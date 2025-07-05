@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="Polyline" load_steps=2 format=3 uid="uid://bhkf586jk1bdk"]
+
+[ext_resource type="Script" uid="uid://ylchq2qojkbj" path="res://Core/Polyline.cs" id="1_mojgj"]
+
+[resource]
+script = ExtResource("1_mojgj")
+LinePoints = Array[Vector2]([Vector2(0, 200), Vector2(-22.625, 0), Vector2(-100, 0)])
+LineRadii = Array[float]([34.91, 17.435, 18.055])
+metadata/_custom_type_script = "uid://ylchq2qojkbj"
