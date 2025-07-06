@@ -10,10 +10,10 @@ config_version=5
 
 [application]
 
-config/name="Ciallo"
+config/name="Ciallo Demo"
 config/description="GPU powered vector paint program!"
 config/version="Demo"
-run/main_scene="uid://ce1yxw3pe0nme"
+run/main_scene="uid://bhueivskybp02"
 config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="uid://cjf7u8mgog5mr"
 

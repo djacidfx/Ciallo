@@ -1,0 +1,106 @@
+[gd_scene load_steps=2 format=3 uid="uid://bhueivskybp02"]
+
+[ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://Core/MainTheme.tres" id="1_mlbys"]
+
+[node name="Main" type="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+theme = ExtResource("1_mlbys")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MenuBarContainer" type="PanelContainer" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="HBoxContainer" parent="VBoxContainer/MenuBarContainer"]
+layout_mode = 2
+
+[node name="Blank" type="Control" parent="VBoxContainer/MenuBarContainer/VBoxContainer"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+
+[node name="MenuBar" type="MenuBar" parent="VBoxContainer/MenuBarContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_constants/h_separation = 30
+theme_override_font_sizes/font_size = 20
+flat = true
+
+[node name="File" type="PopupMenu" parent="VBoxContainer/MenuBarContainer/VBoxContainer/MenuBar"]
+auto_translate_mode = 1
+submenu_popup_delay = 0.01
+item_count = 3
+item_0/text = "Test"
+item_0/id = 0
+item_1/text = "Test1"
+item_1/id = 1
+item_2/checkable = 1
+item_2/checked = true
+item_2/id = 2
+
+[node name="Edit" type="PopupMenu" parent="VBoxContainer/MenuBarContainer/VBoxContainer/MenuBar"]
+submenu_popup_delay = 0.1
+
+[node name="Window" type="PopupMenu" parent="VBoxContainer/MenuBarContainer/VBoxContainer/MenuBar"]
+auto_translate_mode = 1
+submenu_popup_delay = 0.1
+
+[node name="Help" type="PopupMenu" parent="VBoxContainer/MenuBarContainer/VBoxContainer/MenuBar"]
+auto_translate_mode = 1
+submenu_popup_delay = 0.1
+
+[node name="UI" type="HSplitContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Toobar" type="HFlowContainer" parent="VBoxContainer/UI"]
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="VBoxContainer/UI/Toobar"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+
+[node name="ColorRect2" type="ColorRect" parent="VBoxContainer/UI/Toobar"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+
+[node name="ColorRect3" type="ColorRect" parent="VBoxContainer/UI/Toobar"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+
+[node name="UIBlock" type="VBoxContainer" parent="VBoxContainer/UI"]
+layout_mode = 2
+
+[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/UI/UIBlock"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VSplitContainer" type="VSplitContainer" parent="VBoxContainer/UI/UIBlock/HSplitContainer"]
+layout_mode = 2
+
+[node name="ToolProperty" type="VBoxContainer" parent="VBoxContainer/UI/UIBlock/HSplitContainer/VSplitContainer"]
+layout_mode = 2
+
+[node name="ColorRect" type="ColorRect" parent="VBoxContainer/UI/UIBlock/HSplitContainer/VSplitContainer/ToolProperty"]
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+
+[node name="Layer" type="Panel" parent="VBoxContainer/UI/UIBlock/HSplitContainer/VSplitContainer"]
+custom_minimum_size = Vector2(0, 500)
+layout_mode = 2
+
+[node name="Canvas" type="Panel" parent="VBoxContainer/UI/UIBlock/HSplitContainer"]
+layout_mode = 2
