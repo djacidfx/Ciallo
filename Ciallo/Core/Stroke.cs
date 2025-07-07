@@ -3,14 +3,17 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using R3;
 
 namespace Ciallo;
 
-// [Tool] // After enabling the tool script, have to reload the editor on compile. Disable this during development.
+[Tool] // After enabling the tool script, have to reload the editor on compile. Disable this during development.
 [GlobalClass, Icon("res://Icons/vector-curve.svg")]
-public partial class Stroke : MultiMeshInstance2D
+public partial class Stroke : Node2D
 {
     [Export, Notify] public partial Polyline Polyline { get; set; }
+    
+    private MultiMesh _multiMesh;
 
     public Stroke()
     {
@@ -28,20 +31,20 @@ public partial class Stroke : MultiMeshInstance2D
     public void SetRenderBuffer(Polyline line)
     {
         // Set data
-        Multimesh.InstanceCount = 0; // Clear buffer
+        _multiMesh.InstanceCount = 0; // Clear buffer
         if (line == null) return;
         // value to push buffer
         List<Vector2> points;
         List<float> radii;
         if (line.Count() > 1) // regular case
         {
-            Multimesh.InstanceCount = line.Count() - 1;
-            points = line.Points;
-            radii = line.Radii;
+            _multiMesh.InstanceCount = line.Count() - 1;
+            points = line.Points.ToList();
+            radii = line.Radii.ToList();
         }
         else if (line.Count() == 1) // a point, render it as an ultra short segment
         {
-            Multimesh.InstanceCount = 1;
+            _multiMesh.InstanceCount = 1;
             float delta = 1e-5f;
             points = [line.Points[0], line.Points[0] + delta*Vector2.Right];
             radii = [line.Radii[0], line.Radii[0] + delta];
@@ -52,33 +55,34 @@ public partial class Stroke : MultiMeshInstance2D
             return;
         }
         
-        for(int i = 0; i < Multimesh.InstanceCount; i++)
+        for(int i = 0; i < _multiMesh.InstanceCount; i++)
         {
-            Color value = new()
+            Color customPos = new()
             {
                 R = points[i].X,
                 G = points[i].Y,
                 B = points[i + 1].X,
                 A = points[i + 1].Y
             };
-            Multimesh.SetInstanceCustomData(i, value);
+            _multiMesh.SetInstanceCustomData(i, customPos);
             // Have to use instance color to store t.
-            Multimesh.SetInstanceColor(i, new(radii[i], radii[i + 1], 0, 0));
+            _multiMesh.SetInstanceColor(i, new(radii[i], radii[i + 1], 0, 0));
             // Have to set transform or do not render.
             // This transform values are not used in shaders, only to avoid godot frustum culling our strokes.
             // Camera frustum culling cannot be disabled.
-            var transform = Transform2D.Identity.Translated(points[i]);
-            Multimesh.SetInstanceTransform2D(i, transform);
+            // Vector2 ElementAbsMax(Vector2 v1, Vector2 v2) => 
+            //     new (Math.Abs(v1.X) > Math.Abs(v2.X) ? v1.X : v2.X, Math.Abs(v1.Y) > Math.Abs(v2.Y) ? v1.Y : v2.Y);
+            _multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);
         }
     }
 
     public void InitMultiMesh()
     {
-        Multimesh = new MultiMesh();
-        Multimesh.TransformFormat = MultiMesh.TransformFormatEnum.Transform2D;
-        Multimesh.UseColors = true;
-        Multimesh.UseCustomData = true;
-        Multimesh.Mesh = GD.Load<Mesh>("res://core/StrokeDummyMesh.tres");
+        _multiMesh = new MultiMesh();
+        _multiMesh.TransformFormat = MultiMesh.TransformFormatEnum.Transform2D;
+        _multiMesh.UseColors = true;
+        _multiMesh.UseCustomData = true;
+        _multiMesh.Mesh = GD.Load<Mesh>("res://core/StrokeDummyMesh.tres");
     }
 
     public void InitMaterial()
@@ -110,6 +114,7 @@ public partial class Stroke : MultiMeshInstance2D
         {
             SetRenderBuffer(Polyline);
             UpdateConfigurationWarnings();
+            QueueRedraw();
         };
         SetRenderBuffer(Polyline);
     }
@@ -117,5 +122,10 @@ public partial class Stroke : MultiMeshInstance2D
     public override void _Ready()
     {
         
+    }
+
+    public override void _Draw()
+    {
+        DrawMultimesh(_multiMesh, null);
     }
 }

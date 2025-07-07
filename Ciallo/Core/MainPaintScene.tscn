@@ -1,25 +1,21 @@
-[gd_scene load_steps=6 format=3 uid="uid://ce1yxw3pe0nme"]
+[gd_scene load_steps=5 format=3 uid="uid://ce1yxw3pe0nme"]
 
-[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://Core/StrokeMaterial.tres" id="1_cqcf4"]
-[ext_resource type="QuadMesh" uid="uid://ds31nm16a66ih" path="res://Core/StrokeDummyMesh.tres" id="2_bjuo8"]
+[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/StrokeMaterial.tres" id="1_cqcf4"]
 [ext_resource type="Script" uid="uid://c7rxc64vyjfgq" path="res://Core/Stroke.cs" id="3_ppqyv"]
+[ext_resource type="Script" uid="uid://c5x2e5h72cqvb" path="res://Core/NodeTest.cs" id="4_cqcf4"]
 [ext_resource type="Resource" uid="uid://bhkf586jk1bdk" path="res://Tests/TPolyline.tres" id="4_nasgv"]
 
-[sub_resource type="MultiMesh" id="MultiMesh_nasgv"]
-use_colors = true
-use_custom_data = true
-instance_count = 2
-mesh = ExtResource("2_bjuo8")
-buffer = PackedFloat32Array(1, 0, 0, 107.115, 0, 1, 0, 100.38, 28.445, 17.435, 0, 0, 107.115, 100.38, 4.445, 0, 1, 0, 0, 4.445, 0, 1, 0, 0, 17.435, 18.055, 0, 0, 4.445, 0, -100, 0)
-
-[node name="MainPaintScene" type="Node2D"]
-scale = Vector2(1e-05, 1e-05)
+[node name="CanvasLayer" type="Node2D"]
 
 [node name="ViewportCamera" type="Camera2D" parent="."]
+scale = Vector2(1e-05, 1e-05)
 
-[node name="Stroke" type="MultiMeshInstance2D" parent="."]
+[node name="Stroke" type="Node2D" parent="."]
 material = ExtResource("1_cqcf4")
-multimesh = SubResource("MultiMesh_nasgv")
+scale = Vector2(1e-05, 1e-05)
 script = ExtResource("3_ppqyv")
 Polyline = ExtResource("4_nasgv")
 metadata/_custom_type_script = "uid://c7rxc64vyjfgq"
+
+[node name="Node" type="Node" parent="."]
+script = ExtResource("4_cqcf4")

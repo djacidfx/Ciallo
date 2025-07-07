@@ -5,5 +5,5 @@
 [resource]
 script = ExtResource("1_mojgj")
 LinePoints = Array[Vector2]([Vector2(200, 200), Vector2(0, 0), Vector2(-200, -200)])
-LineRadii = Array[float]([34.91, 17.435, 18.055])
+LineRadii = Array[float]([32.495, 19.265, 18.055])
 metadata/_custom_type_script = "uid://ylchq2qojkbj"

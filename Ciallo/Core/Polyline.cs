@@ -5,25 +5,27 @@ using System.Linq;
 using Godot;
 using Godot.Collections;
 using MemoryPack;
+using ObservableCollections;
 
 namespace Ciallo;
 
 [Tool, GlobalClass, MemoryPackable]
 public partial class Polyline : Resource, IEnumerable<Tuple<Vector2, float>>
 {
-    public List<Vector2> Points { get; set; } = [];
-    public List<float> Radii { get; set; } = [];
+    public ObservableList<Vector2> Points { get; init; }
+    public ObservableList<float> Radii { get; init; }
     
     [MemoryPackConstructor]
     public Polyline()
     {
-        
+        Points = [];
+        Radii = [];
     }
 
     public Polyline(List<Vector2> points, List<float> radii)
     {
-        Points = points;
-        Radii = radii;
+        Points = new(points);
+        Radii = new(radii);
     }
 
     public IEnumerator<Tuple<Vector2, float>> GetEnumerator()
@@ -43,13 +45,15 @@ public partial class Polyline : Resource, IEnumerable<Tuple<Vector2, float>>
         var x = new Array<Vector2>(Points);
     }
     
+    // Expose to godot editor
     [Export, MemoryPackIgnore] public Array<Vector2> LinePoints
     {
         get => new(Points);
         set
         {
             if(Points.SequenceEqual(value)) return;
-            Points = value.ToList();
+            Points.Clear();
+            Points.AddRange(value);
             EmitChanged();
         }
     }
@@ -59,7 +63,8 @@ public partial class Polyline : Resource, IEnumerable<Tuple<Vector2, float>>
         set
         {
             if(Radii.SequenceEqual(value)) return;
-            Radii = value.ToList();
+            Radii.Clear();
+            Radii.AddRange(value);
             EmitChanged();
         }
     }
