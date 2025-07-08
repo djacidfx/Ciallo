@@ -64,12 +64,12 @@ public partial class Stroke : Node2D
                 B = points[i + 1].X,
                 A = points[i + 1].Y
             };
+            
             _multiMesh.SetInstanceCustomData(i, customPos);
             // Have to use instance color to store t.
             _multiMesh.SetInstanceColor(i, new(radii[i], radii[i + 1], 0, 0));
             // Have to set transform or do not render.
-            // This transform values are not used in shaders, only to avoid godot frustum culling our strokes.
-            // Camera frustum culling cannot be disabled.
+            // This transform values are not used in shaders
             _multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);
         }
     }
@@ -106,20 +106,26 @@ public partial class Stroke : Node2D
     }
     
 
-    public override void _EnterTree()
+    public override void _Ready()
     {
         PolylineChanged += () =>
         {
             SetRenderBuffer(Polyline);
+            SetBoundingBox();
             UpdateConfigurationWarnings();
             QueueRedraw();
         };
         SetRenderBuffer(Polyline);
+        SetBoundingBox();
     }
 
-    public override void _Ready()
+    // Do not work
+    public void SetBoundingBox()
     {
-        
+        var box = Polyline.BoundingBox;
+        // Shen: Finding this function takes me 3 hours.
+        // Avoid node being culling
+        RenderingServer.CanvasItemSetCustomRect(GetCanvasItem(), true, box);
     }
 
     public override void _Draw()

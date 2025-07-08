@@ -1,17 +1,17 @@
 [gd_scene load_steps=4 format=3 uid="uid://ce1yxw3pe0nme"]
 
-[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/StrokeMaterial.tres" id="1_cqcf4"]
+[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/StrokeMaterial.tres" id="1_hiaak"]
+[ext_resource type="Resource" uid="uid://bhkf586jk1bdk" path="res://Tests/TPolyline.tres" id="3_cqcf4"]
 [ext_resource type="Script" uid="uid://c7rxc64vyjfgq" path="res://Core/Stroke.cs" id="3_ppqyv"]
-[ext_resource type="Resource" uid="uid://bhkf586jk1bdk" path="res://Tests/TPolyline.tres" id="4_nasgv"]
 
 [node name="CanvasLayer" type="Node2D"]
 
 [node name="ViewportCamera" type="Camera2D" parent="."]
+position = Vector2(136, 115)
 scale = Vector2(1e-05, 1e-05)
 
 [node name="Stroke" type="Node2D" parent="."]
-material = ExtResource("1_cqcf4")
-scale = Vector2(1e-05, 1e-05)
+material = ExtResource("1_hiaak")
 script = ExtResource("3_ppqyv")
-Polyline = ExtResource("4_nasgv")
+Polyline = ExtResource("3_cqcf4")
 metadata/_custom_type_script = "uid://c7rxc64vyjfgq"

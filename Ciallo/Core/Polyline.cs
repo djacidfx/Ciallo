@@ -15,12 +15,12 @@ public partial class Polyline : Resource, IEnumerable<Tuple<Vector2, float>>
     public ObservableList<Vector2> Points { get; init; }
     public ObservableList<float> Radii { get; init; }
     [MemoryPackIgnore]
-    public Tuple<Vector2, Vector2> BoundingBox
+    public Rect2 BoundingBox
     {
         get
         {
             // Calculate the bounding box of polyline Points and Radii
-            if (Points.Count == 0) return null;
+            if (Points.Count == 0) return default;
             Vector2 min = Points[0];
             Vector2 max = Points[0];
 
@@ -35,7 +35,7 @@ public partial class Polyline : Resource, IEnumerable<Tuple<Vector2, float>>
                 min = ElementMin(min, p - Vector2.One * r);
                 max = ElementMax(max, p + Vector2.One * r);
             }
-            return Tuple.Create(min, max);
+            return new(min, max-min);
         }
     }
 
