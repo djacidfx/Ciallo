@@ -70,8 +70,6 @@ public partial class Stroke : Node2D
             // Have to set transform or do not render.
             // This transform values are not used in shaders, only to avoid godot frustum culling our strokes.
             // Camera frustum culling cannot be disabled.
-            // Vector2 ElementAbsMax(Vector2 v1, Vector2 v2) => 
-            //     new (Math.Abs(v1.X) > Math.Abs(v2.X) ? v1.X : v2.X, Math.Abs(v1.Y) > Math.Abs(v2.Y) ? v1.Y : v2.Y);
             _multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);
         }
     }

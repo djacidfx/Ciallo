@@ -26,6 +26,14 @@ public class ObservableListFormatter<T> : MemoryPackFormatter<ObservableList<T>>
             return;
         }
         var v = reader.ReadValue<List<T>>();
-        value = new(v);
+        if (value == null)
+        {
+            value = new(v);
+        }
+        else
+        {
+            value.Clear();
+            value.AddRange(v);
+        }
     }
 }

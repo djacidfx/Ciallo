@@ -21,7 +21,7 @@ config/icon="uid://cjf7u8mgog5mr"
 
 FrameProviderDispatcher="*res://addons/R3.Godot/FrameProviderDispatcher.cs"
 ObservableTrackerRuntimeHook="*res://addons/R3.Godot/ObservableTrackerRuntimeHook.cs"
-Formatter="*res://Misc/AutoloadFormatter.cs"
+Formatter="*res://Misc/RegisterFormatter.cs"
 
 [display]
 

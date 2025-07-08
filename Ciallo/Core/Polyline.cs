@@ -9,12 +9,36 @@ using ObservableCollections;
 
 namespace Ciallo;
 
-[Tool, GlobalClass, MemoryPackable]
+[Tool, GlobalClass]
 public partial class Polyline : Resource, IEnumerable<Tuple<Vector2, float>>
 {
     public ObservableList<Vector2> Points { get; init; }
     public ObservableList<float> Radii { get; init; }
-    
+    [MemoryPackIgnore]
+    public Tuple<Vector2, Vector2> BoundingBox
+    {
+        get
+        {
+            // Calculate the bounding box of polyline Points and Radii
+            if (Points.Count == 0) return null;
+            Vector2 min = Points[0];
+            Vector2 max = Points[0];
+
+            for (int i = 0; i < Points.Count; i++)
+            {
+                Vector2 p = Points[i];
+                float r = Radii[i];
+                Vector2 ElementMax(Vector2 v1, Vector2 v2) => 
+                    new (Single.Max(v1.X, v2.X), Single.Max(v1.Y, v2.Y));
+                Vector2 ElementMin(Vector2 v1, Vector2 v2) => 
+                    new (Single.Min(v1.X, v2.X), Single.Min(v1.Y, v2.Y));
+                min = ElementMin(min, p - Vector2.One * r);
+                max = ElementMax(max, p + Vector2.One * r);
+            }
+            return Tuple.Create(min, max);
+        }
+    }
+
     [MemoryPackConstructor]
     public Polyline()
     {

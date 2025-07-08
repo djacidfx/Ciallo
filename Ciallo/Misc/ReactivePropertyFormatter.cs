@@ -24,6 +24,13 @@ public class ReactivePropertyFormatter<T> : MemoryPackFormatter<ReactiveProperty
             return;
         }
         var value = reader.ReadValue<T>();
-        property = new(value);
+        if (property == null)
+        {
+            property = new(value);
+        }
+        else
+        {
+            property.Value = value;
+        }
     }
 }

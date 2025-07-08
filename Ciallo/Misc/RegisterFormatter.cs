@@ -5,9 +5,9 @@ using R3;
 
 namespace Ciallo;
 
-public partial class AutoloadFormatter : Node
+public partial class RegisterFormatter : Node
 {
-    public override void _Ready()
+    public override void _EnterTree()
     {
         MemoryPackFormatterProvider.RegisterGenericType(typeof(ReactiveProperty<>), typeof(ReactivePropertyFormatter<>));
         MemoryPackFormatterProvider.RegisterGenericType(typeof(ObservableList<>), typeof(ObservableListFormatter<>));
