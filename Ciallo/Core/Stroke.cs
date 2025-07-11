@@ -1,5 +1,4 @@
 using Godot;
-using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -11,9 +10,25 @@ namespace Ciallo;
 [GlobalClass, Icon("res://Icons/vector-curve.svg")]
 public partial class Stroke : Node2D
 {
-    [Export, Notify] public partial Polyline Polyline { get; set; }
-    
-    private MultiMesh _multiMesh;
+    private Polyline _polyline;
+    [Export]
+    public Polyline Polyline
+    {
+        get => _polyline;
+        set
+        {
+            _polyline = value;
+            SetRenderBuffer(value);
+            SetBoundingBox(value);
+            QueueRedraw();
+            UpdateConfigurationWarnings();
+        }
+    }
+
+    public Subject<Unit> PointsChanged = new();
+    public Subject<Unit> RadiiChanged = new();
+
+    [Export] private MultiMesh _multiMesh;
 
     public Stroke()
     {
@@ -105,26 +120,11 @@ public partial class Stroke : Node2D
         return warnings;
     }
     
-
-    public override void _Ready()
+    public void SetBoundingBox(Polyline line)
     {
-        PolylineChanged += () =>
-        {
-            SetRenderBuffer(Polyline);
-            SetBoundingBox();
-            UpdateConfigurationWarnings();
-            QueueRedraw();
-        };
-        SetRenderBuffer(Polyline);
-        SetBoundingBox();
-    }
-
-    // Do not work
-    public void SetBoundingBox()
-    {
-        var box = Polyline.BoundingBox;
+        var box = line.BoundingBox;
         // Shen: Finding this function takes me 3 hours.
-        // Avoid node being culling
+        // Avoid node being frustum culled.
         RenderingServer.CanvasItemSetCustomRect(GetCanvasItem(), true, box);
     }
 

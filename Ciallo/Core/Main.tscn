@@ -12,7 +12,9 @@ size_flags_horizontal = 0
 size_flags_vertical = 0
 theme = ExtResource("1_mlbys")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="Node" type="Node" parent="."]
+
+[node name="UIBlock" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -22,24 +24,24 @@ grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="MenuBarContainer" type="PanelContainer" parent="VBoxContainer"]
+[node name="MenuBarContainer" type="PanelContainer" parent="UIBlock"]
 layout_mode = 2
 
-[node name="VBoxContainer" type="HBoxContainer" parent="VBoxContainer/MenuBarContainer"]
+[node name="VBoxContainer" type="HBoxContainer" parent="UIBlock/MenuBarContainer"]
 layout_mode = 2
 
-[node name="Blank" type="Control" parent="VBoxContainer/MenuBarContainer/VBoxContainer"]
+[node name="Blank" type="Control" parent="UIBlock/MenuBarContainer/VBoxContainer"]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 
-[node name="MenuBar" type="MenuBar" parent="VBoxContainer/MenuBarContainer/VBoxContainer"]
+[node name="MenuBar" type="MenuBar" parent="UIBlock/MenuBarContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/h_separation = 30
 theme_override_font_sizes/font_size = 20
 flat = true
 
-[node name="File" type="PopupMenu" parent="VBoxContainer/MenuBarContainer/VBoxContainer/MenuBar"]
+[node name="File" type="PopupMenu" parent="UIBlock/MenuBarContainer/VBoxContainer/MenuBar"]
 auto_translate_mode = 1
 submenu_popup_delay = 0.01
 item_count = 3
@@ -51,56 +53,56 @@ item_2/checkable = 1
 item_2/checked = true
 item_2/id = 2
 
-[node name="Edit" type="PopupMenu" parent="VBoxContainer/MenuBarContainer/VBoxContainer/MenuBar"]
+[node name="Edit" type="PopupMenu" parent="UIBlock/MenuBarContainer/VBoxContainer/MenuBar"]
 submenu_popup_delay = 0.1
 
-[node name="Window" type="PopupMenu" parent="VBoxContainer/MenuBarContainer/VBoxContainer/MenuBar"]
+[node name="Window" type="PopupMenu" parent="UIBlock/MenuBarContainer/VBoxContainer/MenuBar"]
 auto_translate_mode = 1
 submenu_popup_delay = 0.1
 
-[node name="Help" type="PopupMenu" parent="VBoxContainer/MenuBarContainer/VBoxContainer/MenuBar"]
+[node name="Help" type="PopupMenu" parent="UIBlock/MenuBarContainer/VBoxContainer/MenuBar"]
 auto_translate_mode = 1
 submenu_popup_delay = 0.1
 
-[node name="UI" type="HSplitContainer" parent="VBoxContainer"]
+[node name="UIBlock" type="HSplitContainer" parent="UIBlock"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Toobar" type="HFlowContainer" parent="VBoxContainer/UI"]
+[node name="Toobar" type="HFlowContainer" parent="UIBlock/UIBlock"]
 layout_mode = 2
 
-[node name="ColorRect" type="ColorRect" parent="VBoxContainer/UI/Toobar"]
+[node name="ColorRect" type="ColorRect" parent="UIBlock/UIBlock/Toobar"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 
-[node name="ColorRect2" type="ColorRect" parent="VBoxContainer/UI/Toobar"]
+[node name="ColorRect2" type="ColorRect" parent="UIBlock/UIBlock/Toobar"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 
-[node name="ColorRect3" type="ColorRect" parent="VBoxContainer/UI/Toobar"]
+[node name="ColorRect3" type="ColorRect" parent="UIBlock/UIBlock/Toobar"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 
-[node name="UIBlock" type="VBoxContainer" parent="VBoxContainer/UI"]
+[node name="UIBlock" type="VBoxContainer" parent="UIBlock/UIBlock"]
 layout_mode = 2
 
-[node name="HSplitContainer" type="HSplitContainer" parent="VBoxContainer/UI/UIBlock"]
+[node name="HSplitContainer" type="HSplitContainer" parent="UIBlock/UIBlock/UIBlock"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="VSplitContainer" type="VSplitContainer" parent="VBoxContainer/UI/UIBlock/HSplitContainer"]
+[node name="VSplitContainer" type="VSplitContainer" parent="UIBlock/UIBlock/UIBlock/HSplitContainer"]
 layout_mode = 2
 
-[node name="ToolProperty" type="VBoxContainer" parent="VBoxContainer/UI/UIBlock/HSplitContainer/VSplitContainer"]
+[node name="ToolProperty" type="VBoxContainer" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer"]
 layout_mode = 2
 
-[node name="ColorRect" type="ColorRect" parent="VBoxContainer/UI/UIBlock/HSplitContainer/VSplitContainer/ToolProperty"]
+[node name="ColorRect" type="ColorRect" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer/ToolProperty"]
 custom_minimum_size = Vector2(100, 100)
 layout_mode = 2
 
-[node name="Layer" type="Panel" parent="VBoxContainer/UI/UIBlock/HSplitContainer/VSplitContainer"]
+[node name="Layer" type="Panel" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer"]
 custom_minimum_size = Vector2(0, 500)
 layout_mode = 2
 
-[node name="Canvas" type="Panel" parent="VBoxContainer/UI/UIBlock/HSplitContainer"]
+[node name="Canvas" type="Panel" parent="UIBlock/UIBlock/UIBlock/HSplitContainer"]
 layout_mode = 2

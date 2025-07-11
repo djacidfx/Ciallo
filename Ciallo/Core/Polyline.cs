@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using Godot;
-using Godot.Collections;
-using MemoryPack;
-using ObservableCollections;
 
 namespace Ciallo;
 
 [Tool, GlobalClass]
 public partial class Polyline : Resource, IEnumerable<Tuple<Vector2, float>>
 {
-    public ObservableList<Vector2> Points { get; init; }
-    public ObservableList<float> Radii { get; init; }
-    [MemoryPackIgnore]
+    [Export] public Godot.Collections.Array<Vector2> Points { get; set; }
+    [Export] public Godot.Collections.Array<float> Radii { get; set; }
+    
+        
     public Rect2 BoundingBox
     {
         get
@@ -38,8 +35,7 @@ public partial class Polyline : Resource, IEnumerable<Tuple<Vector2, float>>
             return new(min, max-min);
         }
     }
-
-    [MemoryPackConstructor]
+    
     public Polyline()
     {
         Points = [];
@@ -66,30 +62,5 @@ public partial class Polyline : Resource, IEnumerable<Tuple<Vector2, float>>
     {
         Points.Add(p);
         Radii.Add(r);
-        var x = new Array<Vector2>(Points);
-    }
-    
-    // Expose to godot editor
-    [Export, MemoryPackIgnore] public Array<Vector2> LinePoints
-    {
-        get => new(Points);
-        set
-        {
-            if(Points.SequenceEqual(value)) return;
-            Points.Clear();
-            Points.AddRange(value);
-            EmitChanged();
-        }
-    }
-    [Export, MemoryPackIgnore] public Array<float> LineRadii
-    {
-        get => new(Radii);
-        set
-        {
-            if(Radii.SequenceEqual(value)) return;
-            Radii.Clear();
-            Radii.AddRange(value);
-            EmitChanged();
-        }
     }
 }
