@@ -28,7 +28,7 @@ public partial class Stroke : Node2D
     public Subject<Unit> PointsChanged = new();
     public Subject<Unit> RadiiChanged = new();
 
-    [Export] private MultiMesh _multiMesh;
+    private MultiMesh _multiMesh;
 
     public Stroke()
     {

@@ -1,0 +1,44 @@
+[gd_scene load_steps=3 format=3 uid="uid://cmxkg61nilwq8"]
+
+[ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://Core/PaintSceneControl.cs" id="1_h7pkx"]
+[ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Core/MainPaintScene.tscn" id="2_peemv"]
+
+[node name="PaintSceneControl" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_h7pkx")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.298039, 0.298039, 0.298039, 1)
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="_SubViewport" type="SubViewport" parent="SubViewportContainer"]
+unique_name_in_owner = true
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4
+
+[node name="World2D" parent="SubViewportContainer/_SubViewport" instance=ExtResource("2_peemv")]
+
+[node name="ViewportCamera" type="Camera2D" parent="SubViewportContainer/_SubViewport"]
+zoom = Vector2(2, 2)
+
+[connection signal="resized" from="." to="." method="OnResize"]

@@ -13,7 +13,7 @@ config_version=5
 config/name="Ciallo Demo"
 config/description="GPU powered vector paint program!"
 config/version="Demo"
-run/main_scene="uid://ce1yxw3pe0nme"
+run/main_scene="uid://bhueivskybp02"
 config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 config/icon="uid://cjf7u8mgog5mr"
 
@@ -62,3 +62,4 @@ icon_explorer/preview_size_exp=7.0
 [rendering]
 
 textures/canvas_textures/default_texture_filter=0
+environment/screen_space_reflection/roughness_quality=0

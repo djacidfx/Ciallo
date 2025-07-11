@@ -62,5 +62,7 @@ void fragment() {
 	if(d0cos < cosTheta && d0 > r0) discard;
     if(d1cos > cosTheta && d1 > r1) discard;
 
+	// Premultiply alpha is necessary
+	// See: https://github.com/godotengine/godot/issues/99715
     COLOR = vec4(1.0, 1.0, 1.0, 0.5);
 }

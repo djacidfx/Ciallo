@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=3 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://Core/MainTheme.tres" id="1_mlbys"]
+[ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Core/PaintSceneControl.tscn" id="2_mgg3w"]
 
 [node name="Main" type="Panel"]
 anchors_preset = 15
@@ -71,16 +72,16 @@ size_flags_vertical = 3
 [node name="Toobar" type="HFlowContainer" parent="UIBlock/UIBlock"]
 layout_mode = 2
 
-[node name="ColorRect" type="ColorRect" parent="UIBlock/UIBlock/Toobar"]
-custom_minimum_size = Vector2(100, 100)
+[node name="ToolIconPlaceholder" type="ColorRect" parent="UIBlock/UIBlock/Toobar"]
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
 [node name="ColorRect2" type="ColorRect" parent="UIBlock/UIBlock/Toobar"]
-custom_minimum_size = Vector2(100, 100)
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
 [node name="ColorRect3" type="ColorRect" parent="UIBlock/UIBlock/Toobar"]
-custom_minimum_size = Vector2(100, 100)
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
 
 [node name="UIBlock" type="VBoxContainer" parent="UIBlock/UIBlock"]
@@ -93,16 +94,16 @@ size_flags_vertical = 3
 [node name="VSplitContainer" type="VSplitContainer" parent="UIBlock/UIBlock/UIBlock/HSplitContainer"]
 layout_mode = 2
 
-[node name="ToolProperty" type="VBoxContainer" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer"]
+[node name="ToolProperties" type="VBoxContainer" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer"]
 layout_mode = 2
 
-[node name="ColorRect" type="ColorRect" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer/ToolProperty"]
-custom_minimum_size = Vector2(100, 100)
+[node name="PlaceHolder" type="ColorRect" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer/ToolProperties"]
+custom_minimum_size = Vector2(256, 100)
 layout_mode = 2
 
 [node name="Layer" type="Panel" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer"]
 custom_minimum_size = Vector2(0, 500)
 layout_mode = 2
 
-[node name="Canvas" type="Panel" parent="UIBlock/UIBlock/UIBlock/HSplitContainer"]
+[node name="MainPaint" parent="UIBlock/UIBlock/UIBlock/HSplitContainer" instance=ExtResource("2_mgg3w")]
 layout_mode = 2
