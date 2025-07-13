@@ -3,7 +3,7 @@ using System.Linq;
 using MemoryPack;
 using ObservableCollections;
 
-namespace Ciallo;
+namespace Ciallo.Misc;
 
 public class ObservableListFormatter<T> : MemoryPackFormatter<ObservableList<T>>
 {

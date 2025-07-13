@@ -2,18 +2,18 @@ using Godot;
 using System;
 
 [SceneTree(root:"rt")]
-public partial class PaintSceneControl : Control
+public partial class PaintSceneControl : PanelContainer
 {
-    public override void _Ready()
+    public override void _Process(double delta)
     {
         
     }
 
     public void OnResize()
     {
-        var size = this.Size;
-        // SubViewportContainer uses the combined size of the SubViewports as minimum size,
+        var size = _Viewer.Size;
+        // SubViewportContainer uses the combined size of the SubViewports as minimum size, unless stretch is enabled.
+        // The stretch is enabled.
         // https://docs.godotengine.org/en/stable/classes/class_subviewportcontainer.html
-        _SubViewport.Size = new(Mathf.RoundToInt(size.X), Mathf.RoundToInt(size.Y));
     }
 }

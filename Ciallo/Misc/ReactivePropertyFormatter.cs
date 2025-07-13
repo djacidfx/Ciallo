@@ -1,7 +1,7 @@
 ﻿using R3;
 using MemoryPack;
 
-namespace Ciallo;
+namespace Ciallo.Misc;
 
 public class ReactivePropertyFormatter<T> : MemoryPackFormatter<ReactiveProperty<T>>
 {
