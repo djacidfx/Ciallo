@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using R3;
 
-namespace Ciallo;
+namespace Ciallo.Core;
 
 [Tool] // After enabling the tool script, have to reload the editor on compile. Disable this during development.
 [GlobalClass, Icon("res://Icons/vector-curve.svg")]

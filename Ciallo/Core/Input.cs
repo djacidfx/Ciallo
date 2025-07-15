@@ -3,4 +3,4 @@
 namespace Ciallo;
 
 [InputMap]
-public static partial class ActionName;
+public static partial class ActionNames;

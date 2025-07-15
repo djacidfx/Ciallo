@@ -1,17 +1,49 @@
-[gd_scene load_steps=5 format=3 uid="uid://ce1yxw3pe0nme"]
+[gd_scene load_steps=6 format=3 uid="uid://ce1yxw3pe0nme"]
 
-[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/StrokeMaterial.tres" id="1_wlwx4"]
+[ext_resource type="Script" uid="uid://bh1ma4lihi20r" path="res://Core/World2d.cs" id="1_rcuby"]
 [ext_resource type="Script" uid="uid://c7rxc64vyjfgq" path="res://Core/Stroke.cs" id="2_rcuby"]
+[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/StrokeMaterial.tres" id="2_wubmp"]
 [ext_resource type="Resource" uid="uid://c6bta002h4eqy" path="res://Tests/TPolyline.tres" id="3_wubmp"]
 [ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/TestNode.cs" id="4_1xdo7"]
 
 [node name="World2D" type="Node2D"]
+script = ExtResource("1_rcuby")
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -480.0
+offset_top = -270.0
+offset_right = 480.0
+offset_bottom = 270.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.330746, 0.0850599, 0.253003, 1)
 
 [node name="Stroke" type="Node2D" parent="."]
-material = ExtResource("1_wlwx4")
+material = ExtResource("2_wubmp")
 script = ExtResource("2_rcuby")
 Polyline = ExtResource("3_wubmp")
 metadata/_custom_type_script = "uid://c7rxc64vyjfgq"
 
 [node name="Node" type="Node" parent="."]
 script = ExtResource("4_1xdo7")
+
+[node name="_Cursor" type="ColorRect" parent="."]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(20, 20)
+color = Color(1, 0.878431, 0.45098, 1)

@@ -1,6 +1,8 @@
 using Godot;
 using System;
 
+namespace Ciallo.Core;
+
 [SceneTree(root:"rt")]
 public partial class PaintSceneControl : PanelContainer
 {
@@ -11,9 +13,6 @@ public partial class PaintSceneControl : PanelContainer
 
     public void OnResize()
     {
-        var size = _Viewer.Size;
-        // SubViewportContainer uses the combined size of the SubViewports as minimum size, unless stretch is enabled.
-        // The stretch is enabled.
-        // https://docs.godotengine.org/en/stable/classes/class_subviewportcontainer.html
+        
     }
 }

@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Godot;
 
-namespace Ciallo;
+namespace Ciallo.Core;
 
 [Tool, GlobalClass]
 public partial class Polyline : Resource, IEnumerable<Tuple<Vector2, float>>
