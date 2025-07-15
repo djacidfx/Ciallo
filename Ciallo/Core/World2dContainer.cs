@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using Windows.Win32;
 using R3;
 
 
@@ -27,8 +28,7 @@ public partial class World2dContainer : SubViewportContainer
 
     public override void _Input(InputEvent e)
     {
-        var et = e as InputEventMouseMotion;
-        GD.Print(et?.Position);
+        
     }
     
     public void OnMouseEnter()

@@ -58,6 +58,10 @@ redo={
 ]
 }
 
+[input_devices]
+
+pen_tablet/driver.windows="auto"
+
 [plugins]
 
 icon_explorer/preview_size_exp=7.0
