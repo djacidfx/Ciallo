@@ -17,7 +17,7 @@ public partial class World2dContainer : SubViewportContainer
 
     public override void _Process(double delta)
     {
-        // GD.Print($"({pos.X:F4}, {pos.Y:F4})");
+        
     }
 
     public void OnGuiInput(InputEvent e)
@@ -27,18 +27,19 @@ public partial class World2dContainer : SubViewportContainer
 
     public override void _Input(InputEvent e)
     {
-        
+        var et = e as InputEventMouseMotion;
+        GD.Print(et?.Position);
     }
-    //
-    // public void OnMouseEnter()
-    // {
-    //     // Pitfall: Dragging the vsplit/hsplit bar around the container can trigger mouse enter.
-    //     // So use OnGuiInput together to decide whether handle world input.
-    //     _isHovering = true;
-    // }
-    //
-    // public void OnMouseExit()
-    // {
-    //     _isHovering = false;
-    // }
+    
+    public void OnMouseEnter()
+    {
+        // Pitfall: Dragging the vsplit/hsplit bar around the container can trigger mouse enter.
+        // So use OnGuiInput together to decide whether handle world input.
+        _isHovering = true;
+    }
+    
+    public void OnMouseExit()
+    {
+        _isHovering = false;
+    }
 }
