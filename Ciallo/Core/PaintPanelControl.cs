@@ -4,7 +4,7 @@ using System;
 namespace Ciallo.Core;
 
 [SceneTree(root:"rt")]
-public partial class PaintSceneControl : PanelContainer
+public partial class PaintPanelControl : PanelContainer
 {
     public override void _Process(double delta)
     {

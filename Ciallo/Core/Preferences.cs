@@ -1,16 +1,17 @@
 ﻿using Godot;
 using Newtonsoft.Json;
 
-namespace Ciallo.Misc;
+namespace Ciallo.Core;
 
-public class Configurations
+public class Preferences
 {
+    
+    #region save load json
     public static readonly string Path = "res://Temp/Config.json";
     [JsonIgnore]
     public bool FileExists = false;
-    
 
-    public Configurations(bool fromFile = false)
+    public Preferences(bool fromFile = false)
     {
         if (!fromFile) return;
         if (!FileAccess.FileExists(Path))
@@ -30,4 +31,5 @@ public class Configurations
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
         file.StoreString(content);
     }
+    #endregion
 }

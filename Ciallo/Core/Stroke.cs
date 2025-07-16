@@ -6,7 +6,11 @@ using R3;
 
 namespace Ciallo.Core;
 
-[Tool] // After enabling the tool script, have to reload the editor on compile. Disable this during development.
+/// <summary>
+/// The core node in this program.
+/// Note: Current design is mixing data, rendering and control systems together, separate them when necessary.
+/// </summary>
+[Tool]
 [GlobalClass, Icon("res://Icons/vector-curve.svg")]
 public partial class Stroke : Node2D
 {
@@ -18,8 +22,8 @@ public partial class Stroke : Node2D
         set
         {
             _polyline = value;
-            SetRenderBuffer(value);
-            SetBoundingBox(value);
+            SetRenderBuffer();
+            SetBoundingBox();
             QueueRedraw();
             UpdateConfigurationWarnings();
         }
@@ -43,26 +47,26 @@ public partial class Stroke : Node2D
         InitMaterial();
     }
     
-    public void SetRenderBuffer(Polyline line)
+    private void SetRenderBuffer()
     {
         // Set data
         _multiMesh.InstanceCount = 0; // Clear buffer
-        if (line == null) return;
+        if (_polyline == null) return;
         // value to push buffer
         List<Vector2> points;
         List<float> radii;
-        if (line.Count() > 1) // regular case
+        if (_polyline.Count() > 1) // regular case
         {
-            _multiMesh.InstanceCount = line.Count() - 1;
-            points = line.Points.ToList();
-            radii = line.Radii.ToList();
+            _multiMesh.InstanceCount = _polyline.Count() - 1;
+            points = _polyline.Points.ToList();
+            radii = _polyline.Radii.ToList();
         }
-        else if (line.Count() == 1) // a point, render it as an ultra short segment
+        else if (_polyline.Count() == 1) // a point, render it as an ultra short segment
         {
             _multiMesh.InstanceCount = 1;
             float delta = 1e-5f;
-            points = [line.Points[0], line.Points[0] + delta*Vector2.Right];
-            radii = [line.Radii[0], line.Radii[0] + delta];
+            points = [_polyline.Points[0], _polyline.Points[0] + delta*Vector2.Right];
+            radii = [_polyline.Radii[0], _polyline.Radii[0] + delta];
         }
         else
         {
@@ -120,9 +124,9 @@ public partial class Stroke : Node2D
         return warnings;
     }
     
-    public void SetBoundingBox(Polyline line)
+    private void SetBoundingBox()
     {
-        var box = line.BoundingBox;
+        var box = _polyline.BoundingBox;
         // Shen: Finding this function takes me 3 hours.
         // Avoid node being frustum culled.
         RenderingServer.CanvasItemSetCustomRect(GetCanvasItem(), true, box);

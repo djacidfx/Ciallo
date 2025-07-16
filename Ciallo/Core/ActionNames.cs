@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace Ciallo;
+namespace Ciallo.Core;
 
 [InputMap]
 public static partial class ActionNames;

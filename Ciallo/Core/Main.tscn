@@ -2,7 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://Core/MainTheme.tres" id="1_mlbys"]
 [ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/TestNode.cs" id="2_m1i1e"]
-[ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Core/PaintSceneControl.tscn" id="2_mgg3w"]
+[ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Core/PaintPanelControl.tscn" id="2_mgg3w"]
 
 [node name="Main" type="Panel"]
 anchors_preset = 15

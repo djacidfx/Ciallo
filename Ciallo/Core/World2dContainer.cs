@@ -16,19 +16,13 @@ public partial class World2dContainer : SubViewportContainer
         _camera = this.GetChild(0).GetChild<Camera2D>(1);
     }
 
-    public override void _Process(double delta)
-    {
-        
-    }
-
     public void OnGuiInput(InputEvent e)
     {
-        
-    }
-
-    public override void _Input(InputEvent e)
-    {
-        
+        if (e is InputEventMouseMotion mouseEvent)
+        {
+            var worldPos = _camera.GetViewportTransform().AffineInverse() * mouseEvent.Position;
+            GD.Print(worldPos);
+        }
     }
     
     public void OnMouseEnter()

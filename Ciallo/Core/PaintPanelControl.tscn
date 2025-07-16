@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cmxkg61nilwq8"]
 
-[ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://Core/PaintSceneControl.cs" id="1_h7pkx"]
+[ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://Core/PaintPanelControl.cs" id="1_h7pkx"]
 [ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Core/World2D.tscn" id="2_peemv"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://Core/World2dContainer.cs" id="2_t3dnt"]
 
@@ -58,7 +58,7 @@ transparent_bg = true
 handle_input_locally = false
 msaa_2d = 2
 gui_disable_input = true
-size = Vector2i(1920, 1042)
+size = Vector2i(2, 2)
 render_target_update_mode = 4
 
 [node name="World2D" parent="VBoxContainer/World2DContainer/_SubViewport" instance=ExtResource("2_peemv")]
