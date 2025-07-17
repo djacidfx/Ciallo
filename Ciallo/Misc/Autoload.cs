@@ -1,6 +1,5 @@
 ﻿using Godot;
 using MemoryPack;
-using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
 
@@ -12,15 +11,7 @@ public partial class Autoload : Node
     {
         MemoryPackFormatterProvider.RegisterGenericType(typeof(ReactiveProperty<>), typeof(ReactivePropertyFormatter<>));
         MemoryPackFormatterProvider.RegisterGenericType(typeof(ObservableList<>), typeof(ObservableListFormatter<>));
-        JsonConvert.DefaultSettings = () => new JsonSerializerSettings
-        {
-            Formatting = Formatting.Indented,
-            Converters = 
-            {
-                
-            },
-            TypeNameHandling = TypeNameHandling.Auto,
-        };
+        
         // Handle quit manually (to save unsaved file)
         // GetTree().AutoAcceptQuit = false;
     }

@@ -1,33 +1,38 @@
-﻿using Godot;
-using Newtonsoft.Json;
+﻿using System.Text.Json;
+using System.Text.Json.Serialization;
+using Ciallo.Misc;
+using Godot;
+using R3;
 
 namespace Ciallo.Core;
 
 public class Preferences
 {
-    
     #region save load json
-    public static readonly string Path = "res://Temp/Config.json";
-    [JsonIgnore]
-    public bool FileExists = false;
-
-    public Preferences(bool fromFile = false)
+    public static readonly string Path = "res://Temp/Preferences.json";
+    public static bool FileExists = false;
+    private static JsonSerializerOptions _options = new()
     {
-        if (!fromFile) return;
+        WriteIndented = true,
+        IncludeFields = true,
+        Converters = { new ReactivePropertyConverter(), new JsonStringEnumConverter() }
+    };
+
+    public static Preferences Load()
+    {
         if (!FileAccess.FileExists(Path))
         {
-            return;
+            FileExists = false;
+            return new();
         }
-        
-        FileExists = true;
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
-        JsonConvert.PopulateObject(content, this);
+        return JsonSerializer.Deserialize<Preferences>(content, _options);
     }
 
     public void Save()
     {
-        var content = JsonConvert.SerializeObject(this);
+        var content = JsonSerializer.Serialize(this, _options);
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
         file.StoreString(content);
     }

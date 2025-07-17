@@ -4,5 +4,5 @@ namespace Ciallo.Core;
 
 static partial class Global
 {
-    public static readonly Preferences Preferences = new (true);
+    public static readonly Preferences Preferences = Preferences.Load();
 }

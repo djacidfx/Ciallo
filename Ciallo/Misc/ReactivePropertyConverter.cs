@@ -1,25 +1,63 @@
 ﻿using System;
-using Newtonsoft.Json;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using R3;
 
 namespace Ciallo.Misc;
 
+public class ReactivePropertyConverter : JsonConverterFactory
+{
+    public override bool CanConvert(Type typeToConvert)
+    {
+        if (!typeToConvert.IsGenericType)
+        {
+            return false;
+        }
+
+        if (typeToConvert.GetGenericTypeDefinition() != typeof(ReactiveProperty<>))
+        {
+            return false;
+        }
+
+        return true;
+    }
+    public override JsonConverter CreateConverter(Type type, JsonSerializerOptions options)
+    {
+        Type[] typeArguments = type.GetGenericArguments();
+        Type valueType = typeArguments[0]; ;
+
+        JsonConverter converter = (JsonConverter)Activator.CreateInstance(
+            typeof(ReactivePropertyConverter<>).MakeGenericType([valueType]),
+            BindingFlags.Instance | BindingFlags.Public,
+            binder: null,
+            args: [options],
+            culture: null)!;
+
+        return converter;
+    }
+}
+
+
 public class ReactivePropertyConverter<T> : JsonConverter<ReactiveProperty<T>>
 {
-    public override void WriteJson(JsonWriter writer, ReactiveProperty<T> value, JsonSerializer serializer)
+    private readonly JsonConverter<T> _valueConverter;
+    
+    public ReactivePropertyConverter(JsonSerializerOptions options)
     {
-        writer.WriteValue(value.CurrentValue);
+        _valueConverter = (JsonConverter<T>)options.GetConverter(typeof(T));
     }
 
-    public override ReactiveProperty<T> ReadJson(JsonReader reader, Type objectType, ReactiveProperty<T> existingValue, bool hasExistingValue,
-        JsonSerializer serializer)
+    public override ReactiveProperty<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        T x = (T)reader.Value;
-        if (hasExistingValue)
-        {
-            existingValue.Value = x;
-            return existingValue;
-        };
-        return new ReactiveProperty<T>(x);
+        var property = new ReactiveProperty<T>(default);
+        var value = _valueConverter.Read(ref reader, typeToConvert, options);
+        property.Value = value;
+        return property;
+    }
+
+    public override void Write(Utf8JsonWriter writer, ReactiveProperty<T> property, JsonSerializerOptions options)
+    {
+        _valueConverter.Write(writer, property.Value, options);
     }
 }
