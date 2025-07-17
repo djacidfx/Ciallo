@@ -2,7 +2,7 @@
 
 namespace Ciallo.Core;
 
-public partial class StrokeLayer : Node2D
+public partial class StrokeLayer : CanvasGroup
 {
     
 }

@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://bh1ma4lihi20r" path="res://Core/World2d.cs" id="1_rcuby"]
 [ext_resource type="Script" uid="uid://c7rxc64vyjfgq" path="res://Core/Stroke.cs" id="2_rcuby"]
-[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/StrokeMaterial.tres" id="2_wubmp"]
+[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/StrokeMaterial.tres" id="3_rcuby"]
 [ext_resource type="Resource" uid="uid://c6bta002h4eqy" path="res://Tests/TPolyline.tres" id="3_wubmp"]
 [ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/TestNode.cs" id="4_1xdo7"]
 
@@ -25,11 +25,13 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0.330746, 0.0850599, 0.253003, 1)
 
-[node name="Stroke" type="Node2D" parent="."]
-material = ExtResource("2_wubmp")
+[node name="Node" type="Node" parent="."]
+script = ExtResource("4_1xdo7")
+
+[node name="CanvasGroup" type="CanvasGroup" parent="."]
+
+[node name="Stroke" type="Node2D" parent="CanvasGroup"]
+material = ExtResource("3_rcuby")
 script = ExtResource("2_rcuby")
 Polyline = ExtResource("3_wubmp")
 metadata/_custom_type_script = "uid://c7rxc64vyjfgq"
-
-[node name="Node" type="Node" parent="."]
-script = ExtResource("4_1xdo7")
