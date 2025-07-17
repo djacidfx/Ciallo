@@ -19,7 +19,7 @@ public partial class Autoload : Node
     public override void _Notification(int what)
     {
         if (what == NotificationWMCloseRequest)
-            Preferences.Save();
+            ProgramPreferences.Save();
     }
 
     public override void _Ready()

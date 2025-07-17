@@ -6,8 +6,9 @@ using R3;
 
 namespace Ciallo.Core;
 
-public class Preferences
+public class ProgramPreference
 {
+    
     #region save load json
     public static readonly string Path = "res://Temp/Preferences.json";
     public static bool FileExists = false;
@@ -18,7 +19,7 @@ public class Preferences
         Converters = { new ReactivePropertyConverter(), new JsonStringEnumConverter() }
     };
 
-    public static Preferences Load()
+    public static ProgramPreference Load()
     {
         if (!FileAccess.FileExists(Path))
         {
@@ -27,7 +28,7 @@ public class Preferences
         }
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
-        return JsonSerializer.Deserialize<Preferences>(content, _options);
+        return JsonSerializer.Deserialize<ProgramPreference>(content, _options);
     }
 
     public void Save()
