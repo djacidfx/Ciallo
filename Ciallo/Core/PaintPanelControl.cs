@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using Ciallo.Misc;
 using R3;
 
@@ -20,10 +21,15 @@ public partial class PaintPanelControl : PanelContainer
 
     public override void _Ready()
     {
-        var msaa = new ReactiveProperty<Viewport.Msaa>();
-        var container = GetNode<HBoxContainer>("./VBoxContainer/Margin/HBoxContainer");
-        var x = new PropertyEnumUI("test");
-        x.Bind(msaa);
-        container.AddChild(x.Control);
+        var container = GetNode<PropertyContainer>("./VBoxContainer/Margin/Properties");
+        var button = new OptionButton();
+        button.BindValue([Viewport.Msaa.Disabled, Viewport.Msaa.Msaa2X, Viewport.Msaa.Msaa4X, Viewport.Msaa.Msaa8X], ProgramPreferences.Msaa);
+        container.AddPropertyControl("Anti-Aliasing", button);
+        _SubViewport.Msaa2D = ProgramPreferences.Msaa.Value;
+        ProgramPreferences.Msaa.Subscribe(value =>
+        {
+            _SubViewport.Msaa2D = value;
+            GD.Print(_SubViewport.GetMsaa2D());
+        }).AddTo(_SubViewport);
     }
 }

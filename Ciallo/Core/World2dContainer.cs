@@ -21,7 +21,6 @@ public partial class World2dContainer : SubViewportContainer
         if (e is InputEventMouseMotion mouseEvent)
         {
             var worldPos = _camera.GetViewportTransform().AffineInverse() * mouseEvent.Position;
-            GD.Print(worldPos);
         }
     }
     

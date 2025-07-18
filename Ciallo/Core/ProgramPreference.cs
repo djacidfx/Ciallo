@@ -8,6 +8,11 @@ namespace Ciallo.Core;
 
 public class ProgramPreference
 {
+    #region world2D
+    public ReactiveProperty<Viewport.Msaa> Msaa = new(Viewport.Msaa.Msaa4X);
+    public ReactiveProperty<bool> UseTAA = new(false);
+    public ReactiveProperty<bool> UseFXAA = new(false);
+    #endregion
     
     #region save load json
     public static readonly string Path = "res://Temp/Preferences.json";

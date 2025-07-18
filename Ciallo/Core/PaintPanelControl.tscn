@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://cmxkg61nilwq8"]
+[gd_scene load_steps=5 format=3 uid="uid://cmxkg61nilwq8"]
 
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://Core/PaintPanelControl.cs" id="1_h7pkx"]
+[ext_resource type="Script" uid="uid://c3mxvlh0hephd" path="res://Misc/PropertyContainer.cs" id="2_p4r8m"]
 [ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Core/World2D.tscn" id="2_peemv"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://Core/World2dContainer.cs" id="2_t3dnt"]
 
@@ -22,28 +23,12 @@ theme_override_constants/margin_left = 30
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_bottom = 4
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Margin"]
+[node name="Properties" type="BoxContainer" parent="VBoxContainer/Margin"]
 layout_mode = 2
-
-[node name="MSAA" type="HBoxContainer" parent="VBoxContainer/Margin/HBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="VBoxContainer/Margin/HBoxContainer/MSAA"]
-layout_mode = 2
-text = "Anti-aliasing: "
-
-[node name="OptionButton" type="OptionButton" parent="VBoxContainer/Margin/HBoxContainer/MSAA"]
-layout_mode = 2
-selected = 0
-item_count = 4
-popup/item_0/text = "123"
-popup/item_0/id = 0
-popup/item_1/text = "123"
-popup/item_1/id = 1
-popup/item_2/text = "123"
-popup/item_2/id = 2
-popup/item_3/text = "123"
-popup/item_3/id = 3
+theme_override_constants/separation = 5
+script = ExtResource("2_p4r8m")
+Horizontal = true
+metadata/_custom_type_script = "uid://c3mxvlh0hephd"
 
 [node name="World2DContainer" type="SubViewportContainer" parent="VBoxContainer"]
 layout_mode = 2
@@ -53,17 +38,16 @@ script = ExtResource("2_t3dnt")
 
 [node name="_SubViewport" type="SubViewport" parent="VBoxContainer/World2DContainer"]
 unique_name_in_owner = true
-disable_3d = true
-transparent_bg = true
 handle_input_locally = false
-msaa_2d = 2
 gui_disable_input = true
-size = Vector2i(1920, 1042)
+size = Vector2i(1920, 1049)
 render_target_update_mode = 4
 
 [node name="World2D" parent="VBoxContainer/World2DContainer/_SubViewport" instance=ExtResource("2_peemv")]
+scale = Vector2(1.18, 1.18)
 
 [node name="Camera2D" type="Camera2D" parent="VBoxContainer/World2DContainer/_SubViewport"]
+offset = Vector2(29.4, 0)
 ignore_rotation = false
 
 [connection signal="gui_input" from="VBoxContainer/World2DContainer" to="VBoxContainer/World2DContainer" method="OnGuiInput"]
