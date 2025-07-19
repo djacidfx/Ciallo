@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Godot;
 using R3;
@@ -8,34 +9,29 @@ using Humanizer;
 
 namespace Ciallo.Misc;
 
-/// <summary>
-/// The control commonly used to display an enum in the editor.
-/// </summary>
-
 public static class BindOptionButtonExtension
 {
     /// <summary>
-    /// Add enum members to the OptionButton and two-way bind it to a ReactiveProperty. Will clean existing option items.
+    /// Take enum members as OptionButton items and two-way bind the ReactiveProperty. Will clean existing option items.
     /// </summary>
     /// <param name="button"></param>
     /// <param name="property"></param>
     /// <typeparam name="T">Must be enum type.</typeparam>
-    public static void BindEnum<T>(this OptionButton button, ReactiveProperty<T> property) where T : Enum
+    public static void BindEnum<T>(this OptionButton button, [NotNull] ReactiveProperty<T> property) where T : Enum
     {
-        
         var values = (T[])Enum.GetValues(typeof(T));
         button.BindValue(values.ToList(), property);
     }
     
     /// <summary>
-    /// Add list items to the OptionButton and two-way bind the selection to a ReactiveProperty. Will clean existing option items.
+    /// Take list items as the OptionButton items and two-way bind the selection to a ReactiveProperty. Will clean existing option items.
     /// If the current property value is not in the list, the option button will be unselected.
     /// </summary>
     /// <param name="button"></param>
     /// <param name="items">The list options.</param>
     /// <param name="property"></param>
     /// <typeparam name="T">Use `ToString()` as item string.</typeparam>
-    public static void BindValue<T>(this OptionButton button, List<T> items, ReactiveProperty<T> property)
+    public static void BindValue<T>(this OptionButton button, List<T> items, [NotNull] ReactiveProperty<T> property)
     {
         button.Clear();
         foreach (var i in items)

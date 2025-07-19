@@ -21,7 +21,7 @@ public class ProgramPreference
     {
         WriteIndented = true,
         IncludeFields = true,
-        Converters = { new ReactivePropertyConverter(), new JsonStringEnumConverter() }
+        Converters = { new ReactivePropertyJsonConverterFactory(), new JsonStringEnumConverter() }
     };
 
     public static ProgramPreference Load()
