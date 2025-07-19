@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 using R3;
 using Humanizer;
@@ -21,34 +22,9 @@ public static class BindOptionButtonExtension
     /// <typeparam name="T">Must be enum type.</typeparam>
     public static void BindEnum<T>(this OptionButton button, ReactiveProperty<T> property) where T : Enum
     {
-        button.Clear();
-        var memberNames = Enum.GetNames(typeof(T));
-        var values = Enum.GetValues(typeof(T));
-
-        foreach (var name in memberNames)
-        {
-            button.AddItem(name.Humanize());
-        }
         
-        // Set current value
-        button.Selected = Array.IndexOf(values, property.Value);
-        
-        // Bind
-        button.ItemSelected += index =>
-        {
-            if (index < 0 || index >= values.Length)
-                return;
-            property.Value = (T)values.GetValue(index)!;
-        };
-
-        var subscription = property.Subscribe(value =>
-        {
-            button.Selected = Array.IndexOf(values, value);
-        });
-        button.TreeEntered += () =>
-        {
-            subscription.AddTo(button);
-        };
+        var values = (T[])Enum.GetValues(typeof(T));
+        button.BindValue(values.ToList(), property);
     }
     
     /// <summary>
@@ -84,7 +60,9 @@ public static class BindOptionButtonExtension
         }
         else
         {
-            button.TreeEntered += () => subscription.AddTo(button);
+            button.SignalAsObservable(Node.SignalName.TreeEntered)
+                .Take(1)
+                .Subscribe(_ => subscription.AddTo(button));
         }
     }
 }
