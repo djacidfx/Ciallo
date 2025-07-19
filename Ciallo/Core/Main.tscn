@@ -1,7 +1,7 @@
 [gd_scene load_steps=4 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://Core/MainTheme.tres" id="1_mlbys"]
-[ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/TestNode.cs" id="2_m1i1e"]
+[ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/KeyInputHandler.cs" id="2_m1i1e"]
 [ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Core/PaintPanelControl.tscn" id="2_mgg3w"]
 
 [node name="Main" type="Panel"]
@@ -13,9 +13,6 @@ grow_vertical = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 theme = ExtResource("1_mlbys")
-
-[node name="Node" type="Node" parent="."]
-script = ExtResource("2_m1i1e")
 
 [node name="UIBlock" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -109,3 +106,6 @@ layout_mode = 2
 
 [node name="MainPaint" parent="UIBlock/UIBlock/UIBlock/HSplitContainer" instance=ExtResource("2_mgg3w")]
 layout_mode = 2
+
+[node name="KeyInputHandler" type="Node" parent="."]
+script = ExtResource("2_m1i1e")

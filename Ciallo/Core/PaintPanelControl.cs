@@ -16,16 +16,6 @@ public partial class PaintPanelControl : PanelContainer
     
     private readonly ReactiveProperty<float> _cameraRotationDegree = new(0f);
     private readonly ReactiveProperty<float> _cameraZoom = new(1f);
-    
-    public override void _Process(double delta)
-    {
-        
-    }
-
-    public void OnResize()
-    {
-        
-    }
 
     public override void _Ready()
     {
@@ -49,8 +39,8 @@ public partial class PaintPanelControl : PanelContainer
         
         var zoomControl = new SliderSpinBoxPair();
         zoomControl.BindValue(_cameraZoom);
-        zoomControl.MinValue = 0.001;
-        zoomControl.MaxValue = 1000;
+        zoomControl.MinValue = 0.1;
+        zoomControl.MaxValue = 100;
         zoomControl.SpinBox.Step = 0.1;
         zoomControl.Slider.Step = 0;
         zoomControl.Slider.ExpEdit = true;
