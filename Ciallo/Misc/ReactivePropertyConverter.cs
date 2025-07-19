@@ -6,6 +6,9 @@ using R3;
 
 namespace Ciallo.Misc;
 
+/// <summary>
+/// Reactive property convert to json.
+/// </summary>
 public class ReactivePropertyConverter : JsonConverterFactory
 {
     public override bool CanConvert(Type typeToConvert)

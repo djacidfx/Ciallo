@@ -14,7 +14,7 @@ namespace Ciallo.Misc;
 public static class BindOptionButtonExtension
 {
     /// <summary>
-    /// Add enum members to the OptionButton and bind it to a ReactiveProperty. Will clean existing option items.
+    /// Add enum members to the OptionButton and two-way bind it to a ReactiveProperty. Will clean existing option items.
     /// </summary>
     /// <param name="button"></param>
     /// <param name="property"></param>
@@ -52,7 +52,7 @@ public static class BindOptionButtonExtension
     }
     
     /// <summary>
-    /// Add list items to the OptionButton and bind the selection to a ReactiveProperty. Will clean existing option items.
+    /// Add list items to the OptionButton and two-way bind the selection to a ReactiveProperty. Will clean existing option items.
     /// If the current property value is not in the list, the option button will be unselected.
     /// </summary>
     /// <param name="button"></param>
@@ -77,13 +77,14 @@ public static class BindOptionButtonExtension
                 return;
             property.Value = items[(int)index];
         };
-        var subscription = property.Subscribe(value =>
-        {
-            button.Selected = items.IndexOf(value);
-        });
-        button.TreeEntered += () =>
+        var subscription = property.Subscribe(value => button.Selected = items.IndexOf(value));
+        if (button.IsInsideTree())
         {
             subscription.AddTo(button);
-        };
+        }
+        else
+        {
+            button.TreeEntered += () => subscription.AddTo(button);
+        }
     }
 }

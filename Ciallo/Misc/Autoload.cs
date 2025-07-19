@@ -2,7 +2,6 @@
 using MemoryPack;
 using ObservableCollections;
 using R3;
-using Humanizer;
 
 namespace Ciallo.Misc;
 

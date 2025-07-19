@@ -3,6 +3,9 @@ using MemoryPack;
 
 namespace Ciallo.Misc;
 
+/// <summary>
+/// ReactiveProperty format to binary.
+/// </summary>
 public class ReactivePropertyFormatter<T> : MemoryPackFormatter<ReactiveProperty<T>>
 {
     public override void Serialize<TBufferWriter>(ref MemoryPackWriter<TBufferWriter> writer, scoped ref ReactiveProperty<T> property)

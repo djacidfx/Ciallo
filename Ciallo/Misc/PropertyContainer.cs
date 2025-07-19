@@ -25,23 +25,7 @@ public partial class PropertyContainer : BoxContainer
 
     public override void _EnterTree()
     {
-        if (!Engine.IsEditorHint()) return;
-        // Add dummy properties to show in the godot editor
-        var dummy1 = new Label { Text = $"I'm a {(Horizontal? "horizontal":"vertical")} property container" };
-        var control1 = new CheckBox();
-        var hbox1 = new HBoxContainer();
-        hbox1.AddChild(dummy1);
-        hbox1.AddChild(control1);
-        this.AddChild(hbox1);
-            
-        this.AddChild(new VSeparator());
         
-        var dummy2 = new Label { Text = "Dummy property" };
-        var control2 = new OptionButton();
-        var hbox2 = new HBoxContainer();
-        hbox2.AddChild(dummy2);
-        hbox2.AddChild(control2);
-        this.AddChild(hbox2);
     }
 
     public override void _Ready()
@@ -51,15 +35,7 @@ public partial class PropertyContainer : BoxContainer
 
     public override void _ExitTree()
     {
-        if (!Engine.IsEditorHint()) return;
-        foreach (Node child in GetChildren())
-        {
-            if (child is HBoxContainer || child is VSeparator)
-            {
-                RemoveChild(child);
-                child.QueueFree();
-            }
-        }
+        
     }
     
     public void AddPropertyControl(string name, [NotNull] Control control)

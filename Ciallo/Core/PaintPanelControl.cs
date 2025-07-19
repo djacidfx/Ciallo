@@ -24,7 +24,7 @@ public partial class PaintPanelControl : PanelContainer
         var container = GetNode<PropertyContainer>("./VBoxContainer/Margin/Properties");
         var button = new OptionButton();
         button.BindValue([Viewport.Msaa.Disabled, Viewport.Msaa.Msaa2X, Viewport.Msaa.Msaa4X, Viewport.Msaa.Msaa8X], ProgramPreferences.Msaa);
-        container.AddPropertyControl("Anti-Aliasing", button);
+        container.AddPropertyControl("Anti-Aliasing: ", button);
         _SubViewport.Msaa2D = ProgramPreferences.Msaa.Value;
         ProgramPreferences.Msaa.Subscribe(value =>
         {
