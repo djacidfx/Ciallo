@@ -25,7 +25,6 @@ public partial class SliderSpinBoxPair : HBoxContainer
     
     public double MaxValue
     {
-        get => Slider.MaxValue;
         set
         {
             Slider.MaxValue = value;
@@ -35,7 +34,6 @@ public partial class SliderSpinBoxPair : HBoxContainer
     
     public double MinValue
     {
-        get => Slider.MinValue;
         set
         {
             Slider.MinValue = value;
@@ -45,7 +43,6 @@ public partial class SliderSpinBoxPair : HBoxContainer
     
     public double Value
     {
-        get => Slider.Value;
         set
         {
             Slider.Value = value;
@@ -55,11 +52,19 @@ public partial class SliderSpinBoxPair : HBoxContainer
     
     public double Step
     {
-        get => Slider.Step;
         set
         {
             Slider.Step = value;
             SpinBox.Step = value;
+        }
+    }
+
+    public bool ExpEdit
+    {
+        set
+        {
+            Slider.ExpEdit = value;
+            SpinBox.ExpEdit = value;
         }
     }
 }

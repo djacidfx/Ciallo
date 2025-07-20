@@ -15,7 +15,7 @@ public partial class PaintPanelControl : PanelContainer
     public Camera2D Camera;
     
     private readonly ReactiveProperty<float> _cameraRotationDegree = new(0f);
-    private readonly ReactiveProperty<float> _cameraZoom = new(1f);
+    private readonly ReactiveProperty<float> _cameraZoom = new(1.0f);
 
     public override void _Ready()
     {
@@ -30,21 +30,23 @@ public partial class PaintPanelControl : PanelContainer
         ProgramPreferences.Msaa.Subscribe(value => SubViewport.Msaa2D = value).AddTo(this);
         
         var rotControl = new SliderSpinBoxPair();
-        rotControl.BindValue(_cameraRotationDegree);
         rotControl.MinValue = -180;
         rotControl.MaxValue = 180;
         rotControl.Step = 0.1;
         _PropertyContainer.AddPropertyControl("Rotation: ", rotControl);
+        rotControl.BindValue(_cameraRotationDegree);
         _cameraRotationDegree.Subscribe(value => Camera.Rotation = Mathf.DegToRad(value)).AddTo(this);
         
         var zoomControl = new SliderSpinBoxPair();
-        zoomControl.BindValue(_cameraZoom);
         zoomControl.MinValue = 0.1;
         zoomControl.MaxValue = 100;
+        zoomControl.ExpEdit = true;
         zoomControl.SpinBox.Step = 0.1;
         zoomControl.Slider.Step = 0;
-        zoomControl.Slider.ExpEdit = true;
         _PropertyContainer.AddPropertyControl("Zoom: ", zoomControl);
-        _cameraZoom.Subscribe(value => Camera.Zoom = new (value, value)).AddTo(this);
+        // Pitfall: Changing the control's irrelevant properties may cause the control change its inner value.
+        // Thus, if possible, always bind the control to the property after setting control's properties.
+        zoomControl.BindValue(_cameraZoom);
+        _cameraZoom.Subscribe(value => Camera.Zoom = new(value, value)).AddTo(this);
     }
 }

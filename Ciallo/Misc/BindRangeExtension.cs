@@ -10,10 +10,11 @@ public static class BindRangeExtension
 {
     public static void BindValue<T>(Godot.Range rangeControl, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
-        rangeControl.Value = Convert.ToDouble(property.Value);
-        rangeControl.ValueChanged += value => property.Value = (T)Convert.ChangeType(value, typeof(T));
+        // Note: After subscribing to a ReactiveProperty, the callback will be invoked immediately with the current value.
+        // Use skip(1) to ignore the first value.
         var subscription = property.Subscribe(value => rangeControl.Value = Convert.ToDouble(value));
-        
+        rangeControl.ValueChanged += value => property.Value = (T)Convert.ChangeType(value, typeof(T));
+
         if (rangeControl.IsInsideTree())
         {
             subscription.AddTo(rangeControl);

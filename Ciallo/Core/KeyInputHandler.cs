@@ -3,7 +3,7 @@ using System;
 
 namespace Ciallo.Core;
 
-public partial class TestNode : Node
+public partial class KeyInputHandler : Node
 {
     /// <summary>
     /// Using `UnhandledKeyInput` can get keyboard events that is not handled by GUI controls, e.g. `LineEdit`.
