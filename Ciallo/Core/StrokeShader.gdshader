@@ -1,6 +1,6 @@
 shader_type canvas_item;
-render_mode world_vertex_coords;
-render_mode skip_vertex_transform;
+//render_mode world_vertex_coords;
+//render_mode skip_vertex_transform;
 render_mode unshaded;
 
 varying flat vec2 p0;

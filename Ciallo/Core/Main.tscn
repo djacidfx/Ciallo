@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=8 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://Core/MainTheme.tres" id="1_mlbys"]
 [ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://Core/MenuContentFile.cs" id="2_jhd3m"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Core/PaintPanelControl.tscn" id="2_mgg3w"]
 [ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://Core/MenuContentEdit.cs" id="3_mmo8m"]
 [ext_resource type="Script" uid="uid://7am438fddl1w" path="res://Core/ToolIconContainer.cs" id="4_fxul2"]
+[ext_resource type="Texture2D" uid="uid://7e3vbjijfjx5" path="res://Icons/lasso.svg" id="6_lm3t0"]
 
 [node name="Main" type="Panel"]
 anchors_preset = 15
@@ -71,23 +72,53 @@ size_flags_vertical = 3
 [node name="MarginContainer" type="MarginContainer" parent="UIBlock/UIBlock"]
 layout_mode = 2
 theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 8
 
 [node name="ToolIconContainer" type="HFlowContainer" parent="UIBlock/UIBlock/MarginContainer"]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
+theme_override_constants/v_separation = 20
 script = ExtResource("4_fxul2")
 
-[node name="ColorRect" type="ColorRect" parent="UIBlock/UIBlock/MarginContainer/ToolIconContainer"]
-custom_minimum_size = Vector2(32, 32)
+[node name="Button" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolIconContainer"]
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
+theme_type_variation = &"FlatButton"
+icon = ExtResource("6_lm3t0")
+flat = true
+expand_icon = true
 
-[node name="ColorRect2" type="ColorRect" parent="UIBlock/UIBlock/MarginContainer/ToolIconContainer"]
-custom_minimum_size = Vector2(32, 32)
+[node name="Button2" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolIconContainer"]
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
+theme_type_variation = &"FlatButton"
+icon = ExtResource("6_lm3t0")
+flat = true
+expand_icon = true
 
-[node name="ColorRect3" type="ColorRect" parent="UIBlock/UIBlock/MarginContainer/ToolIconContainer"]
-custom_minimum_size = Vector2(32, 32)
+[node name="Button3" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolIconContainer"]
+custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
+theme_type_variation = &"FlatButton"
+icon = ExtResource("6_lm3t0")
+flat = true
+expand_icon = true
+
+[node name="Button4" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolIconContainer"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+theme_type_variation = &"FlatButton"
+icon = ExtResource("6_lm3t0")
+flat = true
+expand_icon = true
+
+[node name="Button5" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolIconContainer"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+toggle_mode = true
+action_mode = 0
+icon = ExtResource("6_lm3t0")
+expand_icon = true
 
 [node name="UIBlock" type="VBoxContainer" parent="UIBlock/UIBlock"]
 layout_mode = 2
