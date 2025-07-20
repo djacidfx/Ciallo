@@ -7,12 +7,12 @@ public partial class KeyInputHandler : Node
 {
     /// <summary>
     /// Using `UnhandledKeyInput` can get keyboard events that is not handled by GUI controls, e.g. `LineEdit`.
-    /// Pitfall: Bug 4.4.1. The `TextEdit` control does not correctly handle key release events, key released events can be received here.
+    /// Pitfall: Bug 4.4.1. The `TextEdit` control does not correctly mark key release events as handled.
+    /// Thus, we need to deal with released events in the UnhandledKeyInput`.
     /// </summary>
-    /// <param name="e"></param>
     public override void _UnhandledKeyInput(InputEvent e)
     {
-        // Pitfall: Redo and Undo events are triggered at the same time when pressing Ctrl+Shift+Z.
+        // Pitfall: "IsActionPressed" return true for both Redo and Undo actions when pressing Ctrl+Shift+Z.
         
     }
 }

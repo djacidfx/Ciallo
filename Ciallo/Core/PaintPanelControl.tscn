@@ -43,7 +43,7 @@ handle_input_locally = false
 msaa_2d = 3
 screen_space_aa = 1
 gui_disable_input = true
-size = Vector2i(1920, 1073)
+size = Vector2i(2, 2)
 render_target_update_mode = 4
 
 [node name="World2D" parent="VBoxContainer/_World2DContainer/SubViewport" instance=ExtResource("2_peemv")]
