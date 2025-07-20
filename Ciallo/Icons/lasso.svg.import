@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://8bmp8mbehv18"
-path="res://.godot/imported/vector-curve.svg-57f2ae89c0e374c5f3b6b833df7cbd54.ctex"
+uid="uid://7e3vbjijfjx5"
+path="res://.godot/imported/lasso.svg-2734fda177c95bc790502e1331309fdf.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/vector-curve.svg"
-dest_files=["res://.godot/imported/vector-curve.svg-57f2ae89c0e374c5f3b6b833df7cbd54.ctex"]
+source_file="res://Icons/lasso.svg"
+dest_files=["res://.godot/imported/lasso.svg-2734fda177c95bc790502e1331309fdf.ctex"]
 
 [params]
 

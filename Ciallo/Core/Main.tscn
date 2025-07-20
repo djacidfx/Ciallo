@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=7 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://Core/MainTheme.tres" id="1_mlbys"]
 [ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://Core/MenuContentFile.cs" id="2_jhd3m"]
 [ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/KeyInputHandler.cs" id="2_m1i1e"]
 [ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Core/PaintPanelControl.tscn" id="2_mgg3w"]
 [ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://Core/MenuContentEdit.cs" id="3_mmo8m"]
+[ext_resource type="Script" uid="uid://7am438fddl1w" path="res://Core/ToolIconContainer.cs" id="4_fxul2"]
 
 [node name="Main" type="Panel"]
 anchors_preset = 15
@@ -32,6 +33,8 @@ layout_mode = 2
 [node name="Margin" type="MarginContainer" parent="UIBlock/MenuBarContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_bottom = 5
 
 [node name="MenuBar" type="MenuBar" parent="UIBlock/MenuBarContainer/Margin"]
 layout_mode = 2
@@ -65,19 +68,25 @@ submenu_popup_delay = 0.1
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="Toobar" type="HFlowContainer" parent="UIBlock/UIBlock"]
+[node name="MarginContainer" type="MarginContainer" parent="UIBlock/UIBlock"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+
+[node name="ToolIconContainer" type="HFlowContainer" parent="UIBlock/UIBlock/MarginContainer"]
+custom_minimum_size = Vector2(30, 0)
+layout_mode = 2
+script = ExtResource("4_fxul2")
+
+[node name="ColorRect" type="ColorRect" parent="UIBlock/UIBlock/MarginContainer/ToolIconContainer"]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 
-[node name="ToolIconPlaceholder" type="ColorRect" parent="UIBlock/UIBlock/Toobar"]
-custom_minimum_size = Vector2(64, 64)
+[node name="ColorRect2" type="ColorRect" parent="UIBlock/UIBlock/MarginContainer/ToolIconContainer"]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 
-[node name="ColorRect2" type="ColorRect" parent="UIBlock/UIBlock/Toobar"]
-custom_minimum_size = Vector2(64, 64)
-layout_mode = 2
-
-[node name="ColorRect3" type="ColorRect" parent="UIBlock/UIBlock/Toobar"]
-custom_minimum_size = Vector2(64, 64)
+[node name="ColorRect3" type="ColorRect" parent="UIBlock/UIBlock/MarginContainer/ToolIconContainer"]
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
 
 [node name="UIBlock" type="VBoxContainer" parent="UIBlock/UIBlock"]
@@ -106,10 +115,3 @@ layout_mode = 2
 
 [node name="KeyInputHandler" type="Node" parent="."]
 script = ExtResource("2_m1i1e")
-
-[node name="TextEdit" type="TextEdit" parent="."]
-layout_mode = 0
-offset_right = 941.0
-offset_bottom = 484.0
-
-[connection signal="index_pressed" from="UIBlock/MenuBarContainer/Margin/MenuBar/Edit" to="UIBlock/MenuBarContainer/Margin/MenuBar/Edit" method="OnIndexPressed"]

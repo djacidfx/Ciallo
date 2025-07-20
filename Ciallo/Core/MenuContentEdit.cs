@@ -29,7 +29,7 @@ public partial class MenuContentEdit : PopupMenu
             };
             var shortcut = new Shortcut
             {
-                Events = [action]
+                Events = [action],
             };
             SetItemShortcut(i, shortcut, true);
         }
