@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=19 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://Core/MainTheme.tres" id="1_mlbys"]
 [ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://Core/MenuContentFile.cs" id="2_jhd3m"]
@@ -12,7 +12,6 @@
 [ext_resource type="Texture2D" uid="uid://duv5tca3ukpww" path="res://Icons/brush-fill.svg" id="6_i5pxm"]
 [ext_resource type="Texture2D" uid="uid://7e3vbjijfjx5" path="res://Icons/lasso.svg" id="6_lm3t0"]
 [ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icons/format-color-fill.svg" id="7_i5pxm"]
-[ext_resource type="Shortcut" uid="uid://d2uipfsdrmrrv" path="res://Core/ShortcutTest.tres" id="8_wcmo1"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
 action = &"ToolSelection"
@@ -25,6 +24,12 @@ action = &"ToolPaintBrush"
 
 [sub_resource type="Shortcut" id="Shortcut_7agld"]
 events = [SubResource("InputEventAction_wcmo1")]
+
+[sub_resource type="InputEventAction" id="InputEventAction_7agld"]
+action = &"ToolPaintFill"
+
+[sub_resource type="Shortcut" id="Shortcut_nllhf"]
+events = [SubResource("InputEventAction_7agld")]
 
 [node name="Main" type="Panel"]
 anchors_preset = 15
@@ -74,10 +79,6 @@ script = ExtResource("2_jhd3m")
 [node name="Edit" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/MenuBar"]
 submenu_popup_delay = 0.1
 script = ExtResource("3_mmo8m")
-
-[node name="Window" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/MenuBar"]
-auto_translate_mode = 1
-submenu_popup_delay = 0.1
 
 [node name="Help" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/MenuBar"]
 auto_translate_mode = 1
@@ -130,7 +131,7 @@ focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
 button_group = ExtResource("5_sx6ov")
-shortcut = ExtResource("8_wcmo1")
+shortcut = SubResource("Shortcut_nllhf")
 icon = ExtResource("6_i5pxm")
 expand_icon = true
 
