@@ -28,10 +28,20 @@ script = ExtResource("1_40hlo")
 Curve = ExtResource("2_ca77x")
 metadata/_custom_type_script = "uid://cc06s8u237jsx"
 
-[node name="CurveEditor3" type="Control" parent="VSplitContainer/HSplitContainer"]
+[node name="CurveEditor4" type="Control" parent="VSplitContainer/HSplitContainer"]
 clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
+focus_mode = 2
+script = ExtResource("1_40hlo")
+Curve = ExtResource("2_ca77x")
+metadata/_custom_type_script = "uid://cc06s8u237jsx"
+
+[node name="CurveEditor3" type="Control" parent="VSplitContainer"]
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 focus_mode = 2
 script = ExtResource("1_40hlo")
 Curve = ExtResource("2_ca77x")

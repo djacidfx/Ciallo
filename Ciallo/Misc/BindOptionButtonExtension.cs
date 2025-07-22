@@ -49,6 +49,7 @@ public static class BindOptionButtonExtension
                 return;
             property.Value = items[(int)index];
         };
+        // `OptionButton` does not have a "ChangeValueWithoutSignal" method, may bring problem.
         var subscription = property.Subscribe(value => button.Selected = items.IndexOf(value));
         if (button.IsInsideTree())
         {

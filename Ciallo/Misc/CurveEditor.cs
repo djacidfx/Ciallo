@@ -1,11 +1,10 @@
 /* This file is originally copied from Godot 4.4 curve_editor_plugin.cpp, translated to C# with AI tool, proof-edited and modified by human. */
 // Shen: this control took me around two hours to make it work correctly at basic level.
-// Note: Godot C++ constructs `Transform2D` default value is Transform2D.Identity, but in C# it is zero.
+// Pitalfall: Godot C++ constructs `Transform2D` default value is Transform2D.Identity, but in C# it is zero.
 
 using Godot;
 
 namespace Ciallo.Misc;
-
 
 /// <summary>
 /// The godot editor's curve edit control at runtime.
@@ -86,8 +85,6 @@ public partial class CurveEditor : Control
             if (_curve != null)
             {
                 _curve.Changed -= _CurveChanged;
-                _curve.DomainChanged -= _CurveChanged;
-                _curve.RangeChanged -= _CurveChanged;
             }
 
             _curve = value;
@@ -95,8 +92,6 @@ public partial class CurveEditor : Control
             if (_curve != null)
             {
                 _curve.Changed += _CurveChanged;
-                _curve.DomainChanged += _CurveChanged;
-                _curve.RangeChanged += _CurveChanged;
             }
 
             QueueRedraw();
@@ -197,8 +192,9 @@ public partial class CurveEditor : Control
         {
             Vector2 mpos = mouseButton.Position;
 
-            if (mouseButton.ButtonIndex == MouseButton.Right || mouseButton.ButtonIndex == MouseButton.Middle)
+            if (mouseButton.ButtonIndex is MouseButton.Right or MouseButton.Middle)
             {
+                // Cancel any ongoing grab operation.
                 if (mouseButton.ButtonIndex == MouseButton.Right && _grabbing == GrabMode.Move)
                 {
                     _curve.SetPointValue(_selectedIndex, _initialGrabPos.Y);
@@ -276,7 +272,7 @@ public partial class CurveEditor : Control
 
                     newPos.X = GetOffsetWithoutCollision(_selectedIndex, newPos.X, mpos.X >= GetViewPos(newPos).X);
 
-                    int newIdx = _curve.AddPoint(newPos); // Potential bug
+                    int newIdx = _curve.AddPoint(newPos); //Suppose to be addPointNoSignal, potential bug
                     SetSelectedIndex(newIdx);
                     _grabbing = GrabMode.Add;
                     _initialGrabPos = newPos;
@@ -338,7 +334,7 @@ public partial class CurveEditor : Control
                             newPos.Y = Mathf.Snapped(newPos.Y - _curve.MinValue, _curve.GetValueRange() / _snapCount) + _curve.MinValue;
                         }
 
-                        if (mouseMotion.IsShiftPressed())
+                        if (mouseMotion.IsAltPressed())
                         {
                             Vector2 initialMpos = GetViewPos(_initialGrabPos);
                             if (Mathf.Abs(mpos.X - initialMpos.X) > Mathf.Abs(mpos.Y - initialMpos.Y))
@@ -378,7 +374,7 @@ public partial class CurveEditor : Control
                             _curve.SetPointLeftTangent(_selectedIndex, tangent);
                             if (_selectedIndex != _curve.GetPointCount() - 1 && _curve.GetPointRightMode(_selectedIndex) != Curve.TangentMode.Linear)
                             {
-                                _curve.SetPointRightTangent(_selectedIndex, mouseMotion.IsShiftPressed() ? _initialGrabRightTangent : tangent);
+                                _curve.SetPointRightTangent(_selectedIndex, mouseMotion.IsAltPressed() ? _initialGrabRightTangent : tangent);
                             }
                         }
                         else
@@ -386,7 +382,7 @@ public partial class CurveEditor : Control
                             _curve.SetPointRightTangent(_selectedIndex, tangent);
                             if (_selectedIndex != 0 && _curve.GetPointLeftMode(_selectedIndex) != Curve.TangentMode.Linear)
                             {
-                                _curve.SetPointLeftTangent(_selectedIndex, mouseMotion.IsShiftPressed() ? _initialGrabLeftTangent : tangent);
+                                _curve.SetPointLeftTangent(_selectedIndex, mouseMotion.IsAltPressed() ? _initialGrabLeftTangent : tangent);
                             }
                         }
                     }
@@ -770,7 +766,7 @@ public partial class CurveEditor : Control
         PlotCurveAccurate(StepSize, lineColor, edgeLineColor);
 
         // Draw points
-        bool shiftPressed = Input.IsKeyPressed(Key.Shift);
+        bool altPressed = Input.IsKeyPressed(Key.Alt);
 
         Color pointColor = GetThemeColor("font_color", "Label");
 
@@ -809,7 +805,7 @@ public partial class CurveEditor : Control
                     else
                         DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentRadius), leftTangentColor);
 
-                    if (_hoveredTangentIndex == TangentIndex.Left || (_hoveredTangentIndex == TangentIndex.Right && !shiftPressed && _curve.GetPointLeftMode(_selectedIndex) != Curve.TangentMode.Linear))
+                    if (_hoveredTangentIndex == TangentIndex.Left || (_hoveredTangentIndex == TangentIndex.Right && !altPressed && _curve.GetPointLeftMode(_selectedIndex) != Curve.TangentMode.Linear))
                     {
                         DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentHoverRadius - Mathf.Round(3)), tangentColor, false, Mathf.Round(1));
                     }
@@ -826,7 +822,7 @@ public partial class CurveEditor : Control
                     else
                         DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentRadius), rightTangentColor);
 
-                    if (_hoveredTangentIndex == TangentIndex.Right || (_hoveredTangentIndex == TangentIndex.Left && !shiftPressed && _curve.GetPointRightMode(_selectedIndex) != Curve.TangentMode.Linear))
+                    if (_hoveredTangentIndex == TangentIndex.Right || (_hoveredTangentIndex == TangentIndex.Left && !altPressed && _curve.GetPointRightMode(_selectedIndex) != Curve.TangentMode.Linear))
                     {
                         DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentHoverRadius - Mathf.Round(3)), tangentColor, false, Mathf.Round(1));
                     }
@@ -837,7 +833,7 @@ public partial class CurveEditor : Control
         }
 
         // Draw help Samsung Electronics
-        if (_selectedIndex > 0 && _selectedIndex < _curve.GetPointCount() - 1 && _selectedTangentIndex == TangentIndex.None && _hoveredTangentIndex != TangentIndex.None && !shiftPressed)
+        if (_selectedIndex > 0 && _selectedIndex < _curve.GetPointCount() - 1 && _selectedTangentIndex == TangentIndex.None && _hoveredTangentIndex != TangentIndex.None && !altPressed)
         {
             float width = Size.X - 50;
             textColor.A *= 0.4f;
@@ -870,7 +866,7 @@ public partial class CurveEditor : Control
             DrawLine(new Vector2(nextPointOffset, _curve.MinValue), new Vector2(nextPointOffset, _curve.MaxValue), new Color(pointColor, 0.6f));
         }
 
-        if (shiftPressed && _grabbing != GrabMode.None && _selectedTangentIndex == TangentIndex.None)
+        if (altPressed && _grabbing != GrabMode.None && _selectedTangentIndex == TangentIndex.None)
         {
             DrawLine(new Vector2(_initialGrabPos.X, _curve.MinValue), new Vector2(_initialGrabPos.X, _curve.MaxValue), GetThemeColor("font_color", "Label").Darkened(0.4f));
             DrawLine(new Vector2(_curve.MinDomain, _initialGrabPos.Y), new Vector2(_curve.MaxDomain, _initialGrabPos.Y), GetThemeColor("font_color", "Label").Darkened(0.4f));
