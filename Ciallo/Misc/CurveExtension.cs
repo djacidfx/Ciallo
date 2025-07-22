@@ -1,4 +1,4 @@
-﻿/* This file is originally copied from the Godot source code curve.cpp, translated to C# with AI tool.*/
+﻿/* This file is originally copied from Godot 4.4 curve.cpp, translated to C# with AI tool.*/
 
 using Godot;
 

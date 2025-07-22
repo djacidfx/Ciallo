@@ -12,7 +12,7 @@ public static class BindRangeExtension
     {
         // Note: After subscribing to a ReactiveProperty, the callback will be invoked immediately with the current value.
         // Use skip(1) to ignore the first value.
-        var subscription = property.Subscribe(value => rangeControl.Value = Convert.ToDouble(value));
+        var subscription = property.Subscribe(value => rangeControl.SetValueNoSignal(Convert.ToDouble(value)));
         rangeControl.ValueChanged += value => property.Value = (T)Convert.ChangeType(value, typeof(T));
 
         if (rangeControl.IsInsideTree())

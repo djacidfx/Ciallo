@@ -28,6 +28,9 @@
   <ItemGroup>
     <Content Include="NativeMethods.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Tests\Objects\" />
+  </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
     <DefineConstants>OS_WINDOWS</DefineConstants>

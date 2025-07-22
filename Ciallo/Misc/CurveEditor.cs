@@ -1,10 +1,15 @@
-/* This file is originally copied from the Godot source code curve_editor_plugin.cpp, translated to C# with AI tool, proof-edited and modified. */
+/* This file is originally copied from Godot 4.4 curve_editor_plugin.cpp, translated to C# with AI tool, proof-edited and modified by human. */
 // Shen: this control took me around two hours to make it work correctly at basic level.
+// Note: Godot C++ constructs `Transform2D` default value is Transform2D.Identity, but in C# it is zero.
 
 using Godot;
 
 namespace Ciallo.Misc;
 
+
+/// <summary>
+/// The godot editor's curve edit control at runtime.
+/// </summary>
 [Tool, GlobalClass]
 public partial class CurveEditor : Control
 {
@@ -95,32 +100,6 @@ public partial class CurveEditor : Control
             }
 
             QueueRedraw();
-        }
-    }
-
-    public void SetSnapEnabled(bool enabled)
-    {
-        _snapEnabled = enabled;
-        QueueRedraw();
-        if (_curve != null)
-        {
-            if (_snapEnabled)
-                _curve.SetMeta("_snap_enabled", true);
-            else
-                _curve.RemoveMeta("_snap_enabled");
-        }
-    }
-
-    public void SetSnapCount(int snapCount)
-    {
-        _snapCount = snapCount;
-        QueueRedraw();
-        if (_curve != null)
-        {
-            if (_snapCount != 10) // Default snap count
-                _curve.SetMeta("_snap_count", snapCount);
-            else
-                _curve.RemoveMeta("_snap_count");
         }
     }
 
@@ -739,8 +718,8 @@ public partial class CurveEditor : Control
         Vector2 minEdge = GetWorldPos(new Vector2(0, Size.Y));
         Vector2 maxEdge = GetWorldPos(new Vector2(Size.X, 0));
 
-        Color gridColorPrimary = GetThemeColor("mono_color", "Editor") * new Color(1, 1, 1, 0.25f);
-        Color gridColor = GetThemeColor("mono_color", "Editor") * new Color(1, 1, 1, 0.1f);
+        Color gridColorPrimary = GetThemeColor("font_color", "Label") * new Color(1, 1, 1, 0.25f);
+        Color gridColor = GetThemeColor("font_color", "Label") * new Color(1, 1, 1, 0.1f);
 
         Vector2I gridSteps = new Vector2I(4, 2);
         Vector2 stepSize = new Vector2(_curve.GetDomainRange(), _curve.GetValueRange()) / gridSteps;
@@ -768,7 +747,7 @@ public partial class CurveEditor : Control
         Font font = GetThemeFont("font", "Label");
         int fontSize = GetThemeFontSize("font_size", "Label");
         float fontHeight = font.GetHeight(fontSize);
-        Color textColor = GetThemeColor("font_color", "Editor");
+        Color textColor = GetThemeColor("font_color", "Label");
 
         int pad = (int)Mathf.Round(2);
 
@@ -785,15 +764,15 @@ public partial class CurveEditor : Control
         }
 
         // Draw curve
-        Color lineColor = GetThemeColor("font_color", "Editor");
-        Color edgeLineColor = GetThemeColor("font_color", "Editor") * new Color(1, 1, 1, 0.75f);
+        Color lineColor = GetThemeColor("font_color", "Label");
+        Color edgeLineColor = GetThemeColor("font_color", "Label") * new Color(1, 1, 1, 0.75f);
 
         PlotCurveAccurate(StepSize, lineColor, edgeLineColor);
 
         // Draw points
         bool shiftPressed = Input.IsKeyPressed(Key.Shift);
 
-        Color pointColor = GetThemeColor("font_color", "Editor");
+        Color pointColor = GetThemeColor("font_color", "Label");
 
         for (int i = 0; i < _curve.GetPointCount(); i++)
         {
@@ -812,12 +791,12 @@ public partial class CurveEditor : Control
         if (_selectedIndex >= 0)
         {
             Vector2 pointPos = _curve.GetPointPosition(_selectedIndex);
-            Color selectedPointColor = GetThemeColor("accent_color", "Editor");
+            Color selectedPointColor = GetThemeColor("font_color", "Label");
 
             if (_grabbing == GrabMode.None || _initialGrabPos == pointPos || _selectedTangentIndex != TangentIndex.None)
             {
-                Color selectedTangentColor = GetThemeColor("accent_color", "Editor").Darkened(0.25f);
-                Color tangentColor = GetThemeColor("font_color", "Editor").Darkened(0.25f);
+                Color selectedTangentColor = GetThemeColor("font_color", "Label").Darkened(0.25f);
+                Color tangentColor = GetThemeColor("font_color", "Label").Darkened(0.25f);
 
                 if (_selectedIndex != 0)
                 {
@@ -893,8 +872,8 @@ public partial class CurveEditor : Control
 
         if (shiftPressed && _grabbing != GrabMode.None && _selectedTangentIndex == TangentIndex.None)
         {
-            DrawLine(new Vector2(_initialGrabPos.X, _curve.MinValue), new Vector2(_initialGrabPos.X, _curve.MaxValue), GetThemeColor("axis_x_color", "Editor").Darkened(0.4f));
-            DrawLine(new Vector2(_curve.MinDomain, _initialGrabPos.Y), new Vector2(_curve.MaxDomain, _initialGrabPos.Y), GetThemeColor("axis_y_color", "Editor").Darkened(0.4f));
+            DrawLine(new Vector2(_initialGrabPos.X, _curve.MinValue), new Vector2(_initialGrabPos.X, _curve.MaxValue), GetThemeColor("font_color", "Label").Darkened(0.4f));
+            DrawLine(new Vector2(_curve.MinDomain, _initialGrabPos.Y), new Vector2(_curve.MaxDomain, _initialGrabPos.Y), GetThemeColor("font_color", "Label").Darkened(0.4f));
         }
     }
 }
