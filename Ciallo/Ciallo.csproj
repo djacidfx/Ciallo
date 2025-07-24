@@ -18,15 +18,8 @@
       <PrivateAssets>none</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Windows.CsWin32" Version="0.3.183">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="ObservableCollections.R3" Version="3.3.4" />
     <PackageReference Include="R3" Version="1.3.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="NativeMethods.txt" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Tests\Objects\" />
@@ -44,6 +37,7 @@
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('OSX'))">
     <DefineConstants>OS_MAC</DefineConstants>
   </PropertyGroup>
+  <!-- After I tried to create a cpp project under the solution, rider stopped auto defining these contants.-->
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>GODOT;GODOT_WINDOWS;GODOT_PC;GODOT4;GODOT4_4;GODOT4_4_1;GODOT4_OR_GREATER;GODOT4_0_OR_GREATER;GODOT4_1_OR_GREATER;GODOT4_2_OR_GREATER;GODOT4_3_OR_GREATER;GODOT4_4_OR_GREATER;GODOT4_4_0_OR_GREATER;GODOT4_4_1_OR_GREATER;TRACE;TOOLS</DefineConstants>
   </PropertyGroup>
