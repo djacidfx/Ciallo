@@ -1,9 +1,10 @@
-[gd_scene load_steps=19 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=20 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://Core/MainTheme.tres" id="1_mlbys"]
 [ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://Core/MenuContentFile.cs" id="2_jhd3m"]
 [ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/KeyInputHandler.cs" id="2_m1i1e"]
 [ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Core/PaintPanelControl.tscn" id="2_mgg3w"]
+[ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icons/ciallo.svg" id="2_wcmo1"]
 [ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://Core/MenuContentEdit.cs" id="3_mmo8m"]
 [ext_resource type="Script" uid="uid://7am438fddl1w" path="res://Core/ToolIconContainer.cs" id="4_fxul2"]
 [ext_resource type="ButtonGroup" uid="uid://hr62j5sfo22p" path="res://Misc/ToolButtonGroup.tres" id="5_sx6ov"]
@@ -56,17 +57,31 @@ layout_mode = 2
 
 [node name="Margin" type="MarginContainer" parent="UIBlock/MenuBarContainer"]
 layout_mode = 2
-theme_override_constants/margin_left = 30
+theme_override_constants/margin_left = 0
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="MenuBar" type="MenuBar" parent="UIBlock/MenuBarContainer/Margin"]
+[node name="HBoxContainer" type="HBoxContainer" parent="UIBlock/MenuBarContainer/Margin"]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer"]
+custom_minimum_size = Vector2(68.17, 0)
+layout_mode = 2
+texture = ExtResource("2_wcmo1")
+expand_mode = 2
+stretch_mode = 5
+
+[node name="Blank" type="Control" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+
+[node name="MenuBar" type="MenuBar" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/h_separation = 30
 flat = true
 
-[node name="File" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/MenuBar"]
+[node name="File" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
 auto_translate_mode = 1
 submenu_popup_delay = 0.01
 item_count = 2
@@ -76,11 +91,11 @@ item_1/text = "Open"
 item_1/id = 1
 script = ExtResource("2_jhd3m")
 
-[node name="Edit" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/MenuBar"]
+[node name="Edit" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
 submenu_popup_delay = 0.1
 script = ExtResource("3_mmo8m")
 
-[node name="Help" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/MenuBar"]
+[node name="Help" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
 auto_translate_mode = 1
 submenu_popup_delay = 0.1
 
