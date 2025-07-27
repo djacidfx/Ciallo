@@ -11,8 +11,8 @@
 [ext_resource type="Texture2D" uid="uid://cjf7u8mgog5mr" path="res://Icons/brush.svg" id="5_y2isn"]
 [ext_resource type="Texture2D" uid="uid://djmjwmlnccp86" path="res://Icons/cursor-default-outline.svg" id="5_yavc3"]
 [ext_resource type="Texture2D" uid="uid://duv5tca3ukpww" path="res://Icons/brush-fill.svg" id="6_i5pxm"]
-[ext_resource type="Texture2D" uid="uid://7e3vbjijfjx5" path="res://Icons/lasso.svg" id="6_lm3t0"]
 [ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icons/format-color-fill.svg" id="7_i5pxm"]
+[ext_resource type="Texture2D" uid="uid://bayscuh6s0yrc" path="res://Icons/lasso-dash.svg" id="11_wcmo1"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
 action = &"ToolSelection"
@@ -129,7 +129,8 @@ expand_icon = true
 [node name="PaintBrush" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-tooltip_text = "Paint Brush"
+tooltip_text = "Paint Brush
+Color by drawing fill-colored polygons."
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
@@ -141,7 +142,8 @@ expand_icon = true
 [node name="PaintFill" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-tooltip_text = "Paint Fill"
+tooltip_text = "Paint Fill
+Free-handly draw colored area."
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
@@ -153,7 +155,8 @@ expand_icon = true
 [node name="VectorFill" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-tooltip_text = "Vector fill"
+tooltip_text = "Vector fill
+Fill enclose areas with editable fill markers."
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
@@ -164,12 +167,13 @@ expand_icon = true
 [node name="Lasso" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-tooltip_text = "Lasso (Free hand selection)"
+tooltip_text = "Lasso 
+Free hand selection"
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
 button_group = ExtResource("5_sx6ov")
-icon = ExtResource("6_lm3t0")
+icon = ExtResource("11_wcmo1")
 expand_icon = true
 
 [node name="UIBlock" type="VBoxContainer" parent="UIBlock/UIBlock"]
@@ -188,6 +192,7 @@ layout_mode = 2
 [node name="PlaceHolder" type="ColorRect" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer/ToolProperties"]
 custom_minimum_size = Vector2(256, 100)
 layout_mode = 2
+color = Color(0.124784, 0.124784, 0.124784, 1)
 
 [node name="Layer" type="Panel" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer"]
 custom_minimum_size = Vector2(0, 500)
