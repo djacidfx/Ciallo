@@ -2,9 +2,10 @@
 // Shen: this control took me around two hours to make it work correctly at basic level.
 // Pitalfall: Godot C++ constructs `Transform2D` default value is Transform2D.Identity, but in C# it is zero.
 
+using Ciallo.Misc;
 using Godot;
 
-namespace Ciallo.Misc;
+namespace Ciallo.Gui;
 
 /// <summary>
 /// The godot editor's curve edit control at runtime.
