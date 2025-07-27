@@ -99,12 +99,12 @@ public partial class Stroke : Node2D
         _multiMesh.TransformFormat = MultiMesh.TransformFormatEnum.Transform2D;
         _multiMesh.UseColors = true;
         _multiMesh.UseCustomData = true;
-        _multiMesh.Mesh = GD.Load<Mesh>("res://core/StrokeDummyMesh.tres");
+        _multiMesh.Mesh = GD.Load<Mesh>("res://core/rendering/StrokeDummyMesh.tres");
     }
 
     public void InitMaterial()
     {
-        var material = GD.Load<ShaderMaterial>("res://core/StrokeMaterial.tres");
+        var material = GD.Load<ShaderMaterial>("res://core/rendering/StrokeMaterial.tres");
         Material = material;
     }
 

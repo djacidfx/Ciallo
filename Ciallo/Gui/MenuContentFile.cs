@@ -2,7 +2,7 @@ using Godot;
 using System;
 using System.Collections.Generic;
 
-namespace Ciallo.Core;
+namespace Ciallo.Gui;
 
 public partial class MenuContentFile : PopupMenu
 {

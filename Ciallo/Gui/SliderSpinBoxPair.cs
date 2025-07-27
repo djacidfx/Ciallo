@@ -1,7 +1,8 @@
-﻿using Godot;
+﻿using Ciallo.Misc;
+using Godot;
 using R3;
 
-namespace Ciallo.Misc;
+namespace Ciallo.Gui;
 
 public partial class SliderSpinBoxPair : HBoxContainer
 {

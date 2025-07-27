@@ -1,10 +1,11 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using Ciallo.Core;
 using Ciallo.Misc;
 using R3;
 
-namespace Ciallo.Core;
+namespace Ciallo.Gui;
 
 [SceneTree(root:"rt")]
 public partial class PaintPanelControl : PanelContainer

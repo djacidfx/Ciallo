@@ -2,7 +2,7 @@
 using Godot;
 using R3;
 
-namespace Ciallo.Misc;
+namespace Ciallo.Gui;
 
 [GlobalClass, Tool, Icon("res://Icons/tune.svg")]
 public partial class PropertyContainer : BoxContainer
