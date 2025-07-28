@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Collections.Generic;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Ciallo.Misc;
 using Godot;
@@ -13,6 +14,9 @@ public class ProgramPreference
     public ReactiveProperty<bool> UseTAA = new(false);
     public ReactiveProperty<bool> UseFXAA = new(false);
     #endregion
+    
+    public ReactiveProperty<string> Language = new("en");
+    public List<string> RecentFiles = [];
     
     #region save load json
     public static readonly string Path = "res://Temp/Preferences.json";

@@ -1,4 +1,5 @@
 using GdUnit4;
+using Godot;
 
 namespace Tests;
 
@@ -6,13 +7,7 @@ namespace Tests;
 public class TestGodot
 {
     [TestCase]
-    public void SaveLoad()
-    {
-        
-    }
-
-    [TestCase]
-    public void ReferenceCount()
+    public void Test()
     {
         
     }

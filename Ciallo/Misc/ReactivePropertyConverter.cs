@@ -7,7 +7,7 @@ using R3;
 namespace Ciallo.Misc;
 
 /// <summary>
-/// Reactive property convert to json.
+/// Reactive property convert to json with System.Text.Json.
 /// </summary>
 public class ReactivePropertyConverter : JsonConverterFactory
 {

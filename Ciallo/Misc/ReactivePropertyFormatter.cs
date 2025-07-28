@@ -4,7 +4,7 @@ using MemoryPack;
 namespace Ciallo.Misc;
 
 /// <summary>
-/// ReactiveProperty format to binary.
+/// ReactiveProperty format to binary with MemoryPack.
 /// </summary>
 public class ReactivePropertyFormatter<T> : MemoryPackFormatter<ReactiveProperty<T>>
 {
