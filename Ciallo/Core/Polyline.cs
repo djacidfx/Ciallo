@@ -5,7 +5,7 @@ using Godot;
 
 namespace Ciallo.Core;
 
-[Tool, GlobalClass]
+[Tool, GlobalClass, Icon("res://Icons/vector-polyline.svg")]
 public partial class Polyline : Resource, IEnumerable<Tuple<Vector2, float>>
 {
     [Export] public Godot.Collections.Array<Vector2> Points { get; set; }

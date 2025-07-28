@@ -24,8 +24,9 @@ public partial class SliderSpinBoxPair : HBoxContainer
         SpinBox.BindValue(property);
     }
     
-    public double MaxValue
+    [Export] public double MaxValue
     {
+        get => Slider.MaxValue;
         set
         {
             Slider.MaxValue = value;
@@ -33,8 +34,9 @@ public partial class SliderSpinBoxPair : HBoxContainer
         }
     }
     
-    public double MinValue
+    [Export] public double MinValue
     {
+        get => Slider.MinValue;
         set
         {
             Slider.MinValue = value;
@@ -42,8 +44,9 @@ public partial class SliderSpinBoxPair : HBoxContainer
         }
     }
     
-    public double Value
+    [Export] public double Value
     {
+        get => Slider.Value;
         set
         {
             Slider.Value = value;
@@ -51,8 +54,9 @@ public partial class SliderSpinBoxPair : HBoxContainer
         }
     }
     
-    public double Step
+    [Export] public double Step
     {
+        get => Slider.Step;
         set
         {
             Slider.Step = value;
@@ -60,8 +64,9 @@ public partial class SliderSpinBoxPair : HBoxContainer
         }
     }
 
-    public bool ExpEdit
+    [Export] public bool ExpEdit
     {
+        get => Slider.ExpEdit;
         set
         {
             Slider.ExpEdit = value;
