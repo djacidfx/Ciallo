@@ -117,6 +117,10 @@ ToolPaintFill={
 
 pen_tablet/driver.windows="auto"
 
+[navigation]
+
+2d/default_link_connection_radius=0.01
+
 [plugins]
 
 icon_explorer/preview_size_exp=7.0

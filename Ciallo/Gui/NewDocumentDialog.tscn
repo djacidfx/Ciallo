@@ -1,19 +1,19 @@
 [gd_scene load_steps=3 format=3 uid="uid://bpntrjged60df"]
 
-[ext_resource type="Script" uid="uid://dhn32ect5buj7" path="res://Gui/Vector2Editor.cs" id="1_kf6mc"]
+[ext_resource type="Script" path="res://Gui/Vector2Editor.cs" id="1_kf6mc"]
 
 [sub_resource type="Theme" id="Theme_kf6mc"]
 
 [node name="PopupPanel" type="PopupPanel"]
 auto_translate_mode = 1
-size = Vector2i(1024, 768)
+size = Vector2i(755, 238)
 visible = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 offset_left = 4.0
 offset_top = 4.0
-offset_right = 1020.0
-offset_bottom = 764.0
+offset_right = 751.0
+offset_bottom = 234.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
@@ -37,21 +37,24 @@ text = "Recent documents:"
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 3
+item_count = 1
 
 [node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/RecentDocument/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_constants/separation = 15
+theme_override_constants/separation = 10
 alignment = 1
 
 [node name="Button" type="Button" parent="HBoxContainer/RecentDocument/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+focus_mode = 0
 text = "Open"
 
 [node name="Button2" type="Button" parent="HBoxContainer/RecentDocument/VBoxContainer/HBoxContainer"]
 layout_mode = 2
+focus_mode = 0
 text = "Find other documents"
 
 [node name="VSeparator" type="ColorRect" parent="HBoxContainer"]
@@ -62,6 +65,7 @@ color = Color(0.502782, 0.502782, 0.502782, 1)
 
 [node name="NewDocument" type="MarginContainer" parent="HBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/margin_left = 15
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_right = 15
@@ -73,24 +77,53 @@ theme = SubResource("Theme_kf6mc")
 
 [node name="Label" type="Label" parent="HBoxContainer/NewDocument/VBoxContainer"]
 layout_mode = 2
-text = "Document settings:"
+text = "New document settings:"
 
 [node name="VSeparator" type="HSeparator" parent="HBoxContainer/NewDocument/VBoxContainer"]
 layout_mode = 2
 
-[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/NewDocument/VBoxContainer"]
+[node name="GridContainer" type="GridContainer" parent="HBoxContainer/NewDocument/VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 3
+columns = 2
 
-[node name="Label" type="Label" parent="HBoxContainer/NewDocument/VBoxContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Background color"
+
+[node name="ColorPickerButton" type="ColorPickerButton" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
+custom_minimum_size = Vector2(180, 0)
+layout_mode = 2
+size_flags_horizontal = 10
+flat = true
+color = Color(1, 1, 1, 1)
+
+[node name="Label2" type="Label" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 0
-text = "Canvas reference size:"
+text = "Canvas reference size"
 
-[node name="Vector2Editor" type="HBoxContainer" parent="HBoxContainer/NewDocument/VBoxContainer/HBoxContainer"]
+[node name="Vector2Editor" type="HBoxContainer" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
 layout_mode = 2
+size_flags_horizontal = 8
 script = ExtResource("1_kf6mc")
 MaxValue = 16384.0
-Value = Vector2(1920, 1080)
 Step = 1.0
 metadata/_custom_type_script = "uid://dhn32ect5buj7"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/NewDocument/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Button" type="Button" parent="HBoxContainer/NewDocument/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+focus_mode = 0
+text = "Create"
+
+[node name="Button2" type="Button" parent="HBoxContainer/NewDocument/VBoxContainer/HBoxContainer"]
+layout_mode = 2
+focus_mode = 0
+text = "Cancal"
