@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=22 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://Core/MainTheme.tres" id="1_mlbys"]
 [ext_resource type="Script" uid="uid://bckjp4y2gxunr" path="res://Core/Main.cs" id="2_7agld"]
@@ -14,6 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://duv5tca3ukpww" path="res://Icons/brush-fill.svg" id="6_i5pxm"]
 [ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icons/format-color-fill.svg" id="7_i5pxm"]
 [ext_resource type="Texture2D" uid="uid://bayscuh6s0yrc" path="res://Icons/lasso-dash.svg" id="11_wcmo1"]
+[ext_resource type="PackedScene" uid="uid://bpntrjged60df" path="res://Gui/NewDocumentDialog.tscn" id="15_nllhf"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
 action = &"ToolSelection"
@@ -210,15 +211,4 @@ layout_mode = 2
 [node name="KeyInputHandler" type="Node" parent="."]
 script = ExtResource("2_m1i1e")
 
-[node name="PopupPanel" type="PopupPanel" parent="."]
-position = Vector2i(939, 540)
-visible = true
-
-[node name="VBoxContainer" type="VBoxContainer" parent="PopupPanel"]
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 96.0
-offset_bottom = 96.0
-
-[node name="Button" type="Button" parent="PopupPanel/VBoxContainer"]
-layout_mode = 2
+[node name="PopupPanel" parent="." instance=ExtResource("15_nllhf")]
