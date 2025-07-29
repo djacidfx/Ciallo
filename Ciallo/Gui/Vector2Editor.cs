@@ -76,6 +76,8 @@ public partial class Vector2Editor : HBoxContainer
         SpinY = new SpinBox();
         AddChild(SpinX);
         AddChild(SpinY);
+        SpinX.SetOwner(this);
+        SpinY.SetOwner(this);
         
         SpinX.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
         SpinY.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
@@ -92,12 +94,6 @@ public partial class Vector2Editor : HBoxContainer
 
         // Connect to our handler, passing which component this spinbox represents
         spin.ValueChanged += rawValue => OnSpinValueChanged(rawValue, component);
-    }
-
-    public override void _ExitTree()
-    {
-        SpinX.QueueFree();
-        SpinY.QueueFree();
     }
 
     private void OnSpinValueChanged(double rawValue, int component)

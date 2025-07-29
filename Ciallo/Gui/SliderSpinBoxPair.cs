@@ -6,16 +6,22 @@ namespace Ciallo.Gui;
 
 public partial class SliderSpinBoxPair : HBoxContainer
 {
-    public readonly HSlider Slider = new();
-    public readonly SpinBox SpinBox = new();
+    public readonly HSlider Slider;
+    public readonly SpinBox SpinBox;
     
     public SliderSpinBoxPair()
     {
+        Slider = new()
+        {
+            CustomMinimumSize = new Vector2(100, 0),
+            Scrollable = false,
+            SizeFlagsVertical = SizeFlags.ShrinkCenter
+        };
+        SpinBox = new();
         AddChild(Slider);
-        Slider.CustomMinimumSize = new Vector2(100, 0);
-        Slider.Scrollable = false;
-        Slider.SizeFlagsVertical = SizeFlags.ShrinkCenter;
         AddChild(SpinBox);
+        Slider.SetOwner(this);
+        SpinBox.SetOwner(this);
     }
     
     public void BindValue<T>(ReactiveProperty<T> property) where T : System.Numerics.INumber<T>

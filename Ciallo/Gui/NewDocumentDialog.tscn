@@ -1,19 +1,19 @@
 [gd_scene load_steps=3 format=3 uid="uid://bpntrjged60df"]
 
-[ext_resource type="Script" path="res://Gui/Vector2Editor.cs" id="1_kf6mc"]
+[ext_resource type="Script" uid="uid://dhn32ect5buj7" path="res://Gui/Vector2Editor.cs" id="1_kf6mc"]
 
 [sub_resource type="Theme" id="Theme_kf6mc"]
 
 [node name="PopupPanel" type="PopupPanel"]
 auto_translate_mode = 1
-size = Vector2i(755, 238)
+size = Vector2i(935, 385)
 visible = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 offset_left = 4.0
 offset_top = 4.0
-offset_right = 751.0
-offset_bottom = 234.0
+offset_right = 931.0
+offset_bottom = 381.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
@@ -89,6 +89,7 @@ columns = 2
 
 [node name="Label" type="Label" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Background color"
 
 [node name="ColorPickerButton" type="ColorPickerButton" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
@@ -108,9 +109,23 @@ text = "Canvas reference size"
 layout_mode = 2
 size_flags_horizontal = 8
 script = ExtResource("1_kf6mc")
-MaxValue = 16384.0
-Step = 1.0
-metadata/_custom_type_script = "uid://dhn32ect5buj7"
+
+[node name="Label3" type="Label" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "File name"
+
+[node name="LineEdit" type="LineEdit" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "New Document"
+
+[node name="Label4" type="Label" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Save folder"
+
+[node name="LineEdit2" type="LineEdit" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
+layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/NewDocument/VBoxContainer"]
 layout_mode = 2
