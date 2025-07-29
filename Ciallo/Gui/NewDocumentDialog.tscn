@@ -1,19 +1,23 @@
-[gd_scene load_steps=3 format=3 uid="uid://bpntrjged60df"]
+[gd_scene load_steps=4 format=3 uid="uid://bpntrjged60df"]
 
 [ext_resource type="Script" uid="uid://dhn32ect5buj7" path="res://Gui/Vector2Editor.cs" id="1_kf6mc"]
+[ext_resource type="Script" uid="uid://ckillqfnqh8wc" path="res://Gui/FilePathPicker.cs" id="2_acvj3"]
 
 [sub_resource type="Theme" id="Theme_kf6mc"]
 
 [node name="PopupPanel" type="PopupPanel"]
 auto_translate_mode = 1
-size = Vector2i(935, 385)
+title = "Open/Create document - Ciallo"
+initial_position = 2
+size = Vector2i(1086, 420)
 visible = true
+unresizable = false
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 offset_left = 4.0
 offset_top = 4.0
-offset_right = 931.0
-offset_bottom = 381.0
+offset_right = 1082.0
+offset_bottom = 416.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
@@ -42,7 +46,7 @@ item_count = 1
 [node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/RecentDocument/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 4
-theme_override_constants/separation = 10
+theme_override_constants/separation = 40
 alignment = 1
 
 [node name="Button" type="Button" parent="HBoxContainer/RecentDocument/VBoxContainer/HBoxContainer"]
@@ -55,7 +59,7 @@ text = "Open"
 [node name="Button2" type="Button" parent="HBoxContainer/RecentDocument/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
-text = "Find other documents"
+text = "Open other documents"
 
 [node name="VSeparator" type="ColorRect" parent="HBoxContainer"]
 custom_minimum_size = Vector2(2, 0)
@@ -109,6 +113,8 @@ text = "Canvas reference size"
 layout_mode = 2
 size_flags_horizontal = 8
 script = ExtResource("1_kf6mc")
+MaxValue = 100.0
+Step = 1.0
 
 [node name="Label3" type="Label" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
 layout_mode = 2
@@ -124,12 +130,15 @@ text = "New Document"
 layout_mode = 2
 text = "Save folder"
 
-[node name="LineEdit2" type="LineEdit" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
+[node name="FilePathPicker" type="HBoxContainer" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
 layout_mode = 2
+script = ExtResource("2_acvj3")
+FileMode = 2
+metadata/_custom_type_script = "uid://ckillqfnqh8wc"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/NewDocument/VBoxContainer"]
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 40
 alignment = 1
 
 [node name="Button" type="Button" parent="HBoxContainer/NewDocument/VBoxContainer/HBoxContainer"]
@@ -141,4 +150,4 @@ text = "Create"
 [node name="Button2" type="Button" parent="HBoxContainer/NewDocument/VBoxContainer/HBoxContainer"]
 layout_mode = 2
 focus_mode = 0
-text = "Cancal"
+text = "Cancel"
