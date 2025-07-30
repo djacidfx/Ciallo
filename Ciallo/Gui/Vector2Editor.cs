@@ -1,5 +1,4 @@
 ﻿using Godot;
-using System;
 
 [GlobalClass, Tool]
 public partial class Vector2Editor : HBoxContainer
@@ -9,106 +8,126 @@ public partial class Vector2Editor : HBoxContainer
     
     public SpinBox SpinX { get; private set; }
     public SpinBox SpinY { get; private set; }
-    
+
+    #region Export
+    private double _maxValue = 100.0;
     [Export] public double MaxValue
     {
-        get => SpinX.MaxValue;
+        get => _maxValue;
         set
         {
-            SpinX.MaxValue = value;
-            SpinY.MaxValue = value;
+            // Note: Change into null-conditional assignment after upgrading to .net10
+            // https://www.arungudelli.com/csharp-tips/null-conditional-assignment-in-csharp/
+            _maxValue = value;
+            if(IsInstanceValid(SpinX)) SpinX.MaxValue = value;
+            if(IsInstanceValid(SpinY)) SpinY.MaxValue = value;
         }
     }
-    
+
+    private double _minValue = 0.0;
     [Export] public double MinValue
     {
-        get => SpinX.MinValue;
+        get => _minValue;
         set
         {
-            SpinX.MinValue = value;
-            SpinY.MinValue = value;
+            _minValue = value;
+            if(IsInstanceValid(SpinX)) SpinX.MinValue = value;
+            if(IsInstanceValid(SpinY)) SpinY.MinValue = value;
         }
     }
     
-    [Export] public Vector2 Value
-    {
-        get => new((float)SpinX.Value, (float)SpinY.Value);
-        set
-        {
-            SpinX.Value = value.X;
-            SpinY.Value = value.Y;
-        }
-    }
-    
+    private double _step = 0;
     [Export] public double Step
     {
-        get => SpinX.Step;
+        get => _step;
         set
         {
-            SpinX.Step = value;
-            SpinY.Step = value;
+            _step = value;
+            if(IsInstanceValid(SpinX)) SpinX.Step = value;
+            if(IsInstanceValid(SpinY)) SpinY.Step = value;
         }
     }
 
+    private bool _expEdit = false;
     [Export] public bool ExpEdit
     {
-        get => SpinX.ExpEdit;
+        get => _expEdit;
         set
         {
-            SpinX.ExpEdit = value;
-            SpinY.ExpEdit = value;
+            _expEdit = value;
+            if(IsInstanceValid(SpinX)) SpinX.ExpEdit = value;
+            if(IsInstanceValid(SpinY)) SpinY.ExpEdit = value;
         }
     }
 
+    private bool _rounded = false;
     [Export] public bool Rounded
     {
-        get => SpinX.Rounded;
+        get => _rounded;
         set
         {
-            SpinX.Rounded = value;
-            SpinY.Rounded = value;
+            _rounded = value;
+            if(IsInstanceValid(SpinX)) SpinX.Rounded = value;
+            if(IsInstanceValid(SpinY)) SpinY.Rounded = value;
         }
     }
-
-    public Vector2Editor()
+    
+    private Vector2 _value = Vector2.Zero;
+    [Export] public Vector2 Value
+    {
+        get => _value;
+        set
+        {
+            _value = value;
+            if(IsInstanceValid(SpinX)) SpinX.Value = value.X;
+            if(IsInstanceValid(SpinY)) SpinY.Value = value.Y;
+        }
+    }
+    #endregion
+    
+    
+    public override void _Ready()
     {
         SpinX = new SpinBox
         {
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
             SizeFlagsVertical = SizeFlags.Fill,
+            MaxValue = MaxValue,
+            MinValue = MinValue,
+            Step = Step,
+            ExpEdit = ExpEdit,
+            Rounded = Rounded,
+            Value = Value.X,
         };
         SpinY = new SpinBox
         {
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
             SizeFlagsVertical = SizeFlags.Fill,
+            MaxValue = MaxValue,
+            MinValue = MinValue,
+            Step = Step,
+            ExpEdit = ExpEdit,
+            Rounded = Rounded,
+            Value = Value.Y,
         };
         
         ConfigureSpin(SpinX, 0);
         ConfigureSpin(SpinY, 1);
-    }
-    
-    public override void _EnterTree()
-    {
+        
         AddChild(SpinX);
         AddChild(SpinY);
         SpinX.SetOwner(this);
         SpinY.SetOwner(this);
     }
     
-    public override void _ExitTree()
-    {
-        RemoveChild(SpinX);
-        RemoveChild(SpinY);
-    }
-    
     private void ConfigureSpin(SpinBox spin, int component)
     {
-        // Connect to our handler, passing which component this spinbox represents
-        spin.ValueChanged += rawValue => OnSpinValueChanged(rawValue, component);
-    }
-
-    private void OnSpinValueChanged(double rawValue, int component)
-    {
-        EmitSignal(SignalName.ValueChanged, Value);
+        spin.ValueChanged += rawValue =>
+        {
+            _value = component == 0
+                ? new Vector2((float)rawValue, _value.Y) 
+                : new Vector2(_value.X, (float)rawValue);
+            EmitSignal(SignalName.ValueChanged, Value);
+        };
     }
 }
