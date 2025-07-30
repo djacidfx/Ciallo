@@ -50,7 +50,7 @@ visible = false
 
 [node name="OpenDocument" type="FileDialog" parent="."]
 
-[node name="UIBlock" type="VBoxContainer" parent="."]
+[node name="MainGui" type="VBoxContainer" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -60,36 +60,36 @@ grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="MenuBarContainer" type="PanelContainer" parent="UIBlock"]
+[node name="MenuBarContainer" type="PanelContainer" parent="MainGui"]
 layout_mode = 2
 
-[node name="Margin" type="MarginContainer" parent="UIBlock/MenuBarContainer"]
+[node name="Margin" type="MarginContainer" parent="MainGui/MenuBarContainer"]
 layout_mode = 2
 theme_override_constants/margin_left = 0
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="HBoxContainer" type="HBoxContainer" parent="UIBlock/MenuBarContainer/Margin"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MainGui/MenuBarContainer/Margin"]
 layout_mode = 2
 
-[node name="TextureRect" type="TextureRect" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer"]
+[node name="TextureRect" type="TextureRect" parent="MainGui/MenuBarContainer/Margin/HBoxContainer"]
 custom_minimum_size = Vector2(68.17, 0)
 layout_mode = 2
 texture = ExtResource("2_wcmo1")
 expand_mode = 2
 stretch_mode = 5
 
-[node name="Blank" type="Control" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer"]
+[node name="Blank" type="Control" parent="MainGui/MenuBarContainer/Margin/HBoxContainer"]
 custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
 
-[node name="MenuBar" type="MenuBar" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer"]
+[node name="MenuBar" type="MenuBar" parent="MainGui/MenuBarContainer/Margin/HBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/h_separation = 30
 flat = true
 
-[node name="File" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
+[node name="File" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
 auto_translate_mode = 1
 submenu_popup_delay = 0.01
 item_count = 2
@@ -99,30 +99,30 @@ item_1/text = "Open"
 item_1/id = 1
 script = ExtResource("2_jhd3m")
 
-[node name="Edit" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
+[node name="Edit" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
 submenu_popup_delay = 0.1
 script = ExtResource("3_mmo8m")
 
-[node name="Help" type="PopupMenu" parent="UIBlock/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
+[node name="Help" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
 auto_translate_mode = 1
 submenu_popup_delay = 0.1
 
-[node name="UIBlock" type="HSplitContainer" parent="UIBlock"]
+[node name="UIBlock" type="HSplitContainer" parent="MainGui"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="UIBlock/UIBlock"]
+[node name="MarginContainer" type="MarginContainer" parent="MainGui/UIBlock"]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 8
 
-[node name="ToolPanel" type="HFlowContainer" parent="UIBlock/UIBlock/MarginContainer"]
+[node name="ToolPanel" type="HFlowContainer" parent="MainGui/UIBlock/MarginContainer"]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 theme_override_constants/v_separation = 20
 script = ExtResource("4_fxul2")
 
-[node name="Select" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolPanel"]
+[node name="Select" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Selection"
@@ -134,7 +134,7 @@ shortcut = SubResource("Shortcut_wcmo1")
 icon = ExtResource("5_yavc3")
 expand_icon = true
 
-[node name="PaintBrush" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolPanel"]
+[node name="PaintBrush" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Paint Brush
@@ -148,7 +148,7 @@ shortcut = SubResource("Shortcut_7agld")
 icon = ExtResource("5_y2isn")
 expand_icon = true
 
-[node name="PaintFill" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolPanel"]
+[node name="PaintFill" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Paint Fill
@@ -162,7 +162,7 @@ shortcut = SubResource("Shortcut_nllhf")
 icon = ExtResource("6_i5pxm")
 expand_icon = true
 
-[node name="VectorFill" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolPanel"]
+[node name="VectorFill" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Vector fill
@@ -175,7 +175,7 @@ button_group = ExtResource("5_sx6ov")
 icon = ExtResource("7_i5pxm")
 expand_icon = true
 
-[node name="Lasso" type="Button" parent="UIBlock/UIBlock/MarginContainer/ToolPanel"]
+[node name="Lasso" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Lasso
@@ -188,30 +188,32 @@ button_group = ExtResource("5_sx6ov")
 icon = ExtResource("11_wcmo1")
 expand_icon = true
 
-[node name="UIBlock" type="VBoxContainer" parent="UIBlock/UIBlock"]
+[node name="UIBlock" type="VBoxContainer" parent="MainGui/UIBlock"]
 layout_mode = 2
 
-[node name="HSplitContainer" type="HSplitContainer" parent="UIBlock/UIBlock/UIBlock"]
+[node name="HSplitContainer" type="HSplitContainer" parent="MainGui/UIBlock/UIBlock"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="VSplitContainer" type="VSplitContainer" parent="UIBlock/UIBlock/UIBlock/HSplitContainer"]
+[node name="VSplitContainer" type="VSplitContainer" parent="MainGui/UIBlock/UIBlock/HSplitContainer"]
 layout_mode = 2
 
-[node name="ToolProperties" type="VBoxContainer" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer"]
+[node name="ToolProperties" type="VBoxContainer" parent="MainGui/UIBlock/UIBlock/HSplitContainer/VSplitContainer"]
 layout_mode = 2
 
-[node name="PlaceHolder" type="ColorRect" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer/ToolProperties"]
+[node name="PlaceHolder" type="ColorRect" parent="MainGui/UIBlock/UIBlock/HSplitContainer/VSplitContainer/ToolProperties"]
 custom_minimum_size = Vector2(256, 100)
 layout_mode = 2
 color = Color(0.124784, 0.124784, 0.124784, 1)
 
-[node name="Layer" type="Panel" parent="UIBlock/UIBlock/UIBlock/HSplitContainer/VSplitContainer"]
+[node name="Layer" type="Panel" parent="MainGui/UIBlock/UIBlock/HSplitContainer/VSplitContainer"]
 custom_minimum_size = Vector2(0, 500)
 layout_mode = 2
 
-[node name="MainPaintPanel" parent="UIBlock/UIBlock/UIBlock/HSplitContainer" instance=ExtResource("2_mgg3w")]
+[node name="MainPaintPanel" parent="MainGui/UIBlock/UIBlock/HSplitContainer" instance=ExtResource("2_mgg3w")]
 layout_mode = 2
 
 [node name="KeyInputHandler" type="Node" parent="."]
 script = ExtResource("2_m1i1e")
+
+[node name="MeshInstance2D" type="MeshInstance2D" parent="."]

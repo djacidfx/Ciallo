@@ -4,3 +4,6 @@
 
 [resource]
 shader = ExtResource("1_fp5q0")
+shader_parameter/strokeType = 0
+shader_parameter/strokeColor = Color(0, 0, 0, 1)
+shader_parameter/stampInterval = 0.015625

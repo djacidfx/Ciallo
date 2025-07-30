@@ -3,11 +3,22 @@ shader_type canvas_item;
 //render_mode skip_vertex_transform;
 render_mode unshaded;
 
+uniform int strokeType : hint_enum("Solid", "Stamp") = 0;
+uniform vec4 strokeColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+
+// ------stamp parameters-----------
+//// hint_range(intervalMin, 10.0, intervalStep) not compile.
+//const float intervalMin = 1.0/64.0;
+//const float intervalStep = 1.0/128.0;
+uniform float stampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
+// ---------------------------------
+
 varying flat vec2 p0;
 varying flat vec2 p1;
 varying flat float r0;
 varying flat float r1;
 varying vec2 p;
+varying float r;
 
 varying flat vec2 tangent;
 varying flat vec2 normal;
@@ -34,19 +45,11 @@ void vertex() {
         vec2(1.0, -1.0),
         vec2(1.0, 1.0)
     )[VERTEX_ID];
-	float radius = vec4(r0, r0, r1, r1)[VERTEX_ID];
+	r = vec4(r0, r0, r1, r1)[VERTEX_ID];
 
-	// Apply the half angle formula from cos(theta) to tan(theta/2)
-    float tanHalfTheta = sqrt((1.0+cosTheta) / (1.0-cosTheta));
-    float cotHalfTheta = 1.0 / tanHalfTheta;
-    float normalTanValue = vec4(tanHalfTheta, tanHalfTheta, cotHalfTheta, cotHalfTheta)[VERTEX_ID];
-    bool isIll = normalTanValue > 10.0 || normalTanValue < 0.1;
-    if(!isIll)
-	{
-		p = position +
-        offsetSign.x * radius * tangent +
-        offsetSign.y * radius * normal * normalTanValue;
-	};
+	p = position +
+    offsetSign.x * r * tangent +
+    offsetSign.y * r * normal;
 
 	VERTEX = p;
 }
@@ -58,11 +61,10 @@ void fragment() {
 	float d0cos = pLocal.x / d0;
     float d1cos = (pLocal.x - len) / d1;
 
-	// Perhaps someday avoid using `discard` to enable early z test
-	if(d0cos < cosTheta && d0 > r0) discard;
-    if(d1cos > cosTheta && d1 > r1) discard;
+	if(pLocal.x < 0.0 && d0 > r) discard;
+    if(pLocal.x > len && d1 > r) discard;
 
 	// Premultiply alpha is necessary
 	// See: https://github.com/godotengine/godot/issues/99715
-    COLOR = vec4(0.0, 0.0, 0.0, 1.0);
+    COLOR = strokeColor;
 }
