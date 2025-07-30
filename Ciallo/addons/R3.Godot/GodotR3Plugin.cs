@@ -11,8 +11,9 @@ public partial class GodotR3Plugin : EditorPlugin
     static ObservableTrackerDebuggerPlugin? observableTrackerDebugger;
     public override void _EnterTree()
     {
-        observableTrackerDebugger ??= new ObservableTrackerDebuggerPlugin();
-        AddDebuggerPlugin(observableTrackerDebugger);
+        // Shen: Buggy in v1.3.0
+        // observableTrackerDebugger ??= new ObservableTrackerDebuggerPlugin();
+        // AddDebuggerPlugin(observableTrackerDebugger);
         // Automatically install autoloads here for ease of use.
         AddAutoloadSingleton(nameof(FrameProviderDispatcher), "res://addons/R3.Godot/FrameProviderDispatcher.cs");
         AddAutoloadSingleton(nameof(ObservableTrackerRuntimeHook), "res://addons/R3.Godot/ObservableTrackerRuntimeHook.cs");

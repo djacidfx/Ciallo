@@ -68,8 +68,6 @@ vertical_alignment = 1
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("2_acvj3")
-FileMode = 2
-DefaultPath = 0
 metadata/_custom_type_script = "uid://ckillqfnqh8wc"
 
 [node name="Label2" type="Label" parent="NewDocument/VBoxContainer/GridContainer"]

@@ -1,9 +1,17 @@
-[gd_scene load_steps=5 format=3 uid="uid://ce1yxw3pe0nme"]
+[gd_scene load_steps=7 format=3 uid="uid://ce1yxw3pe0nme"]
 
 [ext_resource type="Script" uid="uid://bh1ma4lihi20r" path="res://Core/World2d.cs" id="1_rcuby"]
 [ext_resource type="Script" uid="uid://c7rxc64vyjfgq" path="res://Core/Stroke.cs" id="2_rcuby"]
-[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/rendering/StrokeMaterial.tres" id="2_wlwx4"]
+[ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Core/Rendering/Checkerboard.gdshader" id="2_wubmp"]
+[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/rendering/StrokeMaterial.tres" id="3_rcuby"]
 [ext_resource type="Resource" uid="uid://c6bta002h4eqy" path="res://Tests/TPolyline.tres" id="3_wubmp"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1xdo7"]
+shader = ExtResource("2_wubmp")
+shader_parameter/size = 10.0
+shader_parameter/color1 = Color(1, 1, 1, 1)
+shader_parameter/color2 = Color(0.7, 0.7, 0.7, 1)
+shader_parameter/background_color = Color(1, 1, 1, 0)
 
 [node name="World2D" type="Node2D"]
 script = ExtResource("1_rcuby")
@@ -11,6 +19,7 @@ script = ExtResource("1_rcuby")
 [node name="PaintScreenRoot" type="Node2D" parent="."]
 
 [node name="Background" type="ColorRect" parent="."]
+material = SubResource("ShaderMaterial_1xdo7")
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -22,12 +31,11 @@ offset_right = 480.0
 offset_bottom = 270.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.330746, 0.0850599, 0.253003, 1)
 
 [node name="CanvasGroup" type="CanvasGroup" parent="."]
 
 [node name="Stroke" type="Node2D" parent="CanvasGroup"]
-material = ExtResource("2_wlwx4")
+material = ExtResource("3_rcuby")
 script = ExtResource("2_rcuby")
 Polyline = ExtResource("3_wubmp")
 metadata/_custom_type_script = "uid://c7rxc64vyjfgq"

@@ -211,4 +211,7 @@ layout_mode = 2
 [node name="KeyInputHandler" type="Node" parent="."]
 script = ExtResource("2_m1i1e")
 
-[node name="PopupPanel" parent="." instance=ExtResource("15_nllhf")]
+[node name="NewDocument" parent="." instance=ExtResource("15_nllhf")]
+visible = false
+
+[node name="OpenDocument" type="FileDialog" parent="."]

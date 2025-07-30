@@ -20,9 +20,9 @@ config/icon="uid://cjf7u8mgog5mr"
 
 [autoload]
 
+MiscAutoload="*res://Misc/Autoload.cs"
 FrameProviderDispatcher="*res://addons/R3.Godot/FrameProviderDispatcher.cs"
 ObservableTrackerRuntimeHook="*res://addons/R3.Godot/ObservableTrackerRuntimeHook.cs"
-MiscAutoload="*res://Misc/Autoload.cs"
 
 [display]
 
@@ -39,7 +39,7 @@ project/assembly_name="Ciallo"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/R3.Godot/plugin.cfg")
 
 [gui]
 

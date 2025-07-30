@@ -82,12 +82,23 @@ public partial class Vector2Editor : HBoxContainer
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
             SizeFlagsVertical = SizeFlags.Fill,
         };
+        
+        ConfigureSpin(SpinX, 0);
+        ConfigureSpin(SpinY, 1);
+    }
+    
+    public override void _EnterTree()
+    {
         AddChild(SpinX);
         AddChild(SpinY);
         SpinX.SetOwner(this);
         SpinY.SetOwner(this);
-        ConfigureSpin(SpinX, 0);
-        ConfigureSpin(SpinY, 1);
+    }
+    
+    public override void _ExitTree()
+    {
+        RemoveChild(SpinX);
+        RemoveChild(SpinY);
     }
     
     private void ConfigureSpin(SpinBox spin, int component)

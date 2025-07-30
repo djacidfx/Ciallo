@@ -64,5 +64,5 @@ void fragment() {
 
 	// Premultiply alpha is necessary
 	// See: https://github.com/godotengine/godot/issues/99715
-    COLOR = vec4(1.0, 1.0, 1.0, 0.5);
+    COLOR = vec4(0.0, 0.0, 0.0, 1.0);
 }
