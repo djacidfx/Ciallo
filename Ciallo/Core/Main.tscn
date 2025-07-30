@@ -212,5 +212,3 @@ layout_mode = 2
 script = ExtResource("2_m1i1e")
 
 [node name="PopupPanel" parent="." instance=ExtResource("15_nllhf")]
-size = Vector2i(959, 384)
-visible = false

@@ -72,26 +72,26 @@ public partial class Vector2Editor : HBoxContainer
 
     public Vector2Editor()
     {
-        SpinX = new SpinBox();
-        SpinY = new SpinBox();
+        SpinX = new SpinBox
+        {
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            SizeFlagsVertical = SizeFlags.Fill,
+        };
+        SpinY = new SpinBox
+        {
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            SizeFlagsVertical = SizeFlags.Fill,
+        };
         AddChild(SpinX);
         AddChild(SpinY);
         SpinX.SetOwner(this);
         SpinY.SetOwner(this);
-        
-        SpinX.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
-        SpinY.SizeFlagsHorizontal = SizeFlags.ShrinkCenter;
-        
         ConfigureSpin(SpinX, 0);
         ConfigureSpin(SpinY, 1);
     }
     
     private void ConfigureSpin(SpinBox spin, int component)
     {
-        spin.AllowGreater = false;
-        spin.AllowLesser = false;
-        spin.Alignment = HorizontalAlignment.Left;
-
         // Connect to our handler, passing which component this spinbox represents
         spin.ValueChanged += rawValue => OnSpinValueChanged(rawValue, component);
     }

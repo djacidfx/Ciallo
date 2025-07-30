@@ -11,8 +11,8 @@ public partial class FilePathPicker : HBoxContainer
     [Export(PropertyHint.Enum, "None:-1,Desktop:0,Dcim:1,Documents:2,Downloads:3")] // From OS.SystemDir
     public int DefaultPath = -1;
     
-    public readonly LineEdit PathEdit;
-    public readonly Button OpenExplorerButton;
+    public LineEdit PathEdit;
+    public Button OpenExplorerButton;
     public FileDialog FileDialog;
     
     public string Path
@@ -21,7 +21,7 @@ public partial class FilePathPicker : HBoxContainer
         set => PathEdit.Text = value;
     }
 
-    public FilePathPicker()
+    public override void _EnterTree()
     {
         OpenExplorerButton = new Button
         {
@@ -42,12 +42,19 @@ public partial class FilePathPicker : HBoxContainer
         PathEdit.SetOwner(this);
         OpenExplorerButton.SetOwner(this);
         OpenExplorerButton.Pressed += OnOpenExplorer;
-    }
-
-    public override void _EnterTree()
-    {
+        
         if(DefaultPath != -1)
             Path = OS.GetSystemDir((OS.SystemDir)DefaultPath) ?? string.Empty;
+    }
+    
+    public override void _ExitTree()
+    {
+        OpenExplorerButton.QueueFree();
+        PathEdit.QueueFree();
+        if (FileDialog != null)
+        {
+            FileDialog.QueueFree();
+        }
     }
 
     private void OnOpenExplorer()
