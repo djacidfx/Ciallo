@@ -5,19 +5,17 @@
 
 [sub_resource type="Theme" id="Theme_kf6mc"]
 
-[node name="PopupPanel" type="PopupPanel"]
+[node name="AcceptDialog" type="Window"]
 auto_translate_mode = 1
 title = "Open/Create document - Ciallo"
 initial_position = 2
-size = Vector2i(1086, 420)
-visible = true
-unresizable = false
+size = Vector2i(1086, 440)
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
-offset_left = 4.0
-offset_top = 4.0
-offset_right = 1082.0
-offset_bottom = 416.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 1078.0
+offset_bottom = 425.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
@@ -113,7 +111,8 @@ text = "Canvas reference size"
 layout_mode = 2
 size_flags_horizontal = 8
 script = ExtResource("1_kf6mc")
-MaxValue = 100.0
+MaxValue = 16384.0
+Value = Vector2(1920, 1080)
 Step = 1.0
 
 [node name="Label3" type="Label" parent="HBoxContainer/NewDocument/VBoxContainer/GridContainer"]
@@ -134,6 +133,7 @@ text = "Save folder"
 layout_mode = 2
 script = ExtResource("2_acvj3")
 FileMode = 2
+DefaultPath = 0
 metadata/_custom_type_script = "uid://ckillqfnqh8wc"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="HBoxContainer/NewDocument/VBoxContainer"]
