@@ -215,5 +215,3 @@ layout_mode = 2
 
 [node name="KeyInputHandler" type="Node" parent="."]
 script = ExtResource("2_m1i1e")
-
-[node name="MeshInstance2D" type="MeshInstance2D" parent="."]
