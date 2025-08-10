@@ -1,9 +1,9 @@
 [gd_scene load_steps=7 format=3 uid="uid://ce1yxw3pe0nme"]
 
-[ext_resource type="Script" uid="uid://bh1ma4lihi20r" path="res://Core/World2d.cs" id="1_rcuby"]
+[ext_resource type="Script" uid="uid://bh1ma4lihi20r" path="res://Core/WorldView.cs" id="1_rcuby"]
 [ext_resource type="Script" uid="uid://c7rxc64vyjfgq" path="res://Core/Stroke.cs" id="2_rcuby"]
 [ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Core/Rendering/Checkerboard.gdshader" id="2_wubmp"]
-[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/rendering/StrokeMaterial.tres" id="3_rcuby"]
+[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://Core/Rendering/StrokeMaterial.tres" id="3_rcuby"]
 [ext_resource type="Resource" uid="uid://c6bta002h4eqy" path="res://Tests/TPolyline.tres" id="3_wubmp"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1xdo7"]

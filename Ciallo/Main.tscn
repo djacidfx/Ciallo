@@ -11,7 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://djmjwmlnccp86" path="res://Icons/cursor-default-outline.svg" id="9_bg4s2"]
 [ext_resource type="Texture2D" uid="uid://bayscuh6s0yrc" path="res://Icons/lasso-dash.svg" id="10_hhcpw"]
 [ext_resource type="Texture2D" uid="uid://cjf7u8mgog5mr" path="res://Icons/brush.svg" id="11_mxvw5"]
-[ext_resource type="Texture2D" uid="uid://duv5tca3ukpww" path="res://Icons/brush-fill.svg" id="12_xrxkg"]
+[ext_resource type="Texture2D" uid="uid://b4e0ypa7qifd3" path="res://Icons/lasso-fill.svg" id="13_j4qnp"]
 [ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icons/format-color-fill.svg" id="13_sqvbp"]
 [ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Gui/PaintPanelControl.tscn" id="14_hri7i"]
 [ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/KeyInputHandler.cs" id="15_w3rk5"]
@@ -161,20 +161,6 @@ shortcut = SubResource("Shortcut_7agld")
 icon = ExtResource("11_mxvw5")
 expand_icon = true
 
-[node name="PaintFill" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-tooltip_text = "Paint Fill
-
-Free-handly draw colored area."
-focus_mode = 0
-theme_type_variation = &"ToolButton"
-toggle_mode = true
-button_group = ExtResource("8_3b0ty")
-shortcut = SubResource("Shortcut_nllhf")
-icon = ExtResource("12_xrxkg")
-expand_icon = true
-
 [node name="VectorFill" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
@@ -186,6 +172,20 @@ theme_type_variation = &"ToolButton"
 toggle_mode = true
 button_group = ExtResource("8_3b0ty")
 icon = ExtResource("13_sqvbp")
+expand_icon = true
+
+[node name="PaintFill" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+tooltip_text = "Paint Fill
+
+Free-handly draw colored area."
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+button_group = ExtResource("8_3b0ty")
+shortcut = SubResource("Shortcut_nllhf")
+icon = ExtResource("13_j4qnp")
 expand_icon = true
 
 [node name="UIBlock" type="VBoxContainer" parent="MainGui/UIBlock"]

@@ -3,7 +3,7 @@ using System;
 
 namespace Ciallo.Core;
 
-public partial class World2d : Node2D
+public partial class WorldView : Node2D
 {
     
 }

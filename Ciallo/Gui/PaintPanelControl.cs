@@ -11,7 +11,7 @@ namespace Ciallo.Gui;
 public partial class PaintPanelControl : PanelContainer
 {
     public SubViewport SubViewport;
-    public World2d World;
+    public WorldView WorldView;
 
     public Camera2D Camera;
     
@@ -20,8 +20,8 @@ public partial class PaintPanelControl : PanelContainer
 
     public override void _Ready()
     {
-        SubViewport = _World2DContainer.GetChild<SubViewport>(0);
-        World = SubViewport.GetChild<World2d>(0);
+        SubViewport = GetNode<SubViewport>("VBoxContainer/WorldViewContainer/SubViewport");
+        WorldView = SubViewport.GetChild<WorldView>(0);
         Camera = SubViewport.GetChild<Camera2D>(1);
 
         var button = new OptionButton();

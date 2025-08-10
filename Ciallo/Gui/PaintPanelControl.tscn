@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://Gui/PaintPanelControl.cs" id="1_h7pkx"]
 [ext_resource type="Script" uid="uid://c3mxvlh0hephd" path="res://Gui/PropertyContainer.cs" id="2_p4r8m"]
-[ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Core/World2D.tscn" id="2_peemv"]
-[ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://Core/World2dContainer.cs" id="2_t3dnt"]
+[ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Core/WorldView.tscn" id="2_peemv"]
+[ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://Core/WorldViewContainer.cs" id="2_t3dnt"]
 
 [node name="PaintSceneControl" type="PanelContainer"]
 anchors_preset = 15
@@ -31,14 +31,14 @@ script = ExtResource("2_p4r8m")
 Horizontal = true
 metadata/_custom_type_script = "uid://c3mxvlh0hephd"
 
-[node name="_World2DContainer" type="SubViewportContainer" parent="VBoxContainer"]
+[node name="WorldViewContainer" type="SubViewportContainer" parent="VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 stretch = true
 script = ExtResource("2_t3dnt")
 
-[node name="SubViewport" type="SubViewport" parent="VBoxContainer/_World2DContainer"]
+[node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldViewContainer"]
 handle_input_locally = false
 msaa_2d = 3
 screen_space_aa = 1
@@ -46,12 +46,12 @@ gui_disable_input = true
 size = Vector2i(1920, 1073)
 render_target_update_mode = 4
 
-[node name="World2D" parent="VBoxContainer/_World2DContainer/SubViewport" instance=ExtResource("2_peemv")]
+[node name="WorldView" parent="VBoxContainer/WorldViewContainer/SubViewport" instance=ExtResource("2_peemv")]
 scale = Vector2(1.18, 1.18)
 
-[node name="Camera2D" type="Camera2D" parent="VBoxContainer/_World2DContainer/SubViewport"]
+[node name="Camera2D" type="Camera2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
 ignore_rotation = false
 
-[connection signal="gui_input" from="VBoxContainer/_World2DContainer" to="VBoxContainer/_World2DContainer" method="OnGuiInput"]
-[connection signal="mouse_entered" from="VBoxContainer/_World2DContainer" to="VBoxContainer/_World2DContainer" method="OnMouseEnter"]
-[connection signal="mouse_exited" from="VBoxContainer/_World2DContainer" to="VBoxContainer/_World2DContainer" method="OnMouseExit"]
+[connection signal="gui_input" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnGuiInput"]
+[connection signal="mouse_entered" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnMouseEnter"]
+[connection signal="mouse_exited" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnMouseExit"]

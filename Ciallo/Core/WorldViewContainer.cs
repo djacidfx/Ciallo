@@ -5,7 +5,7 @@ using R3;
 
 namespace Ciallo.Core;
 
-public partial class World2dContainer : SubViewportContainer
+public partial class WorldViewContainer : SubViewportContainer
 {
     private Camera2D _camera;
     private bool _isHovering = false;
