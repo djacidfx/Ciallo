@@ -19,8 +19,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 8.0
 offset_top = 8.0
-offset_right = -8.0
-offset_bottom = -49.0
+offset_right = 504.0
+offset_bottom = 463.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10
@@ -33,7 +33,7 @@ theme = SubResource("Theme_kf6mc")
 
 [node name="Label" type="Label" parent="NewDocument/VBoxContainer"]
 layout_mode = 2
-text = "New document settings:"
+text = "Settings:"
 
 [node name="VSeparator" type="HSeparator" parent="NewDocument/VBoxContainer"]
 layout_mode = 2
@@ -50,7 +50,7 @@ columns = 2
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_vertical = 1
-text = "File name"
+text = "Document name"
 vertical_alignment = 1
 
 [node name="LineEdit" type="LineEdit" parent="NewDocument/VBoxContainer/GridContainer"]

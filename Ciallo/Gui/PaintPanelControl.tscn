@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://cmxkg61nilwq8"]
 
-[ext_resource type="Script" path="res://Gui/PaintPanelControl.cs" id="1_h7pkx"]
+[ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://Gui/PaintPanelControl.cs" id="1_h7pkx"]
 [ext_resource type="Script" uid="uid://c3mxvlh0hephd" path="res://Gui/PropertyContainer.cs" id="2_p4r8m"]
 [ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Core/World2D.tscn" id="2_peemv"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://Core/World2dContainer.cs" id="2_t3dnt"]

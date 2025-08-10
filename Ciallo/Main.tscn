@@ -1,20 +1,20 @@
 [gd_scene load_steps=22 format=3 uid="uid://bhueivskybp02"]
 
-[ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://Core/MainTheme.tres" id="1_mlbys"]
-[ext_resource type="Script" uid="uid://bckjp4y2gxunr" path="res://Core/Main.cs" id="2_7agld"]
-[ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://Gui/MenuContentFile.cs" id="2_jhd3m"]
-[ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/KeyInputHandler.cs" id="2_m1i1e"]
-[ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Gui/PaintPanelControl.tscn" id="2_mgg3w"]
-[ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icons/ciallo.svg" id="2_wcmo1"]
-[ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://Gui/MenuContentEdit.cs" id="3_mmo8m"]
-[ext_resource type="Script" uid="uid://7am438fddl1w" path="res://Gui/ToolIconContainer.cs" id="4_fxul2"]
-[ext_resource type="ButtonGroup" uid="uid://hr62j5sfo22p" path="res://Gui/ToolButtonGroup.tres" id="5_sx6ov"]
-[ext_resource type="Texture2D" uid="uid://cjf7u8mgog5mr" path="res://Icons/brush.svg" id="5_y2isn"]
-[ext_resource type="Texture2D" uid="uid://djmjwmlnccp86" path="res://Icons/cursor-default-outline.svg" id="5_yavc3"]
-[ext_resource type="Texture2D" uid="uid://duv5tca3ukpww" path="res://Icons/brush-fill.svg" id="6_i5pxm"]
-[ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icons/format-color-fill.svg" id="7_i5pxm"]
-[ext_resource type="Texture2D" uid="uid://bayscuh6s0yrc" path="res://Icons/lasso-dash.svg" id="11_wcmo1"]
-[ext_resource type="PackedScene" uid="uid://bpntrjged60df" path="res://Gui/NewDocumentDialog.tscn" id="15_nllhf"]
+[ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://Core/MainTheme.tres" id="1_j4qnp"]
+[ext_resource type="Script" uid="uid://bc4wj7b6spts" path="res://Main.cs" id="2_j4qnp"]
+[ext_resource type="PackedScene" uid="uid://bpntrjged60df" path="res://Gui/NewDocumentDialog.tscn" id="3_sc1dx"]
+[ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icons/ciallo.svg" id="4_kjvhd"]
+[ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://Gui/MenuContentFile.cs" id="5_5tuhn"]
+[ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://Gui/MenuContentEdit.cs" id="6_2gh4u"]
+[ext_resource type="Script" uid="uid://7am438fddl1w" path="res://Gui/ToolIconContainer.cs" id="7_devvj"]
+[ext_resource type="ButtonGroup" uid="uid://hr62j5sfo22p" path="res://Gui/ToolButtonGroup.tres" id="8_3b0ty"]
+[ext_resource type="Texture2D" uid="uid://djmjwmlnccp86" path="res://Icons/cursor-default-outline.svg" id="9_bg4s2"]
+[ext_resource type="Texture2D" uid="uid://bayscuh6s0yrc" path="res://Icons/lasso-dash.svg" id="10_hhcpw"]
+[ext_resource type="Texture2D" uid="uid://cjf7u8mgog5mr" path="res://Icons/brush.svg" id="11_mxvw5"]
+[ext_resource type="Texture2D" uid="uid://duv5tca3ukpww" path="res://Icons/brush-fill.svg" id="12_xrxkg"]
+[ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icons/format-color-fill.svg" id="13_sqvbp"]
+[ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Gui/PaintPanelControl.tscn" id="14_hri7i"]
+[ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/KeyInputHandler.cs" id="15_w3rk5"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
 action = &"ToolSelection"
@@ -42,10 +42,10 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
-theme = ExtResource("1_mlbys")
-script = ExtResource("2_7agld")
+theme = ExtResource("1_j4qnp")
+script = ExtResource("2_j4qnp")
 
-[node name="NewDocument" parent="." instance=ExtResource("15_nllhf")]
+[node name="NewDocument" parent="." instance=ExtResource("3_sc1dx")]
 visible = false
 
 [node name="OpenDocument" type="FileDialog" parent="."]
@@ -75,7 +75,7 @@ layout_mode = 2
 [node name="TextureRect" type="TextureRect" parent="MainGui/MenuBarContainer/Margin/HBoxContainer"]
 custom_minimum_size = Vector2(68.17, 0)
 layout_mode = 2
-texture = ExtResource("2_wcmo1")
+texture = ExtResource("4_kjvhd")
 expand_mode = 2
 stretch_mode = 5
 
@@ -97,11 +97,11 @@ item_0/text = "New"
 item_0/id = 0
 item_1/text = "Open"
 item_1/id = 1
-script = ExtResource("2_jhd3m")
+script = ExtResource("5_5tuhn")
 
 [node name="Edit" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
 submenu_popup_delay = 0.1
-script = ExtResource("3_mmo8m")
+script = ExtResource("6_2gh4u")
 
 [node name="Help" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
 auto_translate_mode = 1
@@ -120,7 +120,7 @@ theme_override_constants/margin_top = 8
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 theme_override_constants/v_separation = 20
-script = ExtResource("4_fxul2")
+script = ExtResource("7_devvj")
 
 [node name="Select" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
@@ -129,50 +129,9 @@ tooltip_text = "Selection"
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
-button_group = ExtResource("5_sx6ov")
+button_group = ExtResource("8_3b0ty")
 shortcut = SubResource("Shortcut_wcmo1")
-icon = ExtResource("5_yavc3")
-expand_icon = true
-
-[node name="PaintBrush" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-tooltip_text = "Paint Brush
-
-Color by drawing fill-colored polygons."
-focus_mode = 0
-theme_type_variation = &"ToolButton"
-toggle_mode = true
-button_group = ExtResource("5_sx6ov")
-shortcut = SubResource("Shortcut_7agld")
-icon = ExtResource("5_y2isn")
-expand_icon = true
-
-[node name="PaintFill" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-tooltip_text = "Paint Fill
-
-Free-handly draw colored area."
-focus_mode = 0
-theme_type_variation = &"ToolButton"
-toggle_mode = true
-button_group = ExtResource("5_sx6ov")
-shortcut = SubResource("Shortcut_nllhf")
-icon = ExtResource("6_i5pxm")
-expand_icon = true
-
-[node name="VectorFill" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-tooltip_text = "Vector fill
-
-Fill enclose areas with editable fill markers."
-focus_mode = 0
-theme_type_variation = &"ToolButton"
-toggle_mode = true
-button_group = ExtResource("5_sx6ov")
-icon = ExtResource("7_i5pxm")
+icon = ExtResource("9_bg4s2")
 expand_icon = true
 
 [node name="Lasso" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
@@ -184,8 +143,49 @@ Free hand selection"
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
-button_group = ExtResource("5_sx6ov")
-icon = ExtResource("11_wcmo1")
+button_group = ExtResource("8_3b0ty")
+icon = ExtResource("10_hhcpw")
+expand_icon = true
+
+[node name="PaintBrush" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+tooltip_text = "Paint Brush
+
+Color by drawing fill-colored polygons."
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+button_group = ExtResource("8_3b0ty")
+shortcut = SubResource("Shortcut_7agld")
+icon = ExtResource("11_mxvw5")
+expand_icon = true
+
+[node name="PaintFill" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+tooltip_text = "Paint Fill
+
+Free-handly draw colored area."
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+button_group = ExtResource("8_3b0ty")
+shortcut = SubResource("Shortcut_nllhf")
+icon = ExtResource("12_xrxkg")
+expand_icon = true
+
+[node name="VectorFill" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+tooltip_text = "Vector fill
+
+Fill enclose areas with editable fill markers."
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+button_group = ExtResource("8_3b0ty")
+icon = ExtResource("13_sqvbp")
 expand_icon = true
 
 [node name="UIBlock" type="VBoxContainer" parent="MainGui/UIBlock"]
@@ -210,8 +210,8 @@ color = Color(0.124784, 0.124784, 0.124784, 1)
 custom_minimum_size = Vector2(0, 500)
 layout_mode = 2
 
-[node name="MainPaintPanel" parent="MainGui/UIBlock/UIBlock/HSplitContainer" instance=ExtResource("2_mgg3w")]
+[node name="MainPaintPanel" parent="MainGui/UIBlock/UIBlock/HSplitContainer" instance=ExtResource("14_hri7i")]
 layout_mode = 2
 
 [node name="KeyInputHandler" type="Node" parent="."]
-script = ExtResource("2_m1i1e")
+script = ExtResource("15_w3rk5")

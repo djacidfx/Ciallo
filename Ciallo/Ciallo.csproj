@@ -11,6 +11,8 @@
     <PackageReference Include="Arch" Version="2.1.0" />
     <PackageReference Include="GodotSharp.SourceGenerators" Version="2.6.0-250131-2115.Release" />
     <PackageReference Include="Humanizer" Version="3.0.0-beta.96" />
+    <PackageReference Include="MessagePack" Version="3.1.4" />
+    <PackageReference Include="MessagePackGodot" Version="1.0.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="gdUnit4.api" Version="5.0.0" />
     <PackageReference Include="gdUnit4.test.adapter" Version="3.0.0" />
