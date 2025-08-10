@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://cmxkg61nilwq8"]
 
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://Gui/PaintPanelControl.cs" id="1_h7pkx"]
-[ext_resource type="Script" uid="uid://c3mxvlh0hephd" path="res://Gui/PropertyContainer.cs" id="2_p4r8m"]
+[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Gui/SliderSpinBoxPair.cs" id="2_cccke"]
 [ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Core/WorldView.tscn" id="2_peemv"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://Core/WorldViewContainer.cs" id="2_t3dnt"]
 
@@ -19,17 +19,52 @@ theme_override_constants/separation = 0
 
 [node name="Margin" type="MarginContainer" parent="VBoxContainer"]
 layout_mode = 2
-theme_override_constants/margin_left = 30
+theme_override_constants/margin_left = 50
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_bottom = 4
 
-[node name="_PropertyContainer" type="BoxContainer" parent="VBoxContainer/Margin"]
-unique_name_in_owner = true
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Margin"]
 layout_mode = 2
 theme_override_constants/separation = 15
-script = ExtResource("2_p4r8m")
-Horizontal = true
-metadata/_custom_type_script = "uid://c3mxvlh0hephd"
+
+[node name="Label3" type="Label" parent="VBoxContainer/Margin/HBoxContainer"]
+layout_mode = 2
+tooltip_text = "- Scroll middle mouse button to zoom in /out.
+- Click and drag middle mouse button to pan."
+mouse_filter = 0
+text = "Canvas navigation guide (?)"
+
+[node name="VSeparator2" type="VSeparator" parent="VBoxContainer/Margin/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Margin/HBoxContainer"]
+layout_mode = 2
+text = "Zoom"
+
+[node name="SliderSpinBoxPair" type="HBoxContainer" parent="VBoxContainer/Margin/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+script = ExtResource("2_cccke")
+MinValue = 0.1
+MaxValue = 10.0
+Value = 1.0
+Step = 0.1
+ExpEdit = true
+metadata/_custom_type_script = "uid://b1dclx7d0dgng"
+
+[node name="VSeparator" type="VSeparator" parent="VBoxContainer/Margin/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="VBoxContainer/Margin/HBoxContainer"]
+layout_mode = 2
+text = "Rotation"
+
+[node name="SliderSpinBoxPair2" type="HBoxContainer" parent="VBoxContainer/Margin/HBoxContainer"]
+layout_mode = 2
+script = ExtResource("2_cccke")
+MinValue = -360.0
+MaxValue = 360.0
+metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 
 [node name="WorldViewContainer" type="SubViewportContainer" parent="VBoxContainer"]
 unique_name_in_owner = true
@@ -43,7 +78,7 @@ handle_input_locally = false
 msaa_2d = 3
 screen_space_aa = 1
 gui_disable_input = true
-size = Vector2i(1920, 1073)
+size = Vector2i(2, 2)
 render_target_update_mode = 4
 
 [node name="WorldView" parent="VBoxContainer/WorldViewContainer/SubViewport" instance=ExtResource("2_peemv")]
@@ -51,6 +86,8 @@ scale = Vector2(1.18, 1.18)
 
 [node name="Camera2D" type="Camera2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
 ignore_rotation = false
+
+[node name="Node" type="Node" parent="."]
 
 [connection signal="gui_input" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnGuiInput"]
 [connection signal="mouse_entered" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnMouseEnter"]

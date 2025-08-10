@@ -9,7 +9,7 @@
 auto_translate_mode = 1
 title = "New document - Ciallo"
 initial_position = 2
-size = Vector2i(512, 512)
+size = Vector2i(568, 512)
 visible = true
 ok_button_text = "Create"
 
@@ -19,7 +19,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 504.0
+offset_right = 560.0
 offset_bottom = 463.0
 grow_horizontal = 2
 grow_vertical = 2

@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://bh1ma4lihi20r" path="res://Core/WorldView.cs" id="1_rcuby"]
 [ext_resource type="Script" uid="uid://c7rxc64vyjfgq" path="res://Core/Stroke.cs" id="2_rcuby"]
 [ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Core/Rendering/Checkerboard.gdshader" id="2_wubmp"]
-[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://Core/Rendering/StrokeMaterial.tres" id="3_rcuby"]
+[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/rendering/StrokeMaterial.tres" id="3_k0xid"]
 [ext_resource type="Resource" uid="uid://c6bta002h4eqy" path="res://Tests/TPolyline.tres" id="3_wubmp"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1xdo7"]
@@ -35,7 +35,7 @@ grow_vertical = 2
 [node name="CanvasGroup" type="CanvasGroup" parent="."]
 
 [node name="Stroke" type="Node2D" parent="CanvasGroup"]
-material = ExtResource("3_rcuby")
+material = ExtResource("3_k0xid")
 script = ExtResource("2_rcuby")
 Polyline = ExtResource("3_wubmp")
 metadata/_custom_type_script = "uid://c7rxc64vyjfgq"

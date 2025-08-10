@@ -10,6 +10,18 @@ public partial class Vector2Editor : HBoxContainer
     public SpinBox SpinY { get; private set; }
 
     #region Export
+    private double _minValue = 0.0;
+    [Export] public double MinValue
+    {
+        get => _minValue;
+        set
+        {
+            _minValue = value;
+            if(IsInstanceValid(SpinX)) SpinX.MinValue = value;
+            if(IsInstanceValid(SpinY)) SpinY.MinValue = value;
+        }
+    }
+    
     private double _maxValue = 100.0;
     [Export] public double MaxValue
     {
@@ -21,18 +33,6 @@ public partial class Vector2Editor : HBoxContainer
             _maxValue = value;
             if(IsInstanceValid(SpinX)) SpinX.MaxValue = value;
             if(IsInstanceValid(SpinY)) SpinY.MaxValue = value;
-        }
-    }
-
-    private double _minValue = 0.0;
-    [Export] public double MinValue
-    {
-        get => _minValue;
-        set
-        {
-            _minValue = value;
-            if(IsInstanceValid(SpinX)) SpinX.MinValue = value;
-            if(IsInstanceValid(SpinY)) SpinY.MinValue = value;
         }
     }
     
@@ -92,8 +92,8 @@ public partial class Vector2Editor : HBoxContainer
         {
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
             SizeFlagsVertical = SizeFlags.Fill,
-            MaxValue = MaxValue,
             MinValue = MinValue,
+            MaxValue = MaxValue,
             Step = Step,
             ExpEdit = ExpEdit,
             Rounded = Rounded,
@@ -103,8 +103,8 @@ public partial class Vector2Editor : HBoxContainer
         {
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
             SizeFlagsVertical = SizeFlags.Fill,
-            MaxValue = MaxValue,
             MinValue = MinValue,
+            MaxValue = MaxValue,
             Step = Step,
             ExpEdit = ExpEdit,
             Rounded = Rounded,

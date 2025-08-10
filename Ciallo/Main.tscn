@@ -138,8 +138,7 @@ expand_icon = true
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Lasso
-
-Free hand selection"
+- Free-hand selection"
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
@@ -150,9 +149,7 @@ expand_icon = true
 [node name="PaintBrush" type="Button" parent="MainGui/UIBlock/MarginContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-tooltip_text = "Paint Brush
-
-Color by drawing fill-colored polygons."
+tooltip_text = "Paint Brush"
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
@@ -165,8 +162,7 @@ expand_icon = true
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Vector fill
-
-Fill enclose areas with editable fill markers."
+- Fill enclose areas with editable fill markers."
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
@@ -178,8 +174,7 @@ expand_icon = true
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Paint Fill
-
-Free-handly draw colored area."
+- Draw colored area free-handly."
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
