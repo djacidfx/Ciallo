@@ -19,7 +19,7 @@ theme_override_constants/separation = 0
 
 [node name="Margin" type="MarginContainer" parent="VBoxContainer"]
 layout_mode = 2
-theme_override_constants/margin_left = 50
+theme_override_constants/margin_left = 35
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_bottom = 4
 
@@ -41,7 +41,8 @@ layout_mode = 2
 layout_mode = 2
 text = "Zoom"
 
-[node name="SliderSpinBoxPair" type="HBoxContainer" parent="VBoxContainer/Margin/HBoxContainer"]
+[node name="ZoomControl" type="HBoxContainer" parent="VBoxContainer/Margin/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 script = ExtResource("2_cccke")
@@ -59,7 +60,8 @@ layout_mode = 2
 layout_mode = 2
 text = "Rotation"
 
-[node name="SliderSpinBoxPair2" type="HBoxContainer" parent="VBoxContainer/Margin/HBoxContainer"]
+[node name="RotationControl" type="HBoxContainer" parent="VBoxContainer/Margin/HBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("2_cccke")
 MinValue = -360.0
@@ -67,7 +69,6 @@ MaxValue = 360.0
 metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 
 [node name="WorldViewContainer" type="SubViewportContainer" parent="VBoxContainer"]
-unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 stretch = true
@@ -75,16 +76,14 @@ script = ExtResource("2_t3dnt")
 
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldViewContainer"]
 handle_input_locally = false
-msaa_2d = 3
-screen_space_aa = 1
 gui_disable_input = true
-size = Vector2i(2, 2)
+size = Vector2i(1920, 1042)
 render_target_update_mode = 4
 
 [node name="WorldView" parent="VBoxContainer/WorldViewContainer/SubViewport" instance=ExtResource("2_peemv")]
-scale = Vector2(1.18, 1.18)
 
 [node name="Camera2D" type="Camera2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
+unique_name_in_owner = true
 ignore_rotation = false
 
 [node name="Node" type="Node" parent="."]

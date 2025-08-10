@@ -8,6 +8,9 @@ namespace Ciallo.Gui;
 [GlobalClass, Tool]
 public partial class SliderSpinBoxPair : HBoxContainer
 {
+    [Signal] 
+    public delegate void ValueChangedEventHandler(double newValue);
+    
     public HSlider Slider { get; private set; }
     public SpinBox SpinBox { get; private set; }
     
@@ -99,8 +102,19 @@ public partial class SliderSpinBoxPair : HBoxContainer
         };
         AddChild(Slider);
         AddChild(SpinBox);
+        Connect(Slider);
+        Connect(SpinBox);
         Slider.SetOwner(this);
         SpinBox.SetOwner(this);
+    }
+
+    private void Connect(Godot.Range control)
+    {
+        control.ValueChanged += (double value) =>
+        {
+            Value = value;
+            EmitSignal(SignalName.ValueChanged, Value);
+        };
     }
 
     public void BindValue<T>(ReactiveProperty<T> property) where T : System.Numerics.INumber<T>

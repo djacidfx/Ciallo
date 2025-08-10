@@ -111,8 +111,8 @@ public partial class Vector2Editor : HBoxContainer
             Value = Value.Y,
         };
         
-        ConfigureSpin(SpinX, 0);
-        ConfigureSpin(SpinY, 1);
+        Connect(SpinX, 0);
+        Connect(SpinY, 1);
         
         AddChild(SpinX);
         AddChild(SpinY);
@@ -120,7 +120,7 @@ public partial class Vector2Editor : HBoxContainer
         SpinY.SetOwner(this);
     }
     
-    private void ConfigureSpin(SpinBox spin, int component)
+    private void Connect(SpinBox spin, int component)
     {
         spin.ValueChanged += rawValue =>
         {
