@@ -2,7 +2,6 @@ using Godot;
 using System;
 using Ciallo.Gui;
 
-
 namespace Ciallo.Core;
 
 /// <summary>
@@ -71,7 +70,7 @@ public partial class WorldViewContainer : SubViewportContainer
             _camera.Position = Vector2.Zero;
         }
         // Scroll mouse wheel zooming.
-        var zoomFactor = ProgramPreferences.MouseWheelZoomFactor.Value;
+        var zoomFactor = Autoload.Preference.MouseWheelZoomFactor.Value;
         if (e is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp } && _isHovering)
         {
             _zoomControl.Value *= 1.0f + zoomFactor;

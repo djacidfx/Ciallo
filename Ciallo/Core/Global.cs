@@ -4,5 +4,5 @@ namespace Ciallo.Core;
 
 static partial class Global
 {
-    public static readonly ProgramPreference ProgramPreferences = ProgramPreference.Load();
+    
 }

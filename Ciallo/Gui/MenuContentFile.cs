@@ -33,8 +33,11 @@ public partial class MenuContentFile : PopupMenu
         IndexPressed += id => OnIndexPressed((int)id);
     }
     
-    public static void OnIndexPressed(int id)
+    public void OnIndexPressed(int id)
     {
-        Console.WriteLine(id);
+        switch (id)
+        {
+            
+        }
     }
 }

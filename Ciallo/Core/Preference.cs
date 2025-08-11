@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Ciallo.Misc;
 using Godot;
 using R3;
 
 namespace Ciallo.Core;
 
-public class ProgramPreference
+public partial class Preference : Node
 {
     #region WorldView
     public ReactiveProperty<Viewport.Msaa> Msaa = new(Viewport.Msaa.Msaa4X);
@@ -20,16 +20,26 @@ public class ProgramPreference
     public List<string> RecentFiles = [];
     
     #region save load json
+    public class IntPtrIgnorer : JsonConverter<IntPtr>
+    {
+        public override IntPtr Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            => IntPtr.Zero;
+
+        public override void Write(Utf8JsonWriter writer, IntPtr value, JsonSerializerOptions options)
+            => writer.WriteNullValue(); // or writer.WriteStringValue(""); etc.
+    }
+
+    
     public static readonly string Path = "res://Temp/Preferences.json";
     public static bool FileExists = false;
     private static JsonSerializerOptions _options = new()
     {
         WriteIndented = true,
-        IncludeFields = true,
-        Converters = { new ReactivePropertyJsonConverterFactory(), new JsonStringEnumConverter() }
+        IncludeFields = false,
+        Converters = { new ReactivePropertyJsonConverterFactory(), new JsonStringEnumConverter(), new IntPtrIgnorer()}
     };
 
-    public static ProgramPreference Load()
+    public static Preference Load()
     {
         if (!FileAccess.FileExists(Path))
         {
@@ -38,7 +48,7 @@ public class ProgramPreference
         }
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
-        return JsonSerializer.Deserialize<ProgramPreference>(content, _options);
+        return JsonSerializer.Deserialize<Preference>(content, _options);
     }
 
     public void Save()

@@ -20,9 +20,10 @@ config/icon="uid://cjf7u8mgog5mr"
 
 [autoload]
 
-MiscAutoload="*res://Misc/Autoload.cs"
+MiscAutoload="*res://Misc/MiscAutoload.cs"
 FrameProviderDispatcher="*res://addons/R3.Godot/FrameProviderDispatcher.cs"
 ObservableTrackerRuntimeHook="*res://addons/R3.Godot/ObservableTrackerRuntimeHook.cs"
+Preference="*res://Core/Preference.cs"
 
 [display]
 
