@@ -25,7 +25,9 @@ public partial class PaintPanelControl : PanelContainer
         };
         rotationControl.ValueChanged += newRotation =>
         {
-            Camera.Rotation = Mathf.DegToRad((float)newRotation);
+            // Negative since setting "camera rotation" is inverted to "canvas rotation".
+            // Canvas rotation is more intuitive to users.
+            Camera.Rotation = -Mathf.DegToRad((float)newRotation);
         };
     }
 }

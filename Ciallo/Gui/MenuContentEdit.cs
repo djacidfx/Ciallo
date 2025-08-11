@@ -8,36 +8,33 @@ namespace Ciallo.Gui;
 
 public partial class MenuContentEdit : PopupMenu
 {
-    public readonly List<StringName> Items =
-    [
-        ActionNames.Undo,
-        ActionNames.Redo,
-    ];
-
+    // Identical to the items inside the PopupMenu node's items property.
+    public static readonly Dictionary<int, StringName> IndexToActionName = new()
+    {
+        { 0, ActionNames.Redo },
+        { 1, ActionNames.Undo },
+    };
+    
     public override void _Ready()
     {
-        foreach (var (i, item) in Items.Index())
+        foreach(var (i, item) in IndexToActionName)
         {
-            AddItem(item, i);
-        }
-        
-        foreach(var (i, item) in Items.Index())
-        {
-            var action = new InputEventAction
-            {
-                Action = item,
-                Pressed = true,
-            };
             var shortcut = new Shortcut
             {
-                Events = [action],
+                Events = [new InputEventAction
+                {
+                    Action = item,
+                    Pressed = true,
+                }],
             };
-            SetItemShortcut(i, shortcut, true);
+            SetItemShortcut(i, shortcut);
         }
+        
+        IndexPressed += id => OnIndexPressed((int)id);
     }
     
-    public void OnIndexPressed(int id)
+    public static void OnIndexPressed(int id)
     {
-        GD.Print(Items[id]);
+        Console.WriteLine(id);
     }
 }

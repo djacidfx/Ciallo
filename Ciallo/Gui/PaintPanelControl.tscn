@@ -29,8 +29,9 @@ theme_override_constants/separation = 15
 
 [node name="Label3" type="Label" parent="VBoxContainer/Margin/HBoxContainer"]
 layout_mode = 2
-tooltip_text = "- Scroll middle mouse button to zoom in /out.
-- Click and drag middle mouse button to pan."
+tooltip_text = "- Scroll mouse wheel to zoom in/out.
+- Click and drag middle mouse button to pan.
+- Double click middle mouse button to reset canvas view to center."
 mouse_filter = 0
 text = "Canvas navigation guide (?)"
 
@@ -64,8 +65,8 @@ text = "Rotation"
 unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("2_cccke")
-MinValue = -360.0
-MaxValue = 360.0
+MinValue = -180.0
+MaxValue = 180.0
 metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 
 [node name="WorldViewContainer" type="SubViewportContainer" parent="VBoxContainer"]
