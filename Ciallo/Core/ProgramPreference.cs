@@ -9,10 +9,11 @@ namespace Ciallo.Core;
 
 public class ProgramPreference
 {
-    #region world2D
+    #region WorldView
     public ReactiveProperty<Viewport.Msaa> Msaa = new(Viewport.Msaa.Msaa4X);
     public ReactiveProperty<bool> UseTAA = new(false);
     public ReactiveProperty<bool> UseFXAA = new(false);
+    public ReactiveProperty<float> MouseWheelZoomFactor = new(0.1f);
     #endregion
     
     public ReactiveProperty<string> Language = new("en");

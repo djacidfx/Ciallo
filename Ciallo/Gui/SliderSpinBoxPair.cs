@@ -52,7 +52,7 @@ public partial class SliderSpinBoxPair : HBoxContainer
         }
     }
     
-    private double _step = 1.0;
+    private double _step = 0.01;
     [Export] public double Step
     {
         get => _step;
@@ -121,6 +121,4 @@ public partial class SliderSpinBoxPair : HBoxContainer
     {
         throw new NotImplementedException();
     }
-
-
 }
