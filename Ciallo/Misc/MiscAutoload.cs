@@ -21,8 +21,7 @@ public partial class MiscAutoload : Node
     
     public override void _Notification(int what)
     {
-        if (what == NotificationWMCloseRequest)
-            Autoload.Preference.Save();
+        
     }
 
     public override void _Ready()

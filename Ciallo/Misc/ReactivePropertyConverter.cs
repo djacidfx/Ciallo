@@ -1,66 +1,40 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Reflection;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-using R3;
 
-namespace Ciallo.Misc;
-
-/// <summary>
-/// Reactive property convert to json with System.Text.Json.
-/// </summary>
-public class ReactivePropertyConverter : JsonConverterFactory
+public class ReactivePropertyConverter : JsonConverter
 {
-    public override bool CanConvert(Type typeToConvert)
+    public override bool CanConvert(Type objectType)
     {
-        if (!typeToConvert.IsGenericType)
+        return objectType.IsGenericType &&
+               objectType.GetGenericTypeDefinition().Name == "ReactiveProperty`1";
+    }
+
+    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    {
+        if(value == null) 
         {
-            return false;
+            writer.WriteNull();
+            return;
         }
+        var valueProperty = value.GetType().GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
+        var innerValue = valueProperty!.GetValue(value);
+        serializer.Serialize(writer, innerValue);
+    }
 
-        if (typeToConvert.GetGenericTypeDefinition() != typeof(ReactiveProperty<>))
+    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    {
+        if (reader.TokenType == JsonToken.Null)
         {
-            return false;
+            return null;
         }
-
-        return true;
-    }
-    public override JsonConverter CreateConverter(Type type, JsonSerializerOptions options)
-    {
-        Type[] typeArguments = type.GetGenericArguments();
-        Type valueType = typeArguments[0]; ;
-
-        JsonConverter converter = (JsonConverter)Activator.CreateInstance(
-            typeof(ReactivePropertyConverter<>).MakeGenericType([valueType]),
-            BindingFlags.Instance | BindingFlags.Public,
-            binder: null,
-            args: [options],
-            culture: null)!;
-
-        return converter;
-    }
-}
-
-
-public class ReactivePropertyConverter<T> : JsonConverter<ReactiveProperty<T>>
-{
-    private readonly JsonConverter<T> _valueConverter;
-    
-    public ReactivePropertyConverter(JsonSerializerOptions options)
-    {
-        _valueConverter = (JsonConverter<T>)options.GetConverter(typeof(T));
-    }
-
-    public override ReactiveProperty<T> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        var property = new ReactiveProperty<T>(default);
-        var value = _valueConverter.Read(ref reader, typeToConvert, options);
-        property.Value = value;
-        return property;
-    }
-
-    public override void Write(Utf8JsonWriter writer, ReactiveProperty<T> property, JsonSerializerOptions options)
-    {
-        _valueConverter.Write(writer, property.Value, options);
+        
+        var valueType = objectType.GetGenericArguments()[0];
+        var deserializedValue = serializer.Deserialize(reader, valueType);
+        if (existingValue == null) return Activator.CreateInstance(objectType, deserializedValue);
+        // set Value to deserializedValue
+        var valueProperty = existingValue.GetType().GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
+        valueProperty!.SetValue(existingValue, deserializedValue);
+        return existingValue;
     }
 }

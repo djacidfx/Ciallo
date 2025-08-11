@@ -1,12 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Godot;
 using R3;
+using Newtonsoft.Json;
+using System.Collections.Generic;
 
 namespace Ciallo.Core;
 
+[JsonObject(MemberSerialization.OptIn)]
 public partial class Preference : Node
 {
     #region WorldView
@@ -16,44 +16,45 @@ public partial class Preference : Node
     public ReactiveProperty<float> MouseWheelZoomFactor = new(0.1f);
     #endregion
     
-    public ReactiveProperty<string> Language = new("en");
+    [JsonProperty]
+    public ReactiveProperty<string> Language = null;
+    [JsonProperty]
     public List<string> RecentFiles = [];
     
     #region save load json
-    public class IntPtrIgnorer : JsonConverter<IntPtr>
-    {
-        public override IntPtr Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-            => IntPtr.Zero;
-
-        public override void Write(Utf8JsonWriter writer, IntPtr value, JsonSerializerOptions options)
-            => writer.WriteNullValue(); // or writer.WriteStringValue(""); etc.
-    }
-
-    
-    public static readonly string Path = "res://Temp/Preferences.json";
+    public static readonly string Path = "res://Temp/Preference.json";
     public static bool FileExists = false;
-    private static JsonSerializerOptions _options = new()
+    private static JsonSerializerSettings _options = new()
     {
-        WriteIndented = true,
-        IncludeFields = false,
-        Converters = { new ReactivePropertyJsonConverterFactory(), new JsonStringEnumConverter(), new IntPtrIgnorer()}
+        Converters = {new ReactivePropertyConverter()}
     };
 
-    public static Preference Load()
+    public override void _Ready()
+    {
+        Load();
+    }
+
+    public override void _ExitTree()
+    {
+        Save();
+    }
+
+    public void Load()
     {
         if (!FileAccess.FileExists(Path))
         {
             FileExists = false;
-            return new();
+            return;
         }
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
-        return JsonSerializer.Deserialize<Preference>(content, _options);
+        
+        JsonConvert.PopulateObject(content,this, _options);
     }
 
     public void Save()
     {
-        var content = JsonSerializer.Serialize(this, _options);
+        var content = JsonConvert.SerializeObject(this, _options);
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
         file.StoreString(content);
     }
