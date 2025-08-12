@@ -1,0 +1,64 @@
+[gd_scene load_steps=2 format=3 uid="uid://b605gtasdgmsb"]
+
+[ext_resource type="Texture2D" uid="uid://43k5wfcj0bkj" path="res://Icons/ciallo.svg" id="1_g7ast"]
+
+[node name="PopupPanel" type="PopupPanel"]
+auto_translate_mode = 1
+transparent_bg = false
+initial_position = 1
+size = Vector2i(562, 318)
+visible = true
+transparent = false
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 558.0
+offset_bottom = 314.0
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 30
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = -10
+alignment = 1
+
+[node name="Label" type="RichTextLabel" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(89.335, 0)
+layout_mode = 2
+bbcode_enabled = true
+text = "[font_size=30]Ciallo[/font_size]"
+fit_content = true
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(240.785, 0)
+layout_mode = 2
+size_flags_horizontal = 6
+texture = ExtResource("1_g7ast")
+expand_mode = 5
+stretch_mode = 4
+
+[node name="Label" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 4
+bbcode_enabled = true
+text = "[font_size=12]Demo version[/font_size]"
+fit_content = true
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "[b]Ciallo[/b] is a free and open-source tool for digital painting.
+
+New technologies are developed and researched by Shen Ciao — inspired by love and supported by your donations."

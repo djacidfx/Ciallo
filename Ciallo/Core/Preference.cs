@@ -17,7 +17,7 @@ public partial class Preference : Node
     #endregion
     
     [JsonProperty]
-    public ReactiveProperty<string> Language = null;
+    public ReactiveProperty<string> Language = new("en");
     [JsonProperty]
     public List<string> RecentFiles = [];
     

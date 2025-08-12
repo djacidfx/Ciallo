@@ -11,8 +11,8 @@ public partial class MenuContentEdit : PopupMenu
     // Identical to the items inside the PopupMenu node's items property.
     public static readonly Dictionary<int, StringName> IndexToActionName = new()
     {
-        { 0, ActionNames.Redo },
-        { 1, ActionNames.Undo },
+        { 0, ActionNames.Undo },
+        { 1, ActionNames.Redo },
     };
     
     public override void _Ready()

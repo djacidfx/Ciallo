@@ -72,6 +72,7 @@ public partial class FilePathPicker : HBoxContainer
             Title = $"Select a {(FileMode == FileDialog.FileModeEnum.OpenDir? "folder":"file")}",
             Unresizable = false,
             DialogCloseOnEscape = true,
+            UseNativeDialog = true,
         };
         if (FileMode == FileDialog.FileModeEnum.OpenDir)
         {

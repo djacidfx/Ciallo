@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Ciallo.Core;
 
 namespace Ciallo.Gui;
@@ -37,7 +38,20 @@ public partial class MenuContentFile : PopupMenu
     {
         switch (id)
         {
-            
+            case 0: // New Document
+                var dialogNew = GetTree().GetNodesInGroup("Dialogs").OfType<ConfirmationDialog>().Single(n => n.Name == "NewDocument");
+                dialogNew.Popup();
+                break;
+            case 1: // Open Document
+                var dialogOpen = GetTree().GetNodesInGroup("Dialogs").OfType<FileDialog>().Single(n => n.Name == "OpenDocument");
+                dialogOpen.Popup();
+                break;
+            case 3: // Save
+                
+                break;
+            default:
+                GD.PrintErr($"Unhandled menu item index: {id}");
+                break;
         }
     }
 }
