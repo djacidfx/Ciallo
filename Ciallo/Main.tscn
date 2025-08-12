@@ -60,6 +60,7 @@ show_hidden_files = true
 use_native_dialog = true
 
 [node name="About" parent="." groups=["Dialogs"] instance=ExtResource("4_fpfj3")]
+visible = false
 
 [node name="MainGui" type="VBoxContainer" parent="."]
 layout_mode = 1

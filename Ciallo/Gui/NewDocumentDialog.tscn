@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://bpntrjged60df"]
+[gd_scene load_steps=5 format=3 uid="uid://bpntrjged60df"]
 
 [ext_resource type="Script" uid="uid://dhn32ect5buj7" path="res://Gui/Vector2Editor.cs" id="1_kf6mc"]
+[ext_resource type="Script" uid="uid://eek50uvkfymb" path="res://Gui/NewDocumentDialog.cs" id="1_rukb6"]
 [ext_resource type="Script" uid="uid://ckillqfnqh8wc" path="res://Gui/FilePathPicker.cs" id="2_acvj3"]
 
 [sub_resource type="Theme" id="Theme_kf6mc"]
@@ -12,6 +13,8 @@ initial_position = 2
 size = Vector2i(568, 512)
 visible = true
 ok_button_text = "Create"
+dialog_hide_on_ok = false
+script = ExtResource("1_rukb6")
 
 [node name="NewDocument" type="MarginContainer" parent="."]
 anchors_preset = 15
@@ -19,8 +22,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 560.0
-offset_bottom = 463.0
+offset_right = -8.0
+offset_bottom = -49.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10
@@ -53,7 +56,8 @@ size_flags_vertical = 1
 text = "Document name"
 vertical_alignment = 1
 
-[node name="LineEdit" type="LineEdit" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="DocumentNameControl" type="LineEdit" parent="NewDocument/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "New Document"
 
@@ -64,7 +68,8 @@ size_flags_vertical = 1
 text = "Save folder"
 vertical_alignment = 1
 
-[node name="FilePathPicker" type="HBoxContainer" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="SaveFolderControl" type="HBoxContainer" parent="NewDocument/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("2_acvj3")
@@ -82,7 +87,8 @@ mouse_filter = 0
 text = "Reference size (?)"
 vertical_alignment = 1
 
-[node name="Vector2Editor" type="HBoxContainer" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="ReferenceSizeControl" type="HBoxContainer" parent="NewDocument/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("1_kf6mc")
 MaxValue = 16384.0
@@ -97,7 +103,18 @@ size_flags_vertical = 1
 text = "Background color"
 vertical_alignment = 1
 
-[node name="ColorPickerButton" type="ColorPickerButton" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="BackgroundColorControl" type="ColorPickerButton" parent="NewDocument/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 color = Color(1, 1, 1, 1)
+
+[node name="ErrorMessage" type="Label" parent="NewDocument/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.929412, 0.380392, 1)
+text = "Error"
+horizontal_alignment = 1
+
+[connection signal="confirmed" from="." to="." method="OnCreate"]

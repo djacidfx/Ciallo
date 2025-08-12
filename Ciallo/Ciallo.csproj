@@ -25,6 +25,7 @@
     <PackageReference Include="R3" Version="1.3.0" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Data\" />
     <Folder Include="Tests\Objects\" />
   </ItemGroup>
 
