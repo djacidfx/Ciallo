@@ -2,7 +2,7 @@
 using Godot;
 using MessagePack;
 
-namespace Ciallo.Core;
+namespace Ciallo.Data;
 
 public class DocumentSetting
 {

@@ -2,6 +2,7 @@ using Godot;
 using System;
 using System.IO;
 using Ciallo.Core;
+using Ciallo.Data;
 
 namespace Ciallo.Gui;
 
