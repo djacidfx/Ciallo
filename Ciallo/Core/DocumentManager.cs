@@ -16,6 +16,7 @@ public static class DocumentManager
     {
         var world = World.Create();
         DocumentWorlds.Add(world);
+        
         return world;
     }
     

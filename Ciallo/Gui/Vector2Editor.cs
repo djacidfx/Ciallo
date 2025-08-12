@@ -85,7 +85,6 @@ public partial class Vector2Editor : HBoxContainer
     }
     #endregion
     
-    
     public override void _Ready()
     {
         SpinX = new SpinBox

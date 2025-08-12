@@ -59,6 +59,8 @@ public partial class NewDocumentDialog : ConfirmationDialog
             BackgroundColor = { Value = bgColor },
             FilePath = filePath,
         };
+        DocumentManager.CreateDocument(setting);
+        this.Hide();
     }
     
     // Gen by copilot
