@@ -1,5 +1,7 @@
 ﻿using Godot;
 
+namespace Ciallo.Gui;
+
 [GlobalClass, Tool]
 public partial class Vector2Editor : HBoxContainer
 {

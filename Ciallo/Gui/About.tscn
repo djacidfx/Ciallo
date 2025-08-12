@@ -41,7 +41,7 @@ layout_mode = 2
 size_flags_horizontal = 6
 texture = ExtResource("1_g7ast")
 expand_mode = 5
-stretch_mode = 4
+stretch_mode = 5
 
 [node name="Label" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(123.095, 0)
