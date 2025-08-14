@@ -1,10 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://ce1yxw3pe0nme"]
+[gd_scene load_steps=7 format=3 uid="uid://ce1yxw3pe0nme"]
 
 [ext_resource type="Script" uid="uid://bh1ma4lihi20r" path="res://Core/WorldView.cs" id="1_rcuby"]
-[ext_resource type="Script" uid="uid://c7rxc64vyjfgq" path="res://Core/Stroke.cs" id="2_rcuby"]
 [ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://View/Rendering/Checkerboard.gdshader" id="2_wubmp"]
 [ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://View/Rendering/StrokeMaterial.tres" id="3_k0xid"]
-[ext_resource type="Resource" uid="uid://c6bta002h4eqy" path="res://Tests/TPolyline.tres" id="3_wubmp"]
 [ext_resource type="QuadMesh" uid="uid://ds31nm16a66ih" path="res://View/Rendering/StrokeDummyMesh.tres" id="6_eunqa"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1xdo7"]
@@ -38,14 +36,6 @@ offset_right = 480.0
 offset_bottom = 270.0
 grow_horizontal = 2
 grow_vertical = 2
-
-[node name="CanvasGroup" type="CanvasGroup" parent="."]
-
-[node name="Stroke" type="Node2D" parent="CanvasGroup"]
-material = ExtResource("3_k0xid")
-script = ExtResource("2_rcuby")
-Polyline = ExtResource("3_wubmp")
-metadata/_custom_type_script = "uid://c7rxc64vyjfgq"
 
 [node name="MyStroke" type="MultiMeshInstance2D" parent="."]
 material = ExtResource("3_k0xid")
