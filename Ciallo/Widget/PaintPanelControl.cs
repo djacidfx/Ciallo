@@ -5,7 +5,7 @@ using Ciallo.Core;
 using Ciallo.Misc;
 using R3;
 
-namespace Ciallo.Gui;
+namespace Ciallo.Widget;
 
 public partial class PaintPanelControl : PanelContainer
 {

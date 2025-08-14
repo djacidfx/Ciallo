@@ -4,7 +4,7 @@ using System.IO;
 using Ciallo.Core;
 using Ciallo.Data;
 
-namespace Ciallo.Gui;
+namespace Ciallo.Widget;
 
 public partial class NewDocumentDialog : ConfirmationDialog
 {

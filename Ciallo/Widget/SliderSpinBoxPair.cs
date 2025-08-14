@@ -3,7 +3,7 @@ using Ciallo.Misc;
 using Godot;
 using R3;
 
-namespace Ciallo.Gui;
+namespace Ciallo.Widget;
 
 [GlobalClass, Tool]
 public partial class SliderSpinBoxPair : HBoxContainer

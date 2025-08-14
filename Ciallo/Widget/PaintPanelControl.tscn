@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://cmxkg61nilwq8"]
 
-[ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://Gui/PaintPanelControl.cs" id="1_h7pkx"]
-[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Gui/SliderSpinBoxPair.cs" id="2_cccke"]
+[ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://Widget/PaintPanelControl.cs" id="1_h7pkx"]
+[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SliderSpinBoxPair.cs" id="2_cccke"]
 [ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Core/WorldView.tscn" id="2_peemv"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://Core/WorldViewContainer.cs" id="2_t3dnt"]
 

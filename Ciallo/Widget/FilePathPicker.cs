@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using Godot;
 
-namespace Ciallo.Gui;
+namespace Ciallo.Widget;
 
 [Tool, GlobalClass]
 public partial class FilePathPicker : HBoxContainer

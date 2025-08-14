@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace Ciallo.Gui;
+namespace Ciallo.Widget;
 
 [GlobalClass, Tool]
 public partial class Vector2Editor : HBoxContainer

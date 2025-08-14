@@ -1,6 +1,6 @@
 using Godot;
 using System;
-using Ciallo.Gui;
+using Ciallo.Widget;
 
 namespace Ciallo.Core;
 

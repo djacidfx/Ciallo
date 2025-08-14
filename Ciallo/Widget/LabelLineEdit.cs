@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace Ciallo.Gui;
+namespace Ciallo.Widget;
 
 /// <summary>
 /// <para>Act as a label. Being editable after double-clicked. Lose focus return to the label.</para>

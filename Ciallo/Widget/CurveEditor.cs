@@ -5,7 +5,7 @@
 using Ciallo.Misc;
 using Godot;
 
-namespace Ciallo.Gui;
+namespace Ciallo.Widget;
 
 /// <summary>
 /// The godot editor's curve edit control at runtime.

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Core;
 
-namespace Ciallo.Gui;
+namespace Ciallo.Widget;
 
 public partial class MenuContentEdit : PopupMenu
 {
