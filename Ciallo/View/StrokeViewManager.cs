@@ -62,12 +62,16 @@ public static class StrokeViewManager
             // Have to set transform or do not render, this transform values are not used in shaders
             multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);
         }
-        strokeView.Multimesh = multiMesh;
-        strokeView.Material = GD.Load<ShaderMaterial>("res://View/Rendering/StrokeMaterial.tres");
         
         // Set bounding box
         var boundingBox = points.GetBoundingBox(radii);
-        RenderingServer.CanvasItemSetCustomRect(strokeView.GetCanvasItem(), true, boundingBox);
+        // Incorrect method:
+        // RenderingServer.CanvasItemSetCustomRect(strokeView.GetCanvasItem(), true, boundingBox);
+        // Godot cannot save the value in the scene.
+        var aabb = new Aabb(boundingBox.Position.X, boundingBox.Position.Y, 0, boundingBox.Size.X, boundingBox.Size.Y, 0);
+        multiMesh.CustomAabb = aabb;
+        strokeView.Multimesh = multiMesh;
+        strokeView.Material = GD.Load<ShaderMaterial>("res://View/Rendering/StrokeMaterial.tres");
         
         return strokeView;
     }

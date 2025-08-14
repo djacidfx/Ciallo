@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://dxxuxp83ybahu" path="res://Gui/TextureCheckBoxBackgound.tres" id="3_nt8ii"]
 [ext_resource type="Texture2D" uid="uid://cfh5fqjqt20ay" path="res://Icons/FixedSize/brush_icon_sized.svg" id="4_fuv1t"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hroly"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dtvx0"]
 content_margin_left = 4.0
 content_margin_top = 4.0
 content_margin_right = 4.0
@@ -41,7 +41,7 @@ size_flags_horizontal = 3
 mouse_default_cursor_shape = 0
 theme_override_colors/font_uneditable_color = Color(0.875, 0.875, 0.875, 1)
 theme_override_font_sizes/font_size = 22
-theme_override_styles/read_only = SubResource("StyleBoxFlat_hroly")
+theme_override_styles/read_only = SubResource("StyleBoxFlat_dtvx0")
 placeholder_text = "Double click to rename"
 editable = false
 clear_button_enabled = true
