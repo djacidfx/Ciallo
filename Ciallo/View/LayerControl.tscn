@@ -1,35 +1,68 @@
-[gd_scene load_steps=5 format=3 uid="uid://bd701bypxjeqj"]
+[gd_scene load_steps=8 format=3 uid="uid://bd701bypxjeqj"]
 
+[ext_resource type="Script" uid="uid://cnkmrjlwncaqf" path="res://Gui/LabelLineEdit.cs" id="1_dtvx0"]
 [ext_resource type="Texture2D" uid="uid://cklq1oyy3bwjg" path="res://Icons/eye.svg" id="1_du83r"]
-[ext_resource type="Texture2D" uid="uid://b6jcypl1qwyod" path="res://Icons/eye-off.svg" id="2_em7h3"]
-[ext_resource type="ButtonGroup" uid="uid://cokyxi76fw4o5" path="res://View/LayerBeingEditedButtonGroup.tres" id="3_fuv1t"]
-[ext_resource type="Texture2D" uid="uid://cjf7u8mgog5mr" path="res://Icons/brush.svg" id="3_nt8ii"]
+[ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_qp082"]
+[ext_resource type="Texture2D" uid="uid://dh0mh12moefs8" path="res://Icons/drag-horizontal.svg" id="2_dtvx0"]
+[ext_resource type="Texture2D" uid="uid://dxxuxp83ybahu" path="res://Gui/TextureCheckBoxBackgound.tres" id="3_nt8ii"]
+[ext_resource type="Texture2D" uid="uid://cfh5fqjqt20ay" path="res://Icons/FixedSize/brush_icon_sized.svg" id="4_fuv1t"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hroly"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+border_width_bottom = 2
+border_color = Color(0, 0, 0, 0.6)
+corner_radius_top_left = 3
+corner_radius_top_right = 3
+corner_radius_bottom_right = 3
+corner_radius_bottom_left = 3
+corner_detail = 5
 
 [node name="LayerControl" type="HBoxContainer"]
-custom_minimum_size = Vector2(384, 64)
+offset_right = 380.0
+offset_bottom = 64.0
+theme = ExtResource("1_qp082")
+theme_override_constants/separation = 0
 
-[node name="TextureButton" type="TextureButton" parent="."]
-custom_minimum_size = Vector2(32, 0)
+[node name="Button" type="Button" parent="."]
+custom_minimum_size = Vector2(48, 0)
 layout_mode = 2
-toggle_mode = true
-action_mode = 0
-texture_normal = ExtResource("1_du83r")
-texture_pressed = ExtResource("2_em7h3")
-ignore_texture_size = true
-stretch_mode = 5
-
-[node name="TextureButton2" type="Button" parent="."]
-custom_minimum_size = Vector2(32, 0)
-layout_mode = 2
-toggle_mode = true
-action_mode = 0
-button_group = ExtResource("3_fuv1t")
-icon = ExtResource("3_nt8ii")
+mouse_default_cursor_shape = 9
+icon = ExtResource("2_dtvx0")
 expand_icon = true
 
-[node name="TextEdit" type="TextEdit" parent="."]
+[node name="LabelLineEdit" type="LineEdit" parent="."]
+custom_minimum_size = Vector2(256, 0)
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_default_cursor_shape = 0
+theme_override_colors/font_uneditable_color = Color(0.875, 0.875, 0.875, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/read_only = SubResource("StyleBoxFlat_hroly")
+placeholder_text = "Double click to rename"
+editable = false
+clear_button_enabled = true
+middle_mouse_paste_enabled = false
+caret_blink = true
+script = ExtResource("1_dtvx0")
+metadata/_custom_type_script = "uid://cnkmrjlwncaqf"
 
-[node name="Tree" type="Tree" parent="."]
+[node name="VisibilityControl" type="CheckBox" parent="."]
 layout_mode = 2
+theme_type_variation = &"TextureCheckBox"
+theme_override_icons/checked = ExtResource("1_du83r")
+theme_override_icons/unchecked = ExtResource("3_nt8ii")
+button_pressed = true
+action_mode = 0
+
+[node name="IsEditingControl" type="CheckBox" parent="."]
+layout_mode = 2
+theme = ExtResource("1_qp082")
+theme_type_variation = &"TextureCheckBox"
+theme_override_icons/checked = ExtResource("4_fuv1t")
+theme_override_icons/unchecked = ExtResource("3_nt8ii")
+button_pressed = true
+action_mode = 0

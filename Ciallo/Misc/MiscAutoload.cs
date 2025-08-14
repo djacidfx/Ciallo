@@ -14,7 +14,6 @@ public partial class MiscAutoload : Node
 {
     public override void _EnterTree()
     {
-        
         // Handle quit manually (to save unsaved file)
         // GetTree().AutoAcceptQuit = false;
     }
