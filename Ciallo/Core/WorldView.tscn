@@ -2,8 +2,8 @@
 
 [ext_resource type="Script" uid="uid://bh1ma4lihi20r" path="res://Core/WorldView.cs" id="1_rcuby"]
 [ext_resource type="Script" uid="uid://c7rxc64vyjfgq" path="res://Core/Stroke.cs" id="2_rcuby"]
-[ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Core/Rendering/Checkerboard.gdshader" id="2_wubmp"]
-[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://core/rendering/StrokeMaterial.tres" id="3_k0xid"]
+[ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://View/Rendering/Checkerboard.gdshader" id="2_wubmp"]
+[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://View/Rendering/StrokeMaterial.tres" id="3_k0xid"]
 [ext_resource type="Resource" uid="uid://c6bta002h4eqy" path="res://Tests/TPolyline.tres" id="3_wubmp"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_1xdo7"]
@@ -13,10 +13,8 @@ shader_parameter/color1 = Color(1, 1, 1, 1)
 shader_parameter/color2 = Color(0.7, 0.7, 0.7, 1)
 shader_parameter/background_color = Color(1, 1, 1, 0)
 
-[node name="World2D" type="Node2D"]
+[node name="WorldView" type="Node2D"]
 script = ExtResource("1_rcuby")
-
-[node name="PaintScreenRoot" type="Node2D" parent="."]
 
 [node name="Background" type="ColorRect" parent="."]
 material = SubResource("ShaderMaterial_1xdo7")

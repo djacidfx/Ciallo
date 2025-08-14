@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CopilotDiffPersistence">
+    <option name="pendingDiffs">
+      <map>
+        <entry key="$PROJECT_DIR$/Geometry/PolylineExtension.cs">
+          <value>
+            <PendingDiffInfo>
+              <option name="filePath" value="$PROJECT_DIR$/Geometry/PolylineExtension.cs" />
+              <option name="originalContent" value="using Godot;&#10;using System.Collections.Generic;&#10;using System.Diagnostics.CodeAnalysis;&#10;&#10;namespace Ciallo.Geometry;&#10;&#10;public static class PolylineExtension&#10;{&#10;    public static Rect2 GetBoundingBox([NotNull] this IEnumerable&lt;Vector2&gt; polyline, IEnumerable&lt;float&gt; radii = null)&#10;    {&#10;        using var pEnum = polyline.GetEnumerator();&#10;        using var rEnum = radii.GetEnumerator();&#10;        if (!pEnum.MoveNext())&#10;            return default;&#10;        &#10;&#10;        Vector2 first = pEnum.Current;&#10;        float firstR = rEnum.Current;&#10;        float minX = first.X - firstR;&#10;        float minY = first.Y - firstR;&#10;        float maxX = first.X + firstR;&#10;        float maxY = first.Y + firstR;&#10;&#10;        while (pEnum.MoveNext() &amp;&amp; rEnum.MoveNext())&#10;        {&#10;            Vector2 p = pEnum.Current;&#10;            float r = rEnum.Current;&#10;            float xMin = p.X - r;&#10;            float yMin = p.Y - r;&#10;            float xMax = p.X + r;&#10;            float yMax = p.Y + r;&#10;            if (xMin &lt; minX) minX = xMin;&#10;            if (yMin &lt; minY) minY = yMin;&#10;            if (xMax &gt; maxX) maxX = xMax;&#10;            if (yMax &gt; maxY) maxY = yMax;&#10;        }&#10;&#10;        return new Rect2(new Vector2(minX, minY), new Vector2(maxX - minX, maxY - minY));&#10;    }&#10;}" />
+              <option name="updatedContent" value="using Godot;&#10;using System.Collections.Generic;&#10;using System.Diagnostics.CodeAnalysis;&#10;using System.Linq;&#10;&#10;namespace Ciallo.Geometry;&#10;&#10;public static class PolylineExtension&#10;{&#10;    public static Rect2 GetBoundingBox([NotNull] this IEnumerable&lt;Vector2&gt; polyline, IEnumerable&lt;float&gt; radii = null)&#10;    {&#10;        var radiiSource = radii ?? Enumerable.Repeat(0f, int.MaxValue);&#10;        using var pEnum = polyline.GetEnumerator();&#10;        using var rEnum = radiiSource.GetEnumerator();&#10;        if (!pEnum.MoveNext() || !rEnum.MoveNext())&#10;            return default;&#10;        &#10;&#10;        Vector2 first = pEnum.Current;&#10;        float firstR = rEnum.Current;&#10;        float minX = first.X - firstR;&#10;        float minY = first.Y - firstR;&#10;        float maxX = first.X + firstR;&#10;        float maxY = first.Y + firstR;&#10;&#10;        while (pEnum.MoveNext() &amp;&amp; rEnum.MoveNext())&#10;        {&#10;            Vector2 p = pEnum.Current;&#10;            float r = rEnum.Current;&#10;            float xMin = p.X - r;&#10;            float yMin = p.Y - r;&#10;            float xMax = p.X + r;&#10;            float yMax = p.Y + r;&#10;            if (xMin &lt; minX) minX = xMin;&#10;            if (yMin &lt; minY) minY = yMin;&#10;            if (xMax &gt; maxX) maxX = xMax;&#10;            if (yMax &gt; maxY) maxY = yMax;&#10;        }&#10;&#10;        return new Rect2(new Vector2(minX, minY), new Vector2(maxX - minX, maxY - minY));&#10;    }&#10;}" />
+            </PendingDiffInfo>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

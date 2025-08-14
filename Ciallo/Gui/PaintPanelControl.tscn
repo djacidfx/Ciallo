@@ -78,11 +78,10 @@ script = ExtResource("2_t3dnt")
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldViewContainer"]
 handle_input_locally = false
 gui_disable_input = true
-size = Vector2i(2, 2)
+size = Vector2i(1920, 1042)
 render_target_update_mode = 4
 
 [node name="WorldView" parent="VBoxContainer/WorldViewContainer/SubViewport" instance=ExtResource("2_peemv")]
-visible = false
 
 [node name="Camera2D" type="Camera2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
 unique_name_in_owner = true
