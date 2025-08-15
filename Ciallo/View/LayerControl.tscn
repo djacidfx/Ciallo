@@ -1,21 +1,22 @@
-[gd_scene load_steps=8 format=3 uid="uid://bd701bypxjeqj"]
+[gd_scene load_steps=7 format=3 uid="uid://bd701bypxjeqj"]
 
 [ext_resource type="Script" uid="uid://cnkmrjlwncaqf" path="res://Widget/LabelLineEdit.cs" id="1_dtvx0"]
 [ext_resource type="Texture2D" uid="uid://cklq1oyy3bwjg" path="res://Icons/eye.svg" id="1_du83r"]
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_qp082"]
-[ext_resource type="Texture2D" uid="uid://dh0mh12moefs8" path="res://Icons/drag-horizontal.svg" id="2_dtvx0"]
 [ext_resource type="Texture2D" uid="uid://dxxuxp83ybahu" path="res://Widget/TextureCheckBoxBackgound.tres" id="3_nt8ii"]
 [ext_resource type="Texture2D" uid="uid://cfh5fqjqt20ay" path="res://Icons/FixedSize/brush_icon_sized.svg" id="4_fuv1t"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dtvx0"]
-content_margin_left = 6.0
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qp082"]
+content_margin_left = 4.0
 content_margin_top = 4.0
+content_margin_right = 4.0
 content_margin_bottom = 4.0
 bg_color = Color(0.1, 0.1, 0.1, 0.6)
 corner_radius_top_left = 3
 corner_radius_top_right = 3
 corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
+corner_detail = 5
 
 [node name="LayerControl" type="HBoxContainer"]
 offset_right = 380.0
@@ -45,23 +46,14 @@ action_mode = 0
 custom_minimum_size = Vector2(256, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-mouse_default_cursor_shape = 0
+mouse_default_cursor_shape = 2
 theme = ExtResource("1_qp082")
 theme_override_colors/font_uneditable_color = Color(0.875, 0.875, 0.875, 1)
 theme_override_font_sizes/font_size = 22
-theme_override_styles/read_only = SubResource("StyleBoxFlat_dtvx0")
+theme_override_styles/read_only = SubResource("StyleBoxFlat_qp082")
 placeholder_text = "Double click to rename"
 editable = false
 clear_button_enabled = true
 middle_mouse_paste_enabled = false
 script = ExtResource("1_dtvx0")
 metadata/_custom_type_script = "uid://cnkmrjlwncaqf"
-
-[node name="Drag" type="Button" parent="."]
-custom_minimum_size = Vector2(36, 0)
-layout_mode = 2
-mouse_default_cursor_shape = 9
-icon = ExtResource("2_dtvx0")
-flat = true
-icon_alignment = 1
-expand_icon = true

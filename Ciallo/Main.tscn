@@ -142,24 +142,29 @@ item_1/text = "About Ciallo"
 item_1/id = 1
 script = ExtResource("8_sc1dx")
 
-[node name="UIBlock" type="HSplitContainer" parent="MainGui"]
+[node name="MarginContainer" type="MarginContainer" parent="MainGui"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 10
+
+[node name="UIBlock" type="HSplitContainer" parent="MainGui/MarginContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="VSplit" type="VSplitContainer" parent="MainGui/UIBlock"]
+[node name="VSplit" type="VSplitContainer" parent="MainGui/MarginContainer/UIBlock"]
 layout_mode = 2
 split_offset = 500
 
-[node name="HSplitContainer" type="HSplitContainer" parent="MainGui/UIBlock/VSplit"]
+[node name="HSplitContainer" type="HSplitContainer" parent="MainGui/MarginContainer/UIBlock/VSplit"]
 layout_mode = 2
 
-[node name="ToolPanel" type="HFlowContainer" parent="MainGui/UIBlock/VSplit/HSplitContainer"]
+[node name="ToolPanel" type="HFlowContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer"]
 custom_minimum_size = Vector2(30, 0)
 layout_mode = 2
 theme_override_constants/v_separation = 20
 script = ExtResource("7_devvj")
 
-[node name="Select" type="Button" parent="MainGui/UIBlock/VSplit/HSplitContainer/ToolPanel"]
+[node name="Select" type="Button" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Selection"
@@ -171,7 +176,7 @@ shortcut = SubResource("Shortcut_wcmo1")
 icon = ExtResource("9_bg4s2")
 expand_icon = true
 
-[node name="Lasso" type="Button" parent="MainGui/UIBlock/VSplit/HSplitContainer/ToolPanel"]
+[node name="Lasso" type="Button" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Lasso
@@ -183,7 +188,7 @@ button_group = ExtResource("8_3b0ty")
 icon = ExtResource("10_hhcpw")
 expand_icon = true
 
-[node name="PaintBrush" type="Button" parent="MainGui/UIBlock/VSplit/HSplitContainer/ToolPanel"]
+[node name="PaintBrush" type="Button" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Paint Brush"
@@ -195,7 +200,7 @@ shortcut = SubResource("Shortcut_7agld")
 icon = ExtResource("11_mxvw5")
 expand_icon = true
 
-[node name="VectorFill" type="Button" parent="MainGui/UIBlock/VSplit/HSplitContainer/ToolPanel"]
+[node name="VectorFill" type="Button" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Vector fill
@@ -207,7 +212,7 @@ button_group = ExtResource("8_3b0ty")
 icon = ExtResource("13_sqvbp")
 expand_icon = true
 
-[node name="PaintFill" type="Button" parent="MainGui/UIBlock/VSplit/HSplitContainer/ToolPanel"]
+[node name="PaintFill" type="Button" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolPanel"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Paint Fill
@@ -220,27 +225,27 @@ shortcut = SubResource("Shortcut_nllhf")
 icon = ExtResource("13_j4qnp")
 expand_icon = true
 
-[node name="ToolProperties" type="VBoxContainer" parent="MainGui/UIBlock/VSplit/HSplitContainer"]
+[node name="ToolProperties" type="VBoxContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer"]
 layout_mode = 2
 
-[node name="PlaceHolder" type="ColorRect" parent="MainGui/UIBlock/VSplit/HSplitContainer/ToolProperties"]
+[node name="PlaceHolder" type="ColorRect" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolProperties"]
 custom_minimum_size = Vector2(240, 328.57)
 layout_mode = 2
 color = Color(0.124784, 0.124784, 0.124784, 1)
 
-[node name="LayerTreeControl" parent="MainGui/UIBlock/VSplit" instance=ExtResource("16_kjvhd")]
+[node name="LayerTreeControl" parent="MainGui/MarginContainer/UIBlock/VSplit" instance=ExtResource("16_kjvhd")]
 layout_mode = 2
 IsActiveLayerButtonGroup = SubResource("ButtonGroup_kjvhd")
 
-[node name="UIBlock" type="VBoxContainer" parent="MainGui/UIBlock"]
+[node name="UIBlock" type="VBoxContainer" parent="MainGui/MarginContainer/UIBlock"]
 layout_mode = 2
 
-[node name="HSplitContainer" type="HSplitContainer" parent="MainGui/UIBlock/UIBlock"]
+[node name="HSplitContainer" type="HSplitContainer" parent="MainGui/MarginContainer/UIBlock/UIBlock"]
 layout_mode = 2
 size_flags_vertical = 3
 split_offset = 410
 
-[node name="MainPaintPanel" parent="MainGui/UIBlock/UIBlock/HSplitContainer" instance=ExtResource("14_hri7i")]
+[node name="MainPaintPanel" parent="MainGui/MarginContainer/UIBlock/UIBlock/HSplitContainer" instance=ExtResource("14_hri7i")]
 layout_mode = 2
 
 [node name="KeyInputHandler" type="Node" parent="."]

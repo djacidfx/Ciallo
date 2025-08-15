@@ -6,22 +6,22 @@ namespace Ciallo.Widget;
 /// <summary>
 /// <para>Act as a label. Being editable after double-clicked. Lose focus return to the label.</para>
 /// </summary>
-[Tool, GlobalClass]
+[GlobalClass]
 public partial class LabelLineEdit : LineEdit
 {
+    public CursorShape DefaultCursorShape;
+    
     public override void _Ready()
     {
         Editable = false;
+        SelectingEnabled = false;
         MiddleMousePasteEnabled = false;
-        MouseDefaultCursorShape = CursorShape.Arrow;
-        
-        var styleBox = GetThemeStylebox("normal") ?? throw new InvalidOperationException("Theme stylebox 'normal' not found.");
-        var fontColor = GetThemeColor("font_color");
-        AddThemeStyleboxOverride("read_only", styleBox);
-        AddThemeColorOverride("font_uneditable_color", fontColor);
-        
+        DefaultCursorShape = MouseDefaultCursorShape;
+
         Connect(LineEdit.SignalName.TextSubmitted, new Callable(this, nameof(OnTextSubmitted)));
         Connect(Control.SignalName.FocusExited, new Callable(this, nameof(OnFocusExited)));
+        
+        MouseDefaultCursorShape = DefaultCursorShape;
     }
 
     public override void _GuiInput(InputEvent e)
@@ -29,6 +29,7 @@ public partial class LabelLineEdit : LineEdit
         if (e is InputEventMouseButton { ButtonIndex: MouseButton.Left, DoubleClick: true } && !Editable)
         {
             Editable = true;
+            SelectingEnabled = true;
             MouseDefaultCursorShape = CursorShape.Ibeam;
         }
         Edit();
@@ -37,15 +38,17 @@ public partial class LabelLineEdit : LineEdit
     public void OnTextSubmitted(string newText)
     {
         Editable = false;
+        SelectingEnabled = false;
         Unedit();
-        MouseDefaultCursorShape = CursorShape.Arrow;
+        MouseDefaultCursorShape = DefaultCursorShape;
     }
     
     public void OnFocusExited()
     {
         if (!Editable) return; // IsEditing is false here.
         Editable = false;
+        SelectingEnabled = false;
         Unedit();
-        MouseDefaultCursorShape = CursorShape.Arrow;
+        MouseDefaultCursorShape = DefaultCursorShape;
     }
 }
