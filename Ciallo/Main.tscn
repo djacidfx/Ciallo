@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=26 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://bc4wj7b6spts" path="res://Main.cs" id="2_j4qnp"]
@@ -17,6 +17,7 @@
 [ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icons/format-color-fill.svg" id="13_sqvbp"]
 [ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Widget/PaintPanelControl.tscn" id="14_hri7i"]
 [ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/KeyInputHandler.cs" id="15_w3rk5"]
+[ext_resource type="PackedScene" uid="uid://c08pou8qq2rrg" path="res://View/LayerTreeControl.tscn" id="16_kjvhd"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
 action = &"ToolSelection"
@@ -35,6 +36,8 @@ action = &"ToolPaintFill"
 
 [sub_resource type="Shortcut" id="Shortcut_nllhf"]
 events = [SubResource("InputEventAction_7agld")]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_kjvhd"]
 
 [node name="Main" type="Panel"]
 anchors_preset = 15
@@ -221,6 +224,7 @@ layout_mode = 2
 [node name="HSplitContainer" type="HSplitContainer" parent="MainGui/UIBlock/UIBlock"]
 layout_mode = 2
 size_flags_vertical = 3
+split_offset = 410
 
 [node name="VSplitContainer" type="VSplitContainer" parent="MainGui/UIBlock/UIBlock/HSplitContainer"]
 layout_mode = 2
@@ -233,9 +237,9 @@ custom_minimum_size = Vector2(256, 100)
 layout_mode = 2
 color = Color(0.124784, 0.124784, 0.124784, 1)
 
-[node name="Layer" type="Panel" parent="MainGui/UIBlock/UIBlock/HSplitContainer/VSplitContainer"]
-custom_minimum_size = Vector2(0, 500)
+[node name="LayerTreeControl" parent="MainGui/UIBlock/UIBlock/HSplitContainer/VSplitContainer" instance=ExtResource("16_kjvhd")]
 layout_mode = 2
+IsActiveLayerButtonGroup = SubResource("ButtonGroup_kjvhd")
 
 [node name="MainPaintPanel" parent="MainGui/UIBlock/UIBlock/HSplitContainer" instance=ExtResource("14_hri7i")]
 layout_mode = 2

@@ -15,7 +15,7 @@ public partial class WorldView : Node2D
             //     [new(-200, 200), new (0, 0), new(200, -200)],
             //     [10, 10, 10]);
             // AddChild(strokeView);
-            // strokeView.SetOwner(this);            
+            // strokeView.SetOwner(this);
         }
     }
 }
