@@ -27,6 +27,10 @@ public partial class LayerTreeControl : Container
         var layerRoot = LayerControlScene.Instantiate();
         var isActiveButton = layerRoot.GetNode<CheckBox>("IsActive");
         isActiveButton.ButtonGroup = IsActiveLayerButtonGroup;
+        if (IsActiveLayerButtonGroup.GetPressedButton() == null)
+        {
+            isActiveButton.SetPressed(true);
+        }
         return layerRoot;
     }
 }
