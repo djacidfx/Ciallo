@@ -72,7 +72,6 @@ bg_color = Color(1, 1, 1, 0)
 default_font_size = 22
 Button/styles/focus = SubResource("StyleBoxEmpty_8s18r")
 LineEdit/styles/focus = SubResource("StyleBoxEmpty_4as0w")
-SplitContainer/constants/separation = 9
 TabBar/styles/tab_focus = SubResource("StyleBoxEmpty_yhag5")
 TextureCheckBox/base_type = &"CheckBox"
 TextureCheckBox/styles/disabled = SubResource("StyleBoxFlat_yhag5")
