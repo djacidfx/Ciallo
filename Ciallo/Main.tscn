@@ -1,4 +1,4 @@
-[gd_scene load_steps=26 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=25 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://bc4wj7b6spts" path="res://Main.cs" id="2_j4qnp"]
@@ -17,7 +17,7 @@
 [ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icons/format-color-fill.svg" id="13_sqvbp"]
 [ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Widget/PaintPanelControl.tscn" id="14_hri7i"]
 [ext_resource type="Script" uid="uid://vwx0mtjr77sm" path="res://Core/KeyInputHandler.cs" id="15_w3rk5"]
-[ext_resource type="PackedScene" uid="uid://c08pou8qq2rrg" path="res://View/LayerTreeControl.tscn" id="16_kjvhd"]
+[ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://View/LayerTreePanel.tscn" id="16_kjvhd"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
 action = &"ToolSelection"
@@ -36,8 +36,6 @@ action = &"ToolPaintFill"
 
 [sub_resource type="Shortcut" id="Shortcut_nllhf"]
 events = [SubResource("InputEventAction_7agld")]
-
-[sub_resource type="ButtonGroup" id="ButtonGroup_kjvhd"]
 
 [node name="Main" type="Panel"]
 anchors_preset = 15
@@ -233,9 +231,8 @@ custom_minimum_size = Vector2(240, 328.57)
 layout_mode = 2
 color = Color(0.124784, 0.124784, 0.124784, 1)
 
-[node name="LayerTreeControl" parent="MainGui/MarginContainer/UIBlock/VSplit" instance=ExtResource("16_kjvhd")]
+[node name="LayerTreePanel" parent="MainGui/MarginContainer/UIBlock/VSplit" instance=ExtResource("16_kjvhd")]
 layout_mode = 2
-IsActiveLayerButtonGroup = SubResource("ButtonGroup_kjvhd")
 
 [node name="UIBlock" type="VBoxContainer" parent="MainGui/MarginContainer/UIBlock"]
 layout_mode = 2

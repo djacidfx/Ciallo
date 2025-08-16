@@ -1,9 +1,52 @@
-[gd_scene format=3 uid="uid://bnhhwk1a3yv70"]
+[gd_scene load_steps=6 format=3 uid="uid://bnhhwk1a3yv70"]
 
-[node name="LayerTreePanel" type="Control"]
-layout_mode = 3
+[ext_resource type="PackedScene" uid="uid://c08pou8qq2rrg" path="res://View/LayerTreeControl.tscn" id="1_1j0kq"]
+[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SliderSpinBoxPair.cs" id="1_rmpmi"]
+[ext_resource type="Texture2D" uid="uid://tugksq2pg442" path="res://Icons/layers-plus.svg" id="1_ulw2x"]
+[ext_resource type="Texture2D" uid="uid://c6pduk2ad1t3i" path="res://Icons/layers-minus.svg" id="2_tod7h"]
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_rmpmi"]
+
+[node name="LayerTreePanel" type="VBoxContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="HBoxContainer2" type="HFlowContainer" parent="."]
+layout_mode = 2
+
+[node name="AddLayer" type="Button" parent="HBoxContainer2"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+theme_type_variation = &"FlatButton"
+icon = ExtResource("1_ulw2x")
+expand_icon = true
+
+[node name="DeleteLayer" type="Button" parent="HBoxContainer2"]
+custom_minimum_size = Vector2(42, 42)
+layout_mode = 2
+theme_type_variation = &"FlatButton"
+icon = ExtResource("2_tod7h")
+expand_icon = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Opacity:"
+
+[node name="SliderSpinBoxPair" type="HBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+script = ExtResource("1_rmpmi")
+MaxValue = 1.0
+Value = 1.0
+metadata/_custom_type_script = "uid://b1dclx7d0dgng"
+
+[node name="LayerTreeControl" parent="." instance=ExtResource("1_1j0kq")]
+layout_mode = 2
+size_flags_vertical = 3
+IsActiveLayerButtonGroup = SubResource("ButtonGroup_rmpmi")

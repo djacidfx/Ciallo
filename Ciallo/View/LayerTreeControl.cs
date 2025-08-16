@@ -37,19 +37,18 @@ public partial class LayerTreeControl : Container
         }
         
         var lineEdit = layerRoot.GetNode<LabelLineEdit>("LabelLineEdit");
-        var guiInput = 
-            lineEdit.SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
-                .Where(_=>!lineEdit.IsEditing());
+        var guiInput = lineEdit
+            .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
+            .Where(_=>!lineEdit.IsEditing());
         var leftMouse = guiInput
             .OfType<InputEvent, InputEventMouseButton>()
             .Where(button => button.ButtonIndex == MouseButton.Left);
 
         // Single click
         var singleClickObs = leftMouse
-            .Where(_ => !_isDragging)
-            .Where(button => button.IsReleased())
+            .Where(button => button.IsPressed() || button.IsReleased())
             .Chunk(TimeSpan.FromMilliseconds(200))
-            .Where(xs => xs.Length == 1 && !xs.First().IsDoubleClick())
+            .Where(xs => xs.Length == 2 && xs.First().IsPressed() && xs.Last().IsReleased())
             .Select(xs => xs.First());
         var connection1 = singleClickObs.Subscribe(_ => isActiveButton.SetPressed(true));
         
@@ -63,10 +62,10 @@ public partial class LayerTreeControl : Container
             // mouse motion distance is larger than the value in pixels.
             .Where(motion => motion.GlobalPosition.DistanceTo(mouseState.CurrentValue.GlobalPosition) > 20)
             .Where(_ => !_isDragging);
-        var connection2 = dragStart.Subscribe(button =>
+        var connection2 = dragStart.Subscribe(motion =>
         {
             _isDragging = true;
-            OnDragStart(layerRoot, button);
+            OnDragStart(layerRoot, motion);
         });
 
         var dragging = guiInput
@@ -89,7 +88,7 @@ public partial class LayerTreeControl : Container
         return layerRoot;
     }
 
-    private void OnDragStart(Node layerRoot, InputEventMouseMotion button)
+    private void OnDragStart(Node layerRoot, InputEventMouseMotion motion)
     {
         
     }
