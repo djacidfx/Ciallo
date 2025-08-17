@@ -8,11 +8,8 @@
 [sub_resource type="ButtonGroup" id="ButtonGroup_rmpmi"]
 
 [node name="LayerTreePanel" type="VBoxContainer"]
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+offset_right = 478.0
+offset_bottom = 294.0
 theme_override_constants/separation = 5
 
 [node name="HSeparator" type="HSeparator" parent="."]
