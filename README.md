@@ -73,13 +73,13 @@ During the EA stage, the developer basically knows your most needed features. Th
 If you eagerly need a feature to be deployed a week/month, consider sponsor the project and contact the developer.
 
 ## Sponsor your future
-All Ciallo's unique features are researched by the developer, aiming to be a new standard of digital painting industry. It starts with the love to 2D animes and needs your sponsor to sustain.
+Ciallo's unique techniques are invented by the developer, aiming to be a new standard in digital painting. These techniques are born with a passion to 2D animes, and needs your sponsor to sustain free for everyone.
 
-Moreover, in this AI age, all we human careers are being challenged by the surging AI techniques. Hope Ciallo will be the tool liberating your creativity but not replacing it. Help us to shape the next chapter of digital painting technique, and keep the creativity alive in the future AI-driven world.
+Moreover, in this AI era, all human careers are being challenged by the surging AI techniques. Hope Ciallo will be the tool to liberate your creativity, not replace it. Help us shape the next chapter of digital painting technique, and keep the creativity alive in the future AI-driven world.
 
 ## Credits
 ### Project name
-The name "Ciallo" is the combination of the Italian "Ciao" and English "Hello", comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). Our project won't shame on this name.
+The name "Ciallo" is the combination of the Italian "Ciao" and English "Hello", comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). We won't shame on this name.
 
 ### Coding frameworks/libraries
 
