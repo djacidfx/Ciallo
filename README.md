@@ -51,7 +51,7 @@ System requirements:
 
 - OS: Windows 10 or higher
 - Memory: 8GB or more
-- Graphics card: Minimum NV RTX 2060 or AMD RX 5600 XT.
+- Graphics card: Minimum NV GTX 1060 or AMD Radeon RX 480.
 
 > About MacOS, Linux: The developer literally wish but cannot afford developing a macOS version. Buying a MacBook pro will cost him half years’ budget for staying alive. Please help him buy an MBP.
 
