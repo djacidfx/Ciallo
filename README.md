@@ -68,7 +68,7 @@ After finishing the EA versions, Ciallo will focus on developing peripheral syst
 
 #### Feature requests
 
-During the EA stage, the developer basically knows your most needed features. These are the youtube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [Oridays](https://www.youtube.com/@oridays).
+During the EA stage, the developer basically knows your most needed features. These are the youtube channels he learns painting and what you need: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [Oridays](https://www.youtube.com/@oridays).
 
 If you eagerly need a feature to be deployed a week/month, consider sponsor the project and contact the developer.
 
@@ -113,12 +113,13 @@ My first attempt to develop Ciallo was with Vulkan, [project link](https://githu
 I soon realize the Vulkan’s complexity: it isn’t designed for one-person projects, and even highly experienced graphics engineers can make simple-yet-catastrophic mistakes, see [Cherno’s Vulkan story](https://youtu.be/bUUZ1iD9_e4?si=vVCUxXU-dScgcZx5&t=1438). Only large teams can truly afford the mental burden of Vulkan.
 
 So, I decided to sacrifice the freedom on controlling graphics in exchange for the productivity as much as I can. Under this idea, one of the game engines is the best choice.
+You can imagine Ciallo as a building/RTS game, e.g. _City Skylines_, _Warcraft_ III, players build strokes and place color blocks in the game world (canvas).
 
 ### Why Godot, not Unity or Unreal?
 
 Godot has the best support for 2D rendering and `ColorPicker` control. 
 
-E.g., As of June 2025, Godot is the only engine that supports rendering a polygon directly from point data.
+E.g., As of June 2025, Godot is the only engine that supports rendering a filled polygon directly from a list of points.
 Moreover, Godot’s `ColorPicker` control convinced me to choose it over Unity.
 
 BTW, I hope Godot can make `EditorSpinSlider` runtime available, see [issue](https://github.com/godotengine/godot-proposals/issues/3244#issuecomment-911489983).

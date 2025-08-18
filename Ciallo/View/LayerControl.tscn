@@ -18,13 +18,24 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[node name="LayerControl" type="HBoxContainer"]
-offset_right = 380.0
-offset_bottom = 64.0
+[node name="VBoxContainer" type="VBoxContainer"]
+offset_right = 362.0
+offset_bottom = 50.0
+theme_override_constants/separation = 0
+
+[node name="AboveHint" type="HSeparator" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+
+[node name="LayerControl" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
 theme = ExtResource("1_qp082")
 theme_override_constants/separation = 3
 
-[node name="IsVisible" type="CheckBox" parent="."]
+[node name="IsVisible" type="CheckBox" parent="LayerControl"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"TextureCheckBox"
 theme_override_icons/checked = ExtResource("1_du83r")
@@ -32,7 +43,8 @@ theme_override_icons/unchecked = ExtResource("3_nt8ii")
 button_pressed = true
 action_mode = 0
 
-[node name="IsActive" type="CheckBox" parent="."]
+[node name="IsActive" type="CheckBox" parent="LayerControl"]
+unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("1_qp082")
 theme_type_variation = &"TextureCheckBox"
@@ -42,7 +54,8 @@ theme_override_icons/radio_checked = ExtResource("4_fuv1t")
 theme_override_icons/radio_unchecked = ExtResource("3_nt8ii")
 action_mode = 0
 
-[node name="LabelLineEdit" type="LineEdit" parent="."]
+[node name="LabelLineEdit" type="LineEdit" parent="LayerControl"]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(256, 0)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -57,3 +70,8 @@ clear_button_enabled = true
 middle_mouse_paste_enabled = false
 script = ExtResource("1_dtvx0")
 metadata/_custom_type_script = "uid://cnkmrjlwncaqf"
+
+[node name="BelowHint" type="HSeparator" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
