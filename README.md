@@ -84,7 +84,7 @@ The name "Ciallo" is the combination of the Italian "Ciao" and English "Hello", 
 ### Coding frameworks/libraries
 
 - [Godot C#](https://godotengine.org/): [Why godot?](#tech-faq)
-- [Arch](https://github.com/genaray/Arch): Unity-like entity component pattern (no need for CPU-cache optimizations).
+- [Arch](https://github.com/genaray/Arch): Unity-like (gameobject/entity) component pattern (no need for CPU-cache optimizations).
 - [CGAL](https://www.cgal.org/): Complex geometry operations.
 - [R3](https://github.com/Cysharp/R3): Signal Enhancement and reactive programming.
 - [GdUnit4](https://github.com/MikeSchulze/gdUnit4): Unit test framework.
