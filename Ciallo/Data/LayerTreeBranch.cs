@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
+using MessagePack;
+
+[assembly: MessagePackAssumedFormattable(typeof(Ciallo.Data.LayerTreeBranch))]
 
 namespace Ciallo.Data;
 
@@ -11,22 +14,23 @@ namespace Ciallo.Data;
 /// A list of entity. Adding this component implies entity is non-leaf node in the layer tree.
 /// </summary>
 /// <remarks>
-/// Can be serialized since inherent from IList.
+/// Can be serialized by MessagePack by default since inherent from IList. 
 /// </remarks>>
+/// 
 public class LayerTreeBranch : List<Entity>
 {
     /// <summary>
-    /// Depth first search for the entity.
+    /// Breadth first search for the entity.
     /// </summary>
     /// <returns>Indices list in the hierarchy, in parent first order.</returns>
     public List<int> FindPath(Entity target)
     {
         // start recursion from this branch
-        DepthFirstRecursive(this, target, out var path);
+        BreadthFirstRecursive(this, target, out var path);
         return path;
     }
     
-    public void DepthFirstRecursive(LayerTreeBranch branch, Entity target, out List<int> path)
+    public void BreadthFirstRecursive(LayerTreeBranch branch, Entity target, out List<int> path)
     {
         var index = branch.IndexOf(target);
         if (index >= 0) // found
@@ -39,7 +43,7 @@ public class LayerTreeBranch : List<Entity>
         {
             if (!e.Has<LayerTreeBranch>()) continue;
             var childBranch = e.Get<LayerTreeBranch>();
-            DepthFirstRecursive(childBranch, target, out path);
+            BreadthFirstRecursive(childBranch, target, out path);
             if (path == null) continue;
             path.Insert(0, i);// prepend the index
             return;

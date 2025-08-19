@@ -73,11 +73,12 @@ public partial class NewDocumentDialog : ConfirmationDialog
         if (fileName.IndexOfAny(invalidChars) >= 0) return false;
 
         // Optionally: Check for reserved Windows names
-        string[] reservedNames = {
+        string[] reservedNames =
+        [
             "CON", "PRN", "AUX", "NUL",
             "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
             "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
-        };
+        ];
         string nameWithoutExtension = Path.GetFileNameWithoutExtension(fileName).ToUpperInvariant();
         if (Array.Exists(reservedNames, rn => rn == nameWithoutExtension)) return false;
 
