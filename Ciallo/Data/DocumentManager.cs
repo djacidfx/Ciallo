@@ -11,6 +11,7 @@ namespace Ciallo.Data;
 /// <summary>
 /// Consider a document as a special singleton entity of the world.
 /// All the "document-level singleton data" should be stored in the singleton entity. (Program-level singleton we commonly use static class).
+/// The "document-level singleton data" is the data one per document, such as the document settings, layer tree, etc.
 /// </summary>
 public static class DocumentManager
 {
@@ -55,8 +56,10 @@ public static class DocumentManager
     {
         foreach (var world in LoadedDocuments)
         {
-            RemoveDocument(world);
+            world.Dispose();
         }
+        DocumentSingletons.Clear();
+        LoadedDocuments.Clear();
     }
 
     public static Entity Singleton(this World world)
@@ -67,7 +70,7 @@ public static class DocumentManager
     public static void AddForbiddenComponents(this World world)
     {
         var throwError = new Action(() => throw new InvalidOperationException("Primitive types cannot be used as components."));
-        world.SubscribeComponentAdded((in Entity e, ref Entity _)  => throwError()); // Most common mistake
+        world.SubscribeComponentAdded((in Entity e, ref Entity _)  => throwError()); // The most common mistake
         world.SubscribeComponentAdded((in Entity e, ref int _)=> throwError());
         world.SubscribeComponentAdded((in Entity e, ref float _) => throwError());
         world.SubscribeComponentAdded((in Entity e, ref double _) => throwError());
