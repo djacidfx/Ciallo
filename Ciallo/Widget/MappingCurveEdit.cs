@@ -11,7 +11,7 @@ namespace Ciallo.Widget;
 /// The godot editor's curve edit control at runtime.
 /// </summary>
 [Tool, GlobalClass]
-public partial class CurveEditor : Control
+public partial class MappingCurveEdit : Control
 {
     private const float AspectRatio = 6f / 13f;
     private const float LineWidth = 0.5f;
@@ -69,7 +69,7 @@ public partial class CurveEditor : Control
         Move
     }
 
-    public CurveEditor()
+    public MappingCurveEdit()
     {
         FocusMode = FocusModeEnum.All;
         ClipContents = true;
