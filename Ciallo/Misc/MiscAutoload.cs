@@ -6,6 +6,7 @@ using Godot;
 using ObservableCollections;
 using R3;
 using Arch.Core;
+using Ciallo.Geometry;
 using MessagePack;
 
 namespace Ciallo.Misc;

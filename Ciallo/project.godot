@@ -23,6 +23,7 @@ MiscAutoload="*res://Misc/MiscAutoload.cs"
 FrameProviderDispatcher="*res://addons/R3.Godot/FrameProviderDispatcher.cs"
 ObservableTrackerRuntimeHook="*res://addons/R3.Godot/ObservableTrackerRuntimeHook.cs"
 Preference="*res://Core/Preference.cs"
+SerializerAutoload="*res://Data/SerializerAutoload.cs"
 
 [display]
 

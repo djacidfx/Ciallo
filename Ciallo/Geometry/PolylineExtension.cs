@@ -1,32 +1,30 @@
-﻿using Godot;
+﻿using System;
+using Godot;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Security.Cryptography;
 
 namespace Ciallo.Geometry;
 
 public static class PolylineExtension
 {
-    public static Rect2 GetBoundingBox([NotNull] this IEnumerable<Vector2> polyline, IEnumerable<float> radii = null)
+    public static Rect2 GetBoundingBox([NotNull] this IReadOnlyList<Vector2> polyline, IReadOnlyList<float> radii = null)
     {
-        var radiiSource = radii ?? Enumerable.Repeat(0f, int.MaxValue);
-        using var pEnum = polyline.GetEnumerator();
-        using var rEnum = radiiSource.GetEnumerator();
-        if (!pEnum.MoveNext() || !rEnum.MoveNext())
-            return default;
-        
-
-        Vector2 first = pEnum.Current;
-        float firstR = rEnum.Current;
+        int count = polyline.Count;
+        if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
+        var radiiList = radii ?? Enumerable.Repeat(0f, count).ToList();
+        Vector2 first = polyline[0];
+        float firstR = radiiList[0];
         float minX = first.X - firstR;
         float minY = first.Y - firstR;
         float maxX = first.X + firstR;
         float maxY = first.Y + firstR;
 
-        while (pEnum.MoveNext() && rEnum.MoveNext())
+        for (int i = 1; i < count; i++)
         {
-            Vector2 p = pEnum.Current;
-            float r = rEnum.Current;
+            Vector2 p = polyline[i];
+            float r = radiiList[i];
             float xMin = p.X - r;
             float yMin = p.Y - r;
             float xMax = p.X + r;
@@ -43,33 +41,26 @@ public static class PolylineExtension
     /// Find the closest point on the polyline to the given point.
     /// </summary>
     /// <returns>The closest point position and output its fractional t.</returns>
-    public static Vector2 GetClosestPoint([NotNull] this IEnumerable<Vector2> polyline, Vector2 point, out float t)
+    public static Vector2 GetClosestPoint([NotNull] this IReadOnlyList<Vector2> polyline, Vector2 point, out float t)
     {
         t = 0f;
-        using var enumerator = polyline.GetEnumerator();
+        int count = polyline.Count;
+        if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
+        if (count == 1) return polyline[0];
 
-        if (!enumerator.MoveNext())
-            return Vector2.Zero;
+        Vector2 closestPoint = polyline[0];
+        float minDistanceSq = point.DistanceSquaredTo(closestPoint);
 
-        var p1 = enumerator.Current;
-
-        if (!enumerator.MoveNext())
-            return p1;
-
-        var closestPoint = p1;
-        var minDistanceSq = point.DistanceSquaredTo(p1);
-        var segmentIndex = 0;
-
-        do
+        for (int i = 1; i < count; i++)
         {
-            var p2 = enumerator.Current;
-            var segment = p2 - p1;
-            var segmentLengthSq = segment.LengthSquared();
+            Vector2 p1 = polyline[i - 1];
+            Vector2 p2 = polyline[i];
+            Vector2 segment = p2 - p1;
+            float segmentLengthSq = segment.LengthSquared();
 
             Vector2 currentClosest;
             float currentT;
-
-            if (segmentLengthSq < 1e-7f)
+            if (segmentLengthSq < 1e-5f)
             {
                 currentClosest = p1;
                 currentT = 0f;
@@ -77,7 +68,6 @@ public static class PolylineExtension
             else
             {
                 var s = (point - p1).Dot(segment) / segmentLengthSq;
-
                 if (s < 0f)
                 {
                     currentClosest = p1;
@@ -96,17 +86,51 @@ public static class PolylineExtension
             }
 
             var distSq = point.DistanceSquaredTo(currentClosest);
-            if (distSq < minDistanceSq)
-            {
-                minDistanceSq = distSq;
-                closestPoint = currentClosest;
-                t = segmentIndex + currentT;
-            }
-
-            p1 = p2;
-            segmentIndex++;
-        } while (enumerator.MoveNext());
+            if (!(distSq < minDistanceSq)) continue;
+            minDistanceSq = distSq;
+            closestPoint = currentClosest;
+            t = i-1 + currentT;
+        }
 
         return closestPoint;
+    }
+    /// <summary>
+    /// Check if the curve is a monotone in X.
+    /// So that each element of the function's domain X maps to a single, well-defined element of its range Y.
+    /// </summary>
+    public static bool IsXMonotone([NotNull] this IReadOnlyList<Vector2> polyline)
+    {
+        if (polyline.Count < 2) return true;
+        var sign = MathF.Sign(polyline[1].X - polyline[0].X);
+        if (sign == 0) return false;
+        if (polyline.Count == 2) return true;
+        return Enumerable.Range(1, polyline.Count - 1).All(i => MathF.Sign(polyline[i - 1].X - polyline[i].X) == sign);
+    }
+
+    /// <summary>
+    /// Sample the polyline at the given x value, assuming the polyline is x-monotone.
+    /// If x is out of bound, it will return the Y value of the end segment extended line.
+    /// </summary>
+    /// <param name="polyline"></param>
+    /// <param name="x"></param>
+    /// <returns>Y value at the given x</returns>
+    public static float SampleX([NotNull] this IReadOnlyList<Vector2> polyline, float x)
+    {
+        float SampleSegment(Vector2 p1, Vector2 p2, float xValue)
+        {
+            float slope = (p2.Y - p1.Y) / (p2.X - p1.X);
+            return p1.Y + slope * (xValue - p1.X);
+        }
+
+        if (polyline.Count == 2)
+            return SampleSegment(polyline[0], polyline[1], x);
+
+        var searchResult = Array.BinarySearch(polyline.ToArray(), x);
+        if (searchResult >= 0) return polyline[searchResult].Y;
+        // Get the index of the closest point after x
+        // see https://learn.microsoft.com/en-us/dotnet/api/system.array.binarysearch for the return value.
+        int idx = ~searchResult;
+        if(idx == 0) return SampleSegment(polyline[0], polyline[1], x);
+        return SampleSegment(polyline[idx-1], polyline[idx], x);
     }
 }

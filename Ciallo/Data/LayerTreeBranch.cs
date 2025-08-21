@@ -16,7 +16,7 @@ namespace Ciallo.Data;
 /// <remarks>
 /// Can be serialized by MessagePack by default since inherent from IList. 
 /// </remarks>>
-/// 
+///
 public class LayerTreeBranch : List<Entity>
 {
     /// <summary>
