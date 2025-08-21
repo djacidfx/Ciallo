@@ -15,19 +15,60 @@ namespace Ciallo.Geometry;
 public class PolyBezier
 {
     #region Curve2D
-    // Memebers from godot's `Curve2D` class.
+    // Members from godot's `Curve2D` class.
     [DataContract]
     public struct Point
     {
         [DataMember(Order = 0)] public Vector2 In;        // Incoming control handle relative to position
         [DataMember(Order = 1)] public Vector2 Out;       // Outgoing control handle relative to position
         [DataMember(Order = 2)] public Vector2 Position;  // Main control point
-
+        
         public Point(Vector2 position, Vector2 @in, Vector2 @out)
         {
             Position = position;
             In = @in;
             Out = @out;
+        }
+        
+        public HandleControlMode HandleMode
+        {
+            get
+            {
+                bool isEqual = Math.Abs(In.Length() - Out.Length()) < 1e-5f;
+                bool isLinear = Math.Abs(In.Angle() + Out.Angle()) < 1e-5f;
+                if (isEqual && isLinear)
+                    return HandleControlMode.LinearEqual;
+                if (isLinear)
+                    return HandleControlMode.Linear;
+                return HandleControlMode.Free;
+            }
+            set
+            {
+                switch (value)
+                {
+                    case HandleControlMode.LinearEqual:
+                        In = -Out;
+                        break;
+                    case HandleControlMode.Linear:
+                        In = -Out.Normalized() * In.Length();
+                        break;
+                    case HandleControlMode.Free:
+                        // Do nothing, already free
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(value), value, null);
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Shen: Godot's Curve2D's tangent mode is very, very unintuitive. I guess who programed it have never used Adobe Illustrator or Inkscape.
+        /// </summary>
+        public enum HandleControlMode
+        {
+            LinearEqual, // Two handles are equal in length and tangent (opposite direction)
+            Linear, // Equal in tangent only
+            Free
         }
     }
     [DataMember(Order = 0)]
@@ -103,7 +144,7 @@ public class PolyBezier
     public Vector2 Sample(int index, float segT)
     {
         if (_points.Count == 0)
-            return new Vector2(0, 0);
+            throw new InvalidOperationException("Cannot sample from an empty curve.");
 
         if (_points.Count == 1 || index >= _points.Count - 1)
             return _points[^1].Position;
@@ -120,7 +161,7 @@ public class PolyBezier
     public Vector2 Sample(float polyT)
     {
         if (_points.Count == 0)
-            return new Vector2(0, 0);
+            throw new InvalidOperationException("Cannot sample from an empty curve.");
 
         if (polyT < 0)
             polyT = 0;
@@ -134,7 +175,7 @@ public class PolyBezier
     
     public void Tessellate(int subdivisionsPerSegment = 16)
     {
-        _cachedPolyline.Clear();
+        ClearCache();
         if (_points.Count == 0)
             return;
         if (_points.Count == 1)
@@ -163,8 +204,6 @@ public class PolyBezier
     /// </summary>
     public void SetPointPosition(int index, Vector2 position)
     {
-        if (index < 0 || index >= _points.Count)
-            throw new ArgumentOutOfRangeException(nameof(index));
         var pt = _points[index];
         pt.Position = position;
         _points[index] = pt;
@@ -176,8 +215,6 @@ public class PolyBezier
     /// </summary>
     public void SetPointIn(int index, Vector2 inHandle)
     {
-        if (index < 0 || index >= _points.Count)
-            throw new ArgumentOutOfRangeException(nameof(index));
         var pt = _points[index];
         pt.In = inHandle;
         _points[index] = pt;
@@ -189,8 +226,6 @@ public class PolyBezier
     /// </summary>
     public void SetPointOut(int index, Vector2 outHandle)
     {
-        if (index < 0 || index >= _points.Count)
-            throw new ArgumentOutOfRangeException(nameof(index));
         var pt = _points[index];
         pt.Out = outHandle;
         _points[index] = pt;
@@ -220,7 +255,8 @@ public class PolyBezier
     }
     #endregion
 
-    #region Curve 
+    #region Curve
+    
     // Members from Godot's `Curve` class.
     public float MinDomain
     {
@@ -279,5 +315,6 @@ public class PolyBezier
         if (_cachedPolyline.Count == 0) Tessellate();
         return _cachedPolyline.SampleX(x);
     }
+
     #endregion
 }
