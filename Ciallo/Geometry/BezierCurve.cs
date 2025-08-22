@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
 using Godot;
@@ -171,6 +172,57 @@ public class PolyBezier
         int idx = (int)Math.Floor(polyT);
         float t = polyT - idx;
         return Sample(idx, t);
+    }
+
+    /// <summary>
+    /// Insert a bezier control point at a fractional t. Do not change the shape of original curve.
+    /// </summary>
+    public void Split(float polyT)
+    {
+        if (_points.Count < 2) return;
+        // clamp to valid segment range
+        if (polyT <= 0f || polyT >= _points.Count - 1) return;
+        int idx = (int)Math.Floor(polyT);
+        float t = polyT - idx;
+        if (t <= 0f || t >= 1f) return;
+        // original segment endpoints and controls
+        var left = _points[idx];
+        var right = _points[idx + 1];
+        Vector2 p0 = left.Position;
+        Vector2 p1 = p0 + left.Out;
+        Vector2 p3 = right.Position;
+        Vector2 p2 = p3 + right.In;
+        
+        var p01 = p0.Lerp(p1, t);
+        var p12 = p1.Lerp(p2, t);
+        var p23 = p2.Lerp(p3, t);
+        var p012 = p01.Lerp(p12, t);
+        var p123 = p12.Lerp(p23, t);
+        var p0123 = p012.Lerp(p123, t);
+        // compute new handles
+        left.Out = p01 - p0;
+        var newIn = p012 - p0123;
+        var newOut = p123 - p0123;
+        right.In = p23 - p3;
+        // apply changes: update left, insert new, update right
+        _points[idx] = left;
+        _points.Insert(idx + 1, new Point(p0123, newIn, newOut));
+        _points[idx + 2] = right;
+        OnChanged();
+    }
+
+    /// <summary>
+    /// Insert a list of bezier control points at a list of fractional t.
+    /// </summary>
+    public void Split([NotNull] IReadOnlyList<float> polyT)
+    {
+        if (_points.Count < 2) return;
+        // sort splits descending to avoid index shift issues
+        var ts = polyT.Where(t => t > 0f && t < _points.Count - 1)
+                   .Distinct()
+                   .OrderByDescending(t => t)
+                   .ToList();
+        foreach (var t in ts) Split(t);
     }
     
     public void Tessellate(int subdivisionsPerSegment = 16)
