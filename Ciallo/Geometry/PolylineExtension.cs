@@ -109,7 +109,7 @@ public static class PolylineExtension
 
     /// <summary>
     /// Sample the polyline at the given x value, assuming the polyline is x-monotone.
-    /// If x is out of bound, it will return the Y value of the end segment extended line.
+    /// If x is out of bound, it will return the Y value of the start/end point.
     /// </summary>
     /// <param name="polyline"></param>
     /// <param name="x"></param>
@@ -132,8 +132,8 @@ public static class PolylineExtension
         // Get the index of the closest point after x
         // see https://learn.microsoft.com/en-us/dotnet/api/system.array.binarysearch for the return value.
         int idx = ~searchResult;
-        if(idx == 0) return SampleSegment(polyline[0], polyline[1], x);
-        if(idx == polyline.Count) return SampleSegment(polyline[^2], polyline[^1], x);
+        if(idx == 0) return polyline[0].Y;
+        if(idx == polyline.Count) return polyline[^1].Y;
         return SampleSegment(polyline[idx-1], polyline[idx], x);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Ciallo.Misc;
 using Ciallo.Geometry;
 using Godot;
@@ -22,8 +23,12 @@ public partial class MappingCurveEdit1 : Control
         _CurveChanged();
     }
 
-    [Export] public Vector2 RangeX = new(0.0f, 1.0f);
-    [Export] public Vector2 RangeY = new(0.0f, 1.0f);
+    [Export] public float MinDomain = 0.0f;
+    [Export] public float MaxDomain = 1.0f;
+    [Export] public float MinValue = 0.0f;
+    [Export] public float MaxValue = 1.0f;
+    public float DomainRange => MaxDomain - MinDomain;
+    public float ValueRange => MaxValue - MinValue;
 
     private const float AspectRatio = 6f / 13f;
     private const float LineWidth = 0.5f;
@@ -113,10 +118,10 @@ public partial class MappingCurveEdit1 : Control
     //     // Note: Undo/redo not supported in C# without editor-specific APIs, so we modify the curve directly
     //     _curve.Clear();
     //
-    //     float minY = _curve.MinValue;
-    //     float maxY = _curve.MaxValue;
-    //     float minX = _curve.MinDomain;
-    //     float maxX = _curve.MaxDomain;
+    //     float minY = MinValue;
+    //     float maxY = MaxValue;
+    //     float minX = MinDomain;
+    //     float maxX = MaxDomain;
     //
     //     switch (presetId)
     //     {
@@ -136,11 +141,11 @@ public partial class MappingCurveEdit1 : Control
     //
     //         case PresetId.EaseIn:
     //             _curve.AddPoint(new Vector2(minX, minY));
-    //             _curve.AddPoint(new Vector2(maxX, maxY), _curve.ValueRange / _curve.DomainRange * 1.4f, 0);
+    //             _curve.AddPoint(new Vector2(maxX, maxY), ValueRange / DomainRange * 1.4f, 0);
     //             break;
     //
     //         case PresetId.EaseOut:
-    //             _curve.AddPoint(new Vector2(minX, minY), 0, _curve.ValueRange / _curve.DomainRange * 1.4f);
+    //             _curve.AddPoint(new Vector2(minX, minY), 0, ValueRange / DomainRange * 1.4f);
     //             _curve.AddPoint(new Vector2(maxX, maxY));
     //             break;
     //
@@ -265,13 +270,13 @@ public partial class MappingCurveEdit1 : Control
                 else if (_grabbing == GrabMode.None)
                 {
                     Vector2 newPos = GetWorldPos(mpos).Clamp(
-                        new Vector2(_curve.MinDomain, _curve.MinValue),
-                        new Vector2(_curve.MaxDomain, _curve.MaxValue)
+                        new Vector2(MinDomain, MinValue),
+                        new Vector2(MaxDomain, MaxValue)
                     );
                     if (_snapEnabled || mouseButton.IsCommandOrControlPressed())
                     {
-                        newPos.X = Mathf.Snapped(newPos.X - _curve.MinDomain, _curve.DomainRange / _snapCount) + _curve.MinDomain;
-                        newPos.Y = Mathf.Snapped(newPos.Y - _curve.MinValue, _curve.ValueRange / _snapCount) + _curve.MinValue;
+                        newPos.X = Mathf.Snapped(newPos.X - MinDomain, DomainRange / _snapCount) + MinDomain;
+                        newPos.Y = Mathf.Snapped(newPos.Y - MinValue, ValueRange / _snapCount) + MinValue;
                     }
 
                     newPos.X = GetOffsetWithoutCollision(_selectedIndex, newPos.X, mpos.X >= GetViewPos(newPos).X);
@@ -330,14 +335,14 @@ public partial class MappingCurveEdit1 : Control
                     if (_selectedTangentIndex == TangentIndex.None)
                     {
                         Vector2 newPos = GetWorldPos(mpos).Clamp(
-                            new Vector2(_curve.MinDomain, _curve.MinValue),
-                            new Vector2(_curve.MaxDomain, _curve.MaxValue)
+                            new Vector2(MinDomain, MinValue),
+                            new Vector2(MaxDomain, MaxValue)
                         );
 
                         if (_snapEnabled || mouseMotion.IsCommandOrControlPressed())
                         {
-                            newPos.X = Mathf.Snapped(newPos.X - _curve.MinDomain, _curve.DomainRange / _snapCount) + _curve.MinDomain;
-                            newPos.Y = Mathf.Snapped(newPos.Y - _curve.MinValue, _curve.ValueRange / _snapCount) + _curve.MinValue;
+                            newPos.X = Mathf.Snapped(newPos.X - MinDomain, DomainRange / _snapCount) + MinDomain;
+                            newPos.Y = Mathf.Snapped(newPos.Y - MinValue, ValueRange / _snapCount) + MinValue;
                         }
 
                         if (mouseMotion.IsAltPressed())
@@ -351,8 +356,8 @@ public partial class MappingCurveEdit1 : Control
 
                         if (mouseMotion.IsAltPressed())
                         {
-                            float prevPointOffset = _selectedIndex > 0 ? _curve.GetPointPosition(_selectedIndex - 1).X + 0.00001f : _curve.MinDomain;
-                            float nextPointOffset = _selectedIndex < _curve.Count - 1 ? _curve.GetPointPosition(_selectedIndex + 1).X - 0.00001f : _curve.MaxDomain;
+                            float prevPointOffset = _selectedIndex > 0 ? _curve.GetPointPosition(_selectedIndex - 1).X + 0.00001f : MinDomain;
+                            float nextPointOffset = _selectedIndex < _curve.Count - 1 ? _curve.GetPointPosition(_selectedIndex + 1).X - 0.00001f : MaxDomain;
                             newPos.X = Mathf.Clamp(newPos.X, prevPointOffset, nextPointOffset);
                         }
 
@@ -362,10 +367,9 @@ public partial class MappingCurveEdit1 : Control
                         // _hoveredIndex = i;
                         // SetSelectedIndex(i);
 
-                        // newPos.Y = Mathf.Clamp(newPos.Y, _curve.MinValue, _curve.MaxValue);
+                        // newPos.Y = Mathf.Clamp(newPos.Y, MinValue, MaxValue);
                         // _curve.SetPointValue(_selectedIndex, newPos.Y);
-                        newPos.Y = Mathf.Clamp(newPos.Y, _curve.MinValue, _curve.MaxValue);
-                        GD.Print(newPos);
+                        newPos.Y = Mathf.Clamp(newPos.Y, MinValue, MaxValue);
                         _curve.SetPointPosition(_selectedIndex, newPos);
                     }
                     else
@@ -609,12 +613,12 @@ public partial class MappingCurveEdit1 : Control
     private void UpdateViewTransform()
     {
         float fontSize = 20; // Approximate default font size
-        float margin = fontSize + 2; // Approximate EDSCALE as 1.0
+        float margin = fontSize + 4; // Approximate EDSCALE as 1.0
 
-        float minX = _curve?.MinDomain ?? 0.0f;
-        float maxX = _curve?.MaxDomain ?? 1.0f;
-        float minY = _curve?.MinValue ?? 0.0f;
-        float maxY = _curve?.MaxValue ?? 1.0f;
+        float minX = MinDomain;
+        float maxX = MaxDomain;
+        float minY = MinValue;
+        float maxY = MaxValue;
 
         Rect2 worldRect = new Rect2(minX, minY, maxX - minX, maxY - minY);
         Vector2 viewMargin = new Vector2(margin, margin);
@@ -670,28 +674,24 @@ public partial class MappingCurveEdit1 : Control
 
     private void PlotCurveAccurate(float step, Color lineColor, Color edgeLineColor)
     {
-        float minX = _curve.MinDomain;
-        float maxX = _curve.MaxDomain;
         if (_curve.Count <= 1)
         {
             float y = _curve.SampleX(0);
-            DrawLine(GetViewPos(new Vector2(minX, y)) + new Vector2(0.5f, 0), GetViewPos(new Vector2(maxX, y)) - new Vector2(1.5f, 0), lineColor, LineWidth, true);
+            DrawLine(GetViewPos(new Vector2(MinDomain, y)) + new Vector2(0.5f, 0), GetViewPos(new Vector2(MaxDomain, y)) - new Vector2(1.5f, 0), lineColor, LineWidth, true);
             return;
         }
 
         Vector2 firstPoint = _curve.GetPointPosition(0);
         Vector2 lastPoint = _curve.GetPointPosition(_curve.Count - 1);
 
-        float worldStepSize = step / _worldToView.Scale.X;
-
-        DrawLine(GetViewPos(new Vector2(minX, firstPoint.Y)) + new Vector2(0.5f, 0), GetViewPos(firstPoint), edgeLineColor, LineWidth, true);
-        DrawLine(GetViewPos(lastPoint), GetViewPos(new Vector2(maxX, lastPoint.Y)) - new Vector2(1.5f, 0), edgeLineColor, LineWidth, true);
+        // DrawLine(GetViewPos(new Vector2(MinDomain, firstPoint.Y)) + new Vector2(0.5f, 0), GetViewPos(firstPoint), edgeLineColor, LineWidth, true);
+        // DrawLine(GetViewPos(lastPoint), GetViewPos(new Vector2(MaxDomain, lastPoint.Y)) - new Vector2(1.5f, 0), edgeLineColor, LineWidth, true);
 
         int nSample = 128;
         List<Vector2> samples = new(nSample);
         for (int i = 0; i < nSample; i++)
         {
-            float x = _curve.MinDomain + i * (_curve.DomainRange / (nSample-1));
+            float x = MinDomain + i * (DomainRange / (nSample-1));
             samples.Add(new(x, _curve.SampleX(x)));
         }
         for (int i = 1; i < nSample; i++)
@@ -743,22 +743,22 @@ public partial class MappingCurveEdit1 : Control
         Color gridColor = GetThemeColor("font_color", "Label") * new Color(1, 1, 1, 0.1f);
 
         Vector2I gridSteps = new Vector2I(4, 2);
-        Vector2 stepSize = new Vector2(_curve.DomainRange, _curve.ValueRange) / gridSteps;
+        Vector2 stepSize = new Vector2(DomainRange, ValueRange) / gridSteps;
 
-        DrawLine(new Vector2(minEdge.X, _curve.MinValue), new Vector2(maxEdge.X, _curve.MinValue), gridColorPrimary);
-        DrawLine(new Vector2(maxEdge.X, _curve.MaxValue), new Vector2(minEdge.X, _curve.MaxValue), gridColorPrimary);
-        DrawLine(new Vector2(_curve.MinDomain, minEdge.Y), new Vector2(_curve.MinDomain, maxEdge.Y), gridColorPrimary);
-        DrawLine(new Vector2(_curve.MaxDomain, maxEdge.Y), new Vector2(_curve.MaxDomain, minEdge.Y), gridColorPrimary);
+        DrawLine(new Vector2(minEdge.X, MinValue), new Vector2(maxEdge.X, MinValue), gridColorPrimary);
+        DrawLine(new Vector2(maxEdge.X, MaxValue), new Vector2(minEdge.X, MaxValue), gridColorPrimary);
+        DrawLine(new Vector2(MinDomain, minEdge.Y), new Vector2(MinDomain, maxEdge.Y), gridColorPrimary);
+        DrawLine(new Vector2(MaxDomain, maxEdge.Y), new Vector2(MaxDomain, minEdge.Y), gridColorPrimary);
 
         for (int i = 1; i < gridSteps.X; i++)
         {
-            float x = _curve.MinDomain + i * stepSize.X;
+            float x = MinDomain + i * stepSize.X;
             DrawLine(new Vector2(x, minEdge.Y), new Vector2(x, maxEdge.Y), gridColor);
         }
 
         for (int i = 1; i < gridSteps.Y; i++)
         {
-            float y = _curve.MinValue + i * stepSize.Y;
+            float y = MinValue + i * stepSize.Y;
             DrawLine(new Vector2(minEdge.X, y), new Vector2(maxEdge.X, y), gridColor);
         }
 
@@ -774,14 +774,14 @@ public partial class MappingCurveEdit1 : Control
 
         for (int i = 0; i <= gridSteps.X; i++)
         {
-            float x = _curve.MinDomain + i * stepSize.X;
-            DrawString(font, GetViewPos(new Vector2(x, _curve.MinValue)) + new Vector2(pad, fontHeight - pad), x.ToString("F2"), HorizontalAlignment.Center, -1, fontSize, textColor);
+            float x = MinDomain + i * stepSize.X;
+            DrawString(font, GetViewPos(new Vector2(x, MinValue)) + new Vector2(pad, fontHeight - pad), x.ToString("F2"), HorizontalAlignment.Center, -1, fontSize, textColor);
         }
 
         for (int i = 0; i <= gridSteps.Y; i++)
         {
-            float y = _curve.MinValue + i * stepSize.Y;
-            DrawString(font, GetViewPos(new Vector2(_curve.MinDomain, y)) + new Vector2(pad, -pad), y.ToString("F2"), HorizontalAlignment.Left, -1, fontSize, textColor);
+            float y = MinValue + i * stepSize.Y;
+            DrawString(font, GetViewPos(new Vector2(MinDomain, y)) + new Vector2(pad, -pad), y.ToString("F2"), HorizontalAlignment.Left, -1, fontSize, textColor);
         }
 
         // Draw curve
@@ -851,8 +851,7 @@ public partial class MappingCurveEdit1 : Control
                     // if (_hoveredTangentIndex == TangentIndex.Right || 
                     //     (_hoveredTangentIndex == TangentIndex.Left && 
                     //      !altPressed && _curve.GetPointRightMode(_selectedIndex) != Curve.TangentMode.Linear))
-                    if (_hoveredTangentIndex == TangentIndex.Right || 
-                        (_hoveredTangentIndex == TangentIndex.Left && !altPressed))
+                    if (_hoveredTangentIndex == TangentIndex.Right || (_hoveredTangentIndex == TangentIndex.Left && !altPressed))
                     {
                         DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentHoverRadius - Mathf.Round(3)), tangentColor, false, Mathf.Round(1));
                     }
@@ -889,17 +888,17 @@ public partial class MappingCurveEdit1 : Control
 
         if (Input.IsKeyPressed(Key.Alt) && _grabbing != GrabMode.None && _selectedTangentIndex == TangentIndex.None)
         {
-            float prevPointOffset = _selectedIndex > 0 ? _curve.GetPointPosition(_selectedIndex - 1).X : _curve.MinDomain;
-            float nextPointOffset = _selectedIndex < _curve.Count - 1 ? _curve.GetPointPosition(_selectedIndex + 1).X : _curve.MaxDomain;
+            float prevPointOffset = _selectedIndex > 0 ? _curve.GetPointPosition(_selectedIndex - 1).X : MinDomain;
+            float nextPointOffset = _selectedIndex < _curve.Count - 1 ? _curve.GetPointPosition(_selectedIndex + 1).X : MaxDomain;
 
-            DrawLine(new Vector2(prevPointOffset, _curve.MinValue), new Vector2(prevPointOffset, _curve.MaxValue), new Color(pointColor, 0.6f));
-            DrawLine(new Vector2(nextPointOffset, _curve.MinValue), new Vector2(nextPointOffset, _curve.MaxValue), new Color(pointColor, 0.6f));
+            DrawLine(new Vector2(prevPointOffset, MinValue), new Vector2(prevPointOffset, MaxValue), new Color(pointColor, 0.6f));
+            DrawLine(new Vector2(nextPointOffset, MinValue), new Vector2(nextPointOffset, MaxValue), new Color(pointColor, 0.6f));
         }
 
         if (altPressed && _grabbing != GrabMode.None && _selectedTangentIndex == TangentIndex.None)
         {
-            DrawLine(new Vector2(_initialGrabPos.X, _curve.MinValue), new Vector2(_initialGrabPos.X, _curve.MaxValue), GetThemeColor("font_color", "Label").Darkened(0.4f));
-            DrawLine(new Vector2(_curve.MinDomain, _initialGrabPos.Y), new Vector2(_curve.MaxDomain, _initialGrabPos.Y), GetThemeColor("font_color", "Label").Darkened(0.4f));
+            DrawLine(new Vector2(_initialGrabPos.X, MinValue), new Vector2(_initialGrabPos.X, MaxValue), GetThemeColor("font_color", "Label").Darkened(0.4f));
+            DrawLine(new Vector2(MinDomain, _initialGrabPos.Y), new Vector2(MaxDomain, _initialGrabPos.Y), GetThemeColor("font_color", "Label").Darkened(0.4f));
         }
     }
 }

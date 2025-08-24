@@ -357,7 +357,7 @@ public class PolyBezier
     }
     
     // Members from Godot's `Curve` class.
-    public float MinDomain
+    public float MinX
     {
         get
         {
@@ -365,7 +365,7 @@ public class PolyBezier
             return _cachedBoundingBox.Position.X;
         }
     }
-    public float MaxDomain
+    public float MaxX
     {
         get
         {
@@ -373,7 +373,7 @@ public class PolyBezier
             return _cachedBoundingBox.End.X;
         }
     }
-    public float MinValue
+    public float MinY
     {
         get
         {
@@ -382,16 +382,17 @@ public class PolyBezier
         }
     }
     
-    public float MaxValue
+    public float MaxY
     {
         get
         {
             if(_cachedBoundingBox == default) Tessellate();
             return _cachedBoundingBox.End.Y;
         }
-    } 
-    public float ValueRange => MaxValue - MinValue;
-    public float DomainRange => MaxDomain - MinDomain;
+    }
+
+    public float XRange => MaxX - MinX;
+    public float YRange => MaxY - MinY;
 
     /// <summary>
     /// Returns the Y value for the point at the X position.
