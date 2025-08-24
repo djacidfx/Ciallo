@@ -309,6 +309,53 @@ public class PolyBezier
 
     #region Curve
     
+    /// <summary>
+    /// Check if the curve is a monotone in X.
+    /// So that each element of the function's domain X maps to a single element of its range Y.
+    /// All methods in this region assume the curve is X-monotone.
+    /// </summary>
+    public bool IsXMonotone
+    {
+        get
+        {
+            const float eps = 1e-6f;
+            for (int i = 0; i < _points.Count - 1; i++)
+            {
+                var p0 = _points[i].Position;
+                var p1 = p0 + _points[i].Out;
+                var p3 = _points[i + 1].Position;
+                var p2 = p3 + _points[i + 1].In;
+
+                // derivative coefficients for x′(t) = ax·t² + bx·t + cx
+                float ax = -3 * p0.X + 9 * p1.X - 9 * p2.X + 3 * p3.X;
+                float bx =  6 * p0.X -12 * p1.X + 6 * p2.X;
+                float cx = -3 * p0.X + 3 * p1.X;
+
+                if (MathF.Abs(ax) < eps)
+                {
+                    // linear case: bx·t + cx = 0 ⇒ t = -cx/bx
+                    if (MathF.Abs(bx) < eps)
+                        continue; // constant derivative, no sign change
+                    float t = -cx / bx;
+                    if (t > 0 && t < 1) 
+                        return false;
+                }
+                else
+                {
+                    float disc = bx * bx - 4 * ax * cx;
+                    if (disc <= eps) 
+                        continue; // no real or double root ⇒ no sign change
+                    float sqrtD = MathF.Sqrt(disc);
+                    float t1 = (-bx + sqrtD) / (2 * ax);
+                    float t2 = (-bx - sqrtD) / (2 * ax);
+                    if ((t1 > 0 && t1 < 1) || (t2 > 0 && t2 < 1))
+                        return false;
+                }
+            }
+            return true;
+        }
+    }
+    
     // Members from Godot's `Curve` class.
     public float MinDomain
     {
@@ -347,19 +394,6 @@ public class PolyBezier
     public float DomainRange => MaxDomain - MinDomain;
 
     /// <summary>
-    /// Check if the curve is a monotone in X.
-    /// So that each element of the function's domain X maps to a single element of its range Y.
-    /// </summary>
-    public bool IsXMonotone
-    {
-        get
-        {
-            if (_cachedPolyline.Count == 0) Tessellate();
-            return _cachedPolyline.IsXMonotone();
-        }
-    }
-
-    /// <summary>
     /// Returns the Y value for the point at the X position.
     /// </summary>
     public float SampleX(float x)
@@ -368,5 +402,23 @@ public class PolyBezier
         return _cachedPolyline.SampleX(x);
     }
 
+    public Vector2 GetPointPosition(int i) => GetPoint(i).Position;
+    public float GetPointInTangent(int i) => GetPoint(i).In.Y / GetPoint(i).In.X;
+    public float GetPointOutTangent(int i) => GetPoint(i).Out.Y / GetPoint(i).Out.X;
+    public void SetPointInTangent(int i, float tangent)
+    {
+        var pt = GetPoint(i);
+        pt.In = new Vector2(pt.In.X, pt.In.X * tangent);
+        _points[i] = pt;
+        OnChanged();
+    }
+    public void SetPointOutTangent(int i, float tangent)
+    {
+        var pt = GetPoint(i);
+        pt.Out = new Vector2(pt.Out.X, pt.Out.X * tangent);
+        _points[i] = pt;
+        OnChanged();
+    }
+    
     #endregion
 }

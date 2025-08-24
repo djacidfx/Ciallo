@@ -116,21 +116,24 @@ public static class PolylineExtension
     /// <returns>Y value at the given x</returns>
     public static float SampleX([NotNull] this IReadOnlyList<Vector2> polyline, float x)
     {
-        float SampleSegment(Vector2 p1, Vector2 p2, float xValue)
+        float SampleSegment(Vector2 p0, Vector2 p1, float xValue)
         {
-            float slope = (p2.Y - p1.Y) / (p2.X - p1.X);
-            return p1.Y + slope * (xValue - p1.X);
+            float slope = (p1.Y - p0.Y) / (p1.X - p0.X);
+            return p0.Y + slope * (xValue - p0.X);
         }
 
         if (polyline.Count == 2)
+        {
             return SampleSegment(polyline[0], polyline[1], x);
+        }
 
-        var searchResult = Array.BinarySearch(polyline.ToArray(), x);
+        var searchResult = Array.BinarySearch(polyline.Select(v=>v.X).ToArray(), x);
         if (searchResult >= 0) return polyline[searchResult].Y;
         // Get the index of the closest point after x
         // see https://learn.microsoft.com/en-us/dotnet/api/system.array.binarysearch for the return value.
         int idx = ~searchResult;
         if(idx == 0) return SampleSegment(polyline[0], polyline[1], x);
+        if(idx == polyline.Count) return SampleSegment(polyline[^2], polyline[^1], x);
         return SampleSegment(polyline[idx-1], polyline[idx], x);
     }
 }
