@@ -30,7 +30,7 @@ The following features may fit your favor:
 
 Ciallo uses a custom vector format that is not trained by any AI.
 
-Unlike the big company, Ciallo will never steal your artworks to [train AI](https://www.youtube.com/watch?v=DoM3nUD-1Ro).
+Unlike the big company, Ciallo will never change the term of service silently to steal your artwork stocks for [training AI](https://www.youtube.com/watch?v=DoM3nUD-1Ro).
 We plan to build a sharing platform for your vector artworks while protecting them from unethical AI training.
 
 In the invisible-far future, Ciallo may offer AI-powered features --- but always designed for professional artists.
@@ -68,7 +68,7 @@ After finishing the EA versions, Ciallo will focus on developing peripheral syst
 
 #### Feature requests
 
-During the EA stage, the developer basically knows your most needed features. These are the youtube channels he learns painting and what you need: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [Oridays](https://www.youtube.com/@oridays).
+During the EA stage, the developer basically knows those most needed features. These are the YouTube channels he learns painting and what you need: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2) | [Oridays](https://www.youtube.com/@oridays).
 
 If you eagerly need a feature to be deployed a week/month, consider sponsor the project and contact the developer.
 
