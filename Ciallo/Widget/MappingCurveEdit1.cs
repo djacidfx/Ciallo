@@ -1,6 +1,11 @@
-﻿using System;
+﻿/* This file is originally copied from Godot 4.4 curve_editor_plugin.cpp, translated to C# with AI tool, proof-edited and modified by human. 
+Shen: this control took me around two hours to make it work correctly at basic level.
+Shen: Bezier curve took me two and this control took me one entire working day to further modify.
+*/
+
+//Pitfall: Godot C++ constructs `Transform2D` default value is Transform2D.Identity, but in C# it is zero.
 using System.Collections.Generic;
-using Ciallo.Misc;
+using System.Linq;
 using Ciallo.Geometry;
 using Godot;
 
@@ -40,27 +45,16 @@ public partial class MappingCurveEdit1 : Control
     private int _hoveredIndex = -1;
     private TangentIndex _selectedTangentIndex = TangentIndex.None;
     private TangentIndex _hoveredTangentIndex = TangentIndex.None;
-
-    private const int BasePointRadius = 4;
-    private const int BaseHoverRadius = 10;
-    private const int BaseTangentRadius = 3;
-    private const int BaseTangentHoverRadius = 8;
-    private const int BaseTangentLength = 36;
-
-    private int _pointRadius = BasePointRadius;
-    private int _hoverRadius = BaseHoverRadius;
-    private int _tangentRadius = BaseTangentRadius;
-    private int _tangentHoverRadius = BaseTangentHoverRadius;
-    private int _tangentLength = BaseTangentLength;
+    
+    private int _pointRadius = 4; // in pixel
+    private int _hoverRadius = 10;
+    private int _tangentRadius = 3;
+    private int _tangentHoverRadius = 8;
 
     private GrabMode _grabbing = GrabMode.None;
     private Vector2 _initialGrabPos;
     private int _initialGrabIndex = -1;
-    private float _initialGrabLeftTangent = 0;
-    private float _initialGrabRightTangent = 0;
-
-    private bool _snapEnabled = false;
-    private int _snapCount = 10;
+    private PolyBezier.HandleControlMode _initialHandleMode = PolyBezier.HandleControlMode.LinearEqual;
 
     public enum PresetId
     {
@@ -99,7 +93,11 @@ public partial class MappingCurveEdit1 : Control
         {
             if (_curve == value)
                 return;
-
+            if (!_curve.IsXMonotone)
+            {
+                GD.PushWarning("The provided curve is not X-monotone. Assignment aborted.");
+                return;
+            }
             _curve = value;
             _CurveChanged();
         }
@@ -169,7 +167,7 @@ public partial class MappingCurveEdit1 : Control
             {
                 if (_selectedTangentIndex != TangentIndex.None)
                 {
-                    // ToggleLinear(_selectedIndex, _selectedTangentIndex);
+                    ResetLinear(_selectedIndex, _selectedTangentIndex);
                 }
                 else if (_selectedIndex != -1)
                 {
@@ -204,9 +202,6 @@ public partial class MappingCurveEdit1 : Control
                 // Cancel any ongoing grab operation.
                 if (mouseButton.ButtonIndex is MouseButton.Right && _grabbing == GrabMode.Move)
                 {
-                    // _curve.SetPointValue(_selectedIndex, _initialGrabPos.Y);
-                    // _curve.SetPointOffset(_selectedIndex, _initialGrabPos.X);
-                    // SetSelectedIndex(_initialGrabIndex);
                     _curve.SetPointPosition(_selectedIndex, _initialGrabPos);
                     SetSelectedIndex(_initialGrabIndex);
                     _hoveredIndex = GetPointAt(mpos);
@@ -217,7 +212,7 @@ public partial class MappingCurveEdit1 : Control
                     _selectedTangentIndex = GetTangentAt(mpos);
                     if (_selectedTangentIndex != TangentIndex.None)
                     {
-                        // ToggleLinear(_selectedIndex, _selectedTangentIndex);
+                        ResetLinear(_selectedIndex, _selectedTangentIndex);
                     }
                     else
                     {
@@ -263,9 +258,9 @@ public partial class MappingCurveEdit1 : Control
                     _initialGrabPos = _curve.GetPointPosition(_selectedIndex);
                     _initialGrabIndex = _selectedIndex;
                     if (_selectedIndex > 0)
-                        _initialGrabLeftTangent = _curve.GetPointInTangent(_selectedIndex);
+                        _initialHandleMode = _curve.GetPoint(_selectedIndex).EstimatedHandleMode;
                     if (_selectedIndex < _curve.Count - 1)
-                        _initialGrabRightTangent = _curve.GetPointOutTangent(_selectedIndex);
+                        _initialHandleMode = _curve.GetPoint(_selectedIndex).EstimatedHandleMode;
                 }
                 else if (_grabbing == GrabMode.None)
                 {
@@ -273,20 +268,16 @@ public partial class MappingCurveEdit1 : Control
                         new Vector2(MinDomain, MinValue),
                         new Vector2(MaxDomain, MaxValue)
                     );
-                    if (_snapEnabled || mouseButton.IsCommandOrControlPressed())
-                    {
-                        newPos.X = Mathf.Snapped(newPos.X - MinDomain, DomainRange / _snapCount) + MinDomain;
-                        newPos.Y = Mathf.Snapped(newPos.Y - MinValue, ValueRange / _snapCount) + MinValue;
-                    }
 
                     newPos.X = GetOffsetWithoutCollision(_selectedIndex, newPos.X, mpos.X >= GetViewPos(newPos).X);
-
-                    // int newIdx = _curve.AddPoint(newPos); //Suppose to be addPointNoSignal, potential bug
-                    // SetSelectedIndex(newIdx);
-                    _curve.AddPoint(newPos, new(-0.1f, 0), new(0.1f, 0));
-                    SetSelectedIndex(_curve.Count - 1);
-                    _grabbing = GrabMode.Add;
-                    _initialGrabPos = newPos;
+                    var p = _curve.GetClosestPoint(newPos, out var t);
+                    if(p.DistanceTo(newPos) < DomainRange/100.0 ) // Can split
+                    {
+                        var idx = _curve.Split(t);
+                        SetSelectedIndex(idx);
+                        _grabbing = GrabMode.Add;
+                        _initialGrabPos = newPos;
+                    }
                 }
             }
         }
@@ -295,18 +286,6 @@ public partial class MappingCurveEdit1 : Control
         {
             if (_selectedTangentIndex != TangentIndex.None)
             {
-                if (_selectedIndex == 0)
-                {
-                    SetPointOutTangent(_selectedIndex, _curve.GetPointOutTangent(_selectedIndex));
-                }
-                else if (_selectedIndex == _curve.Count - 1)
-                {
-                    SetPointInTangent(_selectedIndex, _curve.GetPointInTangent(_selectedIndex));
-                }
-                else
-                {
-                    SetPointTangents(_selectedIndex, _curve.GetPointInTangent(_selectedIndex), _curve.GetPointOutTangent(_selectedIndex));
-                }
                 _grabbing = GrabMode.None;
             }
             else if (_grabbing == GrabMode.Move)
@@ -316,11 +295,9 @@ public partial class MappingCurveEdit1 : Control
             }
             else if (_grabbing == GrabMode.Add)
             {
-                Vector2 newPos = _curve.GetPointPosition(_selectedIndex);
-                _curve.RemovePoint(_selectedIndex);
-                AddPoint(newPos);
                 _grabbing = GrabMode.None;
             }
+            
             QueueRedraw();
         }
 
@@ -339,64 +316,41 @@ public partial class MappingCurveEdit1 : Control
                             new Vector2(MaxDomain, MaxValue)
                         );
 
-                        if (_snapEnabled || mouseMotion.IsCommandOrControlPressed())
-                        {
-                            newPos.X = Mathf.Snapped(newPos.X - MinDomain, DomainRange / _snapCount) + MinDomain;
-                            newPos.Y = Mathf.Snapped(newPos.Y - MinValue, ValueRange / _snapCount) + MinValue;
-                        }
-
-                        if (mouseMotion.IsAltPressed())
-                        {
-                            Vector2 initialMpos = GetViewPos(_initialGrabPos);
-                            if (Mathf.Abs(mpos.X - initialMpos.X) > Mathf.Abs(mpos.Y - initialMpos.Y))
-                                newPos.Y = _initialGrabPos.Y;
-                            else
-                                newPos.X = _initialGrabPos.X;
-                        }
-
-                        if (mouseMotion.IsAltPressed())
-                        {
-                            float prevPointOffset = _selectedIndex > 0 ? _curve.GetPointPosition(_selectedIndex - 1).X + 0.00001f : MinDomain;
-                            float nextPointOffset = _selectedIndex < _curve.Count - 1 ? _curve.GetPointPosition(_selectedIndex + 1).X - 0.00001f : MaxDomain;
-                            newPos.X = Mathf.Clamp(newPos.X, prevPointOffset, nextPointOffset);
-                        }
-
                         newPos.X = GetOffsetWithoutCollision(_selectedIndex, newPos.X, mpos.X >= GetViewPos(newPos).X);
-
-                        // int i = _curve.SetPointOffset(_selectedIndex, newPos.X);
-                        // _hoveredIndex = i;
-                        // SetSelectedIndex(i);
-
-                        // newPos.Y = Mathf.Clamp(newPos.Y, MinValue, MaxValue);
-                        // _curve.SetPointValue(_selectedIndex, newPos.Y);
                         newPos.Y = Mathf.Clamp(newPos.Y, MinValue, MaxValue);
+                        var oldPos = _curve.GetPointPosition(_selectedIndex);
                         _curve.SetPointPosition(_selectedIndex, newPos);
+                        if(!_curve.IsXMonotone) _curve.SetPointPosition(_selectedIndex, oldPos);
                     }
                     else
                     {
-                        Vector2 newPos = _curve.GetPointPosition(_selectedIndex);
-                        Vector2 controlPos = GetWorldPos(mpos);
-
-                        Vector2 dir = (controlPos - newPos).Normalized();
-                        float tangent = dir.Y / (dir.X > 0 ? Mathf.Max(dir.X, 0.00001f) : Mathf.Min(dir.X, -0.00001f));
-
-                        _hoveredTangentIndex = _selectedTangentIndex;
+                        Vector2 newPos = GetWorldPos(mpos).Clamp(
+                            new Vector2(MinDomain, MinValue),
+                            new Vector2(MaxDomain, MaxValue)
+                        ) - _curve.GetPointPosition(_selectedIndex);
 
                         if (_selectedTangentIndex == TangentIndex.Left)
                         {
-                            _curve.SetPointInTangent(_selectedIndex, tangent);
-                            // if (_selectedIndex != _curve.Count - 1 && _curve.GetPointRightMode(_selectedIndex) != Curve.TangentMode.Linear)
-                            // {
-                            //     _curve.SetPointOutTangent(_selectedIndex, mouseMotion.IsAltPressed() ? _initialGrabRightTangent : tangent);
-                            // }
+                            // Shit code but work
+                            var oldPos = _curve.Points.ToArray();
+                            if(Input.IsKeyPressed(Key.Alt) || _initialHandleMode == PolyBezier.HandleControlMode.Free)
+                                _curve.SetPointIn(_selectedIndex, newPos);
+                            else
+                                _curve.SetPointInLinearly(_selectedIndex, newPos);
+
+                            if (!_curve.IsXMonotone)
+                                _curve.Points = oldPos;
                         }
                         else
                         {
-                            _curve.SetPointOutTangent(_selectedIndex, tangent);
-                            // if (_selectedIndex != 0 && _curve.GetPointLeftMode(_selectedIndex) != Curve.TangentMode.Linear)
-                            // {
-                            //     _curve.SetPointInTangent(_selectedIndex, mouseMotion.IsAltPressed() ? _initialGrabLeftTangent : tangent);
-                            // }
+                            var oldPos = _curve.Points.ToArray();
+                            if(Input.IsKeyPressed(Key.Alt) || _initialHandleMode == PolyBezier.HandleControlMode.Free)
+                                _curve.SetPointOut(_selectedIndex, newPos);
+                            else
+                                _curve.SetPointOutLinearly(_selectedIndex, newPos);
+
+                            if (!_curve.IsXMonotone)
+                                _curve.Points = oldPos;
                         }
                     }
                 }
@@ -539,67 +493,41 @@ public partial class MappingCurveEdit1 : Control
         if (_initialGrabPos == pos)
             return;
         
-        // _curve.SetPointValue(index, pos.Y);
-        // int newIndex = _curve.SetPointOffset(index, pos.X);
-        // SetSelectedIndex(newIndex);
         _curve.SetPointPosition(index, pos);
         SetSelectedIndex(index);
     }
 
-    private void SetPointTangents(int index, float left, float right)
+    private void ResetLinear(int index, TangentIndex tangent)
     {
-        if (_curve == null || index < 0 || index >= _curve.Count)
+        if (_curve == null || index < 0 || index >= _curve.Count || tangent == TangentIndex.None)
             return;
 
-        if (_initialGrabLeftTangent == left && _initialGrabRightTangent == right)
+        var point = _curve.GetPoint(index);
+        var prevMode = point.EstimatedHandleMode;
+        PolyBezier.HandleControlMode mode;
+        if(prevMode == PolyBezier.HandleControlMode.Linear)
+            mode = PolyBezier.HandleControlMode.LinearEqual;
+        else if (prevMode == PolyBezier.HandleControlMode.Free)
+            mode = PolyBezier.HandleControlMode.Linear;
+        else
             return;
 
-        // Note: Undo/redo not supported, so we set the tangents directly
-        _curve.SetPointInTangent(index, left);
-        _curve.SetPointOutTangent(index, right);
-        SetSelectedIndex(index);
+        if (mode == PolyBezier.HandleControlMode.LinearEqual)
+        {
+            if (tangent == TangentIndex.Left) 
+                _curve.SetPointIn(index, -_curve.GetPoint(index).Out);
+            else 
+                _curve.SetPointOut(index, -_curve.GetPoint(index).In);
+        }
+
+        if (mode == PolyBezier.HandleControlMode.Linear)
+        {
+            if (tangent == TangentIndex.Left) 
+                _curve.SetPointInTangent(index, _curve.GetPointOutTangent(index));
+            else
+                _curve.SetPointOutTangent(index, _curve.GetPointInTangent(index));
+        }
     }
-
-    private void SetPointInTangent(int index, float tangent)
-    {
-        if (_curve == null || index < 0 || index >= _curve.Count)
-            return;
-
-        if (_initialGrabLeftTangent == tangent)
-            return;
-
-        // Note: Undo/redo not supported
-        _curve.SetPointInTangent(index, tangent);
-        SetSelectedIndex(index);
-    }
-
-    private void SetPointOutTangent(int index, float tangent)
-    {
-        if (_curve == null || index < 0 || index >= _curve.Count)
-            return;
-
-        if (_initialGrabRightTangent == tangent)
-            return;
-
-        // Note: Undo/redo not supported
-        _curve.SetPointOutTangent(index, tangent);
-        SetSelectedIndex(index);
-    }
-
-    // private void ToggleLinear(int index, TangentIndex tangent)
-    // {
-    //     if (_curve == null || index < 0 || index >= _curve.Count || tangent == TangentIndex.None)
-    //         return;
-    //
-    //     // Note: Undo/redo not supported
-    //     Curve.TangentMode prevMode = tangent == TangentIndex.Left ? _curve.GetPointLeftMode(index) : _curve.GetPointRightMode(index);
-    //     Curve.TangentMode mode = prevMode == Curve.TangentMode.Linear ? Curve.TangentMode.Free : Curve.TangentMode.Linear;
-    //
-    //     if (tangent == TangentIndex.Left)
-    //         _curve.SetPointLeftMode(index, mode);
-    //     else
-    //         _curve.SetPointRightMode(index, mode);
-    // }
 
     private void SetSelectedIndex(int index)
     {
@@ -612,15 +540,10 @@ public partial class MappingCurveEdit1 : Control
 
     private void UpdateViewTransform()
     {
-        float fontSize = 20; // Approximate default font size
-        float margin = fontSize + 4; // Approximate EDSCALE as 1.0
+        float fontSize = 20;
+        float margin = fontSize + 8;
 
-        float minX = MinDomain;
-        float maxX = MaxDomain;
-        float minY = MinValue;
-        float maxY = MaxValue;
-
-        Rect2 worldRect = new Rect2(minX, minY, maxX - minX, maxY - minY);
+        Rect2 worldRect = new Rect2(MinDomain, MinValue, DomainRange, ValueRange);
         Vector2 viewMargin = new Vector2(margin, margin);
         Vector2 viewSize = Size - viewMargin * 2;
         Vector2 scale = viewSize / worldRect.Size;
@@ -637,29 +560,9 @@ public partial class MappingCurveEdit1 : Control
 
     private Vector2 GetTangentViewPos(int index, TangentIndex tangent)
     {
-        Vector2 dir;
-        if (tangent == TangentIndex.Left)
-            dir = -new Vector2(1, _curve.GetPointInTangent(index));
-        else
-            dir = new Vector2(1, _curve.GetPointOutTangent(index));
-
-        Vector2 pointPos = _curve.GetPointPosition(index);
-        Vector2 pointViewPos = GetViewPos(pointPos);
-        Vector2 controlViewPos = GetViewPos(pointPos + dir);
-
-        Vector2 distanceFromPoint = _tangentLength * (controlViewPos - pointViewPos).Normalized();
-        Vector2 tangentViewPos = pointViewPos + distanceFromPoint;
-
-        float fractionInside = 1.0f;
-        if (distanceFromPoint.X != 0.0f)
-            fractionInside = Mathf.Min(fractionInside, ((distanceFromPoint.X > 0 ? Size.X : 0) - pointViewPos.X) / distanceFromPoint.X);
-        if (distanceFromPoint.Y != 0.0f)
-            fractionInside = Mathf.Min(fractionInside, ((distanceFromPoint.Y > 0 ? Size.Y : 0) - pointViewPos.Y) / distanceFromPoint.Y);
-
-        if (fractionInside < 1.0f && fractionInside > 0.5f)
-            tangentViewPos = pointViewPos + distanceFromPoint * fractionInside;
-
-        return tangentViewPos;
+        var tanPos = _curve.GetPointPosition(index) + 
+            (tangent == TangentIndex.Left ? _curve.GetPoint(index).In : _curve.GetPoint(index).Out);
+        return GetViewPos(tanPos);
     }
 
     private Vector2 GetViewPos(Vector2 worldPos)
@@ -681,12 +584,6 @@ public partial class MappingCurveEdit1 : Control
             return;
         }
 
-        Vector2 firstPoint = _curve.GetPointPosition(0);
-        Vector2 lastPoint = _curve.GetPointPosition(_curve.Count - 1);
-
-        // DrawLine(GetViewPos(new Vector2(MinDomain, firstPoint.Y)) + new Vector2(0.5f, 0), GetViewPos(firstPoint), edgeLineColor, LineWidth, true);
-        // DrawLine(GetViewPos(lastPoint), GetViewPos(new Vector2(MaxDomain, lastPoint.Y)) - new Vector2(1.5f, 0), edgeLineColor, LineWidth, true);
-
         int nSample = 128;
         List<Vector2> samples = new(nSample);
         for (int i = 0; i < nSample; i++)
@@ -698,29 +595,6 @@ public partial class MappingCurveEdit1 : Control
         {
             DrawLine(GetViewPos(samples[i - 1]), GetViewPos(samples[i]), lineColor, LineWidth, true);
         }
-
-        // for (int i = 1; i < _curve.Count; i++)
-        // {
-        //     Vector2 a = _curve.GetPointPosition(i - 1);
-        //     Vector2 b = _curve.GetPointPosition(i);
-        //
-        //     Vector2 pos = a;
-        //     Vector2 prevPos = a;
-        //
-        //     float samples = (b.X - a.X) / worldStepSize;
-        //
-        //     for (int j = 1; j < samples; j++)
-        //     {
-        //         float x = j * worldStepSize;
-        //         pos.X = a.X + x;
-        //         pos.Y = _curve.SampleX(x);
-        //         GD.Print(pos.Y);
-        //         DrawLine(GetViewPos(prevPos), GetViewPos(pos), lineColor, LineWidth, true);
-        //         prevPos = pos;
-        //     }
-        //
-        //     DrawLine(GetViewPos(prevPos), GetViewPos(b), lineColor, LineWidth, true);
-        // }
     }
 
     public override void _Draw()
@@ -825,13 +699,11 @@ public partial class MappingCurveEdit1 : Control
                     Color leftTangentColor = _selectedTangentIndex == TangentIndex.Left ? selectedTangentColor : tangentColor;
 
                     DrawLine(GetViewPos(pointPos), controlPos, leftTangentColor, 0.5f, true);
-                    // if (_curve.GetPointLeftMode(_selectedIndex) == Curve.TangentMode.Free)
-                    //     DrawCircle(controlPos, _tangentRadius, leftTangentColor);
-                    // else
-                        DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentRadius), leftTangentColor);
+                    DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentRadius), leftTangentColor);
 
-                    // if (_hoveredTangentIndex == TangentIndex.Left || (_hoveredTangentIndex == TangentIndex.Right && !altPressed && _curve.GetPointLeftMode(_selectedIndex) != Curve.TangentMode.Linear))
-                    if (_hoveredTangentIndex == TangentIndex.Left || (_hoveredTangentIndex == TangentIndex.Right && !altPressed))
+                    var mode = _curve.GetPoint(_selectedIndex).EstimatedHandleMode;
+                    bool isLinear = mode == PolyBezier.HandleControlMode.Linear || mode == PolyBezier.HandleControlMode.LinearEqual;
+                    if (_hoveredTangentIndex == TangentIndex.Left || (_hoveredTangentIndex == TangentIndex.Right && !altPressed && isLinear))
                     {
                         DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentHoverRadius - Mathf.Round(3)), tangentColor, false, Mathf.Round(1));
                     }
@@ -843,15 +715,11 @@ public partial class MappingCurveEdit1 : Control
                     Color rightTangentColor = _selectedTangentIndex == TangentIndex.Right ? selectedTangentColor : tangentColor;
 
                     DrawLine(GetViewPos(pointPos), controlPos, rightTangentColor, 0.5f, true);
-                    // if (_curve.GetPointRightMode(_selectedIndex) == Curve.TangentMode.Free)
-                    //     DrawCircle(controlPos, _tangentRadius, rightTangentColor);
-                    // else
                         DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentRadius), rightTangentColor);
 
-                    // if (_hoveredTangentIndex == TangentIndex.Right || 
-                    //     (_hoveredTangentIndex == TangentIndex.Left && 
-                    //      !altPressed && _curve.GetPointRightMode(_selectedIndex) != Curve.TangentMode.Linear))
-                    if (_hoveredTangentIndex == TangentIndex.Right || (_hoveredTangentIndex == TangentIndex.Left && !altPressed))
+                    var mode = _curve.GetPoint(_selectedIndex).EstimatedHandleMode;
+                    bool isLinear = mode == PolyBezier.HandleControlMode.Linear || mode == PolyBezier.HandleControlMode.LinearEqual;
+                    if (_hoveredTangentIndex == TangentIndex.Right || (_hoveredTangentIndex == TangentIndex.Left && !altPressed && isLinear))
                     {
                         DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentHoverRadius - Mathf.Round(3)), tangentColor, false, Mathf.Round(1));
                     }
@@ -866,7 +734,7 @@ public partial class MappingCurveEdit1 : Control
         {
             float width = Size.X - 50;
             textColor.A *= 0.4f;
-            DrawMultilineString(font, new Vector2(25, fontHeight - Mathf.Round(2)), "Hold Shift to edit tangents individually", HorizontalAlignment.Center, width, fontSize, -1, textColor);
+            DrawMultilineString(font, new Vector2(25, fontHeight - Mathf.Round(2)), "Hold alt and drag to disconnect handles, right click to reconnect handles", HorizontalAlignment.Center, width, fontSize, -1, textColor);
         }
         else if (_selectedIndex != -1 && _selectedTangentIndex == TangentIndex.None)
         {
