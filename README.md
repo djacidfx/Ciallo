@@ -45,9 +45,7 @@ In the invisible-far future, Ciallo may offer AI-powered features --- but always
 
 Steam | Itch.io
 
-A system can run mid-size indie 2D games is required.
-
-System requirements:
+System requirements (Require a system can run large-size 2D games.):
 
 - OS: Windows 10 or higher
 - Memory: 8GB or more
@@ -55,22 +53,19 @@ System requirements:
 
 > About MacOS, Linux: The developer literally wish but cannot afford developing a macOS version. Buying a MacBook pro will cost him half years’ budget for staying alive. Please help him buy an MBP.
 
-> Tech note: Minimum card tier may be higher than your expectation since Ciallo uses Godot forward+ Vulkan renderer. The cards before them may be unfriendly to the Vulkan.
-
 ## Development philosophy and roadmap
 
 Ciallo is in an early stage of development, its version number will label with EA (early access).
 
-For now, users still need many features from the traditional painting software.
-Throughout Early Access, we will research and develop core painting features using shaders and GPU APIs.
+During the EA stage, we mainly research and develop traditional paint software features with modern shaders and GPU APIs. After finishing those core paint features, we will open Steam Workshop, labeling the end of EA stage.
 
-After finishing the EA versions, Ciallo will focus on developing peripheral systems to create 2D illustrations, animations for 2D game assets and hand-drawn textures in 3D.
+After finishing the EA stage, Ciallo will focus on peripheral systems to create 2D game assets, including 2D illustrations, animations and hand-drawn textures in 3D.
 
 #### Feature requests
 
-During the EA stage, the developer basically knows those most needed features. These are the YouTube channels he learns painting and what you need: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2) | [Oridays](https://www.youtube.com/@oridays).
+The developer basically knows those most needed features in the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2) | [Oridays](https://www.youtube.com/@oridays).
 
-If you eagerly need a feature to be deployed a week/month, consider sponsor the project and contact the developer.
+If you eagerly need a feature to be deployed a week/month, consider contact the developer and sponsor the project.
 
 ## Sponsor your future
 Ciallo's unique techniques are invented by the developer, aiming to be a new standard in digital painting. These techniques are born with a passion to 2D animes, and needs your sponsor to sustain free for everyone.
