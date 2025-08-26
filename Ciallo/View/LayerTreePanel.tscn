@@ -1,7 +1,6 @@
-[gd_scene load_steps=6 format=3 uid="uid://bnhhwk1a3yv70"]
+[gd_scene load_steps=5 format=3 uid="uid://bnhhwk1a3yv70"]
 
 [ext_resource type="PackedScene" uid="uid://c08pou8qq2rrg" path="res://View/LayerTreeControl.tscn" id="1_1j0kq"]
-[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SliderSpinBoxPair.cs" id="1_rmpmi"]
 [ext_resource type="Texture2D" uid="uid://tugksq2pg442" path="res://Icons/layers-plus.svg" id="1_ulw2x"]
 [ext_resource type="Texture2D" uid="uid://c6pduk2ad1t3i" path="res://Icons/layers-minus.svg" id="2_tod7h"]
 
@@ -16,36 +15,22 @@ theme_override_constants/separation = 5
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="HBoxContainer2" type="HFlowContainer" parent="."]
+[node name="Action" type="HFlowContainer" parent="."]
 layout_mode = 2
 
-[node name="NewLayer" type="Button" parent="HBoxContainer2"]
+[node name="NewLayer" type="Button" parent="Action"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 theme_type_variation = &"FlatButton"
 icon = ExtResource("1_ulw2x")
 expand_icon = true
 
-[node name="DeleteLayer" type="Button" parent="HBoxContainer2"]
+[node name="DeleteLayer" type="Button" parent="Action"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 theme_type_variation = &"FlatButton"
 icon = ExtResource("2_tod7h")
 expand_icon = true
-
-[node name="HBoxContainer" type="HBoxContainer" parent="."]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="HBoxContainer"]
-layout_mode = 2
-text = "Opacity:"
-
-[node name="SliderSpinBoxPair" type="HBoxContainer" parent="HBoxContainer"]
-layout_mode = 2
-script = ExtResource("1_rmpmi")
-MaxValue = 1.0
-Value = 1.0
-metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 
 [node name="LayerTreeControl" parent="." instance=ExtResource("1_1j0kq")]
 layout_mode = 2

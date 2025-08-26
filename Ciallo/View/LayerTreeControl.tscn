@@ -2,27 +2,46 @@
 
 [ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://View/LayerControl.tscn" id="1_iwrph"]
 [ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://View/LayerTreeControl.cs" id="1_qbsfr"]
-[ext_resource type="ButtonGroup" uid="uid://cokyxi76fw4o5" path="res://View/IsActiveLayerButtonGroup.tres" id="3_gnrmv"]
+[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SliderSpinBoxPair.cs" id="4_45kbp"]
 
-[node name="LayerTreeControl" type="ScrollContainer"]
-offset_top = 162.0
+[node name="LayerTreeControl" type="VBoxContainer"]
 offset_right = 534.0
-offset_bottom = 456.0
+offset_bottom = 294.0
+size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("1_qbsfr")
-LayerControlScene = ExtResource("1_iwrph")
-IsActiveLayerButtonGroup = ExtResource("3_gnrmv")
 
-[node name="Root" type="VBoxContainer" parent="."]
+[node name="Setting" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Setting"]
+layout_mode = 2
+text = "Opacity:"
+
+[node name="Opacity" type="HBoxContainer" parent="Setting"]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("4_45kbp")
+MaxValue = 1.0
+Value = 1.0
+metadata/_custom_type_script = "uid://b1dclx7d0dgng"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TreeRoot" type="VBoxContainer" parent="ScrollContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 3
 
-[node name="LayerControl" parent="Root" instance=ExtResource("1_iwrph")]
+[node name="LayerControl" parent="ScrollContainer/TreeRoot" instance=ExtResource("1_iwrph")]
 layout_mode = 2
 
-[node name="LayerControl2" parent="Root" instance=ExtResource("1_iwrph")]
+[node name="LayerControl2" parent="ScrollContainer/TreeRoot" instance=ExtResource("1_iwrph")]
 layout_mode = 2
 
-[node name="LayerControl3" parent="Root" instance=ExtResource("1_iwrph")]
+[node name="LayerControl3" parent="ScrollContainer/TreeRoot" instance=ExtResource("1_iwrph")]
 layout_mode = 2

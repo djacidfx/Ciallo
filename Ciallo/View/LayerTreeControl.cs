@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
+using Ciallo.Misc;
 using Ciallo.Widget;
 using R3;
 
@@ -21,21 +22,20 @@ public partial class LayerTreeControl : Container
 
     public override void _Ready()
     {
-        Root = GetChild<VBoxContainer>(0);
-        
-    }
-
-    public void Load()
-    {
-        
+        Root = GetNode<VBoxContainer>("%TreeRoot");
     }
 
     public Control CreateLayerControl(VectorLayerSetting setting)
     {
         var layerControl = LayerControlScene.Instantiate<Control>();
+        var subs = new CompositeDisposable();
+        _subscriptions[layerControl] = subs;
+        
         var activeButton = layerControl.GetNode<CheckBox>("%Active");
         activeButton.ButtonGroup = IsActiveLayerButtonGroup;
         if (IsActiveLayerButtonGroup.GetPressedButton() == null) activeButton.SetPressed(true);
+        var visibleButton = layerControl.GetNode<CheckBox>("%Visible");
+        visibleButton.BindValue(setting.IsVisible).AddTo(subs);
 
         var lineEdit = layerControl.GetNode<LabelLineEdit>("%LabelLineEdit");
         
@@ -43,16 +43,14 @@ public partial class LayerTreeControl : Container
         {
             _mouseHoveringLayer = layerControl;
         };
-
+        
         var guiInput = lineEdit
             .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
             .Where(_=>!lineEdit.IsEditing());
         var leftMouse = guiInput
             .OfType<InputEvent, InputEventMouseButton>()
             .Where(button => button.ButtonIndex == MouseButton.Left);
-
-        var subs = new CompositeDisposable();
-        _subscriptions[layerControl] = subs;
+        
         // Single click without drag and double click
         var singleClickObs = leftMouse
             .Where(button => button.IsPressed() || button.IsReleased())

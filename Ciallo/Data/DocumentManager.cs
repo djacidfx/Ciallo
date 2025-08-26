@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Godot;
 using Arch.Core;
 using Arch.Core.Extensions;
+using ObservableCollections;
 using R3;
 
 namespace Ciallo.Data;
@@ -34,12 +35,19 @@ public static class DocumentManager
         var singleton = world.Create();
         DocumentSingletons.Add(world, singleton);
         singleton.Add(settings);
-        var layerTreeRoot = new LayerTreeManager()
+        
+        var layerTreeManager = new LayerTreeManager()
         {
             World = world,
         };
-        layerTreeRoot.CreateAddVectorLayer();
-        singleton.Add(layerTreeRoot);
+        var layerE = layerTreeManager.CreateAddVectorLayer();
+        singleton.Add(layerTreeManager);
+        
+        var selectionManager = new SelectionManager
+        {
+            ActiveLayer = { Value = layerE }
+        };
+        singleton.Add(selectionManager);
         
         return world;
     }
