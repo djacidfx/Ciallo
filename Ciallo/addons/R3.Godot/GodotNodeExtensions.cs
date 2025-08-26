@@ -12,19 +12,25 @@ public static class GodotNodeExtensions
     /// <param name="node"></param>
     /// <typeparam name="T"></typeparam>
     /// <returns>Self disposable</returns>
+    /// <remarks>
+    /// Godot doesn't expose "node destroyed" signal, so have to use "tree exited" signal here, very ridiculous.
+    /// </remarks>
     public static T AddTo<T>(this T disposable, Node node) where T : IDisposable
     {
-        // Note: Dispose when tree exited, so if node is not inside tree, dispose immediately.
-        if (!node.IsInsideTree()) 
-        {
-            if (!node.IsNodeReady()) // Before enter tree
-            {
-                GD.PrintErr("AddTo does not support to use before enter tree.");
-            }
-
-            disposable.Dispose();
-            return disposable;
-        }
+        // Shen note: Decide to remove the "Node must inside the tree" constraints here. Always be mindful.
+        
+        // // oringal code:
+        // // Note: Dispose when tree exited, so if node is not inside tree, dispose immediately.
+        // if (!node.IsInsideTree()) 
+        // {
+        //     if (!node.IsNodeReady()) // Before enter tree
+        //     {
+        //         GD.PrintErr("AddTo does not support to use before enter tree.");
+        //     }
+        //
+        //     disposable.Dispose();
+        //     return disposable;
+        // }
         
         node.TreeExited += () => disposable.Dispose();
         return disposable;

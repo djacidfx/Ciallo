@@ -8,37 +8,29 @@ namespace Ciallo.Misc;
 
 public static class BindRangeExtension
 {
-    public static void BindValue<T>(Godot.Range rangeControl, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
+    private static CompositeDisposable BindValue<T>(Godot.Range rangeControl, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
         // Note: After subscribing to a ReactiveProperty, the callback will be invoked immediately with the current value.
-        // Use skip(1) to ignore the first value.
-        var subscription = property.Subscribe(value => rangeControl.SetValueNoSignal(Convert.ToDouble(value)));
-        rangeControl.ValueChanged += value => property.Value = (T)Convert.ChangeType(value, typeof(T));
-
-        if (rangeControl.IsInsideTree())
-        {
-            subscription.AddTo(rangeControl);
-        }
-        else
-        {
-            rangeControl.SignalAsObservable(Node.SignalName.TreeEntered)
-                .Take(1)
-                .Subscribe(_ => subscription.AddTo(rangeControl));
-        }
+        // Use skip(1) to ignore the first value if needed.
+        var subs = new CompositeDisposable();
+        property.Subscribe(value => rangeControl.SetValue(double.CreateChecked(value))).AddTo(subs);
+        rangeControl.OnValueChangedAsObservable()
+            .Subscribe(value => property.Value = T.CreateChecked(value)).AddTo(subs);
+        return subs;
     }
 
-    public static void BindValue<T>(this HSlider slider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
+    public static CompositeDisposable BindValue<T>(this HSlider slider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindValue((Godot.Range)slider, property);
+        return BindValue((Godot.Range)slider, property);
     }
     
-    public static void BindValue<T>(this VSlider slider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
+    public static CompositeDisposable BindValue<T>(this VSlider slider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindValue((Godot.Range)slider, property);
+        return BindValue((Godot.Range)slider, property);
     }
     
-    public static void BindValue<T>(this SpinBox spinBox, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
+    public static CompositeDisposable BindValue<T>(this SpinBox spinBox, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindValue((Godot.Range)spinBox, property);
+        return BindValue((Godot.Range)spinBox, property);
     }
 }
