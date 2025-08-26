@@ -37,6 +37,7 @@ public static class PolylineExtension
 
         return new Rect2(new Vector2(minX, minY), new Vector2(maxX - minX, maxY - minY));
     }
+    
     /// <summary>
     /// Find the closest point on the polyline to the given point.
     /// </summary>
@@ -94,6 +95,7 @@ public static class PolylineExtension
 
         return closestPoint;
     }
+    
     /// <summary>
     /// Check if the curve is a monotone in X.
     /// So that each element of the function's domain X maps to a single, well-defined element of its range Y.

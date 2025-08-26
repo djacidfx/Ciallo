@@ -15,8 +15,7 @@ namespace Ciallo.Data;
 /// </summary>
 /// <remarks>
 /// Can be serialized by MessagePack by default since inherent from IList. 
-/// </remarks>>
-///
+/// </remarks>
 public class LayerTreeBranch : List<Entity>
 {
     /// <summary>
@@ -25,7 +24,6 @@ public class LayerTreeBranch : List<Entity>
     /// <returns>Indices list in the hierarchy, in parent first order.</returns>
     public List<int> FindPath(Entity target)
     {
-        // start recursion from this branch
         BreadthFirstRecursive(this, target, out var path);
         return path;
     }
@@ -48,7 +46,7 @@ public class LayerTreeBranch : List<Entity>
             path.Insert(0, i);// prepend the index
             return;
         }
-        // not found in children
+        // not found in children neither
         path = null;
     }
 

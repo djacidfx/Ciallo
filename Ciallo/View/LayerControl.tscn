@@ -34,7 +34,7 @@ layout_mode = 2
 theme = ExtResource("1_qp082")
 theme_override_constants/separation = 3
 
-[node name="IsVisible" type="CheckBox" parent="LayerControl"]
+[node name="Visible" type="CheckBox" parent="LayerControl"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"TextureCheckBox"
@@ -43,7 +43,7 @@ theme_override_icons/unchecked = ExtResource("3_nt8ii")
 button_pressed = true
 action_mode = 0
 
-[node name="IsActive" type="CheckBox" parent="LayerControl"]
+[node name="Active" type="CheckBox" parent="LayerControl"]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("1_qp082")

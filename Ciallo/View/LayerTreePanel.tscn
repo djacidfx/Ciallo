@@ -35,7 +35,6 @@ expand_icon = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
-alignment = 1
 
 [node name="Label" type="Label" parent="HBoxContainer"]
 layout_mode = 2
