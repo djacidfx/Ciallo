@@ -59,7 +59,7 @@ Ciallo is in an early stage of development, its version number will label with E
 
 During the EA stage, we mainly research and develop traditional paint software features with modern shaders and GPU APIs. After finishing those core paint features, we will open Steam Workshop, labeling the end of EA stage.
 
-After finishing the EA stage, Ciallo will focus on peripheral systems to create 2D game assets, including 2D illustrations, animations and hand-drawn textures in 3D.
+After finishing the EA stage, Ciallo will focus on peripheral systems to create 2D game assets, including illustrations, 2D animations and hand-drawn textures in 3D.
 
 #### Feature requests
 
@@ -88,11 +88,11 @@ The name "Ciallo" is the combination of the Italian "Ciao" and English "Hello", 
 - [GodotSharp.SourceGenerators](https://github.com/Cat-Lips/GodotSharp.SourceGenerators): Godot auxiliary.
 
 ## Build Guide
+Go to [dev guide](./DevGuide) for a more comprehensive version.
 
-Ciallo is built upon Godot. Building the core part of Ciallo is exactly the same as building a regular Godot C# project:
+Ciallo is built on Godot. Building the core part of Ciallo is the same as building a standard Godot C# project:
 
-- Set up Godot 4.4.1 with .Net9. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw). Be mindful of the version.
-
+- Set up Godot 4.4.1 with .Net9. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
 - Open the `Ciallo/project.godot` file with your Godot editor, then build and run.
 
 ## Tech FAQ
@@ -112,14 +112,14 @@ You can imagine Ciallo as a building/RTS game, e.g. _City Skylines_, _Warcraft_ 
 
 ### Why Godot, not Unity or Unreal?
 
-Godot has the best support for 2D rendering and `ColorPicker` control. 
+Godot has the best 2D rendering and UI controls. 
 
-E.g., As of June 2025, Godot is the only engine that supports rendering a filled polygon directly from a list of points.
+E.g., As of June 2025, Godot is the only engine that supports rendering a filled polygon directly from a list of points (without manual tessellation).
 Moreover, Godot’s `ColorPicker` control convinced me to choose it over Unity.
 
 BTW, I hope Godot can make `EditorSpinSlider` runtime available, see [issue](https://github.com/godotengine/godot-proposals/issues/3244#issuecomment-911489983).
 
 ### Why not gdscript?
-Dynamically-typed languages cannot support our project (or any projects need custom types more than 10). C# is a better choice.
+Dynamically-typed languages cannot support our project (or IMHO, any projects need custom types more than 10). C# is a better choice, also for its larger community.
 
-But I do like the gdscript language itself. In my wet dream, Godot will discard gdscript for engine scripting and turn it into a high-level shading language for graphics --- Comparing to C#, gdscript lacks a lot of features, but to glsl/hlsl, it's already been crazyly feature-riched.
+But I do like the gdscript language itself. In my wet dream, Godot will discard gdscript for engine scripting and turn it into a high-level shading language for graphics --- Comparing to C#, gdscript lacks a lot of features, but to glsl/hlsl, it's already been crazyly feature-riched. The graphics community really lacks of advanced programming lanuages for shading.
