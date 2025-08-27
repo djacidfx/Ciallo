@@ -12,15 +12,18 @@ namespace Ciallo.Data;
 public class LayerTreeManager
 {
     [IgnoreMember] public World World;
-    [Key(0)] public readonly LayerTreeBranch Branch = [];
+    [Key(0)] public readonly LayerTreeNode Node;
 
     public Entity CreateAddVectorLayer()
     {
         var e = this.World.Create();
-        LayerTreeName name = "Vector Layer" + (Branch.Count + 1);
+        var node = new LayerTreeNode()
+        {
+            Name = { Value = "New Vector Layer" },
+        };
         
-        e.Add(new VectorLayerSetting(), new LayerTreeBranch(), new ToSerializeTag(), name);
-        Branch.Add(e);
+        e.Add(new VectorLayerSetting(), node, new ToSerializeTag());
+        Node.AddChild(e);
         
         return e;
     }

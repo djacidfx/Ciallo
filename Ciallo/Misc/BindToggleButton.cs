@@ -4,9 +4,9 @@ using R3;
 
 namespace Ciallo.Misc;
 
-public static class BindToggleButton
+public static class BindToggleButtonExtension
 {
-    private static CompositeDisposable BindValue(this BaseButton button, ReactiveProperty<bool> property)
+    private static CompositeDisposable BindBool(this BaseButton button, ReactiveProperty<bool> property)
     {
         if(!button.ToggleMode) throw new ArgumentException("Button must be in toggle mode", nameof(button));
         var subs = new CompositeDisposable();
@@ -16,13 +16,13 @@ public static class BindToggleButton
         return subs;
     }
     
-    public static CompositeDisposable BindValue(this CheckBox checkBox, ReactiveProperty<bool> property)
+    public static CompositeDisposable BindBool(this CheckBox checkBox, ReactiveProperty<bool> property)
     {
-        return BindValue((BaseButton)checkBox, property);
+        return BindBool((BaseButton)checkBox, property);
     }
     
-    public static CompositeDisposable BindValue(this Button button, ReactiveProperty<bool> property)
+    public static CompositeDisposable BindBool(this Button button, ReactiveProperty<bool> property)
     {
-        return BindValue((BaseButton)button, property);
+        return BindBool((BaseButton)button, property);
     }
 }

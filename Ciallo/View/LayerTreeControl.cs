@@ -25,7 +25,7 @@ public partial class LayerTreeControl : Container
         Root = GetNode<VBoxContainer>("%TreeRoot");
     }
 
-    public Control CreateLayerControl(VectorLayerSetting setting)
+    public Control CreateVectorLayerControl(LayerTreeNode node, VectorLayerSetting setting)
     {
         var layerControl = LayerControlScene.Instantiate<Control>();
         var subs = new CompositeDisposable();
@@ -35,9 +35,10 @@ public partial class LayerTreeControl : Container
         activeButton.ButtonGroup = IsActiveLayerButtonGroup;
         if (IsActiveLayerButtonGroup.GetPressedButton() == null) activeButton.SetPressed(true);
         var visibleButton = layerControl.GetNode<CheckBox>("%Visible");
-        visibleButton.BindValue(setting.IsVisible).AddTo(subs);
+        visibleButton.BindBool(node.IsVisible).AddTo(subs);
 
         var lineEdit = layerControl.GetNode<LabelLineEdit>("%LabelLineEdit");
+        lineEdit.BindString(node.Name).AddTo(subs);
         
         lineEdit.MouseEntered += () =>
         {
