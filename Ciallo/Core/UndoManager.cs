@@ -2,7 +2,7 @@
 
 namespace Ciallo.Core;
 
-public class UndoRedoManager
+public class UndoManager
 {
     private static UndoRedo _undoRedo = new();
 }

@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-namespace Ciallo.View;
+namespace Ciallo.NodeControl;
 
 public partial class MenuHelp : PopupMenu
 {

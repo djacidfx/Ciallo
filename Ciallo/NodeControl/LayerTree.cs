@@ -7,7 +7,7 @@ using Ciallo.Misc;
 using Ciallo.Widget;
 using R3;
 
-public partial class LayerTreeControl : Container
+public partial class LayerTree : Container
 {
     [Export] public PackedScene LayerControlScene;
     [Export] public ButtonGroup IsActiveLayerButtonGroup;

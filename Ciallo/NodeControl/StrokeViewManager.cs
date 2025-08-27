@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using Ciallo.Geometry;
 using Godot;
 
-namespace Ciallo.View;
+namespace Ciallo.NodeControl;
 
 public static class StrokeViewManager
 {
@@ -26,7 +26,7 @@ public static class StrokeViewManager
             TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,
             UseColors = true,
             UseCustomData = true,
-            Mesh = GD.Load<Mesh>("res://View/Rendering/StrokeDummyMesh.tres"),
+            Mesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres"),
         };
         
         List<Vector2> ps;
@@ -71,7 +71,7 @@ public static class StrokeViewManager
         var aabb = new Aabb(boundingBox.Position.X, boundingBox.Position.Y, 0, boundingBox.Size.X, boundingBox.Size.Y, 0);
         multiMesh.CustomAabb = aabb;
         strokeView.Multimesh = multiMesh;
-        strokeView.Material = GD.Load<ShaderMaterial>("res://View/Rendering/StrokeMaterial.tres");
+        strokeView.Material = GD.Load<ShaderMaterial>("res://Rendering/StrokeMaterial.tres");
         
         return strokeView;
     }

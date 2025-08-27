@@ -1,9 +1,8 @@
 using Godot;
 using System;
-using Ciallo.View;
 using Ciallo.Widget;
 
-namespace Ciallo.Core;
+namespace Ciallo.NodeControl;
 
 /// <summary>
 /// Responsible for collecting and dispatching canvas gui input events.

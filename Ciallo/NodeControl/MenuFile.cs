@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Core;
 
-namespace Ciallo.View;
+namespace Ciallo.NodeControl;
 
 public partial class MenuFile : PopupMenu
 {
