@@ -3,8 +3,9 @@ using System;
 using System.IO;
 using Ciallo.Core;
 using Ciallo.Data;
+using Ciallo.Widget;
 
-namespace Ciallo.Widget;
+namespace Ciallo.View;
 
 public partial class NewDocumentDialog : ConfirmationDialog
 {
@@ -14,7 +15,7 @@ public partial class NewDocumentDialog : ConfirmationDialog
         var docName = docNameControl.Text;
         var saveFolderControl = GetNode<FilePathPicker>("%SaveFolderControl");
         var saveFolder = saveFolderControl.Path;
-        var referenceSizeControl = GetNode<Vector2Editor>("%ReferenceSizeControl");
+        var referenceSizeControl = GetNode<Vector2Edit>("%ReferenceSizeControl");
         var referenceSize = referenceSizeControl.Value;
         var bgControl = GetNode<ColorPickerButton>("%BackgroundColorControl");
         var bgColor = bgControl.Color;

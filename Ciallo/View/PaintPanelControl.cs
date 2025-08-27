@@ -1,9 +1,5 @@
 using Godot;
 using System;
-using System.Collections.Generic;
-using Ciallo.Core;
-using Ciallo.Misc;
-using R3;
 
 namespace Ciallo.Widget;
 
@@ -15,9 +11,9 @@ public partial class PaintPanelControl : PanelContainer
     {
         Camera = GetNode<Camera2D>("%Camera2D")
                  ?? throw new NullReferenceException("Camera2D not found.");
-        var zoomControl = GetNode<SliderSpinBoxPair>("%ZoomControl") 
+        var zoomControl = GetNode<SpinSlider>("%ZoomControl") 
                           ?? throw new NullReferenceException("ZoomControl not found.");
-        var rotationControl = GetNode<SliderSpinBoxPair>("%RotationControl")
+        var rotationControl = GetNode<SpinSlider>("%RotationControl")
                               ?? throw new NullReferenceException("RotationControl not found.");
         zoomControl.ValueChanged += newZoom =>
         {

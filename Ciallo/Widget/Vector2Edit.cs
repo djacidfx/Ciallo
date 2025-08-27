@@ -3,7 +3,7 @@
 namespace Ciallo.Widget;
 
 [GlobalClass, Tool]
-public partial class Vector2Editor : HBoxContainer
+public partial class Vector2Edit : HBoxContainer
 {
     [Signal] 
     public delegate void ValueChangedEventHandler(Vector2 newValue);

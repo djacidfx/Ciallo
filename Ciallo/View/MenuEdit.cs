@@ -4,9 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Core;
 
-namespace Ciallo.Widget;
+namespace Ciallo.View;
 
-public partial class MenuContentEdit : PopupMenu
+public partial class MenuEdit : PopupMenu
 {
     // Identical to the items inside the PopupMenu node's items property.
     public static readonly Dictionary<int, StringName> IndexToActionName = new()

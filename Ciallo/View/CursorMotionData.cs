@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace Ciallo.Widget;
+namespace Ciallo.View;
 
 public struct CursorMotionData
 {

@@ -5,10 +5,13 @@ using R3;
 
 namespace Ciallo.Widget;
 
+/// <summary>
+/// This spin slider aims to be same as Godot's EditorSpinSlider. Current version is visually different.
+/// </summary>
 [GlobalClass, Tool]
-public partial class SliderSpinBoxPair : HBoxContainer
+public partial class SpinSlider : HBoxContainer
 {
-    [Signal] 
+    [Signal]
     public delegate void ValueChangedEventHandler(double newValue);
     
     public HSlider Slider { get; private set; }

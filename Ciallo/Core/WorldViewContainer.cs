@@ -1,5 +1,6 @@
 using Godot;
 using System;
+using Ciallo.View;
 using Ciallo.Widget;
 
 namespace Ciallo.Core;
@@ -11,8 +12,8 @@ namespace Ciallo.Core;
 public partial class WorldViewContainer : SubViewportContainer
 {
     private Camera2D _camera;
-    private SliderSpinBoxPair _zoomControl;
-    private SliderSpinBoxPair _rotationControl;
+    private SpinSlider _zoomControl;
+    private SpinSlider _rotationControl;
     
     private bool _isHovering = false;
     private bool _isPanning = false;
@@ -22,9 +23,9 @@ public partial class WorldViewContainer : SubViewportContainer
     public override void _Ready()
     {
         _camera = GetChild(0).GetChild<Camera2D>(1);
-        _zoomControl = GetNode<SliderSpinBoxPair>("%ZoomControl")
+        _zoomControl = GetNode<SpinSlider>("%ZoomControl")
                        ?? throw new NullReferenceException("ZoomControl not found.");
-        _rotationControl = GetNode<SliderSpinBoxPair>("%RotationControl")
+        _rotationControl = GetNode<SpinSlider>("%RotationControl")
                            ?? throw new NullReferenceException("RotationControl not found.");
     }
     

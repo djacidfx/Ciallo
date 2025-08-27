@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://tugksq2pg442" path="res://Icons/layers-plus.svg" id="1_ulw2x"]
 [ext_resource type="Texture2D" uid="uid://c6pduk2ad1t3i" path="res://Icons/layers-minus.svg" id="2_tod7h"]
 
-[sub_resource type="ButtonGroup" id="ButtonGroup_rmpmi"]
+[sub_resource type="ButtonGroup" id="ButtonGroup_ulw2x"]
 
 [node name="LayerTreePanel" type="VBoxContainer"]
 offset_right = 478.0
@@ -34,5 +34,4 @@ expand_icon = true
 
 [node name="LayerTreeControl" parent="." instance=ExtResource("1_1j0kq")]
 layout_mode = 2
-size_flags_vertical = 3
-IsActiveLayerButtonGroup = SubResource("ButtonGroup_rmpmi")
+IsActiveLayerButtonGroup = SubResource("ButtonGroup_ulw2x")
