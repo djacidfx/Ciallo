@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://7e3vbjijfjx5"
-path="res://.godot/imported/lasso.svg-2734fda177c95bc790502e1331309fdf.ctex"
+uid="uid://dh0mh12moefs8"
+path="res://.godot/imported/drag-horizontal.svg-bda80fb49c0226de7ab7686bbc7ba146.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/lasso.svg"
-dest_files=["res://.godot/imported/lasso.svg-2734fda177c95bc790502e1331309fdf.ctex"]
+source_file="res://Icon/drag-horizontal.svg"
+dest_files=["res://.godot/imported/drag-horizontal.svg-bda80fb49c0226de7ab7686bbc7ba146.ctex"]
 
 [params]
 

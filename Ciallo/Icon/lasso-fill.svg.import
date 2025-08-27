@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c15gbt8wm46pc"
-path="res://.godot/imported/format-color-fill.svg-dc8684ba20a14ff5a0104d620816f16b.ctex"
+uid="uid://b4e0ypa7qifd3"
+path="res://.godot/imported/lasso-fill.svg-fa3176c4f87976568dc7773a66d2f126.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/format-color-fill.svg"
-dest_files=["res://.godot/imported/format-color-fill.svg-dc8684ba20a14ff5a0104d620816f16b.ctex"]
+source_file="res://Icon/lasso-fill.svg"
+dest_files=["res://.godot/imported/lasso-fill.svg-fa3176c4f87976568dc7773a66d2f126.ctex"]
 
 [params]
 

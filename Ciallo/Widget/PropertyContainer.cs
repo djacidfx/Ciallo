@@ -4,7 +4,7 @@ using R3;
 
 namespace Ciallo.Widget;
 
-[GlobalClass, Tool, Icon("res://Icons/tune.svg")]
+[GlobalClass, Tool, Icon("res://Icon/tune.svg")]
 public partial class PropertyContainer : BoxContainer
 {
     [Export] public bool Horizontal

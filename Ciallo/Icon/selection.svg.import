@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dh0mh12moefs8"
-path="res://.godot/imported/drag-horizontal.svg-a8a75bc18269c583dd8ed61e2d4d355c.ctex"
+uid="uid://bs6etdeswyonh"
+path="res://.godot/imported/selection.svg-7812b7017b75428bb870dee06b2dcc13.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/drag-horizontal.svg"
-dest_files=["res://.godot/imported/drag-horizontal.svg-a8a75bc18269c583dd8ed61e2d4d355c.ctex"]
+source_file="res://Icon/selection.svg"
+dest_files=["res://.godot/imported/selection.svg-7812b7017b75428bb870dee06b2dcc13.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://43k5wfcj0bkj"
-path="res://.godot/imported/ciallo.svg-47bb173cac2ac8ccac2e2d90665aaec7.ctex"
+uid="uid://b6hhbllblswdp"
+path="res://.godot/imported/folder-edit-outline.svg-807dbebed7746fd72b24e6529da9f5fa.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/ciallo.svg"
-dest_files=["res://.godot/imported/ciallo.svg-47bb173cac2ac8ccac2e2d90665aaec7.ctex"]
+source_file="res://Icon/folder-edit-outline.svg"
+dest_files=["res://.godot/imported/folder-edit-outline.svg-807dbebed7746fd72b24e6529da9f5fa.ctex"]
 
 [params]
 
@@ -32,6 +32,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.0
+svg/scale=8.0
 editor/scale_with_editor_scale=false
 editor/convert_colors_with_editor_theme=false

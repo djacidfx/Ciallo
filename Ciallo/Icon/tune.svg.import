@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://8bmp8mbehv18"
-path="res://.godot/imported/vector-curve.svg-57f2ae89c0e374c5f3b6b833df7cbd54.ctex"
+uid="uid://cia76mgexk1uo"
+path="res://.godot/imported/tune.svg-744e3bb1f64ca22bc8e998bc329164a5.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/vector-curve.svg"
-dest_files=["res://.godot/imported/vector-curve.svg-57f2ae89c0e374c5f3b6b833df7cbd54.ctex"]
+source_file="res://Icon/tune.svg"
+dest_files=["res://.godot/imported/tune.svg-744e3bb1f64ca22bc8e998bc329164a5.ctex"]
 
 [params]
 
@@ -32,6 +32,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=8.0
+svg/scale=1.0
 editor/scale_with_editor_scale=false
 editor/convert_colors_with_editor_theme=false

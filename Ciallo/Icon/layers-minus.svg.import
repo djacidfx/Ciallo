@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djmjwmlnccp86"
-path="res://.godot/imported/cursor-default-outline.svg-875574e79aa55d17b6a091028039fd9c.ctex"
+uid="uid://c6pduk2ad1t3i"
+path="res://.godot/imported/layers-minus.svg-e2bdda417a1fea9a19bc5ea43653d31e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/cursor-default-outline.svg"
-dest_files=["res://.godot/imported/cursor-default-outline.svg-875574e79aa55d17b6a091028039fd9c.ctex"]
+source_file="res://Icon/layers-minus.svg"
+dest_files=["res://.godot/imported/layers-minus.svg-e2bdda417a1fea9a19bc5ea43653d31e.ctex"]
 
 [params]
 

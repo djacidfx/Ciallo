@@ -24,7 +24,7 @@ public partial class FilePathPicker : HBoxContainer
     {
         OpenExplorerButton = new Button
         {
-            Icon = GD.Load<Texture2D>("res://Icons/folder-edit-outline.svg"),
+            Icon = GD.Load<Texture2D>("res://Icon/folder-edit-outline.svg"),
             SizeFlagsHorizontal = SizeFlags.ShrinkCenter,
             TooltipText = $"Select a {(FileMode == FileDialog.FileModeEnum.OpenDir? "folder":"file")}",
             ExpandIcon = true,

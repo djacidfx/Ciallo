@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://c6pduk2ad1t3i"
-path="res://.godot/imported/layers-minus.svg-662a66d36fe8e1407639c3fe3de31ae0.ctex"
+uid="uid://bkjon4tg14ghw"
+path="res://.godot/imported/vector-polyline.svg-5edb39c7dc6b7385f4665a4adec4c498.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/layers-minus.svg"
-dest_files=["res://.godot/imported/layers-minus.svg-662a66d36fe8e1407639c3fe3de31ae0.ctex"]
+source_file="res://Icon/vector-polyline.svg"
+dest_files=["res://.godot/imported/vector-polyline.svg-5edb39c7dc6b7385f4665a4adec4c498.ctex"]
 
 [params]
 

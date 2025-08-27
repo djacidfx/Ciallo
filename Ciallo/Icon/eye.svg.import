@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bayscuh6s0yrc"
-path="res://.godot/imported/lasso-dash.svg-cd281b6ea00c2c52a5334be2142f7493.ctex"
+uid="uid://cklq1oyy3bwjg"
+path="res://.godot/imported/eye.svg-b7618b88ce1418156f974cce0bb7ba7b.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icons/lasso-dash.svg"
-dest_files=["res://.godot/imported/lasso-dash.svg-cd281b6ea00c2c52a5334be2142f7493.ctex"]
+source_file="res://Icon/eye.svg"
+dest_files=["res://.godot/imported/eye.svg-b7618b88ce1418156f974cce0bb7ba7b.ctex"]
 
 [params]
 
@@ -32,6 +32,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=8.0
+svg/scale=1.767
 editor/scale_with_editor_scale=false
 editor/convert_colors_with_editor_theme=false
