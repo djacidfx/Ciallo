@@ -6,7 +6,7 @@ using R3;
 
 namespace Ciallo.Misc;
 
-public static class BindRangeExtension
+public static class BindRange
 {
     private static CompositeDisposable BindValue<T>(Godot.Range rangeControl, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {

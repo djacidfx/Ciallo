@@ -9,7 +9,7 @@ using Humanizer;
 
 namespace Ciallo.Misc;
 
-public static class BindOptionButtonExtension
+public static class BindOptionButton
 {
     
     /// <summary>
