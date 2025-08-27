@@ -14,10 +14,11 @@ Ciallo is built on Godot. Building the core part of Ciallo is the same as buildi
 ### IDE
 In thoery, you can use any IDEs supporting C#. Follow the Godot's [guide](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor) to link the Godot editor with your ide.
 
-However, I suggest using Jetbrain [Rider](https://www.jetbrains.com/rider/) which is free since 2024 and offers comprehensive supports for Godot scripting.
+However, I suggest using Jetbrain [Rider](https://www.jetbrains.com/rider/) which is free since 2024 and offers comprehensive productivity supports for Godot cripting.
 
 I'm pretty satisified with Rider, but I also interest in learning if Rider is the best choice.
-So if you have deep experience in VS Code or Visual Studio to script Godot C#. Contact me if you would like to use one of them.
+So if you have solid experience in VS Code or Visual Studio to script Godot C#. Contact if you would rather to use one of them.
 
-## Code architecture and 3rd party library
-
+## Code architecture and third-party libraries
+Designing professional-grade software architectures often takes decades of experience, so these implementations may seem noob trying hard.
+Please contact if you have recommendations for improvement.

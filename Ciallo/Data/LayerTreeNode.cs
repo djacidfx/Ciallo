@@ -16,10 +16,35 @@ public class LayerTreeNode
     
     public readonly List<Entity> Children = [];
     
+    [IgnoreMember] public int ChildCount => Children.Count;
+    
     public void AddChild(Entity child)
     {
         if (!child.Has<LayerTreeNode>()) throw new ArgumentException("Child entity must have LayerTreeNode component.");
         Children.Add(child);
+    }
+
+    public void InsertChild(int idx, Entity child)
+    {
+        if (!child.Has<LayerTreeNode>()) throw new ArgumentException("Child entity must have LayerTreeNode component.");
+        Children.Insert(idx, child);
+    }
+    
+    public void AddDescendant(IReadOnlyList<int> parentPath, Entity child)
+    {
+        GetNode(parentPath).AddChild(child);
+    }
+
+    public void InsertDescendant(IReadOnlyList<int> targetPath, Entity descendant)
+    {
+        int idx = targetPath[^1];
+        GetNode(targetPath.SkipLast(1).ToArray()).InsertChild(idx, descendant);
+    }
+    
+    public void RemoveDescendant(IReadOnlyList<int> targetPath)
+    {
+        var parentNode = GetNode(targetPath.SkipLast(1).ToArray());
+        parentNode.Children.RemoveAt(targetPath[^1]);
     }
 
     public Entity GetEntity(IReadOnlyList<int> path)

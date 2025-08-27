@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using Godot;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Ciallo.Core;
 using ObservableCollections;
 using R3;
 
@@ -14,60 +15,51 @@ namespace Ciallo.Data;
 /// All the "document-level singleton data" should be stored in the singleton entity. (Program-level singleton we commonly use static class).
 /// The "document-level singleton data" is the data one per document, such as the document settings, layer tree, etc.
 /// </summary>
-public static class DocumentManager
+public static class WorldManager
 {
-    private static readonly List<World> LoadedDocuments = [];
+    private static readonly List<World> LoadedWorld = [];
     // Current focused document.
-    public static readonly ReactiveProperty<World> ActiveWorld = new(null);
-    public static Entity ActiveDocument => ActiveWorld.Value.Singleton();
+    public static readonly ReactiveProperty<World> WorkingWorld = new(null);
+    public static Entity WorkingDocument => WorkingWorld.Value.Singleton();
     private static readonly Dictionary<World, Entity> DocumentSingletons = [];
 
-    public static World CreateDocument([NotNull] DocumentSetting settings)
+    public static World Create([NotNull] DocumentSetting settings)
     {
         var world = World.Create();
         world.AddForbiddenComponents();
-        // Only one document supported in the view layer for current version.
-        ClearDocuments();
-        LoadedDocuments.Add(world);
-        ActiveWorld.Value = world;
+        // Only one loaded world is supported for current version.
+        Clear();
+        LoadedWorld.Add(world);
+        WorkingWorld.Value = world;
 
         // Init empty document
-        var singleton = world.Create();
-        DocumentSingletons.Add(world, singleton);
-        singleton.Add(settings);
-        
-        var layerTreeManager = new LayerTreeManager()
-        {
-            World = world,
-        };
-        var layerE = layerTreeManager.CreateAddVectorLayer();
-        singleton.Add(layerTreeManager);
-        
-        var selectionManager = new SelectionManager
-        {
-            ActiveLayer = { Value = layerE }
-        };
-        singleton.Add(selectionManager);
+        var document = world.Create();
+        DocumentSingletons.Add(world, document);
+
+        var layerTreeManager = new LayerTreeManager();
+        var selectionManager = new SelectionManager();
+        var commandManager = new CommandManager();
+        document.Add(settings, layerTreeManager, selectionManager, commandManager);
         
         return world;
     }
 
-    public static void RemoveDocument(World world)
+    public static void Remove(World world)
     {
-        if (!LoadedDocuments.Contains(world)) throw new KeyNotFoundException("The specified world does not exist in the document manager.");
-        LoadedDocuments.Remove(world);
+        if (!LoadedWorld.Contains(world)) throw new KeyNotFoundException("The specified world does not exist in the document manager.");
+        LoadedWorld.Remove(world);
         world.Dispose();
         DocumentSingletons.Remove(world);
     }
     
-    public static void ClearDocuments()
+    public static void Clear()
     {
-        foreach (var world in LoadedDocuments)
+        foreach (var world in LoadedWorld)
         {
             world.Dispose();
         }
         DocumentSingletons.Clear();
-        LoadedDocuments.Clear();
+        LoadedWorld.Clear();
     }
 
     public static Entity Singleton(this World world)

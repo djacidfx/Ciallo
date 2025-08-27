@@ -60,7 +60,7 @@ public partial class NewDocumentDialog : ConfirmationDialog
             BackgroundColor = { Value = bgColor },
             FilePath = filePath,
         };
-        DocumentManager.CreateDocument(setting);
+        WorldManager.Create(setting);
         this.Hide();
     }
     
