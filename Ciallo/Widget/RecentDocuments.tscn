@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://q7lc0j2am1si"]
 
-[ext_resource type="Texture2D" uid="uid://b6hhbllblswdp" path="res://Icons/folder-edit-outline.svg" id="1_lfm73"]
+[ext_resource type="Texture2D" uid="uid://b6hhbllblswdp" path="res://Icon/folder-edit-outline.svg" id="1_lfm73"]
 
 [node name="RecentDocument" type="MarginContainer"]
 size_flags_vertical = 3

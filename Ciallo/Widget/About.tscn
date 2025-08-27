@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://b605gtasdgmsb"]
 
-[ext_resource type="Texture2D" uid="uid://43k5wfcj0bkj" path="res://Icons/ciallo.svg" id="1_g7ast"]
+[ext_resource type="Texture2D" uid="uid://43k5wfcj0bkj" path="res://Icon/ciallo.svg" id="1_g7ast"]
 
 [node name="PopupPanel" type="AcceptDialog"]
 auto_translate_mode = 1

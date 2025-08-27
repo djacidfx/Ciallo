@@ -1,10 +1,10 @@
 [gd_scene load_steps=7 format=3 uid="uid://bd701bypxjeqj"]
 
 [ext_resource type="Script" uid="uid://cnkmrjlwncaqf" path="res://Widget/LabelLineEdit.cs" id="1_dtvx0"]
-[ext_resource type="Texture2D" uid="uid://cklq1oyy3bwjg" path="res://Icons/eye.svg" id="1_du83r"]
+[ext_resource type="Texture2D" uid="uid://cklq1oyy3bwjg" path="res://Icon/eye.svg" id="1_du83r"]
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_qp082"]
 [ext_resource type="Texture2D" uid="uid://dxxuxp83ybahu" path="res://Widget/TextureCheckBoxBackgound.tres" id="3_nt8ii"]
-[ext_resource type="Texture2D" uid="uid://cfh5fqjqt20ay" path="res://Icons/FixedSize/brush_icon_sized.svg" id="4_fuv1t"]
+[ext_resource type="Texture2D" uid="uid://cfh5fqjqt20ay" path="res://Icon/FixedSize/brush_icon_sized.svg" id="4_fuv1t"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qp082"]
 content_margin_left = 4.0
