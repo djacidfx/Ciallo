@@ -1,4 +1,5 @@
-﻿using Ciallo.Geometry;
+﻿using System;
+using Ciallo.Geometry;
 using Ciallo.Misc;
 using Godot;
 using MessagePack;
@@ -20,5 +21,16 @@ public partial class SerializerAutoload : Node
             StandardResolver.Instance
         );
         MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(DefaultResolver);
+    }
+
+    public override void _Notification(int what)
+    {
+        base._Notification(what);
+        if (what == NotificationPredelete)
+        {
+            WorldManager.Clear();
+            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+            GC.WaitForPendingFinalizers();
+        }
     }
 }

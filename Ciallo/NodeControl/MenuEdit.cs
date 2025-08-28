@@ -2,7 +2,9 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Arch.Core.Extensions;
 using Ciallo.Core;
+using Ciallo.Data;
 
 namespace Ciallo.NodeControl;
 
@@ -35,6 +37,17 @@ public partial class MenuEdit : PopupMenu
     
     public static void OnIndexPressed(int id)
     {
-        Console.WriteLine(id);
+        if(WorldManager.WorkingWorld == null) return;
+        var cmdM = WorldManager.WorkingDocument.Get<CommandManager>();
+        switch (id)
+        {
+            case 0:
+            {
+                GD.Print("undo");
+                cmdM.Undo(); break;
+            }
+            case 1: cmdM.Redo(); break;
+            default: GD.PrintErr("Unknown menu action"); break;
+        }
     }
 }

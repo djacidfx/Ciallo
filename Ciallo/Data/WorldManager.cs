@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Godot;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -11,26 +12,29 @@ using R3;
 namespace Ciallo.Data;
 
 /// <summary>
-/// Consider a document as a special singleton entity of the world.
-/// All the "document-level singleton data" should be stored in the singleton entity. (Program-level singleton we commonly use static class).
-/// The "document-level singleton data" is the data one per document, such as the document settings, layer tree, etc.
+/// We consider world and document has one-to-one relationship.
+/// In practice, a document is a special singleton entity of the world.
+/// All the "document-level singleton data" should be stored in this "document" entity. (Program-level singleton we commonly use static class).
+/// The "document-level singleton data" is the data one per document, such as the DocumentSetting, LayerTree, etc.
 /// </summary>
 public static class WorldManager
 {
-    private static readonly List<World> LoadedWorld = [];
+    public static readonly List<World> LoadedWorlds = [];
     // Current focused document.
-    public static readonly ReactiveProperty<World> WorkingWorld = new(null);
-    public static Entity WorkingDocument => WorkingWorld.Value.Singleton();
+    public static World WorkingWorld;
+    public static Entity WorkingDocument => WorkingWorld.Document();
+    public static readonly Subject<Unit> WorkingWorldChanged = new();
     private static readonly Dictionary<World, Entity> DocumentSingletons = [];
 
     public static World Create([NotNull] DocumentSetting settings)
     {
-        var world = World.Create();
-        world.AddForbiddenComponents();
         // Only one loaded world is supported for current version.
         Clear();
-        LoadedWorld.Add(world);
-        WorkingWorld.Value = world;
+        var world = World.Create();
+        world.AddForbiddenComponents();
+        WorkingWorld = world;
+        WorkingWorldChanged.OnNext(Unit.Default);
+        LoadedWorlds.Add(world);
 
         // Init empty document
         var document = world.Create();
@@ -41,28 +45,38 @@ public static class WorldManager
         var commandManager = new CommandManager();
         document.Add(settings, layerTreeManager, selectionManager, commandManager);
         
+        // var c = new NewVectorLayerCmd();
+        // c.Do();
+        // c.Free();
+        
+        // using var c = new NewVectorLayerCmd();
+        // c.Do();
+
+        var c = new NewVectorLayerCmd();
+        commandManager.AddCommand(c);
+        
         return world;
     }
 
-    public static void Remove(World world)
+    public static void Remove([NotNull] World world)
     {
-        if (!LoadedWorld.Contains(world)) throw new KeyNotFoundException("The specified world does not exist in the document manager.");
-        LoadedWorld.Remove(world);
+        if (!LoadedWorlds.Contains(world)) throw new KeyNotFoundException("The specified world does not exist.");
+        LoadedWorlds.Remove(world);
+        world.Document().Get<CommandManager>().Dispose();
         world.Dispose();
         DocumentSingletons.Remove(world);
+        if(WorkingWorld == world) WorkingWorld = LoadedWorlds.Count > 0 ? LoadedWorlds[0] : null;
     }
     
     public static void Clear()
     {
-        foreach (var world in LoadedWorld)
+        foreach (var world in LoadedWorlds.ToList())
         {
-            world.Dispose();
+            Remove(world);
         }
-        DocumentSingletons.Clear();
-        LoadedWorld.Clear();
     }
 
-    public static Entity Singleton(this World world)
+    public static Entity Document(this World world)
     {
         return DocumentSingletons[world];
     }
@@ -70,6 +84,7 @@ public static class WorldManager
     public static void AddForbiddenComponents(this World world)
     {
         var throwError = new Action(() => throw new InvalidOperationException("Primitive types cannot be used as components."));
+        // ReSharper disable UnusedParameter.Local
         world.SubscribeComponentAdded((in Entity e, ref Entity _)  => throwError()); // The most common mistake
         world.SubscribeComponentAdded((in Entity e, ref int _)=> throwError());
         world.SubscribeComponentAdded((in Entity e, ref float _) => throwError());
