@@ -112,7 +112,7 @@ You can imagine Ciallo as a building/RTS game, e.g. _City Skylines_, _Warcraft_ 
 
 ### Why Godot, not Unity or Unreal?
 
-Godot has the best 2D rendering and UI controls. 
+Godot has the best 2D rendering infrastructure and GUI widgets. 
 
 E.g., As of June 2025, Godot is the only engine that supports rendering a filled polygon directly from a list of points (without manual tessellation).
 Moreover, Godot’s `ColorPicker` control convinced me to choose it over Unity.
