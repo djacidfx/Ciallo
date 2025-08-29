@@ -21,9 +21,9 @@ public static class WorldManager
 {
     public static readonly List<World> LoadedWorlds = [];
     // Current focused document.
-    public static World WorkingWorld;
-    public static Entity WorkingDocument => WorkingWorld.Document();
-    public static readonly Subject<Unit> WorkingWorldChanged = new();
+    public static readonly ReactiveProperty<World> WorkingWorld = new(null);
+    public static Entity WorkingDocument => WorkingWorld.Value.Document();
+    
     private static readonly Dictionary<World, Entity> DocumentSingletons = [];
 
     public static World Create([NotNull] DocumentSetting settings)
@@ -32,28 +32,30 @@ public static class WorldManager
         Clear();
         var world = World.Create();
         world.AddForbiddenComponents();
-        WorkingWorld = world;
-        WorkingWorldChanged.OnNext(Unit.Default);
-        LoadedWorlds.Add(world);
 
         // Init empty document
         var document = world.Create();
         DocumentSingletons.Add(world, document);
 
+        // Add managers
         var layerTreeManager = new LayerTreeManager();
         var selectionManager = new SelectionManager();
         var commandManager = new CommandManager();
         document.Add(settings, layerTreeManager, selectionManager, commandManager);
         
-        // var c = new NewVectorLayerCmd();
-        // c.Do();
-        // c.Free();
+        // Create layer tree control
+        var sceneTree = (SceneTree)Engine.GetMainLoop();
+        var layerPanel = sceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanelControl>().Single();
+        layerPanel.CreateAddLayerTreeControl(document);
         
-        // using var c = new NewVectorLayerCmd();
-        // c.Do();
-
+        // Set as working world
+        WorkingWorld.Value = world;
+        LoadedWorlds.Add(world);
+        
+        // Add initial layer
         var c = new NewVectorLayerCmd();
-        commandManager.AddCommand(c);
+        c.Do();
+        c.Free();
         
         return world;
     }
@@ -61,11 +63,23 @@ public static class WorldManager
     public static void Remove([NotNull] World world)
     {
         if (!LoadedWorlds.Contains(world)) throw new KeyNotFoundException("The specified world does not exist.");
+        
+        // Remove working world
         LoadedWorlds.Remove(world);
+        if(WorkingWorld.Value == world) WorkingWorld.Value = LoadedWorlds.Count > 0 ? LoadedWorlds[0] : null;
+        
+        // Remove layer tree control
+        var sceneTree = (SceneTree)Engine.GetMainLoop();
+        // Could be called when Godot cleaning up nodes, so add null check.
+        var layerPanel = sceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanelControl>().SingleOrDefault();
+        layerPanel?.RemoveFreeLayerTreeControl(world.Document());
+
+        // Dispose managers
         world.Document().Get<CommandManager>().Dispose();
-        world.Dispose();
+        
+        // Remove world
         DocumentSingletons.Remove(world);
-        if(WorkingWorld == world) WorkingWorld = LoadedWorlds.Count > 0 ? LoadedWorlds[0] : null;
+        world.Dispose();
     }
     
     public static void Clear()
@@ -76,7 +90,7 @@ public static class WorldManager
         }
     }
 
-    public static Entity Document(this World world)
+    public static Entity Document([NotNull] this World world)
     {
         return DocumentSingletons[world];
     }

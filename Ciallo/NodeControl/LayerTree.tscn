@@ -1,15 +1,15 @@
 [gd_scene load_steps=4 format=3 uid="uid://c08pou8qq2rrg"]
 
-[ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://View/LayerControl.tscn" id="1_iwrph"]
-[ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://View/LayerTreeControl.cs" id="1_qbsfr"]
-[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SliderSpinBoxPair.cs" id="4_45kbp"]
+[ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://NodeControl/LayerTreeControl.cs" id="1_s3msb"]
+[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_pg7o7"]
+[ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://NodeControl/Layer.tscn" id="3_a1fln"]
 
-[node name="LayerTreeControl" type="VBoxContainer"]
+[node name="LayerTree" type="VBoxContainer"]
 offset_right = 534.0
 offset_bottom = 294.0
 size_flags_horizontal = 3
 size_flags_vertical = 3
-script = ExtResource("1_qbsfr")
+script = ExtResource("1_s3msb")
 
 [node name="Setting" type="HBoxContainer" parent="."]
 layout_mode = 2
@@ -21,7 +21,7 @@ text = "Opacity:"
 [node name="Opacity" type="HBoxContainer" parent="Setting"]
 unique_name_in_owner = true
 layout_mode = 2
-script = ExtResource("4_45kbp")
+script = ExtResource("2_pg7o7")
 MaxValue = 1.0
 Value = 1.0
 metadata/_custom_type_script = "uid://b1dclx7d0dgng"
@@ -37,11 +37,11 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 3
 
-[node name="LayerControl" parent="ScrollContainer/TreeRoot" instance=ExtResource("1_iwrph")]
+[node name="LayerControl" parent="ScrollContainer/TreeRoot" instance=ExtResource("3_a1fln")]
 layout_mode = 2
 
-[node name="LayerControl2" parent="ScrollContainer/TreeRoot" instance=ExtResource("1_iwrph")]
+[node name="LayerControl2" parent="ScrollContainer/TreeRoot" instance=ExtResource("3_a1fln")]
 layout_mode = 2
 
-[node name="LayerControl3" parent="ScrollContainer/TreeRoot" instance=ExtResource("1_iwrph")]
+[node name="LayerControl3" parent="ScrollContainer/TreeRoot" instance=ExtResource("3_a1fln")]
 layout_mode = 2

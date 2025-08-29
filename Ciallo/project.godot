@@ -43,7 +43,8 @@ enabled=PackedStringArray("res://addons/R3.Godot/plugin.cfg")
 
 [global_group]
 
-Dialogs="All dialogs group."
+Dialog="All dialogs."
+UncategorizedControl="Uncategorized controls need to be accessed in code "
 
 [gui]
 

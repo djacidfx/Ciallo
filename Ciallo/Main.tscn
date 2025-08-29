@@ -15,7 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://b4e0ypa7qifd3" path="res://Icon/lasso-fill.svg" id="13_j4qnp"]
 [ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icon/format-color-fill.svg" id="13_sqvbp"]
 [ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Widget/PaintPanelControl.tscn" id="14_hri7i"]
-[ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://NodeControl/LayerTreePanel.tscn" id="16_kjvhd"]
+[ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://NodeControl/LayerPanel.tscn" id="16_kjvhd"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
 action = &"ToolSelection"
@@ -46,10 +46,10 @@ size_flags_vertical = 0
 theme = ExtResource("1_j4qnp")
 script = ExtResource("2_j4qnp")
 
-[node name="NewDocument" parent="." groups=["Dialogs"] instance=ExtResource("3_sc1dx")]
+[node name="NewDocument" parent="." groups=["Dialog"] instance=ExtResource("3_sc1dx")]
 visible = false
 
-[node name="OpenDocument" type="FileDialog" parent="." groups=["Dialogs"]]
+[node name="OpenDocument" type="FileDialog" parent="." groups=["Dialog"]]
 title = "Open a File"
 ok_button_text = "Open"
 file_mode = 0
@@ -58,10 +58,10 @@ filters = PackedStringArray("*.ciallo")
 show_hidden_files = true
 use_native_dialog = true
 
-[node name="About" parent="." groups=["Dialogs"] instance=ExtResource("4_fpfj3")]
+[node name="About" parent="." groups=["Dialog"] instance=ExtResource("4_fpfj3")]
 visible = false
 
-[node name="NewLayer" type="ConfirmationDialog" parent="." groups=["Dialogs"]]
+[node name="NewLayer" type="ConfirmationDialog" parent="." groups=["Dialog"]]
 
 [node name="MainGui" type="VBoxContainer" parent="."]
 layout_mode = 1

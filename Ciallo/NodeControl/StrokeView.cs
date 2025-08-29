@@ -5,7 +5,7 @@ using Godot;
 
 namespace Ciallo.NodeControl;
 
-public static class StrokeViewManager
+public static class StrokeView
 {
     public static MultiMeshInstance2D CreateStrokeView([NotNull] List<Vector2> points, [NotNull] List<float> radii)
     {

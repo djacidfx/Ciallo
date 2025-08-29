@@ -7,10 +7,15 @@ using Ciallo.Misc;
 using Ciallo.Widget;
 using R3;
 
-public partial class LayerTree : Container
+
+/// <summary>
+/// The layer tree control that manages the layer controls in the UI.
+/// One instance per document.
+/// </summary>
+public partial class LayerTreeControl : Container
 {
-    [Export] public PackedScene LayerControlScene;
-    [Export] public ButtonGroup IsActiveLayerButtonGroup;
+    public static readonly PackedScene LayerScene = GD.Load<PackedScene>("res://NodeControl/Layer.tscn");
+    public readonly ButtonGroup IsActiveLayerButtonGroup = new();
     
     public VBoxContainer Root;
     
@@ -23,11 +28,16 @@ public partial class LayerTree : Container
     public override void _Ready()
     {
         Root = GetNode<VBoxContainer>("%TreeRoot");
+        // Free all existing children for preview in the Godot editor.
+        foreach (var child in Root.GetChildren())
+        {
+            child.QueueFree();
+        }
     }
 
-    public Control CreateVectorLayerControl(LayerTreeNode node, VectorLayerSetting setting)
+    public Control CreateLayerControl(LayerTreeNode node)
     {
-        var layerControl = LayerControlScene.Instantiate<Control>();
+        var layerControl = LayerScene.Instantiate<Control>();
         var subs = new CompositeDisposable();
         _subscriptions[layerControl] = subs;
         
@@ -40,10 +50,7 @@ public partial class LayerTree : Container
         var lineEdit = layerControl.GetNode<LabelLineEdit>("%LabelLineEdit");
         lineEdit.BindString(node.Name).AddTo(subs);
         
-        lineEdit.MouseEntered += () =>
-        {
-            _mouseHoveringLayer = layerControl;
-        };
+        lineEdit.MouseEntered += () => _mouseHoveringLayer = layerControl;
         
         var guiInput = lineEdit
             .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
@@ -93,7 +100,23 @@ public partial class LayerTree : Container
         return layerControl;
     }
     
-    public void RemoveLayerControl(Control layerControl)
+    public void Insert(IReadOnlyList<int> path, Control layerControl)
+    {
+        if (!_subscriptions.ContainsKey(layerControl))
+            throw new ArgumentException("The given layer control is not created by this LayerTreeControl.");
+        if (path.Count == 0)
+        {
+            Root.AddChild(layerControl);
+            return;
+        }
+        var index = path[0];
+        if (index < 0 || index > Root.GetChildCount())
+            throw new ArgumentOutOfRangeException(nameof(path), "The given path is invalid.");
+        Root.AddChild(layerControl);
+        Root.MoveChild(layerControl, index);
+    }
+    
+    public void RemoveFree(Control layerControl)
     {
         if (!_subscriptions.TryGetValue(layerControl, out var subscription))
             throw new ArgumentException("The given layer control is not managed by this LayerTreeControl.");
@@ -101,13 +124,21 @@ public partial class LayerTree : Container
         _subscriptions.Remove(layerControl);
         layerControl.QueueFree();
     }
-
+    
+    public void RemoveFree(IReadOnlyList<int> path)
+    {
+        if (path.Count == 0 || path[0] < 0 || path[0] >= Root.GetChildCount())
+            throw new ArgumentOutOfRangeException(nameof(path), "The given path is invalid.");
+        var layerControl = (Control)Root.GetChild(path[0]);
+        RemoveFree(layerControl);
+    }
+    
     private void OnDragStart(Control layerControl, InputEventMouseMotion motion)
     {
         
     }
 
-    public void OnDragging(Control layerControl, InputEventMouseMotion e)
+    private void OnDragging(Control layerControl, InputEventMouseMotion e)
     {
         if (_mouseHoveringLayer == null) return;
         var locPos = _mouseHoveringLayer.GetLocalMousePosition();

@@ -39,11 +39,11 @@ public partial class MenuFile : PopupMenu
         switch (id)
         {
             case 0: // New Document
-                var dialogNew = GetTree().GetNodesInGroup("Dialogs").OfType<ConfirmationDialog>().Single(n => n.Name == "NewDocument");
+                var dialogNew = GetTree().GetNodesInGroup("Dialog").OfType<ConfirmationDialog>().Single(n => n.Name == "NewDocument");
                 dialogNew.Popup();
                 break;
             case 1: // Open Document
-                var dialogOpen = GetTree().GetNodesInGroup("Dialogs").OfType<FileDialog>().Single(n => n.Name == "OpenDocument");
+                var dialogOpen = GetTree().GetNodesInGroup("Dialog").OfType<FileDialog>().Single(n => n.Name == "OpenDocument");
                 dialogOpen.Popup();
                 break;
             case 3: // Save

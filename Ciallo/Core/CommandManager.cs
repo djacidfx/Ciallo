@@ -13,14 +13,14 @@ public class CommandManager : IDisposable
     public void ClearHistory() => _undoRedo.ClearHistory();
     public int HistoryCount =>_undoRedo.GetHistoryCount();
     
-    public void AddCommand(CommandBase command)
+    public void Commit(CommandBase command, bool execute = true)
     {
         _undoRedo.CreateAction(command.Name);
         _undoRedo.AddDoMethod(new(command, CommandBase.MethodName.Do));
         _undoRedo.AddDoReference(command);
         _undoRedo.AddUndoMethod(new(command, CommandBase.MethodName.Undo));
         _undoRedo.AddUndoReference(command);
-        _undoRedo.CommitAction();
+        _undoRedo.CommitAction(execute);
     }
 
     private void ReleaseUnmanagedResources()

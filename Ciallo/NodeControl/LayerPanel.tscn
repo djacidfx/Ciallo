@@ -1,0 +1,42 @@
+[gd_scene load_steps=6 format=3 uid="uid://bnhhwk1a3yv70"]
+
+[ext_resource type="PackedScene" uid="uid://c08pou8qq2rrg" path="res://NodeControl/LayerTree.tscn" id="1_1j0kq"]
+[ext_resource type="Script" uid="uid://crbythwxpbjg3" path="res://NodeControl/LayerAction.cs" id="1_geqg7"]
+[ext_resource type="Script" uid="uid://di0e1em6fxdc2" path="res://NodeControl/LayerPanelControl.cs" id="1_nug42"]
+[ext_resource type="Texture2D" uid="uid://tugksq2pg442" path="res://Icon/layers-plus.svg" id="1_ulw2x"]
+[ext_resource type="Texture2D" uid="uid://c6pduk2ad1t3i" path="res://Icon/layers-minus.svg" id="2_tod7h"]
+
+[node name="LayerPanel" type="VBoxContainer" groups=["UncategorizedControl"]]
+offset_right = 478.0
+offset_bottom = 294.0
+theme_override_constants/separation = 5
+script = ExtResource("1_nug42")
+
+[node name="HSeparator" type="HSeparator" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="LayerAction" type="HFlowContainer" parent="."]
+layout_mode = 2
+script = ExtResource("1_geqg7")
+
+[node name="New" type="Button" parent="LayerAction"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+theme_type_variation = &"FlatButton"
+icon = ExtResource("1_ulw2x")
+expand_icon = true
+
+[node name="Remove" type="Button" parent="LayerAction"]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+theme_type_variation = &"FlatButton"
+icon = ExtResource("2_tod7h")
+expand_icon = true
+
+[node name="LayerTreePreview" parent="." instance=ExtResource("1_1j0kq")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[connection signal="pressed" from="LayerAction/New" to="LayerAction" method="OnNewLayer"]
+[connection signal="pressed" from="LayerAction/Remove" to="LayerAction" method="OnRemoveLayer"]
