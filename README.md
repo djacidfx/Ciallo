@@ -113,7 +113,8 @@ My first attempt to develop Ciallo was with Vulkan, [project link](https://githu
 I soon realize the complexity of Vulkan: it isn’t designed for one-person projects, and even highly experienced graphics engineers can make simple yet catastrophic mistakes, see [Cherno’s Vulkan story](https://youtu.be/bUUZ1iD9_e4?si=vVCUxXU-dScgcZx5&t=1438). Only large teams can truly afford the mental burden of Vulkan.
 
 So, I decided to sacrifice the freedom of controlling graphics in exchange for productivity. Under this idea, one of the game engines is the best choice.
-You can imagine Ciallo as a building/RTS game, e.g., _City Skylines_, _Warcraft_ III, players build strokes (polylines with brush materials) and place color blocks (polygons with fill materials) in the game world (canvas).
+
+You can imagine Ciallo as a building/RTS game, e.g., _City Skylines_, _Warcraft III_. Players build strokes (polylines with brush materials) and place color blocks (polygons with fill materials) in the game world (canvas).
 
 ### Why Godot, not Unity or Unreal?
 
