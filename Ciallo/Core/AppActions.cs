@@ -1,0 +1,33 @@
+﻿using Godot;
+
+namespace Ciallo.Core;
+
+/// <summary>
+/// Static access to the actions defined in godot editor.
+/// </summary>
+/// <remarks>Using GodotSharp.SourceGenerators library</remarks>
+[InputMap(nameof(AppAction))]
+public static partial class AppActions;
+
+public class AppAction(StringName name)
+{
+    public StringName Name => name;
+    public readonly Shortcut Shortcut = new()
+    {
+        Events = [new InputEventAction
+        {
+            Action = name,
+            Pressed = true,
+        }],
+    };
+
+    public bool IsPressed => Input.IsActionPressed(name);
+    public bool IsJustPressed => Input.IsActionJustPressed(name);
+    public bool IsJustReleased => Input.IsActionJustReleased(name);
+    public float Strength => Input.GetActionStrength(name);
+
+    public void Press() => Input.ActionPress(name);
+    public void Release() => Input.ActionRelease(name);
+
+    public static implicit operator StringName(AppAction input) => input.Name;
+}

@@ -70,7 +70,7 @@ public static class WorldManager
         
         // Remove layer tree control
         var sceneTree = (SceneTree)Engine.GetMainLoop();
-        // Could be called when Godot cleaning up nodes, so add null check.
+        //// add null check since the method could be called as long as Godot cleaning up nodes.
         var layerPanel = sceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanelControl>().SingleOrDefault();
         layerPanel?.RemoveFreeLayerTreeControl(world.Document());
 

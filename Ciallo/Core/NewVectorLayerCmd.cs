@@ -7,10 +7,19 @@ using Godot;
 
 namespace Ciallo.Core;
 
-public partial class NewVectorLayerCmd(List<int> insertPath = null) : CommandBase
+public partial class NewVectorLayerCmd : CommandBase
 {
-    private List<int> _insertPath = insertPath;
+    private List<int> _insertPath;
     private Entity _originalWorkingLayer = Entity.Null;
+
+    public NewVectorLayerCmd()
+    {
+    }
+
+    public NewVectorLayerCmd(List<int> insertPath = null)
+    {
+        _insertPath = insertPath;
+    }
 
     public override void Do()
     {
@@ -46,16 +55,16 @@ public partial class NewVectorLayerCmd(List<int> insertPath = null) : CommandBas
 
     public override void Undo()
     {
-        // Layer Tree
-        var tree = Document.Get<LayerTreeManager>();
-        tree.Root.RemoveDescendant(_insertPath);
+        // Selection
+        var selection = Document.Get<SelectionManager>();
+        selection.WorkingLayer.Value = _originalWorkingLayer;
         
         // Layer tree view
         var layerTreeControl = Document.Get<LayerTreeControl>();
         layerTreeControl.RemoveFree(_insertPath);
         
-        // Selection
-        var selection = Document.Get<SelectionManager>();
-        selection.WorkingLayer.Value = _originalWorkingLayer;
+        // Layer Tree
+        var tree = Document.Get<LayerTreeManager>();
+        tree.Root.RemoveDescendant(_insertPath);
     }
 }

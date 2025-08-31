@@ -10,26 +10,28 @@ namespace Ciallo.NodeControl;
 
 public partial class MenuEdit : PopupMenu
 {
-    // Identical to the items inside the PopupMenu node's items property.
-    public static readonly Dictionary<int, StringName> IndexToActionName = new()
+    public static readonly OrderedDictionary<string, AppAction> MenuItems = new()
     {
-        { 0, ActionNames.Undo },
-        { 1, ActionNames.Redo },
+        { "Undo", AppActions.Undo },
+        { "Redo", AppActions.Redo },
+        { "-1", null },
+        { "Cut", AppActions.Cut },
+        { "Copy", AppActions.Copy },
+        { "Paste", AppActions.Paste },
+        { "Delete", AppActions.Delete },
     };
     
     public override void _Ready()
     {
-        foreach(var (i, item) in IndexToActionName)
+        foreach(var (i, item) in MenuItems.Index())
         {
-            var shortcut = new Shortcut
+            if(item.Key.StartsWith('-'))
             {
-                Events = [new InputEventAction
-                {
-                    Action = item,
-                    Pressed = true,
-                }],
-            };
-            SetItemShortcut(i, shortcut);
+                AddSeparator();
+                continue;
+            }
+            AddItem(item.Key);
+            if (item.Value != null) SetItemShortcut(i, item.Value.Shortcut);
         }
         
         IndexPressed += id => OnIndexPressed((int)id);
@@ -37,17 +39,13 @@ public partial class MenuEdit : PopupMenu
     
     public static void OnIndexPressed(int id)
     {
-        if(WorldManager.WorkingWorld == null) return;
+        if(WorldManager.WorkingWorld.Value == null) return;
         var cmdM = WorldManager.WorkingDocument.Get<CommandManager>();
         switch (id)
         {
-            case 0:
-            {
-                GD.Print("undo");
-                cmdM.Undo(); break;
-            }
+            case 0: cmdM.Undo(); break;
             case 1: cmdM.Redo(); break;
-            default: GD.PrintErr("Unknown menu action"); break;
+            default: GD.PrintErr($"Unhandled menu item index: {id}"); break;
         }
     }
 }

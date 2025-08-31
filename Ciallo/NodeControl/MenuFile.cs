@@ -3,32 +3,36 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Core;
+using Ciallo.Data;
 
 namespace Ciallo.NodeControl;
 
 public partial class MenuFile : PopupMenu
 {
-    // Identical to the items inside the PopupMenu node's items property.
-    public static readonly Dictionary<int, StringName> IndexToActionName = new()
+    public static readonly OrderedDictionary<string, AppAction> MenuItems = new()
     {
-        { 0, ActionNames.NewDocument },
-        { 1, ActionNames.OpenDocument },
-        { 3, ActionNames.Save },
+        { "New Document", AppActions.NewDocument },
+        { "Open Document", AppActions.OpenDocument },
+        { "Close Document", null },
+        { "-1", null },
+        { "Save", AppActions.Save },
+        { "Save As...", AppActions.SaveAs },
+        { "-2", null },
+        { "Export as image", null },
+        { "Export as Godot scene", null },
     };
     
     public override void _Ready()
     {
-        foreach(var (i, item) in IndexToActionName)
+        foreach(var (i, item) in MenuItems.Index())
         {
-            var shortcut = new Shortcut
+            if(item.Key.StartsWith('-'))
             {
-                Events = [new InputEventAction
-                {
-                    Action = item,
-                    Pressed = true,
-                }],
-            };
-            SetItemShortcut(i, shortcut);
+                AddSeparator();
+                continue;
+            }
+            AddItem(item.Key);
+            if (item.Value != null) SetItemShortcut(i, item.Value.Shortcut);
         }
         
         IndexPressed += id => OnIndexPressed((int)id);
@@ -46,8 +50,9 @@ public partial class MenuFile : PopupMenu
                 var dialogOpen = GetTree().GetNodesInGroup("Dialog").OfType<FileDialog>().Single(n => n.Name == "OpenDocument");
                 dialogOpen.Popup();
                 break;
-            case 3: // Save
-                
+            case 2: // Close Document
+                if(WorldManager.WorkingWorld == null) break;
+                WorldManager.Remove(WorldManager.WorkingWorld.Value);
                 break;
             default:
                 GD.PrintErr($"Unhandled menu item index: {id}");
