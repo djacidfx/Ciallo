@@ -4,10 +4,10 @@ using R3;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 
-namespace Ciallo.Core;
+namespace Ciallo.Data;
 
 [JsonObject(MemberSerialization.OptIn)]
-public partial class Preference : Node
+public class Preference
 {
     #region WorldView
     public ReactiveProperty<Viewport.Msaa> Msaa = new(Viewport.Msaa.Msaa4X);
@@ -28,16 +28,6 @@ public partial class Preference : Node
     {
         Converters = {new ReactivePropertyConverter()}
     };
-
-    public override void _Ready()
-    {
-        Load();
-    }
-
-    public override void _ExitTree()
-    {
-        Save();
-    }
 
     public void Load()
     {

@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace Ciallo.Core;
+namespace Ciallo.Command;
 
 /// <summary>
 /// Static access to the actions defined in godot editor.

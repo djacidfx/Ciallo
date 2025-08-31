@@ -5,7 +5,7 @@ using Arch.Core.Extensions;
 using Ciallo.Data;
 using Godot;
 
-namespace Ciallo.Core;
+namespace Ciallo.Command;
 
 public partial class NewVectorLayerCmd : CommandBase
 {

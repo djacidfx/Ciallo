@@ -1,7 +1,7 @@
 ﻿using System;
 using Godot;
 
-namespace Ciallo.Core;
+namespace Ciallo.Command;
 
 public class CommandManager : IDisposable
 {

@@ -7,7 +7,7 @@ using Godot;
 using Godot.Collections;
 using Humanizer;
 
-namespace Ciallo.Core;
+namespace Ciallo.Command;
 
 /// <remarks>
 /// Shen: Several attempts have been made to allow `using var cmd = new Cmd()`, but all failed.

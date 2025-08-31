@@ -70,7 +70,7 @@ public partial class WorldViewContainer : SubViewportContainer
             _camera.Position = Vector2.Zero;
         }
         // Scroll mouse wheel zooming.
-        var zoomFactor = Autoload.Preference.MouseWheelZoomFactor.Value;
+        var zoomFactor = Preferences.MouseWheelZoomFactor.Value;
         if (e is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp } && _isHovering)
         {
             _zoomControl.Value *= 1.0f + zoomFactor;

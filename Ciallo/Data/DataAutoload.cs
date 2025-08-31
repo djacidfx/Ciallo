@@ -8,7 +8,7 @@ using MessagePackGodot;
 
 namespace Ciallo.Data;
 
-public partial class SerializerAutoload : Node
+public partial class DataAutoload : Node
 {
     public IFormatterResolver DefaultResolver;
     
@@ -21,16 +21,17 @@ public partial class SerializerAutoload : Node
             StandardResolver.Instance
         );
         MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(DefaultResolver);
+        
+        Preferences.Load();
     }
 
     public override void _Notification(int what)
     {
-        base._Notification(what);
-        if (what == NotificationPredelete)
-        {
-            WorldManager.Clear();
-            GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
-            GC.WaitForPendingFinalizers();
-        }
+        if (what != NotificationPredelete) return;
+        WorldManager.Clear();
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
+        GC.WaitForPendingFinalizers();
+            
+        Preferences.Save();
     }
 }
