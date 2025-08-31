@@ -2,10 +2,10 @@
 
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://NodeControl/PaintPanel.cs" id="1_h7pkx"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_cccke"]
-[ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Core/WorldView.tscn" id="2_peemv"]
+[ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Command/WorldView.tscn" id="2_peemv"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://NodeControl/WorldViewContainer.cs" id="2_t3dnt"]
 
-[node name="PaintSceneControl" type="PanelContainer"]
+[node name="PaintPanel" type="PanelContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -78,7 +78,7 @@ script = ExtResource("2_t3dnt")
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldViewContainer"]
 handle_input_locally = false
 gui_disable_input = true
-size = Vector2i(2, 2)
+size = Vector2i(1920, 1042)
 render_target_update_mode = 4
 
 [node name="WorldView" parent="VBoxContainer/WorldViewContainer/SubViewport" instance=ExtResource("2_peemv")]
@@ -86,8 +86,6 @@ render_target_update_mode = 4
 [node name="Camera2D" type="Camera2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
 unique_name_in_owner = true
 ignore_rotation = false
-
-[node name="Node" type="Node" parent="."]
 
 [connection signal="gui_input" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnGuiInput"]
 [connection signal="mouse_entered" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnMouseEnter"]

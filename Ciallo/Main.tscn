@@ -14,7 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://cjf7u8mgog5mr" path="res://Icon/brush.svg" id="11_mxvw5"]
 [ext_resource type="Texture2D" uid="uid://b4e0ypa7qifd3" path="res://Icon/lasso-fill.svg" id="13_j4qnp"]
 [ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icon/format-color-fill.svg" id="13_sqvbp"]
-[ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://Widget/PaintPanelControl.tscn" id="14_hri7i"]
+[ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://NodeControl/WelcomePanel.tscn" id="16_fpfj3"]
 [ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://NodeControl/LayerPanel.tscn" id="16_kjvhd"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
@@ -231,5 +231,5 @@ layout_mode = 2
 size_flags_vertical = 3
 split_offset = 410
 
-[node name="MainPaintPanel" parent="MainGui/MarginContainer/UIBlock/UIBlock/HSplitContainer" instance=ExtResource("14_hri7i")]
+[node name="WelcomePanel" parent="MainGui/MarginContainer/UIBlock/UIBlock/HSplitContainer" instance=ExtResource("16_fpfj3")]
 layout_mode = 2
