@@ -1,7 +1,7 @@
 # Ciallo development guide
 ## Introduction
 This guide (and Ciallo's code) is not yet complete.
-Although the current version seems like Shen's personal booknote, it aims to be a comprehensive guide for developing Ciallo.
+Although the current version seems like Shen's personal book note, it aims to be a comprehensive guide for developing Ciallo.
 
 ## Basic setup
 ### How to build
@@ -12,13 +12,13 @@ Ciallo is built on Godot. Building the core part of Ciallo is the same as buildi
 - Open the `Ciallo/project.godot` file with your Godot editor, then build and run.
 
 ### IDE
-In thoery, you can use any IDEs supporting C#. Follow the Godot's [guide](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor) to link the Godot editor with your ide.
+In theory, you can use any IDE supporting C#. Follow the Godot [guide](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor) to link the Godot editor with your IDE.
 
-However, I suggest using Jetbrain [Rider](https://www.jetbrains.com/rider/) which is free since 2024 and offers comprehensive productivity supports for Godot cripting.
+However, I suggest using JetBrains [Rider](https://www.jetbrains.com/rider/), which is free since 2024 and offers comprehensive productivity support for Godot scripting.
 
-I'm pretty satisified with Rider, but I also interest in learning if Rider is the best choice.
-So if you have solid experience in VS Code or Visual Studio to script Godot C#. Contact if you would rather to use one of them.
+I'm pretty satisfied with Rider, but also interested in learning if Rider is the best choice.
+So if you have solid experience in VS Code or Visual Studio to script Godot C#. Contact if you would rather use one of them.
 
 ## Code architecture and third-party libraries
 Designing professional-grade software architectures often takes decades of experience, so these implementations may seem noob trying hard.
-Please contact if you have recommendations for improvement.
+Please contact us if you have recommendations for improvement.
