@@ -29,6 +29,7 @@ theme_override_constants/separation = -10
 alignment = 1
 
 [node name="Label" type="RichTextLabel" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+auto_translate_mode = 2
 custom_minimum_size = Vector2(121.695, 0)
 layout_mode = 2
 bbcode_enabled = true
@@ -43,7 +44,8 @@ texture = ExtResource("1_g7ast")
 expand_mode = 5
 stretch_mode = 5
 
-[node name="Label" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+[node name="Version" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+auto_translate_mode = 2
 custom_minimum_size = Vector2(123.095, 0)
 layout_mode = 2
 size_flags_horizontal = 8

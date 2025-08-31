@@ -1,4 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://duv6uwd686wfj"]
+[gd_scene load_steps=3 format=3 uid="uid://duv6uwd686wfj"]
+
+[ext_resource type="Script" uid="uid://gt4adx4emf1t" path="res://NodeControl/LanguageList.cs" id="1_ad8c8"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rchsu"]
 
@@ -21,7 +23,7 @@ layout_mode = 2
 auto_translate_mode = 2
 layout_mode = 2
 bbcode_enabled = true
-text = "[font_size=64] Ciallo ～(∠・ω< )⌒★! [/font_size]"
+text = "[font_size=82] Ciallo ～(∠・ω< )⌒★! [/font_size]"
 fit_content = true
 horizontal_alignment = 1
 
@@ -31,30 +33,59 @@ theme_override_constants/separation = 65
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/margin_left = 40
 theme_override_constants/margin_right = 40
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/MarginContainer"]
 layout_mode = 2
 theme_override_constants/separation = 140
+alignment = 1
 
 [node name="Language" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
+theme_override_constants/separation = 20
 
 [node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Language"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 26
 text = "Language"
+
+[node name="LanguageList" type="ItemList" parent="VBoxContainer/MarginContainer/HBoxContainer/Language"]
+auto_translate_mode = 2
+layout_mode = 2
+auto_width = true
+auto_height = true
+item_count = 7
+item_0/text = "English"
+item_1/text = "français"
+item_2/text = "Deutsch"
+item_3/text = "日本語"
+item_4/text = "한국어"
+item_5/text = "中文（简体）"
+item_6/text = "中文（繁體）"
+script = ExtResource("1_ad8c8")
 
 [node name="Start" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Start"]
 layout_mode = 2
+theme_override_font_sizes/font_size = 26
 text = "Start"
 
-[node name="RecentFiles" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
+[node name="Recent" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/RecentFiles"]
+[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Recent"]
 layout_mode = 2
-text = "Recent Files"
+theme_override_font_sizes/font_size = 26
+text = "Recent documents"
+
+[node name="Sponsor" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Sponsor"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 26
+text = "Sponsor"

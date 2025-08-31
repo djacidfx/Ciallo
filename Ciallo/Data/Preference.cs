@@ -14,32 +14,42 @@ public class Preference
     public ReactiveProperty<bool> UseTAA = new(false);
     public ReactiveProperty<bool> UseFXAA = new(false);
     public ReactiveProperty<float> MouseWheelZoomFactor = new(0.1f);
+
+    public List<string> SupportedLanguages = 
+    [
+        "en",
+        "fr",
+        "de",
+        "ja",
+        "ko",
+        "zh_CN",
+        "zh_TW",
+    ];
+
     #endregion
-    
+
     [JsonProperty]
     public ReactiveProperty<string> Language = new("en");
     [JsonProperty]
     public List<string> RecentFiles = [];
     
-    #region save load json
+    
+    #region Save Load Json
     public static readonly string Path = "res://Temp/Preference.json";
-    public static bool FileExists = false;
     private static JsonSerializerSettings _options = new()
     {
         Converters = {new ReactivePropertyConverter()}
     };
 
-    public void Load()
+    public bool TryLoad()
     {
         if (!FileAccess.FileExists(Path))
-        {
-            FileExists = false;
-            return;
-        }
+            return false;
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
         
         JsonConvert.PopulateObject(content,this, _options);
+        return true;
     }
 
     public void Save()

@@ -31,16 +31,15 @@ public static class BindOptionButton
     /// <param name="button"></param>
     /// <param name="items">The list options.</param>
     /// <param name="property"></param>
+    /// <param name="toString"></param>
     /// <typeparam name="T">Use `ToString()` as item string.</typeparam>
     public static CompositeDisposable BindValue<T>(this OptionButton button, IReadOnlyList<T> items,
-        [NotNull] ReactiveProperty<T> property)
+        [NotNull] ReactiveProperty<T> property, Func<T, string> toString = null)
     {
         if(button.AllowReselect) throw new ArgumentException("AllowReselect must be false.");
         button.Clear();
-        foreach (var i in items)
-        {
-            button.AddItem(i.ToString());
-        }
+        foreach (var item in items)
+            button.AddItem(toString != null ? toString(item) : item.ToString());
         
         // Bind
         var subs = new CompositeDisposable();
