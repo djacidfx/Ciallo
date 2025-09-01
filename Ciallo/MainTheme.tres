@@ -1,6 +1,8 @@
-[gd_resource type="Theme" load_steps=10 format=3 uid="uid://cmwretuqbofqt"]
+[gd_resource type="Theme" load_steps=11 format=3 uid="uid://cmwretuqbofqt"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8s18r"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rfn4m"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4as0w"]
 
@@ -71,6 +73,7 @@ bg_color = Color(1, 1, 1, 0)
 [resource]
 default_font_size = 22
 Button/styles/focus = SubResource("StyleBoxEmpty_8s18r")
+ItemList/styles/focus = SubResource("StyleBoxEmpty_rfn4m")
 LineEdit/styles/focus = SubResource("StyleBoxEmpty_4as0w")
 TabBar/styles/tab_focus = SubResource("StyleBoxEmpty_yhag5")
 TextureCheckBox/base_type = &"CheckBox"

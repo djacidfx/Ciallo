@@ -131,6 +131,7 @@ theme_override_constants/margin_left = 10
 [node name="UIBlock" type="HSplitContainer" parent="MainGui/MarginContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+split_offset = 365
 
 [node name="VSplit" type="VSplitContainer" parent="MainGui/MarginContainer/UIBlock"]
 layout_mode = 2

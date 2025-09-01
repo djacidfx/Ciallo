@@ -16,7 +16,7 @@ theme_override_styles/panel = SubResource("StyleBoxEmpty_rchsu")
 layout_mode = 2
 
 [node name="Blank" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
 [node name="RichTextLabel" type="RichTextLabel" parent="VBoxContainer"]
@@ -42,14 +42,22 @@ layout_mode = 2
 theme_override_constants/separation = 140
 alignment = 1
 
+[node name="Sponsor" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Sponsor"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Sponsor"
+
 [node name="Language" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 20
 
 [node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Language"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
-text = "Language"
+theme_override_font_sizes/font_size = 32
+text = "Languages"
 
 [node name="LanguageList" type="ItemList" parent="VBoxContainer/MarginContainer/HBoxContainer/Language"]
 auto_translate_mode = 2
@@ -71,7 +79,7 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Start"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 32
 text = "Start"
 
 [node name="Recent" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
@@ -79,13 +87,5 @@ layout_mode = 2
 
 [node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Recent"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 32
 text = "Recent documents"
-
-[node name="Sponsor" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Sponsor"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 26
-text = "Sponsor"

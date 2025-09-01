@@ -27,7 +27,12 @@ public partial class DataAutoload : Node
         MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(DefaultResolver);
 
         bool preferenceFileExists = Preferences.TryLoad();
-        if (!preferenceFileExists) Preferences.Language.Value = OS.GetLocale();
+        if (!preferenceFileExists)
+        {
+            var idx = Preferences.SupportedLanguages.IndexOf(OS.GetLocale(), LanguageComparer.Instance);
+            if(idx != -1)
+                Preferences.Language.Value = Preferences.SupportedLanguages[idx];
+        }
         Preferences.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
     }
 
