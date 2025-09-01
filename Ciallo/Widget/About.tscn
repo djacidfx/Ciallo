@@ -28,14 +28,6 @@ size_flags_horizontal = 4
 theme_override_constants/separation = -10
 alignment = 1
 
-[node name="Label" type="RichTextLabel" parent="MarginContainer/VBoxContainer/HBoxContainer"]
-auto_translate_mode = 2
-custom_minimum_size = Vector2(121.695, 0)
-layout_mode = 2
-bbcode_enabled = true
-text = "[font_size=42]Ciallo[/font_size]"
-fit_content = true
-
 [node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer/HBoxContainer"]
 custom_minimum_size = Vector2(320, 0)
 layout_mode = 2

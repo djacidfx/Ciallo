@@ -1,0 +1,9 @@
+[gd_resource type="SystemFont" load_steps=2 format=3 uid="uid://vj6b51ucwaps"]
+
+[sub_resource type="SystemFont" id="SystemFont_kklsv"]
+font_names = PackedStringArray("Meiryo UI", "Noto Sans JP")
+
+[resource]
+fallbacks = Array[Font]([SubResource("SystemFont_kklsv")])
+font_names = PackedStringArray("Noto Sans SC")
+oversampling = 2.0
