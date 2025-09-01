@@ -151,6 +151,10 @@ ToolPaintFill={
 
 pen_tablet/driver.windows="auto"
 
+[internationalization]
+
+locale/translations=PackedStringArray("res://Localization/TranslatableStrings.zh_CN.translation")
+
 [navigation]
 
 2d/default_link_connection_radius=0.01
