@@ -31,7 +31,7 @@ public partial class MenuFile : PopupMenu
                 AddSeparator();
                 continue;
             }
-            AddItem(item.Key);
+            AddItem(Tr(item.Key));
             if (item.Value != null) SetItemShortcut(i, item.Value.Shortcut);
         }
         
