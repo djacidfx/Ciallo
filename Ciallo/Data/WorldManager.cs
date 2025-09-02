@@ -25,6 +25,7 @@ public static class WorldManager
     public static Entity WorkingDocument => WorkingWorld.Value.Document();
     
     private static readonly Dictionary<World, Entity> DocumentSingletons = [];
+    private static readonly SceneTree SceneTree = (SceneTree)Engine.GetMainLoop();
 
     public static World Create([NotNull] DocumentSetting settings)
     {
@@ -43,12 +44,13 @@ public static class WorldManager
         var commandManager = new CommandManager();
         document.Add(settings, layerTreeManager, selectionManager, commandManager);
         
-        // Create layer tree view control
-        var sceneTree = (SceneTree)Engine.GetMainLoop();
-        var layerPanel = sceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
+        // Create layer tree control
+        var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
         layerPanel.CreateAddLayerTreeControl(document);
         
         // Create paint panel
+        var paintPanelContainer = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().Single();
+        paintPanelContainer.CreateAddPaintPanel(document);
         
         // Set as working world
         WorkingWorld.Value = world;
@@ -70,10 +72,13 @@ public static class WorldManager
         LoadedWorlds.Remove(world);
         if(WorkingWorld.Value == world) WorkingWorld.Value = LoadedWorlds.Count > 0 ? LoadedWorlds[0] : null;
         
-        // Remove layer tree control
-        var sceneTree = (SceneTree)Engine.GetMainLoop();
+        // Remove paint panel
         //// add null check since the method could be called as long as Godot cleaning up nodes.
-        var layerPanel = sceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().SingleOrDefault();
+        var paintPanelContainer = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().SingleOrDefault();
+        paintPanelContainer?.RemoveFreePaintPanel(world.Document());
+        
+        // Remove layer tree control
+        var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().SingleOrDefault();
         layerPanel?.RemoveFreeLayerTreeControl(world.Document());
 
         // Dispose managers

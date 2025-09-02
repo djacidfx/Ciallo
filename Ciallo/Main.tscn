@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=24 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://bc4wj7b6spts" path="res://Main.cs" id="2_j4qnp"]
@@ -17,7 +17,6 @@
 [ext_resource type="Script" uid="uid://b7mwe7nmkxh5d" path="res://PaintPanelContainer.cs" id="16_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://NodeControl/WelcomePanel.tscn" id="16_fpfj3"]
 [ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://NodeControl/LayerPanel.tscn" id="16_kjvhd"]
-[ext_resource type="PackedScene" uid="uid://cmxkg61nilwq8" path="res://NodeControl/PaintPanel.tscn" id="17_sc1dx"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
 action = &"ToolSelection"
@@ -227,7 +226,7 @@ color = Color(0.124784, 0.124784, 0.124784, 1)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="PaintPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock"]
+[node name="PaintPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock" groups=["UncategorizedControl"]]
 layout_mode = 2
 theme_override_constants/margin_left = 0
 theme_override_constants/margin_top = 0
@@ -236,7 +235,4 @@ theme_override_constants/margin_bottom = 0
 script = ExtResource("16_5tuhn")
 
 [node name="WelcomePanel" parent="MainGui/MarginContainer/UIBlock/PaintPanelContainer" instance=ExtResource("16_fpfj3")]
-layout_mode = 2
-
-[node name="PaintPanel" parent="MainGui/MarginContainer/UIBlock/PaintPanelContainer" instance=ExtResource("17_sc1dx")]
 layout_mode = 2
