@@ -43,10 +43,12 @@ public static class WorldManager
         var commandManager = new CommandManager();
         document.Add(settings, layerTreeManager, selectionManager, commandManager);
         
-        // Create layer tree control
+        // Create layer tree view control
         var sceneTree = (SceneTree)Engine.GetMainLoop();
         var layerPanel = sceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanelControl>().Single();
         layerPanel.CreateAddLayerTreeControl(document);
+        
+        // Create document view
         
         // Set as working world
         WorkingWorld.Value = world;

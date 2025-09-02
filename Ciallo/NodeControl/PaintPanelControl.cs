@@ -15,10 +15,7 @@ public partial class PaintPanelControl : PanelContainer
                           ?? throw new NullReferenceException("ZoomControl not found.");
         var rotationControl = GetNode<SpinSlider>("%RotationControl")
                               ?? throw new NullReferenceException("RotationControl not found.");
-        zoomControl.ValueChanged += newZoom =>
-        {
-            Camera.Zoom = Vector2.One * (float)newZoom; 
-        };
+        zoomControl.ValueChanged += newZoom => Camera.Zoom = Vector2.One * (float)newZoom;
         rotationControl.ValueChanged += newRotation =>
         {
             // Negative since setting "camera rotation" is inverted to "canvas rotation".
