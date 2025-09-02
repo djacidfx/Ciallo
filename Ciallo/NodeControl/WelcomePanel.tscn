@@ -1,9 +1,16 @@
-[gd_scene load_steps=4 format=3 uid="uid://duv6uwd686wfj"]
+[gd_scene load_steps=5 format=3 uid="uid://duv6uwd686wfj"]
 
 [ext_resource type="Script" uid="uid://gt4adx4emf1t" path="res://NodeControl/LanguageList.cs" id="1_ad8c8"]
 [ext_resource type="Texture2D" uid="uid://43k5wfcj0bkj" path="res://Icon/ciallo.svg" id="1_xhgsw"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rchsu"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xhgsw"]
+draw_center = false
+border_width_left = 5
+border_width_right = 5
+border_color = Color(0.124784, 0.124784, 0.124784, 1)
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_xhgsw"]
+color = Color(0.728829, 0.728829, 0.728829, 1)
 
 [node name="WelcomePanel" type="PanelContainer"]
 anchors_preset = 15
@@ -11,55 +18,58 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("StyleBoxEmpty_rchsu")
+theme_override_styles/panel = SubResource("StyleBoxFlat_xhgsw")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 100
+theme_override_constants/margin_right = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
 
-[node name="Blank" type="Control" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 10)
-layout_mode = 2
-
-[node name="TextureRect" type="TextureRect" parent="VBoxContainer"]
-custom_minimum_size = Vector2(0, 100)
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 85)
 layout_mode = 2
 texture = ExtResource("1_xhgsw")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="HSeparator" type="HSeparator" parent="VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 65
+theme_override_styles/separator = SubResource("StyleBoxLine_xhgsw")
 
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 40
 theme_override_constants/margin_right = 40
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/MarginContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer"]
 layout_mode = 2
 theme_override_constants/separation = 140
 alignment = 1
 
-[node name="Sponsor" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
+[node name="Sponsor" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Sponsor"]
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Sponsor"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Sponsor"
 
-[node name="Language" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
+[node name="Language" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Language"]
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Language"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Languages"
 
-[node name="LanguageList" type="ItemList" parent="VBoxContainer/MarginContainer/HBoxContainer/Language"]
+[node name="LanguageList" type="ItemList" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Language"]
 auto_translate_mode = 2
 layout_mode = 2
 auto_width = true
@@ -74,18 +84,18 @@ item_5/text = "中文（简体）"
 item_6/text = "中文（繁體）"
 script = ExtResource("1_ad8c8")
 
-[node name="Start" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
+[node name="Start" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Start"]
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Start"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Start"
 
-[node name="Recent" type="VBoxContainer" parent="VBoxContainer/MarginContainer/HBoxContainer"]
+[node name="Recent" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/Recent"]
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Recent"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Recent documents"

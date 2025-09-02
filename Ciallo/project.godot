@@ -16,6 +16,8 @@ config/version="Demo"
 run/main_scene="uid://bhueivskybp02"
 config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 run/low_processor_mode=true
+boot_splash/show_image=false
+config/icon="uid://bkntrccv56vyd"
 
 [autoload]
 
