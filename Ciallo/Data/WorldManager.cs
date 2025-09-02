@@ -46,7 +46,7 @@ public static class WorldManager
         
         // Create layer tree control
         var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
-        layerPanel.CreateAddLayerTreeControl(document);
+        layerPanel.CreateAddLayerContainer(document);
         
         // Create paint panel
         var paintPanelContainer = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().Single();
@@ -79,7 +79,7 @@ public static class WorldManager
         
         // Remove layer tree control
         var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().SingleOrDefault();
-        layerPanel?.RemoveFreeLayerTreeControl(world.Document());
+        layerPanel?.RemoveFreeLayerContainer(world.Document());
 
         // Dispose managers
         world.Document().Get<CommandManager>().Dispose();

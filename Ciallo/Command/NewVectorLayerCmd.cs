@@ -36,16 +36,15 @@ public partial class NewVectorLayerCmd : CommandBase
             e.Add(new VectorLayerSetting(), node, new ToSerializeTag());
             DestructionQueue.Add(e);
         }
-        
+
+        _insertPath ??= [0];
         // Layer tree
         var layerE = DestructionQueue[0];
-        _insertPath ??= [tree.Root.ChildCount];
         tree.Root.InsertDescendant(_insertPath, layerE);
         
         // Layer tree view
-        var layerTreeControl = Document.Get<LayerTreeContainer>();
-        var layerControl = layerTreeControl.CreateLayerControl(layerE.Get<LayerTreeNode>());
-        layerTreeControl.Insert(_insertPath, layerControl);
+        var layerContainer = Document.Get<LayerContainer>();
+        layerContainer.CreateInsert(layerE, _insertPath);
         
         // Selection
         var selection = Document.Get<SelectionManager>();
@@ -60,7 +59,7 @@ public partial class NewVectorLayerCmd : CommandBase
         selection.WorkingLayer.Value = _originalWorkingLayer;
         
         // Layer tree view
-        var layerTreeControl = Document.Get<LayerTreeContainer>();
+        var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.RemoveFree(_insertPath);
         
         // Layer Tree

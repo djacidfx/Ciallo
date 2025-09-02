@@ -6,6 +6,11 @@ namespace Ciallo.Widget;
 public partial class PaintPanel : PanelContainer
 {
     public Camera2D Camera;
+    
+    [OnInstantiate]
+    private void Initialise()
+    {
+    }
 
     public override void _Ready()
     {

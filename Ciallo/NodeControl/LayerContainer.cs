@@ -2,6 +2,8 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Arch.Core;
+using Arch.Core.Extensions;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.Widget;
@@ -9,41 +11,70 @@ using R3;
 
 
 /// <summary>
-/// The layer tree control that manages the layer controls in the UI.
+/// Manage the layer UI controls.
 /// One instance per document.
 /// </summary>
-public partial class LayerTreeContainer : Container
+public partial class LayerContainer : Container
 {
     public static readonly PackedScene LayerScene = GD.Load<PackedScene>("res://NodeControl/Layer.tscn");
-    public readonly ButtonGroup IsActiveLayerButtonGroup = new();
+
+    private VBoxContainer Root;
     
-    public VBoxContainer Root;
-    
+    private readonly ButtonGroup WorkingLayerButtonGroup = new();
+    private readonly Dictionary<BaseButton, Entity> _buttonToEntity = [];
+    // ReSharper disable once ClassNeverInstantiated.Local
+    private struct ActiveButton(CheckBox button) // Avoid potential component conflict.
+    {
+        public readonly CheckBox Button = button;
+    } 
+
     private bool _isDragging = false;
     private Control _visibleDragHint;
     private Control _mouseHoveringLayer;
     
     private readonly Dictionary<Control, CompositeDisposable> _subscriptions = [];
+    
+    [OnInstantiate]
+    private void Initialise(SelectionManager manager)
+    {
+        // "Two way binding" between WorkingLayer and the active button.
+        WorkingLayerButtonGroup.SignalAsObservable<BaseButton>(ButtonGroup.SignalName.Pressed)
+            .Subscribe(b => manager.WorkingLayer.Value = _buttonToEntity[b]).AddTo(this);
+        manager.WorkingLayer.Subscribe(e =>
+        {
+            if (e == Entity.Null) return;
+            e.Get<ActiveButton>().Button.SetPressed(true);
+        }).AddTo(this);
+    }
 
     public override void _Ready()
     {
         Root = GetNode<VBoxContainer>("%TreeRoot");
-        // Free all existing children for preview in the Godot editor.
+        // Free previews in the Godot editor.
         foreach (var child in Root.GetChildren())
         {
             child.QueueFree();
         }
     }
-
-    public Control CreateLayerControl(LayerTreeNode node)
+    
+    public void CreateInsert(Entity layer, IReadOnlyList<int> path)
     {
+        var layerControl = Create(layer);
+        Insert(path, layerControl);
+    }
+
+    private Control Create(Entity e)
+    {
+        var node = e.Get<LayerTreeNode>();
         var layerControl = LayerScene.Instantiate<Control>();
         var subs = new CompositeDisposable();
         _subscriptions[layerControl] = subs;
         
         var activeButton = layerControl.GetNode<CheckBox>("%Active");
-        activeButton.ButtonGroup = IsActiveLayerButtonGroup;
-        if (IsActiveLayerButtonGroup.GetPressedButton() == null) activeButton.SetPressed(true);
+        activeButton.ButtonGroup = WorkingLayerButtonGroup;
+        _buttonToEntity.Add(activeButton, e);
+        e.Add(new ActiveButton(activeButton));
+        
         var visibleButton = layerControl.GetNode<CheckBox>("%Visible");
         visibleButton.BindBool(node.IsVisible).AddTo(subs);
 
@@ -99,8 +130,8 @@ public partial class LayerTreeContainer : Container
         
         return layerControl;
     }
-    
-    public void Insert(IReadOnlyList<int> path, Control layerControl)
+
+    private void Insert(IReadOnlyList<int> path, Control layerControl)
     {
         if (!_subscriptions.ContainsKey(layerControl))
             throw new ArgumentException("The given layer control is not created by this LayerTreeControl.");
@@ -115,13 +146,16 @@ public partial class LayerTreeContainer : Container
         Root.AddChild(layerControl);
         Root.MoveChild(layerControl, index);
     }
-    
-    public void RemoveFree(Control layerControl)
+
+    private void RemoveFree(Control layerControl)
     {
         if (!_subscriptions.TryGetValue(layerControl, out var subscription))
             throw new ArgumentException("The given layer control is not managed by this LayerTreeControl.");
         subscription.Dispose();
         _subscriptions.Remove(layerControl);
+        var activeButton = layerControl.GetNode<CheckBox>("%Active");
+        _buttonToEntity[activeButton].Remove<ActiveButton>();
+        _buttonToEntity.Remove(activeButton);
         layerControl.QueueFree();
     }
     
@@ -154,7 +188,6 @@ public partial class LayerTreeContainer : Container
 
     private void OnDragEnd(Control layerControl, InputEventMouseButton button)
     {
-        
         // Move layer
         
         

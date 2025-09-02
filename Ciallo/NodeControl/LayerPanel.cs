@@ -5,44 +5,45 @@ using Arch.Core.Extensions;
 using Ciallo.Data;
 using R3;
 
+/// <summary>
+/// Show layers, toggle LayerTree scenes' visibility according to current working document
+/// </summary>
 public partial class LayerPanel : VBoxContainer
 {
-    public static readonly PackedScene LayerTreeScene = GD.Load<PackedScene>("res://NodeControl/LayerTree.tscn");
-
-    private Control _visibleLayerTreeControl;
+    private Control _visibleLayerTree;
     
     public override void _Ready()
     {
         GetNode<Node>("%LayerTreePreview").QueueFree();
         WorldManager.WorkingWorld.Skip(1).Subscribe(w =>
         {
-            if(w == null && _visibleLayerTreeControl != null)
+            if(w == null && _visibleLayerTree != null)
             {
-                _visibleLayerTreeControl.Visible = false;
-                _visibleLayerTreeControl = null;
+                _visibleLayerTree.Visible = false;
+                _visibleLayerTree = null;
                 return;
             }
-            if (_visibleLayerTreeControl != null) _visibleLayerTreeControl.Visible = false;
+            if (_visibleLayerTree != null) _visibleLayerTree.Visible = false;
             var doc = w.Document();
-            _visibleLayerTreeControl = doc.Get<LayerTreeContainer>();
-            _visibleLayerTreeControl.Visible = true;
+            _visibleLayerTree = doc.Get<LayerContainer>();
+            _visibleLayerTree.Visible = true;
         }).AddTo(this);
     }
 
-    public void CreateAddLayerTreeControl(Entity document)
+    public void CreateAddLayerContainer(Entity document)
     {
-        var layerTreeControl = LayerTreeScene.Instantiate<LayerTreeContainer>();
-        layerTreeControl.Visible = false;
-        AddChild(layerTreeControl);
-        document.Add(layerTreeControl);
+        var layerContainer = LayerContainer.Instantiate(document.Get<SelectionManager>());
+        layerContainer.Visible = false;
+        AddChild(layerContainer);
+        document.Add(layerContainer);
     }
 
-    public void RemoveFreeLayerTreeControl(Entity document)
+    public void RemoveFreeLayerContainer(Entity document)
     {
-        var layerTreeControl = document.Get<LayerTreeContainer>();
-        if(_visibleLayerTreeControl == layerTreeControl)
-            _visibleLayerTreeControl = null;
-        document.Remove<LayerTreeContainer>();
+        var layerTreeControl = document.Get<LayerContainer>();
+        if(_visibleLayerTree == layerTreeControl)
+            _visibleLayerTree = null;
+        document.Remove<LayerContainer>();
         layerTreeControl.QueueFree();
     }
 }

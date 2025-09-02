@@ -6,11 +6,9 @@ using Ciallo.Widget;
 
 public partial class PaintPanelContainer : Control
 {
-    public static readonly PackedScene PaintPanelScene = GD.Load<PackedScene>("res://NodeControl/PaintPanel.tscn");
-    
     public void CreateAddPaintPanel(Entity document)
     {
-        var paintPanel = PaintPanelScene.Instantiate<PaintPanel>();
+        var paintPanel = PaintPanel.Instantiate();
         AddChild(paintPanel);
         document.Add(paintPanel);
     }
