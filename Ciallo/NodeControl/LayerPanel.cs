@@ -5,7 +5,7 @@ using Arch.Core.Extensions;
 using Ciallo.Data;
 using R3;
 
-public partial class LayerPanelControl : VBoxContainer
+public partial class LayerPanel : VBoxContainer
 {
     public static readonly PackedScene LayerTreeScene = GD.Load<PackedScene>("res://NodeControl/LayerTree.tscn");
 
@@ -24,14 +24,14 @@ public partial class LayerPanelControl : VBoxContainer
             }
             if (_visibleLayerTreeControl != null) _visibleLayerTreeControl.Visible = false;
             var doc = w.Document();
-            _visibleLayerTreeControl = doc.Get<LayerTreeControl>();
+            _visibleLayerTreeControl = doc.Get<LayerTreeContainer>();
             _visibleLayerTreeControl.Visible = true;
         }).AddTo(this);
     }
 
     public void CreateAddLayerTreeControl(Entity document)
     {
-        var layerTreeControl = LayerTreeScene.Instantiate<LayerTreeControl>();
+        var layerTreeControl = LayerTreeScene.Instantiate<LayerTreeContainer>();
         layerTreeControl.Visible = false;
         AddChild(layerTreeControl);
         document.Add(layerTreeControl);
@@ -39,10 +39,10 @@ public partial class LayerPanelControl : VBoxContainer
 
     public void RemoveFreeLayerTreeControl(Entity document)
     {
-        var layerTreeControl = document.Get<LayerTreeControl>();
+        var layerTreeControl = document.Get<LayerTreeContainer>();
         if(_visibleLayerTreeControl == layerTreeControl)
             _visibleLayerTreeControl = null;
-        document.Remove<LayerTreeControl>();
+        document.Remove<LayerTreeContainer>();
         layerTreeControl.QueueFree();
     }
 }

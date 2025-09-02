@@ -12,7 +12,7 @@ using R3;
 /// The layer tree control that manages the layer controls in the UI.
 /// One instance per document.
 /// </summary>
-public partial class LayerTreeControl : Container
+public partial class LayerTreeContainer : Container
 {
     public static readonly PackedScene LayerScene = GD.Load<PackedScene>("res://NodeControl/Layer.tscn");
     public readonly ButtonGroup IsActiveLayerButtonGroup = new();

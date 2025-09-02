@@ -8,7 +8,7 @@ using Ciallo.Misc;
 namespace Ciallo.NodeControl;
 
 [Tool]
-public partial class LanguageList : ItemList
+public partial class LanguageItemList : ItemList
 {
     public override void _Ready()
     {

@@ -43,7 +43,7 @@ public partial class NewVectorLayerCmd : CommandBase
         tree.Root.InsertDescendant(_insertPath, layerE);
         
         // Layer tree view
-        var layerTreeControl = Document.Get<LayerTreeControl>();
+        var layerTreeControl = Document.Get<LayerTreeContainer>();
         var layerControl = layerTreeControl.CreateLayerControl(layerE.Get<LayerTreeNode>());
         layerTreeControl.Insert(_insertPath, layerControl);
         
@@ -60,7 +60,7 @@ public partial class NewVectorLayerCmd : CommandBase
         selection.WorkingLayer.Value = _originalWorkingLayer;
         
         // Layer tree view
-        var layerTreeControl = Document.Get<LayerTreeControl>();
+        var layerTreeControl = Document.Get<LayerTreeContainer>();
         layerTreeControl.RemoveFree(_insertPath);
         
         // Layer Tree

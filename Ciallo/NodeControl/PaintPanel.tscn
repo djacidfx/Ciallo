@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://cmxkg61nilwq8"]
 
-[ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://NodeControl/PaintPanelControl.cs" id="1_ract4"]
+[ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://NodeControl/PaintPanel.cs" id="1_ract4"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_jsupi"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://NodeControl/WorldViewContainer.cs" id="3_7pmtm"]
 [ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Command/WorldView.tscn" id="4_3trrc"]
@@ -78,7 +78,7 @@ script = ExtResource("3_7pmtm")
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldViewContainer"]
 handle_input_locally = false
 gui_disable_input = true
-size = Vector2i(1920, 1042)
+size = Vector2i(2, 2)
 render_target_update_mode = 4
 
 [node name="WorldView" parent="VBoxContainer/WorldViewContainer/SubViewport" instance=ExtResource("4_3trrc")]

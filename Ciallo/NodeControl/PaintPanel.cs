@@ -3,7 +3,7 @@ using System;
 
 namespace Ciallo.Widget;
 
-public partial class PaintPanelControl : PanelContainer
+public partial class PaintPanel : PanelContainer
 {
     public Camera2D Camera;
 

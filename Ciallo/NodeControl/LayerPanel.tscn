@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://c08pou8qq2rrg" path="res://NodeControl/LayerTree.tscn" id="1_1j0kq"]
 [ext_resource type="Script" uid="uid://crbythwxpbjg3" path="res://NodeControl/LayerAction.cs" id="1_geqg7"]
-[ext_resource type="Script" uid="uid://di0e1em6fxdc2" path="res://NodeControl/LayerPanelControl.cs" id="1_nug42"]
+[ext_resource type="Script" uid="uid://di0e1em6fxdc2" path="res://NodeControl/LayerPanel.cs" id="1_nug42"]
 [ext_resource type="Texture2D" uid="uid://tugksq2pg442" path="res://Icon/layers-plus.svg" id="1_ulw2x"]
 [ext_resource type="StyleBox" uid="uid://dp4r1m4tk2v3t" path="res://NodeControl/BlackLine.tres" id="2_4cr57"]
 [ext_resource type="Texture2D" uid="uid://c6pduk2ad1t3i" path="res://Icon/layers-minus.svg" id="2_tod7h"]

@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://duv6uwd686wfj"]
 
-[ext_resource type="Script" uid="uid://gt4adx4emf1t" path="res://NodeControl/LanguageList.cs" id="1_ad8c8"]
+[ext_resource type="Script" uid="uid://gt4adx4emf1t" path="res://NodeControl/LanguageItemList.cs" id="1_ad8c8"]
 [ext_resource type="Texture2D" uid="uid://43k5wfcj0bkj" path="res://Icon/ciallo.svg" id="1_xhgsw"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xhgsw"]

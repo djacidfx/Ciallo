@@ -45,10 +45,10 @@ public static class WorldManager
         
         // Create layer tree view control
         var sceneTree = (SceneTree)Engine.GetMainLoop();
-        var layerPanel = sceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanelControl>().Single();
+        var layerPanel = sceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
         layerPanel.CreateAddLayerTreeControl(document);
         
-        // Create document view
+        // Create paint panel
         
         // Set as working world
         WorkingWorld.Value = world;
@@ -73,7 +73,7 @@ public static class WorldManager
         // Remove layer tree control
         var sceneTree = (SceneTree)Engine.GetMainLoop();
         //// add null check since the method could be called as long as Godot cleaning up nodes.
-        var layerPanel = sceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanelControl>().SingleOrDefault();
+        var layerPanel = sceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().SingleOrDefault();
         layerPanel?.RemoveFreeLayerTreeControl(world.Document());
 
         // Dispose managers
