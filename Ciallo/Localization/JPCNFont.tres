@@ -6,4 +6,4 @@ font_names = PackedStringArray("Meiryo UI", "Noto Sans JP")
 [resource]
 fallbacks = Array[Font]([SubResource("SystemFont_kklsv")])
 font_names = PackedStringArray("Noto Sans SC")
-oversampling = 2.0
+oversampling = 1.5

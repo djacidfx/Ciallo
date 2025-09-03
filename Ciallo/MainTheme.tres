@@ -1,6 +1,6 @@
 [gd_resource type="Theme" load_steps=12 format=3 uid="uid://cmwretuqbofqt"]
 
-[ext_resource type="SystemFont" uid="uid://vj6b51ucwaps" path="res://Localization/MainFont.tres" id="1_4as0w"]
+[ext_resource type="SystemFont" uid="uid://vj6b51ucwaps" path="res://Localization/JPCNFont.tres" id="1_4as0w"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8s18r"]
 
@@ -76,6 +76,7 @@ bg_color = Color(1, 1, 1, 0)
 default_font = ExtResource("1_4as0w")
 default_font_size = 22
 Button/styles/focus = SubResource("StyleBoxEmpty_8s18r")
+ItemList/colors/guide_color = Color(0, 0, 0, 0)
 ItemList/styles/focus = SubResource("StyleBoxEmpty_rfn4m")
 LineEdit/styles/focus = SubResource("StyleBoxEmpty_4as0w")
 TabBar/styles/tab_focus = SubResource("StyleBoxEmpty_yhag5")
