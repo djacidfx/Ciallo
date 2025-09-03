@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.Widget;
@@ -11,22 +12,16 @@ using R3;
 
 
 /// <summary>
-/// Manage the layer UI controls.
+/// Manage the layer UI controls. Also hold layer properties.
 /// One instance per document.
 /// </summary>
 public partial class LayerContainer : Container
 {
     public static readonly PackedScene LayerScene = GD.Load<PackedScene>("res://NodeControl/Layer.tscn");
 
-    private VBoxContainer Root;
-    
-    private readonly ButtonGroup WorkingLayerButtonGroup = new();
-    private readonly Dictionary<BaseButton, Entity> _buttonToEntity = [];
-    // ReSharper disable once ClassNeverInstantiated.Local
-    private struct ActiveButton(CheckBox button) // Avoid potential component conflict.
-    {
-        public readonly CheckBox Button = button;
-    } 
+    private LayerTreeNode _rootNode;
+    private VBoxContainer _rootControl; // all layers controls are direct children of this container, in preorder.
+    private readonly ButtonGroup _workingLayerButtonGroup = new();
 
     private bool _isDragging = false;
     private Control _visibleDragHint;
@@ -35,28 +30,27 @@ public partial class LayerContainer : Container
     private readonly Dictionary<Control, CompositeDisposable> _subscriptions = [];
     
     [OnInstantiate]
-    private void Initialise(SelectionManager manager)
+    private void Initialise(LayerTreeNode root)
     {
-        // "Two way binding" between WorkingLayer and the active button.
-        WorkingLayerButtonGroup.SignalAsObservable<BaseButton>(ButtonGroup.SignalName.Pressed)
-            .Subscribe(b => manager.WorkingLayer.Value = _buttonToEntity[b]).AddTo(this);
-        manager.WorkingLayer.Subscribe(e =>
-        {
-            if (e == Entity.Null) return;
-            e.Get<ActiveButton>().Button.SetPressed(true);
-        }).AddTo(this);
+        _rootNode = root;
     }
 
     public override void _Ready()
     {
-        Root = GetNode<VBoxContainer>("%TreeRoot");
+        _rootControl = GetNode<VBoxContainer>("%TreeRoot");
         // Free previews in the Godot editor.
-        foreach (var child in Root.GetChildren())
+        foreach (var child in _rootControl.GetChildren())
         {
             child.QueueFree();
         }
+        _workingLayerButtonGroup.Pressed += button =>
+        {
+            var layerControl = (Control)button.GetOwner();
+            List<int> path = _rootNode.PreorderIndexToPath(layerControl.GetIndex());
+            new ChangeWorkingLayerCmd(path).Commit();
+        };
     }
-    
+
     public void CreateInsert(Entity layer, IReadOnlyList<int> path)
     {
         var layerControl = Create(layer);
@@ -71,9 +65,7 @@ public partial class LayerContainer : Container
         _subscriptions[layerControl] = subs;
         
         var activeButton = layerControl.GetNode<CheckBox>("%Active");
-        activeButton.ButtonGroup = WorkingLayerButtonGroup;
-        _buttonToEntity.Add(activeButton, e);
-        e.Add(new ActiveButton(activeButton));
+        activeButton.ButtonGroup = _workingLayerButtonGroup;
         
         var visibleButton = layerControl.GetNode<CheckBox>("%Visible");
         visibleButton.BindBool(node.IsVisible).AddTo(subs);
@@ -137,34 +129,23 @@ public partial class LayerContainer : Container
             throw new ArgumentException("The given layer control is not created by this LayerTreeControl.");
         if (path.Count == 0)
         {
-            Root.AddChild(layerControl);
+            _rootControl.AddChild(layerControl);
             return;
         }
         var index = path[0];
-        if (index < 0 || index > Root.GetChildCount())
+        if (index < 0 || index > _rootControl.GetChildCount())
             throw new ArgumentOutOfRangeException(nameof(path), "The given path is invalid.");
-        Root.AddChild(layerControl);
-        Root.MoveChild(layerControl, index);
+        _rootControl.AddChild(layerControl);
+        _rootControl.MoveChild(layerControl, index);
     }
 
-    private void RemoveFree(Control layerControl)
-    {
-        if (!_subscriptions.TryGetValue(layerControl, out var subscription))
-            throw new ArgumentException("The given layer control is not managed by this LayerTreeControl.");
-        subscription.Dispose();
-        _subscriptions.Remove(layerControl);
-        var activeButton = layerControl.GetNode<CheckBox>("%Active");
-        _buttonToEntity[activeButton].Remove<ActiveButton>();
-        _buttonToEntity.Remove(activeButton);
-        layerControl.QueueFree();
-    }
-    
     public void RemoveFree(IReadOnlyList<int> path)
     {
-        if (path.Count == 0 || path[0] < 0 || path[0] >= Root.GetChildCount())
-            throw new ArgumentOutOfRangeException(nameof(path), "The given path is invalid.");
-        var layerControl = (Control)Root.GetChild(path[0]);
-        RemoveFree(layerControl);
+        var layerControl = (Control)_rootControl.GetDecedentAt(path);
+        var subscription = _subscriptions[layerControl];
+        subscription.Dispose();
+        _subscriptions.Remove(layerControl);
+        layerControl.QueueFree();
     }
     
     private void OnDragStart(Control layerControl, InputEventMouseMotion motion)
@@ -194,5 +175,14 @@ public partial class LayerContainer : Container
         // Drag hint
         if(_visibleDragHint != null) _visibleDragHint.Visible = false;
         _visibleDragHint = null;
+    }
+
+    public void SetWorkingLayerNoSignal(IReadOnlyList<int> path)
+    {
+        if (path == null) _workingLayerButtonGroup.GetPressedButton().ButtonPressed = false;
+        var layerControl = (Control)_rootControl.GetDecedentAt(path);
+        var activeButton = layerControl.GetNode<CheckBox>("%Active");
+        _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
+        activeButton.SetPressedNoSignal(true);
     }
 }

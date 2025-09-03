@@ -22,17 +22,21 @@ public abstract partial class CommandBase : GodotObject
     /// <summary>
     /// The world in which this command operates.
     /// </summary>
-    public virtual World WorkingWorld { get; set; } = WorldManager.WorkingWorld.Value;
-    public virtual Entity Document => WorkingWorld.Document();
+    public World WorkingWorld { get; set; } = WorldManager.WorkingWorld.Value;
+    public Entity Document => WorkingWorld.Document();
     public virtual string Name => GetType().Name.Humanize();
 
     public Array<Node> GetNodesInGroup(StringName group) => ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup(group);
 
     /// <summary>
-    /// The entities to be destroyed when this command object is deleted in the command stack.
-    /// Could happen when clearing history or command beyond the limit.
+    /// `DoRefEntities` are the entities will be destroyed when this command object is ready to call redo() and deleted.
+    /// e.g. User undo the most recent command, then clear the whole history. So the most recent command satisfies the above statement.
+    /// Entity version of `add_do_reference`.
     /// </summary>
-    public List<Entity> DestructionQueue = [];
+    public readonly List<Entity> DoRefEntities = [];
+    public EntityGodotObject DoEntityGodotObject;
+    public readonly List<Entity> UndoRefEntities = [];
+    public EntityGodotObject UndoEntityGodotObject;
 
     public abstract void Do();
     public abstract void Undo();
@@ -40,16 +44,36 @@ public abstract partial class CommandBase : GodotObject
     
     public void Commit(bool execute = true)
     {
-        if(WorkingWorld == null) GD.PushWarning("WorkingWorld is null");
+        if(WorkingWorld == null)
+        {
+            GD.PushWarning("WorkingWorld is null");
+            return;
+        };
         var cm = WorkingWorld.Document().Get<CommandManager>();
-        cm.Commit(this, execute);
+        
+        // Add Do/Undo Reference method order matters:
+        cm.CreateAction(Name);
+        DoEntityGodotObject = new EntityGodotObject(DoRefEntities);
+        cm.AddDoReference(DoEntityGodotObject);
+        cm.AddDoReference(this);
+        
+        cm.AddDoMethod(new(this, MethodName.Do));
+        cm.AddUndoMethod(new(this, MethodName.Undo));
+        
+        UndoEntityGodotObject = new EntityGodotObject(UndoRefEntities);
+        cm.AddUndoReference(UndoEntityGodotObject);
+        cm.AddUndoReference(this);
+        cm.CommitAction(execute);
     }
 
     public override void _Notification(int what)
     {
         if (what == NotificationPredelete)
         {
-            DestructionQueue.ForEach(e => WorkingWorld.Destroy(e));
+            if(IsInstanceValid(DoEntityGodotObject))
+                DoEntityGodotObject.FreeWithoutDestroyingEntities();
+            if(IsInstanceValid(UndoEntityGodotObject))
+                UndoEntityGodotObject.FreeWithoutDestroyingEntities();
         }
     }
 

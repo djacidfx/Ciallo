@@ -70,7 +70,9 @@ public class LayerTreeNode
     
     public List<int> GetPathTo(Entity target)
     {
-        BreadthFirstSearch(this, target.Get<LayerTreeNode>(), out var path);
+        var b = target.Has<LayerTreeNode>();
+        var node = target.Get<LayerTreeNode>();
+        BreadthFirstSearch(this, node, out var path);
         return path;
     }
     
@@ -109,5 +111,39 @@ public class LayerTreeNode
         // neither found in children
         path = null;
         return null;
+    }
+
+    /// <summary>
+    /// Turn a preorder index into a path.
+    /// </summary>
+    /// <param name="preorderIdx">Root-Left-Right ordered flatten tree index.</param>
+    /// <returns>Path to the node.</returns>
+    public List<int> PreorderIndexToPath(int preorderIdx)
+    {
+        // Preorder enumeration (parent before its children), excluding the current node (root of this subtree).
+        if (preorderIdx < 0) return null;
+        int remaining = preorderIdx;
+        List<int> path = [];
+
+        bool Dfs(LayerTreeNode node)
+        {
+            for (int i = 0; i < node.Children.Count; i++)
+            {
+                // Visit this child.
+                path.Add(i);
+                if (remaining == 0) return true;
+                remaining--;
+
+                // Traverse its subtree in preorder.
+                var childNode = node.Children[i].Get<LayerTreeNode>();
+                if (Dfs(childNode)) return true;
+
+                // Backtrack and continue with next sibling.
+                path.RemoveAt(path.Count - 1);
+            }
+            return false;
+        }
+
+        return Dfs(this) ? path : null;
     }
 }

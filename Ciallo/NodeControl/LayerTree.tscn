@@ -5,7 +5,8 @@
 [ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://NodeControl/Layer.tscn" id="3_a1fln"]
 
 [node name="LayerTree" type="VBoxContainer"]
-offset_right = 534.0
+offset_left = 1.0
+offset_right = 535.0
 offset_bottom = 294.0
 size_flags_horizontal = 3
 size_flags_vertical = 3

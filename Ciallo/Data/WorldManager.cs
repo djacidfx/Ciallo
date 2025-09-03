@@ -57,9 +57,12 @@ public static class WorldManager
         LoadedWorlds.Add(world);
         
         // Add initial layer
-        var c = new NewVectorLayerCmd();
+        var c = new NewVectorLayerCmd([0]);
         c.Do();
         c.Free();
+        var s = new ChangeWorkingLayerCmd([0]);
+        s.Do();
+        s.Free();
         
         return world;
     }
@@ -81,10 +84,10 @@ public static class WorldManager
         var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().SingleOrDefault();
         layerPanel?.RemoveFreeLayerContainer(world.Document());
 
-        // Dispose managers
-        world.Document().Get<CommandManager>().Dispose();
+        // Dispose or free managers
+        world.Document().Get<CommandManager>().Free();
         
-        // Remove world
+        // Dispose world
         DocumentSingletons.Remove(world);
         world.Dispose();
     }
