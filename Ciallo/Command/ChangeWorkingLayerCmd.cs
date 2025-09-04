@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -9,24 +10,21 @@ namespace Ciallo.Command;
 // ReSharper disable once Godot.MissingParameterlessConstructor
 public partial class ChangeWorkingLayerCmd : CommandBase
 {
-    private readonly List<int> _newSelectedPath;
-    private List<int> _oldSelectedPath;
-    private Entity _oldSelectedLayerE;
+    private readonly ImmutableArray<int> _newSelectedPath;
+    private ImmutableArray<int> _oldSelectedPath;
     
-    public ChangeWorkingLayerCmd(IReadOnlyList<int> path)
+    public ChangeWorkingLayerCmd(ImmutableArray<int> path)
     {
-        _newSelectedPath = path.ToList();
-        var m = Document.Get<LayerTreeManager>();
+        _newSelectedPath = path;
     }
 
     public override void Do()
     {
         // Selection manager
         var sm = Document.Get<SelectionManager>();
-        var tree = Document.Get<LayerTreeManager>();
-        _oldSelectedLayerE = sm.WorkingLayer.Value;
-        _oldSelectedPath = _oldSelectedLayerE != Entity.Null ? tree.Root.GetPathTo(sm.WorkingLayer.Value) : null;
-        sm.WorkingLayer.Value = tree.Root.GetEntity(_newSelectedPath);
+        if(sm.WorkingLayerPath != null)
+            _oldSelectedPath = [..sm.WorkingLayerPath];
+        sm.WorkingLayerPath = _newSelectedPath;
         
         // Layer tree view
         var layerContainer = Document.Get<LayerContainer>();
@@ -41,6 +39,6 @@ public partial class ChangeWorkingLayerCmd : CommandBase
         
         // Selection manager
         var sm = Document.Get<SelectionManager>();
-        sm.WorkingLayer.Value = _oldSelectedLayerE;
+        sm.WorkingLayerPath = _oldSelectedPath;
     }
 }

@@ -1,20 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
-using Godot;
 
 namespace Ciallo.Command;
 
 // ReSharper disable once Godot.MissingParameterlessConstructor
 public partial class NewVectorLayerCmd : CommandBase
 {
-    private readonly List<int> _insertPath;
+    private readonly ImmutableArray<int> _insertPath;
 
-    public NewVectorLayerCmd(List<int> insertPath = null)
+    public NewVectorLayerCmd(IReadOnlyList<int> insertPath)
     {
-        _insertPath = insertPath ?? [0];
+        _insertPath = [..insertPath];
     }
 
     public override void Do()

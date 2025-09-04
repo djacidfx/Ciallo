@@ -45,8 +45,7 @@ public partial class LayerContainer : Container
         _workingLayerButtonGroup.Pressed += button =>
         {
             var layerControl = (Control)button.GetOwner();
-            List<int> path = [layerControl.GetIndex()];
-            new ChangeWorkingLayerCmd(path).Commit();
+            new ChangeWorkingLayerCmd([layerControl.GetIndex()]).Commit();
         };
     }
 

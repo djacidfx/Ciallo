@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -8,6 +10,10 @@ using R3;
 
 namespace Ciallo.Data;
 
+/// <summary>
+/// Layer tree node component providing entity hierarchical structure like Unity's GameObject scene tree.
+/// </summary>
+/// <remarks> All methods this class should be named similar to and behave same as Godot's SceneTree and Node </remarks>
 [MessagePackObject(true), ToSerialize]
 public class LayerTreeNode
 {
@@ -40,19 +46,21 @@ public class LayerTreeNode
     
     public void AddDescendant(IReadOnlyList<int> parentPath, Entity child)
     {
-        GetNode(parentPath).AddChild(child);
+        GetDescendantNode(parentPath).AddChild(child);
     }
 
     public void InsertDescendant(IReadOnlyList<int> targetPath, Entity descendant)
     {
         int idx = targetPath[^1];
-        GetNode(targetPath.SkipLast(1).ToArray()).InsertChild(idx, descendant);
+        GetDescendantNode(targetPath.SkipLast(1).ToArray()).InsertChild(idx, descendant);
     }
     
-    public void RemoveDescendant(IReadOnlyList<int> targetPath)
+    public Entity RemoveDescendant(IReadOnlyList<int> targetPath)
     {
-        var parentNode = GetNode(targetPath.SkipLast(1).ToArray());
+        var parentNode = GetDescendantNode(targetPath.SkipLast(1).ToArray());
+        var removed = parentNode.Children[targetPath[^1]];
         parentNode.Children.RemoveAt(targetPath[^1]);
+        return removed;
     }
     
     /// <summary>
@@ -64,7 +72,7 @@ public class LayerTreeNode
     {
         // Resolve source
         var srcParentPath = srcPath.SkipLast(1).ToArray();
-        var srcParent = GetNode(srcParentPath);
+        var srcParent = GetDescendantNode(srcParentPath);
         int srcIdx = srcPath[^1];
         var moving = srcParent.Children[srcIdx];
 
@@ -81,7 +89,7 @@ public class LayerTreeNode
         }
         if (IsPrefix(srcPath, dstParentPath)) throw new InvalidOperationException("Cannot move a node into its own descendant.");
 
-        var dstParent = GetNode(dstParentPath);
+        var dstParent = GetDescendantNode(dstParentPath);
 
         if (ReferenceEquals(srcParent, dstParent))
         {
@@ -101,16 +109,16 @@ public class LayerTreeNode
     
     #region Visit
 
-    public Entity GetEntity(IReadOnlyList<int> path)
+    public Entity GetDescendantEntity(IReadOnlyList<int> path)
     {
         if(path.Count == 1) return Children[path[0]];
-        return Children[path[0]].Get<LayerTreeNode>().GetEntity(path.Skip(1).ToArray());
+        return Children[path[0]].Get<LayerTreeNode>().GetDescendantEntity(path.Skip(1).ToArray());
     }
     
-    public LayerTreeNode GetNode(IReadOnlyList<int> path)
+    public LayerTreeNode GetDescendantNode(IReadOnlyList<int> path)
     {
         if(path.Count == 0) return this;
-        return Children[path[0]].Get<LayerTreeNode>().GetNode(path.Skip(1).ToArray());
+        return Children[path[0]].Get<LayerTreeNode>().GetDescendantNode(path.Skip(1).ToArray());
     }
     
     public LayerTreeNode GetNodeOrNull(IReadOnlyList<int> path)
@@ -236,5 +244,48 @@ public class LayerTreeNode
         foreach (var e in n.Children)
             cnt += CountSubtreeNodes(e.Get<LayerTreeNode>());
         return cnt;
+    }
+
+    /// <summary>
+    /// Assume this node is focused and to be deleted, return the path to the next node that should have focus.
+    /// e.g. Used at deletion of working layer to determine the new working layer.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns>
+    /// Return priority: next sibling > previous sibling > parent > empty array (no nodes after deletion)
+    /// If the node is root (path is empty), return null.
+    /// </returns>
+    public ImmutableArray<int> GetNextPathAfterDeletion([NotNull] IReadOnlyList<int> path)
+    {
+        // If deleting the root, nothing to focus next.
+        if (path.Count == 0)
+            return [];
+
+        // Build the parent path and resolve the parent node
+        var parentPath = path
+            .Take(path.Count - 1)
+            .ToList();
+        var parentNode = GetDescendantNode(parentPath);
+
+        // Determine indices
+        int idx = path[^1];
+        int childCount = parentNode.Children.Count;
+
+        // Next sibling
+        if (idx + 1 < childCount)
+        {
+            parentPath.Add(idx + 1);
+            return [..parentPath];
+        }
+
+        // Previous sibling
+        if (idx - 1 >= 0)
+        {
+            parentPath.Add(idx - 1);
+            return [..parentPath];
+        }
+
+        // Fallback to parent
+        return [..parentPath];
     }
 }
