@@ -23,5 +23,8 @@ I'm pretty satisfied with Rider, but also interested in learning if Rider is the
 So if you have solid experience in VS Code or Visual Studio to script Godot C#. Contact if you would rather use one of them.
 
 ## Code architecture and third-party libraries
-Designing professional-grade software architectures often takes decades of experience, so these implementations may seem noob trying hard.
-Please contact us if you have recommendations for improvement.
+Designing professional-grade software architectures often takes decades of experience, so my implementations may seem noob trying hard.
+Please contact me if you have recommendations for improvement
+
+## Code style
+See my [instruction](./Ciallo/.github/copilot-instructions) to copilot.
