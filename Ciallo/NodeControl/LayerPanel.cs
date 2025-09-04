@@ -32,7 +32,7 @@ public partial class LayerPanel : VBoxContainer
 
     public void CreateAddLayerContainer(Entity document)
     {
-        var layerContainer = LayerContainer.Instantiate(document.Get<LayerTreeManager>().Root);
+        var layerContainer = LayerContainer.Instantiate();
         layerContainer.Visible = false;
         AddChild(layerContainer);
         document.Add(layerContainer);

@@ -6,6 +6,11 @@ using Godot;
 
 namespace Ciallo.Command;
 
+/// <summary>
+/// Wrapper for Entity list to be used in CommandBase.
+/// Automatically destroy entities when the command is deleted, unless FreeWithoutDestroyingEntities is called.
+/// </summary>
+/// <param name="entities">Referencing existing entity list object.</param>
 public partial class EntityGodotObject(List<Entity> entities) : GodotObject
 {
     private bool _destroyEntities = true;

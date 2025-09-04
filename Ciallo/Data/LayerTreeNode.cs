@@ -17,6 +17,9 @@ public class LayerTreeNode
     public readonly List<Entity> Children = [];
     
     [IgnoreMember] public int ChildCount => Children.Count;
+    [IgnoreMember] public int DescendantCount => CountSubtreeNodes(this) - 1;
+
+    #region Modify
     
     public void AddChild(Entity child)
     {
@@ -28,6 +31,11 @@ public class LayerTreeNode
     {
         if (!child.Has<LayerTreeNode>()) throw new ArgumentException("Child entity must have LayerTreeNode component.");
         Children.Insert(idx, child);
+    }
+    
+    public void RemoveChild(int idx)
+    {
+        Children.RemoveAt(idx);
     }
     
     public void AddDescendant(IReadOnlyList<int> parentPath, Entity child)
@@ -46,6 +54,52 @@ public class LayerTreeNode
         var parentNode = GetNode(targetPath.SkipLast(1).ToArray());
         parentNode.Children.RemoveAt(targetPath[^1]);
     }
+    
+    /// <summary>
+    /// Move a descendant node to another position.
+    /// </summary>
+    /// <param name="srcPath">Which to move.</param>
+    /// <param name="dstPath">Insertion path.</param>
+    public void MoveDescendant(IReadOnlyList<int> srcPath, IReadOnlyList<int> dstPath)
+    {
+        // Resolve source
+        var srcParentPath = srcPath.SkipLast(1).ToArray();
+        var srcParent = GetNode(srcParentPath);
+        int srcIdx = srcPath[^1];
+        var moving = srcParent.Children[srcIdx];
+
+        // Resolve destination parent and insertion index before mutating the tree
+        var dstParentPath = dstPath.SkipLast(1).ToArray();
+        int dstIdx = dstPath[^1];
+
+        // Prevent creating a cycle by moving a node into its own subtree
+        bool IsPrefix(IReadOnlyList<int> prefix, IReadOnlyList<int> full)
+        {
+            if (prefix.Count > full.Count) return false;
+            for (int i = 0; i < prefix.Count; i++) if (prefix[i] != full[i]) return false;
+            return true;
+        }
+        if (IsPrefix(srcPath, dstParentPath)) throw new InvalidOperationException("Cannot move a node into its own descendant.");
+
+        var dstParent = GetNode(dstParentPath);
+
+        if (ReferenceEquals(srcParent, dstParent))
+        {
+            // Remove first, then adjust destination index if it was after the source index
+            srcParent.RemoveChild(srcIdx);
+            if (srcIdx < dstIdx) dstIdx--;
+            srcParent.InsertChild(dstIdx, moving);
+            return;
+        }
+
+        // Different parents: remove from source, then insert into destination
+        srcParent.RemoveChild(srcIdx);
+        dstParent.InsertChild(dstIdx, moving);
+    }
+    
+    #endregion
+    
+    #region Visit
 
     public Entity GetEntity(IReadOnlyList<int> path)
     {
@@ -70,11 +124,12 @@ public class LayerTreeNode
     
     public List<int> GetPathTo(Entity target)
     {
-        var b = target.Has<LayerTreeNode>();
         var node = target.Get<LayerTreeNode>();
         BreadthFirstSearch(this, node, out var path);
         return path;
     }
+    
+    #endregion
     
     /// <summary>
     /// Breadth first search for the entity.
@@ -121,7 +176,7 @@ public class LayerTreeNode
     public List<int> PreorderIndexToPath(int preorderIdx)
     {
         // Preorder enumeration (parent before its children), excluding the current node (root of this subtree).
-        if (preorderIdx < 0) return null;
+        if (preorderIdx < 0) throw new ArgumentOutOfRangeException(nameof(preorderIdx), "Index cannot be negative.");
         int remaining = preorderIdx;
         List<int> path = [];
 
@@ -144,6 +199,42 @@ public class LayerTreeNode
             return false;
         }
 
-        return Dfs(this) ? path : null;
+        return Dfs(this) ? path :
+            throw new ArgumentOutOfRangeException(nameof(preorderIdx), "Index exceeds the number of nodes in the tree.");
+    }
+    
+    /// <summary>
+    /// Turn a path to a preorder index.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public int PathToPreorderIndex(IReadOnlyList<int> path)
+    {
+        int index = 0;
+        var node = this;
+
+        for (int depth = 0; depth < path.Count; depth++)
+        {
+            int idx = path[depth];
+            // add sizes of all sibling subtrees before idx
+            for (int i = 0; i < idx; i++)
+                index += CountSubtreeNodes(node.Children[i].Get<LayerTreeNode>());
+
+            // after the first level, count the parent node itself
+            if (depth > 0) index++;
+
+            node = node.Children[idx].Get<LayerTreeNode>();
+        }
+
+        return index;
+    }
+
+    // compute total nodes in subtree (including the root of that subtree)
+    public static int CountSubtreeNodes(LayerTreeNode n)
+    {
+        int cnt = 1;
+        foreach (var e in n.Children)
+            cnt += CountSubtreeNodes(e.Get<LayerTreeNode>());
+        return cnt;
     }
 }

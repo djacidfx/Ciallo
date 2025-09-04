@@ -16,6 +16,7 @@ public partial class ChangeWorkingLayerCmd : CommandBase
     public ChangeWorkingLayerCmd(IReadOnlyList<int> path)
     {
         _newSelectedPath = path.ToList();
+        var m = Document.Get<LayerTreeManager>();
     }
 
     public override void Do()

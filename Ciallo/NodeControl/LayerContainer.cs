@@ -18,8 +18,7 @@ using R3;
 public partial class LayerContainer : Container
 {
     public static readonly PackedScene LayerScene = GD.Load<PackedScene>("res://NodeControl/Layer.tscn");
-
-    private LayerTreeNode _rootNode;
+    
     private VBoxContainer _rootControl; // all layers controls are direct children of this container, in preorder.
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 
@@ -30,9 +29,9 @@ public partial class LayerContainer : Container
     private readonly Dictionary<Control, CompositeDisposable> _subscriptions = [];
     
     [OnInstantiate]
-    private void Initialise(LayerTreeNode root)
+    private void Initialise()
     {
-        _rootNode = root;
+        
     }
 
     public override void _Ready()
@@ -46,7 +45,7 @@ public partial class LayerContainer : Container
         _workingLayerButtonGroup.Pressed += button =>
         {
             var layerControl = (Control)button.GetOwner();
-            List<int> path = _rootNode.PreorderIndexToPath(layerControl.GetIndex());
+            List<int> path = [layerControl.GetIndex()];
             new ChangeWorkingLayerCmd(path).Commit();
         };
     }
@@ -74,6 +73,7 @@ public partial class LayerContainer : Container
         lineEdit.BindString(node.Name).AddTo(subs);
         
         lineEdit.MouseEntered += () => _mouseHoveringLayer = layerControl;
+        lineEdit.MouseExited += () => _mouseHoveringLayer = null;
         
         var guiInput = lineEdit
             .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
@@ -129,14 +129,19 @@ public partial class LayerContainer : Container
             throw new ArgumentException("The given layer control is not created by this LayerTreeControl.");
         if (path.Count == 0)
         {
-            _rootControl.AddChild(layerControl);
+            _rootControl.AddSibling(layerControl);
             return;
         }
         var index = path[0];
-        if (index < 0 || index > _rootControl.GetChildCount())
-            throw new ArgumentOutOfRangeException(nameof(path), "The given path is invalid.");
         _rootControl.AddChild(layerControl);
         _rootControl.MoveChild(layerControl, index);
+    }
+
+    public void Move(IReadOnlyList<int> src, IReadOnlyList<int> dst)
+    {
+        int srcIdx = src[0];
+        int dstIdx = dst[0];
+        _rootControl.MoveChild(_rootControl.GetChild(srcIdx), dstIdx);
     }
 
     public void RemoveFree(IReadOnlyList<int> path)
@@ -148,14 +153,20 @@ public partial class LayerContainer : Container
         layerControl.QueueFree();
     }
     
-    private void OnDragStart(Control layerControl, InputEventMouseMotion motion)
+    private void OnDragStart(Control srcLayer, InputEventMouseMotion motion)
     {
         
     }
 
-    private void OnDragging(Control layerControl, InputEventMouseMotion e)
+    private void OnDragging(Control _, InputEventMouseMotion e)
     {
-        if (_mouseHoveringLayer == null) return;
+        if (_mouseHoveringLayer == null)
+        {
+            if (_visibleDragHint != null) _visibleDragHint.Visible = false;
+            _visibleDragHint = null;
+            return;
+        }
+        
         var locPos = _mouseHoveringLayer.GetLocalMousePosition();
         var size = _mouseHoveringLayer.Size;
             
@@ -167,21 +178,36 @@ public partial class LayerContainer : Container
         _visibleDragHint = hintToShow;
     }
 
-    private void OnDragEnd(Control layerControl, InputEventMouseButton button)
+    private void OnDragEnd(Control srcLayer, InputEventMouseButton button)
     {
-        // Move layer
-        
-        
         // Drag hint
         if(_visibleDragHint != null) _visibleDragHint.Visible = false;
         _visibleDragHint = null;
-    }
+        
+        // Move layer
+        if(_mouseHoveringLayer == null || ReferenceEquals(_mouseHoveringLayer, srcLayer))
+        {
+            _mouseHoveringLayer = null;
+            return;
+        }
 
+        var srcIndex = srcLayer.GetIndex();
+        var dstIndex = _mouseHoveringLayer.GetIndex();
+        if (srcIndex < dstIndex) dstIndex--; // after removing the source layer, the destination index is shifted left by 1.
+        var locPos = _mouseHoveringLayer.GetLocalMousePosition();
+        var size = _mouseHoveringLayer.Size;
+        var sep = size.Y / 2;
+        if (locPos.Y >= sep) dstIndex++; // insert after the hovering layer.
+        
+        new MoveLayerCmd([srcIndex], [dstIndex]).Commit();
+    }
+    
     public void SetWorkingLayerNoSignal(IReadOnlyList<int> path)
     {
         if (path == null) _workingLayerButtonGroup.GetPressedButton().ButtonPressed = false;
         var layerControl = (Control)_rootControl.GetDecedentAt(path);
         var activeButton = layerControl.GetNode<CheckBox>("%Active");
+        // Note: button group is not updated.
         _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
         activeButton.SetPressedNoSignal(true);
     }
