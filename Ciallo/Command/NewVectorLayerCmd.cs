@@ -7,14 +7,10 @@ using Godot;
 
 namespace Ciallo.Command;
 
+// ReSharper disable once Godot.MissingParameterlessConstructor
 public partial class NewVectorLayerCmd : CommandBase
 {
     private readonly List<int> _insertPath;
-
-    public NewVectorLayerCmd()
-    {
-        _insertPath = [0];
-    }
 
     public NewVectorLayerCmd(List<int> insertPath = null)
     {

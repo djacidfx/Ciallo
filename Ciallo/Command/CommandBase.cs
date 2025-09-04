@@ -34,9 +34,9 @@ public abstract partial class CommandBase : GodotObject
     /// Entity version of `add_do_reference`.
     /// </summary>
     public readonly List<Entity> DoRefEntities = [];
-    public EntityGodotObject DoEntityGodotObject;
+    private EntityGodotObject _doEntityGodotObject;
     public readonly List<Entity> UndoRefEntities = [];
-    public EntityGodotObject UndoEntityGodotObject;
+    private EntityGodotObject _undoEntityGodotObject;
 
     public abstract void Do();
     public abstract void Undo();
@@ -53,27 +53,43 @@ public abstract partial class CommandBase : GodotObject
         
         // Add Do/Undo Reference method order matters:
         cm.CreateAction(Name);
-        DoEntityGodotObject = new EntityGodotObject(DoRefEntities);
-        cm.AddDoReference(DoEntityGodotObject);
+        this.AddToAction(cm);
+        foreach (var cmd in _combinations)
+        {
+            cmd.AddToAction(cm);
+        }
+        cm.CommitAction(execute);
+    }
+
+    private void AddToAction(CommandManager cm)
+    {
+        _doEntityGodotObject = new EntityGodotObject(DoRefEntities);
+        cm.AddDoReference(_doEntityGodotObject);
         cm.AddDoReference(this);
         
         cm.AddDoMethod(new(this, MethodName.Do));
         cm.AddUndoMethod(new(this, MethodName.Undo));
         
-        UndoEntityGodotObject = new EntityGodotObject(UndoRefEntities);
-        cm.AddUndoReference(UndoEntityGodotObject);
+        _undoEntityGodotObject = new EntityGodotObject(UndoRefEntities);
+        cm.AddUndoReference(_undoEntityGodotObject);
         cm.AddUndoReference(this);
-        cm.CommitAction(execute);
+    }
+
+    private readonly List<CommandBase> _combinations = [];
+    public CommandBase Combine(CommandBase other)
+    {
+        _combinations.Add(other);
+        return this;
     }
 
     public override void _Notification(int what)
     {
         if (what == NotificationPredelete)
         {
-            if(IsInstanceValid(DoEntityGodotObject))
-                DoEntityGodotObject.FreeWithoutDestroyingEntities();
-            if(IsInstanceValid(UndoEntityGodotObject))
-                UndoEntityGodotObject.FreeWithoutDestroyingEntities();
+            if(IsInstanceValid(_doEntityGodotObject))
+                _doEntityGodotObject.FreeWithoutDestroyingEntities();
+            if(IsInstanceValid(_undoEntityGodotObject))
+                _undoEntityGodotObject.FreeWithoutDestroyingEntities();
         }
     }
 

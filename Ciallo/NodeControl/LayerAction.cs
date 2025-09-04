@@ -6,7 +6,7 @@ public partial class LayerAction : Control
 {
     public void OnNewLayer()
     {
-        new NewVectorLayerCmd().Commit();
+        new NewVectorLayerCmd([0]).Combine(new ChangeWorkingLayerCmd([0])).Commit();
     }
 
     public void OnRemoveLayer()

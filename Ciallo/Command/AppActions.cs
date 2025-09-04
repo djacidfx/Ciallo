@@ -4,6 +4,7 @@ namespace Ciallo.Command;
 
 /// <summary>
 /// Static access to the actions defined in godot editor.
+/// To distinguish, we consider actions are those shortcuts defined in the godot editor, while commands are the actual actor.
 /// </summary>
 /// <remarks>Using GodotSharp.SourceGenerators library</remarks>
 [InputMap(nameof(AppAction))]
