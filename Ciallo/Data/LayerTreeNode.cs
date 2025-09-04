@@ -109,19 +109,19 @@ public class LayerTreeNode
     
     #region Visit
 
-    public Entity GetDescendantEntity(IReadOnlyList<int> path)
+    public Entity GetDescendant([NotNull] IReadOnlyList<int> path)
     {
         if(path.Count == 1) return Children[path[0]];
-        return Children[path[0]].Get<LayerTreeNode>().GetDescendantEntity(path.Skip(1).ToArray());
+        return Children[path[0]].Get<LayerTreeNode>().GetDescendant(path.Skip(1).ToArray());
     }
     
-    public LayerTreeNode GetDescendantNode(IReadOnlyList<int> path)
+    public LayerTreeNode GetDescendantNode([NotNull] IReadOnlyList<int> path)
     {
         if(path.Count == 0) return this;
         return Children[path[0]].Get<LayerTreeNode>().GetDescendantNode(path.Skip(1).ToArray());
     }
     
-    public LayerTreeNode GetNodeOrNull(IReadOnlyList<int> path)
+    public LayerTreeNode GetNodeOrNull([NotNull] IReadOnlyList<int> path)
     {
         if(path.Count == 0) return this;
         int idx = path[0];
@@ -130,7 +130,7 @@ public class LayerTreeNode
         return childNode.GetNodeOrNull(path.Skip(1).ToArray());
     }
     
-    public List<int> GetPathTo(Entity target)
+    public List<int> SearchPathTo(Entity target)
     {
         var node = target.Get<LayerTreeNode>();
         BreadthFirstSearch(this, node, out var path);
@@ -138,7 +138,9 @@ public class LayerTreeNode
     }
     
     #endregion
-    
+
+    #region utility
+
     /// <summary>
     /// Breadth first search for the entity.
     /// <returns>Entity list to the target, in parent first order.</returns>
@@ -216,7 +218,7 @@ public class LayerTreeNode
     /// </summary>
     /// <param name="path"></param>
     /// <returns></returns>
-    public int PathToPreorderIndex(IReadOnlyList<int> path)
+    public int PathToPreorderIndex([NotNull] IReadOnlyList<int> path)
     {
         int index = 0;
         var node = this;
@@ -255,7 +257,7 @@ public class LayerTreeNode
     /// Return priority: next sibling > previous sibling > parent > empty array (no nodes after deletion)
     /// If the node is root (path is empty), return null.
     /// </returns>
-    public ImmutableArray<int> GetNextPathAfterDeletion([NotNull] IReadOnlyList<int> path)
+    public ImmutableArray<int> GetNextFocusPath([NotNull] IReadOnlyList<int> path)
     {
         // If deleting the root, nothing to focus next.
         if (path.Count == 0)
@@ -288,4 +290,6 @@ public class LayerTreeNode
         // Fallback to parent
         return [..parentPath];
     }
+
+    #endregion
 }

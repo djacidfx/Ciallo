@@ -1,18 +1,20 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using Arch.Core.Extensions;
 using Ciallo.Data;
 
 namespace Ciallo.Command;
 
+// ReSharper disable once Godot.MissingParameterlessConstructor
 public partial class MoveLayerCmd : CommandBase
 {
-    private readonly IReadOnlyList<int> _src;
-    private readonly IReadOnlyList<int> _dst;
+    private readonly ImmutableArray<int> _src;
+    private readonly ImmutableArray<int> _dst;
 
     public MoveLayerCmd(IReadOnlyList<int> src, IReadOnlyList<int> dst)
     {
-        _src = src;
-        _dst = dst;
+        _src = [..src];
+        _dst = [..dst];
     }
 
     public override void Do()

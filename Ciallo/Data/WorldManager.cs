@@ -135,4 +135,6 @@ public static class WorldManager
         world.SubscribeComponentAdded((in Entity e, ref List<Rect2> _) => throwCollectionError());
         world.SubscribeComponentAdded((in Entity e, ref List<Rect2I> _) => throwCollectionError());
     }
+    
+    public static World GetWorldById(int id) => LoadedWorlds.Single(w => w.Id == id);
 }

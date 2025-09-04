@@ -17,10 +17,8 @@ public partial class LayerAction : Control
         if (WorldManager.WorkingWorld.Value == null) return;
         var document = WorldManager.WorkingDocument;
         var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
-        if (workingLayerPath != null)
-        {
-            var nextLayerPath = document.Get<LayerTreeManager>().Root.GetNextPathAfterDeletion(workingLayerPath);
-            new ChangeWorkingLayerCmd(nextLayerPath).Combine(new DeleteLayerCmd([..workingLayerPath])).Commit();
-        }
+        if (workingLayerPath == null) return;
+        var nextLayerPath = document.Get<LayerTreeManager>().Root.GetNextFocusPath(workingLayerPath);
+        new ChangeWorkingLayerCmd(nextLayerPath).Combine(new DeleteLayerCmd([..workingLayerPath])).Commit();
     }
 }

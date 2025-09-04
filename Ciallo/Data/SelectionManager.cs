@@ -13,24 +13,29 @@ public class SelectionManager
 {
     public readonly ObservableList<Entity> SelectedLayers = [];
 
-    // Null is allowed to represent no selection. Empty array represent root node and should not be the working layer. 
-    private int[] _workingLayerPath;
-    public IReadOnlyList<int> WorkingLayerPath
+    // Empty array represents no selection (or root node is selected).
+    public ImmutableArray<int> WorkingLayerPath
     {
-        get => _workingLayerPath;
-        set
+        get
         {
-            if(value != null && value.Count == 0)
-                throw new System.ArgumentException("Working layer cannot be root node.");
-            if (ReferenceEquals(_workingLayerPath, value)) return;
-            if (value != null && _workingLayerPath?.SequenceEqual(value) == true) return;
-            _workingLayerPath = value?.ToArray();
-            WorkingLayerChanged.OnNext(WorkingLayer);
+            if (WorkingLayer == Entity.Null) return [];
+            var world = WorldManager.GetWorldById(_workingLayer.WorldId);
+            ImmutableArray<int> path = [..world.Document().Get<LayerTreeManager>().Root.SearchPathTo(WorkingLayer)];
+            return path;
         }
     }
 
-    public Entity WorkingLayer => _workingLayerPath == null ? Entity.Null : 
-        WorldManager.WorkingDocument.Get<LayerTreeManager>().Root.GetDescendantEntity(WorkingLayerPath);
+    private Entity _workingLayer = Entity.Null;
+    public Entity WorkingLayer
+    {
+        get => _workingLayer;
+        set
+        {
+            if (_workingLayer == value) return;
+            _workingLayer = value;
+            WorkingLayerChanged.OnNext(_workingLayer);
+        }
+    }
 
     public readonly Subject<Entity> WorkingLayerChanged = new();
 }

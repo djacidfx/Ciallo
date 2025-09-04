@@ -10,35 +10,34 @@ namespace Ciallo.Command;
 // ReSharper disable once Godot.MissingParameterlessConstructor
 public partial class ChangeWorkingLayerCmd : CommandBase
 {
-    private readonly ImmutableArray<int> _newSelectedPath;
-    private ImmutableArray<int> _oldSelectedPath;
+    private readonly ImmutableArray<int> _newPath;
+    private ImmutableArray<int> _oldPath;
     
-    public ChangeWorkingLayerCmd(ImmutableArray<int> path)
+    public ChangeWorkingLayerCmd(IReadOnlyList<int> newPath)
     {
-        _newSelectedPath = path;
+        _newPath = [..newPath];
     }
 
     public override void Do()
     {
         // Selection manager
         var sm = Document.Get<SelectionManager>();
-        if(sm.WorkingLayerPath != null)
-            _oldSelectedPath = [..sm.WorkingLayerPath];
-        sm.WorkingLayerPath = _newSelectedPath;
+        _oldPath = sm.WorkingLayerPath;
+        sm.WorkingLayer = Document.Get<LayerTreeManager>().Root.GetDescendant(_newPath);
         
         // Layer tree view
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.SetWorkingLayerNoSignal(_newSelectedPath);
+        layerContainer.SetWorkingLayerNoSignal(_newPath);
     }
 
     public override void Undo()
     {
         // Layer tree view
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.SetWorkingLayerNoSignal(_oldSelectedPath);
+        layerContainer.SetWorkingLayerNoSignal(_oldPath);
         
         // Selection manager
         var sm = Document.Get<SelectionManager>();
-        sm.WorkingLayerPath = _oldSelectedPath;
+        sm.WorkingLayer = Document.Get<LayerTreeManager>().Root.GetDescendant(_oldPath);
     }
 }
