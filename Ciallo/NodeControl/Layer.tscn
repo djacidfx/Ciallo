@@ -35,13 +35,13 @@ custom_minimum_size = Vector2(0, 3)
 layout_mode = 2
 mouse_filter = 1
 
-[node name="LayerControl" type="HBoxContainer" parent="."]
+[node name="Layer" type="HBoxContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("1_kllcm")
 theme_override_constants/separation = 3
 
-[node name="Visible" type="CheckBox" parent="LayerControl"]
+[node name="Visible" type="CheckBox" parent="Layer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"TextureCheckBox"
@@ -50,7 +50,7 @@ theme_override_icons/unchecked = ExtResource("3_2evga")
 button_pressed = true
 action_mode = 0
 
-[node name="Active" type="CheckBox" parent="LayerControl"]
+[node name="Active" type="CheckBox" parent="Layer"]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("1_kllcm")
@@ -61,7 +61,7 @@ theme_override_icons/radio_checked = ExtResource("4_wk5tg")
 theme_override_icons/radio_unchecked = ExtResource("3_2evga")
 action_mode = 0
 
-[node name="LabelLineEdit" type="LineEdit" parent="LayerControl"]
+[node name="LabelLineEdit" type="LineEdit" parent="Layer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(256, 0)
 layout_mode = 2
@@ -76,6 +76,7 @@ placeholder_text = "Double click to rename"
 editable = false
 clear_button_enabled = true
 middle_mouse_paste_enabled = false
+select_all_on_focus = true
 script = ExtResource("5_pd0q4")
 metadata/_custom_type_script = "uid://cnkmrjlwncaqf"
 
