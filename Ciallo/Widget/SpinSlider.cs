@@ -113,15 +113,12 @@ public partial class SpinSlider : HBoxContainer
 
     private void Connect(Godot.Range control)
     {
-        control.ValueChanged += (double value) =>
+        control.ValueChanged += value =>
         {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (Value == value) return;
             Value = value;
             EmitSignal(SignalName.ValueChanged, Value);
         };
-    }
-
-    public void BindValue<T>(ReactiveProperty<T> property) where T : System.Numerics.INumber<T>
-    {
-        throw new NotImplementedException();
     }
 }

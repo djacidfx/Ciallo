@@ -4,7 +4,7 @@ using R3;
 
 namespace Ciallo.Misc;
 
-public static class BindToggleButtonExtension
+public static class BindToggleButton
 {
     private static CompositeDisposable BindBool(this BaseButton button, ReactiveProperty<bool> property)
     {

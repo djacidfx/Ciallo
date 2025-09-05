@@ -1,9 +1,16 @@
-[gd_scene load_steps=5 format=3 uid="uid://cmxkg61nilwq8"]
+[gd_scene load_steps=7 format=3 uid="uid://cmxkg61nilwq8"]
 
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://NodeControl/PaintPanel.cs" id="1_ract4"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_jsupi"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://NodeControl/WorldViewContainer.cs" id="3_7pmtm"]
-[ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Command/WorldView.tscn" id="4_3trrc"]
+[ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://NodeControl/WorldView.tscn" id="4_3trrc"]
+[ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Rendering/Checkerboard.gdshader" id="5_ercqw"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_je3d8"]
+shader = ExtResource("5_ercqw")
+shader_parameter/size = 10.0
+shader_parameter/color1 = Color(1, 1, 1, 1)
+shader_parameter/color2 = Color(0.7, 0.7, 0.7, 1)
 
 [node name="PaintPanel" type="PanelContainer"]
 anchors_preset = 15
@@ -69,6 +76,18 @@ MaxValue = 180.0
 Step = 1.0
 metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 
+[node name="VSeparator3" type="VSeparator" parent="VBoxContainer/Bar/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label4" type="Label" parent="VBoxContainer/Bar/HBoxContainer"]
+layout_mode = 2
+text = "Background color"
+
+[node name="BackgroundColorControl" type="ColorPickerButton" parent="VBoxContainer/Bar/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+
 [node name="WorldViewContainer" type="SubViewportContainer" parent="VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -78,10 +97,14 @@ script = ExtResource("3_7pmtm")
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldViewContainer"]
 handle_input_locally = false
 gui_disable_input = true
-size = Vector2i(2, 2)
+size = Vector2i(1920, 1042)
 render_target_update_mode = 4
 
 [node name="WorldView" parent="VBoxContainer/WorldViewContainer/SubViewport" instance=ExtResource("4_3trrc")]
+
+[node name="Background" type="Polygon2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
+unique_name_in_owner = true
+material = SubResource("ShaderMaterial_je3d8")
 
 [node name="Camera2D" type="Camera2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
 unique_name_in_owner = true

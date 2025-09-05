@@ -1,4 +1,5 @@
 ﻿using Godot;
+using R3;
 
 namespace Ciallo.Widget;
 
@@ -125,9 +126,12 @@ public partial class Vector2Edit : HBoxContainer
     {
         spin.ValueChanged += rawValue =>
         {
+            float v = (float)rawValue;
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if(v == _value[component]) return;
             _value = component == 0
-                ? new Vector2((float)rawValue, _value.Y) 
-                : new Vector2(_value.X, (float)rawValue);
+                ? new Vector2(v, _value.Y) 
+                : new Vector2(_value.X, v); ;
             EmitSignal(SignalName.ValueChanged, Value);
         };
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using Ciallo.Widget;
 using Godot;
 using R3;
 
@@ -32,5 +33,14 @@ public static class BindRange
     public static CompositeDisposable BindValue<T>(this SpinBox spinBox, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
         return BindValue((Godot.Range)spinBox, property);
+    }
+    
+    public static CompositeDisposable BindValue<T>(this SpinSlider spinSlider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
+    {
+        var subs = new CompositeDisposable();
+        property.Subscribe(value => spinSlider.Value = double.CreateChecked(value)).AddTo(subs);
+        spinSlider.SignalAsObservable<float>(SpinSlider.SignalName.ValueChanged)
+            .Subscribe(value => property.Value = T.CreateChecked(value)).AddTo(subs);
+        return subs;
     }
 }

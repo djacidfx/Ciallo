@@ -11,8 +11,6 @@ namespace Ciallo.NodeControl;
 public partial class WorldViewContainer : SubViewportContainer
 {
     private Camera2D _camera;
-    private SpinSlider _zoomControl;
-    private SpinSlider _rotationControl;
     
     private bool _isHovering = false;
     private bool _isPanning = false;
@@ -21,15 +19,12 @@ public partial class WorldViewContainer : SubViewportContainer
     
     public override void _Ready()
     {
-        _camera = GetChild(0).GetChild<Camera2D>(1);
-        _zoomControl = GetNode<SpinSlider>("%ZoomControl")
-                       ?? throw new NullReferenceException("ZoomControl not found.");
-        _rotationControl = GetNode<SpinSlider>("%RotationControl")
-                           ?? throw new NullReferenceException("RotationControl not found.");
+        _camera = GetNode<Camera2D>("%Camera2D");
     }
     
     public void OnGuiInput(InputEvent e)
     {
+        var panel = (PaintPanel)Owner;
         if (e is InputEventMouseMotion motion)
         {
             var worldPos = _camera.GetViewportTransform().AffineInverse() * motion.Position;
@@ -53,7 +48,7 @@ public partial class WorldViewContainer : SubViewportContainer
             
             if (_isPanning)
             {
-                _camera.Position -= worldDelta;
+                panel.Offset.Value -= worldDelta;
             }
         }
 
@@ -67,17 +62,17 @@ public partial class WorldViewContainer : SubViewportContainer
         // Double click to reset camera position.
         if (e is InputEventMouseButton { ButtonIndex: MouseButton.Middle, DoubleClick: true })
         {
-            _camera.Position = Vector2.Zero;
+            panel.Offset.Value = Vector2.Zero;
         }
         // Scroll mouse wheel zooming.
         var zoomFactor = Preferences.MouseWheelZoomFactor.Value;
         if (e is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp } && _isHovering)
         {
-            _zoomControl.Value *= 1.0f + zoomFactor;
+            panel.Zoom.Value *= 1.0f + zoomFactor;
         }
         else if (e is InputEventMouseButton { ButtonIndex: MouseButton.WheelDown } && _isHovering)
         {
-            _zoomControl.Value *= 1.0f - zoomFactor;
+            panel.Zoom.Value *= 1.0f - zoomFactor;
         }
     }
     
