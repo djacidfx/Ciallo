@@ -8,7 +8,7 @@ namespace Ciallo.NodeControl;
 /// Responsible for collecting and dispatching canvas gui input events.
 /// Current version also handles canvas navigation with mouse wheel. May change in the future.
 /// </summary>
-public partial class WorldViewContainer : SubViewportContainer
+public partial class WorldInteractiveEventDispatcher : SubViewportContainer
 {
     private Camera2D _camera;
     
