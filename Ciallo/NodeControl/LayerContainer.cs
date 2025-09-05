@@ -58,7 +58,7 @@ public partial class LayerContainer : Container
     private Control Create(Entity e)
     {
         var node = e.Get<LayerTreeNode>();
-        var layerControl = LayerScene.Instantiate<Control>();
+        var layerControl = LayerScene.Instantiate<Container>();
         var subs = new CompositeDisposable();
         _subscriptions[layerControl] = subs;
         
@@ -71,8 +71,8 @@ public partial class LayerContainer : Container
         var lineEdit = layerControl.GetNode<LabelLineEdit>("%LabelLineEdit");
         lineEdit.BindString(node.Name).AddTo(subs);
         
-        lineEdit.MouseEntered += () => _mouseHoveringLayer = layerControl;
-        lineEdit.MouseExited += () => _mouseHoveringLayer = null;
+        layerControl.MouseEntered += () => _mouseHoveringLayer = layerControl;
+        layerControl.MouseExited += () => _mouseHoveringLayer = null;
         
         var guiInput = lineEdit
             .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)

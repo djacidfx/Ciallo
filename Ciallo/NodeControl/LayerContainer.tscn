@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_icvmy"]
 [ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://NodeControl/Layer.tscn" id="3_3l7of"]
 
-[node name="LayerTree" type="VBoxContainer"]
+[node name="LayerCotainer" type="VBoxContainer"]
 offset_right = 534.0
 offset_bottom = 294.0
 size_flags_horizontal = 3
@@ -35,7 +35,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 3
+theme_override_constants/separation = 0
 
 [node name="LayerControl" parent="ScrollContainer/TreeRoot" instance=ExtResource("3_3l7of")]
 layout_mode = 2

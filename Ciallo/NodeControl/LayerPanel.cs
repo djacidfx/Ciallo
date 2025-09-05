@@ -14,7 +14,7 @@ public partial class LayerPanel : VBoxContainer
     
     public override void _Ready()
     {
-        GetNode<Node>("%LayerTreePreview").QueueFree();
+        GetNode<Node>("%LayerContainerPreview").QueueFree();
         WorldManager.WorkingWorld.Skip(1).Subscribe(w =>
         {
             if(w == null && _visibleLayerTree != null)
