@@ -18,7 +18,7 @@ public partial class LayerAction : Control
         var document = WorldManager.WorkingDocument;
         var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
         if (workingLayerPath == null) return;
-        var nextLayerPath = document.Get<LayerTreeManager>().Root.GetNextFocusPath(workingLayerPath);
+        var nextLayerPath = document.Get<LayerTreeManager>().GetNextFocusPathAfterDeletion(workingLayerPath);
         new ChangeWorkingLayerCmd(nextLayerPath).Combine(new DeleteLayerCmd(workingLayerPath)).Commit();
     }
 }

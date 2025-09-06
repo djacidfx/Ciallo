@@ -19,7 +19,7 @@ public partial class EntityWrapperObject(List<Entity> entities) : GodotObject
     {
         if (what != NotificationPredelete || !_destroyEntities) return;
         if (entities == null || entities.Count == 0) return;
-        var world = WorldManager.GetWorldById(entities.First().WorldId);
+        var world = World.Worlds.First(w => w.Id == entities.First().WorldId);
         entities.ForEach(world.Destroy);
     }
     
