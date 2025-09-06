@@ -10,6 +10,7 @@ namespace Ciallo.Command;
 public partial class DeleteLayerCmd(IReadOnlyList<int> target) : CommandBase
 {
     private readonly ImmutableArray<int> _target = [..target];
+    
     public override void Do()
     {
         // Layer tree data

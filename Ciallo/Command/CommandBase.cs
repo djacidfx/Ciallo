@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
@@ -17,7 +18,7 @@ namespace Ciallo.Command;
 /// <summary>
 /// `using var cmd = new Cmd()` cause memory leak. Must manually call `cmd.Free()`.
 /// </summary>
-public abstract partial class CommandBase : GodotObject
+public abstract class CommandBase
 {
     /// <summary>
     /// The world in which this command operates.
@@ -52,27 +53,24 @@ public abstract partial class CommandBase : GodotObject
         var cm = WorkingWorld.Document().Get<CommandManager>();
         
         // Add Do/Undo Reference method order matters:
+        CommandBase[] commands =  [this, .._combinations];
+        var objects = commands.Select(c => new CommandWrapperObject(c)).ToArray();
         cm.CreateAction(Name);
-        this.AddToAction(cm);
-        foreach (var cmd in _combinations)
+        foreach (var obj in objects)
         {
-            cmd.AddToAction(cm);
+            cm.AddDoReference(obj);
+            _doEntityGodotObject = new EntityGodotObject(DoRefEntities);
+            cm.AddDoReference(_doEntityGodotObject);
+            cm.AddDoMethod(new(obj, CommandWrapperObject.MethodName.Do));
+        }
+        foreach (var obj in objects.Reverse())
+        {
+            cm.AddUndoMethod(new(obj, CommandWrapperObject.MethodName.Undo));
+            _undoEntityGodotObject = new EntityGodotObject(UndoRefEntities);
+            cm.AddUndoReference(_undoEntityGodotObject);
+            cm.AddUndoReference(obj);
         }
         cm.CommitAction(execute);
-    }
-
-    private void AddToAction(CommandManager cm)
-    {
-        _doEntityGodotObject = new EntityGodotObject(DoRefEntities);
-        cm.AddDoReference(_doEntityGodotObject);
-        cm.AddDoReference(this);
-        
-        cm.AddDoMethod(new(this, MethodName.Do));
-        cm.AddUndoMethod(new(this, MethodName.Undo));
-        
-        _undoEntityGodotObject = new EntityGodotObject(UndoRefEntities);
-        cm.AddUndoReference(_undoEntityGodotObject);
-        cm.AddUndoReference(this);
     }
 
     private readonly List<CommandBase> _combinations = [];
@@ -82,15 +80,12 @@ public abstract partial class CommandBase : GodotObject
         return this;
     }
 
-    public override void _Notification(int what)
+    public void FreeGodotObject()
     {
-        if (what == NotificationPredelete)
-        {
-            if(IsInstanceValid(_doEntityGodotObject))
-                _doEntityGodotObject.FreeWithoutDestroyingEntities();
-            if(IsInstanceValid(_undoEntityGodotObject))
-                _undoEntityGodotObject.FreeWithoutDestroyingEntities();
-        }
+        if(GodotObject.IsInstanceValid(_doEntityGodotObject))
+            _doEntityGodotObject.FreeWithoutDestroyingEntities();
+        if(GodotObject.IsInstanceValid(_undoEntityGodotObject))
+            _undoEntityGodotObject.FreeWithoutDestroyingEntities();
     }
 
     public override string ToString()

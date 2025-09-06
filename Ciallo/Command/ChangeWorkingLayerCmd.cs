@@ -11,7 +11,7 @@ namespace Ciallo.Command;
 public partial class ChangeWorkingLayerCmd : CommandBase
 {
     private readonly ImmutableArray<int> _newPath;
-    private ImmutableArray<int> _oldPath;
+    private ImmutableArray<int>? _oldPath;
     
     public ChangeWorkingLayerCmd(IReadOnlyList<int> newPath)
     {
@@ -22,7 +22,8 @@ public partial class ChangeWorkingLayerCmd : CommandBase
     {
         // Selection manager
         var sm = Document.Get<SelectionManager>();
-        _oldPath = sm.WorkingLayerPath;
+        if(_oldPath == null)
+            _oldPath = sm.WorkingLayerPath;
         sm.WorkingLayer = Document.Get<LayerTreeManager>().Root.GetDescendant(_newPath);
         
         // Layer tree view

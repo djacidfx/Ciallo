@@ -59,10 +59,8 @@ public static class WorldManager
         // Add initial layer
         var c = new NewVectorLayerCmd([0]);
         c.Do();
-        c.Free();
         var s = new ChangeWorkingLayerCmd([0]);
         s.Do();
-        s.Free();
         
         return world;
     }
@@ -78,7 +76,7 @@ public static class WorldManager
         // Remove paint panel
         //// add null check since the method could be called as long as Godot cleaning up nodes.
         var paintPanelContainer = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().SingleOrDefault();
-        paintPanelContainer?.RemoveFreePaintPanel(world.Document());
+        if(GodotObject.IsInstanceValid(paintPanelContainer)) paintPanelContainer.RemoveFreePaintPanel(world.Document());
         
         // Remove layer tree control
         var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().SingleOrDefault();
