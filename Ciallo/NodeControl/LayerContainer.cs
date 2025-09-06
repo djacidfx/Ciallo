@@ -206,7 +206,7 @@ public partial class LayerContainer : Container
         if (path == null) _workingLayerButtonGroup.GetPressedButton().ButtonPressed = false;
         var layerControl = (Control)_rootControl.GetDecedentAt(path);
         var activeButton = layerControl.GetNode<CheckBox>("%Active");
-        // Note: button group is not updated.
+        // Note: button group will not be updated.
         _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
         activeButton.SetPressedNoSignal(true);
     }
