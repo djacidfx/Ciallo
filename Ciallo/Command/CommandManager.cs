@@ -22,6 +22,7 @@ public partial class CommandManager : UndoRedo
         obj.DoEntityObject = new EntityWrapperObject(obj.Command.DoRefEntities);
         AddDoMethod(new(obj, CommandWrapperObject.MethodName.Do));
         AddDoReference(obj.DoEntityObject);
+        obj.Command.DoRefObjects.ForEach(AddDoReference);
         AddDoReference(obj);
     }
     
@@ -30,6 +31,7 @@ public partial class CommandManager : UndoRedo
         obj.UndoEntityObject = new EntityWrapperObject(obj.Command.UndoRefEntities);
         AddUndoMethod(new(obj, CommandWrapperObject.MethodName.Undo));
         AddUndoReference(obj.UndoEntityObject);
+        obj.Command.UndoRefObjects.ForEach(AddUndoReference);
         AddUndoReference(obj);
     }
 }

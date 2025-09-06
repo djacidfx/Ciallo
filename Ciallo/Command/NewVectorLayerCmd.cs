@@ -4,11 +4,13 @@ using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
+using Ciallo.Rendering;
+using Godot;
 
 namespace Ciallo.Command;
 
 // ReSharper disable once Godot.MissingParameterlessConstructor
-public partial class NewVectorLayerCmd : CommandBase
+public class NewVectorLayerCmd : CommandBase
 {
     private readonly ImmutableArray<int> _insertPath;
 
@@ -33,22 +35,32 @@ public partial class NewVectorLayerCmd : CommandBase
             DoRefEntities.Add(e);
         }
         
-        // Layer tree
+        // Layer tree data
         var layerE = DoRefEntities[0];
         tree.Root.InsertDescendant(_insertPath, layerE);
         
-        // Layer tree view
+        // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
         layerContainer.CreateInsert(layerE, _insertPath);
+        
+        // World view
+        var worldView = Document.Get<WorldView>();
+        if (DoRefObjects.Count == 0) DoRefObjects.Add(VectorLayerView.Create());
+        var layerNode =  (Node)DoRefObjects[0];
+        worldView.InsertNodeAt(layerNode, _insertPath);
     }
 
     public override void Undo()
     {
-        // Layer tree view
+        // World view
+        var worldView = Document.Get<WorldView>();
+        worldView.RemoveNodeAt(_insertPath);
+        
+        // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.RemoveFree(_insertPath);
         
-        // Layer Tree
+        // Layer tree data
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.RemoveDescendant(_insertPath);
     }

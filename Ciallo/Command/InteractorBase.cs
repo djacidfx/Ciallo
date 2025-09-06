@@ -10,7 +10,7 @@ public abstract class InteractorBase
 {
     public World WorkingWorld { get; set; } = WorldManager.WorkingWorld.Value;
     public Entity Document => WorkingWorld.Document();
-    public SelectionManager Selection => Document.Get<SelectionManager>();
+    public Entity WorkingLayer => Document.Get<SelectionManager>().WorkingLayer;
     
     public abstract bool CanInteract { get; }
 

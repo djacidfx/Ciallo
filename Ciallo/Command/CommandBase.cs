@@ -36,6 +36,9 @@ public abstract class CommandBase
     /// </summary>
     public readonly List<Entity> DoRefEntities = [];
     public readonly List<Entity> UndoRefEntities = [];
+    
+    public readonly List<GodotObject> DoRefObjects = [];
+    public readonly List<GodotObject> UndoRefObjects = [];
 
     public abstract void Do();
     public abstract void Undo();

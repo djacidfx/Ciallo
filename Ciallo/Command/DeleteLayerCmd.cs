@@ -4,6 +4,7 @@ using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
+using Godot;
 
 namespace Ciallo.Command;
 
@@ -18,15 +19,25 @@ public partial class DeleteLayerCmd(IReadOnlyList<int> target) : CommandBase
         var e = tree.Root.RemoveDescendant(_target);
         if(UndoRefEntities.Count == 0) UndoRefEntities.Add(e);
         
-        // Layer tree view
+        // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.RemoveFree(_target);
+        
+        // World view
+        var worldView = Document.Get<WorldView>();
+        var node = worldView.RemoveNodeAt(_target);
+        if(UndoRefObjects.Count == 0) UndoRefObjects.Add(node);
     }
 
     public override void Undo()
     {
+        // World view
+        var worldView = Document.Get<WorldView>();
+        var node = (Node)UndoRefObjects.First();
+        worldView.InsertNodeAt(node, _target);
+        
         var e = UndoRefEntities.First();
-        // Layer tree view
+        // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.CreateInsert(e, _target);
         

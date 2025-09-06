@@ -13,10 +13,13 @@ public partial class PaintPanelContainer : Control
         var paintPanel = PaintPanel.Instantiate(document.Get<DocumentSetting>());
         AddChild(paintPanel);
         document.Add(paintPanel);
+        var worldView = paintPanel.GetNode<WorldView>("%WorldView");
+        document.Add(worldView);
     }
     
     public void RemoveFreePaintPanel(Entity document)
     {
+        document.Remove<WorldView>();
         var paintPanel = document.Get<PaintPanel>();
         document.Remove<PaintPanel>();
         paintPanel.QueueFree();

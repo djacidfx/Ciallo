@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://NodeControl/PaintPanel.cs" id="1_ract4"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_jsupi"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://NodeControl/WorldEventDispatcher.cs" id="3_7pmtm"]
-[ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://NodeControl/WorldView.tscn" id="4_3trrc"]
+[ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Rendering/WorldView.tscn" id="4_3trrc"]
 [ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Rendering/Checkerboard.gdshader" id="5_ercqw"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_je3d8"]
@@ -105,6 +105,7 @@ unique_name_in_owner = true
 material = SubResource("ShaderMaterial_je3d8")
 
 [node name="WorldView" parent="VBoxContainer/WorldViewContainer/SubViewport" instance=ExtResource("4_3trrc")]
+unique_name_in_owner = true
 
 [node name="Camera2D" type="Camera2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
 unique_name_in_owner = true

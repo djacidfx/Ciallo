@@ -22,16 +22,26 @@ public partial class MoveLayerCmd : CommandBase
         // Layer tree data
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.MoveDescendant(_src, _dst);
-        // layer tree view
+        
+        // layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.Move(_src, _dst);
+        
+        // World view
+        var worldView = Document.Get<WorldView>();
+        worldView.MoveNode(_src, _dst);
     }
 
     public override void Undo()
     {
-        // layer tree view
+        // World view
+        var worldView = Document.Get<WorldView>();
+        worldView.MoveNode(_dst, _src);
+        
+        // layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.Move(_dst, _src);
+        
         // layer tree data
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.MoveDescendant(_dst, _src);
