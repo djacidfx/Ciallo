@@ -1,41 +1,59 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Ciallo.Geometry;
 using Godot;
 
-namespace Ciallo.NodeControl;
+namespace Ciallo.Rendering;
 
 public static class StrokeView
 {
-    public static MultiMeshInstance2D CreateStrokeView([NotNull] List<Vector2> points, [NotNull] List<float> radii)
+    private static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
+    private static readonly ShaderMaterial Material = GD.Load<ShaderMaterial>("res://Rendering/StrokeMaterial.tres");
+    
+    public static MultiMeshInstance2D Create()
     {
-        if(points.Count != radii.Count)
-        {
-            GD.PushError("Points and radii count mismatch.");
-            return null;
-        }
-        if(points.Count == 0 || radii.Count == 0)
-        {
-            GD.PushWarning("No points or radii provided.");
-            return null;
-        }
-        
         var strokeView = new MultiMeshInstance2D();
         var multiMesh = new MultiMesh
         {
             TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,
             UseColors = true,
             UseCustomData = true,
-            Mesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres"),
+            Mesh = DummyMesh,
         };
+        strokeView.Multimesh = multiMesh;
+        strokeView.Material = Material;
         
-        List<Vector2> ps;
-        List<float> rs;
+        return strokeView;
+    }
+    
+    public static void UpdateStroke(
+        [NotNull] this MultiMeshInstance2D strokeView,
+        [NotNull] IReadOnlyList<Vector2> points,
+        [NotNull] IReadOnlyList<float> radii)
+    {
+        if(points.Count != radii.Count)
+        {
+            GD.PushError("Points and radii count mismatch.");
+            return;
+        }
+        if(points.Count == 0 || radii.Count == 0)
+        {
+            GD.PushWarning("No points or radii provided.");
+            return;
+        }
+        
+        var multiMesh = strokeView.Multimesh;
+        
+        ImmutableArray<Vector2> ps;
+        ImmutableArray<float> rs;
+        
         if (points.Count > 1) // regular case
         {
             multiMesh.InstanceCount = points.Count - 1;
-            ps = points;
-            rs = radii;
+            ps = [..points];
+            rs = [..radii];
         }
         else if (points.Count == 1) // a point, render it as an ultra short segment
         {
@@ -43,9 +61,8 @@ public static class StrokeView
             ps = [points[0], points[0] + float.Epsilon*Vector2.Right];
             rs = [radii[0], radii[0] + float.Epsilon];
         }
-        else throw new System.ArgumentException("Something wrong");
+        else throw new("Unreachable");
         
-        // Push data to buffer
         for(int i = 0; i < multiMesh.InstanceCount; i++)
         {
             Color customPos = new()
@@ -70,9 +87,5 @@ public static class StrokeView
         // Godot cannot save the value in the scene.
         var aabb = new Aabb(boundingBox.Position.X, boundingBox.Position.Y, 0, boundingBox.Size.X, boundingBox.Size.Y, 0);
         multiMesh.CustomAabb = aabb;
-        strokeView.Multimesh = multiMesh;
-        strokeView.Material = GD.Load<ShaderMaterial>("res://Rendering/StrokeMaterial.tres");
-        
-        return strokeView;
     }
 }
