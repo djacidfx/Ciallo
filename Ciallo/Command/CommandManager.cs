@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Arch.Core;
 using Godot;
+using Microsoft.CodeAnalysis;
 
 namespace Ciallo.Command;
 
@@ -14,5 +15,21 @@ public partial class CommandManager : UndoRedo
     public CommandManager()
     {
         SetMaxSteps(3); // fast invoke bugs
+    }
+
+    public void AddDo(CommandWrapperObject obj)
+    {
+        obj.DoEntityObject = new EntityWrapperObject(obj.Command.DoRefEntities);
+        AddDoMethod(new(obj, CommandWrapperObject.MethodName.Do));
+        AddDoReference(obj.DoEntityObject);
+        AddDoReference(obj);
+    }
+    
+    public void AddUndo(CommandWrapperObject obj)
+    {
+        obj.UndoEntityObject = new EntityWrapperObject(obj.Command.UndoRefEntities);
+        AddUndoMethod(new(obj, CommandWrapperObject.MethodName.Undo));
+        AddUndoReference(obj.UndoEntityObject);
+        AddUndoReference(obj);
     }
 }

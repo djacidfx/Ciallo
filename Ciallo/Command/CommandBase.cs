@@ -35,9 +35,7 @@ public abstract class CommandBase
     /// Entity version of `add_do_reference`.
     /// </summary>
     public readonly List<Entity> DoRefEntities = [];
-    private EntityGodotObject _doEntityGodotObject;
     public readonly List<Entity> UndoRefEntities = [];
-    private EntityGodotObject _undoEntityGodotObject;
 
     public abstract void Do();
     public abstract void Undo();
@@ -55,21 +53,10 @@ public abstract class CommandBase
         // Add Do/Undo Reference method order matters:
         CommandBase[] commands =  [this, .._combinations];
         var objects = commands.Select(c => new CommandWrapperObject(c)).ToArray();
+        
         cm.CreateAction(Name);
-        foreach (var obj in objects)
-        {
-            cm.AddDoReference(obj);
-            _doEntityGodotObject = new EntityGodotObject(DoRefEntities);
-            cm.AddDoReference(_doEntityGodotObject);
-            cm.AddDoMethod(new(obj, CommandWrapperObject.MethodName.Do));
-        }
-        foreach (var obj in objects.Reverse())
-        {
-            cm.AddUndoMethod(new(obj, CommandWrapperObject.MethodName.Undo));
-            _undoEntityGodotObject = new EntityGodotObject(UndoRefEntities);
-            cm.AddUndoReference(_undoEntityGodotObject);
-            cm.AddUndoReference(obj);
-        }
+        foreach (var obj in objects) cm.AddDo(obj);
+        foreach (var obj in objects.Reverse()) cm.AddUndo(obj);
         cm.CommitAction(execute);
     }
 
@@ -78,14 +65,6 @@ public abstract class CommandBase
     {
         _combinations.Add(other);
         return this;
-    }
-
-    public void FreeGodotObject()
-    {
-        if(GodotObject.IsInstanceValid(_doEntityGodotObject))
-            _doEntityGodotObject.FreeWithoutDestroyingEntities();
-        if(GodotObject.IsInstanceValid(_undoEntityGodotObject))
-            _undoEntityGodotObject.FreeWithoutDestroyingEntities();
     }
 
     public override string ToString()
