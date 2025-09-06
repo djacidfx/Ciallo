@@ -1,4 +1,6 @@
-﻿
+﻿using Arch.Core;
+using Arch.Core.Extensions;
+using Ciallo.Data;
 using Ciallo.NodeControl;
 using Godot;
 
@@ -6,17 +8,17 @@ namespace Ciallo.Command;
 
 public abstract class InteractorBase
 {
+    public World WorkingWorld { get; set; } = WorldManager.WorkingWorld.Value;
+    public Entity Document => WorkingWorld.Document();
+    public SelectionManager Selection => Document.Get<SelectionManager>();
+    
     public abstract bool CanInteract { get; }
-    
-    public abstract void Activated();
-    
-    public abstract void Deactivated();
 
-    public abstract void InteractionStart(CursorButtonData data);
+    public abstract void Start(CursorButtonData data);
     
     public abstract void Interacting(CursorMotionData data);
     
-    public abstract void InteractionEnd(CursorButtonData data);
+    public abstract void End(CursorButtonData data);
     
-    public abstract void Cancel();
+    public abstract void Cancel(CursorButtonData data);
 }
