@@ -45,14 +45,17 @@ public class NewVectorLayerCmd : CommandBase
         
         // World view
         var worldView = Document.Get<WorldView>();
-        if (DoRefObjects.Count == 0) DoRefObjects.Add(VectorLayerView.Create());
-        var layerNode =  (Node)DoRefObjects[0];
-        worldView.InsertNodeAt(layerNode, _insertPath);
+        if (DoRefObjects.Count == 0) DoRefObjects.Add(new VectorLayerView());
+        var layerView =  (VectorLayerView)DoRefObjects[0];
+        worldView.InsertNodeAt(layerView, _insertPath);
+        layerE.Add(layerView);
     }
 
     public override void Undo()
     {
+        var layerE = DoRefEntities[0];
         // World view
+        layerE.Remove<VectorLayerView>();
         var worldView = Document.Get<WorldView>();
         worldView.RemoveNodeAt(_insertPath);
         

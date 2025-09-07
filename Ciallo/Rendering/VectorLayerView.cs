@@ -4,15 +4,10 @@ using Godot;
 
 namespace Ciallo.Rendering;
 
-public static class VectorLayerView
+public partial class VectorLayerView : CanvasGroup
 {
-    /// <summary>
-    /// Create a default layer view at runtime.
-    /// </summary>
-    public static CanvasGroup Create()
+    public VectorLayerView()
     {
-        var layerView = new CanvasGroup();
-        return layerView;
     }
 
     /// <summary>

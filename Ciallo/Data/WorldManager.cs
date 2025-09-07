@@ -48,7 +48,7 @@ public static class WorldManager
         var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
         layerPanel.CreateAddLayerContainer(document);
         
-        // Create paint panel
+        // Create paint panel, also attach WorldView.
         var paintPanelContainer = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().Single();
         paintPanelContainer.CreateAddPaintPanel(document);
         

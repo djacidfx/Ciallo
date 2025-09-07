@@ -1,0 +1,91 @@
+[gd_scene load_steps=13 format=3 uid="uid://bfwvwd77tb7tq"]
+
+[ext_resource type="Texture2D" uid="uid://djmjwmlnccp86" path="res://Icon/cursor-default-outline.svg" id="2_vu0km"]
+[ext_resource type="Texture2D" uid="uid://bayscuh6s0yrc" path="res://Icon/lasso-dash.svg" id="3_ic33f"]
+[ext_resource type="Texture2D" uid="uid://cjf7u8mgog5mr" path="res://Icon/brush.svg" id="4_ijdye"]
+[ext_resource type="Texture2D" uid="uid://b4e0ypa7qifd3" path="res://Icon/lasso-fill.svg" id="5_p40eb"]
+[ext_resource type="Script" uid="uid://c3cw48t1rqox2" path="res://Tool/PaintTool.cs" id="5_w8m0o"]
+[ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icon/format-color-fill.svg" id="6_4b63a"]
+
+[sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
+action = &"ToolSelection"
+
+[sub_resource type="Shortcut" id="Shortcut_wcmo1"]
+events = [SubResource("InputEventAction_sx6ov")]
+
+[sub_resource type="InputEventAction" id="InputEventAction_wcmo1"]
+action = &"ToolPaintBrush"
+
+[sub_resource type="Shortcut" id="Shortcut_7agld"]
+events = [SubResource("InputEventAction_wcmo1")]
+
+[sub_resource type="InputEventAction" id="InputEventAction_7agld"]
+action = &"ToolPaintFill"
+
+[sub_resource type="Shortcut" id="Shortcut_nllhf"]
+events = [SubResource("InputEventAction_7agld")]
+
+[node name="ToolButtonPanel" type="HFlowContainer"]
+custom_minimum_size = Vector2(30, 0)
+offset_right = 48.0
+offset_bottom = 184.0
+theme_override_constants/v_separation = 20
+
+[node name="Select" type="Button" parent="."]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+tooltip_text = "Selection"
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+shortcut = SubResource("Shortcut_wcmo1")
+icon = ExtResource("2_vu0km")
+expand_icon = true
+
+[node name="Lasso" type="Button" parent="."]
+visible = false
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+tooltip_text = "Lasso
+- Free-hand selection"
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+icon = ExtResource("3_ic33f")
+expand_icon = true
+
+[node name="Paint" type="Button" parent="."]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+tooltip_text = "Paint Brush"
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+shortcut = SubResource("Shortcut_7agld")
+icon = ExtResource("4_ijdye")
+expand_icon = true
+script = ExtResource("5_w8m0o")
+
+[node name="PaintFill" type="Button" parent="."]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+tooltip_text = "Paint Fill
+- Draw colored area free-handly."
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+shortcut = SubResource("Shortcut_nllhf")
+icon = ExtResource("5_p40eb")
+expand_icon = true
+
+[node name="VectorFill" type="Button" parent="."]
+visible = false
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+tooltip_text = "Vector fill
+- Fill enclose areas with editable fill markers."
+focus_mode = 0
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+icon = ExtResource("6_4b63a")
+expand_icon = true

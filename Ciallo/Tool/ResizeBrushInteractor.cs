@@ -1,20 +1,13 @@
-﻿using Arch.Core.Extensions;
-using Ciallo.Data;
-using Ciallo.NodeControl;
-using Godot;
+﻿using Ciallo.NodeControl;
 
-namespace Ciallo.Command;
+namespace Ciallo.Tool;
 
-public class PaintInteractor : InteractorBase
+public class ResizeBrushInteractor : InteractorBase
 {
-    public override bool CanInteract => WorkingLayer.Has<VectorLayerSetting>();
-
-    private Vector2 _startPos;
-
+    public override bool CanInteract { get; }
     public override void Start(CursorButtonData data)
     {
-        _startPos = data.WorldPosition;
-        
+        throw new System.NotImplementedException();
     }
 
     public override void Interacting(CursorMotionData data)
@@ -27,7 +20,7 @@ public class PaintInteractor : InteractorBase
         throw new System.NotImplementedException();
     }
 
-    public override void Cancel(CursorButtonData data)
+    public override void Cancel()
     {
         throw new System.NotImplementedException();
     }

@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=13 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://bc4wj7b6spts" path="res://Main.cs" id="2_j4qnp"]
@@ -7,34 +7,11 @@
 [ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icon/star.svg" id="4_kjvhd"]
 [ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://NodeControl/MenuFile.cs" id="5_5tuhn"]
 [ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://NodeControl/MenuEdit.cs" id="6_2gh4u"]
-[ext_resource type="ButtonGroup" uid="uid://hr62j5sfo22p" path="res://Widget/ToolButtonGroup.tres" id="8_3b0ty"]
 [ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://NodeControl/MenuHelp.cs" id="8_sc1dx"]
-[ext_resource type="Texture2D" uid="uid://djmjwmlnccp86" path="res://Icon/cursor-default-outline.svg" id="9_bg4s2"]
-[ext_resource type="Texture2D" uid="uid://bayscuh6s0yrc" path="res://Icon/lasso-dash.svg" id="10_hhcpw"]
-[ext_resource type="Texture2D" uid="uid://cjf7u8mgog5mr" path="res://Icon/brush.svg" id="11_mxvw5"]
-[ext_resource type="Texture2D" uid="uid://b4e0ypa7qifd3" path="res://Icon/lasso-fill.svg" id="13_j4qnp"]
-[ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icon/format-color-fill.svg" id="13_sqvbp"]
+[ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://NodeControl/ToolButtonPanel.tscn" id="9_5vvyt"]
 [ext_resource type="Script" uid="uid://b7mwe7nmkxh5d" path="res://NodeControl/PaintPanelContainer.cs" id="16_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://NodeControl/WelcomePanel.tscn" id="16_fpfj3"]
 [ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://NodeControl/LayerPanel.tscn" id="16_kjvhd"]
-
-[sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
-action = &"ToolSelection"
-
-[sub_resource type="Shortcut" id="Shortcut_wcmo1"]
-events = [SubResource("InputEventAction_sx6ov")]
-
-[sub_resource type="InputEventAction" id="InputEventAction_wcmo1"]
-action = &"ToolPaintBrush"
-
-[sub_resource type="Shortcut" id="Shortcut_7agld"]
-events = [SubResource("InputEventAction_wcmo1")]
-
-[sub_resource type="InputEventAction" id="InputEventAction_7agld"]
-action = &"ToolPaintFill"
-
-[sub_resource type="Shortcut" id="Shortcut_nllhf"]
-events = [SubResource("InputEventAction_7agld")]
 
 [node name="Main" type="Panel"]
 texture_filter = 2
@@ -146,78 +123,13 @@ layout_mode = 2
 layout_mode = 2
 theme_override_constants/margin_top = 20
 
-[node name="ToolPanel" type="HFlowContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/MarginContainer"]
-custom_minimum_size = Vector2(30, 0)
-layout_mode = 2
-theme_override_constants/v_separation = 20
-
-[node name="Select" type="Button" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/MarginContainer/ToolPanel"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-tooltip_text = "Selection"
-focus_mode = 0
-theme_type_variation = &"ToolButton"
-toggle_mode = true
-button_group = ExtResource("8_3b0ty")
-shortcut = SubResource("Shortcut_wcmo1")
-icon = ExtResource("9_bg4s2")
-expand_icon = true
-
-[node name="Lasso" type="Button" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/MarginContainer/ToolPanel"]
-visible = false
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-tooltip_text = "Lasso
-- Free-hand selection"
-focus_mode = 0
-theme_type_variation = &"ToolButton"
-toggle_mode = true
-button_group = ExtResource("8_3b0ty")
-icon = ExtResource("10_hhcpw")
-expand_icon = true
-
-[node name="PaintBrush" type="Button" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/MarginContainer/ToolPanel"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-tooltip_text = "Paint Brush"
-focus_mode = 0
-theme_type_variation = &"ToolButton"
-toggle_mode = true
-button_group = ExtResource("8_3b0ty")
-shortcut = SubResource("Shortcut_7agld")
-icon = ExtResource("11_mxvw5")
-expand_icon = true
-
-[node name="PaintFill" type="Button" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/MarginContainer/ToolPanel"]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-tooltip_text = "Paint Fill
-- Draw colored area free-handly."
-focus_mode = 0
-theme_type_variation = &"ToolButton"
-toggle_mode = true
-button_group = ExtResource("8_3b0ty")
-shortcut = SubResource("Shortcut_nllhf")
-icon = ExtResource("13_j4qnp")
-expand_icon = true
-
-[node name="VectorFill" type="Button" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/MarginContainer/ToolPanel"]
-visible = false
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-tooltip_text = "Vector fill
-- Fill enclose areas with editable fill markers."
-focus_mode = 0
-theme_type_variation = &"ToolButton"
-toggle_mode = true
-button_group = ExtResource("8_3b0ty")
-icon = ExtResource("13_sqvbp")
-expand_icon = true
-
-[node name="ToolProperties" type="VBoxContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer"]
+[node name="ToolButtonPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/MarginContainer" instance=ExtResource("9_5vvyt")]
 layout_mode = 2
 
-[node name="PlaceHolder" type="ColorRect" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolProperties"]
+[node name="ToolPropertyPreview" type="VBoxContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer"]
+layout_mode = 2
+
+[node name="PlaceHolder" type="ColorRect" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolPropertyPreview"]
 custom_minimum_size = Vector2(240, 328.57)
 layout_mode = 2
 color = Color(0.124784, 0.124784, 0.124784, 1)

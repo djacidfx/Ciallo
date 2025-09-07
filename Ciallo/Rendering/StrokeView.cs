@@ -7,14 +7,13 @@ using Godot;
 
 namespace Ciallo.Rendering;
 
-public static class StrokeView
+public partial class StrokeView : MultiMeshInstance2D
 {
     private static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
-    private static readonly ShaderMaterial Material = GD.Load<ShaderMaterial>("res://Rendering/StrokeMaterial.tres");
-    
-    public static MultiMeshInstance2D Create()
+    private static readonly ShaderMaterial BrushMaterial = GD.Load<ShaderMaterial>("res://Rendering/StrokeMaterial.tres");
+
+    public StrokeView()
     {
-        var strokeView = new MultiMeshInstance2D();
         var multiMesh = new MultiMesh
         {
             TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,
@@ -22,14 +21,11 @@ public static class StrokeView
             UseCustomData = true,
             Mesh = DummyMesh,
         };
-        strokeView.Multimesh = multiMesh;
-        strokeView.Material = Material;
-        
-        return strokeView;
+        this.Multimesh = multiMesh;
+        this.Material = BrushMaterial;
     }
     
-    public static void UpdateStroke(
-        [NotNull] this MultiMeshInstance2D strokeView,
+    public void UpdateStroke(
         [NotNull] IReadOnlyList<Vector2> points,
         [NotNull] IReadOnlyList<float> radii)
     {
@@ -44,7 +40,8 @@ public static class StrokeView
             return;
         }
         
-        var multiMesh = strokeView.Multimesh;
+        var multiMesh = this.Multimesh;
+        multiMesh.InstanceCount = 0; // Also clear buffer
         
         ImmutableArray<Vector2> ps;
         ImmutableArray<float> rs;

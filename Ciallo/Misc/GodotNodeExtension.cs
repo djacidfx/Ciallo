@@ -37,6 +37,7 @@ public static class GodotNodeExtension
         return target;
     }
     
+    // Gen by asking copilot refer to LayerTreeNode.MoveDescendant
     public static void MoveNode(this Node node, IReadOnlyList<int> srcPath, IReadOnlyList<int> dstPath)
     {
         // Resolve source parent and node to move

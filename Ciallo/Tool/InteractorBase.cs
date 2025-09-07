@@ -4,13 +4,13 @@ using Ciallo.Data;
 using Ciallo.NodeControl;
 using Godot;
 
-namespace Ciallo.Command;
+namespace Ciallo.Tool;
 
 public abstract class InteractorBase
 {
-    public World WorkingWorld { get; set; } = WorldManager.WorkingWorld.Value;
+    public World WorkingWorld => WorldManager.WorkingWorld.Value;
     public Entity Document => WorkingWorld.Document();
-    public Entity WorkingLayer => Document.Get<SelectionManager>().WorkingLayer;
+    public SelectionManager SelectionManager => Document.Get<SelectionManager>();
     
     public abstract bool CanInteract { get; }
 
@@ -20,5 +20,5 @@ public abstract class InteractorBase
     
     public abstract void End(CursorButtonData data);
     
-    public abstract void Cancel(CursorButtonData data);
+    public abstract void Cancel();
 }

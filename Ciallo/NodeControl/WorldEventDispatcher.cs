@@ -1,5 +1,7 @@
 using Godot;
 using System;
+using Ciallo.Command;
+using Ciallo.Tool;
 using Ciallo.Widget;
 
 namespace Ciallo.NodeControl;
@@ -26,6 +28,8 @@ public partial class WorldEventDispatcher : SubViewportContainer
     
     public void OnGuiInput(InputEvent e)
     {
+        if (e is InputEventAction key) DispatchAction(key);
+        
         if (e is not InputEventMouse mouseEvent) return;
         
         var screenPos = mouseEvent.Position;
@@ -123,29 +127,35 @@ public partial class WorldEventDispatcher : SubViewportContainer
         }
     }
 
+    private void DispatchAction(InputEventAction action)
+    {
+        ToolManager.GetActiveTool()?.OnAction(action);
+    }
+
     public void DispatchLeftClick(CursorButtonData data)
     {
-        
+        GD.Print(ToolManager.ToolButtonGroup.GetButtons());
+        ToolManager.GetActiveTool()?.OnLeftClick(data);
     }
     
     public void DispatchLeftRelease(CursorButtonData data)
     {
-        
+        ToolManager.GetActiveTool()?.OnLeftRelease(data);
     }
 
     public void DispatchMotion(CursorMotionData data)
     {
-        
+        ToolManager.GetActiveTool()?.OnMoving(data);
     }
     
     public void DispatchRightClick(CursorButtonData data)
     {
-        
+        ToolManager.GetActiveTool()?.OnRightClick(data);
     }
     
     public void DispatchRightRelease(CursorButtonData data)
     {
-        
+        ToolManager.GetActiveTool()?.OnRightRelease(data);
     }
 
     public void OnMouseEnter()
