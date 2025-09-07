@@ -134,7 +134,6 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
     public void DispatchLeftClick(CursorButtonData data)
     {
-        GD.Print(ToolManager.ToolButtonGroup.GetButtons());
         ToolManager.GetActiveTool()?.OnLeftClick(data);
     }
     
@@ -163,10 +162,13 @@ public partial class WorldEventDispatcher : SubViewportContainer
         // Pitfall: Godot Bug 4.4.1, Dragging the vsplit/hsplit bar around the container can trigger mouse enter.
         // So use OnGuiInput together to decide whether handle world input.
         _isHovering = true;
+        // For some unknown bug, shen's touch screen pen cannot trigger Godot's control's focus on pen cursor enter (mouse can).
+        CallDeferred(Control.MethodName.GrabFocus);
     }
 
     public void OnMouseExit()
     {
+        CallDeferred(Control.MethodName.ReleaseFocus);
         _isHovering = false;
     }
 }

@@ -35,14 +35,14 @@ public class PaintInteractor : InteractorBase
         layerView.AddChild(_strokePreview);
         
         _points.Add(data.WorldPosition);
-        _radii.Add(5f); // TODO: Brush size setting
+        _radii.Add(2f); // TODO: Brush size setting
         _strokePreview.UpdateStroke(_points, _radii);
     }
 
     public override void Interacting(CursorMotionData data)
     {
         _points.Add(data.WorldPosition);
-        _radii.Add(Mathf.Lerp(5f, 20f, data.Pressure));
+        _radii.Add(Mathf.Lerp(2f, 8f, data.Pressure));
         _strokePreview.UpdateStroke(_points, _radii);
     }
 

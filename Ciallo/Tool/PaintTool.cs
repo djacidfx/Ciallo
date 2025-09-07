@@ -19,6 +19,7 @@ public partial class PaintTool : Button, ITool
     public override void _Ready()
     {
         ButtonGroup = ToolManager.ToolButtonGroup;
+        this.SetPressed(true);
     }
 
     public void OnLeftClick(CursorButtonData data)

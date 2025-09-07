@@ -61,6 +61,7 @@ tooltip_text = "Paint Brush"
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
+action_mode = 0
 shortcut = SubResource("Shortcut_7agld")
 icon = ExtResource("4_ijdye")
 expand_icon = true

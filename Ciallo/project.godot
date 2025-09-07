@@ -169,7 +169,7 @@ CancelInteraction={
 
 [input_devices]
 
-pen_tablet/driver.windows="auto"
+pen_tablet/driver.windows="winink"
 
 [internationalization]
 
