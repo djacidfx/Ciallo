@@ -6,7 +6,7 @@ using Ciallo.Command;
 using Ciallo.NodeControl;
 using Ciallo.Tool;
 
-public partial class PaintTool : Button, ITool
+public partial class PaintTool : ToolButtonBase, ITool
 {
     public readonly PaintInteractor PaintInteractor = new();
     public readonly ResizeBrushInteractor BrushInteractor = new();
@@ -18,8 +18,8 @@ public partial class PaintTool : Button, ITool
 
     public override void _Ready()
     {
-        ButtonGroup = ToolManager.ToolButtonGroup;
-        this.SetPressed(true);
+        base._Ready();
+        SetPressed(true);
     }
 
     public void OnLeftClick(CursorButtonData data)
