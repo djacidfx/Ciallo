@@ -1,6 +1,6 @@
 # Ciallo ～(∠・ω< )⌒★!
 
-Ciallo is an open-source vector graphics program for professional digital painting.
+Ciallo is an open-source graphics program for professional digital painting.
 
 It aims to compete with traditional painting software like Photoshop and Clip Studio Paint, while offering the following unique features:
 
