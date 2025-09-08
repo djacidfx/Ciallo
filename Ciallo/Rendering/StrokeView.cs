@@ -45,6 +45,7 @@ public partial class StrokeView : MultiMeshInstance2D
         
         ImmutableArray<Vector2> ps;
         ImmutableArray<float> rs;
+        List<float> nds = [];
         
         if (points.Count > 1) // regular case
         {
@@ -60,6 +61,16 @@ public partial class StrokeView : MultiMeshInstance2D
         }
         else throw new("Unreachable");
         
+        nds.Add(0);
+        for(int i = 0; i < ps.Length - 1; i++)
+        {
+            var l = (ps[i + 1] - ps[i]).Length();
+            var r0 = rs[i];
+            var r1 = rs[i + 1];
+            var nd = l / (r0 - r1) * Mathf.Log(r0 / r1);
+            nds.Add(nds.Last() + nd);
+        }
+        
         for(int i = 0; i < multiMesh.InstanceCount; i++)
         {
             Color customPos = new()
@@ -72,7 +83,7 @@ public partial class StrokeView : MultiMeshInstance2D
             
             multiMesh.SetInstanceCustomData(i, customPos);
             // Have to use instance color to store t.
-            multiMesh.SetInstanceColor(i, new(rs[i], rs[i + 1], 0, 0));
+            multiMesh.SetInstanceColor(i, new(rs[i], rs[i + 1], nds[i], nds[i+1]));
             // Have to set transform or do not render, this transform values are not used in shaders
             multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);
         }
