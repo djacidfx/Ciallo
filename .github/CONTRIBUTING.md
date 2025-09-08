@@ -12,6 +12,7 @@ Below is the roadmap for the Demo version. Will make a release on steam and star
   - [ ] Brush tool
     - [x] Basic interaction
     - [ ] With brush engine
+    - [ ] Resize brush interactor
   - [ ] Paint fill tool
   - [ ] Vector fill tool
     - [x] CGAL C++ code

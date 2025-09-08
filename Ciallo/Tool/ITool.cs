@@ -16,5 +16,5 @@ public interface ITool
     {
     }
 
-    void OnAction(InputEventAction action);
+    void OnKey(InputEventKey key);
 }

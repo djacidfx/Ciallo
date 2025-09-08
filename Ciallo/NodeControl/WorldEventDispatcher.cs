@@ -28,8 +28,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
     
     public void OnGuiInput(InputEvent e)
     {
-        if (e is InputEventAction key) DispatchAction(key);
-        
+        if (e is InputEventKey key) DispatchKey(key);
         if (e is not InputEventMouse mouseEvent) return;
         
         var screenPos = mouseEvent.Position;
@@ -127,9 +126,9 @@ public partial class WorldEventDispatcher : SubViewportContainer
         }
     }
 
-    private void DispatchAction(InputEventAction action)
+    private void DispatchKey(InputEventKey key)
     {
-        ToolManager.GetActiveTool()?.OnAction(action);
+        ToolManager.GetActiveTool()?.OnKey(key);
     }
 
     public void DispatchLeftClick(CursorButtonData data)
