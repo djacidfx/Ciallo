@@ -46,10 +46,18 @@ void vertex() {
         vec2(1.0, 1.0)
     )[VERTEX_ID];
 	r = vec4(r0, r0, r1, r1)[VERTEX_ID];
-
-	p = position +
-    offsetSign.x * r * tangent +
-    offsetSign.y * r * normal;
+	
+	float tanHalfTheta = sqrt((1.0+cosTheta) / (1.0-cosTheta));
+    float cotHalfTheta = 1.0 / tanHalfTheta;
+    float normalTanValue = vec4(tanHalfTheta, tanHalfTheta, cotHalfTheta, cotHalfTheta)[VERTEX_ID];
+    bool isIll = normalTanValue > 10.0 || normalTanValue < 0.1;
+	
+	if(!isIll)
+	{
+		p = position +
+        offsetSign.x * r * tangent +
+        offsetSign.y * r * normal * normalTanValue;
+	};
 
 	VERTEX = p;
 }
@@ -61,8 +69,8 @@ void fragment() {
 	float d0cos = pLocal.x / d0;
     float d1cos = (pLocal.x - len) / d1;
 
-	if(pLocal.x < 0.0 && d0 > r) discard;
-    if(pLocal.x > len && d1 > r) discard;
+	if(d0cos < cosTheta && d0 > r0) discard;
+    if(d1cos > cosTheta && d1 > r1) discard;
 
 	// Premultiply alpha is necessary
 	// See: https://github.com/godotengine/godot/issues/99715
