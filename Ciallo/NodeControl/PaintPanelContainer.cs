@@ -8,13 +8,12 @@ using Ciallo.Widget;
 
 public partial class PaintPanelContainer : Control
 {
-    public void CreateAddPaintPanel(Entity document)
+    public PaintPanel CreateAddPaintPanel(Entity document)
     {
-        var paintPanel = PaintPanel.Instantiate(document.Get<DocumentSetting>());
-        AddChild(paintPanel);
-        document.Add(paintPanel);
-        var worldView = paintPanel.GetNode<WorldView>("%WorldView");
-        document.Add(worldView);
+        var panel = PaintPanel.Instantiate(document.Get<DocumentSetting>());
+        AddChild(panel);
+        document.Add(panel);
+        return panel;
     }
     
     public void RemoveFreePaintPanel(Entity document)

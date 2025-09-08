@@ -48,9 +48,13 @@ public static class WorldManager
         var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
         layerPanel.CreateAddLayerContainer(document);
         
-        // Create paint panel, also attach WorldView.
+        // Create paint panel
         var paintPanelContainer = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().Single();
-        paintPanelContainer.CreateAddPaintPanel(document);
+        var paintPanel = paintPanelContainer.CreateAddPaintPanel(document);
+        
+        // Add world view
+        var worldView = paintPanel.GetNode<WorldView>("%WorldView");
+        document.Add(worldView);
         
         // Set as working world
         WorkingWorld.Value = world;
@@ -72,6 +76,11 @@ public static class WorldManager
         // Remove working world
         LoadedWorlds.Remove(world);
         if(WorkingWorld.Value == world) WorkingWorld.Value = LoadedWorlds.Count > 0 ? LoadedWorlds[0] : null;
+        
+        // Remove work view
+        var worldView = world.Document().Get<WorldView>();
+        world.Document().Remove<WorldView>();
+        if(GodotObject.IsInstanceValid(worldView)) worldView.Free();
         
         // Remove paint panel
         //// add null check since the method could be called as long as Godot cleaning up nodes.
