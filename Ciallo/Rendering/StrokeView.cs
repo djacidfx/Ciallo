@@ -36,7 +36,7 @@ public partial class StrokeView : MultiMeshInstance2D
         }
         if(points.Count == 0 || radii.Count == 0)
         {
-            GD.PushWarning("No points or radii provided.");
+            this.Multimesh.InstanceCount = 0;
             return;
         }
         

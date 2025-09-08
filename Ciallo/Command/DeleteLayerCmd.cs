@@ -23,7 +23,7 @@ public partial class DeleteLayerCmd(IReadOnlyList<int> target) : CommandBase
         var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.RemoveFree(_target);
         
-        // World view
+        // View
         var worldView = Document.Get<WorldView>();
         var node = worldView.RemoveNodeAt(_target);
         if(UndoRefObjects.Count == 0) UndoRefObjects.Add(node);
@@ -31,7 +31,7 @@ public partial class DeleteLayerCmd(IReadOnlyList<int> target) : CommandBase
 
     public override void Undo()
     {
-        // World view
+        // View
         var worldView = Document.Get<WorldView>();
         var node = (Node)UndoRefObjects.First();
         worldView.InsertNodeAt(node, _target);

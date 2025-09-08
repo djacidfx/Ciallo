@@ -24,6 +24,7 @@ public class LayerTreeNode
     
     [IgnoreMember] public int ChildCount => Children.Count;
     [IgnoreMember] public int DescendantCount => CountSubtreeNodes(this) - 1;
+    [IgnoreMember] public bool IsLeaf => Children.Count == 0;
 
     #region Modify
     
@@ -37,6 +38,13 @@ public class LayerTreeNode
     {
         if (!child.Has<LayerTreeNode>()) throw new ArgumentException("Child entity must have LayerTreeNode component.");
         Children.Insert(idx, child);
+    }
+    
+    public void MoveChild(int srcIdx, int dstIdx)
+    {
+        var moving = Children[srcIdx];
+        Children.RemoveAt(srcIdx);
+        Children.Insert(dstIdx, moving);
     }
     
     public void RemoveChild(int idx)
@@ -93,10 +101,8 @@ public class LayerTreeNode
 
         if (ReferenceEquals(srcParent, dstParent))
         {
-            // Remove first, then adjust destination index if it was after the source index
-            srcParent.RemoveChild(srcIdx);
-            if (srcIdx < dstIdx) dstIdx--;
-            srcParent.InsertChild(dstIdx, moving);
+            // the same parent
+            srcParent.MoveChild(srcIdx, dstIdx);
             return;
         }
 

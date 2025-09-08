@@ -27,14 +27,14 @@ public partial class MoveLayerCmd : CommandBase
         var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.Move(_src, _dst);
         
-        // World view
+        // View
         var worldView = Document.Get<WorldView>();
         worldView.MoveNode(_src, _dst);
     }
 
     public override void Undo()
     {
-        // World view
+        // View
         var worldView = Document.Get<WorldView>();
         worldView.MoveNode(_dst, _src);
         

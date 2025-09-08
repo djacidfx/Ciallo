@@ -8,16 +8,11 @@ using Ciallo.Data;
 namespace Ciallo.Command;
 
 // ReSharper disable once Godot.MissingParameterlessConstructor
-public partial class ChangeWorkingLayerCmd : CommandBase
+public class ChangeWorkingLayerCmd(IReadOnlyList<int> newPath) : CommandBase
 {
-    private readonly ImmutableArray<int> _newPath;
+    private readonly ImmutableArray<int> _newPath = [..newPath];
     private ImmutableArray<int>? _oldPath;
     
-    public ChangeWorkingLayerCmd(IReadOnlyList<int> newPath)
-    {
-        _newPath = [..newPath];
-    }
-
     public override void Do()
     {
         // Selection manager

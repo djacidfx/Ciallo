@@ -29,7 +29,7 @@ public class NewStrokeLayerCmd : CommandBase
             var e = WorkingWorld.Create();
             var node = new LayerTreeNode()
             {
-                Name = { Value = $"Layer {tree.Root.ChildCount+1}" },
+                Name = { Value = $"Stroke Layer {tree.Root.ChildCount+1}" },
             };
             e.Add(new StrokeLayerSetting(), node, new ToSerializeTag());
             DoRefEntities.Add(e);
@@ -43,7 +43,7 @@ public class NewStrokeLayerCmd : CommandBase
         var layerContainer = Document.Get<LayerContainer>();
         layerContainer.CreateInsert(layerE, _insertPath);
         
-        // World view
+        // View
         var worldView = Document.Get<WorldView>();
         if (DoRefObjects.Count == 0) DoRefObjects.Add(new StrokeLayerView());
         var layerView =  (StrokeLayerView)DoRefObjects[0];
@@ -54,7 +54,7 @@ public class NewStrokeLayerCmd : CommandBase
     public override void Undo()
     {
         var layerE = DoRefEntities[0];
-        // World view
+        // View
         layerE.Remove<StrokeLayerView>();
         var worldView = Document.Get<WorldView>();
         worldView.RemoveNodeAt(_insertPath);
