@@ -4,16 +4,16 @@ using Godot;
 
 namespace Ciallo.Rendering;
 
-public partial class VectorLayerView : CanvasGroup
+public partial class StrokeLayerView : CanvasGroup
 {
-    public VectorLayerView()
+    public StrokeLayerView()
     {
     }
 
     /// <summary>
     /// Create the best node type for the layer view and will be exported to Godot.
     /// </summary>
-    public static Node2D CreateOptimized(VectorLayerSetting setting)
+    public static Node2D CreateOptimized(StrokeLayerSetting setting)
     {
         throw new NotImplementedException();
     }

@@ -4,14 +4,14 @@ using R3;
 namespace Ciallo.Data;
 
 [MessagePackObject(true), ToSerialize]
-public class VectorLayerSetting
+public class StrokeLayerSetting
 {
     public readonly ReactiveProperty<float> Opacity = new(1.0f);
     public readonly ReactiveProperty<bool> IsLocked = new(false); // Need to implement
-    public readonly ReactiveProperty<VectorLayerRenderMode> RenderMode = new(VectorLayerRenderMode.Realtime);
+    public readonly ReactiveProperty<StrokeLayerRenderMode> RenderMode = new(StrokeLayerRenderMode.Realtime);
 }
 
-public enum VectorLayerRenderMode
+public enum StrokeLayerRenderMode
 {
     Realtime,
     Rasterized, // For performance, render as rasterized image, need to implement

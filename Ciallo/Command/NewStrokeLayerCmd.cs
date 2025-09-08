@@ -10,11 +10,11 @@ using Godot;
 namespace Ciallo.Command;
 
 // ReSharper disable once Godot.MissingParameterlessConstructor
-public class NewVectorLayerCmd : CommandBase
+public class NewStrokeLayerCmd : CommandBase
 {
     private readonly ImmutableArray<int> _insertPath;
 
-    public NewVectorLayerCmd(IReadOnlyList<int> insertPath)
+    public NewStrokeLayerCmd(IReadOnlyList<int> insertPath)
     {
         _insertPath = [..insertPath];
     }
@@ -31,7 +31,7 @@ public class NewVectorLayerCmd : CommandBase
             {
                 Name = { Value = $"Layer {tree.Root.ChildCount+1}" },
             };
-            e.Add(new VectorLayerSetting(), node, new ToSerializeTag());
+            e.Add(new StrokeLayerSetting(), node, new ToSerializeTag());
             DoRefEntities.Add(e);
         }
         
@@ -45,8 +45,8 @@ public class NewVectorLayerCmd : CommandBase
         
         // World view
         var worldView = Document.Get<WorldView>();
-        if (DoRefObjects.Count == 0) DoRefObjects.Add(new VectorLayerView());
-        var layerView =  (VectorLayerView)DoRefObjects[0];
+        if (DoRefObjects.Count == 0) DoRefObjects.Add(new StrokeLayerView());
+        var layerView =  (StrokeLayerView)DoRefObjects[0];
         worldView.InsertNodeAt(layerView, _insertPath);
         layerE.Add(layerView);
     }
@@ -55,7 +55,7 @@ public class NewVectorLayerCmd : CommandBase
     {
         var layerE = DoRefEntities[0];
         // World view
-        layerE.Remove<VectorLayerView>();
+        layerE.Remove<StrokeLayerView>();
         var worldView = Document.Get<WorldView>();
         worldView.RemoveNodeAt(_insertPath);
         

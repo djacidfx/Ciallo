@@ -57,7 +57,7 @@ public static class WorldManager
         LoadedWorlds.Add(world);
         
         // Add initial layer
-        var c = new NewVectorLayerCmd([0]);
+        var c = new NewStrokeLayerCmd([0]);
         c.Do();
         var s = new ChangeWorkingLayerCmd([0]);
         s.Do();

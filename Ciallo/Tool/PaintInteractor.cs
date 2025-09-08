@@ -16,7 +16,7 @@ public class PaintInteractor : InteractorBase
         get
         {
             var l = SelectionManager.WorkingLayer;
-            return l != Entity.Null && l.Has<VectorLayerSetting>();
+            return l != Entity.Null && l.Has<StrokeLayerSetting>();
         }
     }
     
@@ -31,7 +31,7 @@ public class PaintInteractor : InteractorBase
         
         _strokePreview = new StrokeView();
         var layerE = SelectionManager.WorkingLayer;
-        var layerView = layerE.Get<VectorLayerView>();
+        var layerView = layerE.Get<StrokeLayerView>();
         layerView.AddChild(_strokePreview);
         
         _points.Add(data.WorldPosition);
