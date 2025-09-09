@@ -50,7 +50,7 @@ Ciallo is built on Godot. Building the core part of Ciallo is the same as buildi
 - Open the `Ciallo/project.godot` file with your Godot editor, then build and run.
 - Enable the "Embedded game size stretches..." option in the game run window.
   
-![](./EnableStretch.png)
+![](/.github/EnableStretch.png)
 
 ### IDE
 In theory, you can use any IDE supporting C#. Follow the Godot [guide](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor) to link the Godot editor with your IDE.
