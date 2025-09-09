@@ -51,10 +51,10 @@ public class PaintInteractor : InteractorBase
     {
         bool isLarger = data.ScreenPosition.DistanceTo(_lastScreenPoint) > _minDistance;
         bool isWinding = data.ScreenPosition.DirectionTo(_lastScreenPoint).Dot(_lastDirection) < _minCosAngle;
-        if (!isLarger) return;
-        // if (!isLarger && !isWinding) return;
+        // if (!isLarger) return;
+        if (!isLarger && !isWinding) return;
         _points.Add(data.WorldPosition);
-        _radii.Add(Mathf.Lerp(2f, 4f, data.Pressure));
+        _radii.Add(Mathf.Lerp(2f, 6f, data.Pressure));
         // GD.Print($"--------------");
         // GD.Print($"Screen: {data.ScreenPosition}");
         // GD.Print($"World: {data.WorldPosition}");

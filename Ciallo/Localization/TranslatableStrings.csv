@@ -46,10 +46,14 @@ Settings,,设置,設定,設定,설정,Einstellungen,Paramètres
 Start,,开始,開始,開始,시작,Start,Démarrer
 Undo,,撤销,復原,元に戻す,실행 취소,Rückgängig,Annuler
 User manual,,用户手册,使用者手冊,ユーザーマニュアル,사용자 매뉴얼,Benutzerhandbuch,Manuel utilisateur
-Vector fill - Fill enclose areas with editable fill markers.,,矢量填充 - 用可编辑填充标记填充封闭区域。,向量填充 - 用可編輯填充標記填充封閉區域。,ベクター塗りつぶし - 編集可能な塗りつぶしマーカーで囲まれた領域を塗りつぶします。,벡터 채우기 - 편집 가능한 채우기 마커로 닫힌 영역을 채웁니다.,Vektorfüllung - Geschlossene Bereiche mit bearbeitbaren Füllmarkierungen füllen.,Remplissage vectoriel - Remplir les zones fermées avec des marqueurs de remplissage modifiables.
 Zoom,,缩放,縮放,ズーム,확대/축소,Zoom,Zoom
 Sponsor,,赞助者,,,,,
 Recent documents,,最近的文档,,,,,
 File,,文件,,,,,
 Edit,,编辑,,,,,
 Help,,帮助,,,,,
+[Vector Fill Tooltip],Vector fill\n- Fill enclose areas with editable fill markers.,矢量填充\n- 用可编辑的填充标记填充封闭区域。,,,,,
+[Paint Fill Tooltip],Paint fill\n- Draw colored area free-handly.,,,,,,
+[Paint Brush Tooltip],Paint brush,,,,,,
+[About Ciallo],Ciallo is a free and open-source software for digital painting.\n\nCiallo's unique technologies are invented and developed by the developer Shen Ciao — inspired by love and supported by your donations.,Ciallo是一款免费开源的数字软件。\n\nCiallo特有的技术由开发者Shen Ciao发明并开发 - 因爱而生，靠您的捐赠而行。,,,,,
+[Canvas Navigation Guide Tooltip],- Scroll mouse wheel to zoom in/out.\n- Click and drag middle mouse button to pan.\n- Double click middle mouse button to reset canvas view to center.,,,,,,

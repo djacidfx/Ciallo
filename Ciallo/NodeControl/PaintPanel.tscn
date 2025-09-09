@@ -36,9 +36,7 @@ theme_override_constants/separation = 15
 
 [node name="Label3" type="Label" parent="VBoxContainer/Bar/HBoxContainer"]
 layout_mode = 2
-tooltip_text = "- Scroll mouse wheel to zoom in/out.
-- Click and drag middle mouse button to pan.
-- Double click middle mouse button to reset canvas view to center."
+tooltip_text = "[Canvas Navigation Guide Tooltip]"
 mouse_filter = 0
 text = "Canvas navigation guide (?)"
 
@@ -100,7 +98,7 @@ handle_input_locally = false
 msaa_2d = 3
 canvas_item_default_texture_filter = 0
 gui_disable_input = true
-size = Vector2i(2, 2)
+size = Vector2i(1920, 1042)
 render_target_update_mode = 4
 
 [node name="Background" type="Polygon2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]

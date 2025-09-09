@@ -37,7 +37,7 @@ filters = PackedStringArray("*.ciallo")
 show_hidden_files = true
 use_native_dialog = true
 
-[node name="About" parent="." groups=["Dialog"] instance=ExtResource("4_fpfj3")]
+[node name="AboutCiallo" parent="." groups=["Dialog"] instance=ExtResource("4_fpfj3")]
 visible = false
 
 [node name="NewLayer" type="ConfirmationDialog" parent="." groups=["Dialog"]]
@@ -95,11 +95,6 @@ script = ExtResource("6_2gh4u")
 auto_translate_mode = 1
 size = Vector2i(144, 100)
 submenu_popup_delay = 0.1
-item_count = 2
-item_0/text = "User manual"
-item_0/id = 0
-item_1/text = "About Ciallo"
-item_1/id = 1
 script = ExtResource("8_sc1dx")
 
 [node name="MarginContainer" type="MarginContainer" parent="MainGui"]

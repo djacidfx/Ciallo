@@ -60,7 +60,7 @@ expand_icon = true
 [node name="Paint" type="Button" parent="."]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-tooltip_text = "Paint Brush"
+tooltip_text = "[Paint Brush Tooltip]"
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
@@ -73,8 +73,7 @@ script = ExtResource("5_w8m0o")
 [node name="PaintFill" type="Button" parent="."]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-tooltip_text = "Paint Fill
-- Draw colored area free-handly."
+tooltip_text = "[Paint Fill Tooltip]"
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
@@ -84,11 +83,9 @@ expand_icon = true
 script = ExtResource("7_vvphd")
 
 [node name="VectorFill" type="Button" parent="."]
-visible = false
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-tooltip_text = "Vector fill
-- Fill enclose areas with editable fill markers."
+tooltip_text = "[Vector Fill Tooltip]"
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
