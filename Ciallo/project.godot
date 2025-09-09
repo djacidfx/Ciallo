@@ -23,9 +23,10 @@ config/icon="uid://bkntrccv56vyd"
 [autoload]
 
 MiscAutoload="*res://Misc/MiscAutoload.cs"
+DataAutoload="*res://Data/DataAutoload.cs"
+RenderingAutoload="*res://Rendering/RenderingAutoload.cs"
 FrameProviderDispatcher="*res://addons/R3.Godot/FrameProviderDispatcher.cs"
 ObservableTrackerRuntimeHook="*res://addons/R3.Godot/ObservableTrackerRuntimeHook.cs"
-DataAutoload="*res://Data/DataAutoload.cs"
 
 [display]
 
@@ -51,6 +52,7 @@ UncategorizedControl="Uncategorized controls need to be accessed in code "
 [gui]
 
 timers/tooltip_delay_sec=0.3
+common/snap_controls_to_pixels=false
 
 [importer_defaults]
 

@@ -71,6 +71,13 @@ public partial class StrokeView : MultiMeshInstance2D
             var l = (ps[i + 1] - ps[i]).Length();
             var r0 = rs[i];
             var r1 = rs[i + 1];
+            if(Mathf.Abs(r0 - r1) < 1e-10f)
+            {
+                // Nearly equal radius, avoid division by zero
+                var r = (r0 + r1) * 0.5f;
+                nds.Add(nds.Last() + l / r);
+                continue;
+            }
             var nd = l / (r0 - r1) * Mathf.Log(r0 / r1);
             nds.Add(nds.Last() + nd);
         }

@@ -42,7 +42,7 @@ void vertex() {
 	segmentLength = distance(p1, p0);
 	cosTheta = (r0 - r1)/distance(p0, p1);
 	sinTheta = sqrt(1.0 - pow(cosTheta, 2.0));
-	tanTheta = sinTheta/cosTheta;
+	tanTheta = abs(cosTheta) > 1e-10 ? sinTheta/cosTheta : 1e30;
 
 	tangent = normalize(p1 - p0);
 	normal = vec2(-tangent.y, tangent.x);
@@ -71,8 +71,14 @@ void vertex() {
 	VERTEX = p;
 }
 
-float x2n(float x) { return -1.0/cosTheta/stampInterval * log(1.0 - cosTheta*(x)/r0); }
-float n2x(float n) { return r0/cosTheta * (1.0-exp(-stampInterval*cosTheta*(n))); }
+float x2n(float x) {
+	if(abs(cosTheta) < 1e-10) return x/(stampInterval * (r0 + r1) * 0.5);
+	return -1.0/cosTheta/stampInterval * log(1.0 - cosTheta*x/r0);
+}
+float n2x(float n) {
+	if(abs(cosTheta) < 1e-10) return n * stampInterval * (r0 + r1) * 0.5;
+	return r0/cosTheta * (1.0-exp(-stampInterval*cosTheta*n));
+}
 
 void fragment() {
 	vec2 pLocal = vec2(dot(p-p0, tangent), dot(p-p0, normal));
@@ -98,7 +104,7 @@ void fragment() {
  		int i = 0;
  		int MAX_i = 128;
  		float currIdx = ceil(startIdx);
- 		float currA = 1e-7;
+ 		float currA = 1e-10;
  		while(i < MAX_i && currIdx < endIdx){
  			float currStampLocalX = n2x(currIdx - n0);
  			vec2 pToCurrStamp = pLocal - vec2(currStampLocalX, 0.0);
