@@ -27,6 +27,8 @@ varying flat vec2 tangent;
 varying flat vec2 normal;
 varying flat float segmentLength;
 varying flat float cosTheta;
+varying flat float tanTheta;
+varying flat float sinTheta;
 
 void vertex() {
 	p0 = INSTANCE_CUSTOM.xy;
@@ -39,6 +41,8 @@ void vertex() {
 	n1 = COLOR.w/stampInterval;
 	segmentLength = distance(p1, p0);
 	cosTheta = (r0 - r1)/distance(p0, p1);
+	sinTheta = sqrt(1.0 - pow(cosTheta, 2.0));
+	tanTheta = sinTheta/cosTheta;
 
 	tangent = normalize(p1 - p0);
 	normal = vec2(-tangent.y, tangent.x);
@@ -108,7 +112,21 @@ void fragment() {
  		}
  		COLOR = vec4(strokeColor.rgb, currA);
  	}
-
+	//// Anti antialiasing
+	const float aaStart = 0.95;
+	float dMidAxis;
+	if (d0cos < cosTheta) dMidAxis = d0/r0;
+	else if (d1cos > cosTheta) dMidAxis = d1/r1;
+	else {
+		vec2 rp = pLocal - vec2(pLocal.y/tanTheta, 0);
+		float pr = r0 - cosTheta * rp.x;
+		dMidAxis = abs(pLocal.y) / pr * sinTheta;
+	}
+	
+	if(dMidAxis > aaStart){
+		float t = (dMidAxis - aaStart)/(1.0 - aaStart);
+		COLOR.a = COLOR.a * smoothstep(1.0, 0.0, t);
+	}
 	// Be mindful with premultiply alpha
 	// See: https://github.com/godotengine/godot/issues/99715
 }

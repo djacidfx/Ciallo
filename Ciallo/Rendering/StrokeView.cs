@@ -10,7 +10,11 @@ namespace Ciallo.Rendering;
 public partial class StrokeView : MultiMeshInstance2D
 {
     private static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
-    private static readonly ShaderMaterial BrushMaterial = GD.Load<ShaderMaterial>("res://Rendering/StrokeMaterial.tres");
+
+    public static readonly ShaderMaterial BrushMaterial = new()
+    {
+        Shader = GD.Load<Shader>("res://Rendering/StrokeShader.gdshader"),
+    };
 
     public StrokeView()
     {
