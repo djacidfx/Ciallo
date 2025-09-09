@@ -6,14 +6,14 @@
 auto_translate_mode = 1
 title = "About Ciallo"
 initial_position = 1
-size = Vector2i(600, 512)
+size = Vector2i(600, 582)
 visible = true
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 592.0
-offset_bottom = 463.0
+offset_bottom = 533.0
 theme_override_constants/margin_left = 30
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 30
@@ -29,7 +29,7 @@ theme_override_constants/separation = -10
 alignment = 1
 
 [node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer/HBoxContainer"]
-custom_minimum_size = Vector2(320, 0)
+custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 6
 texture = ExtResource("1_g7ast")
@@ -38,12 +38,11 @@ stretch_mode = 5
 
 [node name="Version" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
 auto_translate_mode = 2
-custom_minimum_size = Vector2(123.095, 0)
 layout_mode = 2
-size_flags_horizontal = 8
 bbcode_enabled = true
-text = "[font_size=16]Demo version[/font_size]"
+text = "[font_size=24]Demo version[/font_size]"
 fit_content = true
+horizontal_alignment = 2
 
 [node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -52,6 +51,4 @@ layout_mode = 2
 layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true
-text = "[b]Ciallo[/b] is a free and open-source tool for digital painting.
-
-New technologies are researched and developed by Shen Ciao — inspired by love and supported by your donations."
+text = "[About Ciallo]"
