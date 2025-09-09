@@ -1,20 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://ce1yxw3pe0nme"]
+[gd_scene load_steps=2 format=3 uid="uid://ce1yxw3pe0nme"]
 
 [ext_resource type="Script" uid="uid://b6k54smyke07b" path="res://Rendering/WorldView.cs" id="1_oaofm"]
-[ext_resource type="Material" uid="uid://bm7lva2lvoa7d" path="res://Rendering/StrokeMaterial.tres" id="2_oaofm"]
-[ext_resource type="QuadMesh" uid="uid://ds31nm16a66ih" path="res://Rendering/StrokeDummyMesh.tres" id="3_lq4am"]
-
-[sub_resource type="MultiMesh" id="MultiMesh_urnvi"]
-use_colors = true
-use_custom_data = true
-custom_aabb = AABB(-110, -110, 0, 420, 330, 0)
-instance_count = 2
-mesh = ExtResource("3_lq4am")
-buffer = PackedFloat32Array(1, 0, 0, 0, 0, 1, 0, 0, 10, 20, 0, 21.9192, -100, -100, 0, 200, 1, 0, 0, 0, 0, 1, 0, 0, 20, 10, 21.9192, 43.8385, 0, 200, 300, 100)
 
 [node name="WorldView" type="Node2D"]
 script = ExtResource("1_oaofm")
-
-[node name="StrokePreview" type="MultiMeshInstance2D" parent="."]
-material = ExtResource("2_oaofm")
-multimesh = SubResource("MultiMesh_urnvi")

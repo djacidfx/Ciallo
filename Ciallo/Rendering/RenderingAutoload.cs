@@ -6,9 +6,8 @@ public partial class RenderingAutoload : Node
 {
     public override void _Ready()
     {
-        var m = StrokeView.BrushMaterial;
-        m.SetShaderParameter("strokeType", 1);
-        m.SetShaderParameter("strokeColor", Colors.Black);
-        m.SetShaderParameter("stampInterval", 1.0f);
+        StrokeView.BrushMaterial.SetShaderParameter("strokeType", 1);
+        StrokeView.BrushMaterial.SetShaderParameter("strokeColor", Colors.Black);
+        StrokeView.BrushMaterial.SetShaderParameter("stampInterval", 1.0f);
     }
 }

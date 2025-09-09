@@ -1,5 +1,5 @@
 shader_type canvas_item;
-//render_mode world_vertex_coords;
+render_mode world_vertex_coords;
 //render_mode skip_vertex_transform;
 render_mode unshaded;
 
@@ -30,15 +30,22 @@ varying flat float cosTheta;
 varying flat float tanTheta;
 varying flat float sinTheta;
 
+vec2 unpack2floats(float f) {
+    uint word = floatBitsToUint(f);
+    // unpackHalf2x16 returns vec2( halfToFloat(high16), halfToFloat(low16) )
+    return unpackHalf2x16(word);
+}
+
 void vertex() {
+	// Canvas item not 
 	p0 = INSTANCE_CUSTOM.xy;
 	p1 = INSTANCE_CUSTOM.zw;
-	// Have to use COLOR to store the radius and stamp count values since the
-	// INSTANCE_CUSTOM is a vec4 value, and is fully ouccupied for storing position.
-	r0 = COLOR.x;
-	r1 = COLOR.y;
-	n0 = COLOR.z/stampInterval;
-	n1 = COLOR.w/stampInterval;
+	vec2 rs = unpack2floats(COLOR.x);
+	r0 = rs.x;
+	r1 = rs.y;
+	vec2 ns = unpack2floats(COLOR.y);
+	n0 = ns.x/stampInterval;
+	n1 = ns.y/stampInterval;
 	segmentLength = distance(p1, p0);
 	cosTheta = (r0 - r1)/distance(p0, p1);
 	sinTheta = sqrt(1.0 - pow(cosTheta, 2.0));
@@ -69,6 +76,7 @@ void vertex() {
 	}
 
 	VERTEX = p;
+	VERTEX = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy;
 }
 
 float x2n(float x) {
@@ -87,11 +95,26 @@ void fragment() {
 	float d0cos = pLocal.x / d0;
     float d1cos = (pLocal.x - segmentLength) / d1;
 
-	if(d0cos < cosTheta && d0 > r0) discard;
-    if(d1cos > cosTheta && d1 > r1) discard;
-
 	if(strokeType == 0){
+		if(d0cos < cosTheta && d0 > r0) discard;
+    	if(d1cos > cosTheta && d1 > r1) discard;
+		
 		COLOR = strokeColor;
+		//// Anti antialiasing
+		const float aaStart = 0.95;
+		float dMidAxis;
+		if (d0cos < cosTheta) dMidAxis = d0/r0;
+		else if (d1cos > cosTheta) dMidAxis = d1/r1;
+		else {
+			vec2 rp = pLocal - vec2(pLocal.y/tanTheta, 0);
+			float pr = r0 - cosTheta * rp.x;
+			dMidAxis = abs(pLocal.y) / pr * sinTheta;
+		}
+		
+		if(dMidAxis > aaStart){
+			float t = (dMidAxis - aaStart)/(1.0 - aaStart);
+			COLOR.a = COLOR.a * smoothstep(1.0, 0.0, t);
+		}
 	}
  	if(strokeType == 1){
  		float x1 = pLocal.x - r;
@@ -118,21 +141,6 @@ void fragment() {
  		}
  		COLOR = vec4(strokeColor.rgb, currA);
  	}
-	//// Anti antialiasing
-	const float aaStart = 0.95;
-	float dMidAxis;
-	if (d0cos < cosTheta) dMidAxis = d0/r0;
-	else if (d1cos > cosTheta) dMidAxis = d1/r1;
-	else {
-		vec2 rp = pLocal - vec2(pLocal.y/tanTheta, 0);
-		float pr = r0 - cosTheta * rp.x;
-		dMidAxis = abs(pLocal.y) / pr * sinTheta;
-	}
-	
-	if(dMidAxis > aaStart){
-		float t = (dMidAxis - aaStart)/(1.0 - aaStart);
-		COLOR.a = COLOR.a * smoothstep(1.0, 0.0, t);
-	}
 	// Be mindful with premultiply alpha
 	// See: https://github.com/godotengine/godot/issues/99715
 }
