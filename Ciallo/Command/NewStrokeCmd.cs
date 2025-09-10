@@ -25,28 +25,40 @@ public class NewStrokeCmd(IReadOnlyList<int> insertPath) : CommandBase
             DoRefEntities.Add(e);
         }
         
-        // Layer tree data
+        // Data
         var strokeE = DoRefEntities[0];
         tree.Root.InsertDescendant(_insertPath, strokeE);
         
         // View
-        var worldView = Document.Get<WorldView>();
+        var view = Document.Get<WorldView>();
         if (DoRefObjects.Count == 0) DoRefObjects.Add(new StrokeView());
         var strokeView =  (StrokeView)DoRefObjects[0];
-        worldView.InsertNodeAt(strokeView, _insertPath);
+        view.InsertNodeAt(strokeView, _insertPath);
         strokeE.Add(strokeView);
+        
+        // Overlay
+        var overlay = Document.Get<WorldOverlay>();
+        if(DoRefObjects.Count == 1) DoRefObjects.Add(new StrokeOverlay());
+        var strokeOverlay = (StrokeOverlay)DoRefObjects[1];
+        overlay.InsertNodeAt(strokeOverlay, _insertPath);
+        strokeE.Add(strokeOverlay);
     }
 
     public override void Undo()
     {
         var strokeE = DoRefEntities[0];
         var tree = Document.Get<LayerTreeManager>();
+        // Overlay
+        var overlay = Document.Get<WorldOverlay>();
+        strokeE.Remove<StrokeOverlay>();
+        overlay.RemoveNodeAt(_insertPath);
+        
         // View
         var worldView = Document.Get<WorldView>();
         strokeE.Remove<StrokeView>();
         worldView.RemoveNodeAt(_insertPath);
         
-        // Layer tree data
+        // Data
         tree.Root.RemoveDescendant(_insertPath);
     }
 }

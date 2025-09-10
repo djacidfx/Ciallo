@@ -11,7 +11,7 @@ namespace Ciallo.Rendering;
 [Tool, GlobalClass]
 public partial class StrokeView : MultiMeshInstance2D
 {
-    private static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
+    public static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
 
     public static readonly ShaderMaterial BrushMaterial = new()
     {
@@ -35,10 +35,10 @@ public partial class StrokeView : MultiMeshInstance2D
     {
         // For editor preview, convenient rendering test.
         if (!Engine.IsEditorHint()) return;
-        UpdateStroke([new(0, 0), new(100, 0), new(150, 50), new(200, 0)], [10f, 20f, 5f, 15f]);
+        UpdateGeometry([new(0, 0), new(100, 0), new(150, 50), new(200, 0)], [10f, 20f, 5f, 15f]);
     }
 
-    public void UpdateStroke(
+    public void UpdateGeometry(
         [NotNull] IReadOnlyList<Vector2> points,
         [NotNull] IReadOnlyList<float> radii)
     {

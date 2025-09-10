@@ -56,6 +56,10 @@ public static class WorldManager
         var worldView = paintPanel.GetNode<WorldView>("%WorldView");
         document.Add(worldView);
         
+        // Add world overlay
+        var worldOverlay = paintPanel.GetNode<WorldOverlay>("%WorldOverlay");
+        document.Add(worldOverlay);
+        
         // Set as working world
         WorkingWorld.Value = world;
         LoadedWorlds.Add(world);
@@ -77,10 +81,15 @@ public static class WorldManager
         LoadedWorlds.Remove(world);
         if(WorkingWorld.Value == world) WorkingWorld.Value = LoadedWorlds.Count > 0 ? LoadedWorlds[0] : null;
         
-        // Remove work view
+        // Remove world overlay
+        var worldOverlay = world.Document().Get<WorldOverlay>();
+        world.Document().Remove<WorldOverlay>();
+        if(GodotObject.IsInstanceValid(worldOverlay)) worldOverlay.QueueFree();
+        
+        // Remove world view
         var worldView = world.Document().Get<WorldView>();
         world.Document().Remove<WorldView>();
-        if(GodotObject.IsInstanceValid(worldView)) worldView.Free();
+        if(GodotObject.IsInstanceValid(worldView)) worldView.QueueFree();
         
         // Remove paint panel
         //// add null check since the method could be called as long as Godot cleaning up nodes.

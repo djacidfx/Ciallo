@@ -8,7 +8,7 @@ using Ciallo.Rendering;
 
 namespace Ciallo.Data;
 
-public class ResetStrokeGeometryCmd(IReadOnlyList<int> targetPath, IReadOnlyList<Vector2> newPoints, IReadOnlyList<float> newRadii) : CommandBase
+public class UpdateStrokeGeometryCmd(IReadOnlyList<int> targetPath, IReadOnlyList<Vector2> newPoints, IReadOnlyList<float> newRadii) : CommandBase
 {
     private readonly ImmutableArray<int> _targetPath = [..targetPath];
     private readonly StrokeGeometry _newGeometry = new()
@@ -28,7 +28,10 @@ public class ResetStrokeGeometryCmd(IReadOnlyList<int> targetPath, IReadOnlyList
         targetE.Set(_newGeometry);
         
         // View
-        targetE.Get<StrokeView>().UpdateStroke(_newGeometry.Points, _newGeometry.Radii);
+        targetE.Get<StrokeView>().UpdateGeometry(_newGeometry.Points, _newGeometry.Radii);
+        
+        // Overlay
+        targetE.Get<StrokeOverlay>().UpdateGeometry(_newGeometry.Points);
     }
 
     public override void Undo()
@@ -36,10 +39,13 @@ public class ResetStrokeGeometryCmd(IReadOnlyList<int> targetPath, IReadOnlyList
         var tree = Document.Get<LayerTreeManager>();
         var targetE = tree.Root.GetDescendant(_targetPath);
         
+        // Overlay
+        targetE.Get<StrokeOverlay>().UpdateGeometry(_oldGeometry.Points);
+
+        // View
+        targetE.Get<StrokeView>().UpdateGeometry(_oldGeometry.Points, _oldGeometry.Radii);
+        
         // Data
         targetE.Set(_oldGeometry);
-        
-        // View
-        targetE.Get<StrokeView>().UpdateStroke(_oldGeometry.Points, _oldGeometry.Radii);
     }
 }

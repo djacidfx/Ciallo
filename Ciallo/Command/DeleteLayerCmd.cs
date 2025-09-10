@@ -27,10 +27,20 @@ public partial class DeleteLayerCmd(IReadOnlyList<int> target) : CommandBase
         var worldView = Document.Get<WorldView>();
         var node = worldView.RemoveNodeAt(_target);
         if(UndoRefObjects.Count == 0) UndoRefObjects.Add(node);
+        
+        // Overlay
+        var worldOverlay = Document.Get<WorldOverlay>();
+        var overlayNode = worldOverlay.RemoveNodeAt(_target);
+        if(UndoRefObjects.Count == 1) UndoRefObjects.Add(overlayNode);
     }
 
     public override void Undo()
     {
+        // Overlay
+        var worldOverlay = Document.Get<WorldOverlay>();
+        var overlayNode = (Node)UndoRefObjects.Last();
+        worldOverlay.InsertNodeAt(overlayNode, _target);
+        
         // View
         var worldView = Document.Get<WorldView>();
         var node = (Node)UndoRefObjects.First();

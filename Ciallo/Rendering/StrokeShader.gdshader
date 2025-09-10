@@ -6,7 +6,7 @@ render_mode unshaded;
 uniform int strokeType : hint_enum("Vanilla", "Stamp") = 0;
 uniform vec4 strokeColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 // Canvas mode is useful for drawing wireframe 
-uniform int strokeRadiusMode : hint_enum("World", "Canvas") = 0;
+uniform int radiusMode : hint_enum("World", "Canvas") = 0;
 uniform float canvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
 
 // ------stamp parameters-----------
@@ -49,7 +49,7 @@ void vertex() {
 	vec2 ns = unpack2floats(COLOR.y);
 	n0 = ns.x/stampInterval;
 	n1 = ns.y/stampInterval;
-	if(strokeRadiusMode > 0){
+	if(radiusMode > 0){
 		float canvasZoom = length(CANVAS_MATRIX[0].xy);
 		canvasZoom = canvasZoom > canvasZoomThreshold ? canvasZoom : canvasZoomThreshold ;
 		r0 /= canvasZoom;

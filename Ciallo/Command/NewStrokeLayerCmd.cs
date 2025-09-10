@@ -49,11 +49,23 @@ public class NewStrokeLayerCmd : CommandBase
         var layerView =  (StrokeLayerView)DoRefObjects[0];
         worldView.InsertNodeAt(layerView, _insertPath);
         layerE.Add(layerView);
+        
+        // Overlay
+        var worldOverlay = Document.Get<WorldOverlay>();
+        if(DoRefObjects.Count == 1) DoRefObjects.Add(new StrokeLayerOverlay());
+        var layerOverlay = (StrokeLayerOverlay)DoRefObjects[1];
+        worldOverlay.InsertNodeAt(layerOverlay, _insertPath);
+        layerE.Add(layerOverlay);
     }
 
     public override void Undo()
     {
         var layerE = DoRefEntities[0];
+        // Overlay
+        var overlay = Document.Get<WorldOverlay>();
+        layerE.Remove<StrokeLayerOverlay>();
+        overlay.RemoveNodeAt(_insertPath);
+        
         // View
         layerE.Remove<StrokeLayerView>();
         var worldView = Document.Get<WorldView>();
