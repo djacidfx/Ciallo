@@ -99,7 +99,7 @@ handle_input_locally = false
 msaa_2d = 3
 canvas_item_default_texture_filter = 0
 gui_disable_input = true
-size = Vector2i(1920, 1042)
+size = Vector2i(2, 2)
 render_target_update_mode = 4
 
 [node name="Background" type="Polygon2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]

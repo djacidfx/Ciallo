@@ -7,10 +7,11 @@
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_lq4am"]
 shader = ExtResource("2_lq4am")
-shader_parameter/useCanvasRadius = 1
-shader_parameter/strokeType = 1
+shader_parameter/strokeType = 0
 shader_parameter/strokeColor = Color(0, 0, 0, 1)
-shader_parameter/stampInterval = 1.96094
+shader_parameter/strokeRadiusMode = 0
+shader_parameter/canvasZoomThreshold = 0.0
+shader_parameter/stampInterval = 0.2
 
 [sub_resource type="MultiMesh" id="MultiMesh_urnvi"]
 use_colors = true
