@@ -8,6 +8,7 @@ using Godot;
 
 namespace Ciallo.Rendering;
 
+[Tool, GlobalClass]
 public partial class StrokeView : MultiMeshInstance2D
 {
     private static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
@@ -29,7 +30,14 @@ public partial class StrokeView : MultiMeshInstance2D
         this.Multimesh = multiMesh;
         this.Material = BrushMaterial;
     }
-    
+
+    public override void _Ready()
+    {
+        // For editor preview, convenient rendering test.
+        if (!Engine.IsEditorHint()) return;
+        UpdateStroke([new(0, 0), new(100, 0), new(150, 50), new(200, 0)], [10f, 20f, 5f, 15f]);
+    }
+
     public void UpdateStroke(
         [NotNull] IReadOnlyList<Vector2> points,
         [NotNull] IReadOnlyList<float> radii)
