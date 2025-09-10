@@ -27,15 +27,15 @@ public partial class StrokeView : MultiMeshInstance2D
             UseCustomData = true,
             Mesh = DummyMesh,
         };
-        base.Multimesh = multiMesh;
-        base.Material = BrushMaterial;
+        Multimesh = multiMesh;
+        Material = BrushMaterial;
     }
 
     public override void _Ready()
     {
         // For editor preview, convenient rendering test.
         if (!Engine.IsEditorHint()) return;
-        UpdateGeometry([new(0, 0), new(100, 0), new(150, 50), new(200, 0)], [10f, 20f, 5f, 15f]);
+        UpdateGeometry([new(1, 1), new(100, 0), new(150, 50), new(200, 0)], [4f, 10f, 5f, 15f]);
     }
 
     public void UpdateGeometry(
@@ -49,11 +49,11 @@ public partial class StrokeView : MultiMeshInstance2D
         }
         if(points.Count == 0 || radii.Count == 0)
         {
-            this.Multimesh.InstanceCount = 0;
+            Multimesh.InstanceCount = 0;
             return;
         }
         
-        var multiMesh = this.Multimesh;
+        var multiMesh = Multimesh;
         multiMesh.InstanceCount = 0; // Also clear buffer
         
         ImmutableArray<Vector2> ps;
