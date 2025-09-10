@@ -1,12 +1,12 @@
-// Ciallo Articulated Line Shader!
+// Ciallo's articulated line shader!
 shader_type canvas_item;
 //render_mode world_vertex_coords;
-//render_mode skip_vertex_transform;
+render_mode skip_vertex_transform;
 render_mode unshaded;
 
 uniform int strokeType : hint_enum("Vanilla", "Stamp") = 0;
 uniform vec4 strokeColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
-// Canvas mode is useful for drawing wireframe 
+// Canvas mode is used for drawing wireframe 
 uniform int radiusMode : hint_enum("World", "Canvas") = 0;
 uniform float canvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
 
@@ -104,27 +104,27 @@ void fragment() {
 	vec2 pLocal = vec2(dot(p-p0, tangent), dot(p-p0, normal));
 	float d0 = distance(p, p0);
     float d1 = distance(p, p1);
-	float d0cos = pLocal.x / d0;
-    float d1cos = (pLocal.x - segmentLength) / d1;
+	float cosPhi0 = pLocal.x / d0;
+    float cosPhi1 = (pLocal.x - segmentLength) / d1;
 
 	if(strokeType == 0){
-		if(d0cos < cosTheta && d0 > r0) discard;
-    	if(d1cos > cosTheta && d1 > r1) discard;
+		if(cosPhi0 < cosTheta && d0 > r0) discard;
+    	if(cosPhi1 > cosTheta && d1 > r1) discard;
 		
 		COLOR = strokeColor;
 		//// Anti antialiasing
-		const float aaStart = 0.95;
-		float dMidAxis;
-		if (d0cos < cosTheta) dMidAxis = d0/r0;
-		else if (d1cos > cosTheta) dMidAxis = d1/r1;
+		const float aaStart = 0.97;
+		float lambda;
+		if (cosPhi0 < cosTheta) lambda = d0/r0;
+		else if (cosPhi1 > cosTheta) lambda = d1/r1;
 		else {
-			vec2 rp = pLocal - vec2(pLocal.y/tanTheta, 0);
+			vec2 rp = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
 			float pr = r0 - cosTheta * rp.x;
-			dMidAxis = abs(pLocal.y) / pr * sinTheta;
+			lambda = abs(pLocal.y) / pr * sinTheta;
 		}
 		
-		if(dMidAxis > aaStart){
-			float t = (dMidAxis - aaStart)/(1.0 - aaStart);
+		if(lambda > aaStart){
+			float t = (lambda - aaStart)/(1.0 - aaStart);
 			COLOR.a = COLOR.a * smoothstep(1.0, 0.0, t);
 		}
 	}
@@ -144,9 +144,9 @@ void fragment() {
  			float currStampLocalX = n2x(currIdx - n0);
  			vec2 pToCurrStamp = pLocal - vec2(currStampLocalX, 0.0);
  			//vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
-			vec2 uv = pToCurrStamp/r;
+			vec2 c = pToCurrStamp/r;
 			//float sampledA = length(uv) > 1.0 ? 1e-7 : 0.5;
- 			float sampledA = abs(uv.x) > 1.0 || abs(uv.y) > 1.0 ? 1e-7 : 0.5;
+ 			float sampledA = abs(c.x) > 1.0 || abs(c.y) > 1.0 ? 1e-7 : 0.5;
  			currA = sampledA + currA * (1.0 - sampledA);
 			i++;
 			currIdx += 1.0;

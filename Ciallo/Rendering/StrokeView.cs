@@ -106,7 +106,7 @@ public partial class StrokeView : MultiMeshInstance2D
             // Have to use instance color to store t.
             multiMesh.SetInstanceColor(i, new(Float32Packer.Pack(rs[i],rs[i+1]), Float32Packer.Pack(nds[i], nds[i+1]), 0, 0)); // empty spaces for tilt
             // Have to set transform or do not render, this transform values are not used in shaders
-            // Cannot access this matrix from the CnavasItem shader, so cannot be used for passing data.
+            // Cannot access this matrix from the CanvasItem shader, so cannot be used for passing data.
             multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);
         }
         
