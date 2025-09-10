@@ -1,0 +1,11 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://bfck63e008bqj"]
+
+[ext_resource type="Shader" uid="uid://drdoefdprre0o" path="res://Rendering/Stroke.gdshader" id="1_c11ky"]
+
+[resource]
+shader = ExtResource("1_c11ky")
+shader_parameter/strokeType = 0
+shader_parameter/strokeColor = Color(0.686275, 0.403922, 0.541176, 1)
+shader_parameter/radiusMode = 1
+shader_parameter/canvasZoomThreshold = 1.0
+shader_parameter/stampInterval = 0.2

@@ -15,7 +15,7 @@ public partial class StrokeView : MultiMeshInstance2D
 
     public static readonly ShaderMaterial BrushMaterial = new()
     {
-        Shader = GD.Load<Shader>("res://Rendering/StrokeShader.gdshader"),
+        Shader = GD.Load<Shader>("res://Rendering/Stroke.gdshader"),
     };
 
     public StrokeView()
@@ -27,8 +27,8 @@ public partial class StrokeView : MultiMeshInstance2D
             UseCustomData = true,
             Mesh = DummyMesh,
         };
-        this.Multimesh = multiMesh;
-        this.Material = BrushMaterial;
+        base.Multimesh = multiMesh;
+        base.Material = BrushMaterial;
     }
 
     public override void _Ready()
@@ -87,6 +87,7 @@ public partial class StrokeView : MultiMeshInstance2D
                 nds.Add(nds.Last() + l / r);
                 continue;
             }
+            
             var nd = l / (r0 - r1) * Mathf.Log(r0 / r1);
             nds.Add(nds.Last() + nd);
         }

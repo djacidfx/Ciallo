@@ -1,5 +1,6 @@
+// Ciallo Articulated Line Shader!
 shader_type canvas_item;
-render_mode world_vertex_coords;
+//render_mode world_vertex_coords;
 //render_mode skip_vertex_transform;
 render_mode unshaded;
 
@@ -29,9 +30,9 @@ varying float r;
 varying flat vec2 tangent;
 varying flat vec2 normal;
 varying flat float segmentLength;
+varying flat float sinTheta;
 varying flat float cosTheta;
 varying flat float tanTheta;
-varying flat float sinTheta;
 
 vec2 unpack2floats(float f) {
     uint word = floatBitsToUint(f);
@@ -50,8 +51,8 @@ void vertex() {
 	n0 = ns.x/stampInterval;
 	n1 = ns.y/stampInterval;
 	if(radiusMode > 0){
-		float canvasZoom = length(CANVAS_MATRIX[0].xy);
-		canvasZoom = canvasZoom > canvasZoomThreshold ? canvasZoom : canvasZoomThreshold ;
+		float canvasZoom = length(CANVAS_MATRIX[0].xy); // Cannot support shear (or skew in godot)
+		canvasZoom = canvasZoom > canvasZoomThreshold ? canvasZoom : canvasZoomThreshold;
 		r0 /= canvasZoom;
 		r1 /= canvasZoom;
 		n0 *= canvasZoom;

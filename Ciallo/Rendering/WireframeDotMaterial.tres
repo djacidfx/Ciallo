@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://7aom11eikmbh"]
+
+[ext_resource type="Shader" uid="uid://dmpv1lkkkxlnc" path="res://Rendering/Dot.gdshader" id="1_qn122"]
+
+[resource]
+shader = ExtResource("1_qn122")
+shader_parameter/radiusMode = 1
+shader_parameter/canvasZoomThreshold = 1.0
