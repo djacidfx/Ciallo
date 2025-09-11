@@ -18,11 +18,11 @@ public abstract class InteractorBase
     
     public abstract bool CanInteract { get; }
 
-    public abstract void Start(CursorButtonData data);
+    public virtual void Start(CursorButtonData data) { }
     
-    public abstract void Interacting(CursorMotionData data);
-    
-    public abstract void End(CursorButtonData data);
-    
-    public abstract void Cancel();
+    public virtual void Interacting(CursorMotionData data) { }
+
+    public virtual void End(CursorButtonData data) { }
+
+    public virtual void Cancel() { }
 }

@@ -11,24 +11,24 @@ public abstract partial class ToolBaseSingularInteractor : ToolButtonBase, ITool
 {
     public abstract InteractorBase LeftInteractor { get; }
     
-    private bool _isInteracting = false;
+    public bool IsLeftInteracting { get; protected set; }
 
     public void OnLeftClick(CursorButtonData data)
     {
         if(!LeftInteractor.CanInteract) return;
-        _isInteracting = true;
+        IsLeftInteracting = true;
         LeftInteractor.Start(data);
     }
 
     public void OnMoving(CursorMotionData data)
     {
-        if(_isInteracting) LeftInteractor.Interacting(data);
+        if(IsLeftInteracting) LeftInteractor.Interacting(data);
     }
 
     public void OnLeftRelease(CursorButtonData data)
     {
-        if(_isInteracting) LeftInteractor.End(data);
-        _isInteracting = false;
+        if(IsLeftInteracting) LeftInteractor.End(data);
+        IsLeftInteracting = false;
     }
 
     public void OnRightClick(CursorButtonData data)
@@ -43,8 +43,8 @@ public abstract partial class ToolBaseSingularInteractor : ToolButtonBase, ITool
     {
         if(AppActions.CancelInteraction.IsJustPressed)
         {
-            if(_isInteracting) LeftInteractor.Cancel();
-            _isInteracting = false;
+            if(IsLeftInteracting) LeftInteractor.Cancel();
+            IsLeftInteracting = false;
         }
     }
 }
