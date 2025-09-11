@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Ciallo.Command;
 using Godot;
 
 namespace Ciallo.Rendering;
@@ -9,33 +10,39 @@ public partial class StrokeOverlay : Node2D
 {
     public static readonly ShaderMaterial WireframeMaterial = GD.Load<ShaderMaterial>("res://Rendering/WireframeMaterial.tres");
     public static readonly ShaderMaterial WireframeDotMaterial = GD.Load<ShaderMaterial>("res://Rendering/WireframeDotMaterial.tres");
-    private List<Vector2> _points = [];
 
     public StrokeView Wireframe;
     public MultiMeshInstance2D WireframeDot;
+    public StrokeBody HitTestBody;
 
     public override void _Ready()
     {
         Wireframe = new() { Material = WireframeMaterial };
-        WireframeDot = new () {Material = WireframeDotMaterial};
         var multiMesh = new MultiMesh
         {
             TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,
             UseColors = true,
             Mesh = GD.Load<Mesh>("res://Rendering/WireframeDotMesh.tres"),
         };
-        WireframeDot.Multimesh = multiMesh;
+        WireframeDot = new()
+        {
+            Material = WireframeDotMaterial,
+            Multimesh = multiMesh
+        };
+        HitTestBody = new();
+        
         AddChild(Wireframe);
         AddChild(WireframeDot);
+        AddChild(HitTestBody);
     }
 
-    public void UpdateGeometry(IReadOnlyList<Vector2> points)
+    public void UpdateGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
         const float wireframeRadius = 2f;
         const float dotRadius = 12f;
         Wireframe.UpdateGeometry(points, Enumerable.Repeat(wireframeRadius, points.Count).ToImmutableArray());
-        _points = points.ToList();
         WireframeDot.UpdateDotGeometry(points, Enumerable.Repeat(dotRadius, points.Count).ToImmutableArray());
+        HitTestBody.UpdateGeometry(points, radii);
     }
 }
 

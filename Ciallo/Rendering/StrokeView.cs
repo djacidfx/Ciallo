@@ -91,10 +91,6 @@ public partial class StrokeView : MultiMeshInstance2D
             var nd = l / (r0 - r1) * Mathf.Log(r0 / r1);
             nds.Add(nds.Last() + nd);
         }
-        // GD.Print("----------");
-        // // GD.Print(string.Join(" ", ps));
-        // GD.Print(string.Join(" ", rs));
-        // GD.Print(string.Join(" ", nds));
         
         for(int i = 0; i < multiMesh.InstanceCount; i++)
         {

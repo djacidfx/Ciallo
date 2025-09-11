@@ -31,7 +31,7 @@ public class UpdateStrokeGeometryCmd(IReadOnlyList<int> targetPath, IReadOnlyLis
         targetE.Get<StrokeView>().UpdateGeometry(_newGeometry.Points, _newGeometry.Radii);
         
         // Overlay
-        targetE.Get<StrokeOverlay>().UpdateGeometry(_newGeometry.Points);
+        targetE.Get<StrokeOverlay>().UpdateGeometry(_newGeometry.Points, _newGeometry.Radii);
     }
 
     public override void Undo()
@@ -40,7 +40,7 @@ public class UpdateStrokeGeometryCmd(IReadOnlyList<int> targetPath, IReadOnlyLis
         var targetE = tree.Root.GetDescendant(_targetPath);
         
         // Overlay
-        targetE.Get<StrokeOverlay>().UpdateGeometry(_oldGeometry.Points);
+        targetE.Get<StrokeOverlay>().UpdateGeometry(_oldGeometry.Points, _newGeometry.Radii);
 
         // View
         targetE.Get<StrokeView>().UpdateGeometry(_oldGeometry.Points, _oldGeometry.Radii);

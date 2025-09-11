@@ -96,9 +96,9 @@ script = ExtResource("3_7pmtm")
 
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldViewContainer"]
 handle_input_locally = false
-msaa_2d = 3
+msaa_2d = 2
 canvas_item_default_texture_filter = 0
-gui_disable_input = true
+physics_object_picking = true
 size = Vector2i(1920, 1042)
 render_target_update_mode = 4
 
