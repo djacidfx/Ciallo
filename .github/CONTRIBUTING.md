@@ -22,6 +22,7 @@ Below is the roadmap for the Demo version. Will make a release on steam and star
     - [ ] Line binding system (Bézier curve only)
       - [x] Bézier curve geometry
     - [ ] Design
+    - [x] Polyline overlay rendering
   - [ ] Lasso tool
 - [ ] Layer system
   - [x] Add, delete
