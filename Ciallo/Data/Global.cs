@@ -4,5 +4,5 @@ namespace Ciallo.Data;
 
 public static partial class Global
 {
-    public static readonly Preference Preferences = new();
+    public static readonly Preference AppPreferences = new();
 }

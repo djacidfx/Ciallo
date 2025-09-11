@@ -115,7 +115,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
             panel.Offset.Value = Vector2.Zero;
         }
         // Scroll mouse wheel zooming.
-        var zoomFactor = Preferences.MouseWheelZoomFactor.Value;
+        var zoomFactor = AppPreferences.MouseWheelZoomFactor.Value;
         if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp } && _isHovering)
         {
             panel.Zoom.Value *= 1.0f + zoomFactor;
