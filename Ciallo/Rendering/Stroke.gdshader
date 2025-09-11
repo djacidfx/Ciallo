@@ -1,6 +1,5 @@
 // Ciallo's articulated line shader!
 shader_type canvas_item;
-//render_mode world_vertex_coords;
 render_mode skip_vertex_transform;
 render_mode unshaded;
 
@@ -45,8 +44,8 @@ void vertex() {
 	p0 = INSTANCE_CUSTOM.xy;
 	p1 = INSTANCE_CUSTOM.zw;
 	vec2 rs = unpack2floats(COLOR.x);
-	r0 = rs.x <= 1e-10 ? 1e-10 : rs.x;
-	r1 = rs.y <= 1e-10 ? 1e-10 : rs.y;
+	r0 = rs.x <= 1e-7 ? 1e-7 : rs.x;
+	r1 = rs.y <= 1e-7 ? 1e-7 : rs.y;
 	vec2 ns = unpack2floats(COLOR.y);
 	n0 = ns.x/stampInterval;
 	n1 = ns.y/stampInterval;
@@ -61,7 +60,7 @@ void vertex() {
 	segmentLength = distance(p1, p0);
 	cosTheta = (r0 - r1)/distance(p0, p1);
 	sinTheta = sqrt(1.0 - cosTheta * cosTheta);
-	tanTheta = cosTheta < 1e-20 ? 1e30 : sinTheta/cosTheta;
+	tanTheta = cosTheta < 1e-7 ? 1e30 : sinTheta/cosTheta;
 
 	tangent = normalize(p1 - p0);
 	normal = vec2(-tangent.y, tangent.x);
@@ -92,11 +91,11 @@ void vertex() {
 }
 
 float x2n(float x) {
-	if(abs(cosTheta) < 1e-20) return x/(stampInterval * (r0 + r1) * 0.5);
+	if(abs(cosTheta) < 1e-7) return x/(stampInterval * (r0 + r1) * 0.5);
 	return -1.0/cosTheta/stampInterval * log(1.0 - cosTheta*x/r0);
 }
 float n2x(float n) {
-	if(abs(cosTheta) < 1e-20) return n * stampInterval * (r0 + r1) * 0.5;
+	if(abs(cosTheta) < 1e-7) return n * stampInterval * (r0 + r1) * 0.5;
 	return r0/cosTheta * (1.0-exp(-stampInterval*cosTheta*n));
 }
 
@@ -139,7 +138,7 @@ void fragment() {
  		int i = 0;
  		int MAX_i = 128;
  		float currIdx = ceil(startIdx);
- 		float currA = 1e-10;
+ 		float currA = 1e-7;
  		while(i < MAX_i && currIdx < endIdx){
  			float currStampLocalX = n2x(currIdx - n0);
  			vec2 pToCurrStamp = pLocal - vec2(currStampLocalX, 0.0);
