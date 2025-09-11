@@ -18,6 +18,7 @@ public partial class StrokeOverlay : Node2D
     public override void _Ready()
     {
         Wireframe = new() { Material = WireframeMaterial };
+        Wireframe.SetInstanceShaderParameter("overridingColor", AppPreferences.StrokeWireframeColor);
         var multiMesh = new MultiMesh
         {
             TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,

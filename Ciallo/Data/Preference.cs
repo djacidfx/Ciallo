@@ -33,6 +33,8 @@ public class Preference
     [JsonProperty]
     public List<string> RecentFiles = [];
     
+    [JsonProperty]
+    public Color StrokeWireframeColor = Colors.NavyBlue;
     
     #region Save Load Json
     public static readonly string Path = "res://Temp/Preference.json";
