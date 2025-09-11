@@ -10,64 +10,61 @@ using Godot;
 namespace Ciallo.Command;
 
 // ReSharper disable once Godot.MissingParameterlessConstructor
-public class NewStrokeLayerCmd : CommandBase
+public class NewStrokeLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
 {
-    private readonly ImmutableArray<int> _insertPath;
+    private readonly ImmutableArray<int> _insertPath = [..insertPath];
+    private Entity _layerE = Entity.Null;
+    private readonly List<Node> _refObjects = [];
 
-    public NewStrokeLayerCmd(IReadOnlyList<int> insertPath)
-    {
-        _insertPath = [..insertPath];
-    }
+    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(_layerE);
+    public override IEnumerable<GodotObject> DoRefObjects => _refObjects;
 
     public override void Do()
     {
         var tree = Document.Get<LayerTreeManager>();
         
         // Creation
-        if (DoRefEntities.Count == 0)
+        if (_layerE == Entity.Null)
         {
-            var e = WorkingWorld.Create();
+            _layerE = WorkingWorld.Create();
             var node = new LayerTreeNode()
             {
                 Name = { Value = $"Stroke Layer {tree.Root.ChildCount+1}" },
             };
-            e.Add(new StrokeLayerSetting(), node, new ToSerializeTag());
-            DoRefEntities.Add(e);
+            _layerE.Add(new StrokeLayerSetting(), node, new ToSerializeTag());
         }
         
         // Layer tree data
-        var layerE = DoRefEntities[0];
-        tree.Root.InsertDescendant(_insertPath, layerE);
+        tree.Root.InsertDescendant(_insertPath, _layerE);
         
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.CreateInsert(layerE, _insertPath);
+        layerContainer.CreateInsert(_layerE, _insertPath);
         
         // View
         var worldView = Document.Get<WorldView>();
-        if (DoRefObjects.Count == 0) DoRefObjects.Add(new StrokeLayerView());
-        var layerView =  (StrokeLayerView)DoRefObjects[0];
+        if (_refObjects.Count == 0) _refObjects.Add(new StrokeLayerView());
+        var layerView =  (StrokeLayerView)_refObjects[0];
         worldView.InsertNodeAt(layerView, _insertPath);
-        layerE.Add(layerView);
+        _layerE.Add(layerView);
         
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
-        if(DoRefObjects.Count == 1) DoRefObjects.Add(new StrokeLayerOverlay());
-        var layerOverlay = (StrokeLayerOverlay)DoRefObjects[1];
+        if(_refObjects.Count == 1) _refObjects.Add(new StrokeLayerOverlay());
+        var layerOverlay = (StrokeLayerOverlay)_refObjects[1];
         worldOverlay.InsertNodeAt(layerOverlay, _insertPath);
-        layerE.Add(layerOverlay);
+        _layerE.Add(layerOverlay);
     }
 
     public override void Undo()
     {
-        var layerE = DoRefEntities[0];
         // Overlay
         var overlay = Document.Get<WorldOverlay>();
-        layerE.Remove<StrokeLayerOverlay>();
+        _layerE.Remove<StrokeLayerOverlay>();
         overlay.RemoveNodeAt(_insertPath);
         
         // View
-        layerE.Remove<StrokeLayerView>();
+        _layerE.Remove<StrokeLayerView>();
         var worldView = Document.Get<WorldView>();
         worldView.RemoveNodeAt(_insertPath);
         

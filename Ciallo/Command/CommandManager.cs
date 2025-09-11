@@ -17,39 +17,38 @@ public partial class CommandManager : UndoRedo
         SetMaxSteps(3); // fast invoke bugs
     }
 
-    public void AddDo(CommandWrapperObject obj)
+    public void AddDo(CommandWrapperObject cmdWrapper)
     {
-        obj.DoObject = new WrapperObject(obj.Command.DoRefEntities, obj.Command.DoRefObjects);
-        AddDoMethod(new(obj, CommandWrapperObject.MethodName.Do));
-        AddDoReference(obj.DoObject);
-        obj.Command.DoRefObjects.ForEach(AddDoReference);
-        AddDoReference(obj);
+        cmdWrapper.DoWrapper = new WrapperObject(cmdWrapper.Command.DoRefEntities, cmdWrapper.Command.DoRefObjects);
+        AddDoMethod(new(cmdWrapper, CommandWrapperObject.MethodName.Do));
+        AddDoReference(cmdWrapper.DoWrapper);
+        AddDoReference(cmdWrapper);
     }
 
-    public void AddUndo(CommandWrapperObject obj)
+    public void AddUndo(CommandWrapperObject cmdWrapper)
     {
-        obj.UndoObject = new WrapperObject(obj.Command.UndoRefEntities, obj.Command.UndoRefObjects);
-        AddUndoMethod(new(obj, CommandWrapperObject.MethodName.Undo));
-        AddUndoReference(obj.UndoObject);
-        obj.Command.UndoRefObjects.ForEach(AddUndoReference);
-        AddUndoReference(obj);
+        cmdWrapper.UndoWrapper = new WrapperObject(cmdWrapper.Command.UndoRefEntities, cmdWrapper.Command.UndoRefObjects);
+        AddUndoMethod(new(cmdWrapper, CommandWrapperObject.MethodName.Undo));
+        AddUndoReference(cmdWrapper.UndoWrapper);
+        // cmdWrapper.Command.UndoRefObjects.ForEach(AddUndoReference);
+        AddUndoReference(cmdWrapper);
     }
 }
 
 public partial class CommandWrapperObject(CommandBase command) : GodotObject
 {
     public CommandBase Command { get; } = command;
-    public WrapperObject DoObject;
-    public WrapperObject UndoObject;
+    public WrapperObject DoWrapper;
+    public WrapperObject UndoWrapper;
 
     public override void _Notification(int what)
     {
         if (what == NotificationPredelete)
         {
-            if (IsInstanceValid(DoObject))
-                DoObject.FreeWithoutDestroying();
-            if (IsInstanceValid(UndoObject))
-                UndoObject.FreeWithoutDestroying();
+            if (IsInstanceValid(DoWrapper))
+                DoWrapper.FreeWithoutDestroying();
+            if (IsInstanceValid(UndoWrapper))
+                UndoWrapper.FreeWithoutDestroying();
         }
     }
 
@@ -58,25 +57,29 @@ public partial class CommandWrapperObject(CommandBase command) : GodotObject
 }
 
 /// <summary>
-/// Wrapper for the lists to be used in CommandBase.
+/// Wrapper for the IEnumerable to be used in CommandBase.
 /// Automatically destroy entities and objects when the command is deleted, unless FreeWithoutDestroying is called.
 /// </summary>
-/// <param name="entities">The reference to an entity List in CommandBase</param>
-/// <param name="objects">The reference to an object List in CommandBase</param>
-public partial class WrapperObject(List<Entity> entities, List<GodotObject> objects) : GodotObject
+public partial class WrapperObject(IEnumerable<Entity> entities, IEnumerable<GodotObject> objects) : GodotObject
 {
     private bool _destroy = true;
 
     public override void _Notification(int what)
     {
         if (what != NotificationPredelete || !_destroy) return;
-        if (entities != null && entities.Count != 0)
+        
+        if (entities?.Any() == true)
         {
             var world = World.Worlds.First(w => w.Id == entities.First().WorldId);
-            entities.ForEach(world.Destroy);
+            foreach(var e in entities)
+                world.Destroy(e);
         }
 
-        objects?.ForEach(obj => obj.Free());
+        if (objects != null)
+        {
+            foreach (var obj in objects)
+                obj.Free();
+        }
     }
 
     public void FreeWithoutDestroying()

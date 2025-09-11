@@ -34,11 +34,11 @@ public abstract class CommandBase
     /// e.g. User undo the most recent command, then clear the whole history. So the most recent command satisfies the above statement.
     /// Entity version of `add_do_reference`.
     /// </summary>
-    public readonly List<Entity> DoRefEntities = [];
-    public readonly List<Entity> UndoRefEntities = [];
-    
-    public readonly List<GodotObject> DoRefObjects = [];
-    public readonly List<GodotObject> UndoRefObjects = [];
+    public virtual IEnumerable<Entity> DoRefEntities => null;
+    public virtual IEnumerable<Entity> UndoRefEntities => null;
+
+    public virtual IEnumerable<GodotObject> DoRefObjects => null;
+    public virtual IEnumerable<GodotObject> UndoRefObjects => null;
 
     public abstract void Do();
     public abstract void Undo();
@@ -74,4 +74,10 @@ public abstract class CommandBase
     {
         return $"{Name}";
     }
+    
+    public static IEnumerable<Entity> ToEnumerable(Entity value)
+    {
+        if (value != Entity.Null) yield return value;
+    }
+
 }

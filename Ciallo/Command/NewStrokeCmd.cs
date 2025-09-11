@@ -4,58 +4,59 @@ using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
 using Ciallo.Rendering;
+using Godot;
 
 namespace Ciallo.Command;
 
 public class NewStrokeCmd(IReadOnlyList<int> insertPath) : CommandBase
 {
     private readonly ImmutableArray<int> _insertPath = [..insertPath];
+    private Entity _strokeE = Entity.Null;
+    private readonly List<Node> _refNodes = [];
     
+    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(_strokeE);
+    public override IEnumerable<GodotObject> DoRefObjects => _refNodes;
+
     public override void Do()
     {
         var tree = Document.Get<LayerTreeManager>();
         // Creation
-        if (DoRefEntities.Count == 0)
+        if (_strokeE == Entity.Null)
         {
-            var e = WorkingWorld.Create();
-            var node = new LayerTreeNode()
-            {
-            };
-            e.Add(new StrokeGeometry(), node, new ToSerializeTag());
-            DoRefEntities.Add(e);
+            _strokeE = WorkingWorld.Create();
+            var node = new LayerTreeNode();
+            _strokeE.Add(new StrokeGeometry(), node, new ToSerializeTag());
         }
         
         // Data
-        var strokeE = DoRefEntities[0];
-        tree.Root.InsertDescendant(_insertPath, strokeE);
+        tree.Root.InsertDescendant(_insertPath, _strokeE);
         
         // View
         var view = Document.Get<WorldView>();
-        if (DoRefObjects.Count == 0) DoRefObjects.Add(new StrokeView());
-        var strokeView =  (StrokeView)DoRefObjects[0];
+        if (_refNodes.Count == 0) _refNodes.Add(new StrokeView());
+        var strokeView =  (StrokeView)_refNodes[0];
         view.InsertNodeAt(strokeView, _insertPath);
-        strokeE.Add(strokeView);
+        _strokeE.Add(strokeView);
         
         // Overlay
         var overlay = Document.Get<WorldOverlay>();
-        if(DoRefObjects.Count == 1) DoRefObjects.Add(new StrokeOverlay());
-        var strokeOverlay = (StrokeOverlay)DoRefObjects[1];
+        if(_refNodes.Count == 1) _refNodes.Add(new StrokeOverlay());
+        var strokeOverlay = (StrokeOverlay)_refNodes[1];
         overlay.InsertNodeAt(strokeOverlay, _insertPath);
-        strokeE.Add(strokeOverlay);
+        _strokeE.Add(strokeOverlay);
     }
 
     public override void Undo()
     {
-        var strokeE = DoRefEntities[0];
         var tree = Document.Get<LayerTreeManager>();
         // Overlay
         var overlay = Document.Get<WorldOverlay>();
-        strokeE.Remove<StrokeOverlay>();
+        _strokeE.Remove<StrokeOverlay>();
         overlay.RemoveNodeAt(_insertPath);
         
         // View
         var worldView = Document.Get<WorldView>();
-        strokeE.Remove<StrokeView>();
+        _strokeE.Remove<StrokeView>();
         worldView.RemoveNodeAt(_insertPath);
         
         // Data

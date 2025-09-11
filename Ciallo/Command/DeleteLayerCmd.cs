@@ -8,51 +8,54 @@ using Godot;
 
 namespace Ciallo.Command;
 
-public partial class DeleteLayerCmd(IReadOnlyList<int> target) : CommandBase
+public class DeleteLayerCmd(IReadOnlyList<int> target) : CommandBase
 {
-    private readonly ImmutableArray<int> _target = [..target];
-    
+    private readonly ImmutableArray<int> _targetPath = [..target];
+    private Entity _targetE = Entity.Null;
+    private readonly List<Node> _refNodes = [];
+
+    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_targetE);
+    public override IEnumerable<GodotObject> UndoRefObjects => _refNodes;
+
     public override void Do()
     {
         // Layer tree data
         var tree = Document.Get<LayerTreeManager>();
-        var e = tree.Root.RemoveDescendant(_target);
-        if(UndoRefEntities.Count == 0) UndoRefEntities.Add(e);
+        _targetE = tree.Root.RemoveDescendant(_targetPath);
         
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.RemoveFree(_target);
+        layerTreeControl.RemoveFree(_targetPath);
         
         // View
         var worldView = Document.Get<WorldView>();
-        var node = worldView.RemoveNodeAt(_target);
-        if(UndoRefObjects.Count == 0) UndoRefObjects.Add(node);
+        var node = worldView.RemoveNodeAt(_targetPath);
+        if(_refNodes.Count == 0) _refNodes.Add(node);
         
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
-        var overlayNode = worldOverlay.RemoveNodeAt(_target);
-        if(UndoRefObjects.Count == 1) UndoRefObjects.Add(overlayNode);
+        var overlayNode = worldOverlay.RemoveNodeAt(_targetPath);
+        if(_refNodes.Count == 1) _refNodes.Add(overlayNode);
     }
 
     public override void Undo()
     {
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
-        var overlayNode = (Node)UndoRefObjects.Last();
-        worldOverlay.InsertNodeAt(overlayNode, _target);
+        var overlayNode = _refNodes[1];
+        worldOverlay.InsertNodeAt(overlayNode, _targetPath);
         
         // View
         var worldView = Document.Get<WorldView>();
-        var node = (Node)UndoRefObjects.First();
-        worldView.InsertNodeAt(node, _target);
+        var node = _refNodes[0];
+        worldView.InsertNodeAt(node, _targetPath);
         
-        var e = UndoRefEntities.First();
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.CreateInsert(e, _target);
+        layerTreeControl.CreateInsert(_targetE, _targetPath);
         
         // Layer tree data
         var tree = Document.Get<LayerTreeManager>();
-        tree.Root.InsertDescendant(_target, e);
+        tree.Root.InsertDescendant(_targetPath, _targetE);
     }
 }
