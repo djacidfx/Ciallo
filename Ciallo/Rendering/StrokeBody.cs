@@ -13,8 +13,6 @@ public partial class StrokeBody : StaticBody2D
         CollisionLayer = AppLayers.Physics2D.Stroke;
         CollisionMask = AppLayers.Physics2D.Empty; // Only detect mouse input
         InputPickable = true;
-        MouseEntered += OnMouseEntered;
-        MouseExited += OnMouseExited;
     }
     
     public void UpdateGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
@@ -50,15 +48,5 @@ public partial class StrokeBody : StaticBody2D
         PhysicsServer2D.BodyClearShapes(GetRid());
         _shapes.ForEach(PhysicsServer2D.FreeRid);
         _shapes.Clear();
-    }
-
-    public void OnMouseEntered()
-    {
-        GD.Print($"Entered StrokeBody {GetRid()}");
-    }
-    
-    public void OnMouseExited()
-    {
-        GD.Print($"Exited StrokeBody {GetRid()}");
     }
 }
