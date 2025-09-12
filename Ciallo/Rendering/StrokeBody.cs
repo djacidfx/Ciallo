@@ -15,7 +15,7 @@ public partial class StrokeBody : StaticBody2D
         InputPickable = true;
     }
     
-    public void UpdateGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
+    public void SetGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
         ClearFree();
         var vertices = new Vector2[4];

@@ -44,7 +44,7 @@ public class PaintInteractor : InteractorBase
         _radii.Add(2f);
         _lastScreenPoint = data.ScreenPosition;
         _lastDirection = Vector2.FromAngle(0);
-        _strokePreview.UpdateGeometry(_points, _radii);
+        _strokePreview.SetGeometry(_points, _radii);
     }
 
     public override void Interacting(CursorMotionData data)
@@ -58,7 +58,7 @@ public class PaintInteractor : InteractorBase
         // GD.Print($"--------------");
         // GD.Print($"Screen: {data.ScreenPosition}");
         // GD.Print($"World: {data.WorldPosition}");
-        _strokePreview.UpdateGeometry(_points, _radii);
+        _strokePreview.SetGeometry(_points, _radii);
         _lastDirection = data.ScreenPosition.DirectionTo(_lastScreenPoint).Normalized();
         _lastScreenPoint = data.ScreenPosition;
     }
@@ -69,7 +69,7 @@ public class PaintInteractor : InteractorBase
         var parentE = SelectionManager.WorkingLayer;
         ImmutableArray<int> path = [..parentPath, parentE.Get<LayerTreeNode>().ChildCount];
         new NewStrokeCmd(path)
-            .Combine(new UpdateStrokeGeometryCmd(path, _points, _radii)).Commit();
+            .Combine(new SetStrokeGeometryCmd(path, _points, _radii)).Commit();
         Clear();
     }
 

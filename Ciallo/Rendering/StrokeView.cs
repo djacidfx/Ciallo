@@ -35,10 +35,10 @@ public partial class StrokeView : MultiMeshInstance2D
     {
         // For editor preview, convenient rendering test.
         if (!Engine.IsEditorHint()) return;
-        UpdateGeometry([new(1, 1), new(100, 0), new(150, 50), new(200, 0)], [4f, 10f, 5f, 15f]);
+        SetGeometry([new(1, 1), new(100, 0), new(150, 50), new(200, 0)], [4f, 10f, 5f, 15f]);
     }
 
-    public void UpdateGeometry(
+    public void SetGeometry(
         [NotNull] IReadOnlyList<Vector2> points,
         [NotNull] IReadOnlyList<float> radii)
     {

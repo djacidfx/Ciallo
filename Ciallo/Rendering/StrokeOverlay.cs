@@ -37,13 +37,13 @@ public partial class StrokeOverlay : Node2D
         AddChild(HitTestBody);
     }
 
-    public void UpdateGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
+    public void SetGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
         const float wireframeRadius = 2f;
         const float dotRadius = 12f;
-        Wireframe.UpdateGeometry(points, Enumerable.Repeat(wireframeRadius, points.Count).ToImmutableArray());
-        WireframeDot.UpdateDotGeometry(points, Enumerable.Repeat(dotRadius, points.Count).ToImmutableArray());
-        HitTestBody.UpdateGeometry(points, radii);
+        Wireframe.SetGeometry(points, Enumerable.Repeat(wireframeRadius, points.Count).ToImmutableArray());
+        WireframeDot.SetDotGeometry(points, Enumerable.Repeat(dotRadius, points.Count).ToImmutableArray());
+        HitTestBody.SetGeometry(points, radii);
     }
     
     public void SetColor(Color color)
@@ -58,7 +58,7 @@ public partial class StrokeOverlay : Node2D
 
 public static class DotExtension
 {
-    public static void UpdateDotGeometry(this MultiMeshInstance2D instance, IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
+    public static void SetDotGeometry(this MultiMeshInstance2D instance, IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
         if (points.Count == 0)
         {
