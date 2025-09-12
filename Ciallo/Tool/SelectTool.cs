@@ -7,5 +7,5 @@ public partial class SelectTool : CommonToolBase
 {
     public readonly StrokeSelectionHintInteractor HintInteractor = new();
     
-    public override InteractorBase LeftInteractor => HintInteractor;
+    public override InteractorBase HoveringInteractor => HintInteractor;
 }

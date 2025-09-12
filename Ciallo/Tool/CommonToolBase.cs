@@ -1,11 +1,16 @@
 ﻿using Ciallo.Command;
 using Ciallo.NodeControl;
 using Godot;
+using Stateless;
 
 namespace Ciallo.Tool;
 
+using TriggerButton = StateMachine<CommonToolBase.State,CommonToolBase.Event>.TriggerWithParameters<CursorButtonData>;
+using TriggerMotion = StateMachine<CommonToolBase.State,CommonToolBase.Event>.TriggerWithParameters<CursorMotionData>;
+using TriggerKey = StateMachine<CommonToolBase.State,CommonToolBase.Event>.TriggerWithParameters<InputEventKey>;
 /// <summary>
 /// The base class for common tools that need for three states: Hovering, left mouse drag, right mouse drag.
+/// (Middle mouse has dedicated usage for canvas navigation.)
 /// For more complex tools, we can write state machine code and implement ITool directly.
 /// </summary>
 public abstract partial class CommonToolBase : ToolButtonBase, ITool
@@ -14,43 +19,88 @@ public abstract partial class CommonToolBase : ToolButtonBase, ITool
     public virtual InteractorBase HoveringInteractor => null;
     public virtual InteractorBase RightInteractor => null;
     
-    public bool IsLeftInteracting { get; protected set; }
-    public bool IsHovering { get; protected set; }
-
-    public void OnLeftClick(CursorButtonData data)
+    public enum State
     {
-        if(!LeftInteractor.CanInteract) return;
-        IsLeftInteracting = true;
-        LeftInteractor.Start(data);
+        Idle,
+        HoverInteracting,
+        LeftInteracting,
+        RightInteracting
     }
+
+    public enum Event
+    {
+        LeftClick,
+        LeftRelease,
+        RightClick,
+        RightRelease,
+        Move,
+        Cancel
+    }
+
+    public readonly StateMachine<State, Event> Machine = new(State.Idle);
+    private readonly TriggerButton _tLeftClick;
+    private readonly TriggerButton _tLeftRelease;
+    private readonly TriggerButton _tRightClick;
+    private readonly TriggerButton _tRightRelease;
+    private readonly TriggerMotion _tMove;
+
+    protected CommonToolBase()
+    {
+        Machine.OnUnhandledTrigger((_, _) => { });
+        _tLeftClick = Machine.SetTriggerParameters<CursorButtonData>(Event.LeftClick);
+        _tLeftRelease = Machine.SetTriggerParameters<CursorButtonData>(Event.LeftRelease);
+        _tRightClick = Machine.SetTriggerParameters<CursorButtonData>(Event.RightClick);
+        _tRightRelease = Machine.SetTriggerParameters<CursorButtonData>(Event.RightRelease);
+        _tMove = Machine.SetTriggerParameters<CursorMotionData>(Event.Move);
+
+        Machine.Configure(State.Idle)
+            .PermitIf(_tLeftClick, State.LeftInteracting, _ => LeftInteractor?.CanInteract == true)
+            .PermitIf(_tRightClick, State.RightInteracting, _ => RightInteractor?.CanInteract == true)
+            .PermitIf(_tMove, State.HoverInteracting, _ => HoveringInteractor?.CanInteract == true);
+        Machine.Configure(State.HoverInteracting)
+            .PermitIf(_tLeftClick, State.LeftInteracting, _ => LeftInteractor?.CanInteract == true)
+            .PermitIf(_tRightClick, State.RightInteracting, _ => RightInteractor?.CanInteract == true)
+            .Permit(Event.Cancel, State.Idle)
+            .OnExit(() => HoveringInteractor.Cancel());
+        Machine.Configure(State.LeftInteracting)
+            .OnEntryFrom(_tLeftClick, data => LeftInteractor.Start(data))
+            .Permit(Event.Cancel, State.Idle)
+            .PermitIf(_tLeftRelease, State.Idle)
+            .OnExit(t =>
+            {
+                if(t.Trigger == Event.LeftRelease) LeftInteractor.End((CursorButtonData)t.Parameters[0]);
+                if(t.Trigger == Event.Cancel) LeftInteractor.Cancel();
+            });
+        Machine.Configure(State.RightInteracting)
+            .OnEntryFrom(_tRightClick, data => RightInteractor.Start(data))
+            .Permit(Event.Cancel, State.Idle)
+            .PermitIf(_tRightRelease, State.Idle)
+            .OnExit(t =>
+            {
+                if(t.Trigger == Event.RightRelease) RightInteractor.End((CursorButtonData)t.Parameters[0]);
+                if(t.Trigger == Event.Cancel) RightInteractor.Cancel();
+            });
+    }
+
+    public void OnLeftClick(CursorButtonData data) => Machine.Fire(_tLeftClick, data);
+
+    public void OnLeftRelease(CursorButtonData data) => Machine.Fire(_tLeftRelease, data);
+
+    public void OnRightClick(CursorButtonData data) => Machine.Fire(_tRightClick, data);
+
+    public void OnRightRelease(CursorButtonData data) => Machine.Fire(_tRightRelease, data);
 
     public void OnMoving(CursorMotionData data)
     {
-        if(IsLeftInteracting) LeftInteractor.Interacting(data);
-        if (!IsLeftInteracting && !IsHovering) IsHovering = true;
-        if(IsHovering && HoveringInteractor?.CanInteract == true) HoveringInteractor?.Interacting(data);
-    }
-
-    public void OnLeftRelease(CursorButtonData data)
-    {
-        if(IsLeftInteracting) LeftInteractor.End(data);
-        IsLeftInteracting = false;
-    }
-
-    public void OnRightClick(CursorButtonData data)
-    {
-    }
-
-    public void OnRightRelease(CursorButtonData data)
-    {
+        Machine.Fire(_tMove, data);
+        if(Machine.State == State.HoverInteracting) HoveringInteractor.Interacting(data);
+        if(Machine.State == State.LeftInteracting) LeftInteractor.Interacting(data);
+        if(Machine.State == State.RightInteracting) RightInteractor.Interacting(data);
     }
 
     public void OnKey(InputEventKey key)
     {
-        if(AppActions.CancelInteraction.IsJustPressed)
-        {
-            if(IsLeftInteracting) LeftInteractor.Cancel();
-            IsLeftInteracting = false;
-        }
+        if(AppActions.CancelInteraction.IsJustPressed) Machine.Fire(Event.Cancel);
     }
 }
+
