@@ -8,7 +8,9 @@ namespace Ciallo.Tool;
 
 /// <summary>
 /// Base class for the objects that handle canvas interactions. Tools hold one or more of these interactors.
-/// Interactors actually implement tools' logics and behaviors.
+/// Interactors actually implement users' tools logics and behaviors.
+/// In order to support key remapping, interactors shouldn't know "how to start himself".
+/// E.g. Stroke drag interactor doesn't know it's started by dragging left mouse button, or pressing the 'G' key(like Blender)
 /// </summary>
 public abstract class InteractorBase
 {

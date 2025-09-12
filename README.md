@@ -86,11 +86,12 @@ The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", an
 - [Godot C#](https://godotengine.org/): [Why godot?](#tech-faq)
 - [Arch](https://github.com/genaray/Arch): Unity-like (gameobject/entity) component pattern (no need for CPU-cache optimizations).
 - [CGAL](https://www.cgal.org/): Complex geometry operations.
-- [R3](https://github.com/Cysharp/R3): Signal enhancement and reactive programming.
+- [R3](https://github.com/Cysharp/R3): Signal on steroids and reactive programming.
 - [GdUnit4](https://github.com/MikeSchulze/gdUnit4): Unit test framework.
 - [MessagePack](https://github.com/MessagePack-CSharp/MessagePack-CSharp): Binary serialization.
 - [Newtonsoft.Json](https://www.newtonsoft.com/json): JSON serialization.
 - [GodotSharp.SourceGenerators](https://github.com/Cat-Lips/GodotSharp.SourceGenerators): Godot auxiliary.
+- [Stateless](https://github.com/dotnet-state-machine/stateless) Managing complex interactive states (tool system).
 
 ## Build Guide
 Ciallo is built on Godot. Building the core part of Ciallo is the same as building a standard Godot C# project:

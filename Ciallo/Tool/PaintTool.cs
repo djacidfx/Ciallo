@@ -1,6 +1,6 @@
 using Ciallo.Tool;
 
-public partial class PaintTool : ToolBaseSingularInteractor
+public partial class PaintTool : CommonToolBase
 {
     public override InteractorBase LeftInteractor => PaintInteractor;
     
