@@ -25,11 +25,12 @@ public partial class StrokeBody : StaticBody2D
             var r1 = radii[i + 1];
             var p0 = points[i];
             var p1 = points[i + 1];
-            var segmentLength = (p1 - p0).Length();
-            vertices[0] = p0 + new Vector2(-1, -1) * r0;
-            vertices[1] = p1 + new Vector2(1, -1) * r1;
-            vertices[2] = p1 + new Vector2(1, 1) * r1;
-            vertices[3] = p0 + new Vector2(-1, 1) * r0;
+            var tangent = (p1 - p0).Normalized();
+            var normal = tangent.Rotated(Mathf.Pi / 2);
+            vertices[0] = p0 + (-tangent - normal) * r0;
+            vertices[1] = p1 + (tangent - normal) * r1;
+            vertices[2] = p1 + (tangent + normal) * r1;
+            vertices[3] = p0 + (-tangent + normal) * r0;
             
             var shape = PhysicsServer2D.ConvexPolygonShapeCreate();
             PhysicsServer2D.ShapeSetData(shape, vertices);
