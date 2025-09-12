@@ -35,6 +35,8 @@ public class Preference
     
     [JsonProperty]
     public Color StrokeWireframeColor = Colors.NavyBlue;
+    [JsonProperty]
+    public Color StrokeWireframeHintColor = Colors.Orange;
     
     #region Save Load Json
     public static readonly string Path = "res://Temp/Preference.json";

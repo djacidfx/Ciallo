@@ -1,0 +1,27 @@
+﻿using Ciallo.NodeControl;
+
+namespace Ciallo.Tool;
+
+public class DragStrokeInteractor : InteractorBase
+{
+    public override bool CanInteract { get; }
+    public override void Start(CursorButtonData data)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override void Interacting(CursorMotionData data)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override void End(CursorButtonData data)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override void Cancel()
+    {
+        throw new System.NotImplementedException();
+    }
+}

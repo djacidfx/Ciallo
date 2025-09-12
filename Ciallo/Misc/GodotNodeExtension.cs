@@ -74,4 +74,23 @@ public static class GodotNodeExtension
             dstParent.MoveChild(moving, dstIdx);
         }
     }
+    
+    public static ImmutableArray<int> GetIndexPathTo(this Node node, Node root)
+    {
+        var path = new List<int>();
+        var current = node;
+        while (current != null && current != root)
+        {
+            var parent = current.GetParent();
+            if (parent == null) break; // reached the top without finding root
+            int idx = current.GetIndex();
+            path.Add(idx);
+            current = parent;
+        }
+
+        if (current != root)
+            throw new InvalidOperationException("The specified root is not an ancestor of the node.");
+        path.Reverse();
+        return [..path];
+    }
 }

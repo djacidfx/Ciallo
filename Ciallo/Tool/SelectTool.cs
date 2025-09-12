@@ -5,5 +5,7 @@ namespace Ciallo.Tool;
 
 public partial class SelectTool : ToolBaseSingularInteractor
 {
-    public override InteractorBase LeftInteractor => null;
+    public readonly StrokeSelectionHintInteractor HintInteractor = new();
+    
+    public override InteractorBase LeftInteractor => HintInteractor;
 }

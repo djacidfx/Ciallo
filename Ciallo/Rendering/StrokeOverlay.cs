@@ -45,6 +45,15 @@ public partial class StrokeOverlay : Node2D
         WireframeDot.UpdateDotGeometry(points, Enumerable.Repeat(dotRadius, points.Count).ToImmutableArray());
         HitTestBody.UpdateGeometry(points, radii);
     }
+    
+    public void SetColor(Color color)
+    {
+        Wireframe.SetInstanceShaderParameter("overridingColor", color);
+        for(int i = 0; i < WireframeDot.Multimesh.InstanceCount; i++)
+        {
+            WireframeDot.Multimesh.SetInstanceColor(i, color);
+        }
+    }
 }
 
 public static class DotExtension
@@ -64,7 +73,7 @@ public static class DotExtension
         {
             var transform = Transform2D.Identity.Scaled(Vector2.One * radii[i]).Translated(points[i]);
             multiMesh.SetInstanceTransform2D(i, transform);
-            multiMesh.SetInstanceColor(i, Colors.RoyalBlue);
+            multiMesh.SetInstanceColor(i, AppPreferences.StrokeWireframeColor);
         }
     }
 }
