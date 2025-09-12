@@ -29,7 +29,7 @@ public class NewStrokeLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
             _layerE = WorkingWorld.Create();
             var node = new LayerTreeNode()
             {
-                Name = { Value = $"Stroke Layer {tree.Root.ChildCount+1}" },
+                Name = { Value = $"{SceneTree.Tr("Stroke layer")} {tree.Root.ChildCount+1}" },
             };
             _layerE.Add(new StrokeLayerSetting(), node, new ToSerializeTag());
         }

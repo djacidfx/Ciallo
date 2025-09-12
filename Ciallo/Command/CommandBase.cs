@@ -26,8 +26,9 @@ public abstract class CommandBase
     public World WorkingWorld { get; set; } = WorldManager.WorkingWorld.Value;
     public Entity Document => WorkingWorld.Document();
     public virtual string Name => GetType().Name.Humanize();
+    public SceneTree SceneTree => (SceneTree)Engine.GetMainLoop();
 
-    public Array<Node> GetNodesInGroup(StringName group) => ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup(group);
+    public Array<Node> GetNodesInGroup(StringName group) => SceneTree.GetNodesInGroup(group);
 
     /// <summary>
     /// `DoRefEntities` are the entities will be destroyed when this command object is ready to call redo() and deleted.

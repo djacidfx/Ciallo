@@ -15,13 +15,13 @@ Enable StackTrace,,启用堆栈跟踪,啟用堆疊追蹤,スタックトレー�
 Enable Tracking,,启用跟踪,啟用追蹤,トラッキングを有効にする,추적 활성화,Tracking aktivieren,Activer le suivi
 Error,,错误,錯誤,エラー,오류,Fehler,Erreur
 Export as Godot scene,,导出为Godot场景,匯出為Godot場景,Godotシーンとしてエクスポート,Godot 씬으로 내보내기,Als Godot-Szene exportieren,Exporter comme scène Godot
-Export as image,,导出为图像,匯出為��像,画像としてエクスポート,이미지로 내보내기,Als Bild exportieren,Exporter comme image
+Export as image,,导出为图像,匯出為圖像,画像としてエクスポート,이미지로 내보내기,Als Bild exportieren,Exporter comme image
 Invalid document name. Please use a valid file name.,,文档名称无效。请使用有效的文件名。,文檔名稱無效。請使用有效的檔案名稱。,無効なドキュメント名です。有効なファイル名を使用してください。,잘못된 문서 이름입니다. 유효한 파일 이름을 사용하세요.,Ungültiger Dokumentname. Bitte verwenden Sie einen gültigen Dateinamen.,Nom de document invalide. Veuillez utiliser un nom de fichier valide.
 Languages,,语言,語言,言語,언어,Sprache,Langue
 Lasso - Free-hand selection,,套索 - 自由选择,套索 - 自由選取,投げ縄 - フリーハンド選択,올가미 - 자유 선택,Lasso - Freihandauswahl,Lasso - Sélection à main levée
 Layer,,图层,圖層,レイヤー,레이어,Ebene,Calque
 New Document,,新建文档,新增文檔,新しいドキュメント,새 문서,Neues Dokument,Nouveau document
-Opacity:,,不透明度:,不透明度:,不透明度:,불투명도:,Deckkraft:,Opacité :
+Opacity,,不透明度,不透明度,不透明度,불투명도,Deckkraft,Opacité 
 Open,,打开,開啟,開く,열기,Öffnen,Ouvrir
 Open a File,,打开文件,開啟檔案,ファイルを開く,파일 열기,Datei öffnen,Ouvrir un fichier
 Open Document,,打开文档,開啟文檔,ドキュメントを開く,문서 열기,Dokument öffnen,Ouvrir un document
@@ -57,3 +57,5 @@ Help,,帮助,說明,ヘルプ,도움말,Hilfe,Aide
 [Paint Brush Tooltip],Paint brush,画笔,畫筆,ペイントブラシ,페인트 브러시,Pinsel,Pinceau
 [About Ciallo],Ciallo is a free and open-source software for digital painting.\n\nCiallo's unique technologies are invented and developed by the developer Shen Ciao — inspired by love and supported by your donations.,Ciallo是一款免费开源的数字绘画软件。\n\nCiallo特有的技术由开发者Shen Ciao发明并开发 - 因爱而生，靠您的捐赠而行。,Ciallo是一款免費开源的數位繪畫軟體。\n\nCiallo特有的技術由開發者沈喬（Shen Ciao）所發明和開發──源於愛並由您的捐助支持。,Cialloはデジタルペインティングのための無料オープンソースソフトウェアです。\n\nCialloの独自技術は開発者Shen Ciaoによって発明・開発されました—愛に触発され、皆様のご寄付によって支えられています。,Ciallo는 디지털 페인팅을 위한 무료 오픈 소스 소프트웨어입니다.\n\nCiallo의 고유 기술은 개발자 Shen Ciao에 의해 발명되고 개발되었습니다 — 사랑에서 영감을 얻었으며 여러분의 후원으로 지원됩니다.,Ciallo ist eine kostenlose Open-Source-Software für digitales Malen.\n\nCiallos einzigartige Technologien wurden vom Entwickler Shen Ciao erfunden und entwickelt – inspiriert von Liebe und unterstützt durch Ihre Spenden.,Ciallo est un logiciel libre et open source pour la peinture numérique.\n\nLes technologies uniques de Ciallo sont inventées et développées par le développeur Shen Ciao — inspirées par l'amour et soutenues par vos dons.
 [Canvas Navigation Guide Tooltip],- Scroll mouse wheel to zoom in/out.\n- Click and drag middle mouse button to pan.\n- Double click middle mouse button to reset canvas view to center.,- 滚动鼠标滚轮以放大/缩小。\n- 按住中键并拖动以平移。\n- 双击中键将画布视图重置到中心。,- 滾動滑鼠滾輪以放大/縮小。\n- 按住中鍵並拖動以平移。\n- 雙擊中鍵將畫布視圖重置到中心。,- マウスホイールをスクロールしてズームイン/ズームアウト。\n- 中ボタンをクリックしてドラッグでパン。\n- 中ボタンダブルクリックでキャンバスビューを中央にリセット。,- 마우스 휠을 굴려서 확대/축소합니다.\n- 중간 버튼을 클릭하고 드래그하여 팬합니다.\n- 중간 버튼을 더블 클릭하여 캔버스 보기를 중앙으로 재설정합니다.,- Am Mausrad drehen zum Rein- und Rauszoomen.\n- Mittlere Maustaste klicken und ziehen zum Verschieben.\n- Mittlere Maustaste doppelt klicken zum Zurücksetzen der Canvas-Ansicht in die Mitte.,- Faire défiler la molette pour zoomer et dézoomer.\n- Cliquer et faire glisser le bouton central pour déplacer.\n- Double-cliquer sur le bouton central pour réinitialiser la vue de la toile au centre。
+Canvas navigation guide (?),,画布移动方法（？）,,,,,
+Stroke layer,,线条图层,,,,,
