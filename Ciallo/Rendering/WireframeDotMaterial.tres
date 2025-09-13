@@ -5,4 +5,4 @@
 [resource]
 shader = ExtResource("1_qn122")
 shader_parameter/radiusMode = 1
-shader_parameter/canvasZoomThreshold = 1.0
+shader_parameter/canvasZoomThreshold = 1.5

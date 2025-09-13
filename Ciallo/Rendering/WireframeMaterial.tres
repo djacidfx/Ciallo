@@ -8,4 +8,7 @@ shader_parameter/strokeType = 0
 shader_parameter/strokeColor = Color(0.686275, 0.403922, 0.541176, 1)
 shader_parameter/radiusMode = 1
 shader_parameter/canvasZoomThreshold = 1.0
+shader_parameter/dashLength = -1.0
+shader_parameter/gapLength = -1.0
+shader_parameter/dashForwardSpeed = 0.0
 shader_parameter/stampInterval = 0.2
