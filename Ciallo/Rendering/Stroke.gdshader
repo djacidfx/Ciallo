@@ -9,6 +9,11 @@ instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
 // Canvas mode is used for drawing wireframe 
 uniform int radiusMode : hint_enum("World", "Canvas") = 0;
 uniform float canvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
+// Dash
+uniform float dashLength = -1.0; // length with unit "L/r"
+uniform float gapLength = -1.0;
+uniform float dashForwardSpeed = 0.0;
+
 // ------stamp parameters-----------
 //// Fail to compile:
 // hint_range(intervalMin, 10.0, intervalStep) .
@@ -154,6 +159,13 @@ void fragment() {
  		}
  		COLOR = vec4(strokeColor.rgb, currA);
  	}
+	// Dash
+	if(dashLength > 0.0){
+		float unitLength = dashLength + (gapLength > 0.0 ? gapLength : dashLength);
+		float pixelN = x2n(pLocal.x) + n0;
+		if(mod(pixelN + TIME * dashForwardSpeed, unitLength) > dashLength) discard;
+	}
+	
 	// Be mindful with premultiply alpha
 	// See: https://github.com/godotengine/godot/issues/99715
 }

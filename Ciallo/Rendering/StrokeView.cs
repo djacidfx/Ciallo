@@ -58,7 +58,7 @@ public partial class StrokeView : MultiMeshInstance2D
         
         ImmutableArray<Vector2> ps;
         ImmutableArray<float> rs;
-        List<float> nds = [];
+        List<float> ns = [];
         
         if (points.Count > 1) // regular case
         {
@@ -74,7 +74,7 @@ public partial class StrokeView : MultiMeshInstance2D
         }
         else throw new("Unreachable");
         
-        nds.Add(0f);
+        ns.Add(0f);
         for(int i = 0; i < ps.Length - 1; i++)
         {
             var l = (ps[i + 1] - ps[i]).Length();
@@ -84,12 +84,12 @@ public partial class StrokeView : MultiMeshInstance2D
             {
                 // Nearly equal radius, avoid division by zero
                 var r = (r0 + r1) * 0.5f;
-                nds.Add(nds.Last() + l / r);
+                ns.Add(ns.Last() + l / r);
                 continue;
             }
             
-            var nd = l / (r0 - r1) * Mathf.Log(r0 / r1);
-            nds.Add(nds.Last() + nd);
+            var n = l / (r0 - r1) * Mathf.Log(r0 / r1);
+            ns.Add(ns.Last() + n);
         }
         
         for(int i = 0; i < multiMesh.InstanceCount; i++)
@@ -104,7 +104,7 @@ public partial class StrokeView : MultiMeshInstance2D
             
             multiMesh.SetInstanceCustomData(i, customPos);
             // Have to use instance color to store t.
-            multiMesh.SetInstanceColor(i, new(Float32Packer.Pack(rs[i],rs[i+1]), Float32Packer.Pack(nds[i], nds[i+1]), 0, 0)); // empty spaces for tilt
+            multiMesh.SetInstanceColor(i, new(Float32Packer.Pack(rs[i],rs[i+1]), Float32Packer.Pack(ns[i], ns[i+1]), 0, 0)); // empty spaces for tilt
             // Have to set transform or do not render, this transform values are not used in shaders
             // Cannot access this matrix from the CanvasItem shader, so cannot be used for passing data.
             multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);
