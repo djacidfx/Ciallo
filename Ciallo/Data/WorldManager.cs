@@ -14,7 +14,7 @@ namespace Ciallo.Data;
 /// <summary>
 /// We consider world and document has one-to-one relationship.
 /// In practice, a document is a special singleton entity of the world.
-/// All the "document-level singleton data" should be stored in this "document" entity. (Program-level singleton we commonly use static class).
+/// All the "document-level singleton data" should be stored in this "document" entity. (For the program-level singletons we commonly use static class).
 /// The "document-level singleton data" is the data one per document, such as the DocumentSetting, LayerTree, etc.
 /// </summary>
 public static class WorldManager

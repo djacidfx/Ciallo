@@ -107,9 +107,9 @@ Shen answers the following questions:
 
 ### Why develop on a game engine?
 
-**TL;DR**: I cannot handle the complexity of modern graphics APIs.
+**TL;DR**: I cannot handle the complexity of Vulkan.
 
-My first attempt to develop Ciallo was with Vulkan, [project link](https://github.com/ShenCiao/CialloVulkan), motivated by the rather naive reason: “my next-generation technology should be built on next-generation technical foundations.”
+My first attempt to develop Ciallo was with raw Vulkan, [project link](https://github.com/ShenCiao/CialloVulkan), motivated by the rather naive reason: “my next-generation technology should be built on next-generation technical foundations.”
 
 I soon realize the complexity of Vulkan: it isn’t designed for one-person projects, and even highly experienced graphics engineers can make simple yet catastrophic mistakes, see [Cherno’s Vulkan story](https://youtu.be/bUUZ1iD9_e4?si=vVCUxXU-dScgcZx5&t=1438). Only large teams can truly afford the mental burden of Vulkan.
 
@@ -119,16 +119,18 @@ You can imagine Ciallo as a building/RTS game, e.g., _City Skylines_, _Warcraft 
 
 ### Why Godot, not Unity or Unreal?
 
-Godot has the best 2D rendering infrastructure and GUI widgets. 
+Godot has the best 2D rendering infrastructure and GUI widgets.
 
 For example, as of June 2025, Godot is the only engine that supports rendering a filled polygon directly from a list of points (without manual tessellation).
 Moreover, Godot’s `ColorPicker` control convinced me to choose it over Unity.
 
-If we have to give up using Godot for whatever reasons someday, we may consider using [defold](https://defold.com/) or [flax](https://flaxengine.com/).
-
-BTW, I hope Godot can make `EditorSpinSlider` runtime available, see [issue](https://github.com/godotengine/godot-proposals/issues/3244#issuecomment-911489983).
+On the other side of the coin, Godot's convenience brings potential limitations on rendering.
+I'm far away from being familiar with low level [`RenderingDevice`](https://docs.godotengine.org/en/stable/classes/class_renderingdevice.html#class-renderingdevice) RHI of Godot.
+If we have to give up using Godot for whatever reason someday, we may consider using [defold](https://defold.com/) or [flax](https://flaxengine.com/).
 
 ### Why not GDScript?
-Dynamically-typed languages cannot support our project (or, IMHO, any projects that need custom types more than 10). C# is a better choice, also for its larger community.
+Dynamically-typed languages cannot support our project (or, IMHO, any projects that need more than 5 custom types). C# is a better choice, also for its larger community.
 
-But I do like the GDScript language itself. In my wet dream, Godot will discard GDScript for engine scripting and turn it into a high-level shading language for graphics --- Comparing to C#, GDScript lacks many features, but compared to glsl/hlsl, it's already considered feature-rich. The graphics community really lacks advanced programming languages for shading.
+But I do like the GDScript language itself. In my wet dream, Godot will discard GDScript for engine scripting and turn it into a high-level shading language for graphics.
+
+> The graphics community lacks of an advanced programming language for shading. Comparing to C#, GDScript lacks many features, but compared to glsl/hlsl, GDScript has already been very feature-rich.

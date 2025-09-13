@@ -65,5 +65,33 @@ So if you have solid experience in VS Code or Visual Studio to script Godot C#. 
 Designing professional-grade software architectures often takes decades of experience, so my implementations may seem noob trying hard.
 Please contact me if you have recommendations for improvement.
 
+### Godot
+Ciallo uses following 2D features of Godot: Rendering/Shader for stroke rendering, Input, GUI, Physics for click detection,
+which basically cover every aspect of a 2D game.
+So every piece of experience you have in 2D game development is helpful, and skills you learn from Ciallo can also be applied your future 2D game development.
+
+### Component pattern
+Ciallo heavily uses the [Arch](https://github.com/genaray/Arch) library for implementing component pattern in almost every piece of code.
+Make sure you understand the component pattern [(tutorial)](https://gameprogrammingpatterns.com/component.html),
+and the Arch library [documentation](https://arch-ecs.gitbook.io/arch).
+> __Note__: Reading Arch document's first three tabs: Concepts, World and Entity is enough to begin with.
+> Ciallo uses Arch for writing clean code, but not for CPU-cache optimizations (the "S" part of ECS).
+
+See `WorldManager` class. Each user document is stored and managed by a `World` object.
+Each `World` object create a "singleton entity" that stores "document-level singletons" data,
+such as `DocumentSetting` for canvas parameters, `LayerTreeManager` for layer data, `CommandManager` for undoRedo stack, etc.
+They should be one per document, so I call them "document-level singletons" and simply name the singleton entity variable as `Document`.
+
+The current active `Document` is globally accessible, so does those document-level singletons.
+You will see code like `var tree = Document.Get<LayerTreeManager>()` to visit the document's layer tree within the Tool or Command system code.
+
+<details>
+<summary>Why globalize the Document entity?</summary>
+Though using global variables/singletons is commonly considered a bad practice, it's necessary for Ciallo.
+Ciallo is an interactive graphics program, the interaction between subsystems is necessary by business.
+As the business grows, it's impossible to predefine the accessibility scope of each subsystem.
+So I think this design is reasonable.
+</details>
+
 ## Code style
 See my [instruction](../Ciallo/.github/copilot-instructions.md) to copilot.
