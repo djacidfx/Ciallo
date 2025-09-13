@@ -5,10 +5,10 @@ render_mode unshaded;
 
 uniform int strokeType : hint_enum("Vanilla", "Stamp") = 0;
 uniform vec4 strokeColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
 // Canvas mode is used for drawing wireframe 
 uniform int radiusMode : hint_enum("World", "Canvas") = 0;
 uniform float canvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
-instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
 // ------stamp parameters-----------
 //// Fail to compile:
 // hint_range(intervalMin, 10.0, intervalStep) .
@@ -44,11 +44,11 @@ void vertex() {
 	p0 = INSTANCE_CUSTOM.xy;
 	p1 = INSTANCE_CUSTOM.zw;
 	vec2 rs = unpack2floats(COLOR.x);
-	r0 = rs.x <= 1e-7 ? 1e-7 : rs.x;
-	r1 = rs.y <= 1e-7 ? 1e-7 : rs.y;
+	r0 = max(rs.x, 1e-7);
+	r1 = max(rs.y, 1e-7);
 	vec2 ns = unpack2floats(COLOR.y);
-	n0 = ns.x/stampInterval;
-	n1 = ns.y/stampInterval;
+	n0 = ns.x;
+	n1 = ns.y;
 	if(radiusMode > 0){
 		float canvasZoom = length(CANVAS_MATRIX[0].xy); // Cannot support shear (or skew in godot)
 		canvasZoom = canvasZoom > canvasZoomThreshold ? canvasZoom : canvasZoomThreshold;
@@ -91,12 +91,12 @@ void vertex() {
 }
 
 float x2n(float x) {
-	if(abs(cosTheta) < 1e-7) return x/(stampInterval * (r0 + r1) * 0.5);
-	return -1.0/cosTheta/stampInterval * log(1.0 - cosTheta*x/r0);
+	if(abs(cosTheta) < 1e-7) return x/r0;
+	return -1.0/cosTheta * log(1.0 - cosTheta*x/r0);
 }
 float n2x(float n) {
-	if(abs(cosTheta) < 1e-7) return n * stampInterval * (r0 + r1) * 0.5;
-	return r0/cosTheta * (1.0-exp(-stampInterval*cosTheta*n));
+	if(abs(cosTheta) < 1e-7) return n*r0;
+	return r0/cosTheta * (1.0-exp(-cosTheta*n));
 }
 
 void fragment() {
@@ -133,14 +133,16 @@ void fragment() {
  		float x1Idx = x2n(x1) + n0;
  		float x2Idx = x2n(x2) + n1;
  		float startIdx = x1 < 0.0 ? n0 : x1Idx;
+		startIdx /= stampInterval;
  		float endIdx = x2 > segmentLength ? n1 : x2Idx;
+		endIdx /= stampInterval;
 
  		int i = 0;
  		int MAX_i = 128;
  		float currIdx = ceil(startIdx);
  		float currA = 1e-7;
  		while(i < MAX_i && currIdx < endIdx){
- 			float currStampLocalX = n2x(currIdx - n0);
+ 			float currStampLocalX = n2x(currIdx * stampInterval - n0);
  			vec2 pToCurrStamp = pLocal - vec2(currStampLocalX, 0.0);
  			//vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
 			vec2 c = pToCurrStamp/r;

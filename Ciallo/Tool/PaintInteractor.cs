@@ -27,7 +27,8 @@ public class PaintInteractor : InteractorBase
     
     private Vector2 _lastScreenPoint = new();
     private Vector2 _lastDirection = new();
-    private readonly float _minDistance = 7f; // in pixel
+    private readonly float _minDistance = 10f; // in pixel
+    private readonly float _maxDistance = 20f; // in pixel
     private readonly float _minCosAngle = Mathf.Cos(Mathf.DegToRad(15f));
 
     public override void Start(CursorButtonData data)
@@ -49,9 +50,10 @@ public class PaintInteractor : InteractorBase
 
     public override void Interacting(CursorMotionData data)
     {
-        bool isLarger = data.ScreenPosition.DistanceTo(_lastScreenPoint) > _minDistance;
+        bool isSmaller = data.ScreenPosition.DistanceTo(_lastScreenPoint) < _minDistance;
+        bool isLarger = data.ScreenPosition.DistanceTo(_lastScreenPoint) > _maxDistance;
         bool isWinding = data.ScreenPosition.DirectionTo(_lastScreenPoint).Dot(_lastDirection) < _minCosAngle;
-        // if (!isLarger) return;
+        if (isSmaller) return;
         if (!isLarger && !isWinding) return;
         _points.Add(data.WorldPosition);
         _radii.Add(Mathf.Lerp(2f, 6f, data.Pressure));
