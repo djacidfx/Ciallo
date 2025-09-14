@@ -32,27 +32,27 @@ public class StrokeSelectionHintInteractor : InteractorBase
             var overlay = (StrokeOverlay)collider.GetParent();
             if(overlay != _hintingOverlay)
             {
-                _hintingOverlay?.SetColor(AppPreferences.StrokeWireframeColor);
-                overlay.SetColor(AppPreferences.StrokeWireframeHintColor);
+                _hintingOverlay?.SetColor(AppPreference.StrokeWireframeColor);
+                overlay.SetColor(AppPreference.StrokeWireframeHintColor);
                 _hintingOverlay = overlay;
             }
         }
         else
         {
-            _hintingOverlay?.SetColor(AppPreferences.StrokeWireframeColor);
+            _hintingOverlay?.SetColor(AppPreference.StrokeWireframeColor);
             _hintingOverlay = null;
         }
     }
 
     public override void End(CursorButtonData _)
     {
-        _hintingOverlay?.SetColor(AppPreferences.StrokeWireframeColor);
+        _hintingOverlay?.SetColor(AppPreference.StrokeWireframeColor);
         _hintingOverlay = null;
     }
 
     public override void Cancel()
     {
-        _hintingOverlay?.SetColor(AppPreferences.StrokeWireframeColor);
+        _hintingOverlay?.SetColor(AppPreference.StrokeWireframeColor);
         _hintingOverlay = null;
     }
 }

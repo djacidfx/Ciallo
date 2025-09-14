@@ -16,12 +16,12 @@ public partial class LanguageItemList : ItemList
 
         if (Engine.IsEditorHint())
         {
-            foreach(var langCode in AppPreferences.SupportedLanguages)
+            foreach(var langCode in AppPreference.SupportedLanguages)
             {
                 AddItem(ToNativeName(langCode));
             }
         }
-        else this.BindValue(AppPreferences.SupportedLanguages, AppPreferences.Language, ToNativeName);
+        else this.BindValue(AppPreference.SupportedLanguages, AppPreference.Language, ToNativeName);
 
         return;
 

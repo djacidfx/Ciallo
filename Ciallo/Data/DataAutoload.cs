@@ -26,14 +26,14 @@ public partial class DataAutoload : Node
         );
         MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(DefaultResolver);
 
-        bool preferenceFileExists = AppPreferences.TryLoad();
+        bool preferenceFileExists = AppPreference.TryLoad();
         if (!preferenceFileExists)
         {
-            var idx = AppPreferences.SupportedLanguages.IndexOf(OS.GetLocale(), LanguageComparer.Instance);
+            var idx = AppPreference.SupportedLanguages.IndexOf(OS.GetLocale(), LanguageComparer.Instance);
             if(idx != -1)
-                AppPreferences.Language.Value = AppPreferences.SupportedLanguages[idx];
+                AppPreference.Language.Value = AppPreference.SupportedLanguages[idx];
         }
-        AppPreferences.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
+        AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
     }
 
     public override void _Notification(int what)
@@ -43,7 +43,7 @@ public partial class DataAutoload : Node
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         GC.WaitForPendingFinalizers();
             
-        AppPreferences.Save();
+        AppPreference.Save();
     }
     
     public static IEnumerable<Type> GetSerializableTypes()

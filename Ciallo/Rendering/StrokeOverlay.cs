@@ -18,7 +18,7 @@ public partial class StrokeOverlay : Node2D
     public override void _Ready()
     {
         Wireframe = new() { Material = WireframeMaterial };
-        Wireframe.SetInstanceShaderParameter("overridingColor", AppPreferences.StrokeWireframeColor);
+        Wireframe.SetInstanceShaderParameter("overridingColor", AppPreference.StrokeWireframeColor);
         var multiMesh = new MultiMesh
         {
             TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,
@@ -73,7 +73,7 @@ public static class DotExtension
         {
             var transform = Transform2D.Identity.Scaled(Vector2.One * radii[i]).Translated(points[i]);
             multiMesh.SetInstanceTransform2D(i, transform);
-            multiMesh.SetInstanceColor(i, AppPreferences.StrokeWireframeColor);
+            multiMesh.SetInstanceColor(i, AppPreference.StrokeWireframeColor);
         }
     }
 }
