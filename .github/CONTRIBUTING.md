@@ -1,5 +1,7 @@
 # Roadmap
-Below is the roadmap for the Demo version. Will make a release on steam and start version "v0.1 EA" after finishing it.
+## v0.1 EA plan 
+To get a little bit more than a minimum viable product, below are the features for finishing the Demo version.
+Will make a release on steam and start version "v0.1 EA" after finish these features.
 
 - [x] Document/world manager
 - [ ] Serialization
@@ -11,19 +13,19 @@ Below is the roadmap for the Demo version. Will make a release on steam and star
   - [x] Infrastructure
   - [ ] Brush tool
     - [x] Basic interaction
-    - [ ] With brush engine
+    - [ ] Basic brush engine
     - [ ] Paint stabilizer
     - [ ] Resize brush interactor
   - [ ] Paint fill tool
   - [ ] Vector fill tool
     - [x] CGAL C++ code
-    - [ ] C# tool code
+    - [ ] Integration
   - [ ] Selection/move tool
     - [ ] Line binding system (Bézier curve only)
       - [x] Bézier curve geometry
     - [ ] Design
     - [x] Polyline overlay rendering
-  - [ ] Lasso tool
+  - [ ] Basic lasso tool
 - [ ] Layer system
   - [x] Add, delete
   - [x] Rename
@@ -34,7 +36,20 @@ Below is the roadmap for the Demo version. Will make a release on steam and star
 - [ ] Localization
   - [x] Infrastructure (ai translation)
   - [ ] Complete
----
+
+
+## v1.0 plan
+Ciallo is largely inspired by Blender Grease Pencil (GP) 3D stroke.
+Before release v1.0, Ciallo will have 2D copies of every GP's major features.
+
+Beside GP, here is a rough unique feature list:
+
+- Animation system similar to Clip Studio Paint (CSP)
+  - Vector fill integration in depth
+- Lasso tool identical to Photoshop or CSP's for raster image.
+- Polygon gaps detection system (built with 2D game navigation system)  
+- Anime style lighting system integrated with Godot's 2D light (need research)
+- Feature-rich GPU brush engine that should be same level to [Krita](https://krita.org/en/) and [MyPaint](https://www.mypaint.app/en/) (need research)
 
 # Ciallo Contributing Guide
 
