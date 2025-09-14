@@ -128,32 +128,32 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
     private void DispatchKey(InputEventKey key)
     {
-        ToolManager.GetActiveTool()?.OnKey(key);
+        ToolManager.ActiveTool.Value?.OnKey(key);
     }
 
     public void DispatchLeftClick(CursorButtonData data)
     {
-        ToolManager.GetActiveTool()?.OnLeftClick(data);
+        ToolManager.ActiveTool.Value?.OnLeftClick(data);
     }
     
     public void DispatchLeftRelease(CursorButtonData data)
     {
-        ToolManager.GetActiveTool()?.OnLeftRelease(data);
+        ToolManager.ActiveTool.Value?.OnLeftRelease(data);
     }
 
     public void DispatchMotion(CursorMotionData data)
     {
-        ToolManager.GetActiveTool()?.OnMoving(data);
+        ToolManager.ActiveTool.Value?.OnMoving(data);
     }
     
     public void DispatchRightClick(CursorButtonData data)
     {
-        ToolManager.GetActiveTool()?.OnRightClick(data);
+        ToolManager.ActiveTool.Value?.OnRightClick(data);
     }
     
     public void DispatchRightRelease(CursorButtonData data)
     {
-        ToolManager.GetActiveTool()?.OnRightRelease(data);
+        ToolManager.ActiveTool.Value?.OnRightRelease(data);
     }
 
     public void OnMouseEnter()

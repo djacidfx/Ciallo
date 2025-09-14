@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=14 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://bc4wj7b6spts" path="res://Main.cs" id="2_j4qnp"]
@@ -9,6 +9,7 @@
 [ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://NodeControl/MenuEdit.cs" id="6_2gh4u"]
 [ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://NodeControl/MenuHelp.cs" id="8_sc1dx"]
 [ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://NodeControl/ToolButtonPanel.tscn" id="9_5vvyt"]
+[ext_resource type="PackedScene" uid="uid://cbe5uqtdiejke" path="res://NodeControl/ToolPropertyPanel.tscn" id="10_c6i3y"]
 [ext_resource type="Script" uid="uid://b7mwe7nmkxh5d" path="res://NodeControl/PaintPanelContainer.cs" id="16_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://NodeControl/WelcomePanel.tscn" id="16_fpfj3"]
 [ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://NodeControl/LayerPanel.tscn" id="16_kjvhd"]
@@ -121,13 +122,8 @@ theme_override_constants/margin_top = 20
 [node name="ToolButtonPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/MarginContainer" instance=ExtResource("9_5vvyt")]
 layout_mode = 2
 
-[node name="ToolPropertyPreview" type="VBoxContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer"]
+[node name="ToolPropertyPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer" instance=ExtResource("10_c6i3y")]
 layout_mode = 2
-
-[node name="PlaceHolder" type="ColorRect" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolPropertyPreview"]
-custom_minimum_size = Vector2(240, 328.57)
-layout_mode = 2
-color = Color(0.124784, 0.124784, 0.124784, 1)
 
 [node name="LayerPanel" parent="MainGui/MarginContainer/UIBlock/VSplit" instance=ExtResource("16_kjvhd")]
 layout_mode = 2

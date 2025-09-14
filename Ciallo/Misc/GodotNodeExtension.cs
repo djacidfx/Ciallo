@@ -93,4 +93,13 @@ public static class GodotNodeExtension
         path.Reverse();
         return [..path];
     }
+
+    public static void QueueFreeChildren(this Node node)
+    {
+        foreach (Node child in node.GetChildren())
+        {
+            node.RemoveChild(child);
+            child.QueueFree();
+        }
+    }
 }
