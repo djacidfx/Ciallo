@@ -20,7 +20,7 @@ public partial class PaintTool : CommonToolBase
         {
             MinValue = 0.03f,
             MaxValue = 256f,
-            Step = 0.03f,
+            Step = 0.03333333f,
             ExpEdit = true
         };
         brushSizeControl.BindValue(BrushSize).AddTo(brushSizeControl);
