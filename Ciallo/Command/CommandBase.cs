@@ -23,7 +23,7 @@ public abstract class CommandBase
     /// <summary>
     /// The world in which this command operates.
     /// </summary>
-    public World WorkingWorld { get; set; } = WorldManager.WorkingWorld.Value;
+    public World WorkingWorld { get; set; } = AppWorldManager.WorkingWorld.Value;
     public Entity Document => WorkingWorld.Document();
     public virtual string Name => GetType().Name.Humanize();
     public SceneTree SceneTree => (SceneTree)Engine.GetMainLoop();

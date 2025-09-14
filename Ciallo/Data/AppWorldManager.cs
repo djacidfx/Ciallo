@@ -17,7 +17,7 @@ namespace Ciallo.Data;
 /// All the "document-level singleton data" should be stored in this "document" entity. (For the program-level singletons we commonly use static class).
 /// The "document-level singleton data" is the data one per document, such as the DocumentSetting, LayerTree, etc.
 /// </summary>
-public static class WorldManager
+public static class AppWorldManager
 {
     public static readonly List<World> LoadedWorlds = [];
     // Current focused document.

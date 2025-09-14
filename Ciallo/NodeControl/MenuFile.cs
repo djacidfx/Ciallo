@@ -51,8 +51,8 @@ public partial class MenuFile : PopupMenu
                 dialogOpen.Popup();
                 break;
             case 2: // Close Document
-                if(WorldManager.WorkingWorld == null) break;
-                WorldManager.Remove(WorldManager.WorkingWorld.Value);
+                if(AppWorldManager.WorkingWorld == null) break;
+                AppWorldManager.Remove(AppWorldManager.WorkingWorld.Value);
                 break;
             default:
                 GD.PrintErr($"Unhandled menu item index: {id}");

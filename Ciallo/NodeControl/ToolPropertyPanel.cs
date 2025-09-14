@@ -19,7 +19,7 @@ public partial class ToolPropertyPanel : PanelContainer
         HubBox = GetNode<VBoxContainer>("%HubBox");
         HubBox.QueueFreeChildren();
         
-        var tools = ToolManager.GetAllTools<ToolButtonBase>();
+        var tools = AppToolManager.GetAllTools<ToolButtonBase>();
         foreach (var tool in tools)
         {
             var hub = ToolPropertyHubScene.Instantiate<Control>();
@@ -35,7 +35,7 @@ public partial class ToolPropertyPanel : PanelContainer
             ToolToHubMap.Add(tool, hub);
         }
         
-        ToolManager.ActiveTool.Subscribe(t =>
+        AppToolManager.ActiveTool.Subscribe(t =>
         {
             _currentVisibleHub?.SetVisible(false);
             if (t == null)

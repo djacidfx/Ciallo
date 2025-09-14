@@ -39,7 +39,7 @@ public partial class DataAutoload : Node
     public override void _Notification(int what)
     {
         if (what != NotificationPredelete) return;
-        WorldManager.Clear();
+        AppWorldManager.Clear();
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         GC.WaitForPendingFinalizers();
             

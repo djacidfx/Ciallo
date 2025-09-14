@@ -14,7 +14,7 @@ namespace Ciallo.Tool;
 /// </summary>
 public abstract class InteractorBase
 {
-    public World WorkingWorld => WorldManager.WorkingWorld.Value;
+    public World WorkingWorld => AppWorldManager.WorkingWorld.Value;
     public Entity Document => WorkingWorld.Document();
     public SelectionManager SelectionManager => Document.Get<SelectionManager>();
     

@@ -14,7 +14,7 @@ public abstract partial class ToolButtonBase : Button, IPropertySource
     
     public override void _EnterTree()
     {
-        ButtonGroup = ToolManager.ToolButtonGroup;
+        ButtonGroup = AppToolManager.ToolButtonGroup;
     }
 
     public override string ToString() => ToolName;

@@ -19,7 +19,7 @@ public class SelectionManager
         get
         {
             if (WorkingLayer == Entity.Null) return [];
-            var world = WorldManager.GetWorldById(_workingLayer.WorldId);
+            var world = AppWorldManager.GetWorldById(_workingLayer.WorldId);
             ImmutableArray<int> path = [..world.Document().Get<LayerTreeManager>().Root.SearchPathTo(WorkingLayer)];
             return path;
         }
