@@ -12,7 +12,7 @@ public class PaintFillInteractor : InteractorBase
         get
         {
             var l = SelectionManager.WorkingLayer;
-            return l != Entity.Null && l.Has<StrokeLayerSetting>();
+            return l != Entity.Null && l.Has<PolylineLayerSetting>();
         }
     }
 

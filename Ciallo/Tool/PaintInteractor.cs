@@ -17,7 +17,7 @@ public class PaintInteractor : InteractorBase
         get
         {
             var l = SelectionManager.WorkingLayer;
-            return l != Entity.Null && l.Has<StrokeLayerSetting>();
+            return l != Entity.Null && l.Has<PolylineLayerSetting>();
         }
     }
     
@@ -38,7 +38,7 @@ public class PaintInteractor : InteractorBase
         
         _strokePreview = new StrokeView();
         var layerE = SelectionManager.WorkingLayer;
-        var layerView = layerE.Get<StrokeLayerView>();
+        var layerView = layerE.Get<PolylineLayerView>();
         layerView.AddChild(_strokePreview);
         
         _points.Add(data.WorldPosition);

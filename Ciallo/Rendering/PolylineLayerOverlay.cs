@@ -2,7 +2,7 @@
 
 namespace Ciallo.Rendering;
 
-public partial class StrokeLayerOverlay : Node2D
+public partial class PolylineLayerOverlay : Node2D
 {
     
 }

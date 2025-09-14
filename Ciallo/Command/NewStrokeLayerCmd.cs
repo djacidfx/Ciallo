@@ -31,7 +31,7 @@ public class NewStrokeLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
             {
                 Name = { Value = $"{SceneTree.Tr("Line layer")} {tree.Root.ChildCount+1}" },
             };
-            _layerE.Add(new StrokeLayerSetting(), node, new ToSerializeTag());
+            _layerE.Add(new PolylineLayerSetting(), node, new ToSerializeTag());
         }
         
         // Layer tree data
@@ -43,15 +43,15 @@ public class NewStrokeLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
         
         // View
         var worldView = Document.Get<WorldView>();
-        if (_refObjects.Count == 0) _refObjects.Add(new StrokeLayerView());
-        var layerView =  (StrokeLayerView)_refObjects[0];
+        if (_refObjects.Count == 0) _refObjects.Add(new PolylineLayerView());
+        var layerView =  (PolylineLayerView)_refObjects[0];
         worldView.InsertNodeAt(layerView, _insertPath);
         _layerE.Add(layerView);
         
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
-        if(_refObjects.Count == 1) _refObjects.Add(new StrokeLayerOverlay());
-        var layerOverlay = (StrokeLayerOverlay)_refObjects[1];
+        if(_refObjects.Count == 1) _refObjects.Add(new PolylineLayerOverlay());
+        var layerOverlay = (PolylineLayerOverlay)_refObjects[1];
         worldOverlay.InsertNodeAt(layerOverlay, _insertPath);
         _layerE.Add(layerOverlay);
     }
@@ -60,11 +60,11 @@ public class NewStrokeLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
     {
         // Overlay
         var overlay = Document.Get<WorldOverlay>();
-        _layerE.Remove<StrokeLayerOverlay>();
+        _layerE.Remove<PolylineLayerOverlay>();
         overlay.RemoveNodeAt(_insertPath);
         
         // View
-        _layerE.Remove<StrokeLayerView>();
+        _layerE.Remove<PolylineLayerView>();
         var worldView = Document.Get<WorldView>();
         worldView.RemoveNodeAt(_insertPath);
         

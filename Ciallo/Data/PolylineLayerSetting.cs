@@ -4,14 +4,14 @@ using R3;
 namespace Ciallo.Data;
 
 [MessagePackObject(true), ToSerialize]
-public class StrokeLayerSetting
+public class PolylineLayerSetting
 {
     public readonly ReactiveProperty<float> Opacity = new(1.0f);
     public readonly ReactiveProperty<bool> IsLocked = new(false); // Need to implement
-    public readonly ReactiveProperty<StrokeLayerRenderMode> RenderMode = new(StrokeLayerRenderMode.Realtime);
+    public readonly ReactiveProperty<PolylineLayerRenderMode> RenderMode = new(PolylineLayerRenderMode.Realtime);
 }
 
-public enum StrokeLayerRenderMode
+public enum PolylineLayerRenderMode
 {
     Realtime,
     Rasterized, // For performance, render as rasterized image, need to implement
