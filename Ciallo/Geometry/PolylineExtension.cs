@@ -6,6 +6,9 @@ using System.Linq;
 
 namespace Ciallo.Geometry;
 
+/// <summary>
+/// This class is for Bézier curves geometry/math calculations. Without any curve modification and cache logic.
+/// </summary>
 public static class PolylineExtension
 {
     public static Rect2 GetBoundingBox([NotNull] this IReadOnlyList<Vector2> polyline, IReadOnlyList<float> radii = null)

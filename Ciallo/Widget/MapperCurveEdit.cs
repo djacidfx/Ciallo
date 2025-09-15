@@ -1,6 +1,7 @@
 ﻿/* This file is originally copied from Godot 4.4 curve_editor_plugin.cpp, translated to C# with AI tool, proof-edited and modified by human. 
 Shen: this control took me around two hours to make it work correctly at basic level.
 Shen: Bezier curve took me two and this control took me one entire working day to further modify.
+Sep 15 2025: Given the complexity of this control, Shen still consider this as a productive workflow.
 */
 
 //Pitfall: Godot C++ constructs `Transform2D` default value is Transform2D.Identity, but in C# it is zero.
@@ -19,7 +20,7 @@ public partial class MapperCurveEdit : Control
 {
     public override void _Ready()
     {
-        _curve = new PolyBezier();
+        _curve = new BezierCurve();
         _curve.AddPoint(Vector2.Zero, new(-0.1f, 0), new(0.1f, 0));
         _curve.AddPoint(Vector2.One * 0.25f, new(-0.1f, 0), new(0.1f, 0));
         _curve.AddPoint(Vector2.One * 0.5f, new(-0.1f, 0), new(0.1f, 0));
@@ -39,7 +40,7 @@ public partial class MapperCurveEdit : Control
     private const float LineWidth = 0.5f;
     private const int StepSize = 2; // Number of pixels between plot points.
 
-    private PolyBezier _curve;
+    private BezierCurve _curve;
     private Transform2D _worldToView;
     private int _selectedIndex = -1;
     private int _hoveredIndex = -1;
@@ -54,7 +55,7 @@ public partial class MapperCurveEdit : Control
     private GrabMode _grabbing = GrabMode.None;
     private Vector2 _initialGrabPos;
     private int _initialGrabIndex = -1;
-    private PolyBezier.HandleControlMode _initialHandleMode = PolyBezier.HandleControlMode.LinearEqual;
+    private BezierCurve.HandleControlMode _initialHandleMode = BezierCurve.HandleControlMode.LinearEqual;
 
     public enum PresetId
     {
@@ -86,7 +87,7 @@ public partial class MapperCurveEdit : Control
         ClipContents = true;
     }
 
-    public PolyBezier Curve
+    public BezierCurve Curve
     {
         get => _curve;
         set
@@ -124,32 +125,32 @@ public partial class MapperCurveEdit : Control
     //     switch (presetId)
     //     {
     //         case PresetId.Constant:
-    //             _curve.AddPoint(new Vector2(minX, (minY + maxY) / 2.0f));
-    //             _curve.AddPoint(new Vector2(maxX, (minY + maxY) / 2.0f));
+    //             _curve.TryInsertPoint(new Vector2(minX, (minY + maxY) / 2.0f));
+    //             _curve.TryInsertPoint(new Vector2(maxX, (minY + maxY) / 2.0f));
     //             _curve.SetPointRightMode(0, Curve.TangentMode.Linear);
     //             _curve.SetPointLeftMode(1, Curve.TangentMode.Linear);
     //             break;
     //
     //         case PresetId.Linear:
-    //             _curve.AddPoint(new Vector2(minX, minY));
-    //             _curve.AddPoint(new Vector2(maxX, maxY));
+    //             _curve.TryInsertPoint(new Vector2(minX, minY));
+    //             _curve.TryInsertPoint(new Vector2(maxX, maxY));
     //             _curve.SetPointRightMode(0, Curve.TangentMode.Linear);
     //             _curve.SetPointLeftMode(1, Curve.TangentMode.Linear);
     //             break;
     //
     //         case PresetId.EaseIn:
-    //             _curve.AddPoint(new Vector2(minX, minY));
-    //             _curve.AddPoint(new Vector2(maxX, maxY), ValueRange / DomainRange * 1.4f, 0);
+    //             _curve.TryInsertPoint(new Vector2(minX, minY));
+    //             _curve.TryInsertPoint(new Vector2(maxX, maxY), ValueRange / DomainRange * 1.4f, 0);
     //             break;
     //
     //         case PresetId.EaseOut:
-    //             _curve.AddPoint(new Vector2(minX, minY), 0, ValueRange / DomainRange * 1.4f);
-    //             _curve.AddPoint(new Vector2(maxX, maxY));
+    //             _curve.TryInsertPoint(new Vector2(minX, minY), 0, ValueRange / DomainRange * 1.4f);
+    //             _curve.TryInsertPoint(new Vector2(maxX, maxY));
     //             break;
     //
     //         case PresetId.Smoothstep:
-    //             _curve.AddPoint(new Vector2(minX, minY));
-    //             _curve.AddPoint(new Vector2(maxX, maxY));
+    //             _curve.TryInsertPoint(new Vector2(minX, minY));
+    //             _curve.TryInsertPoint(new Vector2(maxX, maxY));
     //             break;
     //     }
     //
@@ -273,7 +274,7 @@ public partial class MapperCurveEdit : Control
                     var p = _curve.GetClosestPoint(newPos, out var t);
                     if(p.DistanceTo(newPos) < DomainRange/100.0 ) // Can split
                     {
-                        var idx = _curve.Split(t);
+                        var idx = _curve.TryInsertPoint(t);
                         SetSelectedIndex(idx);
                         _grabbing = GrabMode.Add;
                         _initialGrabPos = newPos;
@@ -333,7 +334,7 @@ public partial class MapperCurveEdit : Control
                         {
                             // Shit code but work
                             var oldPos = _curve.Points.ToArray();
-                            if(Input.IsKeyPressed(Key.Alt) || _initialHandleMode == PolyBezier.HandleControlMode.Free)
+                            if(Input.IsKeyPressed(Key.Alt) || _initialHandleMode == BezierCurve.HandleControlMode.Free)
                                 _curve.SetPointIn(_selectedIndex, newPos);
                             else
                                 _curve.SetPointInLinearly(_selectedIndex, newPos);
@@ -344,7 +345,7 @@ public partial class MapperCurveEdit : Control
                         else
                         {
                             var oldPos = _curve.Points.ToArray();
-                            if(Input.IsKeyPressed(Key.Alt) || _initialHandleMode == PolyBezier.HandleControlMode.Free)
+                            if(Input.IsKeyPressed(Key.Alt) || _initialHandleMode == BezierCurve.HandleControlMode.Free)
                                 _curve.SetPointOut(_selectedIndex, newPos);
                             else
                                 _curve.SetPointOutLinearly(_selectedIndex, newPos);
@@ -504,15 +505,15 @@ public partial class MapperCurveEdit : Control
 
         var point = _curve.GetPoint(index);
         var prevMode = point.EstimatedHandleMode;
-        PolyBezier.HandleControlMode mode;
-        if(prevMode == PolyBezier.HandleControlMode.Linear)
-            mode = PolyBezier.HandleControlMode.LinearEqual;
-        else if (prevMode == PolyBezier.HandleControlMode.Free)
-            mode = PolyBezier.HandleControlMode.Linear;
+        BezierCurve.HandleControlMode mode;
+        if(prevMode == BezierCurve.HandleControlMode.Linear)
+            mode = BezierCurve.HandleControlMode.LinearEqual;
+        else if (prevMode == BezierCurve.HandleControlMode.Free)
+            mode = BezierCurve.HandleControlMode.Linear;
         else
             return;
 
-        if (mode == PolyBezier.HandleControlMode.LinearEqual)
+        if (mode == BezierCurve.HandleControlMode.LinearEqual)
         {
             if (tangent == TangentIndex.Left) 
                 _curve.SetPointIn(index, -_curve.GetPoint(index).Out);
@@ -520,7 +521,7 @@ public partial class MapperCurveEdit : Control
                 _curve.SetPointOut(index, -_curve.GetPoint(index).In);
         }
 
-        if (mode == PolyBezier.HandleControlMode.Linear)
+        if (mode == BezierCurve.HandleControlMode.Linear)
         {
             if (tangent == TangentIndex.Left) 
                 _curve.SetPointInTangent(index, _curve.GetPointOutTangent(index));
@@ -702,7 +703,7 @@ public partial class MapperCurveEdit : Control
                     DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentRadius), leftTangentColor);
 
                     var mode = _curve.GetPoint(_selectedIndex).EstimatedHandleMode;
-                    bool isLinear = mode == PolyBezier.HandleControlMode.Linear || mode == PolyBezier.HandleControlMode.LinearEqual;
+                    bool isLinear = mode == BezierCurve.HandleControlMode.Linear || mode == BezierCurve.HandleControlMode.LinearEqual;
                     if (_hoveredTangentIndex == TangentIndex.Left || (_hoveredTangentIndex == TangentIndex.Right && !altPressed && isLinear))
                     {
                         DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentHoverRadius - Mathf.Round(3)), tangentColor, false, Mathf.Round(1));
@@ -718,7 +719,7 @@ public partial class MapperCurveEdit : Control
                         DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentRadius), rightTangentColor);
 
                     var mode = _curve.GetPoint(_selectedIndex).EstimatedHandleMode;
-                    bool isLinear = mode == PolyBezier.HandleControlMode.Linear || mode == PolyBezier.HandleControlMode.LinearEqual;
+                    bool isLinear = mode == BezierCurve.HandleControlMode.Linear || mode == BezierCurve.HandleControlMode.LinearEqual;
                     if (_hoveredTangentIndex == TangentIndex.Right || (_hoveredTangentIndex == TangentIndex.Left && !altPressed && isLinear))
                     {
                         DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentHoverRadius - Mathf.Round(3)), tangentColor, false, Mathf.Round(1));
