@@ -1,9 +1,9 @@
 // Ciallo's articulated line shader!
 shader_type canvas_item;
-render_mode skip_vertex_transform;
 render_mode unshaded;
 
-uniform int strokeType : hint_enum("Vanilla", "Stamp") = 0;
+const int Vanilla = 0, Stamp = 1, Airbrush = 2;
+uniform int strokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
 uniform vec4 strokeColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
 // Canvas mode is used for drawing wireframe 
@@ -104,14 +104,18 @@ float n2x(float n) {
 	return r0/cosTheta * (1.0-exp(-cosTheta*n));
 }
 
+float sampleGraident(float t){
+	return 1.0 - t;
+}
+
 void fragment() {
 	vec2 pLocal = vec2(dot(p-p0, tangent), dot(p-p0, normal));
 	float d0 = distance(p, p0);
     float d1 = distance(p, p1);
 	float cosPhi0 = pLocal.x / d0;
     float cosPhi1 = (pLocal.x - segmentLength) / d1;
-
-	if(strokeType == 0){
+	/*----------------------------------------------------------*/
+	if(strokeType == Vanilla){
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
 	
@@ -122,9 +126,9 @@ void fragment() {
 		if (cosPhi0 < cosTheta) lambda = d0/r0;
 		else if (cosPhi1 > cosTheta) lambda = d1/r1;
 		else {
-			vec2 rp = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
-			float pr = r0 - cosTheta * rp.x;
-			lambda = abs(pLocal.y) / pr * sinTheta;
+			vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
+			float r_p = r0 - cosTheta * p_r.x;
+			lambda = abs(pLocal.y) / r_p * sinTheta;
 		}
 		
 		if(lambda > aaStart){
@@ -132,7 +136,8 @@ void fragment() {
 			COLOR.a = COLOR.a * smoothstep(1.0, 0.0, t);
 		}
 	}
- 	if(strokeType == 1){
+	/*----------------------------------------------------------*/
+ 	if(strokeType == Stamp){
  		float x1 = pLocal.x - r;
  		float x2 = pLocal.x + r;
  		float x1Idx = x2n(x1) + n0;
@@ -159,6 +164,34 @@ void fragment() {
  		}
  		COLOR = vec4(strokeColor.rgb, currA);
  	}
+	/*----------------------------------------------------------*/
+	if(strokeType == Airbrush){
+		if(cosPhi0 < cosTheta && d0 > r0) discard;
+    	if(cosPhi1 > cosTheta && d1 > r1) discard;
+		
+		// The Whispers Of the olD Ones
+		vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
+		float flow = 0.5;
+		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleGraident(d0/r0));
+        float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleGraident(d1/r1));
+		float transparency;
+		
+		// Shen already forget about every details here, and he is too lazy to remind of.
+		// A bunch of math derived with the continuous form of airbrush here.
+        if(p_r.x <= 0.0){
+            transparency = transparency0/transparency1;
+        }
+        if(p_r.x > 0.0 && p_r.x < segmentLength){
+			float r_p = r0 - cosTheta * p_r.x;
+            float lambda = abs(pLocal.y) / r_p * sinTheta;
+            transparency = (1.0 - flow*sampleGraident(lambda))/transparency0/transparency1;
+        }
+        if(p_r.x >= segmentLength){
+            transparency = transparency1/transparency0;
+        }
+		COLOR = vec4(strokeColor.rgb, 1.0 - transparency);
+	}
+	
 	// Dash
 	if(dashLength > 0.0){
 		float unitLength = dashLength + (gapLength > 0.0 ? gapLength : dashLength);
