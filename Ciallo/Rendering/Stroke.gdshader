@@ -6,7 +6,7 @@ const int Vanilla = 0, Stamp = 1, Airbrush = 2;
 uniform int strokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
 uniform vec4 strokeColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
-// Canvas mode is used for drawing wireframe 
+// Canvas mode is used for drawing wireframe
 uniform int radiusMode : hint_enum("World", "Canvas") = 0;
 uniform float canvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
 // Dash
@@ -45,7 +45,7 @@ vec2 unpack2floats(float f) {
 }
 
 void vertex() {
-	// Canvas item not 
+	// Canvas item not
 	p0 = INSTANCE_CUSTOM.xy;
 	p1 = INSTANCE_CUSTOM.zw;
 	vec2 rs = unpack2floats(COLOR.x);
@@ -118,7 +118,7 @@ void fragment() {
 	if(strokeType == Vanilla){
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
-	
+
 		COLOR = overridingColor.a >= 0.0 ? overridingColor : strokeColor;
 		//// Anti antialiasing
 		const float aaStart = 0.97;
@@ -130,7 +130,7 @@ void fragment() {
 			float r_p = r0 - cosTheta * p_r.x;
 			lambda = abs(pLocal.y) / r_p * sinTheta;
 		}
-		
+
 		if(lambda > aaStart){
 			float t = (lambda - aaStart)/(1.0 - aaStart);
 			COLOR.a = COLOR.a * smoothstep(1.0, 0.0, t);
@@ -168,14 +168,14 @@ void fragment() {
 	if(strokeType == Airbrush){
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
-		
+
 		// The Whispers Of the olD Ones
 		vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
 		float flow = 0.5;
 		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleGraident(d0/r0));
         float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleGraident(d1/r1));
 		float transparency;
-		
+
 		// Shen already forget about every details here, and he is too lazy to remind of.
 		// A bunch of math derived with the continuous form of airbrush here.
         if(p_r.x <= 0.0){
@@ -191,14 +191,14 @@ void fragment() {
         }
 		COLOR = vec4(strokeColor.rgb, 1.0 - transparency);
 	}
-	
+
 	// Dash
 	if(dashLength > 0.0){
 		float unitLength = dashLength + (gapLength > 0.0 ? gapLength : dashLength);
 		float pixelN = x2n(pLocal.x) + n0;
 		if(mod(pixelN + TIME * dashForwardSpeed, unitLength) > dashLength) discard;
 	}
-	
+
 	// Be mindful with premultiply alpha
 	// See: https://github.com/godotengine/godot/issues/99715
 }

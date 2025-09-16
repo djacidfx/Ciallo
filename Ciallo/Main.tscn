@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=16 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://bc4wj7b6spts" path="res://Main.cs" id="2_j4qnp"]
@@ -6,7 +6,9 @@
 [ext_resource type="PackedScene" uid="uid://b605gtasdgmsb" path="res://Widget/About.tscn" id="4_fpfj3"]
 [ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icon/star.svg" id="4_kjvhd"]
 [ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://NodeControl/MenuFile.cs" id="5_5tuhn"]
+[ext_resource type="PackedScene" uid="uid://dw0q5mir7loyl" path="res://NodeControl/BrushManager.tscn" id="5_j4qnp"]
 [ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://NodeControl/MenuEdit.cs" id="6_2gh4u"]
+[ext_resource type="Script" uid="uid://cwjtb7r01fcf7" path="res://NodeControl/MenuWindow.cs" id="8_c2ibq"]
 [ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://NodeControl/MenuHelp.cs" id="8_sc1dx"]
 [ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://NodeControl/ToolButtonPanel.tscn" id="9_5vvyt"]
 [ext_resource type="PackedScene" uid="uid://cbe5uqtdiejke" path="res://NodeControl/ToolPropertyPanel.tscn" id="10_c6i3y"]
@@ -42,6 +44,9 @@ use_native_dialog = true
 visible = false
 
 [node name="NewLayer" type="ConfirmationDialog" parent="." groups=["Dialog"]]
+
+[node name="BrushManager" parent="." groups=["Dialog"] instance=ExtResource("5_j4qnp")]
+visible = false
 
 [node name="MainGui" type="VBoxContainer" parent="."]
 layout_mode = 1
@@ -91,6 +96,11 @@ script = ExtResource("5_5tuhn")
 [node name="Edit" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
 submenu_popup_delay = 0.1
 script = ExtResource("6_2gh4u")
+
+[node name="Window" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
+auto_translate_mode = 1
+submenu_popup_delay = 0.1
+script = ExtResource("8_c2ibq")
 
 [node name="Help" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
 auto_translate_mode = 1
