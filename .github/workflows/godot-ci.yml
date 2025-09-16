@@ -22,7 +22,7 @@ jobs:
           mkdir -v -p ~/.local/share/godot/export_templates/
           mkdir -v -p ~/.config/
           mv /root/.config/godot ~/.config/godot
-          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
       - name: Windows Build
         run: |
           mkdir -v -p build/windows
@@ -48,7 +48,7 @@ jobs:
       - name: Setup
         run: |
           mkdir -v -p ~/.local/share/godot/export_templates/
-          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+          mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
       - name: Linux Build
         run: |
           mkdir -v -p build/linux
@@ -61,7 +61,7 @@ jobs:
           name: linux
           path: build/linux
           
-# Shen doesn't have a MacBook Pro for a fundamental interactive test, so no macOS release. He should be responsible for his product. 
+# Shen doesn't have a MacBook Pro for a fundamental interactive test, so sadly, no macOS release. He must be responsible for his product. 
 
   # export-mac:
   #   name: Mac Export
@@ -76,7 +76,7 @@ jobs:
   #     - name: Setup
   #       run: |
   #         mkdir -v -p ~/.local/share/godot/export_templates/
-  #         mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
+  #         mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
   #     - name: Mac Build
   #       run: |
   #         mkdir -v -p build/mac
