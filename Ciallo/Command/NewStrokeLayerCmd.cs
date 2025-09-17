@@ -29,7 +29,7 @@ public class NewStrokeLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
             _layerE = WorkingWorld.Create();
             var node = new LayerTreeNode()
             {
-                Name = { Value = $"{SceneTree.Tr("Line layer")} {tree.Root.ChildCount+1}" },
+                Name = { Value = $"{TranslationServer.Translate("Line layer")} {tree.Root.ChildCount+1}" },
             };
             _layerE.Add(new PolylineLayerSetting(), node, new ToSerializeTag());
         }

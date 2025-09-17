@@ -6,15 +6,20 @@ using Ciallo.Widget;
 using Godot;
 using R3;
 using MessagePack;
+using ObservableCollections;
 
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
 public class BrushSetting : IPropertySource
 {
-    [DataMember] public ReactiveProperty<BrushType> Type = new(BrushType.Stamp);
-    [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
-    [DataMember] public BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(); // radius = baseRadius * curve(pressure)
+    public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
+
+    [DataMember] public readonly ReactiveProperty<string> Name = new(TranslationServer.Translate(""));
+    [DataMember] public readonly ObservableList<BrushLabel> Labels = [];
+    [DataMember] public readonly ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
+    [DataMember] public readonly ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
+    [DataMember] public readonly BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(); // radius = baseRadius * curve(pressure)
 
     // Vanilla
     [DataMember] public ReactiveProperty<float> DashLength = new(-1.0f);
@@ -29,30 +34,65 @@ public class BrushSetting : IPropertySource
     
     public void DrawProperty(PropertyContainer container)
     {
+        var nameEdit = new LineEdit();
+        nameEdit.BindString(Name).AddTo(nameEdit);
+        var box = container.AddPropertyControl("Name", nameEdit);
+        Labels.ObserveChanged().Subscribe(_ => box.Visible = Labels.Contains(BrushLabel.BuiltIn)).AddTo(nameEdit);
+        
         var typeButton = new OptionButton();
-        typeButton.BindEnum(Type).AddTo(typeButton);
+        typeButton.BindEnum(RenderingType).AddTo(typeButton);
         container.AddPropertyControl("Brush type", typeButton);
         
         var colorPicker = new ColorPicker();
         colorPicker.BindColor(Color).AddTo(colorPicker);
-        container.AddPropertyControl("Color", colorPicker);
+        container.AddPropertyControl("RGB+Flow", colorPicker);
         
-        var pressureCurveEditor = new MappingCurveEdit();
-        pressureCurveEditor.Curve = Pressure2RadiusRatioCurve;
-        pressureCurveEditor.CustomMinimumSize = new(0, 200);
-        container.AddPropertyControl("Pen pressure", pressureCurveEditor);
+        var pressureCurveEdit = new MappingCurveEdit();
+        pressureCurveEdit.Curve = Pressure2RadiusRatioCurve;
+        pressureCurveEdit.CustomMinimumSize = new(0, 200);
+        container.AddPropertyControl("Pen pressure", pressureCurveEdit);
         
-        var falloffCurveEditor = new MappingCurveEdit();
-        falloffCurveEditor.Curve = FalloffCurve;
-        falloffCurveEditor.CustomMinimumSize = new(0, 200);
-        container.AddPropertyControl("Opacity falloff curve", falloffCurveEditor)
-            .VisibleIf(Type, BrushType.Airbrush).AddTo(falloffCurveEditor);
+        var falloffCurveEdit = new MappingCurveEdit();
+        falloffCurveEdit.Curve = FalloffCurve;
+        falloffCurveEdit.CustomMinimumSize = new(0, 200);
+        container.AddPropertyControl("Opacity falloff curve", falloffCurveEdit)
+            .VisibleIf(RenderingType, BrushRenderingType.Airbrush).AddTo(falloffCurveEdit);
+    }
+    
+    public ShaderMaterial CreateBoundBrushMaterial(out CompositeDisposable subs)
+    {
+        subs = new();
+        var material = new ShaderMaterial
+        {
+            Shader = StrokeShader,
+        };
+        RenderingType.Subscribe(type => material.SetShaderParameter("strokeType", (int)type)).AddTo(subs);
+        Color.Subscribe(color => material.SetShaderParameter("materialColor", color)).AddTo(subs);
+        DashLength.Subscribe(length => material.SetShaderParameter("dashLength", length)).AddTo(subs);
+        GapLength.Subscribe(length => material.SetShaderParameter("gapLength", length)).AddTo(subs);
+        DashForwardSpeed.Subscribe(speed => material.SetShaderParameter("dashForwardSpeed", speed)).AddTo(subs);
+        StampInterval.Subscribe(interval => material.SetShaderParameter("stampInterval", interval)).AddTo(subs);
+        // TODO: falloff curve.
+        
+        return material;
+    }
+
+    public BrushSetting Clone()
+    {
+        var bytes = MessagePackSerializer.Serialize(this);
+        var setting = MessagePackSerializer.Deserialize<BrushSetting>(bytes);
+        return setting;
     }
 }
 
-public enum BrushType
+public enum BrushRenderingType
 {
     Vanilla = 0,
     Stamp,
     Airbrush,
+}
+
+public enum BrushLabel
+{
+    BuiltIn = 0,
 }
