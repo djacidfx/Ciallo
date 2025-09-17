@@ -1,7 +1,7 @@
 name: "godot-ci export"
 on: push
 
-# See resource import issue: https://github.com/godotengine/godot-proposals/issues/1362
+# See https://github.com/godotengine/godot/pull/90431
 
 env:
   GODOT_VERSION: 4.4.1
@@ -25,12 +25,14 @@ jobs:
           mkdir -v -p ~/.config/
           mv /root/.config/godot ~/.config/godot
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+      - name: Import resources once
+        continue-on-error: true
+        run: godot --headless --verbose --import
       - name: Windows Build
         run: |
           mkdir -v -p build/windows
           EXPORT_DIR="$(readlink -f build)"
           cd $PROJECT_PATH
-          godot --editor --quit-after 2
           godot --headless --verbose --export-release "Windows Desktop" "$EXPORT_DIR/windows/$EXPORT_NAME.exe"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -52,12 +54,14 @@ jobs:
         run: |
           mkdir -v -p ~/.local/share/godot/export_templates/
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+      - name: Import resources once
+        continue-on-error: true
+        run: godot --headless --verbose --import
       - name: Linux Build
         run: |
           mkdir -v -p build/linux
           EXPORT_DIR="$(readlink -f build)"
           cd $PROJECT_PATH
-          godot --editor --quit-after 2
           godot --headless --verbose --export-release "Linux/X11" "$EXPORT_DIR/linux/$EXPORT_NAME.x86_64"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -67,29 +71,32 @@ jobs:
           
 # Shen doesn't have a MacBook Pro for a fundamental interactive test, so sadly, no macOS release. He must be responsible for his product. 
 
-  # export-mac:
-  #   name: Mac Export
-  #   runs-on: ubuntu-22.04  # Use 22.04 with godot 4
-  #   container:
-  #     image: barichello/godot-ci:mono-4.4.1
-  #   steps:
-  #     - name: Checkout
-  #       uses: actions/checkout@v4
-  #       with:
-  #         lfs: true
-  #     - name: Setup
-  #       run: |
-  #         mkdir -v -p ~/.local/share/godot/export_templates/
-  #         mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
-  #     - name: Mac Build
-  #       run: |
-  #         mkdir -v -p build/mac
-  #         EXPORT_DIR="$(readlink -f build)"
-  #         cd $PROJECT_PATH
-  #         godot --editor --quit-after 2
-  #         godot --headless --verbose --export-release "macOS" "$EXPORT_DIR/mac/$EXPORT_NAME.zip"
-  #     - name: Upload Artifact
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: mac
-  #         path: build/mac
+   export-mac:
+     name: Mac Export
+     runs-on: ubuntu-22.04  # Use 22.04 with godot 4
+     container:
+       image: barichello/godot-ci:mono-4.4.1
+     steps:
+       - name: Checkout
+         uses: actions/checkout@v4
+         with:
+           lfs: true
+       - name: Setup
+         run: |
+           mkdir -v -p ~/.local/share/godot/export_templates/
+           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
+       - name: Import resources once
+         continue-on-error: true
+         run: godot --headless --verbose --import
+       - name: Mac Build
+         run: |
+           mkdir -v -p build/mac
+           EXPORT_DIR="$(readlink -f build)"
+           cd $PROJECT_PATH
+           godot --editor --quit-after 2
+           godot --headless --verbose --export-release "macOS" "$EXPORT_DIR/mac/$EXPORT_NAME.zip"
+       - name: Upload Artifact
+         uses: actions/upload-artifact@v4
+         with:
+           name: mac
+           path: build/mac
