@@ -37,7 +37,6 @@ ok_button_text = "Open"
 file_mode = 0
 access = 2
 filters = PackedStringArray("*.ciallo")
-show_hidden_files = true
 use_native_dialog = true
 
 [node name="AboutCiallo" parent="." groups=["Dialog"] instance=ExtResource("4_fpfj3")]

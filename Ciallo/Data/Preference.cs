@@ -39,7 +39,7 @@ public class Preference
     public Color StrokeWireframeHintColor = Colors.Orange;
     
     #region Save Load Json
-    public static readonly string Path = "res://Temp/Preference.json";
+    public static readonly string Path = "user://Preference.json";
     private static JsonSerializerSettings _options = new()
     {
         Converters = {new ReactivePropertyConverter()}
