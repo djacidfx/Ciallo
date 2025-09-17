@@ -1,8 +1,6 @@
 name: "godot-ci export"
 on: push
 
-# See https://github.com/godotengine/godot/pull/90431
-
 env:
   GODOT_VERSION: 4.4.1
   EXPORT_NAME: Ciallo
@@ -21,6 +19,10 @@ jobs:
           godot --headless --quit
           echo 'export/windows/wine = "/usr/bin/wine64-stable"' >> ~/.config/godot/editor_settings-4.4.tres
           echo 'export/windows/rcedit = "/opt/rcedit.exe"' >> ~/.config/godot/editor_settings-4.4.tres
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
       - name: Checkout
         uses: actions/checkout@v5
         with:
@@ -55,6 +57,10 @@ jobs:
     container:
       image: barichello/godot-ci:mono-4.4.1
     steps:
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
       - name: Checkout
         uses: actions/checkout@v5
         with:
@@ -70,7 +76,7 @@ jobs:
           godot --headless --verbose --import
       - name: Linux Build
         run: |
-          mkdir -v -p build/windows
+          mkdir -v -p build/linux
           EXPORT_DIR="$(readlink -f build)"
           cd $PROJECT_PATH
           godot --headless --verbose --export-release "Linux/X11" "$EXPORT_DIR/linux/$EXPORT_NAME.x86_64"
@@ -103,7 +109,7 @@ jobs:
 #           godot --headless --verbose --import
 #       - name: Mac Build
 #         run: |
-#           mkdir -v -p build/windows
+#           mkdir -v -p build/mac
 #           EXPORT_DIR="$(readlink -f build)"
 #           cd $PROJECT_PATH
 #           godot --headless --verbose --export-release "macOS" "$EXPORT_DIR/mac/$EXPORT_NAME.zip"
