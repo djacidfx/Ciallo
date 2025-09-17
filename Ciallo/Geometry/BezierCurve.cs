@@ -35,11 +35,14 @@ public class BezierCurve
 
     private List<Point> _points = [];
     public int Count => _points.Count;
+    
+    [Signal] public delegate void ChangedEventHandler();
 
-    public bool IsCacheInvalid => _cachedPolyline == null;
+    private bool IsCacheInvalid => _cachedPolyline == null;
     private List<Vector2> _cachedPolyline;
     private List<float> _cachedT; // Fractional T values of the points of the cached polyline
     private Rect2? _cachedBoundingBox;
+    
     public Rect2 BoundingBox
     {
         get
@@ -50,7 +53,20 @@ public class BezierCurve
         }
     }
 
-    private void OnChanged() => ClearCache();
+    public BezierCurve()
+    {
+    }
+
+    public BezierCurve(IReadOnlyList<Point> points)
+    {
+        _points = points.ToList();
+    }
+
+    private void OnChanged()
+    {
+        ClearCache();
+    }
+
     public void ClearCache()
     {
         _cachedPolyline = null;
@@ -322,11 +338,36 @@ public class BezierCurve
         _points[i] = pt;
         OnChanged();
     }
-    
+
+    private static float l = 0.1f;
+    public static BezierCurve Constant(float y = 0.0f) => new([
+        new(new(0f, y), new(-l, 0f), new(l, 0f)),
+        new(new(1f, y), new(-l, 0f), new(l, 0f))
+    ]);
+
+    public static BezierCurve Linear(float y0 = 0.0f, float y1 = 1.0f)
+    {
+        var dl = new Vector2(1f, y1 - y0).Normalized() * l;
+        return new([
+            new(new(0f, y0), -dl, dl),
+            new(new(1f, y1), -dl, dl)
+        ]);
+    }
+
+    public static BezierCurve EaseInOut(float y0 = 0.0f, float y1 = 1.0f)
+    {
+        // horizontal handles produce zero slope at start/end → S‐curve in between
+        return new BezierCurve([
+            new(new(0f, y0), new(-l, 0f), new(l,  0f)),
+            new(new(1f, y1), new(-l, 0f), new(l,  0f))
+        ]);
+    }
+
     #endregion
 
     /// <summary>
     /// Shen: Godot's Curve2D's tangent mode is very, very unintuitive. I guess who programed it have never used Adobe Illustrator or Inkscape.
+    /// Sep 17, 2025. Shen: Seem fixed in 4.5? No, only available in animation editor, not for runtime.
     /// </summary>
     public enum HandleControlMode
     {

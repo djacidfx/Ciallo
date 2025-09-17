@@ -4,7 +4,7 @@ render_mode unshaded;
 
 const int Vanilla = 0, Stamp = 1, Airbrush = 2;
 uniform int strokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
-uniform vec4 strokeColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform vec4 materialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
 // Canvas mode is used for drawing wireframe
 uniform int radiusMode : hint_enum("World", "Canvas") = 0;
@@ -119,7 +119,7 @@ void fragment() {
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
 
-		COLOR = overridingColor.a >= 0.0 ? overridingColor : strokeColor;
+		COLOR = overridingColor.a >= 0.0 ? overridingColor : materialColor;
 		//// Anti antialiasing
 		const float aaStart = 0.97;
 		float lambda;
@@ -162,7 +162,7 @@ void fragment() {
 			i++;
 			currIdx += 1.0;
  		}
- 		COLOR = vec4(strokeColor.rgb, currA);
+ 		COLOR = vec4(materialColor.rgb, currA);
  	}
 	/*----------------------------------------------------------*/
 	if(strokeType == Airbrush){
@@ -189,7 +189,7 @@ void fragment() {
         if(p_r.x >= segmentLength){
             transparency = transparency1/transparency0;
         }
-		COLOR = vec4(strokeColor.rgb, 1.0 - transparency);
+		COLOR = vec4(materialColor.rgb, 1.0 - transparency);
 	}
 
 	// Dash

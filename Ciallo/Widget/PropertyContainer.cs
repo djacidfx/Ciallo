@@ -13,6 +13,12 @@ public partial class PropertyContainer : VBoxContainer
 
     public void AddPropertyControl(string name, [NotNull] Control control)
     {
+        var box = CreatePropertyControl(name, control);
+        AddChild(box);
+    }
+    
+    public static Container CreatePropertyControl(string name, [NotNull] Control control)
+    {
         var box = new HFlowContainer()
         {
             LastWrapAlignment = FlowContainer.LastWrapAlignmentMode.End,
@@ -28,6 +34,6 @@ public partial class PropertyContainer : VBoxContainer
         });
         control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         box.AddChild(control);
-        AddChild(box);
+        return box;
     }
 }
