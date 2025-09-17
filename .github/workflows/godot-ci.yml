@@ -71,7 +71,7 @@ jobs:
           
 # Shen doesn't have a MacBook Pro for a fundamental interactive test, so sadly, no macOS release. He must be responsible for his product. 
 
-   export-mac:
+  export-mac:
      name: Mac Export
      runs-on: ubuntu-22.04  # Use 22.04 with godot 4
      container:
