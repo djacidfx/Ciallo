@@ -1,5 +1,6 @@
 ﻿using System.Runtime.Serialization;
 using Ciallo.Geometry;
+using Ciallo.Misc;
 using Ciallo.Tool;
 using Ciallo.Widget;
 using Godot;
@@ -12,7 +13,6 @@ namespace Ciallo.Data;
 public class BrushSetting : IPropertySource
 {
     [DataMember] public ReactiveProperty<BrushType> Type = new(BrushType.Stamp);
-    
     [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
     [DataMember] public BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(); // radius = baseRadius * curve(pressure)
 
@@ -29,7 +29,24 @@ public class BrushSetting : IPropertySource
     
     public void DrawProperty(PropertyContainer container)
     {
+        var typeButton = new OptionButton();
+        typeButton.BindEnum(Type).AddTo(typeButton);
+        container.AddPropertyControl("Brush type", typeButton);
         
+        var colorPicker = new ColorPicker();
+        colorPicker.BindColor(Color).AddTo(colorPicker);
+        container.AddPropertyControl("Color", colorPicker);
+        
+        var pressureCurveEditor = new MappingCurveEdit();
+        pressureCurveEditor.Curve = Pressure2RadiusRatioCurve;
+        pressureCurveEditor.CustomMinimumSize = new(0, 200);
+        container.AddPropertyControl("Pen pressure", pressureCurveEditor);
+        
+        var falloffCurveEditor = new MappingCurveEdit();
+        falloffCurveEditor.Curve = FalloffCurve;
+        falloffCurveEditor.CustomMinimumSize = new(0, 200);
+        container.AddPropertyControl("Opacity falloff curve", falloffCurveEditor)
+            .VisibleIf(Type, BrushType.Airbrush).AddTo(falloffCurveEditor);
     }
 }
 
