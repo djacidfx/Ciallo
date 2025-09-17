@@ -16,7 +16,7 @@ namespace Ciallo.Widget;
 /// The godot editor's curve edit control at runtime.
 /// </summary>
 [Tool, GlobalClass]
-public partial class MapperCurveEdit : Control
+public partial class MappingCurveEdit : Control
 {
     public override void _Ready()
     {
@@ -81,7 +81,7 @@ public partial class MapperCurveEdit : Control
         Move
     }
 
-    public MapperCurveEdit()
+    public MappingCurveEdit()
     {
         FocusMode = FocusModeEnum.All;
         ClipContents = true;

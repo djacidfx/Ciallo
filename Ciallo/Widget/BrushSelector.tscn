@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dh3rv2rfekvha"]
 
-[ext_resource type="Script" uid="uid://b7vp1bfkhtsse" path="res://BrushSelector.cs" id="1_ujrhi"]
+[ext_resource type="Script" uid="uid://b7vp1bfkhtsse" path="res://Widget/BrushSelector.cs" id="1_ujrhi"]
 
 [node name="BrushSelector" type="ItemList"]
 auto_width = true

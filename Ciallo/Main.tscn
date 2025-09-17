@@ -1,7 +1,6 @@
-[gd_scene load_steps=16 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=15 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
-[ext_resource type="Script" uid="uid://bc4wj7b6spts" path="res://Main.cs" id="2_j4qnp"]
 [ext_resource type="PackedScene" uid="uid://bpntrjged60df" path="res://Widget/NewDocumentDialog.tscn" id="3_sc1dx"]
 [ext_resource type="PackedScene" uid="uid://b605gtasdgmsb" path="res://Widget/About.tscn" id="4_fpfj3"]
 [ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icon/star.svg" id="4_kjvhd"]
@@ -26,7 +25,6 @@ grow_vertical = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 theme = ExtResource("1_j4qnp")
-script = ExtResource("2_j4qnp")
 
 [node name="NewDocument" parent="." groups=["Dialog"] instance=ExtResource("3_sc1dx")]
 visible = false

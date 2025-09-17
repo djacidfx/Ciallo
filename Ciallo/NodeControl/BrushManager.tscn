@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b6xc7pixx1opt" path="res://NodeControl/BrushManager.cs" id="1_0mb0o"]
 [ext_resource type="Script" uid="uid://c3mxvlh0hephd" path="res://Widget/PropertyContainer.cs" id="2_cnx4d"]
-[ext_resource type="PackedScene" uid="uid://dh3rv2rfekvha" path="res://BrushSelector.tscn" id="2_vueu2"]
+[ext_resource type="PackedScene" uid="uid://dh3rv2rfekvha" path="res://Widget/BrushSelector.tscn" id="2_vueu2"]
 
 [node name="BrushManager" type="PopupPanel"]
 auto_translate_mode = 1
