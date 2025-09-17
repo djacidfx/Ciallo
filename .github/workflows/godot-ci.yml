@@ -25,12 +25,15 @@ jobs:
           mkdir -v -p ~/.config/
           mv /root/.config/godot ~/.config/godot
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
-      - name: Windows Build
+      - name: Import resources once
+        continue-on-error: true
         run: |
           mkdir -v -p build/windows
           EXPORT_DIR="$(readlink -f build)"
           cd $PROJECT_PATH
           godot --headless --verbose --import
+      - name: Windows Build
+        run: |
           godot --headless --verbose --export-release "Windows Desktop" "$EXPORT_DIR/windows/$EXPORT_NAME.exe"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -52,12 +55,15 @@ jobs:
         run: |
           mkdir -v -p ~/.local/share/godot/export_templates/
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
-      - name: Linux Build
+      - name: Import resources once
+        continue-on-error: true
         run: |
-          mkdir -v -p build/linux
+          mkdir -v -p build/windows
           EXPORT_DIR="$(readlink -f build)"
           cd $PROJECT_PATH
           godot --headless --verbose --import
+      - name: Linux Build
+        run: |
           godot --headless --verbose --export-release "Linux/X11" "$EXPORT_DIR/linux/$EXPORT_NAME.x86_64"
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
@@ -81,12 +87,15 @@ jobs:
          run: |
            mkdir -v -p ~/.local/share/godot/export_templates/
            mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable.mono
-       - name: Mac Build
+       - name: Import resources once
+         continue-on-error: true
          run: |
-           mkdir -v -p build/mac
+           mkdir -v -p build/windows
            EXPORT_DIR="$(readlink -f build)"
            cd $PROJECT_PATH
            godot --headless --verbose --import
+       - name: Mac Build
+         run: |
            godot --headless --verbose --export-release "macOS" "$EXPORT_DIR/mac/$EXPORT_NAME.zip"
        - name: Upload Artifact
          uses: actions/upload-artifact@v4
