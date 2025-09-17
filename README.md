@@ -1,5 +1,7 @@
 ⚠️ This page and features are under construction. Navigate to the [Contributing Tab] for the development plan.
 
+[![godot-ci export](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml/badge.svg?branch=main)](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml)
+
 Want to know how these features are (or will be) implemented?
 Leave a star to this project and check my [research project], [paper](https://dl.acm.org/doi/10.1145/3641519.3657418) or [tutorial](https://shenciao.github.io/brush-rendering-tutorial/Introduction/).
 
@@ -11,7 +13,7 @@ Ciallo is an open-source graphics program for professional digital painting.
 It aims to compete with traditional painting software like Photoshop and Clip Studio Paint, while offering the following unique features:
 
 ## Unique features
-### Vectorized raster brushes
+### Vectorized Photoshop-like brushes
 
 Resolution-independent, Photoshop-like brushes: The brushes are entirely drawn on your graphics card, and the techniques behind were invented by the developer (Shen Ciao).
 
