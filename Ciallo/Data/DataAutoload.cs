@@ -32,8 +32,10 @@ public partial class DataAutoload : Node
             var idx = AppPreference.SupportedLanguages.IndexOf(OS.GetLocale(), LanguageComparer.Instance);
             if(idx != -1)
                 AppPreference.Language.Value = AppPreference.SupportedLanguages[idx];
+            
         }
         AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
+        BrushManager.AddBuiltInBrush();
     }
 
     public override void _Notification(int what)

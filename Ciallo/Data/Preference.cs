@@ -3,17 +3,19 @@ using Godot;
 using R3;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
+using ObservableCollections;
 
 namespace Ciallo.Data;
 
-[JsonObject(MemberSerialization.OptIn)]
+[DataContract]
 public class Preference
 {
     #region WorldView
     public ReactiveProperty<Viewport.Msaa> Msaa = new(Viewport.Msaa.Msaa4X);
     public ReactiveProperty<bool> UseTAA = new(false);
     public ReactiveProperty<bool> UseFXAA = new(false);
-    public ReactiveProperty<float> MouseWheelZoomFactor = new(0.1f);
+    public readonly ReactiveProperty<float> MouseWheelZoomFactor = new(0.1f);
 
     public List<string> SupportedLanguages = 
     [
@@ -28,15 +30,18 @@ public class Preference
 
     #endregion
 
-    [JsonProperty]
+    [DataMember]
     public ReactiveProperty<string> Language = new("en");
-    [JsonProperty]
+    [DataMember]
     public List<string> RecentFiles = [];
     
-    [JsonProperty]
+    [DataMember]
     public Color StrokeWireframeColor = Colors.NavyBlue;
-    [JsonProperty]
+    [DataMember]
     public Color StrokeWireframeHintColor = Colors.Orange;
+
+    [DataMember]
+    public ObservableList<BrushSetting> Brushes = [];
     
     #region Save Load Json
     public static readonly string Path = "user://Preference.json";
