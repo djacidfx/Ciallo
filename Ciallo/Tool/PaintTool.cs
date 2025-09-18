@@ -18,7 +18,7 @@ public partial class PaintTool : CommonToolBase
     {
         var brushSizeControl = new SpinSlider()
         {
-            MinValue = 0.03f,
+            MinValue = 0.1f,
             MaxValue = 256f,
             Step = 0.03333333f,
             ExpEdit = true

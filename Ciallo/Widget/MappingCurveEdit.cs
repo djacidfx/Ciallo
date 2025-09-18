@@ -18,17 +18,6 @@ namespace Ciallo.Widget;
 [Tool, GlobalClass]
 public partial class MappingCurveEdit : Control
 {
-    public override void _Ready()
-    {
-        _curve = new BezierCurve();
-        _curve.AddPoint(Vector2.Zero, new(-0.1f, 0), new(0.1f, 0));
-        _curve.AddPoint(Vector2.One * 0.25f, new(-0.1f, 0), new(0.1f, 0));
-        _curve.AddPoint(Vector2.One * 0.5f, new(-0.1f, 0), new(0.1f, 0));
-        _curve.AddPoint(Vector2.One * 0.75f, new(-0.1f, 0), new(0.1f, 0));
-        _curve.AddPoint(Vector2.One, new(-0.1f, 0), new(0.1f, 0));
-        _CurveChanged();
-    }
-
     [Export] public float MinDomain = 0.0f;
     [Export] public float MaxDomain = 1.0f;
     [Export] public float MinValue = 0.0f;
@@ -92,9 +81,9 @@ public partial class MappingCurveEdit : Control
         get => _curve;
         set
         {
-            if (_curve == value)
-                return;
-            if (!_curve.IsXMonotone)
+            if (_curve == value) return;
+            if (value == null) return;
+            if (!value.IsXMonotone)
             {
                 GD.PushWarning("The provided curve is not X-monotone. Assignment aborted.");
                 return;
@@ -340,7 +329,7 @@ public partial class MappingCurveEdit : Control
                                 _curve.SetPointInLinearly(_selectedIndex, newPos);
 
                             if (!_curve.IsXMonotone)
-                                _curve.Points = oldPos;
+                                _curve.Points = oldPos.ToList();
                         }
                         else
                         {
@@ -351,7 +340,7 @@ public partial class MappingCurveEdit : Control
                                 _curve.SetPointOutLinearly(_selectedIndex, newPos);
 
                             if (!_curve.IsXMonotone)
-                                _curve.Points = oldPos;
+                                _curve.Points = oldPos.ToList();
                         }
                     }
                 }

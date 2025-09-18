@@ -208,7 +208,7 @@ public static class PolyCubicBezierExtension
         return _points.Sample(idx, t);
     }
     
-    [Pure] public static (List<Vector2>, List<float>) Tessellate(this IReadOnlyList<BezierCurve.Point> points, int subdivisionsPerSegment = 16)
+    [Pure] public static (List<Vector2>, List<float>) Tessellate(this IReadOnlyList<BezierCurve.Point> points, int subdivisionsPerSegment)
     {
         if (points.Count == 0) return ([], []);
         if (points.Count == 1) return ([points[0].P], [0f]);

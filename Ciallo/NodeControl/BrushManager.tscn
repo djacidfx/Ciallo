@@ -1,7 +1,6 @@
-[gd_scene load_steps=4 format=3 uid="uid://dw0q5mir7loyl"]
+[gd_scene load_steps=3 format=3 uid="uid://dw0q5mir7loyl"]
 
-[ext_resource type="Script" uid="uid://b6xc7pixx1opt" path="res://NodeControl/BrushManager.cs" id="1_0mb0o"]
-[ext_resource type="Script" uid="uid://c3mxvlh0hephd" path="res://Widget/PropertyContainer.cs" id="2_cnx4d"]
+[ext_resource type="Script" uid="uid://b6xc7pixx1opt" path="res://NodeControl/BrushLibrary.cs" id="1_0mb0o"]
 [ext_resource type="PackedScene" uid="uid://dh3rv2rfekvha" path="res://Widget/BrushSelector.tscn" id="2_vueu2"]
 
 [node name="BrushManager" type="PopupPanel"]
@@ -22,8 +21,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 4.0
 offset_top = 4.0
-offset_right = -4.0
-offset_bottom = -4.0
+offset_right = 1791.0
+offset_bottom = 956.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -33,11 +32,16 @@ layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 
-[node name="StrokePreview" type="TextureRect" parent="HSplitContainer/VBoxContainer"]
+[node name="PreviewHolder" type="MarginContainer" parent="HSplitContainer/VBoxContainer"]
 layout_mode = 2
 
-[node name="PropertyContainer" type="VBoxContainer" parent="HSplitContainer/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer/VBoxContainer"]
 layout_mode = 2
-script = ExtResource("2_cnx4d")
-metadata/_custom_type_script = "uid://c3mxvlh0hephd"
+size_flags_vertical = 3
+
+[node name="PropertiesHolder" type="VBoxContainer" parent="HSplitContainer/VBoxContainer/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3

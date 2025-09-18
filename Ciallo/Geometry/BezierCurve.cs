@@ -5,6 +5,8 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.Serialization;
 using Godot;
+using Newtonsoft.Json;
+
 namespace Ciallo.Geometry;  
 
 /// <summary>
@@ -19,16 +21,16 @@ namespace Ciallo.Geometry;
 [DataContract]
 public class BezierCurve
 {
-    #region Curve2D
+    #region Curve2D /// Members from godot's `Curve2D` class.
     
-    // Members from godot's `Curve2D` class.
-    [DataMember(Order = 0)]
-    public IReadOnlyList<Point> Points
+    // When poping json object, list add items rather than replace. Force replace here.
+    [DataMember(Order = 0), JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+    public List<Point> Points
     {
         get => _points;
         set
         {
-            _points = value.ToList();
+            _points = value;
             OnChanged();
         }
     }
@@ -143,7 +145,7 @@ public class BezierCurve
         foreach (var t in ts) TryInsertPoint(t);
     }
     
-    public void Tessellate(int subdivisionsPerSegment = 16)
+    public void Tessellate(int subdivisionsPerSegment = 64)
     {
         (_cachedPolyline, _cachedT) = _points.Tessellate(subdivisionsPerSegment);
     }

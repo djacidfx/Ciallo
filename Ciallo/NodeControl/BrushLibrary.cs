@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Ciallo.Data;
 using Ciallo.Misc;
+using Ciallo.Widget;
 using ObservableCollections;
 using R3;
 
@@ -12,11 +13,23 @@ namespace Ciallo.NodeControl;
 
 public partial class BrushLibrary : PopupPanel
 {
-    public ReactiveProperty<BrushSetting> CurrentBrush = new(null);
+    public Container PropertiesHolder;
+    public readonly ReactiveProperty<BrushSetting> CurrentBrush = new(null);
 
     public override void _Ready()
     {
-        
+        var view = AppPreference.Brushes.CreateWritableView(setting =>  setting.Name.Value);
+        view.AddTo(this);
+        PropertiesHolder = GetNode<Container>("%PropertiesHolder");
+        GetNode<BrushSelector>("%BrushSelector").BindValue(view, CurrentBrush).AddTo(this);
+
+        foreach (var brush in AppPreference.Brushes)
+        {
+            var propertyBox = new PropertyContainer();
+            brush.DrawProperty(propertyBox);
+            propertyBox.VisibleIf(CurrentBrush, brush).AddTo(this);
+            PropertiesHolder.AddChild(propertyBox);
+        }
     }
 
 
@@ -32,13 +45,13 @@ public partial class BrushLibrary : PopupPanel
         
         brushes.Add(new()
         {
-            Name = { Value = "High performance".Tr() + "Soft airbrush".Tr()},
+            Name = { Value = "High performance".Tr() + " " + "Soft airbrush".Tr()},
             RenderingType = { Value = BrushRenderingType.Airbrush },
             Labels = { BrushLabel.BuiltIn },
             Color = { Value = new(0,0,0,0.3f) },
             FalloffCurve = new([
-                new(new(1,1), new(-0.25f,0), new(0.25f,0)),
-                new(new(0,0), new(-0.25f,0), new(0.25f,0))
+                new(new(0,1), new(-0.25f,0), new(0.25f,0)),
+                new(new(1,0), new(-0.25f,0), new(0.25f,0))
             ]),
         });
 

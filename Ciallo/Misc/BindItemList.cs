@@ -37,8 +37,10 @@ public static class BindItemList
     public static CompositeDisposable BindValue<T>(this ItemList control, IWritableSynchronizedView<T,string> view,
         [NotNull] ReactiveProperty<T> property)
     {
-        var subs = new CompositeDisposable();
+        if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
+        control.Clear();
         
+        var subs = new CompositeDisposable();
         foreach (var itemString in view)
             control.AddItem(itemString);
         view.ObserveChanged().Subscribe(e =>
@@ -75,7 +77,8 @@ public static class BindItemList
                     break;
                 }
             }
-            control.Select(idx);
+            if(idx != -1) control.Select(idx);
+            else control.DeselectAll(); // .Select(-1) gives error
         }).AddTo(subs);
         
         control.SignalAsObservable<long>(ItemList.SignalName.ItemSelected)

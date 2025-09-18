@@ -4,6 +4,7 @@ using R3;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Ciallo.Misc;
 using ObservableCollections;
 
 namespace Ciallo.Data;
@@ -45,9 +46,10 @@ public class Preference
     
     #region Save Load Json
     public static readonly string Path = "user://Preference.json";
-    private static JsonSerializerSettings _options = new()
+
+    public static readonly JsonSerializerSettings JsonOptions = new()
     {
-        Converters = {new ReactivePropertyConverter()}
+        Converters = {ReactivePropertyConverter.Instance, Vector2Converter.Instance}
     };
 
     public bool TryLoad()
@@ -57,13 +59,13 @@ public class Preference
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
         
-        JsonConvert.PopulateObject(content,this, _options);
+        JsonConvert.PopulateObject(content,this, JsonOptions);
         return true;
     }
 
     public void Save()
     {
-        var content = JsonConvert.SerializeObject(this, _options);
+        var content = JsonConvert.SerializeObject(this, JsonOptions);
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
         file.StoreString(content);
     }

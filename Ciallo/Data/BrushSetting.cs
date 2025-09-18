@@ -43,9 +43,13 @@ public class BrushSetting : IPropertySource
         typeButton.BindEnum(RenderingType).AddTo(typeButton);
         container.AddPropertyControl("Brush type", typeButton);
         
-        var colorPicker = new ColorPicker();
-        colorPicker.BindColor(Color).AddTo(colorPicker);
-        container.AddPropertyControl("RGB+Flow", colorPicker);
+        var colorPickerButton = new ColorPickerButton();
+        var picker = colorPickerButton.GetPicker();
+        picker.ColorModesVisible = false;
+        picker.ColorMode = ColorPicker.ColorModeType.Rgb;
+        picker.HexVisible = false;
+        colorPickerButton.BindColor(Color).AddTo(colorPickerButton);
+        container.AddPropertyControl("RGB+Flow", colorPickerButton);
         
         var pressureCurveEdit = new MappingCurveEdit();
         pressureCurveEdit.Curve = Pressure2RadiusRatioCurve;

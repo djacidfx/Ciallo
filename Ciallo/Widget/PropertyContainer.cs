@@ -24,12 +24,12 @@ public partial class PropertyContainer : VBoxContainer
         {
             LastWrapAlignment = FlowContainer.LastWrapAlignmentMode.End,
         };
-        box.AddThemeConstantOverride("h_separation", 30);
-        box.AddThemeConstantOverride("v_separation", 0);
+        box.AddThemeConstantOverride("h_separation", 50);
+        box.AddThemeConstantOverride("v_separation", 10);
         box.AddChild(new Label
         {
             Text = name,
-            VerticalAlignment = VerticalAlignment.Center,
+            VerticalAlignment = VerticalAlignment.Top,
             HorizontalAlignment = HorizontalAlignment.Left,
             SizeFlagsVertical = SizeFlags.Fill,
         });
