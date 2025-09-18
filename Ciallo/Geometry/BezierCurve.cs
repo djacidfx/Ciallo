@@ -222,19 +222,12 @@ public class BezierCurve
     }
     
     [DataContract]
-    public struct Point
+    public struct Point(Vector2 p, Vector2 @in, Vector2 @out)
     {
-        [DataMember(Order = 0)] public Vector2 P;
-        [DataMember(Order = 1)] public Vector2 In;// Relative to position
-        [DataMember(Order = 2)] public Vector2 Out; 
+        [DataMember(Order = 0)] public Vector2 P = p;
+        [DataMember(Order = 1)] public Vector2 In = @in;// Relative to position
+        [DataMember(Order = 2)] public Vector2 Out = @out;
 
-        public Point(Vector2 p, Vector2 @in, Vector2 @out)
-        {
-            P = p;
-            In = @in;
-            Out = @out;
-        }
-        
         [Pure] public Point WithIn(Vector2 newIn) => new(P, newIn, Out);
         [Pure] public Point WithOut(Vector2 newOut) => new(P, In, newOut);
         [Pure] public Point WithPoint(Vector2 newP) => new(newP, In, Out);

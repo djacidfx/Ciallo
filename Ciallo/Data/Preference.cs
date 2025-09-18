@@ -41,7 +41,7 @@ public class Preference
     public Color StrokeWireframeHintColor = Colors.Orange;
 
     [DataMember]
-    public ObservableList<BrushSetting> Brushes = [];
+    public readonly ObservableList<BrushSetting> Brushes = [];
     
     #region Save Load Json
     public static readonly string Path = "user://Preference.json";

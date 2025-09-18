@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Ciallo.Geometry;
 using Ciallo.Misc;
+using Ciallo.NodeControl;
 using Godot;
 using MessagePack;
 using MessagePack.Resolvers;
@@ -35,7 +36,8 @@ public partial class DataAutoload : Node
             
         }
         AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
-        BrushManager.AddBuiltInBrush();
+        if(AppPreference.Brushes.Count == 0)
+            BrushLibrary.ResetBuiltInBrushes();
     }
 
     public override void _Notification(int what)
@@ -44,7 +46,7 @@ public partial class DataAutoload : Node
         AppWorldManager.Clear();
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         GC.WaitForPendingFinalizers();
-            
+        
         AppPreference.Save();
     }
     
