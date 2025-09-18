@@ -42,7 +42,7 @@ visible = false
 
 [node name="NewLayer" type="ConfirmationDialog" parent="." groups=["Dialog"]]
 
-[node name="BrushManager" parent="." groups=["Dialog"] instance=ExtResource("5_j4qnp")]
+[node name="BrushLibrary" parent="." groups=["Dialog"] instance=ExtResource("5_j4qnp")]
 visible = false
 
 [node name="MainGui" type="VBoxContainer" parent="."]

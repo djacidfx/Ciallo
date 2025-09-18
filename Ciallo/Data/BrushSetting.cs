@@ -17,9 +17,9 @@ public class BrushSetting : IPropertySource
 
     [DataMember] public readonly ReactiveProperty<string> Name = new(TranslationServer.Translate(""));
     [DataMember] public readonly ObservableList<BrushLabel> Labels = [];
-    [DataMember] public readonly ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
     [DataMember] public readonly ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
     [DataMember] public readonly BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(); // radius = baseRadius * curve(pressure)
+    [DataMember] public readonly ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
 
     // Vanilla
     [DataMember] public ReactiveProperty<float> DashLength = new(-1.0f);
@@ -38,28 +38,30 @@ public class BrushSetting : IPropertySource
         nameEdit.BindString(Name).AddTo(nameEdit);
         var box = container.AddPropertyControl("Name", nameEdit);
         Labels.ObserveChanged().Subscribe(_ => box.Visible = Labels.Contains(BrushLabel.BuiltIn)).AddTo(nameEdit);
-        
-        var typeButton = new OptionButton();
-        typeButton.BindEnum(RenderingType).AddTo(typeButton);
-        container.AddPropertyControl("Brush type", typeButton);
-        
-        var colorPickerButton = new ColorPickerButton();
+
+
+        var colorPickerButton = new ColorPickerButton()
+        {
+            CustomMinimumSize = new(0, 30),
+        };
         var picker = colorPickerButton.GetPicker();
         picker.ColorModesVisible = false;
         picker.ColorMode = ColorPicker.ColorModeType.Rgb;
         picker.HexVisible = false;
         colorPickerButton.BindColor(Color).AddTo(colorPickerButton);
         container.AddPropertyControl("RGB+Flow", colorPickerButton);
-        
+
         var pressureCurveEdit = new MappingCurveEdit();
         pressureCurveEdit.Curve = Pressure2RadiusRatioCurve;
-        pressureCurveEdit.CustomMinimumSize = new(0, 200);
         container.AddPropertyControl("Pen pressure", pressureCurveEdit);
+
+        var typeButton = new OptionButton();
+        typeButton.BindEnum(RenderingType).AddTo(typeButton);
+        container.AddPropertyControl("Rendering type", typeButton);
         
         var falloffCurveEdit = new MappingCurveEdit();
         falloffCurveEdit.Curve = FalloffCurve;
-        falloffCurveEdit.CustomMinimumSize = new(0, 200);
-        container.AddPropertyControl("Opacity falloff curve", falloffCurveEdit)
+        container.AddPropertyControl("Opacity falloff", falloffCurveEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Airbrush).AddTo(falloffCurveEdit);
     }
     

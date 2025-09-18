@@ -25,7 +25,7 @@ public partial class MappingCurveEdit : Control
     public float DomainRange => MaxDomain - MinDomain;
     public float ValueRange => MaxValue - MinValue;
 
-    private const float AspectRatio = 6f / 13f;
+    private const float AspectRatio = 1.0f;
     private const float LineWidth = 0.5f;
     private const int StepSize = 2; // Number of pixels between plot points.
 
@@ -93,9 +93,14 @@ public partial class MappingCurveEdit : Control
         }
     }
 
+    public override void _Ready()
+    {
+        Resized += QueueRedraw;
+    }
+    
     public override Vector2 _GetMinimumSize()
     {
-        return new Vector2(64, Mathf.Max(135, Size.X * AspectRatio)) * 1.0f; // EDSCALE approximated as 1.0
+        return new Vector2(128, Mathf.Max(128, Size.X * AspectRatio)) * 1.0f; // EDSCALE approximated as 1.0
     }
 
     // public void UsePreset(PresetId presetId)
@@ -530,7 +535,7 @@ public partial class MappingCurveEdit : Control
 
     private void UpdateViewTransform()
     {
-        float fontSize = 20;
+        float fontSize = (int)(GetThemeFontSize("font_size", "Label") * 0.8f);
         float margin = fontSize + 8;
 
         Rect2 worldRect = new Rect2(MinDomain, MinValue, DomainRange, ValueRange);
@@ -591,6 +596,7 @@ public partial class MappingCurveEdit : Control
     {
         if (_curve == null)
             return;
+        UpdateMinimumSize();
 
         UpdateViewTransform();
 
@@ -630,7 +636,7 @@ public partial class MappingCurveEdit : Control
         DrawSetTransformMatrix(Transform2D.Identity);
 
         Font font = GetThemeFont("font", "Label");
-        int fontSize = GetThemeFontSize("font_size", "Label");
+        int fontSize = (int)(GetThemeFontSize("font_size", "Label") * 0.8f);
         float fontHeight = font.GetHeight(fontSize);
         Color textColor = GetThemeColor("font_color", "Label");
 

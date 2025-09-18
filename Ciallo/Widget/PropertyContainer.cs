@@ -8,7 +8,7 @@ public partial class PropertyContainer : VBoxContainer
 {
     public override void _EnterTree()
     {
-        AddThemeConstantOverride("v_separation", 10);
+        AddThemeConstantOverride("separation", 20);
     }
 
     public Container AddPropertyControl(string name, [NotNull] Control control)
@@ -20,18 +20,14 @@ public partial class PropertyContainer : VBoxContainer
     
     public static Container CreatePropertyControl(string name, [NotNull] Control control)
     {
-        var box = new HFlowContainer()
-        {
-            LastWrapAlignment = FlowContainer.LastWrapAlignmentMode.End,
-        };
-        box.AddThemeConstantOverride("h_separation", 50);
-        box.AddThemeConstantOverride("v_separation", 10);
+        var box = new VBoxContainer();
+        box.AddThemeConstantOverride("v_separation", 5);
         box.AddChild(new Label
         {
             Text = name,
-            VerticalAlignment = VerticalAlignment.Top,
+            VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Left,
-            SizeFlagsVertical = SizeFlags.Fill,
+            SizeFlagsVertical = SizeFlags.ShrinkBegin,
         });
         control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         box.AddChild(control);

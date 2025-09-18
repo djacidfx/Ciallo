@@ -11,13 +11,14 @@ using R3;
 
 namespace Ciallo.NodeControl;
 
-public partial class BrushLibrary : PopupPanel
+public partial class BrushLibrary : AcceptDialog
 {
     public Container PropertiesHolder;
     public readonly ReactiveProperty<BrushSetting> CurrentBrush = new(null);
 
     public override void _Ready()
     {
+        GetOkButton().Visible = false;
         var view = AppPreference.Brushes.CreateWritableView(setting =>  setting.Name.Value);
         view.AddTo(this);
         PropertiesHolder = GetNode<Container>("%PropertiesHolder");
@@ -27,7 +28,7 @@ public partial class BrushLibrary : PopupPanel
         {
             var propertyBox = new PropertyContainer();
             brush.DrawProperty(propertyBox);
-            propertyBox.VisibleIf(CurrentBrush, brush).AddTo(this);
+            propertyBox.VisibleIf(CurrentBrush, brush).AddTo(propertyBox);
             PropertiesHolder.AddChild(propertyBox);
         }
     }
