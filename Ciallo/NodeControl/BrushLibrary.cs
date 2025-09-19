@@ -20,7 +20,7 @@ public partial class BrushLibrary : AcceptDialog
     public override void _Ready()
     {
         GetOkButton().Visible = false;
-        var view = AppBrushes.CreateWritableView(setting =>  setting.Name.Value);
+        var view = AppBrushes.CreateWritableView(setting =>  setting.Name);
         view.AddTo(this);
         PropertiesHolder = GetNode<Container>("%PropertiesHolder");
         GetNode<BrushSelector>("%BrushSelector").BindValue(view, CurrentBrush).AddTo(this);
