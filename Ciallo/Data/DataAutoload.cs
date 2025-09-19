@@ -33,11 +33,17 @@ public partial class DataAutoload : Node
             var idx = AppPreference.SupportedLanguages.IndexOf(OS.GetLocale(), LanguageComparer.Instance);
             if(idx != -1)
                 AppPreference.Language.Value = AppPreference.SupportedLanguages[idx];
-            
         }
         AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
-        if(AppPreference.Brushes.Count == 0)
-            BrushLibrary.ResetBuiltInBrushes();
+
+        bool brushesFileExists = BrushLibrary.TryLoad();
+        if (!brushesFileExists) BrushLibrary.ResetBuiltInBrushes();
+    }
+
+    public override void _ExitTree()
+    {
+        BrushLibrary.Save();
+        AppPreference.Save();
     }
 
     public override void _Notification(int what)
@@ -46,8 +52,6 @@ public partial class DataAutoload : Node
         AppWorldManager.Clear();
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         GC.WaitForPendingFinalizers();
-        
-        AppPreference.Save();
     }
     
     public static IEnumerable<Type> GetSerializableTypes()

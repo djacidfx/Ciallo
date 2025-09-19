@@ -6,6 +6,7 @@ using System.Linq;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.Widget;
+using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
 
@@ -19,12 +20,12 @@ public partial class BrushLibrary : AcceptDialog
     public override void _Ready()
     {
         GetOkButton().Visible = false;
-        var view = AppPreference.Brushes.CreateWritableView(setting =>  setting.Name.Value);
+        var view = AppBrushes.CreateWritableView(setting =>  setting.Name.Value);
         view.AddTo(this);
         PropertiesHolder = GetNode<Container>("%PropertiesHolder");
         GetNode<BrushSelector>("%BrushSelector").BindValue(view, CurrentBrush).AddTo(this);
 
-        foreach (var brush in AppPreference.Brushes)
+        foreach (var brush in AppBrushes)
         {
             var propertyBox = new PropertyContainer();
             brush.DrawProperty(propertyBox);
@@ -61,11 +62,31 @@ public partial class BrushLibrary : AcceptDialog
 
     public static void ResetBuiltInBrushes()
     {
-        var userBrushes = AppPreference.Brushes.ToList();
+        var userBrushes = AppBrushes.ToList();
         userBrushes.RemoveAll(b => b.Labels.Contains(BrushLabel.BuiltIn));
         var builtInBrushes = CreateBuiltInBrushes();
-        AppPreference.Brushes.Clear();
-        AppPreference.Brushes.AddRange(builtInBrushes);
-        AppPreference.Brushes.AddRange(userBrushes);
+        AppBrushes.Clear();
+        AppBrushes.AddRange(builtInBrushes);
+        AppBrushes.AddRange(userBrushes);
+    }
+
+    public static readonly string Path = "user://Brushes.json";
+    public static void Save()
+    {
+        var content = JsonConvert.SerializeObject(AppBrushes, Preference.JsonOptions);
+        using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
+        file.StoreString(content);
+    }
+
+    public static bool TryLoad()
+    {
+        AppBrushes.Clear();
+        if (!FileAccess.FileExists(Path))
+            return false;
+        using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
+        string content = file.GetAsText();
+        
+        JsonConvert.PopulateObject(content, AppBrushes, Preference.JsonOptions);
+        return true;
     }
 }
