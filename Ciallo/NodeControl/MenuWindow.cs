@@ -9,7 +9,7 @@ public partial class MenuWindow : PopupMenu
 {
     public static readonly OrderedDictionary<string, AppAction> MenuItems = new()
     {
-        { "Brush manager", null },
+        { "Brush library", null },
     };
     
     public override void _Ready()
@@ -33,7 +33,7 @@ public partial class MenuWindow : PopupMenu
         switch (id)
         {
             case 0:
-                GetTree().GetNodesInGroup("Dialog").OfType<BrushLibrary>().First().Popup();
+                GetTree().GetNodesInGroup("Dialog").OfType<AppBrushLibrary>().First().Popup();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(id), $"Unhandled menu item index: {id}");

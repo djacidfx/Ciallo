@@ -12,20 +12,21 @@ using R3;
 
 namespace Ciallo.NodeControl;
 
-public partial class BrushLibrary : AcceptDialog
+public partial class AppBrushLibrary : AcceptDialog
 {
     public Container PropertiesHolder;
-    public readonly ReactiveProperty<BrushSetting> CurrentBrush = new(null);
+    public static readonly ReactiveProperty<BrushSetting> CurrentBrush = new(null);
+    public static readonly ObservableList<BrushSetting> Brushes = [];
 
     public override void _Ready()
     {
         GetOkButton().Visible = false;
-        var view = AppBrushes.CreateWritableView(setting =>  setting.Name);
+        var view = Brushes.CreateWritableView(setting =>  setting.Name);
         view.AddTo(this);
         PropertiesHolder = GetNode<Container>("%PropertiesHolder");
         GetNode<BrushSelector>("%BrushSelector").BindValue(view, CurrentBrush).AddTo(this);
 
-        foreach (var brush in AppBrushes)
+        foreach (var brush in Brushes)
         {
             var propertyBox = new PropertyContainer();
             brush.DrawProperty(propertyBox);
@@ -33,8 +34,7 @@ public partial class BrushLibrary : AcceptDialog
             PropertiesHolder.AddChild(propertyBox);
         }
     }
-
-
+    
     public static List<BrushSetting> CreateBuiltInBrushes()
     {
         List<BrushSetting> brushes = [];
@@ -62,31 +62,31 @@ public partial class BrushLibrary : AcceptDialog
 
     public static void ResetBuiltInBrushes()
     {
-        var userBrushes = AppBrushes.ToList();
+        var userBrushes = Brushes.ToList();
         userBrushes.RemoveAll(b => b.Labels.Contains(BrushLabel.BuiltIn));
         var builtInBrushes = CreateBuiltInBrushes();
-        AppBrushes.Clear();
-        AppBrushes.AddRange(builtInBrushes);
-        AppBrushes.AddRange(userBrushes);
+        Brushes.Clear();
+        Brushes.AddRange(builtInBrushes);
+        Brushes.AddRange(userBrushes);
     }
 
     public static readonly string Path = "user://Brushes.json";
     public static void Save()
     {
-        var content = JsonConvert.SerializeObject(AppBrushes, Preference.JsonOptions);
+        var content = JsonConvert.SerializeObject(Brushes, Preference.JsonOptions);
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
         file.StoreString(content);
     }
 
     public static bool TryLoad()
     {
-        AppBrushes.Clear();
+        Brushes.Clear();
         if (!FileAccess.FileExists(Path))
             return false;
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
         
-        JsonConvert.PopulateObject(content, AppBrushes, Preference.JsonOptions);
+        JsonConvert.PopulateObject(content, Brushes, Preference.JsonOptions);
         return true;
     }
 }

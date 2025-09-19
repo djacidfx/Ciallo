@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://dw0q5mir7loyl"]
 
-[ext_resource type="Script" uid="uid://b6xc7pixx1opt" path="res://NodeControl/BrushLibrary.cs" id="1_0mb0o"]
+[ext_resource type="Script" uid="uid://b6xc7pixx1opt" path="res://Data/AppBrushLibrary.cs" id="1_0mb0o"]
 [ext_resource type="PackedScene" uid="uid://dh3rv2rfekvha" path="res://Widget/BrushSelector.tscn" id="2_vueu2"]
 
 [node name="BrushLibrary" type="AcceptDialog"]
@@ -21,6 +21,7 @@ grow_vertical = 2
 
 [node name="BrushSelector" parent="BoxCannotBeSpliter" instance=ExtResource("2_vueu2")]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 0)
 layout_mode = 2
 
 [node name="VBoxContainer" type="VBoxContainer" parent="BoxCannotBeSpliter"]

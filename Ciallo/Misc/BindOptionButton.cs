@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using Godot;
 using R3;
-using Humanizer;
+using ObservableCollections;
 
 namespace Ciallo.Misc;
 
@@ -44,7 +43,82 @@ public static class BindOptionButton
         // Bind
         var subs = new CompositeDisposable();
         property.Subscribe(value => button.Selected = items.IndexOf(value)).AddTo(subs);
-        button.OnItemSelectedAsObservable().Subscribe(index => property.Value = items[(int)index]).AddTo(subs);
+        button.OnItemSelectedAsObservable().Subscribe(index =>
+        {
+            if (index != -1) property.Value = items[(int)index];
+            if (index == -1) property.Value = default;
+        }).AddTo(subs);
+        return subs;
+    }
+    
+    public static CompositeDisposable BindValue<T>(this OptionButton button, IWritableSynchronizedView<T,ReactiveProperty<string>> view,
+        [NotNull] ReactiveProperty<T> property)
+    {
+        if (button.AllowReselect) throw new ArgumentException("AllowReselect must be false.", nameof(button));
+        button.Clear();
+
+        var subs = new CompositeDisposable();
+
+        // Initialize with existing view items
+        foreach (var viewProperty in view)
+        {
+            button.AddItem(viewProperty.Value);
+            viewProperty.Subscribe(s =>
+            {
+                using var list = view.ToViewList();
+                var idx = list.IndexOf(viewProperty);
+                if (idx != -1) button.SetItemText(idx, s);
+            }).AddTo(subs);
+        }
+
+        // Observe collection changes
+        view.ObserveChanged().Subscribe(e =>
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    button.AddItem(e.NewItem.View.Value);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    button.RemoveItem(e.OldStartingIndex);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    button.SetItemText(e.NewStartingIndex, e.NewItem.View.Value);
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    // Rebuild items on move since OptionButton lacks MoveItem
+                    button.Clear();
+                    foreach (var viewProperty in view)
+                        button.AddItem(viewProperty.Value);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    button.Clear();
+                    break;
+                default: throw new ("Unreachable");
+            }
+        }).AddTo(subs);
+
+        // Bind property changes to selection
+        property.Subscribe(value =>
+        {
+            var idx = -1;
+            for (int i = 0; i < view.Count; i++)
+            {
+                if (EqualityComparer<T>.Default.Equals(view.GetAt(i).Value, value))
+                {
+                    idx = i;
+                    break;
+                }
+            }
+            button.Selected = idx;
+        }).AddTo(subs);
+
+        // Bind selection changes to property
+        button.OnItemSelectedAsObservable().Subscribe(index =>
+        {
+            property.Value = index == -1 ? default : view.GetAt((int)index).Value;
+        }).AddTo(subs);
+
         return subs;
     }
 }

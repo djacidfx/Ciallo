@@ -33,60 +33,7 @@ public static class BindItemList
         return subs;
     }
     
-    // Dynamic list view created from R3.ObservableList, no rename
-    public static CompositeDisposable BindValue<T>(this ItemList control, IWritableSynchronizedView<T,string> view,
-        [NotNull] ReactiveProperty<T> property)
-    {
-        if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
-        control.Clear();
-        
-        var subs = new CompositeDisposable();
-        foreach (var itemString in view)
-            control.AddItem(itemString);
-        view.ObserveChanged().Subscribe(e =>
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    control.AddItem(e.NewItem.View);
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    control.RemoveItem(e.OldStartingIndex);
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    control.SetItemText(e.NewStartingIndex, e.NewItem.View);
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    control.MoveItem(e.OldStartingIndex, e.NewStartingIndex);
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    control.Clear();
-                    break;
-                default: throw new ArgumentOutOfRangeException();
-            }
-        }).AddTo(subs);
-        
-        property.Subscribe(value =>
-        {
-            int idx = -1;
-            for(int i = 0; i < view.Count; i++)
-            {
-                if (EqualityComparer<T>.Default.Equals(view.GetAt(i).Value, value))
-                {
-                    idx = i;
-                    break;
-                }
-            }
-            if(idx != -1) control.Select(idx);
-            else control.DeselectAll(); // .Select(-1) gives error
-        }).AddTo(subs);
-        
-        control.SignalAsObservable<long>(ItemList.SignalName.ItemSelected)
-            .Subscribe(idx => property.Value = view.GetAt((int)idx).Value)
-            .AddTo(subs);
-        return subs;
-    }
-    
+    // Dynamic list view created from R3.ObservableList
     public static CompositeDisposable BindValue<T>(this ItemList control, IWritableSynchronizedView<T,ReactiveProperty<string>> view,
         [NotNull] ReactiveProperty<T> property)
     {

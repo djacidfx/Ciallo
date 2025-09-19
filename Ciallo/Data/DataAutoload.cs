@@ -36,13 +36,13 @@ public partial class DataAutoload : Node
         }
         AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
 
-        bool brushesFileExists = BrushLibrary.TryLoad();
-        if (!brushesFileExists) BrushLibrary.ResetBuiltInBrushes();
+        bool brushesFileExists = AppBrushLibrary.TryLoad();
+        if (!brushesFileExists) AppBrushLibrary.ResetBuiltInBrushes();
     }
 
     public override void _ExitTree()
     {
-        BrushLibrary.Save();
+        AppBrushLibrary.Save();
         AppPreference.Save();
     }
 

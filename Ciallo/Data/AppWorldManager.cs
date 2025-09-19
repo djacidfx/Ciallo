@@ -42,7 +42,8 @@ public static class AppWorldManager
         var layerTreeManager = new LayerTreeManager();
         var selectionManager = new SelectionManager();
         var commandManager = new CommandManager();
-        document.Add(settings, layerTreeManager, selectionManager, commandManager);
+        var brushManager = new BrushManager();
+        document.Add(settings, layerTreeManager, selectionManager, commandManager, brushManager);
         
         // Create layer tree control
         var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();

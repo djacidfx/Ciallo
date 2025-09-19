@@ -1,6 +1,10 @@
+using Arch.Core;
+using Ciallo.Data;
 using Ciallo.Misc;
+using Ciallo.NodeControl;
 using Ciallo.Tool;
 using Ciallo.Widget;
+using Godot;
 using Humanizer;
 using R3;
 
@@ -12,7 +16,7 @@ public partial class PaintTool : CommonToolBase
     
     public readonly PaintInteractor PaintInteractor = new();
     // Will have dual interactors
-    // public readonly ResizeBrushInteractor BrushInteractor = new();
+    // public readonly ResizeBrushInteractor ResizeInteractor = new();
 
     public override void DrawProperty(PropertyContainer container)
     {
@@ -25,6 +29,12 @@ public partial class PaintTool : CommonToolBase
         };
         brushSizeControl.BindValue(BrushSize).AddTo(brushSizeControl);
         container.AddPropertyControl(nameof(BrushSize).Humanize(), brushSizeControl);
+
+        var brushSelector = new OptionButton();
+        var view = AppBrushLibrary.Brushes.CreateWritableView(setting => setting.Name);
+        view.AddTo(brushSelector);
+        brushSelector.BindValue(view, AppBrushLibrary.CurrentBrush).AddTo(brushSelector);
+        container.AddPropertyControl("Brush".Tr(), brushSelector);
     }
 
     public override void _Ready()
