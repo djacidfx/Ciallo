@@ -11,7 +11,7 @@ size = Vector2i(720, 960)
 visible = true
 script = ExtResource("1_0mb0o")
 
-[node name="HSplitContainer" type="HSplitContainer" parent="."]
+[node name="BoxCannotBeSpliter" type="HBoxContainer" parent="."]
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 712.0
@@ -19,19 +19,19 @@ offset_bottom = 911.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="BrushSelector" parent="HSplitContainer" instance=ExtResource("2_vueu2")]
+[node name="BrushSelector" parent="BoxCannotBeSpliter" instance=ExtResource("2_vueu2")]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="HSplitContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="BoxCannotBeSpliter"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ScrollContainer" type="ScrollContainer" parent="HSplitContainer/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="BoxCannotBeSpliter/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="HSplitContainer/VBoxContainer/ScrollContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="BoxCannotBeSpliter/VBoxContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -39,7 +39,7 @@ theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 10
 
-[node name="PropertiesHolder" type="VBoxContainer" parent="HSplitContainer/VBoxContainer/ScrollContainer/MarginContainer"]
+[node name="PropertiesHolder" type="VBoxContainer" parent="BoxCannotBeSpliter/VBoxContainer/ScrollContainer/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3

@@ -93,14 +93,9 @@ public partial class MappingCurveEdit : Control
         }
     }
 
-    public override void _Ready()
-    {
-        Resized += QueueRedraw;
-    }
-    
     public override Vector2 _GetMinimumSize()
     {
-        return new Vector2(128, Mathf.Max(128, Size.X * AspectRatio)) * 1.0f; // EDSCALE approximated as 1.0
+        return new Vector2(0, Size.X * AspectRatio * 1.0f); // EDSCALE approximated as 1.0
     }
 
     // public void UsePreset(PresetId presetId)
@@ -591,13 +586,13 @@ public partial class MappingCurveEdit : Control
             DrawLine(GetViewPos(samples[i - 1]), GetViewPos(samples[i]), lineColor, LineWidth, true);
         }
     }
+    
 
     public override void _Draw()
     {
         if (_curve == null)
             return;
-        UpdateMinimumSize();
-
+        UpdateMinimumSize(); // Godot 4.4.1 bug: This causes split container crash. So have change the container into box. 
         UpdateViewTransform();
 
         // Draw background
