@@ -8,14 +8,14 @@ namespace R3;
 [Tool]
 public partial class GodotR3Plugin : EditorPlugin
 {
-    static ObservableTrackerDebuggerPlugin? observableTrackerDebugger;
+    // static ObservableTrackerDebuggerPlugin? observableTrackerDebugger;
     public override void _EnterTree()
     {
         //// Shen: Buggy in v1.3.0
         // observableTrackerDebugger ??= new ObservableTrackerDebuggerPlugin();
         // AddDebuggerPlugin(observableTrackerDebugger);
         
-        //// Shen: Unfriendly to version control and CI systems, add them manually. 
+        //// Shen: Unfriendly to version control and CI systems to auto add these Autoloads, add them manually. 
         // Automatically install autoloads here for ease of use.
         // AddAutoloadSingleton(nameof(FrameProviderDispatcher), "res://addons/R3.Godot/FrameProviderDispatcher.cs");
         // AddAutoloadSingleton(nameof(ObservableTrackerRuntimeHook), "res://addons/R3.Godot/ObservableTrackerRuntimeHook.cs");
