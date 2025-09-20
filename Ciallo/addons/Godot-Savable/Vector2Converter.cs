@@ -3,7 +3,7 @@ using Godot;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
-namespace Ciallo.Misc;
+namespace Saveable.Converters;
 
 public class Vector2Converter : JsonConverter<Vector2>
 {
