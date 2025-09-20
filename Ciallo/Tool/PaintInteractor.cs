@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -7,11 +8,14 @@ using Ciallo.Data;
 using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Godot;
+using R3;
 
 namespace Ciallo.Tool;
 
 public class PaintInteractor : InteractorBase
 {
+    public ReactiveProperty<float> ToolBrushSize {private get; init; }
+    
     public override bool CanInteract
     {
         get
@@ -25,11 +29,11 @@ public class PaintInteractor : InteractorBase
     private readonly List<Vector2> _points = new(){Capacity = 2048};
     private readonly List<float> _radii = new(){Capacity = 2048};
     
-    private Vector2 _lastScreenPoint = new();
-    private Vector2 _lastDirection = new();
-    private readonly float _minDistance = 10f; // in pixel
-    private readonly float _maxDistance = 20f; // in pixel
-    private readonly float _minCosAngle = Mathf.Cos(Mathf.DegToRad(15f));
+    private Vector2 _lastScreenPoint;
+    private Vector2 _lastDirection;
+    private readonly float _minDistance = 7f; // in pixel
+    private readonly float _maxDistance = 15f; // in pixel
+    private readonly float _minCosAngle = Mathf.Cos(Mathf.DegToRad(5f));
 
     public override void Start(CursorButtonData data)
     {
@@ -47,7 +51,7 @@ public class PaintInteractor : InteractorBase
         _lastDirection = Vector2.FromAngle(0);
         _strokePreview.SetGeometry(_points, _radii);
     }
-
+    
     public override void Interacting(CursorMotionData data)
     {
         bool isSmaller = data.ScreenPosition.DistanceTo(_lastScreenPoint) < _minDistance;
@@ -57,9 +61,17 @@ public class PaintInteractor : InteractorBase
         if (!isLarger && !isWinding) return;
         _points.Add(data.WorldPosition);
         _radii.Add(Mathf.Lerp(2f, 6f, data.Pressure));
-        // GD.Print($"--------------");
-        // GD.Print($"Screen: {data.ScreenPosition}");
-        // GD.Print($"World: {data.WorldPosition}");
+
+        // Very basic smoothing
+        float delta = 0.1f;
+        for(int i = 0; i < 4; i++)
+        {
+            int idx = _points.Count - 1 - i;
+            if (idx < 1) break;
+            _radii[idx] = Mathf.Lerp(_radii[idx], _radii[idx - 1], delta);
+            _points[idx] = _points[idx].Lerp(_points[idx - 1], delta);
+        }
+        
         _strokePreview.SetGeometry(_points, _radii);
         _lastDirection = data.ScreenPosition.DirectionTo(_lastScreenPoint).Normalized();
         _lastScreenPoint = data.ScreenPosition;

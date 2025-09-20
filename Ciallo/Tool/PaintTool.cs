@@ -10,13 +10,28 @@ using R3;
 
 public partial class PaintTool : CommonToolBase
 {
-    public ReactiveProperty<float> BrushSize { get; } = new(8f);
+    public readonly ReactiveProperty<float> BrushSize = new(8f);
+    public readonly ReactiveProperty<Entity> BrushE = new(Entity.Null);
     
     public override InteractorBase LeftInteractor => PaintInteractor;
     
-    public readonly PaintInteractor PaintInteractor = new();
+    public readonly PaintInteractor PaintInteractor;
     // Will have dual interactors
     // public readonly ResizeBrushInteractor ResizeInteractor = new();
+
+    public PaintTool()
+    {
+        PaintInteractor = new()
+        {
+            ToolBrushSize = BrushSize
+        };
+    }
+
+    public override void _Ready()
+    {
+        base._Ready();
+        SetPressed(true);
+    }
 
     public override void DrawProperty(PropertyContainer container)
     {
@@ -35,11 +50,5 @@ public partial class PaintTool : CommonToolBase
         view.AddTo(brushSelector);
         brushSelector.BindValue(view, AppBrushLibrary.CurrentBrush).AddTo(brushSelector);
         container.AddPropertyControl("Brush".Tr(), brushSelector);
-    }
-
-    public override void _Ready()
-    {
-        base._Ready();
-        SetPressed(true);
     }
 }

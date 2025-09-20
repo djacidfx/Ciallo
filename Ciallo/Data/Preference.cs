@@ -46,7 +46,10 @@ public class Preference
 
     public static readonly JsonSerializerSettings JsonOptions = new()
     {
-        Converters = {ReactivePropertyConverter.Instance, Vector2Converter.Instance}
+        Converters =
+        {
+            ReactivePropertyConverter.Instance,
+        }
     };
 
     public bool TryLoad()
