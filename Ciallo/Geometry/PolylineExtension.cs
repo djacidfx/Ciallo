@@ -1,6 +1,7 @@
 ﻿using System;
 using Godot;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
@@ -131,7 +132,7 @@ public static class PolylineExtension
             return SampleSegment(polyline[0], polyline[1], x);
         }
 
-        var searchResult = Array.BinarySearch(polyline.Select(v=>v.X).ToArray(), x);
+        var searchResult = polyline.Select(v=>v.X).ToImmutableArray().BinarySearch(x);
         if (searchResult >= 0) return polyline[searchResult].Y;
         // Get the index of the closest point after x
         // see https://learn.microsoft.com/en-us/dotnet/api/system.array.binarysearch for the return value.
