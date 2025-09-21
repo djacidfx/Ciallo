@@ -14,8 +14,6 @@ namespace Ciallo.Tool;
 
 public class PaintInteractor : InteractorBase
 {
-    public ReactiveProperty<float> ToolBrushSize {private get; init; }
-    
     public override bool CanInteract
     {
         get

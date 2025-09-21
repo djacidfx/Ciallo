@@ -18,6 +18,7 @@ public class BrushSetting : IPropertySource
     [DataMember] public readonly ReactiveProperty<string> Name = new(TranslationServer.Translate(""));
     [DataMember] public readonly ObservableList<BrushLabel> Labels = [];
     [DataMember] public readonly ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
+    [DataMember] public readonly ReactiveProperty<float> BaseRadius = new(8.0f);
     [DataMember] public readonly BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(); // radius = baseRadius * curve(pressure)
     [DataMember] public readonly ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
 
@@ -38,8 +39,17 @@ public class BrushSetting : IPropertySource
         nameEdit.BindString(Name).AddTo(nameEdit);
         var box = container.AddPropertyControl("Name", nameEdit);
         Labels.ObserveChanged().Subscribe(_ => box.Visible = Labels.Contains(BrushLabel.BuiltIn)).AddTo(nameEdit);
-
-
+        
+        var baseRadiusControl = new SpinSlider
+        {
+            MinValue = 0.1,
+            MaxValue = 256,
+            Step = 0.03333333,
+            ExpEdit = true
+        };
+        baseRadiusControl.BindValue(BaseRadius).AddTo(baseRadiusControl);
+        container.AddPropertyControl("Base radius", baseRadiusControl);
+        
         var colorPickerButton = new ColorPickerButton()
         {
             CustomMinimumSize = new(0, 30),
@@ -47,13 +57,14 @@ public class BrushSetting : IPropertySource
         var picker = colorPickerButton.GetPicker();
         picker.ColorModesVisible = false;
         picker.ColorMode = ColorPicker.ColorModeType.Rgb;
-        picker.HexVisible = false;
         colorPickerButton.BindColor(Color).AddTo(colorPickerButton);
         container.AddPropertyControl("RGB+Flow", colorPickerButton);
 
         var pressureCurveEdit = new MappingCurveEdit();
         pressureCurveEdit.Curve = Pressure2RadiusRatioCurve;
-        container.AddPropertyControl("Pen pressure", pressureCurveEdit);
+        var aspectBox = new AspectRatioContainer();
+        aspectBox.AddChild(pressureCurveEdit);
+        container.AddPropertyControl("Pen pressure", aspectBox);
 
         var typeButton = new OptionButton();
         typeButton.BindEnum(RenderingType).AddTo(typeButton);

@@ -95,7 +95,7 @@ public partial class MappingCurveEdit : Control
 
     public override Vector2 _GetMinimumSize()
     {
-        return new Vector2(0, Size.X * AspectRatio * 1.0f); // EDSCALE approximated as 1.0
+        return new Vector2(256 + 128, 256 + 128);
     }
 
     // public void UsePreset(PresetId presetId)
@@ -358,6 +358,7 @@ public partial class MappingCurveEdit : Control
 
     private void _CurveChanged()
     {
+        
         QueueRedraw();
         if (_selectedIndex >= _curve.Count)
             SetSelectedIndex(-1);
@@ -592,7 +593,9 @@ public partial class MappingCurveEdit : Control
     {
         if (_curve == null)
             return;
-        UpdateMinimumSize(); // Godot 4.4.1 bug: This causes split container crash. So have change the container into box. 
+        //// Godot 4.4.1 bug: UpdateMinimumSize causes split container crash. So have change the container into box.
+        //// More bugs: This also causes crash when one is visible and another is not.
+        // UpdateMinimumSize();
         UpdateViewTransform();
 
         // Draw background
