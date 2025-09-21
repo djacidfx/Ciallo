@@ -334,7 +334,7 @@ public class BezierCurve
         OnChanged();
     }
 
-    private static float l = 0.1f;
+    private static float l = 0.25f;
     public static BezierCurve Constant(float y = 0.0f) => new([
         new(new(0f, y), new(-l, 0f), new(l, 0f)),
         new(new(1f, y), new(-l, 0f), new(l, 0f))
@@ -342,7 +342,10 @@ public class BezierCurve
 
     public static BezierCurve Linear(float y0 = 0.0f, float y1 = 1.0f)
     {
-        var dl = new Vector2(1f, y1 - y0).Normalized() * l;
+        var v = new Vector2(1f, y1 - y0);
+        var dir = v.Normalized();
+        var len = v.Length();
+        var dl = v / len * l;
         return new([
             new(new(0f, y0), -dl, dl),
             new(new(1f, y1), -dl, dl)

@@ -70,7 +70,7 @@ public partial class AppBrushLibrary : AcceptDialog
         Brushes.AddRange(userBrushes);
     }
 
-    public static readonly string Path = "user://Brushes.json";
+    public static readonly string Path = "user://Brush.json";
     public static void Save()
     {
         var content = JsonConvert.SerializeObject(Brushes, Preference.JsonOptions);
@@ -80,9 +80,9 @@ public partial class AppBrushLibrary : AcceptDialog
 
     public static bool TryLoad()
     {
-        Brushes.Clear();
         if (!FileAccess.FileExists(Path))
             return false;
+        Brushes.Clear();
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
         
