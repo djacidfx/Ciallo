@@ -11,16 +11,26 @@ public partial class PropertyContainer : VBoxContainer
         AddThemeConstantOverride("separation", 20);
     }
 
-    public Container AddPropertyControl(string name, [NotNull] Control control)
+    public Container AddProperty(string name, [NotNull] Control control)
     {
         var box = CreatePropertyControl(name, control);
         AddChild(box);
         return box;
     }
     
+    public Container RemoveProperty(string name)
+    {
+        var child = GetNode<Container>(name);
+        RemoveChild(child);
+        return child;
+    }
+    
     public static Container CreatePropertyControl(string name, [NotNull] Control control)
     {
-        var box = new VBoxContainer();
+        var box = new VBoxContainer()
+        {
+            Name = name,
+        };
         box.AddThemeConstantOverride("v_separation", 5);
         box.AddChild(new Label
         {

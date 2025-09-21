@@ -37,7 +37,7 @@ public class BrushSetting : IPropertySource
     {
         var nameEdit = new LineEdit();
         nameEdit.BindString(Name).AddTo(nameEdit);
-        var box = container.AddPropertyControl("Name", nameEdit);
+        var box = container.AddProperty("Name", nameEdit);
         Labels.ObserveChanged().Subscribe(_ => box.Visible = Labels.Contains(BrushLabel.BuiltIn)).AddTo(nameEdit);
         
         var baseRadiusControl = new SpinSlider
@@ -48,7 +48,7 @@ public class BrushSetting : IPropertySource
             ExpEdit = true
         };
         baseRadiusControl.BindValue(BaseRadius).AddTo(baseRadiusControl);
-        container.AddPropertyControl("Base radius", baseRadiusControl);
+        container.AddProperty("Base radius", baseRadiusControl);
         
         var colorPickerButton = new ColorPickerButton()
         {
@@ -58,21 +58,21 @@ public class BrushSetting : IPropertySource
         picker.ColorModesVisible = false;
         picker.ColorMode = ColorPicker.ColorModeType.Rgb;
         colorPickerButton.BindColor(Color).AddTo(colorPickerButton);
-        container.AddPropertyControl("RGB+Flow", colorPickerButton);
+        container.AddProperty("RGB+Flow", colorPickerButton);
 
         var pressureCurveEdit = new MappingCurveEdit();
         pressureCurveEdit.Curve = Pressure2RadiusRatioCurve;
         var aspectBox = new AspectRatioContainer();
         aspectBox.AddChild(pressureCurveEdit);
-        container.AddPropertyControl("Pen pressure", aspectBox);
+        container.AddProperty("Pen pressure", aspectBox);
 
         var typeButton = new OptionButton();
         typeButton.BindEnum(RenderingType).AddTo(typeButton);
-        container.AddPropertyControl("Rendering type", typeButton);
+        container.AddProperty("Rendering type", typeButton);
         
         var falloffCurveEdit = new MappingCurveEdit();
         falloffCurveEdit.Curve = FalloffCurve;
-        container.AddPropertyControl("Opacity falloff", falloffCurveEdit)
+        container.AddProperty("Opacity falloff", falloffCurveEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Airbrush).AddTo(falloffCurveEdit);
     }
     

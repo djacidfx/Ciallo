@@ -46,7 +46,7 @@ public abstract partial class CommonToolBase : ToolButtonBase, ITool
 
     protected CommonToolBase()
     {
-        Machine.OnUnhandledTrigger((_, _) => { });
+        Machine.OnUnhandledTrigger((_, _) => { }); // Do nothing on unhandled trigger
         _tLeftClick = Machine.SetTriggerParameters<CursorButtonData>(Event.LeftClick);
         _tLeftRelease = Machine.SetTriggerParameters<CursorButtonData>(Event.LeftRelease);
         _tRightClick = Machine.SetTriggerParameters<CursorButtonData>(Event.RightClick);

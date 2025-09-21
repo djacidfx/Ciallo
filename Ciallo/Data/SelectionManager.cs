@@ -39,5 +39,5 @@ public class SelectionManager
 
     public readonly Subject<Entity> WorkingLayerChanged = new();
     
-    public Entity SelectedBrush = Entity.Null;
+    public ReactiveProperty<Entity> SelectedBrush = new(Entity.Null);
 }

@@ -44,12 +44,12 @@ public partial class DataAutoload : Node
     {
         AppBrushLibrary.Save();
         AppPreference.Save();
+        AppWorldManager.Clear();
     }
 
     public override void _Notification(int what)
     {
         if (what != NotificationPredelete) return;
-        AppWorldManager.Clear();
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         GC.WaitForPendingFinalizers();
     }
