@@ -7,13 +7,19 @@ namespace Ciallo.Misc;
 
 public static class GodotControlExtension
 {
-    public static IDisposable VisibleIf<T>(this Control control, ReactiveProperty<T> property, Predicate<T> predicate)
+    public static void VisibleIf<T>(this Control control, ReactiveProperty<T> property, Predicate<T> predicate, out IDisposable sub)
     {
-        return property.Subscribe(value => control.Visible = predicate(value));
+        sub = property.Subscribe(value => control.Visible = predicate(value));
     }
     
-    public static IDisposable VisibleIf<T>(this Control control, ReactiveProperty<T> property, T value)
+    public static void VisibleIf<T>(this Control control, ReactiveProperty<T> property, Predicate<T> predicate)
     {
-        return control.VisibleIf(property, v => EqualityComparer<T>.Default.Equals(v, value));
+        control.VisibleIf(property, predicate, out var sub);
+        sub.AddTo(control);
+    }
+    
+    public static void VisibleIf<T>(this Control control, ReactiveProperty<T> property, T value)
+    {
+        control.VisibleIf(property, v => EqualityComparer<T>.Default.Equals(v, value));
     }
 }

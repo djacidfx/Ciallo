@@ -73,7 +73,7 @@ public class BrushSetting : IPropertySource
         var falloffCurveEdit = new MappingCurveEdit();
         falloffCurveEdit.Curve = FalloffCurve;
         container.AddProperty("Opacity falloff", falloffCurveEdit)
-            .VisibleIf(RenderingType, BrushRenderingType.Airbrush).AddTo(falloffCurveEdit);
+            .VisibleIf(RenderingType, BrushRenderingType.Airbrush);
     }
     
     public ShaderMaterial CreateBoundBrushMaterial(out CompositeDisposable subs)

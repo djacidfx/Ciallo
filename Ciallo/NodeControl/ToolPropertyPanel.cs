@@ -30,14 +30,14 @@ public partial class ToolPropertyPanel : PanelContainer
             {
                 case NotifyCollectionChangedAction.Add:
                     var holder = new DocumentToolPropertyContainer();
-                    holder.VisibleIf(AppWorldManager.WorkingWorld, et.NewItem).AddTo(holder);
+                    holder.VisibleIf(AppWorldManager.WorkingWorld, et.NewItem);
                     et.NewItem.Document().Add(holder);
                     HubBox.AddChild(holder);
                     
                     foreach (var tool in AppToolManager.GetAllTools<ToolButtonBase>())
                     {
                         var hub = ToolPropertyHubScene.Instantiate<Control>();
-                        hub.VisibleIf(AppToolManager.ActiveTool, (ITool)tool).AddTo(hub);
+                        hub.VisibleIf(AppToolManager.ActiveTool, (ITool)tool);
             
                         var container = hub.GetNode<PropertyContainer>("%PropertyContainer");
                         container.QueueFreeChildren();

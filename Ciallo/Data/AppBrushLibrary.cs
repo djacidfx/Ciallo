@@ -30,7 +30,7 @@ public partial class AppBrushLibrary : AcceptDialog
         {
             var propertyBox = new PropertyContainer();
             brush.DrawProperty(propertyBox);
-            propertyBox.VisibleIf(CurrentBrush, brush).AddTo(propertyBox);
+            propertyBox.VisibleIf(CurrentBrush, brush);
             PropertiesHolder.AddChild(propertyBox);
         }
     }

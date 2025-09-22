@@ -44,7 +44,7 @@ public partial class PaintTool : CommonToolBase
             ExpEdit = true
         };
         var boxBrushRadius = container.AddProperty("Radius", appBrushRadiusControl);
-        boxBrushRadius.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null).AddTo(boxBrushRadius);
+        boxBrushRadius.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null);
         var radiusView = AppBrushLibrary.CurrentBrush.CreateView(setting => setting?.BaseRadius).AddTo(boxBrushRadius);
         appBrushRadiusControl.ReactiveBindValue(radiusView);
         
@@ -53,18 +53,18 @@ public partial class PaintTool : CommonToolBase
             CustomMinimumSize = new(0, 30),
         };
         var boxBrushColor = container.AddProperty("Color", appBrushColorControl);
-        boxBrushColor.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null).AddTo(boxBrushColor);
+        boxBrushColor.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null);
         var colorView = AppBrushLibrary.CurrentBrush.CreateView(setting => setting?.Color).AddTo(boxBrushColor);
         appBrushColorControl.ReactiveBindColor(colorView).AddTo(colorView);
         
-        var AddToDocumentButton = new Button()
+        var useBrushButton = new Button()
         {
             Text = "Use brush",
             Alignment = HorizontalAlignment.Left,
             CustomMinimumSize = new(0, 30),
             SizeFlagsHorizontal = SizeFlags.Fill
         };
-        AddToDocumentButton.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null).AddTo(AddToDocumentButton);
+        useBrushButton.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null);
         var manageButton = new Button()
         {
             Text = "Manage brush library",
@@ -78,10 +78,10 @@ public partial class PaintTool : CommonToolBase
             SizeFlagsHorizontal = SizeFlags.Fill
         };
         box.AddChild(manageButton);
-        box.AddChild(AddToDocumentButton);
+        box.AddChild(useBrushButton);
         container.AddChild(box);
         // ---------------------------------------------
-        var brushList = new ToolDocumentBrushList()
+        var brushList = new DocumentBrushList()
         {
             CustomMinimumSize = new(0, 200),
         };
@@ -100,11 +100,11 @@ public partial class PaintTool : CommonToolBase
             ExpEdit = true,
         };
         var radiusBox = container.AddProperty("Radius", radiusControl);
-        radiusBox.VisibleIf(selectionM.SelectedBrush, e => e != Entity.Null).AddTo(radiusBox);
+        radiusBox.VisibleIf(selectionM.SelectedBrush, e => e != Entity.Null);
         var rView = selectionM.SelectedBrush.CreateView(e => e == Entity.Null ?
             null : e.Get<BrushSetting>().BaseRadius).AddTo(radiusControl);
         radiusControl.ReactiveBindValue(rView);
     }
 }
 
-public partial class ToolDocumentBrushList : ItemList;
+public partial class DocumentBrushList : ItemList;
