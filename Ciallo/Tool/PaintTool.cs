@@ -2,6 +2,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.NodeControl;
@@ -65,6 +66,7 @@ public partial class PaintTool : CommonToolBase
             SizeFlagsHorizontal = SizeFlags.Fill
         };
         useBrushButton.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null);
+        useBrushButton.Pressed += OnUseBrushPressed;
         var manageButton = new Button()
         {
             Text = "Manage brush library",
@@ -104,6 +106,14 @@ public partial class PaintTool : CommonToolBase
         var rView = selectionM.SelectedBrush.CreateView(e => e == Entity.Null ?
             null : e.Get<BrushSetting>().BaseRadius).AddTo(radiusControl);
         radiusControl.ReactiveBindValue(rView);
+    }
+
+    private void OnUseBrushPressed()
+    {
+        var setting = AppBrushLibrary.CurrentBrush.Value;
+        if (setting == null) return;
+        AppBrushLibrary.CurrentBrush.Value = null;
+        new NewBrushCmd(setting).Commit();
     }
 }
 

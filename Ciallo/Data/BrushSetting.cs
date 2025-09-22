@@ -15,12 +15,12 @@ public class BrushSetting : IPropertySource
 {
     public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
 
-    [DataMember] public readonly ReactiveProperty<string> Name = new(TranslationServer.Translate(""));
-    [DataMember] public readonly ObservableList<BrushLabel> Labels = [];
-    [DataMember] public readonly ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
-    [DataMember] public readonly ReactiveProperty<float> BaseRadius = new(8.0f);
-    [DataMember] public readonly BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(); // radius = baseRadius * curve(pressure)
-    [DataMember] public readonly ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
+    [DataMember] public ReactiveProperty<string> Name = new(TranslationServer.Translate("Brush"));
+    [DataMember] public ObservableList<BrushLabel> Labels = [];
+    [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
+    [DataMember] public ReactiveProperty<float> BaseRadius = new(8.0f);
+    [DataMember] public BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(); // radius = baseRadius * curve(pressure)
+    [DataMember] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
 
     // Vanilla
     [DataMember] public ReactiveProperty<float> DashLength = new(-1.0f);
@@ -97,7 +97,7 @@ public class BrushSetting : IPropertySource
     public BrushSetting Clone()
     {
         var bytes = MessagePackSerializer.Serialize(this);
-        var setting = MessagePackSerializer.Deserialize<BrushSetting>(bytes);
+        var setting = MessagePackSerializer.Deserialize<BrushSetting>(bytes); // Note: Fields or properties cannot be readonly
         return setting;
     }
 }

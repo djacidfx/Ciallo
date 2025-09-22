@@ -12,4 +12,15 @@ namespace Ciallo.Data;
 public class BrushManager
 {
     public List<Entity> Brushes = [];
+
+    public int Add(Entity brush)
+    {
+        Brushes.Add(brush);
+        return Brushes.Count - 1;
+    }
+
+    public void Remove(Entity brush)
+    {
+        Brushes.Remove(brush);
+    }
 }

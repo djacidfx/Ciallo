@@ -15,17 +15,18 @@ namespace Ciallo.Data;
 
 public partial class DataAutoload : Node
 {
-    public IFormatterResolver DefaultResolver;
+    public static MessagePackSerializerOptions DefaultOption;
     
     public override void _EnterTree()
     {
-        DefaultResolver = CompositeResolver.Create(
+        var defaultResolver = CompositeResolver.Create(
             GodotResolver.Instance,
             AttributeFormatterResolver.Instance,
             ReactivePropertyResolver.Instance,
             StandardResolver.Instance
         );
-        MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(DefaultResolver);
+        MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(defaultResolver);
+        DefaultOption = MessagePackSerializer.DefaultOptions;
 
         bool preferenceFileExists = AppPreference.TryLoad();
         if (!preferenceFileExists)
