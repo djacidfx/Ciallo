@@ -21,12 +21,12 @@ public static class ReactivePropertyExtension
 public class ReactivePropertyView<T> : ReactiveProperty<T>
 {
     // ReSharper disable once CollectionNeverQueried.Global
-    public CompositeDisposable ExtraDisposable { get; } = new();
+    public DisposableBag ExtraDisposable { get; } = new();
 
     public override void Dispose()
     {
-        base.Dispose();
         ExtraDisposable.Dispose();
+        base.Dispose();
     }
     
     public void AddDisposable(IDisposable disposable)

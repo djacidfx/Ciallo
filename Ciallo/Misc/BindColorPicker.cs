@@ -25,4 +25,25 @@ public static class BindColorPicker
             .Subscribe(c => property.Value = c).AddTo(subs);
         return subs;
     }
+    
+    public static CompositeDisposable ReactiveBindColor(this ColorPickerButton button, ReactivePropertyView<ReactiveProperty<Color>> view)
+    {
+        var resultSubs = new CompositeDisposable();
+        CompositeDisposable curSubs = null;
+        view.Subscribe(property =>
+        {
+            if (property == null)
+            {
+                curSubs?.Dispose();
+                curSubs = null;
+            }
+            if (property != null)
+            {
+                curSubs?.Dispose();
+                curSubs = button.BindColor(property);
+            }
+        }).AddTo(resultSubs);
+
+        return resultSubs;
+    }
 }

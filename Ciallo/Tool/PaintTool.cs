@@ -36,15 +36,6 @@ public partial class PaintTool : CommonToolBase
         brushSelector.BindValue(view, AppBrushLibrary.CurrentBrush).AddTo(brushSelector);
         container.AddProperty("Library brush", brushSelector);
         
-        var manageButton = new Button()
-        {
-            Text = "Manage brush library",
-            CustomMinimumSize = new(0, 30),
-            SizeFlagsHorizontal = SizeFlags.Fill
-        };
-        manageButton.Pressed += () => GetTree().GetNodesInGroup("Dialog").OfType<AppBrushLibrary>().First().Popup();
-        container.AddChild(manageButton);
-        
         var appBrushRadiusControl = new SpinSlider()
         {
             MinValue = 0.1f,
@@ -52,24 +43,68 @@ public partial class PaintTool : CommonToolBase
             Step = 0.03333333f,
             ExpEdit = true
         };
-        var box = container.AddProperty("Size", appBrushRadiusControl);
+        var boxBrushRadius = container.AddProperty("Radius", appBrushRadiusControl);
+        boxBrushRadius.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null).AddTo(boxBrushRadius);
+        var radiusView = AppBrushLibrary.CurrentBrush.CreateView(setting => setting?.BaseRadius).AddTo(boxBrushRadius);
+        appBrushRadiusControl.ReactiveBindValue(radiusView).AddTo(radiusView);
         
-        CompositeDisposable subs = new();
-        AppBrushLibrary.CurrentBrush.Subscribe(setting =>
+        var appBrushColorControl = new ColorPickerButton()
         {
-            if (setting == null)
-            {
-                box.Visible = false;
-                subs?.Dispose();
-                subs = null;
-            }
-            else
-            {
-                box.Visible = true;
-                subs?.Dispose();
-                subs = appBrushRadiusControl.BindValue(setting.BaseRadius);
-            }
-        }).AddTo(container);
+            CustomMinimumSize = new(0, 30),
+        };
+        var boxBrushColor = container.AddProperty("Color", appBrushColorControl);
+        boxBrushColor.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null).AddTo(boxBrushColor);
+        var colorView = AppBrushLibrary.CurrentBrush.CreateView(setting => setting?.Color).AddTo(boxBrushColor);
+        appBrushColorControl.ReactiveBindColor(colorView).AddTo(colorView);
         
+        var AddToDocumentButton = new Button()
+        {
+            Text = "Use brush",
+            Alignment = HorizontalAlignment.Left,
+            CustomMinimumSize = new(0, 30),
+            SizeFlagsHorizontal = SizeFlags.Fill
+        };
+        AddToDocumentButton.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null).AddTo(AddToDocumentButton);
+        var manageButton = new Button()
+        {
+            Text = "Manage brush library",
+            Alignment = HorizontalAlignment.Left,
+            CustomMinimumSize = new(0, 30),
+            SizeFlagsHorizontal = SizeFlags.Fill
+        };
+        manageButton.Pressed += () => GetTree().GetNodesInGroup("Dialog").OfType<AppBrushLibrary>().First().Popup();
+        var box = new VBoxContainer()
+        {
+            SizeFlagsHorizontal = SizeFlags.Fill
+        };
+        box.AddChild(manageButton);
+        box.AddChild(AddToDocumentButton);
+        container.AddChild(box);
+        // ---------------------------------------------
+        var brushList = new ToolDocumentBrushList()
+        {
+            CustomMinimumSize = new(0, 200),
+        };
+        var brushM = document.Get<BrushManager>();
+        var selectionM = document.Get<SelectionManager>();
+        foreach(var brush in brushM.Brushes)
+            brushList.AddItem(brush.Get<BrushSetting>().Name.Value);
+        document.Add(brushList);
+        container.AddProperty("Brush in use", brushList);
+        
+        var radiusControl = new SpinSlider
+        {
+            MinValue = 0.1f,
+            MaxValue = 256f,
+            Step = 0.03333333f,
+            ExpEdit = true,
+        };
+        var radiusBox = container.AddProperty("Radius", radiusControl);
+        radiusBox.VisibleIf(selectionM.SelectedBrush, e => e != Entity.Null).AddTo(radiusBox);
+        var rView = selectionM.SelectedBrush.CreateView(e => e == Entity.Null ?
+            null : e.Get<BrushSetting>().BaseRadius).AddTo(radiusControl);
+        radiusControl.ReactiveBindValue(rView).AddTo(rView);
     }
 }
+
+public partial class ToolDocumentBrushList : ItemList;

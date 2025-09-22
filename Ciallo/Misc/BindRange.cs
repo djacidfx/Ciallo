@@ -43,4 +43,26 @@ public static class BindRange
             .Subscribe(value => property.Value = T.CreateChecked(value)).AddTo(subs);
         return subs;
     }
+
+    public static CompositeDisposable ReactiveBindValue<T>(this SpinSlider spinSlider,
+        ReactivePropertyView<ReactiveProperty<T>> view) where T : INumber<T>
+    {
+        var resultSubs = new CompositeDisposable();
+        CompositeDisposable curSubs = null;
+        view.Subscribe(property =>
+        {
+            if (property == null)
+            {
+                curSubs?.Dispose();
+                curSubs = null;
+            }
+            if (property != null)
+            {
+                curSubs?.Dispose();
+                curSubs = spinSlider.BindValue(property);
+            }
+        }).AddTo(resultSubs);
+
+        return resultSubs;
+    }
 }
