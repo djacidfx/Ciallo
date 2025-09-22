@@ -36,7 +36,7 @@ public class BrushSetting : IPropertySource
     public void DrawProperty(PropertyContainer container)
     {
         var nameEdit = new LineEdit();
-        nameEdit.BindString(Name).AddTo(nameEdit);
+        nameEdit.BindString(Name);
         var box = container.AddProperty("Name", nameEdit);
         Labels.ObserveChanged().Subscribe(_ => box.Visible = Labels.Contains(BrushLabel.BuiltIn)).AddTo(nameEdit);
         
@@ -47,7 +47,7 @@ public class BrushSetting : IPropertySource
             Step = 0.03333333,
             ExpEdit = true
         };
-        baseRadiusControl.BindValue(BaseRadius).AddTo(baseRadiusControl);
+        baseRadiusControl.BindNumber(BaseRadius);
         container.AddProperty("Base radius", baseRadiusControl);
         
         var colorPickerButton = new ColorPickerButton()
@@ -57,7 +57,7 @@ public class BrushSetting : IPropertySource
         var picker = colorPickerButton.GetPicker();
         picker.ColorModesVisible = false;
         picker.ColorMode = ColorPicker.ColorModeType.Rgb;
-        colorPickerButton.BindColor(Color).AddTo(colorPickerButton);
+        colorPickerButton.BindColor(Color);
         container.AddProperty("RGB+Flow", colorPickerButton);
 
         var pressureCurveEdit = new MappingCurveEdit();
@@ -67,7 +67,7 @@ public class BrushSetting : IPropertySource
         container.AddProperty("Pen pressure", aspectBox);
 
         var typeButton = new OptionButton();
-        typeButton.BindEnum(RenderingType).AddTo(typeButton);
+        typeButton.BindEnum(RenderingType);
         container.AddProperty("Rendering type", typeButton);
         
         var falloffCurveEdit = new MappingCurveEdit();

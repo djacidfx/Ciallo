@@ -15,15 +15,20 @@ public static class BindColorPicker
         return subs;
     }
 
-    public static CompositeDisposable BindColor(this ColorPickerButton button, ReactiveProperty<Color> property)
+    public static void BindColor(this ColorPickerButton button, ReactiveProperty<Color> property, out CompositeDisposable subs)
     {
         //// Direct get picker binding make the preview color of the button not update correctly
         // return BindColor(button.GetPicker(), property);
-        CompositeDisposable subs = new();
+        subs = new();
         property.Subscribe(c => button.Color = c).AddTo(subs);
         button.SignalAsObservable<Color>(ColorPickerButton.SignalName.ColorChanged)
             .Subscribe(c => property.Value = c).AddTo(subs);
-        return subs;
+    }
+    
+    public static void BindColor(this ColorPickerButton button, ReactiveProperty<Color> property)
+    {
+        BindColor(button, property, out var subs);
+        subs.AddTo(button);
     }
     
     public static CompositeDisposable ReactiveBindColor(this ColorPickerButton button, ReactivePropertyView<ReactiveProperty<Color>> view)
@@ -40,7 +45,7 @@ public static class BindColorPicker
             if (property != null)
             {
                 curSubs?.Dispose();
-                curSubs = button.BindColor(property);
+                button.BindColor(property, out curSubs);
             }
         }).AddTo(resultSubs);
 

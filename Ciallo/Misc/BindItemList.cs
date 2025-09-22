@@ -9,10 +9,11 @@ using R3;
 namespace Ciallo.Misc;
 
 // Note: DeselectAll does not emit ItemSelected signal
+// Shen: being lazy here, not implement output disposable version
 public static class BindItemList
 {
     // Fix item list
-    public static CompositeDisposable BindValue<T>(this ItemList control, [NotNull] IReadOnlyList<T> items, 
+    public static void BindValue<T>(this ItemList control, [NotNull] IReadOnlyList<T> items, 
         [NotNull] ReactiveProperty<T> property, Func<T, string> toString = null)
     {
         if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
@@ -30,11 +31,11 @@ public static class BindItemList
         control.SignalAsObservable<long>(ItemList.SignalName.ItemSelected)
             .Subscribe(idx => property.Value = items[(int)idx])
             .AddTo(subs);
-        return subs;
+        subs.AddTo(control);
     }
     
     // Dynamic list view created from R3.ObservableList
-    public static CompositeDisposable BindValue<T>(this ItemList control, IWritableSynchronizedView<T,ReactiveProperty<string>> view,
+    public static void BindValue<T>(this ItemList control, IWritableSynchronizedView<T,ReactiveProperty<string>> view,
         [NotNull] ReactiveProperty<T> property)
     {
         if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
@@ -93,6 +94,7 @@ public static class BindItemList
         control.SignalAsObservable<long>(ItemList.SignalName.ItemSelected)
             .Subscribe(idx => property.Value = view.GetAt((int)idx).Value)
             .AddTo(subs);
-        return subs;
+        
+        subs.AddTo(control);
     }
 }

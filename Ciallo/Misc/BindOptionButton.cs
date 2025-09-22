@@ -17,10 +17,10 @@ public static class BindOptionButton
     /// <param name="button"></param>
     /// <param name="property"></param>
     /// <typeparam name="T">Must be enum type.</typeparam>
-    public static CompositeDisposable BindEnum<T>(this OptionButton button, [NotNull] ReactiveProperty<T> property) where T : Enum
+    public static void BindEnum<T>(this OptionButton button, [NotNull] ReactiveProperty<T> property) where T : Enum
     {
         var values = (T[])Enum.GetValues(typeof(T));
-        return button.BindValue(values, property);
+        button.BindValue(values, property);
     }
 
     /// <summary>
@@ -31,33 +31,43 @@ public static class BindOptionButton
     /// <param name="items">The list options.</param>
     /// <param name="property"></param>
     /// <param name="toString"></param>
+    /// <param name="subs"></param>
     /// <typeparam name="T">Use `ToString()` as item string.</typeparam>
-    public static CompositeDisposable BindValue<T>(this OptionButton button, IReadOnlyList<T> items,
-        [NotNull] ReactiveProperty<T> property, Func<T, string> toString = null)
+    public static void BindValue<T>(this OptionButton button, IReadOnlyList<T> items,
+        [NotNull] ReactiveProperty<T> property, Func<T, string> toString, out CompositeDisposable subs)
     {
         if(button.AllowReselect) throw new ArgumentException("AllowReselect must be false.");
         button.Clear();
         foreach (var item in items)
-            button.AddItem(toString != null ? toString(item) : item.ToString());
+            button.AddItem(toString(item));
         
         // Bind
-        var subs = new CompositeDisposable();
+        subs = new();
         property.Subscribe(value => button.Selected = items.IndexOf(value)).AddTo(subs);
         button.OnItemSelectedAsObservable().Subscribe(index =>
         {
             if (index != -1) property.Value = items[(int)index];
             if (index == -1) property.Value = default;
         }).AddTo(subs);
-        return subs;
     }
     
-    public static CompositeDisposable BindValue<T>(this OptionButton button, IWritableSynchronizedView<T,ReactiveProperty<string>> view,
-        [NotNull] ReactiveProperty<T> property)
+    public static void BindValue<T>(this OptionButton button, IReadOnlyList<T> items,
+        [NotNull] ReactiveProperty<T> property, Func<T, string> toString = null)
+    {
+        toString ??= v => v.ToString();
+        BindValue(button, items, property, toString, out var subs);
+        subs.AddTo(button);
+    }
+    
+    public static void BindValue<T>(this OptionButton button,
+        IWritableSynchronizedView<T, ReactiveProperty<string>> view,
+        [NotNull] ReactiveProperty<T> property,
+        out CompositeDisposable subs)
     {
         if (button.AllowReselect) throw new ArgumentException("AllowReselect must be false.", nameof(button));
         button.Clear();
 
-        var subs = new CompositeDisposable();
+        subs = new();
 
         // Initialize with existing view items
         foreach (var viewProperty in view)
@@ -118,7 +128,13 @@ public static class BindOptionButton
         {
             property.Value = index == -1 ? default : view.GetAt((int)index).Value;
         }).AddTo(subs);
+    }
 
-        return subs;
+    public static void BindValue<T>(this OptionButton button,
+        IWritableSynchronizedView<T, ReactiveProperty<string>> view,
+        [NotNull] ReactiveProperty<T> property)
+    {
+        BindValue(button, view, property, out var subs);
+        subs.AddTo(button);
     }
 }

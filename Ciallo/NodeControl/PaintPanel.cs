@@ -35,8 +35,8 @@ public partial class PaintPanel : PanelContainer
         Offset.Subscribe(v => _camera.Position = v);
         _documentSetting.BackgroundColor.Subscribe(c => _background.Color = c);
         
-        GetNode<SpinSlider>("%ZoomControl").BindValue(Zoom).AddTo(this);
-        GetNode<SpinSlider>("%RotationControl").BindValue(CanvasRotation).AddTo(this);
-        GetNode<ColorPickerButton>("%BackgroundColorControl").BindColor(_documentSetting.BackgroundColor).AddTo(this);
+        GetNode<SpinSlider>("%ZoomControl").BindNumber(Zoom);
+        GetNode<SpinSlider>("%RotationControl").BindNumber(CanvasRotation);
+        GetNode<ColorPickerButton>("%BackgroundColorControl").BindColor(_documentSetting.BackgroundColor);
     }
 }

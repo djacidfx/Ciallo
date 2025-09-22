@@ -69,7 +69,7 @@ public partial class LayerContainer : Container
         visibleButton.BindBool(node.IsVisible).AddTo(subs);
 
         var lineEdit = layerControl.GetNode<LabelLineEdit>("%LabelLineEdit");
-        lineEdit.BindString(node.Name).AddTo(subs);
+        lineEdit.BindString(node.Name);
         
         layerControl.MouseEntered += () => _mouseHoveringLayer = layerControl;
         layerControl.MouseExited += () => _mouseHoveringLayer = null;

@@ -33,7 +33,7 @@ public partial class PaintTool : CommonToolBase
         var brushSelector = new OptionButton();
         var view = AppBrushLibrary.Brushes.CreateWritableView(setting => setting.Name);
         view.AddTo(brushSelector);
-        brushSelector.BindValue(view, AppBrushLibrary.CurrentBrush).AddTo(brushSelector);
+        brushSelector.BindValue(view, AppBrushLibrary.CurrentBrush);
         container.AddProperty("Library brush", brushSelector);
         
         var appBrushRadiusControl = new SpinSlider()
@@ -46,7 +46,7 @@ public partial class PaintTool : CommonToolBase
         var boxBrushRadius = container.AddProperty("Radius", appBrushRadiusControl);
         boxBrushRadius.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null).AddTo(boxBrushRadius);
         var radiusView = AppBrushLibrary.CurrentBrush.CreateView(setting => setting?.BaseRadius).AddTo(boxBrushRadius);
-        appBrushRadiusControl.ReactiveBindValue(radiusView).AddTo(radiusView);
+        appBrushRadiusControl.ReactiveBindValue(radiusView);
         
         var appBrushColorControl = new ColorPickerButton()
         {
@@ -103,7 +103,7 @@ public partial class PaintTool : CommonToolBase
         radiusBox.VisibleIf(selectionM.SelectedBrush, e => e != Entity.Null).AddTo(radiusBox);
         var rView = selectionM.SelectedBrush.CreateView(e => e == Entity.Null ?
             null : e.Get<BrushSetting>().BaseRadius).AddTo(radiusControl);
-        radiusControl.ReactiveBindValue(rView).AddTo(rView);
+        radiusControl.ReactiveBindValue(rView);
     }
 }
 
