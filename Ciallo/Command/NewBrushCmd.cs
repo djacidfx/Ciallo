@@ -26,8 +26,8 @@ public class NewBrushCmd(BrushSetting inputSetting) : CommandBase
         }
         // Data
         BrushE.Add(new ToSerializeTag());
-        var brushM = Document.Get<BrushManager>();
-        brushM.Add(BrushE);
+        var bm = Document.Get<BrushManager>();
+        bm.Add(BrushE);
         
         // UI
         // Note: suppose to have a dedicate custom widget to handle this.
@@ -36,7 +36,7 @@ public class NewBrushCmd(BrushSetting inputSetting) : CommandBase
         list.AddItem(setting.Name.Value);
         _nameSubscription = setting.Name.Subscribe(s =>
         {
-            var idx = brushM.Brushes.IndexOf(BrushE);
+            var idx = bm.Brushes.IndexOf(BrushE);
             list.SetItemText(idx, s);
         });
     }
@@ -46,13 +46,13 @@ public class NewBrushCmd(BrushSetting inputSetting) : CommandBase
         // UI
         _nameSubscription.Dispose();
         _nameSubscription = null;
-        var brushM = Document.Get<BrushManager>();
+        var bm = Document.Get<BrushManager>();
         var list = Document.Get<DocumentBrushList>();
-        var idx = brushM.Brushes.IndexOf(BrushE);
+        var idx = bm.Brushes.IndexOf(BrushE);
         list.RemoveItem(idx);
         
         // Data
-        brushM.Remove(BrushE);
+        bm.Remove(BrushE);
         BrushE.Remove<ToSerializeTag>();
     }
 }

@@ -87,6 +87,10 @@ public partial class PaintTool : CommonToolBase
         {
             CustomMinimumSize = new(0, 200),
         };
+        brushList.ItemSelected += idx =>
+        {
+            new ChangeWorkingBrushCmd((int)idx).Commit();
+        };
         var brushM = document.Get<BrushManager>();
         var selectionM = document.Get<SelectionManager>();
         foreach(var brush in brushM.Brushes)
