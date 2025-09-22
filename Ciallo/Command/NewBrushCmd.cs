@@ -22,9 +22,10 @@ public class NewBrushCmd(BrushSetting inputSetting) : CommandBase
             BrushE = WorkingWorld.Create();
             var s = inputSetting.Clone();
             s.Labels.Remove(BrushLabel.BuiltIn);
-            BrushE.Add(s, new ToSerializeTag());
+            BrushE.Add(s);
         }
         // Data
+        BrushE.Add(new ToSerializeTag());
         var brushM = Document.Get<BrushManager>();
         brushM.Add(BrushE);
         
@@ -52,5 +53,6 @@ public class NewBrushCmd(BrushSetting inputSetting) : CommandBase
         
         // Data
         brushM.Remove(BrushE);
+        BrushE.Remove<ToSerializeTag>();
     }
 }

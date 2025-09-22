@@ -25,10 +25,11 @@ public class NewStrokeCmd(IReadOnlyList<int> insertPath) : CommandBase
         {
             _strokeE = WorkingWorld.Create();
             var node = new LayerTreeNode();
-            _strokeE.Add(new StrokeGeometry(), node, new ToSerializeTag());
+            _strokeE.Add(new StrokeGeometry(), node);
         }
         
         // Data
+        _strokeE.Add(new ToSerializeTag());
         tree.Root.InsertDescendant(_insertPath, _strokeE);
         
         // View
@@ -61,5 +62,6 @@ public class NewStrokeCmd(IReadOnlyList<int> insertPath) : CommandBase
         
         // Data
         tree.Root.RemoveDescendant(_insertPath);
+        _strokeE.Remove<ToSerializeTag>();
     }
 }

@@ -9,7 +9,7 @@ public partial class LayerAction : Control
     public void OnNewLayer()
     {
         if (AppWorldManager.WorkingWorld.Value == null) return;
-        new NewStrokeLayerCmd([0]).Combine(new ChangeWorkingLayerCmd([0])).Commit();
+        new NewPolylineLayerCmd([0]).Combine(new ChangeWorkingLayerCmd([0])).Commit();
     }
 
     public void OnRemoveLayer()

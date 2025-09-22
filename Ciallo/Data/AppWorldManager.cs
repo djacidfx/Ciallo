@@ -67,7 +67,7 @@ public static class AppWorldManager
         LoadedWorlds.Add(world);
         
         // Add initial layer
-        var c = new NewStrokeLayerCmd([0]);
+        var c = new NewPolylineLayerCmd([0]);
         c.Do();
         var s = new ChangeWorkingLayerCmd([0]);
         s.Do();
