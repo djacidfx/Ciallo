@@ -13,8 +13,10 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
   - [x] Infrastructure
   - [ ] Brush tool
     - [x] Basic interaction
-    - [ ] Basic brush engine
-    - [ ] Paint stabilizer
+    - [x] Basic brush engine
+      - [ ] More brushes 
+      - [ ] More brush parameters
+    - [x] Paint stabilizer
     - [ ] Resize brush interactor
   - [ ] Paint fill tool
   - [ ] Vector fill tool
@@ -32,7 +34,6 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
   - [x] Reorder
   - [ ] Merge, split
   - [ ] Import image as a layer
-- [ ] Stamp brush engine
 - [ ] Localization
   - [x] Infrastructure (ai translation)
   - [ ] Complete
