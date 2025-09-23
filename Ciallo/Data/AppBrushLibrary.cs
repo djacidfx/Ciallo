@@ -24,7 +24,7 @@ public partial class AppBrushLibrary : AcceptDialog
         var view = Brushes.CreateWritableView(setting =>  setting.Name);
         view.AddTo(this);
         PropertiesHolder = GetNode<Container>("%PropertiesHolder");
-        GetNode<BrushSelector>("%BrushSelector").BindValue(view, CurrentBrush);
+        GetNode<ItemList>("%BrushSelector").BindValue(view, CurrentBrush);
 
         foreach (var brush in Brushes)
         {

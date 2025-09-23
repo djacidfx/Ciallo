@@ -1,17 +1,16 @@
-[gd_scene load_steps=3 format=3 uid="uid://dw0q5mir7loyl"]
+[gd_scene load_steps=2 format=3 uid="uid://dw0q5mir7loyl"]
 
 [ext_resource type="Script" uid="uid://b6xc7pixx1opt" path="res://Data/AppBrushLibrary.cs" id="1_0mb0o"]
-[ext_resource type="PackedScene" uid="uid://dh3rv2rfekvha" path="res://Widget/BrushSelector.tscn" id="2_vueu2"]
 
 [node name="BrushLibrary" type="AcceptDialog"]
 auto_translate_mode = 1
-title = "Brush Manager"
+title = "Brush library"
 initial_position = 1
 size = Vector2i(720, 960)
 visible = true
 script = ExtResource("1_0mb0o")
 
-[node name="BoxCannotBeSpliter" type="HBoxContainer" parent="."]
+[node name="Spliter" type="HSplitContainer" parent="."]
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 712.0
@@ -19,20 +18,21 @@ offset_bottom = 911.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="BrushSelector" parent="BoxCannotBeSpliter" instance=ExtResource("2_vueu2")]
+[node name="BrushSelector" type="ItemList" parent="Spliter"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 0)
 layout_mode = 2
+auto_width = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="BoxCannotBeSpliter"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Spliter"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ScrollContainer" type="ScrollContainer" parent="BoxCannotBeSpliter/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Spliter/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="BoxCannotBeSpliter/VBoxContainer/ScrollContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="Spliter/VBoxContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -40,7 +40,7 @@ theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 10
 
-[node name="PropertiesHolder" type="VBoxContainer" parent="BoxCannotBeSpliter/VBoxContainer/ScrollContainer/MarginContainer"]
+[node name="PropertiesHolder" type="VBoxContainer" parent="Spliter/VBoxContainer/ScrollContainer/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
