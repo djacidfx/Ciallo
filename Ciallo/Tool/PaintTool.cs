@@ -46,8 +46,9 @@ public partial class PaintTool : CommonToolBase
         };
         var boxBrushRadius = container.AddProperty("Radius", appBrushRadiusControl);
         boxBrushRadius.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null);
-        var radiusView = AppBrushLibrary.CurrentBrush.CreateView(setting => setting?.BaseRadius).AddTo(boxBrushRadius);
-        appBrushRadiusControl.ReactiveBindValue(radiusView);
+        var radiusView = AppBrushLibrary.CurrentBrush
+            .Select(setting => setting?.BaseRadius).ToReadOnlyReactiveProperty();
+        appBrushRadiusControl.ReactiveBindNumber(radiusView);
         
         var appBrushColorControl = new ColorPickerButton()
         {
@@ -55,8 +56,8 @@ public partial class PaintTool : CommonToolBase
         };
         var boxBrushColor = container.AddProperty("Color", appBrushColorControl);
         boxBrushColor.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null);
-        var colorView = AppBrushLibrary.CurrentBrush.CreateView(setting => setting?.Color).AddTo(boxBrushColor);
-        appBrushColorControl.ReactiveBindColor(colorView).AddTo(colorView);
+        var colorView = AppBrushLibrary.CurrentBrush.Select(setting => setting?.Color).ToReadOnlyReactiveProperty();
+        appBrushColorControl.ReactiveBindColor(colorView);
         
         var useBrushButton = new Button()
         {
@@ -107,9 +108,9 @@ public partial class PaintTool : CommonToolBase
         };
         var radiusBox = container.AddProperty("Radius", radiusControl);
         radiusBox.VisibleIf(selectionM.SelectedBrush, e => e != Entity.Null);
-        var rView = selectionM.SelectedBrush.CreateView(e => e == Entity.Null ?
-            null : e.Get<BrushSetting>().BaseRadius).AddTo(radiusControl);
-        radiusControl.ReactiveBindValue(rView);
+        var rView = selectionM.SelectedBrush
+            .Select(e => e == Entity.Null ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
+        radiusControl.ReactiveBindNumber(rView);
     }
 
     private void OnUseBrushPressed()

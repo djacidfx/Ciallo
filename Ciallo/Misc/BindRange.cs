@@ -58,8 +58,8 @@ public static class BindRange
         subs.AddTo(spinSlider);
     }
 
-    public static void ReactiveBindValue<T>(this SpinSlider spinSlider,
-        ReactivePropertyView<ReactiveProperty<T>> view,
+    public static void ReactiveBindNumber<T>(this SpinSlider spinSlider,
+        ReadOnlyReactiveProperty<ReactiveProperty<T>> view,
         out CompositeDisposable subs) where T : INumber<T>
     {
         subs = new();
@@ -79,10 +79,10 @@ public static class BindRange
         }).AddTo(subs);
     }
     
-    public static void ReactiveBindValue<T>(this SpinSlider spinSlider,
-        ReactivePropertyView<ReactiveProperty<T>> view) where T : INumber<T>
+    public static void ReactiveBindNumber<T>(this SpinSlider spinSlider,
+        ReadOnlyReactiveProperty<ReactiveProperty<T>> view) where T : INumber<T>
     {
-        ReactiveBindValue(spinSlider, view, out var subs);
+        ReactiveBindNumber(spinSlider, view, out var subs);
         subs.AddTo(spinSlider);
     }
 }
