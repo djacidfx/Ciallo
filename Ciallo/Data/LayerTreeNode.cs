@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Runtime.Serialization;
 using Arch.Core;
 using Arch.Core.Extensions;
-using MessagePack;
 using R3;
 
 namespace Ciallo.Data;
@@ -14,17 +14,17 @@ namespace Ciallo.Data;
 /// Layer tree node component providing entity hierarchical structure like Unity's GameObject scene tree.
 /// </summary>
 /// <remarks> All methods this class should be named similar to and behave same as Godot's SceneTree and Node </remarks>
-[MessagePackObject(true), ToSerialize]
+[DataContract, ToSerialize]
 public class LayerTreeNode
 {
-    public readonly ReactiveProperty<string> Name = new("");
-    public readonly ReactiveProperty<bool> IsVisible = new(true);
+    [DataMember] public ReactiveProperty<string> Name = new("");
+    [DataMember] public ReactiveProperty<bool> IsVisible = new(true);
     
-    public readonly List<Entity> Children = [];
+    [DataMember] public List<Entity> Children = [];
     
-    [IgnoreMember] public int ChildCount => Children.Count;
-    [IgnoreMember] public int DescendantCount => CountSubtreeNodes(this) - 1;
-    [IgnoreMember] public bool IsLeaf => Children.Count == 0;
+    public int ChildCount => Children.Count;
+    public int DescendantCount => CountSubtreeNodes(this) - 1;
+    public bool IsLeaf => Children.Count == 0;
 
     #region Modify
     
