@@ -17,11 +17,17 @@ offset_right = 712.0
 offset_bottom = 911.0
 grow_horizontal = 2
 grow_vertical = 2
+split_offset = 256
 
-[node name="BrushSelector" type="ItemList" parent="Spliter"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Spliter"]
+layout_mode = 2
+
+[node name="BrushSelector" type="ItemList" parent="Spliter/ScrollContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 0)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 auto_width = true
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Spliter"]

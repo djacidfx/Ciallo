@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using Ciallo.Command;
 using Ciallo.Geometry;
 using Ciallo.Misc;
 using Ciallo.Tool;
@@ -35,7 +36,11 @@ public class BrushSetting : IPropertySource
     
     public void DrawProperty(PropertyContainer container)
     {
-        var nameEdit = new LineEdit();
+        var nameEdit = new LineEdit()
+        {
+            FocusMode = Control.FocusModeEnum.Click,
+            AutoTranslateMode = Node.AutoTranslateModeEnum.Disabled,
+        };
         nameEdit.BindString(Name);
         var box = container.AddProperty("Name", nameEdit);
         Labels.ObserveChanged().Subscribe(_ => box.Visible = Labels.Contains(BrushLabel.BuiltIn)).AddTo(nameEdit);

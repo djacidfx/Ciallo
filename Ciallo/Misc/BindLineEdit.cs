@@ -14,13 +14,19 @@ public static class BindLineEdit
             if(lineEdit.Text == value) return; 
             lineEdit.Text = value;
         }).AddTo(subs);
-        lineEdit.OnTextChangedAsObservable()
+        lineEdit.OnTextSubmittedAsObservable()
             .Subscribe(value => property.Value = value).AddTo(subs);
+        lineEdit.SubmitOnFocusExit();
     }
 
     public static void BindString(this LineEdit lineEdit, ReactiveProperty<string> property)
     {
         BindString(lineEdit, property, out var subs);
         subs.AddTo(lineEdit);
+    }
+    
+    public static void SubmitOnFocusExit(this LineEdit lineEdit)
+    {
+        lineEdit.FocusExited += () => lineEdit.EmitSignal(LineEdit.SignalName.TextSubmitted, lineEdit.Text);
     }
 }
