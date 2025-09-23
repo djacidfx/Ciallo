@@ -1,40 +1,18 @@
-using Godot;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Ciallo.Data;
 using Ciallo.Misc;
-using Ciallo.Widget;
+using Godot;
 using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
 
-namespace Ciallo.NodeControl;
+namespace Ciallo.Data;
 
-public partial class AppBrushLibrary : AcceptDialog
+public static class AppBrushLibrary
 {
-    public Container PropertiesHolder;
     public static readonly ReactiveProperty<BrushSetting> CurrentBrush = new(null);
     public static readonly ObservableList<BrushSetting> Brushes = [];
 
-    public override void _Ready()
-    {
-        GetOkButton().Visible = false;
-        var view = Brushes.CreateWritableView(setting =>  setting.Name);
-        view.AddTo(this);
-        PropertiesHolder = GetNode<Container>("%PropertiesHolder");
-        GetNode<ItemList>("%BrushSelector").BindValue(view, CurrentBrush);
-
-        foreach (var brush in Brushes)
-        {
-            var propertyBox = new PropertyContainer();
-            brush.DrawProperty(propertyBox);
-            propertyBox.VisibleIf(CurrentBrush, brush);
-            PropertiesHolder.AddChild(propertyBox);
-        }
-    }
-    
     public static List<BrushSetting> CreateBuiltInBrushes()
     {
         List<BrushSetting> brushes = [];
@@ -71,9 +49,10 @@ public partial class AppBrushLibrary : AcceptDialog
     }
 
     public static readonly string Path = "user://Brush.json";
+
     public static void Save()
     {
-        var content = JsonConvert.SerializeObject(Brushes, Preference.JsonOptions);
+        var content = JsonConvert.SerializeObject(AppBrushLibrary.Brushes, Preference.JsonOptions);
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
         file.StoreString(content);
     }
@@ -82,11 +61,11 @@ public partial class AppBrushLibrary : AcceptDialog
     {
         if (!FileAccess.FileExists(Path))
             return false;
-        Brushes.Clear();
+        AppBrushLibrary.Brushes.Clear();
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
         
-        JsonConvert.PopulateObject(content, Brushes, Preference.JsonOptions);
+        JsonConvert.PopulateObject(content, AppBrushLibrary.Brushes, Preference.JsonOptions);
         return true;
     }
 }

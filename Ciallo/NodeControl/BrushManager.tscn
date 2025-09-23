@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://dw0q5mir7loyl"]
 
-[ext_resource type="Script" uid="uid://b6xc7pixx1opt" path="res://Data/AppBrushLibrary.cs" id="1_0mb0o"]
+[ext_resource type="Script" uid="uid://b6xc7pixx1opt" path="res://NodeControl/BrushPanel.cs" id="1_0mb0o"]
 
 [node name="BrushLibrary" type="AcceptDialog"]
 auto_translate_mode = 1

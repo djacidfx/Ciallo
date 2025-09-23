@@ -75,7 +75,7 @@ public partial class PaintTool : CommonToolBase
             CustomMinimumSize = new(0, 30),
             SizeFlagsHorizontal = SizeFlags.Fill
         };
-        manageButton.Pressed += () => GetTree().GetNodesInGroup("Dialog").OfType<AppBrushLibrary>().First().Popup();
+        manageButton.Pressed += () => GetTree().GetNodesInGroup("Dialog").OfType<BrushPanel>().First().Popup();
         var box = new VBoxContainer()
         {
             SizeFlagsHorizontal = SizeFlags.Fill

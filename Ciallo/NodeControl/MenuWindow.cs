@@ -33,7 +33,7 @@ public partial class MenuWindow : PopupMenu
         switch (id)
         {
             case 0:
-                GetTree().GetNodesInGroup("Dialog").OfType<AppBrushLibrary>().First().Popup();
+                GetTree().GetNodesInGroup("Dialog").OfType<BrushPanel>().First().Popup();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(id), $"Unhandled menu item index: {id}");
