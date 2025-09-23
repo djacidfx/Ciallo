@@ -37,15 +37,12 @@ public static class BindColorPicker
         CompositeDisposable curSubs = null;
         view.Subscribe(property =>
         {
-            if (property == null)
+            curSubs?.Dispose();
+            if (property == null) curSubs = null;
+            else
             {
-                curSubs?.Dispose();
-                curSubs = null;
-            }
-            if (property != null)
-            {
-                curSubs?.Dispose();
                 button.BindColor(property, out curSubs);
+                curSubs.AddTo(subs);
             }
         }).AddTo(subs);
         

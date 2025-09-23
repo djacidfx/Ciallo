@@ -63,18 +63,16 @@ public static class BindRange
         out CompositeDisposable subs) where T : INumber<T>
     {
         subs = new();
-        CompositeDisposable curSubs = null;
+        CompositeDisposable curSub = null;
+        var disposable = subs;
         view.Subscribe(property =>
         {
-            if (property == null)
+            curSub?.Dispose();
+            if (property == null) curSub = null;
+            else
             {
-                curSubs?.Dispose();
-                curSubs = null;
-            }
-            if (property != null)
-            {
-                curSubs?.Dispose();
-                spinSlider.BindNumber(property, out curSubs);
+                spinSlider.BindNumber(property, out curSub);
+                curSub.AddTo(disposable);
             }
         }).AddTo(subs);
     }
