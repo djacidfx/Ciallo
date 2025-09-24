@@ -1,6 +1,14 @@
-[gd_scene load_steps=2 format=3 uid="uid://dw0q5mir7loyl"]
+[gd_scene load_steps=10 format=3 uid="uid://dw0q5mir7loyl"]
 
 [ext_resource type="Script" uid="uid://b6xc7pixx1opt" path="res://NodeControl/BrushPanel.cs" id="1_0mb0o"]
+[ext_resource type="Texture2D" uid="uid://dm6dr88emw3ta" path="res://Icon/plus.svg" id="2_8ha6r"]
+[ext_resource type="Texture2D" uid="uid://dvgbavcaytc4e" path="res://Icon/minus.svg" id="3_eaqx8"]
+[ext_resource type="Texture2D" uid="uid://ddgqnm1dvnk6w" path="res://Icon/content-copy.svg" id="4_7s73l"]
+[ext_resource type="Texture2D" uid="uid://dt146sb1jur0" path="res://Icon/replay.svg" id="5_eaqx8"]
+[ext_resource type="Texture2D" uid="uid://cckv70bagaa5d" path="res://Icon/chevron-double-up.svg" id="5_hu6b8"]
+[ext_resource type="Texture2D" uid="uid://v31or7k4er55" path="res://Icon/chevron-up.svg" id="6_4gyxw"]
+[ext_resource type="Texture2D" uid="uid://bvtnbej55aygj" path="res://Icon/chevron-down.svg" id="7_vldbi"]
+[ext_resource type="Texture2D" uid="uid://cguvcubtl0453" path="res://Icon/chevron-double-down.svg" id="8_tnq2j"]
 
 [node name="BrushLibrary" type="AcceptDialog"]
 auto_translate_mode = 1
@@ -10,7 +18,7 @@ size = Vector2i(720, 960)
 visible = true
 script = ExtResource("1_0mb0o")
 
-[node name="Spliter" type="HSplitContainer" parent="."]
+[node name="Splitter" type="HSplitContainer" parent="."]
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 712.0
@@ -19,26 +27,104 @@ grow_horizontal = 2
 grow_vertical = 2
 split_offset = 256
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Spliter"]
+[node name="VBoxContainer2" type="HBoxContainer" parent="Splitter"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HBoxContainer" type="VBoxContainer" parent="Splitter/VBoxContainer2"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Blank" type="Control" parent="Splitter/VBoxContainer2/HBoxContainer"]
 layout_mode = 2
 
-[node name="BrushSelector" type="ItemList" parent="Spliter/ScrollContainer"]
+[node name="Add" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(128, 0)
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("2_8ha6r")
+expand_icon = true
+
+[node name="Remove" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("3_eaqx8")
+expand_icon = true
+
+[node name="Copy" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("4_7s73l")
+expand_icon = true
+
+[node name="Reset" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+tooltip_text = "Reset all built-in brushes"
+theme_type_variation = &"ToolButton"
+icon = ExtResource("5_eaqx8")
+expand_icon = true
+
+[node name="Top" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("5_hu6b8")
+expand_icon = true
+
+[node name="Up" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("6_4gyxw")
+expand_icon = true
+
+[node name="Down" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("7_vldbi")
+expand_icon = true
+
+[node name="Bottom" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("8_tnq2j")
+expand_icon = true
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Splitter/VBoxContainer2"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="BrushSelector" type="ItemList" parent="Splitter/VBoxContainer2/ScrollContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(112, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 auto_width = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Spliter"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Splitter"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Spliter/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Splitter/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="Spliter/VBoxContainer/ScrollContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="Splitter/VBoxContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -46,7 +132,7 @@ theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 10
 
-[node name="PropertiesHolder" type="VBoxContainer" parent="Spliter/VBoxContainer/ScrollContainer/MarginContainer"]
+[node name="PropertiesHolder" type="VBoxContainer" parent="Splitter/VBoxContainer/ScrollContainer/MarginContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3

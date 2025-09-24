@@ -25,14 +25,14 @@ script = ExtResource("1_geqg7")
 [node name="New" type="Button" parent="LayerAction"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-theme_type_variation = &"FlatButton"
+theme_type_variation = &"ToolButton"
 icon = ExtResource("1_ulw2x")
 expand_icon = true
 
 [node name="Remove" type="Button" parent="LayerAction"]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-theme_type_variation = &"FlatButton"
+theme_type_variation = &"ToolButton"
 icon = ExtResource("2_tod7h")
 expand_icon = true
 

@@ -97,7 +97,7 @@ public partial class PaintTool : CommonToolBase
         foreach(var brush in brushM.Brushes)
             brushList.AddItem(brush.Get<BrushSetting>().Name.Value);
         document.Add(brushList);
-        container.AddProperty("Brush in use", brushList);
+        container.AddProperty("Brush in document", brushList);
         
         var radiusControl = new SpinSlider
         {
