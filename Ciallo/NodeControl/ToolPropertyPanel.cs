@@ -24,15 +24,16 @@ public partial class ToolPropertyPanel : PanelContainer
         HubBox = GetNode<VBoxContainer>("%HubBox");
         HubBox.QueueFreeChildren();
         
-        AppWorldManager.LoadedWorlds.ObserveChanged().Subscribe(et =>
+        AppWorldManager.LoadedWorlds.ObserveChanged().Subscribe(e =>
         {
-            switch (et.Action)
+            switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
                     var holder = new DocumentToolPropertyContainer();
-                    holder.VisibleIf(AppWorldManager.WorkingWorld, et.NewItem);
-                    et.NewItem.Document().Add(holder);
+                    holder.VisibleIf(AppWorldManager.WorkingWorld, e.NewItem);
+                    e.NewItem.Document().Add(holder);
                     HubBox.AddChild(holder);
+                    HubBox.MoveChild(holder, e.NewStartingIndex);
                     
                     foreach (var tool in AppToolManager.GetAllTools<ToolButtonBase>())
                     {
@@ -41,7 +42,7 @@ public partial class ToolPropertyPanel : PanelContainer
             
                         var container = hub.GetNode<PropertyContainer>("%PropertyContainer");
                         container.QueueFreeChildren();
-                        tool.DrawProperty(container, et.NewItem.Document());
+                        tool.DrawProperty(container, e.NewItem.Document());
             
                         var toolNameLabel = hub.GetNode<Label>("%ToolNameLabel");
                         toolNameLabel.Text = tool.ToolName;
@@ -50,8 +51,8 @@ public partial class ToolPropertyPanel : PanelContainer
                     }
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    var box = et.OldItem.Document().Get<DocumentToolPropertyContainer>();
-                    et.OldItem.Document().Remove<DocumentToolPropertyContainer>();
+                    var box = e.OldItem.Document().Get<DocumentToolPropertyContainer>();
+                    e.OldItem.Document().Remove<DocumentToolPropertyContainer>();
                     box.QueueFree();
                     break;
                 default:

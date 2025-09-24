@@ -88,6 +88,9 @@ public static class BindOptionButton
             {
                 case NotifyCollectionChangedAction.Add:
                     button.AddItem(e.NewItem.View.Value);
+                    button.MoveItem(button.GetItemCount() - 1, e.NewStartingIndex);
+                    if(EqualityComparer<T>.Default.Equals(e.NewItem.Value, property.Value))
+                        button.Select(e.NewStartingIndex); // Necessary after clearing the control (in Reset)
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     button.RemoveItem(e.OldStartingIndex);
@@ -96,10 +99,7 @@ public static class BindOptionButton
                     button.SetItemText(e.NewStartingIndex, e.NewItem.View.Value);
                     break;
                 case NotifyCollectionChangedAction.Move:
-                    // Rebuild items on move since OptionButton lacks MoveItem
-                    button.Clear();
-                    foreach (var viewProperty in view)
-                        button.AddItem(viewProperty.Value);
+                    button.MoveItem(e.OldStartingIndex, e.NewStartingIndex);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     button.Clear();
@@ -136,5 +136,30 @@ public static class BindOptionButton
     {
         BindValue(button, view, property, out var subs);
         subs.AddTo(button);
+    }
+    
+    // Pitfall: OptionButton lacks MoveItem, so we need to rebuild items on Move
+    public static void MoveItem(this OptionButton button, int from, int to)
+    {
+        var count = button.GetItemCount();
+        var texts = new List<string>(count);
+        for (int i = 0; i < count; i++)
+            texts.Add(button.GetItemText(i));
+        var selected = button.Selected;
+        var movedText = texts[from];
+        texts.RemoveAt(from);
+        texts.Insert(to, movedText);
+        button.Clear();
+        foreach (var t in texts)
+            button.AddItem(t);
+        // Restore selection
+        if (selected == from)
+            button.Selected = to;
+        else if (from < to && selected > from && selected <= to)
+            button.Selected = selected - 1;
+        else if (from > to && selected >= to && selected < from)
+            button.Selected = selected + 1;
+        else
+            button.Selected = selected;
     }
 }

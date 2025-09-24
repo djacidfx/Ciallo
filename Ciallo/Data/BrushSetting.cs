@@ -16,7 +16,7 @@ public class BrushSetting
 {
     public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
 
-    [DataMember] public ReactiveProperty<string> Name = new(TranslationServer.Translate("Brush"));
+    [DataMember] public ReactiveProperty<string> Name = new("");
     [DataMember] public ObservableList<BrushLabel> Labels = [];
     [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
     [DataMember] public ReactiveProperty<float> BaseRadius = new(8.0f);
@@ -103,6 +103,7 @@ public class BrushSetting
     {
         var bytes = MessagePackSerializer.Serialize(this);
         var setting = MessagePackSerializer.Deserialize<BrushSetting>(bytes); // Note: Fields or properties cannot be readonly
+        setting.Labels.Remove(BrushLabel.BuiltIn);
         return setting;
     }
 }

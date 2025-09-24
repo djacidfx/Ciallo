@@ -59,6 +59,9 @@ public static class BindItemList
             {
                 case NotifyCollectionChangedAction.Add:
                     control.AddItem(e.NewItem.View.Value);
+                    control.MoveItem(control.GetItemCount() - 1, e.NewStartingIndex);
+                    if(EqualityComparer<T>.Default.Equals(e.NewItem.Value, property.Value))
+                        control.Select(e.NewStartingIndex); // Necessary after clearing the control (in Reset)
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     control.RemoveItem(e.OldStartingIndex);

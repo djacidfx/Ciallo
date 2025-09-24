@@ -6,24 +6,28 @@ public partial class BrushPanel : AcceptDialog
 {
     public ItemList BrushSelector;
     public Container PropertiesHolder;
+    public Button Add;
+    public Button Remove;
+    public Button Copy;
+    public Button Reset;
+    public Button Top;
+    public Button Up;
+    public Button Down;
+    public Button Bottom;
 
     public override void _EnterTree()
     {
         GetOkButton().Visible = false;
         BrushSelector = GetNode<ItemList>("%BrushSelector");
-        // var view = AppBrushLibrary.Brushes.CreateWritableView(setting =>  setting.Name);
-        // view.AddTo(this);
-        // BrushSelector.BindValue(view, AppBrushLibrary.CurrentBrush);
-        
         PropertiesHolder = GetNode<Container>("%PropertiesHolder");
-
-        // foreach (var brush in AppBrushLibrary.Brushes)
-        // {
-        //     var propertyBox = new PropertyContainer();
-        //     brush.DrawProperty(propertyBox);
-        //     propertyBox.VisibleIf(AppBrushLibrary.CurrentBrush, brush);
-        //     PropertiesHolder.AddChild(propertyBox);
-        // }
+        Add = GetNode<Button>("%Add");
+        Remove = GetNode<Button>("%Remove");
+        Copy = GetNode<Button>("%Copy");
+        Reset = GetNode<Button>("%Reset");
+        Top = GetNode<Button>("%Top");
+        Up = GetNode<Button>("%Up");
+        Down = GetNode<Button>("%Down");
+        Bottom = GetNode<Button>("%Bottom");
     }
 
     public override void _UnhandledInput(InputEvent @event)

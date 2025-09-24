@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
-using Ciallo.Geometry;
 using Ciallo.Misc;
-using Ciallo.NodeControl;
-using Ciallo.Widget;
 using Godot;
 using MessagePack;
 using MessagePack.Resolvers;
 using MessagePackGodot;
-using ObservableCollections;
 using R3;
 
 namespace Ciallo.Data;
@@ -55,44 +50,7 @@ public partial class DataAutoload : Node
 
     public override void _Ready()
     {
-        // Setup brush library panel
-        var libraryPanel = GetTree().GetNodesInGroup("Dialog").OfType<BrushPanel>().First();
-        var view = AppBrushLibrary.Brushes.CreateWritableView(setting =>  setting.Name);
-        view.AddTo(this);
-        libraryPanel.BrushSelector.BindValue(view, AppBrushLibrary.CurrentBrush);
-        
-        foreach (var brush in AppBrushLibrary.Brushes)
-        {
-            var propertyBox = new PropertyContainer();
-            brush.DrawProperty(propertyBox);
-            propertyBox.VisibleIf(AppBrushLibrary.CurrentBrush, brush);
-            libraryPanel.PropertiesHolder.AddChild(propertyBox);
-        }
-        
-        AppBrushLibrary.Brushes.ObserveChanged().Subscribe(et =>
-        {
-            switch (et.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    var brush = et.NewItem;
-                    var propertyBox = new PropertyContainer();
-                    brush.DrawProperty(propertyBox);
-                    propertyBox.VisibleIf(AppBrushLibrary.CurrentBrush, brush);
-                    libraryPanel.PropertiesHolder.AddChild(propertyBox);
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    libraryPanel.PropertiesHolder.GetChild(et.OldStartingIndex).QueueFree();
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    libraryPanel.PropertiesHolder.MoveNode([et.OldStartingIndex], [et.NewStartingIndex]);
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    libraryPanel.PropertiesHolder.QueueFreeChildren();
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    throw new("Should be unreachable");
-            }
-        });
+        AppBrushLibrary.BindToGui();
     }
 
     public override void _Notification(int what)
