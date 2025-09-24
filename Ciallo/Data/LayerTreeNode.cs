@@ -117,6 +117,7 @@ public class LayerTreeNode
 
     public Entity GetDescendant([NotNull] IReadOnlyList<int> path)
     {
+        if(path.Count == 0) throw new ArgumentException("Path cannot be empty.", nameof(path));
         if(path.Count == 1) return Children[path[0]];
         return Children[path[0]].Get<LayerTreeNode>().GetDescendant(path.Skip(1).ToArray());
     }
