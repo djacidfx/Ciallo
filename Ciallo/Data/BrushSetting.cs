@@ -12,7 +12,7 @@ using ObservableCollections;
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
-public class BrushSetting : IPropertySource
+public class BrushSetting
 {
     public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
 
