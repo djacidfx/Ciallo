@@ -11,9 +11,9 @@ public partial class MenuFile : PopupMenu
 {
     public static readonly OrderedDictionary<string, AppAction> MenuItems = new()
     {
-        { "New Document", AppActions.NewDocument },
-        { "Open Document", AppActions.OpenDocument },
-        { "Close Document", null },
+        { "New document", AppActions.NewDocument },
+        { "Open document", AppActions.OpenDocument },
+        { "Close document", null },
         { "-1", null },
         { "Save", AppActions.Save },
         { "Save As...", AppActions.SaveAs },
