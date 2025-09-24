@@ -43,7 +43,6 @@ public class BrushSetting
         };
         nameEdit.BindString(Name);
         var box = container.AddProperty("Name", nameEdit);
-        Labels.ObserveChanged().Subscribe(_ => box.Visible = Labels.Contains(BrushLabel.BuiltIn)).AddTo(nameEdit);
         
         var baseRadiusControl = new SpinSlider
         {

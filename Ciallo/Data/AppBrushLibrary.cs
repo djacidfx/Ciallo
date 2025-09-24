@@ -112,7 +112,7 @@ public static class AppBrushLibrary
                 case NotifyCollectionChangedAction.Replace:
                     throw new("Should be unreachable");
             }
-        });
+        }).AddTo(panel);
 
         int count = 1;
         panel.Add.Pressed += () =>

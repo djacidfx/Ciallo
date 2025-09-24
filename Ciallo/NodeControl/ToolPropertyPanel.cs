@@ -7,7 +7,6 @@ using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.Tool;
 using Ciallo.Widget;
-using Godot.Collections;
 using ObservableCollections;
 using R3;
 
@@ -58,6 +57,6 @@ public partial class ToolPropertyPanel : PanelContainer
                 default:
                     throw new ArgumentOutOfRangeException();
             }
-        });
+        }).AddTo(this);
     }
 }
