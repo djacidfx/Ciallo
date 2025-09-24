@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=14 format=3 uid="uid://cmwretuqbofqt"]
+[gd_resource type="Theme" load_steps=16 format=3 uid="uid://cmwretuqbofqt"]
 
 [ext_resource type="SystemFont" uid="uid://vj6b51ucwaps" path="res://Localization/JPCNFont.tres" id="1_4as0w"]
 
@@ -7,6 +7,11 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_u23kh"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ogfsw"]
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_4as0w"]
+color = Color(0.101961, 0.101961, 0.101961, 0.6)
+thickness = 5
+vertical = true
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rfn4m"]
 
@@ -63,7 +68,7 @@ corner_radius_bottom_left = 3
 corner_detail = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_voest"]
-bg_color = Color(0, 0, 0, 1)
+bg_color = Color(0.101961, 0.101961, 0.101961, 0.6)
 corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
@@ -75,6 +80,11 @@ expand_margin_bottom = 5.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t6ki5"]
 bg_color = Color(1, 1, 1, 0)
+draw_center = false
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_yhag5"]
+color = Color(0.101961, 0.101961, 0.101961, 0.6)
+thickness = 5
 
 [resource]
 default_font = ExtResource("1_4as0w")
@@ -82,6 +92,8 @@ default_font_size = 22
 Button/styles/focus = SubResource("StyleBoxEmpty_8s18r")
 ColorPickerButton/styles/focus = SubResource("StyleBoxEmpty_u23kh")
 ColorPickerButton/styles/normal = SubResource("StyleBoxEmpty_ogfsw")
+HSplitContainer/constants/separation = 6
+HSplitContainer/styles/split_bar_background = SubResource("StyleBoxLine_4as0w")
 ItemList/colors/guide_color = Color(0, 0, 0, 0)
 ItemList/styles/focus = SubResource("StyleBoxEmpty_rfn4m")
 LineEdit/styles/focus = SubResource("StyleBoxEmpty_4as0w")
@@ -95,3 +107,5 @@ ToolButton/base_type = &"Button"
 ToolButton/styles/focus = null
 ToolButton/styles/hover = SubResource("StyleBoxFlat_voest")
 ToolButton/styles/normal = SubResource("StyleBoxFlat_t6ki5")
+VSplitContainer/constants/separation = 6
+VSplitContainer/styles/split_bar_background = SubResource("StyleBoxLine_yhag5")

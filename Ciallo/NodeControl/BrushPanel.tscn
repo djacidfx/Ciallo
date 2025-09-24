@@ -27,19 +27,20 @@ grow_horizontal = 2
 grow_vertical = 2
 split_offset = 256
 
-[node name="VBoxContainer2" type="HBoxContainer" parent="Splitter"]
+[node name="MarginContainer" type="MarginContainer" parent="Splitter"]
+layout_mode = 2
+theme_override_constants/margin_top = 5
+
+[node name="VBoxContainer2" type="HBoxContainer" parent="Splitter/MarginContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Operators" type="VBoxContainer" parent="Splitter/VBoxContainer2"]
+[node name="Operators" type="VBoxContainer" parent="Splitter/MarginContainer/VBoxContainer2"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="Blank" type="Control" parent="Splitter/VBoxContainer2/Operators"]
-layout_mode = 2
-
-[node name="Add" type="Button" parent="Splitter/VBoxContainer2/Operators"]
+[node name="Add" type="Button" parent="Splitter/MarginContainer/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -47,7 +48,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("2_8ha6r")
 expand_icon = true
 
-[node name="Remove" type="Button" parent="Splitter/VBoxContainer2/Operators"]
+[node name="Remove" type="Button" parent="Splitter/MarginContainer/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -55,7 +56,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("3_eaqx8")
 expand_icon = true
 
-[node name="Copy" type="Button" parent="Splitter/VBoxContainer2/Operators"]
+[node name="Copy" type="Button" parent="Splitter/MarginContainer/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -63,7 +64,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("4_7s73l")
 expand_icon = true
 
-[node name="Reset" type="Button" parent="Splitter/VBoxContainer2/Operators"]
+[node name="Reset" type="Button" parent="Splitter/MarginContainer/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -72,7 +73,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("5_eaqx8")
 expand_icon = true
 
-[node name="Top" type="Button" parent="Splitter/VBoxContainer2/Operators"]
+[node name="Top" type="Button" parent="Splitter/MarginContainer/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -80,7 +81,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("5_hu6b8")
 expand_icon = true
 
-[node name="Up" type="Button" parent="Splitter/VBoxContainer2/Operators"]
+[node name="Up" type="Button" parent="Splitter/MarginContainer/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -88,7 +89,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("6_4gyxw")
 expand_icon = true
 
-[node name="Down" type="Button" parent="Splitter/VBoxContainer2/Operators"]
+[node name="Down" type="Button" parent="Splitter/MarginContainer/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -96,7 +97,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("7_vldbi")
 expand_icon = true
 
-[node name="Bottom" type="Button" parent="Splitter/VBoxContainer2/Operators"]
+[node name="Bottom" type="Button" parent="Splitter/MarginContainer/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -104,12 +105,12 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("8_tnq2j")
 expand_icon = true
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Splitter/VBoxContainer2"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Splitter/MarginContainer/VBoxContainer2"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="BrushSelector" type="ItemList" parent="Splitter/VBoxContainer2/ScrollContainer"]
+[node name="BrushSelector" type="ItemList" parent="Splitter/MarginContainer/VBoxContainer2/ScrollContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(112, 0)
 layout_mode = 2

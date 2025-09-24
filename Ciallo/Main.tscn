@@ -125,6 +125,7 @@ layout_mode = 2
 [node name="MarginContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer"]
 layout_mode = 2
 theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 5
 
 [node name="ToolButtonPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/MarginContainer" instance=ExtResource("9_5vvyt")]
 layout_mode = 2
@@ -132,7 +133,12 @@ layout_mode = 2
 [node name="ToolPropertyPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer" instance=ExtResource("10_c6i3y")]
 layout_mode = 2
 
-[node name="LayerPanel" parent="MainGui/MarginContainer/UIBlock/VSplit" instance=ExtResource("16_kjvhd")]
+[node name="MarginContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit"]
+layout_mode = 2
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 10
+
+[node name="LayerPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/MarginContainer" instance=ExtResource("16_kjvhd")]
 layout_mode = 2
 size_flags_vertical = 3
 
