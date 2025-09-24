@@ -10,7 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://bvtnbej55aygj" path="res://Icon/chevron-down.svg" id="7_vldbi"]
 [ext_resource type="Texture2D" uid="uid://cguvcubtl0453" path="res://Icon/chevron-double-down.svg" id="8_tnq2j"]
 
-[node name="BrushLibrary" type="AcceptDialog"]
+[node name="BrushPanel" type="AcceptDialog"]
 auto_translate_mode = 1
 title = "Brush library"
 initial_position = 1
@@ -31,14 +31,15 @@ split_offset = 256
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="HBoxContainer" type="VBoxContainer" parent="Splitter/VBoxContainer2"]
+[node name="Operators" type="VBoxContainer" parent="Splitter/VBoxContainer2"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="Blank" type="Control" parent="Splitter/VBoxContainer2/HBoxContainer"]
+[node name="Blank" type="Control" parent="Splitter/VBoxContainer2/Operators"]
 layout_mode = 2
 
-[node name="Add" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+[node name="Add" type="Button" parent="Splitter/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -46,7 +47,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("2_8ha6r")
 expand_icon = true
 
-[node name="Remove" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+[node name="Remove" type="Button" parent="Splitter/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -54,7 +55,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("3_eaqx8")
 expand_icon = true
 
-[node name="Copy" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+[node name="Copy" type="Button" parent="Splitter/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -62,7 +63,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("4_7s73l")
 expand_icon = true
 
-[node name="Reset" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+[node name="Reset" type="Button" parent="Splitter/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -71,7 +72,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("5_eaqx8")
 expand_icon = true
 
-[node name="Top" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+[node name="Top" type="Button" parent="Splitter/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -79,7 +80,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("5_hu6b8")
 expand_icon = true
 
-[node name="Up" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+[node name="Up" type="Button" parent="Splitter/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -87,7 +88,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("6_4gyxw")
 expand_icon = true
 
-[node name="Down" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+[node name="Down" type="Button" parent="Splitter/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -95,7 +96,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("7_vldbi")
 expand_icon = true
 
-[node name="Bottom" type="Button" parent="Splitter/VBoxContainer2/HBoxContainer"]
+[node name="Bottom" type="Button" parent="Splitter/VBoxContainer2/Operators"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2

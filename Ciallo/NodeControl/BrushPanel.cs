@@ -14,6 +14,12 @@ public partial class BrushPanel : AcceptDialog
     public Button Up;
     public Button Down;
     public Button Bottom;
+    public Container Operators;
+    
+    [OnInstantiate]
+    private void Initialise()
+    {
+    }
 
     public override void _EnterTree()
     {
@@ -28,6 +34,7 @@ public partial class BrushPanel : AcceptDialog
         Up = GetNode<Button>("%Up");
         Down = GetNode<Button>("%Down");
         Bottom = GetNode<Button>("%Bottom");
+        Operators = GetNode<Container>("%Operators");
     }
 
     public override void _UnhandledInput(InputEvent @event)
