@@ -27,6 +27,45 @@ public partial class PaintTool : CommonToolBase
     {
         base._Ready();
         SetPressed(true);
+
+        RegisterDocumentBrushPanel();
+    }
+
+    // Refactor: Move to another place when writing deserialization logic.
+    private static void RegisterDocumentBrushPanel()
+    {
+        AppWorldManager.LoadedWorlds.ObserveChanged().Subscribe(e =>
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    var dAdd = e.NewItem.Document();
+                    var panel = BrushPanel.Instantiate();
+                    panel.Title = "Brush in document";
+                    panel.Visible = false;
+                    panel.PopupWindow = true; // Hint user this is different from the brush library panel
+                    panel.Exclusive = false; // Allow propagating input (redo/undo mainly) to main window
+                    dAdd.Add(panel);
+                    ((SceneTree)Engine.GetMainLoop()).Root.AddChild(panel);
+                    
+                    panel.Operators.Visible = false;
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    var dRemove = e.OldItem.Document();
+                    dRemove.Get<BrushPanel>().QueueFree();
+                    dRemove.Remove<BrushPanel>();
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    foreach (var world in AppWorldManager.LoadedWorlds)
+                    {
+                        var d = world.Document();
+                        d.Get<BrushPanel>().QueueFree();
+                        d.Remove<BrushPanel>();
+                    }
+                    break;
+                default: throw new("unreachable");
+            }
+        });
     }
 
     public override void DrawProperty(PropertyContainer container, Entity document)
@@ -111,6 +150,16 @@ public partial class PaintTool : CommonToolBase
         var rView = selectionM.SelectedBrush
             .Select(e => e == Entity.Null ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
         radiusControl.ReactiveBindNumber(rView);
+        
+        var manageDocumentBrush = new Button()
+        {
+            Text = "Manage brush in document",
+            Alignment = HorizontalAlignment.Left,
+            CustomMinimumSize = new(0, 30),
+            SizeFlagsHorizontal = SizeFlags.Fill
+        };
+        manageDocumentBrush.Pressed += () => document.Get<BrushPanel>().Popup();
+        container.AddChild(manageDocumentBrush);
     }
 
     private void OnUseBrushPressed()
