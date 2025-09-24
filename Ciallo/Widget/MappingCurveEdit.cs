@@ -488,6 +488,11 @@ public partial class MappingCurveEdit : Control
         SetSelectedIndex(index);
     }
 
+    public override string _GetTooltip(Vector2 atPosition)
+    {
+        return "[Mapping Curve Tooltip]";
+    }
+
     private void ResetLinear(int index, TangentIndex tangent)
     {
         if (_curve == null || index < 0 || index >= _curve.Count || tangent == TangentIndex.None)
@@ -593,8 +598,10 @@ public partial class MappingCurveEdit : Control
     {
         if (_curve == null)
             return;
-        //// Godot 4.4.1 bug: UpdateMinimumSize causes split container crash. So have change the container into box.
+        //// Godot 4.4.1 bug: UpdateMinimumSize causes split container crash. So change the container into box.
         //// More bugs: This also causes crash when one is visible and another is not.
+        // Use a aspect ratio container to fix this.
+        
         // UpdateMinimumSize();
         UpdateViewTransform();
 
@@ -728,7 +735,7 @@ public partial class MappingCurveEdit : Control
         {
             float width = Size.X - 50;
             textColor.A *= 0.4f;
-            DrawMultilineString(font, new Vector2(25, fontHeight - Mathf.Round(2)), "Hold alt and drag to disconnect handles, right click to reconnect handles", HorizontalAlignment.Center, width, fontSize, -1, textColor);
+            DrawMultilineString(font, new Vector2(25, fontHeight - Mathf.Round(2)), "", HorizontalAlignment.Center, width, fontSize, -1, textColor);
         }
         else if (_selectedIndex != -1 && _selectedTangentIndex == TangentIndex.None)
         {

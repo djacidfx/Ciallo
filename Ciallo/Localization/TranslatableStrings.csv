@@ -43,7 +43,7 @@ File,,文件,檔案,ファイル,파일,Datei,Fichier
 Edit,,编辑,編輯,編集,편집,Bearbeiten,Édition
 Help,,帮助,說明,ヘルプ,도움말,Hilfe,Aide
 Window,Window,窗口,,,,,
-[Vector Fill Tooltip],Vector fill\n- Fill enclose areas with editable fill markers.,矢量填充\n- 用可编辑的填充标记填充封闭区域。,矢量填充\n- 用可編輯的填充標記填充��閉區域。,ベクターフィル\n- 編集可能なフィルマーカーで閉じた領域を塗りつぶします。,벡터 채우기\n- 편집 가능한 채우기 마커로 닫힌 영역을 채웁니다.,Vektor-Füllung\n- Geschlossene Bereiche mit bearbeitbaren Füllmarkern füllen.,Remplissage vectoriel\n- Remplit les zones fermées avec des repères de remplissage modifiables.
+[Vector Fill Tooltip],Vector fill\n- Fill enclose areas with editable fill markers.,矢量填充\n- 用可编辑的填充标记填充封闭区域。,矢量填充\n- 用可編輯的填充標記填充封閉區域。,ベクターフィル\n- 編集可能なフィルマーカーで閉じた領域を塗りつぶします。,벡터 채우기\n- 편집 가능한 채우기 마커로 닫힌 영역을 채웁니다.,Vektor-Füllung\n- Geschlossene Bereiche mit bearbeitbaren Füllmarkern füllen.,Remplissage vectoriel\n- Remplit les zones fermées avec des repères de remplissage modifiables.
 [Paint Fill Tooltip],Paint fill\n- Draw colored area free-handly.,填充\n- 自由手绘彩色区域。,填充\n- 自由手繪彩色區域。,ペイント塗りつぶし\n- フリーハンドでカラー領域を描画します。,페인트 채우기\n- 자유롭게 색칠된 영역을 그립니다.,Farbfüllung\n- Freihändig gezeichnete Farbflächen.,Remplissage au pinceau\n- Dessine des zones colorées à main levée.
 [Paint Brush Tooltip],Paint brush,画笔,畫筆,ペイントブラシ,페인트 브러시,Pinsel,Pinceau
 [About Ciallo],Ciallo is a free and open-source software for digital painting.\n\nCiallo's unique technologies are invented and developed by the developer Shen Ciao — inspired by love and supported by your donations.,Ciallo是一款免费开源的数字绘画软件。\n\nCiallo特有的技术由开发者Shen Ciao发明并开发 - 因爱而生，靠您的捐赠而行。,Ciallo是一款免費开源的數位繪畫軟體。\n\nCiallo特有的技術由開發者沈喬（Shen Ciao）所發明和開發──源於愛並由您的捐助支持。,Cialloはデジタルペインティングのための無料オープンソースソフトウェアです。\n\nCialloの独自技術は開発者Shen Ciaoによって発明・開発されました—愛に触発され、皆様のご寄付によって支えられています。,Ciallo는 디지털 페인팅을 위한 무료 오픈 소스 소프트웨어입니다.\n\nCiallo의 고유 기술은 개발자 Shen Ciao에 의해 발명되고 개발되었습니다 — 사랑에서 영감을 얻었으며 여러분의 후원으로 지원됩니다.,Ciallo ist eine kostenlose Open-Source-Software für digitales Malen.\n\nCiallos einzigartige Technologien wurden vom Entwickler Shen Ciao erfunden und entwickelt – inspiriert von Liebe und unterstützt durch Ihre Spenden.,Ciallo est un logiciel libre et open source pour la peinture numérique.\n\nLes technologies uniques de Ciallo sont inventées et développées par le développeur Shen Ciao — inspirées par l'amour et soutenues par vos dons.
@@ -77,3 +77,4 @@ Use brush,,使用笔刷,,,,,
 Cancel,,取消,,,,,
 Manage brush in document,,管理文档中的笔刷,,,,,
 New brush,,新笔刷,,,,,
+[Mapping Curve Tooltip],- Hold alt and drag to disconnect handles\n- Right click to delete points or reset handles\n- Left click on curve to add points,- 按住 Alt 并拖动以断开控制柄\n- 右键点击以删除点或重置控制柄\n- 左键点击曲线以添加点,,,,,
