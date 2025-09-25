@@ -5,7 +5,7 @@ using Ciallo.Data;
 
 namespace Ciallo.Command;
 
-public class ChangeWorkingBrushCmd(int idx) : CommandBase
+public class ChangeWorkingBrushCmd(Index idx) : CommandBase
 {
     public Entity OldBrushE = Entity.Null;
     public Entity NewBrushE = Entity.Null;
@@ -16,13 +16,13 @@ public class ChangeWorkingBrushCmd(int idx) : CommandBase
         var sm = Document.Get<SelectionManager>();
         
         // data
-        OldBrushE = sm.SelectedBrush.Value;
+        OldBrushE = sm.WorkingBrush.Value;
         NewBrushE = bm.Brushes[idx];
-        sm.SelectedBrush.Value = NewBrushE;
+        sm.WorkingBrush.Value = NewBrushE;
         
         // UI
         var brushList = Document.Get<DocumentBrushList>();
-        brushList.Select(idx);
+        brushList.Select(idx.GetOffset(bm.Brushes.Count));
     }
 
     public override void Undo()
@@ -41,6 +41,6 @@ public class ChangeWorkingBrushCmd(int idx) : CommandBase
         }
         
         // data
-        sm.SelectedBrush.Value = OldBrushE;
+        sm.WorkingBrush.Value = OldBrushE;
     }
 }

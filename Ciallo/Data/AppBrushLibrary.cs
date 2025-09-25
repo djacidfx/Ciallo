@@ -15,6 +15,9 @@ public static class AppBrushLibrary
 {
     public static ReactiveProperty<int> SelectedIndex;
     public static readonly ObservableList<BrushSetting> BrushSettings = [];
+    public static ReadOnlyReactiveProperty<BrushSetting> SelectedBrushSetting;
+
+    public static bool HasSelection => SelectedBrushSetting?.CurrentValue != null;
 
     public static List<BrushSetting> CreateBuiltInBrushes()
     {
@@ -78,6 +81,14 @@ public static class AppBrushLibrary
         var panel = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<BrushPanel>().First();
         SelectedIndex = panel.SelectedIndex;
         panel.BindBrushSetting(BrushSettings, s => s);
+        
+        // Note about `BrushSettings.ObserveChanged().ToReadOnlyReactiveProperty()`
+        // ToReadOnlyReactiveProperty() is necessary to trigger the initial value of observable.
+        // Or CombineLatest lacks of the first value to get to work.
+        SelectedBrushSetting = SelectedIndex
+            .CombineLatest(BrushSettings.ObserveChanged().ToReadOnlyReactiveProperty(), (idx, _) =>idx)
+            .Select(idx => idx < 0 || idx >= BrushSettings.Count ? null : BrushSettings[idx])
+            .ToReadOnlyReactiveProperty();
         
         int count = 1;
         panel.Add.Pressed += () =>

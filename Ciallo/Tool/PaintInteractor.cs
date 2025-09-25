@@ -19,11 +19,15 @@ public class PaintInteractor : InteractorBase
         get
         {
             var l = SelectionManager.WorkingLayer;
-            return l != Entity.Null && l.Has<PolylineLayerSetting>();
+            bool layerAvailable = l != Entity.Null && l.Has<PolylineLayerSetting>();
+            bool brushAvailable = SelectionManager.WorkingBrush.Value != Entity.Null || AppBrushLibrary.HasSelection;
+            
+            return layerAvailable && brushAvailable;
         }
     }
     
     private StrokeView _strokePreview;
+    private Entity _brushE;
     private readonly List<Vector2> _points = new(){Capacity = 2048};
     private readonly List<float> _radii = new(){Capacity = 2048};
     
@@ -37,6 +41,14 @@ public class PaintInteractor : InteractorBase
     {
         // Shen: I guess this will improve graphics responsiveness
         OS.LowProcessorUsageMode = false;
+
+        // Selection in brush library has higher priority
+        if (AppBrushLibrary.HasSelection)
+        {
+            var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
+            new NewBrushCmd(setting).Combine(new ChangeWorkingBrushCmd(^1)).Commit();
+        }
+        _brushE = SelectionManager.WorkingBrush.Value;
         
         _strokePreview = new StrokeView();
         var layerE = SelectionManager.WorkingLayer;

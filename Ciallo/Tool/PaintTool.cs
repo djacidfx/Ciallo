@@ -136,8 +136,8 @@ public partial class PaintTool : CommonToolBase
         };
         var brushM = document.Get<BrushManager>();
         var selectionM = document.Get<SelectionManager>();
-        foreach(var brush in brushM.Brushes)
-            brushList.AddItem(brush.Get<BrushSetting>().Name.Value);
+        foreach(var brushE in brushM.Brushes)
+            brushList.AddItem(brushE.Get<BrushSetting>().Name.Value);
         document.Add(brushList);
         container.AddProperty("Brush in document", brushList);
         
@@ -149,8 +149,8 @@ public partial class PaintTool : CommonToolBase
             ExpEdit = true,
         };
         var radiusBox = container.AddProperty("Radius", radiusControl);
-        radiusBox.VisibleIf(selectionM.SelectedBrush, e => e != Entity.Null);
-        var rView = selectionM.SelectedBrush
+        radiusBox.VisibleIf(selectionM.WorkingBrush, e => e != Entity.Null);
+        var rView = selectionM.WorkingBrush
             .Select(e => e == Entity.Null ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
         radiusControl.ReactiveBindNumber(rView);
         
@@ -167,10 +167,9 @@ public partial class PaintTool : CommonToolBase
     
     private void OnUseBrushPressed()
     {
-        var idx = AppBrushLibrary.SelectedIndex.Value;
-        if (idx < 0) return;
-        AppBrushLibrary.SelectedIndex.Value = -1;
-        new NewBrushCmd(AppBrushLibrary.BrushSettings[idx]).Commit();
+        if (!AppBrushLibrary.HasSelection) return;
+        var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
+        new NewBrushCmd(setting).Combine(new ChangeWorkingBrushCmd(^1)).Commit();
     }
 }
 
