@@ -103,7 +103,7 @@ public static class AppBrushLibrary
             else if (idx >= BrushSettings.Count)
                 SelectedIndex.Value = BrushSettings.Count - 1;
             else
-                SelectedIndex.Value = idx;
+                SelectedIndex.OnNext(idx);
         };
         
         panel.Copy.Pressed += () =>
@@ -127,7 +127,7 @@ public static class AppBrushLibrary
             else if (prev >= BrushSettings.Count)
                 SelectedIndex.Value = BrushSettings.Count - 1;
             else
-                SelectedIndex.Value = prev;
+                SelectedIndex.OnNext(prev);
         };
         
         panel.Up.Pressed += () =>

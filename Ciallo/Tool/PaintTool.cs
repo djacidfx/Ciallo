@@ -46,7 +46,7 @@ public partial class PaintTool : CommonToolBase
                     panel.PopupWindow = true; // Hint user this is different from the brush library panel
                     panel.Exclusive = false; // Allow propagating input (redo/undo mainly) to main window
                     docAdd.Add(panel);
-                    ((SceneTree)Engine.GetMainLoop()).Root.AddChild(panel);
+                    ((SceneTree)Engine.GetMainLoop()).GetCurrentScene().AddChild(panel);
 
                     var bm = docAdd.Get<BrushManager>();
                     panel.BindBrushSetting(bm.Brushes, ent => ent.Get<BrushSetting>());
