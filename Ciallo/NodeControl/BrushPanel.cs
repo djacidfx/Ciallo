@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Arch.Core;
@@ -59,29 +61,27 @@ public partial class BrushPanel : AcceptDialog
         }
     }
 
-    public void BindBrushManager(BrushManager manager)
+    public void BindBrushSetting<T>(ObservableList<T> list, Func<T, BrushSetting> toBrushSetting)
     {
-        var brushes = manager.Brushes;
-        BrushSelector.BindObservableList(brushes, e=>e.Get<BrushSetting>().Name);
+        BrushSelector.BindObservableList(list, e => toBrushSetting(e).Name);
         BrushSelector.BindSelectionIndex(SelectedIndex);
         
-        foreach (var brushE in brushes)
+        foreach (var item in list)
         {
             var propertyBox = new PropertyContainer();
-            brushE.Get<BrushSetting>().DrawProperty(propertyBox);
-            propertyBox.VisibleIf(SelectedIndex, idx=>brushes.ElementAtOrDefault(idx) == brushE);
+            toBrushSetting(item).DrawProperty(propertyBox);
+            propertyBox.VisibleIf(SelectedIndex, idx => EqualityComparer<T>.Default.Equals(list.ElementAtOrDefault(idx), item));
             PropertiesHolder.AddChild(propertyBox);
         }
         
-        brushes.ObserveChanged().Subscribe(e =>
+        list.ObserveChanged().Subscribe(e =>
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    var brushE = e.NewItem;
                     var propertyBox = new PropertyContainer();
-                    brushE.Get<BrushSetting>().DrawProperty(propertyBox);
-                    propertyBox.VisibleIf(SelectedIndex, idx=>brushes.ElementAtOrDefault(idx) == brushE);
+                    toBrushSetting(e.NewItem).DrawProperty(propertyBox);
+                    propertyBox.VisibleIf(SelectedIndex, idx=>EqualityComparer<T>.Default.Equals(list.ElementAtOrDefault(idx), e.NewItem));
                     PropertiesHolder.AddChild(propertyBox);
                     PropertiesHolder.MoveChild(propertyBox, e.NewStartingIndex);
                     break;
@@ -95,7 +95,7 @@ public partial class BrushPanel : AcceptDialog
                     PropertiesHolder.QueueFreeChildren();
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    throw new("Replace action is not supported in brush collection");
+                    throw new("Replace action is not supported yet");
             }
         }).AddTo(this);
     }

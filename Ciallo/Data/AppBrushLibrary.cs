@@ -77,43 +77,8 @@ public static class AppBrushLibrary
         // Setup brush library panel
         var panel = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<BrushPanel>().First();
         SelectedIndex = panel.SelectedIndex;
-        panel.BrushSelector.BindObservableList(BrushSettings, b => b.Name);
-        panel.BrushSelector.BindSelectionIndex(SelectedIndex);
+        panel.BindBrushSetting(BrushSettings, s => s);
         
-        foreach (var setting in BrushSettings)
-        {
-            var propertyBox = new PropertyContainer();
-            setting.DrawProperty(propertyBox);
-            propertyBox.VisibleIf(SelectedIndex, idx => BrushSettings.ElementAtOrDefault(idx) == setting);
-            panel.PropertiesHolder.AddChild(propertyBox);
-        }
-        
-        BrushSettings.ObserveChanged().Subscribe(e =>
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    var brushE = e.NewItem;
-                    var propertyBox = new PropertyContainer();
-                    brushE.DrawProperty(propertyBox);
-                    propertyBox.VisibleIf(SelectedIndex, idx => BrushSettings.ElementAtOrDefault(idx) == brushE);
-                    panel.PropertiesHolder.AddChild(propertyBox);
-                    panel.PropertiesHolder.MoveChild(propertyBox, e.NewStartingIndex);
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    panel.PropertiesHolder.GetChild(e.OldStartingIndex).QueueFree();
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    panel.PropertiesHolder.MoveNode([e.OldStartingIndex], [e.NewStartingIndex]);
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    panel.PropertiesHolder.QueueFreeChildren();
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    throw new("Should be unreachable");
-            }
-        }).AddTo(panel);
-
         int count = 1;
         panel.Add.Pressed += () =>
         {

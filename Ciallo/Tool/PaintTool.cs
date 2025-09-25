@@ -49,7 +49,7 @@ public partial class PaintTool : CommonToolBase
                     ((SceneTree)Engine.GetMainLoop()).Root.AddChild(panel);
 
                     var bm = docAdd.Get<BrushManager>();
-                    panel.BindBrushManager(bm);
+                    panel.BindBrushSetting(bm.Brushes, ent => ent.Get<BrushSetting>());
                     
                     panel.Operators.Visible = false;
                     break;
