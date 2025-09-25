@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Collections.Immutable;
 using Godot;
 using R3;
 using ObservableCollections;
@@ -59,85 +61,7 @@ public static class BindOptionButton
         subs.AddTo(button);
     }
     
-    public static void BindValue<T>(this OptionButton button,
-        IWritableSynchronizedView<T, ReactiveProperty<string>> view,
-        [NotNull] ReactiveProperty<T> property,
-        out CompositeDisposable subs)
-    {
-        if (button.AllowReselect) throw new ArgumentException("AllowReselect must be false.", nameof(button));
-        button.Clear();
-
-        subs = new();
-
-        // Initialize with existing view items
-        foreach (var viewProperty in view)
-        {
-            button.AddItem(viewProperty.Value);
-            viewProperty.Subscribe(s =>
-            {
-                using var list = view.ToViewList();
-                var idx = list.IndexOf(viewProperty);
-                if (idx != -1) button.SetItemText(idx, s);
-            }).AddTo(subs);
-        }
-
-        // Observe collection changes
-        view.ObserveChanged().Subscribe(e =>
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    button.AddItem(e.NewItem.View.Value);
-                    button.MoveItem(button.GetItemCount() - 1, e.NewStartingIndex);
-                    if(EqualityComparer<T>.Default.Equals(e.NewItem.Value, property.Value))
-                        button.Select(e.NewStartingIndex); // Necessary after clearing the control (in Reset)
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    button.RemoveItem(e.OldStartingIndex);
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    button.SetItemText(e.NewStartingIndex, e.NewItem.View.Value);
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    button.MoveItem(e.OldStartingIndex, e.NewStartingIndex);
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    button.Clear();
-                    break;
-                default: throw new ("Unreachable");
-            }
-        }).AddTo(subs);
-
-        // Bind property changes to selection
-        property.Subscribe(value =>
-        {
-            var idx = -1;
-            for (int i = 0; i < view.Count; i++)
-            {
-                if (EqualityComparer<T>.Default.Equals(view.GetAt(i).Value, value))
-                {
-                    idx = i;
-                    break;
-                }
-            }
-            button.Selected = idx;
-        }).AddTo(subs);
-
-        // Bind selection changes to property
-        button.OnItemSelectedAsObservable().Subscribe(index =>
-        {
-            property.Value = index == -1 ? default : view.GetAt((int)index).Value;
-        }).AddTo(subs);
-    }
-
-    public static void BindValue<T>(this OptionButton button,
-        IWritableSynchronizedView<T, ReactiveProperty<string>> view,
-        [NotNull] ReactiveProperty<T> property)
-    {
-        BindValue(button, view, property, out var subs);
-        subs.AddTo(button);
-    }
-    
+    //---------------------------------------------------------------
     // Pitfall: OptionButton lacks MoveItem, so we need to rebuild items on Move
     public static void MoveItem(this OptionButton button, int from, int to)
     {
@@ -161,5 +85,98 @@ public static class BindOptionButton
             button.Selected = selected + 1;
         else
             button.Selected = selected;
+    }
+
+    public static void BindObservableList<T>(this OptionButton button,
+        ObservableList<T> list,
+        Func<T, ReactiveProperty<string>> toName)
+    {
+        button.Clear();
+        var subs = new CompositeDisposable();
+        var subList = new List<IDisposable>();
+
+                // Initialize items
+        foreach (var item in list)
+        {
+            var name = toName(item);
+            button.AddItem(name.Value);
+            var sub = name.Subscribe(s =>
+            {
+                var idx = list.Select(toName).ToImmutableArray().IndexOf(name);
+                if (idx != -1) button.SetItemText(idx, s);
+            });
+            sub.AddTo(subs);
+            subList.Add(sub);
+        }
+
+                // Handle dynamic list changes
+        list.ObserveChanged().Subscribe(e =>
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    var addName = toName(e.NewItem);
+                    button.AddItem(addName.Value);
+                    button.MoveItem(button.GetItemCount() - 1, e.NewStartingIndex);
+                    var subAdd = addName.Subscribe(s =>
+                    {
+                        var idx = list.Select(toName).ToImmutableArray().IndexOf(addName);
+                        if (idx != -1) button.SetItemText(idx, s);
+                    });
+                    subAdd.AddTo(subs);
+                    subList.Insert(e.NewStartingIndex, subAdd);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    button.RemoveItem(e.OldStartingIndex);
+                    subList[e.OldStartingIndex].Dispose();
+                    subList.RemoveAt(e.OldStartingIndex);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    var replaceName = toName(e.NewItem);
+                    button.SetItemText(e.NewStartingIndex, replaceName.Value);
+                    subList[e.OldStartingIndex].Dispose();
+                    var subReplace = replaceName.Subscribe(s =>
+                    {
+                        var idx = list.Select(toName).ToImmutableArray().IndexOf(replaceName);
+                        if (idx != -1) button.SetItemText(idx, s);
+                    });
+                    subReplace.AddTo(subs);
+                    subList[e.NewStartingIndex] = subReplace;
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    button.MoveItem(e.OldStartingIndex, e.NewStartingIndex);
+                    var moving = subList[e.OldStartingIndex];
+                    subList.RemoveAt(e.OldStartingIndex);
+                    subList.Insert(e.NewStartingIndex, moving);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    button.Clear();
+                    foreach (var old in subList) old.Dispose();
+                    subList.Clear();
+                    break;
+                default: throw new ArgumentOutOfRangeException();
+            }
+        }).AddTo(subs);
+
+        subs.AddTo(button);
+    }
+
+    public static void BindSelectionIndex(this OptionButton button,
+        [NotNull] ReactiveProperty<int> property)
+    {
+        var subs = new CompositeDisposable();
+
+        property.Subscribe(value =>
+        {
+            if (value >= 0 && value < button.GetItemCount())
+                button.Selected = value;
+            else
+                button.Selected = -1;
+        }).AddTo(subs);
+
+        button.OnItemSelectedAsObservable().Subscribe(index => property.Value = (int)index)
+            .AddTo(subs);
+
+        subs.AddTo(button);
     }
 }

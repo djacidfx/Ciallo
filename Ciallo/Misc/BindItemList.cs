@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 using Godot;
 using ObservableCollections;
 using R3;
@@ -14,12 +16,12 @@ public static class BindItemList
 {
     // Fix item list
     public static void BindValue<T>(this ItemList control, [NotNull] IReadOnlyList<T> items, 
-        [NotNull] ReactiveProperty<T> property, Func<T, string> toString = null)
+        [NotNull] ReactiveProperty<T> property, Func<T, string> toName = null)
     {
         if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
         control.Clear();
         foreach (var item in items)
-            control.AddItem(toString != null ? toString(item) : item.ToString());
+            control.AddItem(toName != null ? toName(item) : item.ToString());
         
         var subs = new CompositeDisposable();
         property.Subscribe(value =>
@@ -34,70 +36,102 @@ public static class BindItemList
         subs.AddTo(control);
     }
     
-    // Dynamic list view created from R3.ObservableList
-    public static void BindValue<T>(this ItemList control, IWritableSynchronizedView<T,ReactiveProperty<string>> view,
-        [NotNull] ReactiveProperty<T> property)
+    // --------------------------------------------------------------------------------
+    // Binds dynamic list
+    public static void BindObservableList<T>(this ItemList control,
+        ObservableList<T> list,
+        Func<T, ReactiveProperty<string>> toName)
     {
         if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
         control.Clear();
-        
+
         var subs = new CompositeDisposable();
-        foreach (var viewProperty in view)
+        var subList = new List<IDisposable>();
+
+        // Initialize items
+        foreach (var item in list)
         {
-            control.AddItem(viewProperty.Value);
-            viewProperty.Subscribe(s =>
+            var name = toName(item);
+            control.AddItem(name.Value);
+            var sub = name.Subscribe(s =>
             {
-                using var list = view.ToViewList();
-                var idx = list.IndexOf(viewProperty);
+                var idx = list.Select(toName).ToImmutableArray().IndexOf(name);
                 if (idx != -1) control.SetItemText(idx, s);
-            }).AddTo(subs);
+            });
+            sub.AddTo(subs);
+            subList.Add(sub);
         }
-        
-        view.ObserveChanged().Subscribe(e =>
+
+        // Handle dynamic list changes
+        list.ObserveChanged().Subscribe(e =>
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    control.AddItem(e.NewItem.View.Value);
+                    var newName = toName(e.NewItem);
+                    control.AddItem(newName.Value);
                     control.MoveItem(control.GetItemCount() - 1, e.NewStartingIndex);
-                    if(EqualityComparer<T>.Default.Equals(e.NewItem.Value, property.Value))
-                        control.Select(e.NewStartingIndex); // Necessary after clearing the control (in Reset)
+                    var newSub = newName.Subscribe(s =>
+                    {
+                        var idx = list.Select(toName).ToImmutableArray().IndexOf(newName);
+                        if (idx != -1) control.SetItemText(idx, s);
+                    }).AddTo(subs);
+                    subList.Insert(e.NewStartingIndex, newSub);
                     break;
                 case NotifyCollectionChangedAction.Remove:
                     control.RemoveItem(e.OldStartingIndex);
+                    subList[e.OldStartingIndex].Dispose();
+                    subList.RemoveAt(e.OldStartingIndex);
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    control.SetItemText(e.NewStartingIndex, e.NewItem.View.Value);
+                    var replaceName = toName(e.NewItem);
+                    control.SetItemText(e.NewStartingIndex, replaceName.Value);
+                    subList[e.NewStartingIndex].Dispose();
+                    var subReplace = replaceName.Subscribe(s =>
+                    {
+                        var idx = list.Select(toName).ToImmutableArray().IndexOf(replaceName);
+                        if (idx != -1) control.SetItemText(idx, s);
+                    }).AddTo(subs);
+                    subList[e.NewStartingIndex] = subReplace;
                     break;
                 case NotifyCollectionChangedAction.Move:
                     control.MoveItem(e.OldStartingIndex, e.NewStartingIndex);
+                    var moving = subList[e.OldStartingIndex];
+                    subList.RemoveAt(e.OldStartingIndex);
+                    subList.Insert(e.NewStartingIndex, moving);
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     control.Clear();
+                    foreach (var subOld in subList) subOld.Dispose();
+                    subList.Clear();
                     break;
                 default: throw new ArgumentOutOfRangeException();
             }
         }).AddTo(subs);
-        
-        property.Subscribe(value =>
+
+        subs.AddTo(control);
+    }
+
+    // Two-way binding of selection index
+    public static void BindSelectionIndex(this ItemList control,
+        ReactiveProperty<int> index)
+    {
+        if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
+        var subs = new CompositeDisposable();
+
+        // Bind index property to selection
+        subs.Add(index.Subscribe(value =>
         {
-            int idx = -1;
-            for(int i = 0; i < view.Count; i++)
-            {
-                if (EqualityComparer<T>.Default.Equals(view.GetAt(i).Value, value))
-                {
-                    idx = i;
-                    break;
-                }
-            }
-            if(idx != -1) control.Select(idx);
-            else control.DeselectAll(); // .Select(-1) gives error
-        }).AddTo(subs);
-        
+            if (value >= 0 && value < control.GetItemCount())
+                control.Select(value);
+            else
+                control.DeselectAll();
+        }));
+
+        // Update property on user selection
         control.SignalAsObservable<long>(ItemList.SignalName.ItemSelected)
-            .Subscribe(idx => property.Value = view.GetAt((int)idx).Value)
-            .AddTo(subs);
-        
+            .Subscribe(idx => index.Value = (int)idx).AddTo(subs);
+
         subs.AddTo(control);
     }
 }

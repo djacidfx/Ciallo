@@ -39,28 +39,31 @@ public partial class PaintTool : CommonToolBase
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    var dAdd = e.NewItem.Document();
+                    var docAdd = e.NewItem.Document();
                     var panel = BrushPanel.Instantiate();
                     panel.Title = "Brush in document";
                     panel.Visible = false;
                     panel.PopupWindow = true; // Hint user this is different from the brush library panel
                     panel.Exclusive = false; // Allow propagating input (redo/undo mainly) to main window
-                    dAdd.Add(panel);
+                    docAdd.Add(panel);
                     ((SceneTree)Engine.GetMainLoop()).Root.AddChild(panel);
+
+                    var bm = docAdd.Get<BrushManager>();
+                    panel.BindBrushManager(bm);
                     
                     panel.Operators.Visible = false;
                     break;
                 case NotifyCollectionChangedAction.Remove:
-                    var dRemove = e.OldItem.Document();
-                    dRemove.Get<BrushPanel>().QueueFree();
-                    dRemove.Remove<BrushPanel>();
+                    var docRemove = e.OldItem.Document();
+                    docRemove.Get<BrushPanel>().QueueFree();
+                    docRemove.Remove<BrushPanel>();
                     break;
                 case NotifyCollectionChangedAction.Reset:
                     foreach (var world in AppWorldManager.LoadedWorlds)
                     {
-                        var d = world.Document();
-                        d.Get<BrushPanel>().QueueFree();
-                        d.Remove<BrushPanel>();
+                        var doc = world.Document();
+                        doc.Get<BrushPanel>().QueueFree();
+                        doc.Remove<BrushPanel>();
                     }
                     break;
                 default: throw new("unreachable");
@@ -71,9 +74,8 @@ public partial class PaintTool : CommonToolBase
     public override void DrawProperty(PropertyContainer container, Entity document)
     {
         var brushSelector = new OptionButton();
-        var view = AppBrushLibrary.Brushes.CreateWritableView(setting => setting.Name);
-        view.AddTo(brushSelector);
-        brushSelector.BindValue(view, AppBrushLibrary.CurrentBrush);
+        brushSelector.BindObservableList(AppBrushLibrary.BrushSettings, s => s.Name);
+        brushSelector.BindSelectionIndex(AppBrushLibrary.SelectedIndex);
         container.AddProperty("Library brush", brushSelector);
         
         var appBrushRadiusControl = new SpinSlider()
@@ -84,9 +86,9 @@ public partial class PaintTool : CommonToolBase
             ExpEdit = true
         };
         var boxBrushRadius = container.AddProperty("Radius", appBrushRadiusControl);
-        boxBrushRadius.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null);
-        var radiusView = AppBrushLibrary.CurrentBrush
-            .Select(setting => setting?.BaseRadius).ToReadOnlyReactiveProperty();
+        boxBrushRadius.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
+        var radiusView = AppBrushLibrary.SelectedIndex
+            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.BaseRadius).ToReadOnlyReactiveProperty();
         appBrushRadiusControl.ReactiveBindNumber(radiusView);
         
         var appBrushColorControl = new ColorPickerButton()
@@ -94,8 +96,9 @@ public partial class PaintTool : CommonToolBase
             CustomMinimumSize = new(0, 30),
         };
         var boxBrushColor = container.AddProperty("Color", appBrushColorControl);
-        boxBrushColor.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null);
-        var colorView = AppBrushLibrary.CurrentBrush.Select(setting => setting?.Color).ToReadOnlyReactiveProperty();
+                boxBrushColor.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
+        var colorView = AppBrushLibrary.SelectedIndex
+            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color ).ToReadOnlyReactiveProperty();
         appBrushColorControl.ReactiveBindColor(colorView);
         
         var useBrushButton = new Button()
@@ -105,7 +108,7 @@ public partial class PaintTool : CommonToolBase
             CustomMinimumSize = new(0, 30),
             SizeFlagsHorizontal = SizeFlags.Fill
         };
-        useBrushButton.VisibleIf(AppBrushLibrary.CurrentBrush, v => v != null);
+        useBrushButton.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
         useBrushButton.Pressed += OnUseBrushPressed;
         var manageButton = new Button()
         {
@@ -161,13 +164,13 @@ public partial class PaintTool : CommonToolBase
         manageDocumentBrush.Pressed += () => document.Get<BrushPanel>().Popup();
         container.AddChild(manageDocumentBrush);
     }
-
+    
     private void OnUseBrushPressed()
     {
-        var setting = AppBrushLibrary.CurrentBrush.Value;
-        if (setting == null) return;
-        AppBrushLibrary.CurrentBrush.Value = null;
-        new NewBrushCmd(setting).Commit();
+        var idx = AppBrushLibrary.SelectedIndex.Value;
+        if (idx < 0) return;
+        AppBrushLibrary.SelectedIndex.Value = -1;
+        new NewBrushCmd(AppBrushLibrary.BrushSettings[idx]).Commit();
     }
 }
 

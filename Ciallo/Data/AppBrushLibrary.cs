@@ -13,8 +13,8 @@ namespace Ciallo.Data;
 
 public static class AppBrushLibrary
 {
-    public static readonly ReactiveProperty<BrushSetting> CurrentBrush = new(null);
-    public static readonly ObservableList<BrushSetting> Brushes = [];
+    public static ReactiveProperty<int> SelectedIndex;
+    public static readonly ObservableList<BrushSetting> BrushSettings = [];
 
     public static List<BrushSetting> CreateBuiltInBrushes()
     {
@@ -43,19 +43,19 @@ public static class AppBrushLibrary
 
     public static void ResetBuiltInBrushes()
     {
-        var userBrushes = Brushes.ToList();
+        var userBrushes = BrushSettings.ToList();
         userBrushes.RemoveAll(b => b.Labels.Contains(BrushLabel.BuiltIn));
         var builtInBrushes = CreateBuiltInBrushes();
-        Brushes.Clear();
-        Brushes.AddRange(builtInBrushes);
-        Brushes.AddRange(userBrushes);
+        BrushSettings.Clear();
+        BrushSettings.AddRange(builtInBrushes);
+        BrushSettings.AddRange(userBrushes);
     }
 
     public static readonly string Path = "user://Brush.json";
 
     public static void Save()
     {
-        var content = JsonConvert.SerializeObject(Brushes, Preference.JsonOptions);
+        var content = JsonConvert.SerializeObject(BrushSettings, Preference.JsonOptions);
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
         file.StoreString(content);
     }
@@ -64,11 +64,11 @@ public static class AppBrushLibrary
     {
         if (!FileAccess.FileExists(Path))
             return false;
-        Brushes.Clear();
+        BrushSettings.Clear();
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
         
-        JsonConvert.PopulateObject(content, Brushes, Preference.JsonOptions);
+        JsonConvert.PopulateObject(content, BrushSettings, Preference.JsonOptions);
         return true;
     }
 
@@ -76,27 +76,27 @@ public static class AppBrushLibrary
     {
         // Setup brush library panel
         var panel = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<BrushPanel>().First();
-        var view = Brushes.CreateWritableView(setting =>  setting.Name);
-        view.AddTo(panel);
-        panel.BrushSelector.BindValue(view, CurrentBrush);
+        SelectedIndex = panel.SelectedIndex;
+        panel.BrushSelector.BindObservableList(BrushSettings, b => b.Name);
+        panel.BrushSelector.BindSelectionIndex(SelectedIndex);
         
-        foreach (var brush in Brushes)
+        foreach (var setting in BrushSettings)
         {
             var propertyBox = new PropertyContainer();
-            brush.DrawProperty(propertyBox);
-            propertyBox.VisibleIf(CurrentBrush, brush);
+            setting.DrawProperty(propertyBox);
+            propertyBox.VisibleIf(SelectedIndex, idx => BrushSettings.ElementAtOrDefault(idx) == setting);
             panel.PropertiesHolder.AddChild(propertyBox);
         }
         
-        Brushes.ObserveChanged().Subscribe(e =>
+        BrushSettings.ObserveChanged().Subscribe(e =>
         {
             switch (e.Action)
             {
                 case NotifyCollectionChangedAction.Add:
-                    var brush = e.NewItem;
+                    var brushE = e.NewItem;
                     var propertyBox = new PropertyContainer();
-                    brush.DrawProperty(propertyBox);
-                    propertyBox.VisibleIf(CurrentBrush, brush);
+                    brushE.DrawProperty(propertyBox);
+                    propertyBox.VisibleIf(SelectedIndex, idx => BrushSettings.ElementAtOrDefault(idx) == brushE);
                     panel.PropertiesHolder.AddChild(propertyBox);
                     panel.PropertiesHolder.MoveChild(propertyBox, e.NewStartingIndex);
                     break;
@@ -117,85 +117,84 @@ public static class AppBrushLibrary
         int count = 1;
         panel.Add.Pressed += () =>
         {
-            if (CurrentBrush.Value == null)
+            if (SelectedIndex.Value < 0)
                 return;
             var newBrush = new BrushSetting()
             {
                 Name = { Value = "New brush".Tr() + " " + count++},
             };
-            Brushes.Add(newBrush);
-            CurrentBrush.Value = newBrush;
+            BrushSettings.Add(newBrush);
+            SelectedIndex.Value = BrushSettings.Count - 1;
         };
         
         panel.Remove.Pressed += () =>
         {
-            if (CurrentBrush.Value == null)
+            if (SelectedIndex.Value < 0)
                 return;
-            var idx = Brushes.IndexOf(CurrentBrush.Value);
-            Brushes.Remove(CurrentBrush.Value);
-            if (Brushes.Count == 0)
-                CurrentBrush.Value = null;
-            else if (idx >= Brushes.Count)
-                CurrentBrush.Value = Brushes.Last();
+            var idx = SelectedIndex.Value;
+            BrushSettings.RemoveAt(idx);
+            if (BrushSettings.Count == 0)
+                SelectedIndex.Value = -1;
+            else if (idx >= BrushSettings.Count)
+                SelectedIndex.Value = BrushSettings.Count - 1;
             else
-                CurrentBrush.Value = Brushes[idx];
+                SelectedIndex.Value = idx;
         };
         
         panel.Copy.Pressed += () =>
         {
-            if (CurrentBrush.Value == null)
-                return;
-            var newBrush = CurrentBrush.Value.Clone();
+            int idx = SelectedIndex.Value;
+            if (idx < 0) return;
+            var newBrush = BrushSettings[idx].Clone();
             newBrush.Name.Value += " " + count++;
-            Brushes.Add(newBrush);
-            CurrentBrush.Value = newBrush;
+            BrushSettings.Add(newBrush);
+            SelectedIndex.Value = BrushSettings.Count - 1;
         };
         
         panel.Reset.Pressed += () =>
         {
+            int prev = SelectedIndex.Value;
             ResetBuiltInBrushes();
-            if (!Brushes.Contains(CurrentBrush.Value))
-                CurrentBrush.Value = Brushes[0];
+            if (BrushSettings.Count == 0)
+                SelectedIndex.Value = -1;
+            else if (prev < 0)
+                SelectedIndex.Value = 0;
+            else if (prev >= BrushSettings.Count)
+                SelectedIndex.Value = BrushSettings.Count - 1;
+            else
+                SelectedIndex.Value = prev;
         };
         
         panel.Up.Pressed += () =>
         {
-            if (CurrentBrush.Value == null)
-                return;
-            var brush = CurrentBrush.Value;
-            var idx = Brushes.IndexOf(brush);
+            int idx = SelectedIndex.Value;
             if (idx <= 0) return;
-            Brushes.Move(idx, idx - 1);
+            BrushSettings.Move(idx, idx - 1);
+            SelectedIndex.Value = idx - 1;
         };
 
         panel.Down.Pressed += () =>
         {
-            if (CurrentBrush.Value == null)
-                return;
-            var brush = CurrentBrush.Value;
-            var idx = Brushes.IndexOf(brush);
-            if (idx >= Brushes.Count - 1) return;
-            Brushes.Move(idx, idx + 1);
+            int idx = SelectedIndex.Value;
+            if (idx < 0 || idx >= BrushSettings.Count - 1) return;
+            BrushSettings.Move(idx, idx + 1);
+            SelectedIndex.Value = idx + 1;
         };
 
         panel.Top.Pressed += () =>
         {
-            if (CurrentBrush.Value == null)
-                return;
-            var brush = CurrentBrush.Value;
-            var idx = Brushes.IndexOf(brush);
+            int idx = SelectedIndex.Value;
             if (idx <= 0) return;
-            Brushes.Move(idx, 0);
+            BrushSettings.Move(idx, 0);
+            SelectedIndex.Value = 0;
         };
 
         panel.Bottom.Pressed += () =>
         {
-            if (CurrentBrush.Value == null)
-                return;
-            var brush = CurrentBrush.Value;
-            var idx = Brushes.IndexOf(brush);
-            if (idx >= Brushes.Count - 1) return;
-            Brushes.Move(idx, Brushes.Count - 1);
+            int idx = SelectedIndex.Value;
+            if (idx < 0 || idx >= BrushSettings.Count - 1) return;
+            BrushSettings.Move(idx, BrushSettings.Count - 1);
+            SelectedIndex.Value = BrushSettings.Count - 1;
         };
     }
 }
