@@ -87,7 +87,7 @@ public static class BindOptionButton
             button.Selected = selected;
     }
 
-    public static void BindObservableList<T>(this OptionButton button,
+    public static void ObserveObservableList<T>(this OptionButton button,
         ObservableList<T> list,
         Func<T, ReactiveProperty<string>> toName)
     {

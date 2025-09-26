@@ -38,7 +38,7 @@ public static class BindItemList
     
     // --------------------------------------------------------------------------------
     // Binds dynamic list
-    public static void BindObservableList<T>(this ItemList control,
+    public static void ObserveObservableList<T>(this ItemList control,
         ObservableList<T> list,
         Func<T, ReactiveProperty<string>> toName)
     {

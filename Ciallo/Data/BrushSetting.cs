@@ -14,8 +14,6 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class BrushSetting
 {
-    public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
-
     [DataMember] public ReactiveProperty<string> Name = new("");
     [DataMember] public ObservableList<BrushLabel> Labels = [];
     [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
@@ -78,24 +76,6 @@ public class BrushSetting
         falloffCurveEdit.Curve = FalloffCurve;
         container.AddProperty("Opacity falloff", falloffCurveEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Airbrush);
-    }
-    
-    public ShaderMaterial CreateBoundBrushMaterial(out CompositeDisposable subs)
-    {
-        subs = new();
-        var material = new ShaderMaterial
-        {
-            Shader = StrokeShader,
-        };
-        RenderingType.Subscribe(type => material.SetShaderParameter("strokeType", (int)type)).AddTo(subs);
-        Color.Subscribe(color => material.SetShaderParameter("materialColor", color)).AddTo(subs);
-        DashLength.Subscribe(length => material.SetShaderParameter("dashLength", length)).AddTo(subs);
-        GapLength.Subscribe(length => material.SetShaderParameter("gapLength", length)).AddTo(subs);
-        DashForwardSpeed.Subscribe(speed => material.SetShaderParameter("dashForwardSpeed", speed)).AddTo(subs);
-        StampInterval.Subscribe(interval => material.SetShaderParameter("stampInterval", interval)).AddTo(subs);
-        // TODO: falloff curve.
-        
-        return material;
     }
 
     public BrushSetting Clone()

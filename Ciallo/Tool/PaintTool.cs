@@ -74,7 +74,7 @@ public partial class PaintTool : CommonToolBase
     public override void DrawProperty(PropertyContainer container, Entity document)
     {
         var brushSelector = new OptionButton();
-        brushSelector.BindObservableList(AppBrushLibrary.BrushSettings, s => s.Name);
+        brushSelector.ObserveObservableList(AppBrushLibrary.BrushSettings, s => s.Name);
         brushSelector.BindSelectionIndex(AppBrushLibrary.SelectedIndex);
         container.AddProperty("Library brush", brushSelector);
         
