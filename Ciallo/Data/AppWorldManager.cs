@@ -19,7 +19,7 @@ namespace Ciallo.Data;
 /// </summary>
 public static class AppWorldManager
 {
-    public static readonly List<World> LoadedWorlds = [];
+    public static readonly ObservableList<World> LoadedWorlds = [];
     // Current focused document.
     public static readonly ReactiveProperty<World> WorkingWorld = new(null);
     public static Entity WorkingDocument => WorkingWorld.Value.Document();
@@ -42,7 +42,8 @@ public static class AppWorldManager
         var layerTreeManager = new LayerTreeManager();
         var selectionManager = new SelectionManager();
         var commandManager = new CommandManager();
-        document.Add(settings, layerTreeManager, selectionManager, commandManager);
+        var brushManager = new BrushManager();
+        document.Add(settings, layerTreeManager, selectionManager, commandManager, brushManager);
         
         // Create layer tree control
         var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
@@ -62,10 +63,11 @@ public static class AppWorldManager
         
         // Set as working world
         WorkingWorld.Value = world;
+        // Always init first, then add to list
         LoadedWorlds.Add(world);
         
         // Add initial layer
-        var c = new NewStrokeLayerCmd([0]);
+        var c = new NewPolylineLayerCmd([0]);
         c.Do();
         var s = new ChangeWorkingLayerCmd([0]);
         s.Do();

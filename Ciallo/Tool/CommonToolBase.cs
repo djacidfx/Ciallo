@@ -46,7 +46,7 @@ public abstract partial class CommonToolBase : ToolButtonBase, ITool
 
     protected CommonToolBase()
     {
-        Machine.OnUnhandledTrigger((_, _) => { });
+        Machine.OnUnhandledTrigger((_, _) => { }); // Do nothing on unhandled trigger
         _tLeftClick = Machine.SetTriggerParameters<CursorButtonData>(Event.LeftClick);
         _tLeftRelease = Machine.SetTriggerParameters<CursorButtonData>(Event.LeftRelease);
         _tRightClick = Machine.SetTriggerParameters<CursorButtonData>(Event.RightClick);
@@ -63,23 +63,53 @@ public abstract partial class CommonToolBase : ToolButtonBase, ITool
             .Permit(Event.Cancel, State.Idle)
             .OnExit(() => HoveringInteractor.Cancel());
         Machine.Configure(State.LeftInteracting)
-            .OnEntryFrom(_tLeftClick, data => LeftInteractor.Start(data))
+            .OnEntryFrom(_tLeftClick, data =>
+            {
+                BeforeLeftStart();
+                LeftInteractor.Start(data);
+            })
             .Permit(Event.Cancel, State.Idle)
             .PermitIf(_tLeftRelease, State.Idle)
             .OnExit(t =>
             {
                 if(t.Trigger == Event.LeftRelease) LeftInteractor.End((CursorButtonData)t.Parameters[0]);
                 if(t.Trigger == Event.Cancel) LeftInteractor.Cancel();
+                AfterLeftEnd();
             });
         Machine.Configure(State.RightInteracting)
-            .OnEntryFrom(_tRightClick, data => RightInteractor.Start(data))
+            .OnEntryFrom(_tRightClick, data =>
+            {
+                BeforeRightStart();
+                RightInteractor.Start(data);
+            })
             .Permit(Event.Cancel, State.Idle)
             .PermitIf(_tRightRelease, State.Idle)
             .OnExit(t =>
             {
                 if(t.Trigger == Event.RightRelease) RightInteractor.End((CursorButtonData)t.Parameters[0]);
                 if(t.Trigger == Event.Cancel) RightInteractor.Cancel();
+                AfterRightEnd();
             });
+    }
+
+    public virtual void BeforeLeftStart()
+    {
+
+    }
+    
+    public virtual void AfterLeftEnd()
+    {
+        
+    }
+    
+    public virtual void BeforeRightStart()
+    {
+        
+    }
+    
+    public virtual void AfterRightEnd()
+    {
+        
     }
 
     public void OnLeftClick(CursorButtonData data) => Machine.Fire(_tLeftClick, data);

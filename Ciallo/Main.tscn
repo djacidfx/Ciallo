@@ -5,7 +5,7 @@
 [ext_resource type="PackedScene" uid="uid://b605gtasdgmsb" path="res://Widget/About.tscn" id="4_fpfj3"]
 [ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icon/star.svg" id="4_kjvhd"]
 [ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://NodeControl/MenuFile.cs" id="5_5tuhn"]
-[ext_resource type="PackedScene" uid="uid://dw0q5mir7loyl" path="res://NodeControl/BrushManager.tscn" id="5_j4qnp"]
+[ext_resource type="PackedScene" uid="uid://dw0q5mir7loyl" path="res://NodeControl/BrushPanel.tscn" id="5_j4qnp"]
 [ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://NodeControl/MenuEdit.cs" id="6_2gh4u"]
 [ext_resource type="Script" uid="uid://cwjtb7r01fcf7" path="res://NodeControl/MenuWindow.cs" id="8_c2ibq"]
 [ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://NodeControl/MenuHelp.cs" id="8_sc1dx"]
@@ -42,7 +42,7 @@ visible = false
 
 [node name="NewLayer" type="ConfirmationDialog" parent="." groups=["Dialog"]]
 
-[node name="BrushManager" parent="." groups=["Dialog"] instance=ExtResource("5_j4qnp")]
+[node name="BrushLibrary" parent="." groups=["Dialog"] instance=ExtResource("5_j4qnp")]
 visible = false
 
 [node name="MainGui" type="VBoxContainer" parent="."]
@@ -125,6 +125,7 @@ layout_mode = 2
 [node name="MarginContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer"]
 layout_mode = 2
 theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 5
 
 [node name="ToolButtonPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/MarginContainer" instance=ExtResource("9_5vvyt")]
 layout_mode = 2
@@ -132,7 +133,12 @@ layout_mode = 2
 [node name="ToolPropertyPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer" instance=ExtResource("10_c6i3y")]
 layout_mode = 2
 
-[node name="LayerPanel" parent="MainGui/MarginContainer/UIBlock/VSplit" instance=ExtResource("16_kjvhd")]
+[node name="MarginContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit"]
+layout_mode = 2
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 10
+
+[node name="LayerPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/MarginContainer" instance=ExtResource("16_kjvhd")]
 layout_mode = 2
 size_flags_vertical = 3
 

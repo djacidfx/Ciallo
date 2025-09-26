@@ -1,6 +1,7 @@
 using Godot;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -69,7 +70,7 @@ public partial class LayerContainer : Container
         visibleButton.BindBool(node.IsVisible).AddTo(subs);
 
         var lineEdit = layerControl.GetNode<LabelLineEdit>("%LabelLineEdit");
-        lineEdit.BindString(node.Name).AddTo(subs);
+        lineEdit.BindString(node.Name);
         
         layerControl.MouseEntered += () => _mouseHoveringLayer = layerControl;
         layerControl.MouseExited += () => _mouseHoveringLayer = null;
@@ -201,9 +202,13 @@ public partial class LayerContainer : Container
         new MoveLayerCmd([srcIndex], [dstIndex]).Commit();
     }
     
-    public void SetWorkingLayerNoSignal(IReadOnlyList<int> path)
+    public void SetWorkingLayerNoSignal([NotNull] IReadOnlyList<int> path)
     {
-        if (path == null) _workingLayerButtonGroup.GetPressedButton().ButtonPressed = false;
+        if (path.Count == 0)
+        {
+            _workingLayerButtonGroup.GetPressedButton().ButtonPressed = false;
+            return;
+        }
         var layerControl = (Control)_rootControl.GetDecedentAt(path);
         var activeButton = layerControl.GetNode<CheckBox>("%Active");
         // Note: button group will not be updated.

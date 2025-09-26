@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.Serialization;
 using Arch.Core;
 using Arch.Core.Extensions;
 
@@ -10,10 +11,10 @@ namespace Ciallo.Data;
 /// <summary>
 /// Manages the layer tree in the document. Considered as root of the tree.
 /// </summary>
-[MessagePackObject(true), ToSerialize]
+[DataContract, ToSerialize]
 public class LayerTreeManager
 {
-    public readonly LayerTreeNode Root = new()
+    [DataMember] public readonly LayerTreeNode Root = new()
     {
         Name = { Value = "Root" },
     };

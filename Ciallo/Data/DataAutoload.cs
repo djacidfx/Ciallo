@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Ciallo.Geometry;
 using Ciallo.Misc;
 using Godot;
 using MessagePack;
@@ -14,18 +13,21 @@ namespace Ciallo.Data;
 
 public partial class DataAutoload : Node
 {
-    public IFormatterResolver DefaultResolver;
+    public static MessagePackSerializerOptions DefaultOption;
     
     public override void _EnterTree()
     {
-        DefaultResolver = CompositeResolver.Create(
+        // Message pack serializer setup
+        var defaultResolver = CompositeResolver.Create(
             GodotResolver.Instance,
             AttributeFormatterResolver.Instance,
             ReactivePropertyResolver.Instance,
             StandardResolver.Instance
         );
-        MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(DefaultResolver);
+        MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(defaultResolver);
+        DefaultOption = MessagePackSerializer.DefaultOptions;
 
+        // Preference and load brush library data
         bool preferenceFileExists = AppPreference.TryLoad();
         if (!preferenceFileExists)
         {
@@ -34,16 +36,29 @@ public partial class DataAutoload : Node
                 AppPreference.Language.Value = AppPreference.SupportedLanguages[idx];
         }
         AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
+
+        bool brushesFileExists = AppBrushLibrary.TryLoad();
+        if (!brushesFileExists) AppBrushLibrary.ResetBuiltInBrushes();
+    }
+
+    public override void _ExitTree()
+    {
+        AppBrushLibrary.Save();
+        AppPreference.Save();
+        AppWorldManager.Clear();
+    }
+
+    public override void _Ready()
+    {
+        AppBrushLibrary.BindToGui();
     }
 
     public override void _Notification(int what)
     {
+        // Force garbage collection makes godot memory leak warning disappear
         if (what != NotificationPredelete) return;
-        AppWorldManager.Clear();
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         GC.WaitForPendingFinalizers();
-            
-        AppPreference.Save();
     }
     
     public static IEnumerable<Type> GetSerializableTypes()

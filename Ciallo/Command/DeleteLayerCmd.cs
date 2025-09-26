@@ -22,6 +22,7 @@ public class DeleteLayerCmd(IReadOnlyList<int> target) : CommandBase
         // Layer tree data
         var tree = Document.Get<LayerTreeManager>();
         _targetE = tree.Root.RemoveDescendant(_targetPath);
+        _targetE.Remove<ToSerializeTag>();
         
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
@@ -55,6 +56,7 @@ public class DeleteLayerCmd(IReadOnlyList<int> target) : CommandBase
         layerTreeControl.CreateInsert(_targetE, _targetPath);
         
         // Layer tree data
+        _targetE.Add(new ToSerializeTag());
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.InsertDescendant(_targetPath, _targetE);
     }

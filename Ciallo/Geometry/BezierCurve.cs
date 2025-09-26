@@ -5,6 +5,8 @@ using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Runtime.Serialization;
 using Godot;
+using Newtonsoft.Json;
+
 namespace Ciallo.Geometry;  
 
 /// <summary>
@@ -19,27 +21,30 @@ namespace Ciallo.Geometry;
 [DataContract]
 public class BezierCurve
 {
-    #region Curve2D
+    #region Curve2D /// Members from godot's `Curve2D` class.
     
-    // Members from godot's `Curve2D` class.
-    [DataMember(Order = 0)]
-    public IReadOnlyList<Point> Points
+    // When poping json object, list add items rather than replace. Force replace here.
+    [DataMember(Order = 0), JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
+    public List<Point> Points
     {
         get => _points;
         set
         {
-            _points = value.ToList();
+            _points = value;
             OnChanged();
         }
     }
 
     private List<Point> _points = [];
     public int Count => _points.Count;
+    
+    [Signal] public delegate void ChangedEventHandler();
 
-    public bool IsCacheInvalid => _cachedPolyline == null;
+    private bool IsCacheInvalid => _cachedPolyline == null;
     private List<Vector2> _cachedPolyline;
     private List<float> _cachedT; // Fractional T values of the points of the cached polyline
     private Rect2? _cachedBoundingBox;
+    
     public Rect2 BoundingBox
     {
         get
@@ -50,7 +55,20 @@ public class BezierCurve
         }
     }
 
-    private void OnChanged() => ClearCache();
+    public BezierCurve()
+    {
+    }
+
+    public BezierCurve(IReadOnlyList<Point> points)
+    {
+        _points = points.ToList();
+    }
+
+    private void OnChanged()
+    {
+        ClearCache();
+    }
+
     public void ClearCache()
     {
         _cachedPolyline = null;
@@ -127,7 +145,7 @@ public class BezierCurve
         foreach (var t in ts) TryInsertPoint(t);
     }
     
-    public void Tessellate(int subdivisionsPerSegment = 16)
+    public void Tessellate(int subdivisionsPerSegment = 64)
     {
         (_cachedPolyline, _cachedT) = _points.Tessellate(subdivisionsPerSegment);
     }
@@ -206,19 +224,12 @@ public class BezierCurve
     }
     
     [DataContract]
-    public struct Point
+    public struct Point(Vector2 p, Vector2 @in, Vector2 @out)
     {
-        [DataMember(Order = 0)] public Vector2 P;
-        [DataMember(Order = 1)] public Vector2 In;// Relative to position
-        [DataMember(Order = 2)] public Vector2 Out; 
+        [DataMember(Order = 0)] public Vector2 P = p;
+        [DataMember(Order = 1)] public Vector2 In = @in;// Relative to position
+        [DataMember(Order = 2)] public Vector2 Out = @out;
 
-        public Point(Vector2 p, Vector2 @in, Vector2 @out)
-        {
-            P = p;
-            In = @in;
-            Out = @out;
-        }
-        
         [Pure] public Point WithIn(Vector2 newIn) => new(P, newIn, Out);
         [Pure] public Point WithOut(Vector2 newOut) => new(P, In, newOut);
         [Pure] public Point WithPoint(Vector2 newP) => new(newP, In, Out);
@@ -322,11 +333,39 @@ public class BezierCurve
         _points[i] = pt;
         OnChanged();
     }
-    
+
+    private static float l = 0.25f;
+    public static BezierCurve Constant(float y = 0.0f) => new([
+        new(new(0f, y), new(-l, 0f), new(l, 0f)),
+        new(new(1f, y), new(-l, 0f), new(l, 0f))
+    ]);
+
+    public static BezierCurve Linear(float y0 = 0.0f, float y1 = 1.0f)
+    {
+        var v = new Vector2(1f, y1 - y0);
+        var dir = v.Normalized();
+        var len = v.Length();
+        var dl = v / len * l;
+        return new([
+            new(new(0f, y0), -dl, dl),
+            new(new(1f, y1), -dl, dl)
+        ]);
+    }
+
+    public static BezierCurve EaseInOut(float y0 = 0.0f, float y1 = 1.0f)
+    {
+        // horizontal handles produce zero slope at start/end → S‐curve in between
+        return new BezierCurve([
+            new(new(0f, y0), new(-l, 0f), new(l,  0f)),
+            new(new(1f, y1), new(-l, 0f), new(l,  0f))
+        ]);
+    }
+
     #endregion
 
     /// <summary>
     /// Shen: Godot's Curve2D's tangent mode is very, very unintuitive. I guess who programed it have never used Adobe Illustrator or Inkscape.
+    /// Sep 17, 2025. Shen: Seem fixed in 4.5? No, only available in animation editor, not for runtime.
     /// </summary>
     public enum HandleControlMode
     {

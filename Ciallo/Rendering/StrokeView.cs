@@ -13,11 +13,6 @@ public partial class StrokeView : MultiMeshInstance2D
 {
     public static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
 
-    public static readonly ShaderMaterial BrushMaterial = new()
-    {
-        Shader = GD.Load<Shader>("res://Rendering/Stroke.gdshader"),
-    };
-
     public StrokeView()
     {
         var multiMesh = new MultiMesh
@@ -28,7 +23,6 @@ public partial class StrokeView : MultiMeshInstance2D
             Mesh = DummyMesh,
         };
         Multimesh = multiMesh;
-        Material = BrushMaterial;
     }
 
     public override void _Ready()

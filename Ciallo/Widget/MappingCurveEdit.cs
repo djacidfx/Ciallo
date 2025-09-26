@@ -18,17 +18,6 @@ namespace Ciallo.Widget;
 [Tool, GlobalClass]
 public partial class MappingCurveEdit : Control
 {
-    public override void _Ready()
-    {
-        _curve = new BezierCurve();
-        _curve.AddPoint(Vector2.Zero, new(-0.1f, 0), new(0.1f, 0));
-        _curve.AddPoint(Vector2.One * 0.25f, new(-0.1f, 0), new(0.1f, 0));
-        _curve.AddPoint(Vector2.One * 0.5f, new(-0.1f, 0), new(0.1f, 0));
-        _curve.AddPoint(Vector2.One * 0.75f, new(-0.1f, 0), new(0.1f, 0));
-        _curve.AddPoint(Vector2.One, new(-0.1f, 0), new(0.1f, 0));
-        _CurveChanged();
-    }
-
     [Export] public float MinDomain = 0.0f;
     [Export] public float MaxDomain = 1.0f;
     [Export] public float MinValue = 0.0f;
@@ -36,7 +25,7 @@ public partial class MappingCurveEdit : Control
     public float DomainRange => MaxDomain - MinDomain;
     public float ValueRange => MaxValue - MinValue;
 
-    private const float AspectRatio = 6f / 13f;
+    private const float AspectRatio = 1.0f;
     private const float LineWidth = 0.5f;
     private const int StepSize = 2; // Number of pixels between plot points.
 
@@ -92,9 +81,9 @@ public partial class MappingCurveEdit : Control
         get => _curve;
         set
         {
-            if (_curve == value)
-                return;
-            if (!_curve.IsXMonotone)
+            if (_curve == value) return;
+            if (value == null) return;
+            if (!value.IsXMonotone)
             {
                 GD.PushWarning("The provided curve is not X-monotone. Assignment aborted.");
                 return;
@@ -106,7 +95,7 @@ public partial class MappingCurveEdit : Control
 
     public override Vector2 _GetMinimumSize()
     {
-        return new Vector2(64, Mathf.Max(135, Size.X * AspectRatio)) * 1.0f; // EDSCALE approximated as 1.0
+        return new Vector2(256 + 128, 256 + 128);
     }
 
     // public void UsePreset(PresetId presetId)
@@ -340,7 +329,7 @@ public partial class MappingCurveEdit : Control
                                 _curve.SetPointInLinearly(_selectedIndex, newPos);
 
                             if (!_curve.IsXMonotone)
-                                _curve.Points = oldPos;
+                                _curve.Points = oldPos.ToList();
                         }
                         else
                         {
@@ -351,7 +340,7 @@ public partial class MappingCurveEdit : Control
                                 _curve.SetPointOutLinearly(_selectedIndex, newPos);
 
                             if (!_curve.IsXMonotone)
-                                _curve.Points = oldPos;
+                                _curve.Points = oldPos.ToList();
                         }
                     }
                 }
@@ -369,6 +358,7 @@ public partial class MappingCurveEdit : Control
 
     private void _CurveChanged()
     {
+        
         QueueRedraw();
         if (_selectedIndex >= _curve.Count)
             SetSelectedIndex(-1);
@@ -498,6 +488,11 @@ public partial class MappingCurveEdit : Control
         SetSelectedIndex(index);
     }
 
+    public override string _GetTooltip(Vector2 atPosition)
+    {
+        return "[Mapping Curve Tooltip]";
+    }
+
     private void ResetLinear(int index, TangentIndex tangent)
     {
         if (_curve == null || index < 0 || index >= _curve.Count || tangent == TangentIndex.None)
@@ -541,7 +536,7 @@ public partial class MappingCurveEdit : Control
 
     private void UpdateViewTransform()
     {
-        float fontSize = 20;
+        float fontSize = (int)(GetThemeFontSize("font_size", "Label") * 0.8f);
         float margin = fontSize + 8;
 
         Rect2 worldRect = new Rect2(MinDomain, MinValue, DomainRange, ValueRange);
@@ -597,12 +592,17 @@ public partial class MappingCurveEdit : Control
             DrawLine(GetViewPos(samples[i - 1]), GetViewPos(samples[i]), lineColor, LineWidth, true);
         }
     }
+    
 
     public override void _Draw()
     {
         if (_curve == null)
             return;
-
+        //// Godot 4.4.1 bug: UpdateMinimumSize causes split container crash. So change the container into box.
+        //// More bugs: This also causes crash when one is visible and another is not.
+        // Use a aspect ratio container to fix this.
+        
+        // UpdateMinimumSize();
         UpdateViewTransform();
 
         // Draw background
@@ -641,7 +641,7 @@ public partial class MappingCurveEdit : Control
         DrawSetTransformMatrix(Transform2D.Identity);
 
         Font font = GetThemeFont("font", "Label");
-        int fontSize = GetThemeFontSize("font_size", "Label");
+        int fontSize = (int)(GetThemeFontSize("font_size", "Label") * 0.8f);
         float fontHeight = font.GetHeight(fontSize);
         Color textColor = GetThemeColor("font_color", "Label");
 
@@ -735,7 +735,7 @@ public partial class MappingCurveEdit : Control
         {
             float width = Size.X - 50;
             textColor.A *= 0.4f;
-            DrawMultilineString(font, new Vector2(25, fontHeight - Mathf.Round(2)), "Hold alt and drag to disconnect handles, right click to reconnect handles", HorizontalAlignment.Center, width, fontSize, -1, textColor);
+            DrawMultilineString(font, new Vector2(25, fontHeight - Mathf.Round(2)), "", HorizontalAlignment.Center, width, fontSize, -1, textColor);
         }
         else if (_selectedIndex != -1 && _selectedTangentIndex == TangentIndex.None)
         {

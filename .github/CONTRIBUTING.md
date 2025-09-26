@@ -11,10 +11,12 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
 - [ ] Property undo/redo
 - [ ] Tool system
   - [x] Infrastructure
-  - [ ] Brush tool
+  - [x] Brush tool
     - [x] Basic interaction
-    - [ ] Basic brush engine
-    - [ ] Paint stabilizer
+    - [x] Basic brush engine
+      - [ ] More brushes
+      - [ ] More brush parameters
+    - [x] Paint stabilizer
     - [ ] Resize brush interactor
   - [ ] Paint fill tool
   - [ ] Vector fill tool
@@ -26,13 +28,12 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
     - [ ] Design
     - [x] Polyline overlay rendering
   - [ ] Basic lasso tool
-- [ ] Layer system
+- [x] Layer system
   - [x] Add, delete
   - [x] Rename
   - [x] Reorder
   - [ ] Merge, split
   - [ ] Import image as a layer
-- [ ] Stamp brush engine
 - [ ] Localization
   - [x] Infrastructure (ai translation)
   - [ ] Complete
@@ -49,7 +50,7 @@ Beside GP, here is a rough unique feature list:
 - Lasso tool identical to Photoshop or CSP's for raster image.
 - Polygon gaps detection system (built with 2D game navigation system)  
 - Anime style lighting system integrated with Godot's 2D light (need research)
-- Feature-rich GPU brush engine that should be same level to [Krita](https://krita.org/en/) and [MyPaint](https://www.mypaint.app/en/) (need research)
+- Feature-rich GPU brush engine near to [Krita](https://krita.org/en/) and [MyPaint](https://www.mypaint.app/en/) (need research)
 
 # Ciallo Contributing Guide
 

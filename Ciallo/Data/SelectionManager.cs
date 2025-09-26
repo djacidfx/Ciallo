@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.Serialization;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Godot;
@@ -9,9 +10,10 @@ using R3;
 
 namespace Ciallo.Data;
 
+[DataContract, ToSerialize]
 public class SelectionManager
 {
-    public readonly ObservableList<Entity> SelectedLayers = [];
+    [DataMember] public ObservableList<Entity> SelectedLayers = [];
 
     // Empty array represents no selection (or root node is selected).
     public ImmutableArray<int> WorkingLayerPath
@@ -26,7 +28,7 @@ public class SelectionManager
     }
 
     private Entity _workingLayer = Entity.Null;
-    public Entity WorkingLayer
+    [DataMember] public Entity WorkingLayer
     {
         get => _workingLayer;
         set
@@ -38,4 +40,6 @@ public class SelectionManager
     }
 
     public readonly Subject<Entity> WorkingLayerChanged = new();
+    
+    public ReactiveProperty<Entity> WorkingBrush = new(Entity.Null);
 }

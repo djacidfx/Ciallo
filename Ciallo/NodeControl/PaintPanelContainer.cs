@@ -18,9 +18,8 @@ public partial class PaintPanelContainer : Control
     
     public void RemoveFreePaintPanel(Entity document)
     {
-        document.Remove<WorldView>();
-        var paintPanel = document.Get<PaintPanel>();
+        var panel = document.Get<PaintPanel>();
         document.Remove<PaintPanel>();
-        paintPanel.QueueFree();
+        panel.QueueFree();
     }
 }

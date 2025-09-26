@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using Godot;
 using MessagePack;
 
 namespace Ciallo.Data;
 
-[MessagePackObject, ToSerialize]
+[DataContract, ToSerialize]
 public class StrokeGeometry
 {
-    [Key(0)] public List<Vector2> Points = [];
-    [Key(1)] public List<float> Radii = [];
+    [DataMember(Order = 0)] public List<Vector2> Points = [];
+    [DataMember(Order = 1)] public List<float> Radii = [];
 
     public StrokeGeometry DeepClone()
     {

@@ -3,12 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
+using Ciallo.NodeControl;
 
 public partial class MenuWindow : PopupMenu
 {
     public static readonly OrderedDictionary<string, AppAction> MenuItems = new()
     {
-        { "Brush manager", null },
+        { "Brush library", null },
     };
     
     public override void _Ready()
@@ -32,7 +33,7 @@ public partial class MenuWindow : PopupMenu
         switch (id)
         {
             case 0:
-                GetTree().GetNodesInGroup("Dialog").OfType<BrushManager>().First().Popup();
+                GetTree().GetNodesInGroup("Dialog").OfType<BrushPanel>().First().Popup();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(id), $"Unhandled menu item index: {id}");

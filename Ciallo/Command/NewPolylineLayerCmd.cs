@@ -9,8 +9,7 @@ using Godot;
 
 namespace Ciallo.Command;
 
-// ReSharper disable once Godot.MissingParameterlessConstructor
-public class NewStrokeLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
+public class NewPolylineLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
 {
     private readonly ImmutableArray<int> _insertPath = [..insertPath];
     private Entity _layerE = Entity.Null;
@@ -29,12 +28,13 @@ public class NewStrokeLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
             _layerE = WorkingWorld.Create();
             var node = new LayerTreeNode()
             {
-                Name = { Value = $"{SceneTree.Tr("Line layer")} {tree.Root.ChildCount+1}" },
+                Name = { Value = $"{TranslationServer.Translate("Line layer")} {tree.Root.ChildCount+1}" },
             };
-            _layerE.Add(new PolylineLayerSetting(), node, new ToSerializeTag());
+            _layerE.Add(new PolylineLayerSetting(), node);
         }
         
         // Layer tree data
+        _layerE.Add(new ToSerializeTag());
         tree.Root.InsertDescendant(_insertPath, _layerE);
         
         // Layer panel
@@ -75,5 +75,6 @@ public class NewStrokeLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
         // Layer tree data
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.RemoveDescendant(_insertPath);
+        _layerE.Remove<ToSerializeTag>();
     }
 }

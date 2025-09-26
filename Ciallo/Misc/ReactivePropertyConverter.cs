@@ -4,6 +4,8 @@ using System.Reflection;
 
 public class ReactivePropertyConverter : JsonConverter
 {
+    public static readonly ReactivePropertyConverter Instance = new();
+    
     public override bool CanConvert(Type objectType)
     {
         return objectType.IsGenericType &&
