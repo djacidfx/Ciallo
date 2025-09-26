@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
+using Ciallo.Rendering;
 using Godot;
 using R3;
 
@@ -36,6 +37,11 @@ public class NewBrushCmd : CommandBase
         var bm = Document.Get<BrushManager>();
         bm.Add(BrushE);
         
+        // Material
+        var material = new BrushMaterial();
+        material.ObserveBrushSetting(BrushE.Get<BrushSetting>());
+        BrushE.Add(material);
+        
         // UI
         // Note: suppose to have a dedicate custom widget to handle this.
         var setting = BrushE.Get<BrushSetting>();
@@ -60,6 +66,10 @@ public class NewBrushCmd : CommandBase
         var callableSub = (Callable)list.GetItemMetadata(idx);
         callableSub.Call();
         list.RemoveItem(idx);
+        
+        // Material
+        // Note: Material is RefCounted, cannot be manually freed
+        BrushE.Remove<BrushMaterial>();
         
         // Data
         bm.Remove(BrushE);
