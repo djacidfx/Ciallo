@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Runtime.Serialization;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
@@ -8,7 +9,9 @@ using Godot;
 
 namespace Ciallo.Command;
 
-public class NewStrokeCmd(IReadOnlyList<int> insertPath) : CommandBase
+[DataContract, ToSerialize] class BrushEntity : EntityWrapper;
+
+public class NewStrokeCmd(IReadOnlyList<int> insertPath, Entity brushE) : CommandBase
 {
     private readonly ImmutableArray<int> _insertPath = [..insertPath];
     private Entity _strokeE = Entity.Null;
@@ -26,6 +29,7 @@ public class NewStrokeCmd(IReadOnlyList<int> insertPath) : CommandBase
             _strokeE = WorkingWorld.Create();
             var node = new LayerTreeNode();
             _strokeE.Add(new StrokeGeometry(), node);
+            _strokeE.Add<BrushEntity>(brushE);
         }
         
         // Data
@@ -38,6 +42,7 @@ public class NewStrokeCmd(IReadOnlyList<int> insertPath) : CommandBase
         var strokeView =  (StrokeView)_refNodes[0];
         view.InsertNodeAt(strokeView, _insertPath);
         _strokeE.Add(strokeView);
+        strokeView.Material = brushE.Get<BrushMaterial>();
         
         // Overlay
         var overlay = Document.Get<WorldOverlay>();
@@ -57,6 +62,8 @@ public class NewStrokeCmd(IReadOnlyList<int> insertPath) : CommandBase
         
         // View
         var worldView = Document.Get<WorldView>();
+        var strokeView = _strokeE.Get<StrokeView>();
+        strokeView.Material = null;
         _strokeE.Remove<StrokeView>();
         worldView.RemoveNodeAt(_insertPath);
         

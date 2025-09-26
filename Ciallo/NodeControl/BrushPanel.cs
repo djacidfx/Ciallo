@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Arch.Core;
+using Arch.Core.Extensions;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.Widget;
 using Godot;
 using ObservableCollections;
 using R3;
-using Arch.Core;
-using Arch.Core.Extensions;
 
 namespace Ciallo.NodeControl;
 

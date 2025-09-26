@@ -25,9 +25,9 @@ public class PaintInteractor : InteractorBase
             return layerAvailable && brushAvailable;
         }
     }
-    
+
+    private Entity _brushE = Entity.Null;
     private StrokeView _strokePreview;
-    private Entity _brushE;
     private readonly List<Vector2> _points = new(){Capacity = 2048};
     private readonly List<float> _radii = new(){Capacity = 2048};
     
@@ -49,8 +49,10 @@ public class PaintInteractor : InteractorBase
             new NewBrushCmd(setting).Combine(new ChangeWorkingBrushCmd(^1)).Commit();
         }
         _brushE = SelectionManager.WorkingBrush.Value;
+        var brushMaterial = _brushE.Get<BrushMaterial>();
         
         _strokePreview = new StrokeView();
+        _strokePreview.Material = brushMaterial;
         var layerE = SelectionManager.WorkingLayer;
         var layerView = layerE.Get<PolylineLayerView>();
         layerView.AddChild(_strokePreview);
@@ -92,7 +94,7 @@ public class PaintInteractor : InteractorBase
         var parentPath = SelectionManager.WorkingLayerPath;
         var parentE = SelectionManager.WorkingLayer;
         ImmutableArray<int> path = [..parentPath, parentE.Get<LayerTreeNode>().ChildCount];
-        new NewStrokeCmd(path)
+        new NewStrokeCmd(path, _brushE)
             .Combine(new SetStrokeGeometryCmd(path, _points, _radii)).Commit();
         Clear();
     }

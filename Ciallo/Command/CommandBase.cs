@@ -14,6 +14,7 @@ namespace Ciallo.Command;
 /// Shen: Several attempts have been made to allow `using var cmd = new Cmd()`, but all failed.
 /// This class cannot be `RefCounted` otherwise cannot get notification of Predelete.
 /// Override the Dispose method get unknown/undefined behavior.
+/// Already solved by making CommandBase not inherent GodotObject. 
 /// </remarks>>
 /// <summary>
 /// `using var cmd = new Cmd()` cause memory leak. Must manually call `cmd.Free()`.
@@ -80,5 +81,4 @@ public abstract class CommandBase
     {
         if (value != Entity.Null) yield return value;
     }
-
 }

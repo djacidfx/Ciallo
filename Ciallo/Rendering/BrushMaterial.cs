@@ -6,7 +6,7 @@ namespace Ciallo.Rendering;
 
 public partial class BrushMaterial : ShaderMaterial
 {
-    public readonly CompositeDisposable Subs = new();
+    public CompositeDisposable Subs;
     public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
     
     public BrushMaterial()
@@ -16,14 +16,14 @@ public partial class BrushMaterial : ShaderMaterial
     
     public void ObserveBrushSetting(BrushSetting setting)
     {
-        Subs.Dispose();
-        var subs = Subs;
-        setting.RenderingType.Subscribe(type => SetShaderParameter("strokeType", (int)type)).AddTo(subs);
-        setting.Color.Subscribe(color => SetShaderParameter("materialColor", color)).AddTo(subs);
-        setting.DashLength.Subscribe(length => SetShaderParameter("dashLength", length)).AddTo(subs);
-        setting.GapLength.Subscribe(length => SetShaderParameter("gapLength", length)).AddTo(subs);
-        setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("dashForwardSpeed", speed)).AddTo(subs);
-        setting.StampInterval.Subscribe(interval => SetShaderParameter("stampInterval", interval)).AddTo(subs);
+        Subs?.Dispose();
+        Subs = new();
+        setting.RenderingType.Subscribe(type => SetShaderParameter("strokeType", (int)type)).AddTo(Subs);
+        setting.Color.Subscribe(color => SetShaderParameter("materialColor", color)).AddTo(Subs);
+        setting.DashLength.Subscribe(length => SetShaderParameter("dashLength", length)).AddTo(Subs);
+        setting.GapLength.Subscribe(length => SetShaderParameter("gapLength", length)).AddTo(Subs);
+        setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("dashForwardSpeed", speed)).AddTo(Subs);
+        setting.StampInterval.Subscribe(interval => SetShaderParameter("stampInterval", interval)).AddTo(Subs);
         // TODO: falloff curve.
     }
 
