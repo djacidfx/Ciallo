@@ -24,7 +24,7 @@ public class BezierCurve
 {
     #region Curve2D /// Members from godot's `Curve2D` class.
     
-    // When populating json object, list add items rather than replace. Force replace here.
+    // When populating json object, list adds items rather than replace. Force replace here.
     [DataMember(Order = 0), JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
     public List<Point> Points
     {
