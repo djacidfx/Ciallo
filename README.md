@@ -9,13 +9,12 @@ Leave a star to this project and check my [research project], [paper](https://dl
 # Ciallo ～(∠・ω< )⌒★!
 
 Ciallo is an open-source graphics program for professional digital painting.
-
 It aims to compete with traditional raster painting software like Photoshop and Clip Studio Paint, while offering the following unique features:
 
 ## Unique features
 ### Vectorized Photoshop-like brushes
 
-Resolution-independent, Photoshop-like brushes: The brushes are entirely drawn on your graphics card. This technique was invented by the developer ([Shen Ciao]).
+Resolution-independent, Photoshop-like brushes: The brushes are entirely drawn on your graphics card. This technique is researched by the developer ([Shen Ciao]).
 
 ### Vector fill
 
@@ -65,6 +64,7 @@ System requirements (A system can run large-sized 2D games.):
 - OS: Windows 10 or higher
 - Memory: 6GB or more
 - Graphics card: Minimum NV GTX 1650 or AMD Radeon RX 6500 XT.
+- Monitor: Fresh rate greater than 100fps to get the best drawing experience.
 
 > About MacOS: The developer literally wishes but cannot afford to develop a macOS version. Buying a MacBook Pro will cost him half a year’s living budget. Consider Patreon him for a macOS version.
 
