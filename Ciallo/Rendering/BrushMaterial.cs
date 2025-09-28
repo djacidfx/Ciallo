@@ -47,8 +47,10 @@ public partial class BrushMaterial : ShaderMaterial
 
     public static Image BakeCurve(BezierCurve curve)
     {
-        var data = curve.SampleXList(Enumerable.Range(0, 127).Select(i => i / 127f).ToArray());
+        int n = 256;
+        var data = curve.SampleXList(Enumerable.Range(0, n).Select(i => (float)i / n).ToArray());
         var img = Image.CreateFromData(data.Count, 1, false, Image.Format.L8, data.Select(c => (byte)(c * 255)).ToArray());
+        img.GenerateMipmaps();
         // img.GenerateMipmaps();
         return img;
     }

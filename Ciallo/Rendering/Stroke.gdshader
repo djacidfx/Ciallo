@@ -107,7 +107,7 @@ float n2x(float n) {
 }
 
 float sampleFalloffCurve(float t){
-	return texture(falloffCurve, vec2(t, 0.5)).r;
+	return texture(falloffCurve, vec2(t, 0)).r;
 }
 
 void fragment() {
