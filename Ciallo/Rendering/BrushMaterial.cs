@@ -1,4 +1,6 @@
-﻿using Ciallo.Data;
+﻿using System.Linq;
+using Ciallo.Data;
+using Ciallo.Geometry;
 using Godot;
 using R3;
 
@@ -23,8 +25,15 @@ public partial class BrushMaterial : ShaderMaterial
         setting.DashLength.Subscribe(length => SetShaderParameter("dashLength", length)).AddTo(Subs);
         setting.GapLength.Subscribe(length => SetShaderParameter("gapLength", length)).AddTo(Subs);
         setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("dashForwardSpeed", speed)).AddTo(Subs);
+        
         setting.StampInterval.Subscribe(interval => SetShaderParameter("stampInterval", interval)).AddTo(Subs);
-        // TODO: falloff curve.
+        
+        var falloffTex = ImageTexture.CreateFromImage(BakeCurve(setting.FalloffCurve));
+        setting.FalloffCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
+        {
+            falloffTex.Update(BakeCurve(setting.FalloffCurve));
+            SetShaderParameter("falloffCurve", falloffTex);
+        }).AddTo(Subs);
     }
 
     public override void _Notification(int what)
@@ -34,5 +43,13 @@ public partial class BrushMaterial : ShaderMaterial
             GD.Print("deleting brush material");
             Subs.Dispose();
         }
+    }
+
+    public static Image BakeCurve(BezierCurve curve)
+    {
+        var data = curve.SampleXList(Enumerable.Range(0, 127).Select(i => i / 127f).ToArray());
+        var img = Image.CreateFromData(data.Count, 1, false, Image.Format.L8, data.Select(c => (byte)(c * 255)).ToArray());
+        // img.GenerateMipmaps();
+        return img;
     }
 }

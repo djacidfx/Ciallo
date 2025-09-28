@@ -18,7 +18,7 @@ public class BrushSetting
     [DataMember] public ObservableList<BrushLabel> Labels = [];
     [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
     [DataMember] public ReactiveProperty<float> BaseRadius = new(8.0f);
-    [DataMember] public BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(); // radius = baseRadius * curve(pressure)
+    [DataMember] public BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(0.2f, 1.0f); // radius = baseRadius * curve(pressure)
     [DataMember] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
 
     // Vanilla
