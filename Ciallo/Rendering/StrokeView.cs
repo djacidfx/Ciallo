@@ -23,6 +23,7 @@ public partial class StrokeView : MultiMeshInstance2D
             Mesh = DummyMesh,
         };
         Multimesh = multiMesh;
+        TextureFilter = TextureFilterEnum.LinearWithMipmaps;
     }
 
     public override void _Ready()

@@ -22,6 +22,8 @@ uniform float dashForwardSpeed = 0.0;
 uniform float stampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
 // ---------------------------------
 
+uniform sampler2D falloffCurve;
+
 varying flat vec2 p0;
 varying flat vec2 p1;
 varying flat float r0;
@@ -104,8 +106,8 @@ float n2x(float n) {
 	return r0/cosTheta * (1.0-exp(-cosTheta*n));
 }
 
-float sampleGraident(float t){
-	return 1.0 - t;
+float sampleFalloffCurve(float t){
+	return texture(falloffCurve, vec2(t, 0)).r;
 }
 
 void fragment() {
@@ -171,9 +173,9 @@ void fragment() {
 
 		// The Whispers Of the olD Ones
 		vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
-		float flow = 0.5;
-		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleGraident(d0/r0));
-        float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleGraident(d1/r1));
+		float flow = materialColor.a;
+		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleFalloffCurve(d0/r0));
+        float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleFalloffCurve(d1/r1));
 		float transparency;
 
 		// Shen already forget about every details here, and he is too lazy to remind of.
@@ -184,7 +186,7 @@ void fragment() {
         if(p_r.x > 0.0 && p_r.x < segmentLength){
 			float r_p = r0 - cosTheta * p_r.x;
             float lambda = abs(pLocal.y) / r_p * sinTheta;
-            transparency = (1.0 - flow*sampleGraident(lambda))/transparency0/transparency1;
+            transparency = (1.0 - flow*sampleFalloffCurve(lambda))/transparency0/transparency1;
         }
         if(p_r.x >= segmentLength){
             transparency = transparency1/transparency0;

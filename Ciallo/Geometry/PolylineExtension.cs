@@ -121,16 +121,9 @@ public static class PolylineExtension
     /// <returns>Y value at the given x</returns>
     public static float SampleX([NotNull] this IReadOnlyList<Vector2> polyline, float x)
     {
-        float SampleSegment(Vector2 p0, Vector2 p1, float xValue)
-        {
-            float slope = (p1.Y - p0.Y) / (p1.X - p0.X);
-            return p0.Y + slope * (xValue - p0.X);
-        }
-
-        if (polyline.Count == 2)
-        {
-            return SampleSegment(polyline[0], polyline[1], x);
-        }
+        if (polyline.Count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
+        if (polyline.Count == 1) return polyline[0].Y;
+        if (polyline.Count == 2) return SampleSegment(polyline[0], polyline[1], x);
 
         var searchResult = polyline.Select(v=>v.X).ToImmutableArray().BinarySearch(x);
         if (searchResult >= 0) return polyline[searchResult].Y;
@@ -140,5 +133,56 @@ public static class PolylineExtension
         if(idx == 0) return polyline[0].Y;
         if(idx == polyline.Count) return polyline[^1].Y;
         return SampleSegment(polyline[idx-1], polyline[idx], x);
+    }
+
+    private static float SampleSegment(Vector2 p0, Vector2 p1, float xValue)
+    {
+        if(xValue < p0.X) return p0.Y;
+        if(xValue > p1.X) return p1.Y;
+        if (MathF.Abs(p1.X - p0.X) < 1e-5f) 
+            return (p0.Y + p1.Y) / 2; // vertical
+        float slope = (p1.Y - p0.Y) / (p1.X - p0.X);
+        return p0.Y + slope * (xValue - p0.X);
+    }
+
+    /// <summary>
+    /// Sample the polyline by the given x ordered list from small to large.
+    /// </summary>
+    public static List<float> SampleXList([NotNull] this IReadOnlyList<Vector2> polyline, IReadOnlyList<float> xs)
+    {
+        int count = polyline.Count;
+        if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
+        var ys = new List<float>(xs.Count);
+        if (count == 1)
+        {
+            float y0 = polyline[0].Y;
+            for (int i = 0; i < xs.Count; i++)
+                ys.Add(y0);
+            return ys;
+        }
+        // For monotone-in-X polyline and sorted xs, scan segments in one pass
+        int segIdx = 1;
+        foreach (var x in xs)
+        {
+            // before first point
+            if (x <= polyline[0].X)
+            {
+                ys.Add(polyline[0].Y);
+                continue;
+            }
+            // after last point
+            if (x >= polyline[count - 1].X)
+            {
+                ys.Add(polyline[count - 1].Y);
+                continue;
+            }
+            // advance segment until x is within [prev.X, curr.X]
+            while (segIdx < count - 1 && x > polyline[segIdx].X)
+                segIdx++;
+            var p0 = polyline[segIdx - 1];
+            var p1 = polyline[segIdx];
+            ys.Add(SampleSegment(p0, p1, x));
+        }
+        return ys;
     }
 }

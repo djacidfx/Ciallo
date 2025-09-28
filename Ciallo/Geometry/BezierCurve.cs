@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Godot;
 using Newtonsoft.Json;
+using R3;
 
 namespace Ciallo.Geometry;  
 
@@ -23,7 +24,7 @@ public class BezierCurve
 {
     #region Curve2D /// Members from godot's `Curve2D` class.
     
-    // When poping json object, list add items rather than replace. Force replace here.
+    // When populating json object, list adds items rather than replace. Force replace here.
     [DataMember(Order = 0), JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
     public List<Point> Points
     {
@@ -37,23 +38,15 @@ public class BezierCurve
 
     private List<Point> _points = [];
     public int Count => _points.Count;
-    
-    [Signal] public delegate void ChangedEventHandler();
+
+    private readonly Subject<Unit> _changed = new();
+    public Observable<Unit> Changed => _changed.DebounceFrame(1);
 
     private bool IsCacheInvalid => _cachedPolyline == null;
     private List<Vector2> _cachedPolyline;
     private List<float> _cachedT; // Fractional T values of the points of the cached polyline
-    private Rect2? _cachedBoundingBox;
     
-    public Rect2 BoundingBox
-    {
-        get
-        {
-            if (_cachedBoundingBox != null) return _cachedBoundingBox.Value;
-            _cachedBoundingBox = _points.GetBoundingBox();
-            return _cachedBoundingBox.Value;
-        }
-    }
+    public Rect2 BoundingBox => _points.GetBoundingBox();
 
     public BezierCurve()
     {
@@ -67,13 +60,13 @@ public class BezierCurve
     private void OnChanged()
     {
         ClearCache();
+        _changed.OnNext(new());
     }
 
     public void ClearCache()
     {
         _cachedPolyline = null;
         _cachedT = null;
-        _cachedBoundingBox = null;
     }
 
     public void AddPoint(Vector2 position, Vector2 inHandle, Vector2 outHandle, int at = -1)
@@ -145,7 +138,7 @@ public class BezierCurve
         foreach (var t in ts) TryInsertPoint(t);
     }
     
-    public void Tessellate(int subdivisionsPerSegment = 64)
+    public void Tessellate(int subdivisionsPerSegment = 32)
     {
         (_cachedPolyline, _cachedT) = _points.Tessellate(subdivisionsPerSegment);
     }
@@ -297,6 +290,15 @@ public class BezierCurve
     {
         if (_cachedPolyline == null) Tessellate();
         return _cachedPolyline.SampleX(x);
+    }
+    
+    /// <summary>
+    /// Sample by the given x ordered list from small to large.
+    /// </summary>
+    public List<float> SampleXList(IReadOnlyList<float> xs)
+    {
+        if (_cachedPolyline == null) Tessellate();
+        return _cachedPolyline.SampleXList(xs);
     }
 
     public Vector2 GetPointPosition(int i) => GetPoint(i).P;

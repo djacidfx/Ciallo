@@ -34,10 +34,22 @@ public static class AppBrushLibrary
             Name = { Value = "High performance".Tr() + " " + "Soft airbrush".Tr()},
             RenderingType = { Value = BrushRenderingType.Airbrush },
             Labels = { BrushLabel.BuiltIn },
+            Color = { Value = new(0,0,0,0.2f) },
+            FalloffCurve = new([
+                new(new(0,1), new(-0.25f,0), new(0.5f,0)),
+                new(new(1,0), new(-0.25f,0), new(0.25f,0))
+            ]),
+        });
+        
+        brushes.Add(new()
+        {
+            Name = { Value = "High performance".Tr() + " " + "Hard airbrush".Tr()},
+            RenderingType = { Value = BrushRenderingType.Airbrush },
+            Labels = { BrushLabel.BuiltIn },
             Color = { Value = new(0,0,0,0.3f) },
             FalloffCurve = new([
-                new(new(0,1), new(-0.25f,0), new(0.25f,0)),
-                new(new(1,0), new(-0.25f,0), new(0.25f,0))
+                new(new(0,1), new(-0.25f,0), new(0.65f,0)),
+                new(new(1,0), new(0,0.25f), new(0.25f,0))
             ]),
         });
 
@@ -84,7 +96,7 @@ public static class AppBrushLibrary
         
         // Note about `BrushSettings.ObserveChanged().ToReadOnlyReactiveProperty()`
         // ToReadOnlyReactiveProperty() is necessary to trigger the initial value of observable.
-        // Or CombineLatest lacks of the first value to get to work.
+        // Or CombineLatest lacks of the first value to get to work. Or use `Prepend` function.
         SelectedBrushSetting = SelectedIndex
             .CombineLatest(BrushSettings.ObserveChanged().ToReadOnlyReactiveProperty(), (idx, _) =>idx)
             .Select(idx => idx < 0 || idx >= BrushSettings.Count ? null : BrushSettings[idx])
