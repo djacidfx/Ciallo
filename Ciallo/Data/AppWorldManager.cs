@@ -67,10 +67,9 @@ public static class AppWorldManager
         LoadedWorlds.Add(world);
         
         // Add initial layer
-        var c = new NewPolylineLayerCmd([0]);
-        c.Do();
-        var s = new ChangeWorkingLayerCmd([0]);
-        s.Do();
+        AppBrushLibrary.SelectedIndex.Value = 0;
+        new NewPolylineLayerCmd([0]).Do();
+        new ChangeWorkingLayerCmd([0]).Do();
         
         return world;
     }
