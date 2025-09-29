@@ -18,7 +18,7 @@ public class ChangeWorkingLayerCmd(IReadOnlyList<int> newPath) : CommandBase
         // Selection manager
         var sm = Document.Get<SelectionManager>();
         _oldPath ??= sm.WorkingLayerPath;
-        sm.WorkingLayer = _newPath.Length > 0 ? Document.Get<LayerTreeManager>().Root.GetDescendant(_newPath) : Entity.Null;
+        sm.WorkingLayer.Value = _newPath.Length > 0 ? Document.Get<LayerTreeManager>().Root.GetDescendant(_newPath) : Entity.Null;
         
         // Layer tree view
         var layerContainer = Document.Get<LayerContainer>();
@@ -33,6 +33,6 @@ public class ChangeWorkingLayerCmd(IReadOnlyList<int> newPath) : CommandBase
         
         // Selection manager
         var sm = Document.Get<SelectionManager>();
-        sm.WorkingLayer = _oldPath!.Value.Length > 0 ? Document.Get<LayerTreeManager>().Root.GetDescendant(_oldPath) : Entity.Null;
+        sm.WorkingLayer.Value = _oldPath!.Value.Length > 0 ? Document.Get<LayerTreeManager>().Root.GetDescendant(_oldPath) : Entity.Null;
     }
 }

@@ -6,6 +6,8 @@ using Ciallo.Data;
 using Ciallo.NodeControl;
 using Ciallo.Widget;
 
+namespace Ciallo.NodeControl;
+
 public partial class PaintPanelContainer : Control
 {
     public PaintPanel CreateAddPaintPanel(Entity document)

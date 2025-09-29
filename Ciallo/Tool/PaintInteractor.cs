@@ -18,7 +18,7 @@ public class PaintInteractor : InteractorBase
     {
         get
         {
-            var l = SelectionManager.WorkingLayer;
+            var l = SelectionManager.WorkingLayer.Value;
             bool layerAvailable = l != Entity.Null && l.Has<PolylineLayerSetting>();
             bool brushAvailable = SelectionManager.WorkingBrush.Value != Entity.Null || AppBrushLibrary.HasSelection;
             
@@ -58,7 +58,7 @@ public class PaintInteractor : InteractorBase
         
         _strokePreview = new StrokeView();
         _strokePreview.Material = brushMaterial;
-        var layerE = SelectionManager.WorkingLayer;
+        var layerE = SelectionManager.WorkingLayer.Value;
         var layerView = layerE.Get<PolylineLayerView>();
         layerView.AddChild(_strokePreview);
         
@@ -132,7 +132,7 @@ public class PaintInteractor : InteractorBase
     public override void End(CursorButtonData data)
     {
         var parentPath = SelectionManager.WorkingLayerPath;
-        var parentE = SelectionManager.WorkingLayer;
+        var parentE = SelectionManager.WorkingLayer.Value;
         ImmutableArray<int> path = [..parentPath, parentE.Get<LayerTreeNode>().ChildCount];
         new NewStrokeCmd(path, _brushE)
             .Combine(new SetStrokeGeometryCmd(path, _points, _radii)).Commit();

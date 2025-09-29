@@ -5,6 +5,8 @@ using Arch.Core.Extensions;
 using Ciallo.Data;
 using R3;
 
+namespace Ciallo.NodeControl;
+
 /// <summary>
 /// Show layers, toggle LayerTree scenes' visibility according to current working document
 /// </summary>

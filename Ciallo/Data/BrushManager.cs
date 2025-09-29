@@ -11,7 +11,7 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class BrushManager
 {
-    public ObservableList<Entity> Brushes = [];
+    [DataMember] public ObservableList<Entity> Brushes = [];
 
     public int Add(Entity brush)
     {

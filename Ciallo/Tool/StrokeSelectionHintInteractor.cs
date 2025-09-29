@@ -11,7 +11,7 @@ public class StrokeSelectionHintInteractor : InteractorBase
 {
     private StrokeOverlay _hintingOverlay;
 
-    public override bool CanInteract => SelectionManager.WorkingLayer != Entity.Null;
+    public override bool CanInteract => SelectionManager.WorkingLayer.Value != Entity.Null;
     
     public override void Interacting(CursorMotionData data)
     {
