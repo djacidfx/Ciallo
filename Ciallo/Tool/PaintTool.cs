@@ -48,9 +48,10 @@ public partial class PaintTool : CommonToolBase
                     docAdd.Add(panel);
                     ((SceneTree)Engine.GetMainLoop()).GetCurrentScene().AddChild(panel);
 
+                    panel.BrushPreviewContainer.Visible = false; // Add preview someday
                     var bm = docAdd.Get<BrushManager>();
                     panel.BindBrushSetting(bm.Brushes, ent => ent.Get<BrushSetting>());
-                    
+
                     panel.Operators.Visible = false;
                     break;
                 case NotifyCollectionChangedAction.Remove:

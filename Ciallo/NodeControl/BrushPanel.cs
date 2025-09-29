@@ -30,7 +30,7 @@ public partial class BrushPanel : AcceptDialog
     public Container Operators;
     public Viewport BrushPreviewViewport;
     public SubViewportContainer BrushPreviewContainer;
-    public float PreviewBaseWidth = Single.Pi * (2f + 0.2f);
+    public float PreviewBaseWidth = Single.Pi * (2f + 0.3f);
     public const float PreviewAspectRatio = 1.618f * 2;
 
     [OnInstantiate]
@@ -59,8 +59,8 @@ public partial class BrushPanel : AcceptDialog
     public override void _Ready()
     {
         var background = (GradientTexture2D)BrushPreviewViewport.GetChild<Sprite2D>(1).Texture;
-        background.Width = (int)PreviewBaseWidth;
-        background.Height = (int)(PreviewBaseWidth / PreviewAspectRatio);
+        background.Width = (int)Mathf.Ceil(PreviewBaseWidth);
+        background.Height = (int)Mathf.Ceil(PreviewBaseWidth / PreviewAspectRatio);
         
         BrushPreviewContainer.Resized += () =>
         {
@@ -74,7 +74,7 @@ public partial class BrushPanel : AcceptDialog
         BrushPreviewViewport.SizeChanged += () =>
         {
             var size = BrushPreviewContainer.Size;
-            var zoomLevel = size.X / PreviewAspectRatio;
+            var zoomLevel = size.X / PreviewBaseWidth;
             BrushPreviewViewport.GetChild<Camera2D>(0).Zoom = Vector2.One * zoomLevel;
         };
         
