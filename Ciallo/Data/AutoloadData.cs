@@ -11,7 +11,7 @@ using R3;
 
 namespace Ciallo.Data;
 
-public partial class DataAutoload : Node
+public partial class AutoloadData : Node
 {
     public static MessagePackSerializerOptions DefaultOption;
     

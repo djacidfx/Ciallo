@@ -11,7 +11,7 @@ using MessagePack;
 
 namespace Ciallo.Misc;
 
-public partial class MiscAutoload : Node
+public partial class AutoloadMisc : Node
 {
     public override void _EnterTree()
     {
