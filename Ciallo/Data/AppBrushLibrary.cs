@@ -1,8 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Linq;
+using Ciallo.Geometry;
 using Ciallo.Misc;
 using Ciallo.NodeControl;
+using Ciallo.Rendering;
 using Ciallo.Widget;
 using Godot;
 using Newtonsoft.Json;
@@ -101,7 +104,34 @@ public static class AppBrushLibrary
             .CombineLatest(BrushSettings.ObserveChanged().ToReadOnlyReactiveProperty(), (idx, _) =>idx)
             .Select(idx => idx < 0 || idx >= BrushSettings.Count ? null : BrushSettings[idx])
             .ToReadOnlyReactiveProperty();
+
+        // Create stroke preview
+        var preview = new StrokeView();
+        panel.BrushPreviewViewport.AddChild(preview);
+        // Note: Lazy on clearing these caches on destruction. I don't believe user will view 1e5 brushes in one session.
+        Dictionary<BrushSetting, BrushMaterial> materialCache = new();
+        CompositeDisposable curveChangeSubs = new(); 
+        curveChangeSubs.AddTo(panel);
+        SelectedBrushSetting.Subscribe(setting =>
+        {
+            if (setting == null)
+            {
+                preview.Material = null;
+                return;
+            }
+            materialCache.TryGetValue(setting, out var material);
+            if (material == null)
+            {
+                material = new();
+                material.ObserveBrushSetting(setting);
+                materialCache[setting] = material;
+                setting.Pressure2RadiusRatioCurve.Changed.Prepend(new Unit()).Subscribe(_ => 
+                    UpdateStrokePreview(preview, setting.Pressure2RadiusRatioCurve)).AddTo(curveChangeSubs);
+            }
+            preview.Material = material;
+        }).AddTo(panel);
         
+        // Brush list operations and buttons
         int count = 1;
         panel.Add.Pressed += () =>
         {
@@ -184,5 +214,23 @@ public static class AppBrushLibrary
             BrushSettings.Move(idx, BrushSettings.Count - 1);
             SelectedIndex.Value = BrushSettings.Count - 1;
         };
+    }
+
+    private static void UpdateStrokePreview(StrokeView view, BezierCurve pressureCurve)
+    {
+        int n = 64;
+        float gr = (1 + Mathf.Sqrt(5)) / 2; // golden ratio
+        var ts = Enumerable.Range(0, n)
+            .Select(i => i / (n - 1f))
+            .Select(i => (i * 2 - 1f) * Mathf.Pi)
+            .ToImmutableArray(); // [-pi, pi]
+        
+        var points = ts.Select(t => new Vector2(t, Mathf.Sin(t) / gr)).ToImmutableArray();
+        var radii = ts
+            .Select(t => Mathf.Cos(t / 2.0f))
+            .Select(pressureCurve.SampleX)
+            .Select(radiusRatio => radiusRatio * 0.5f/gr)
+            .ToImmutableArray();
+        view.SetGeometry(points, radii);
     }
 }

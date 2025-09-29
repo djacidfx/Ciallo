@@ -288,7 +288,7 @@ public class BezierCurve
     /// </summary>
     public float SampleX(float x)
     {
-        if (_cachedPolyline == null) Tessellate();
+        if (IsCacheInvalid) Tessellate(64);
         return _cachedPolyline.SampleX(x);
     }
     
@@ -297,7 +297,7 @@ public class BezierCurve
     /// </summary>
     public List<float> SampleXList(IReadOnlyList<float> xs)
     {
-        if (_cachedPolyline == null) Tessellate();
+        if (IsCacheInvalid) Tessellate(64);
         return _cachedPolyline.SampleXList(xs);
     }
 
