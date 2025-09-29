@@ -30,7 +30,7 @@ public partial class BrushPanel : AcceptDialog
     public Container Operators;
     public Viewport BrushPreviewViewport;
     public SubViewportContainer BrushPreviewContainer;
-    public float PreviewBaseWidth = Single.Pi * (2f + 0.3f);
+    public float PreviewBaseWidth = Single.Pi * (2f + 0.3f); // 2pi + padding blank
     public const float PreviewAspectRatio = 1.618f * 2;
 
     [OnInstantiate]
@@ -65,7 +65,7 @@ public partial class BrushPanel : AcceptDialog
         BrushPreviewContainer.Resized += () =>
         {
             Vector2 size = BrushPreviewContainer.Size;
-            if (!(MathF.Abs(size.X / size.Y - PreviewAspectRatio) > 1e-5f)) return;
+            if ((MathF.Abs(size.X / size.Y - PreviewAspectRatio) <= 1e-5f)) return;
 
             size.Y = size.X / PreviewAspectRatio;
             BrushPreviewContainer.CustomMinimumSize = new(0, size.Y);
