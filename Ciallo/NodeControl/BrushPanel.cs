@@ -28,7 +28,11 @@ public partial class BrushPanel : AcceptDialog
     public Button Down;
     public Button Bottom;
     public Container Operators;
-    
+    public Viewport BrushPreviewViewport;
+    public SubViewportContainer BrushPreviewContainer;
+    public float PreviewBaseHeight = 100.0f;
+    public const float PreviewAspectRatio = 3.6f;
+
     [OnInstantiate]
     private void Initialise()
     {
@@ -48,12 +52,39 @@ public partial class BrushPanel : AcceptDialog
         Down = GetNode<Button>("%Down");
         Bottom = GetNode<Button>("%Bottom");
         Operators = GetNode<Container>("%Operators");
+        BrushPreviewViewport = GetNode<SubViewport>("%BrushPreviewViewport");
+        BrushPreviewContainer = BrushPreviewViewport.GetParent<SubViewportContainer>();
+    }
+
+    public override void _Ready()
+    {
+        var background = (GradientTexture2D)BrushPreviewViewport.GetChild<Sprite2D>(1).Texture;
+        background.Width = (int)(PreviewBaseHeight * PreviewAspectRatio);
+        background.Height = (int)PreviewBaseHeight;
+        
+        BrushPreviewContainer.Resized += () =>
+        {
+            Vector2 size = BrushPreviewContainer.Size;
+            if (!(MathF.Abs(size.X / size.Y - PreviewAspectRatio) > 1e-5f)) return;
+
+            size.Y = size.X / PreviewAspectRatio;
+            BrushPreviewContainer.Size = size;
+        };
+
+        BrushPreviewViewport.SizeChanged += () =>
+        {
+            var size = BrushPreviewContainer.Size;
+            var zoomLevel = size.Y / PreviewBaseHeight;
+            BrushPreviewViewport.GetChild<Camera2D>(0).Zoom = Vector2.One * zoomLevel;
+        };
+        
+        BrushPreviewContainer.ResetSize();
     }
 
     public override void _UnhandledInput(InputEvent @event)
     {
         // Propagate unhandled key event to main viewport to enable shortcuts
-        // Only work for godot `Window` without exclusive
+        // Only work for godot `Window` with `exclusive` false
         if (@event is InputEventKey)
         {
             GetParent().GetViewport().PushInput(@event);
