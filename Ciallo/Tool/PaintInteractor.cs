@@ -148,6 +148,7 @@ public class PaintInteractor : InteractorBase
     {
         _points.Clear();
         _radii.Clear();
+        _strokePreview.QueueFree();
         OS.LowProcessorUsageMode = true;
     }
 }

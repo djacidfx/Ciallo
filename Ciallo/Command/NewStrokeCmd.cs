@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Runtime.Serialization;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
@@ -8,8 +7,6 @@ using Ciallo.Rendering;
 using Godot;
 
 namespace Ciallo.Command;
-
-[DataContract, ToSerialize] class BrushEntity : EntityWrapper;
 
 public class NewStrokeCmd(IReadOnlyList<int> insertPath, Entity brushE) : CommandBase
 {
@@ -22,7 +19,6 @@ public class NewStrokeCmd(IReadOnlyList<int> insertPath, Entity brushE) : Comman
 
     public override void Do()
     {
-        var tree = Document.Get<LayerTreeManager>();
         // Creation
         if (_strokeE == Entity.Null)
         {
@@ -31,8 +27,9 @@ public class NewStrokeCmd(IReadOnlyList<int> insertPath, Entity brushE) : Comman
             _strokeE.Add(new StrokeGeometry(), node);
             _strokeE.Add<BrushEntity>(brushE);
         }
-        
+
         // Data
+        var tree = Document.Get<LayerTreeManager>();
         _strokeE.Add(new ToSerializeTag());
         tree.Root.InsertDescendant(_insertPath, _strokeE);
         

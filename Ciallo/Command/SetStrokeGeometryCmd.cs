@@ -40,7 +40,7 @@ public class SetStrokeGeometryCmd(IReadOnlyList<int> targetPath, IReadOnlyList<V
         var targetE = tree.Root.GetDescendant(_targetPath);
         
         // Overlay
-        targetE.Get<StrokeOverlay>().SetGeometry(_oldGeometry.Points, _newGeometry.Radii);
+        targetE.Get<StrokeOverlay>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
 
         // View
         targetE.Get<StrokeView>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
