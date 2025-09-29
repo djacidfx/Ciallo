@@ -15,7 +15,7 @@ public partial class LayerAction : Control
     public void OnRemoveLayer()
     {
         if (AppWorldManager.WorkingWorld.Value == null) return;
-        var document = AppWorldManager.WorkingDocument;
+        var document = AppWorldManager.WorkingDocument.CurrentValue;
         var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
         if (workingLayerPath == null) return;
         var nextLayerPath = document.Get<LayerTreeManager>().GetNextFocusPathAfterDeletion(workingLayerPath);

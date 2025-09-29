@@ -17,6 +17,7 @@ public partial class AutoloadData : Node
     
     public override void _EnterTree()
     {
+        GetTree().AutoAcceptQuit = false;
         // Message pack serializer setup
         var defaultResolver = CompositeResolver.Create(
             GodotResolver.Instance,
@@ -41,13 +42,6 @@ public partial class AutoloadData : Node
         if (!brushesFileExists) AppBrushLibrary.ResetBuiltInBrushes();
     }
 
-    public override void _ExitTree()
-    {
-        AppBrushLibrary.Save();
-        AppPreference.Save();
-        AppWorldManager.Clear();
-    }
-
     public override void _Ready()
     {
         AppBrushLibrary.BindToGui();
@@ -55,6 +49,15 @@ public partial class AutoloadData : Node
 
     public override void _Notification(int what)
     {
+        if(what == NotificationWMCloseRequest)
+        {
+            AppBrushLibrary.Save();
+            AppPreference.Save();
+            AppWorldManager.Clear();
+            GetTree().Quit();
+            // Prevent default handler
+            return;
+        }
         // Force garbage collection makes godot memory leak warning disappear
         if (what != NotificationPredelete) return;
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);

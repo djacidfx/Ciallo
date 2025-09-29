@@ -40,7 +40,7 @@ public partial class MenuEdit : PopupMenu
     public static void OnIndexPressed(int id)
     {
         if(AppWorldManager.WorkingWorld.Value == null) return;
-        var cmdM = AppWorldManager.WorkingDocument.Get<CommandManager>();
+        var cmdM = AppWorldManager.WorkingDocument.CurrentValue.Get<CommandManager>();
         switch (id)
         {
             case 0: cmdM.Undo(); break;

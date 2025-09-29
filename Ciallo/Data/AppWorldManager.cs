@@ -23,7 +23,8 @@ public static class AppWorldManager
     public static readonly ObservableList<World> LoadedWorlds = [];
     // Current focused document.
     public static readonly ReactiveProperty<World> WorkingWorld = new(null);
-    public static Entity WorkingDocument => WorkingWorld.Value.Document();
+    public static readonly ReadOnlyReactiveProperty<Entity> WorkingDocument =
+        WorkingWorld.Select(w => w?.Document() ?? Entity.Null).ToReadOnlyReactiveProperty();
     
     private static readonly Dictionary<World, Entity> DocumentSingletons = [];
     private static readonly SceneTree SceneTree = (SceneTree)Engine.GetMainLoop();
@@ -46,22 +47,6 @@ public static class AppWorldManager
         var brushManager = new BrushManager();
         document.Add(settings, layerTreeManager, selectionManager, commandManager, brushManager);
         
-        // Create layer tree control
-        var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
-        layerPanel.CreateAddLayerContainer(document);
-        
-        // Create paint panel
-        var paintPanelContainer = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().Single();
-        var paintPanel = paintPanelContainer.CreateAddPaintPanel(document);
-        
-        // Add world view
-        var worldView = paintPanel.GetNode<WorldView>("%WorldView");
-        document.Add(worldView);
-        
-        // Add world overlay
-        var worldOverlay = paintPanel.GetNode<WorldOverlay>("%WorldOverlay");
-        document.Add(worldOverlay);
-        
         // Set as working world
         WorkingWorld.Value = world;
         // Always init first, then add to list
@@ -82,25 +67,6 @@ public static class AppWorldManager
         // Remove working world
         LoadedWorlds.Remove(world);
         if(WorkingWorld.Value == world) WorkingWorld.Value = LoadedWorlds.Count > 0 ? LoadedWorlds[0] : null;
-        
-        // Remove world overlay
-        var worldOverlay = world.Document().Get<WorldOverlay>();
-        world.Document().Remove<WorldOverlay>();
-        if(GodotObject.IsInstanceValid(worldOverlay)) worldOverlay.QueueFree();
-        
-        // Remove world view
-        var worldView = world.Document().Get<WorldView>();
-        world.Document().Remove<WorldView>();
-        if(GodotObject.IsInstanceValid(worldView)) worldView.QueueFree();
-        
-        // Remove paint panel
-        //// add null check since the method could be called as long as Godot cleaning up nodes.
-        var paintPanelContainer = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().SingleOrDefault();
-        if(GodotObject.IsInstanceValid(paintPanelContainer)) paintPanelContainer.RemoveFreePaintPanel(world.Document());
-        
-        // Remove layer tree control
-        var layerPanel = SceneTree.GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().SingleOrDefault();
-        layerPanel?.RemoveFreeLayerContainer(world.Document());
 
         // Dispose or free managers
         world.Document().Get<CommandManager>().Free();
@@ -112,6 +78,7 @@ public static class AppWorldManager
     
     public static void Clear()
     {
+        // Don't use `clear` on LoadedWorlds since it will trigger reset rather than remove event.
         foreach (var world in LoadedWorlds.ToList())
         {
             Remove(world);
