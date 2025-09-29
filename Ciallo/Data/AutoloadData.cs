@@ -20,10 +20,11 @@ public partial class AutoloadData : Node
         GetTree().AutoAcceptQuit = false;
         // Message pack serializer setup
         var defaultResolver = CompositeResolver.Create(
-            GodotResolver.Instance,
-            AttributeFormatterResolver.Instance,
-            ReactivePropertyResolver.Instance,
-            StandardResolver.Instance
+            [EntityToIndexFormatter.Instance, TypeFormatter.Instance],
+            [GodotResolver.Instance,
+                AttributeFormatterResolver.Instance,
+                ReactivePropertyResolver.Instance,
+                StandardResolver.Instance]
         );
         MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(defaultResolver);
         DefaultOption = MessagePackSerializer.DefaultOptions;
