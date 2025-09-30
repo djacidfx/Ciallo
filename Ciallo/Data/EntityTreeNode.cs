@@ -5,37 +5,33 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Arch.Core;
 using Arch.Core.Extensions;
-using R3;
 
 namespace Ciallo.Data;
 
 /// <summary>
-/// Layer tree node component providing entity hierarchical structure like Unity's GameObject scene tree.
+/// Generic entity tree node component providing hierarchical structure.
 /// </summary>
-/// <remarks> All methods this class should be named similar to and behave same as Godot's SceneTree and Node </remarks>
+/// <typeparam name="T">The derived type of the tree node.</typeparam>
 [DataContract, ToSerialize]
-public class LayerTreeNode
+public abstract class EntityTreeNode<T> where T : EntityTreeNode<T>
 {
-    [DataMember] public ReactiveProperty<string> Name = new("");
-    [DataMember] public ReactiveProperty<bool> IsVisible = new(true);
-    
     [DataMember] public List<Entity> Children = [];
     
     public int ChildCount => Children.Count;
-    public int DescendantCount => CountSubtreeNodes(this) - 1;
+    public int DescendantCount => CountSubtreeNodes((T)this) - 1;
     public bool IsLeaf => Children.Count == 0;
 
     #region Modify
     
     public void AddChild(Entity child)
     {
-        if (!child.Has<LayerTreeNode>()) throw new ArgumentException("Child entity must have LayerTreeNode component.");
+        if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
         Children.Add(child);
     }
 
     public void InsertChild(int idx, Entity child)
     {
-        if (!child.Has<LayerTreeNode>()) throw new ArgumentException("Child entity must have LayerTreeNode component.");
+        if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
         Children.Insert(idx, child);
     }
     
@@ -116,30 +112,30 @@ public class LayerTreeNode
 
     public Entity GetDescendant([NotNull] IReadOnlyList<int> path)
     {
-        if(path.Count == 0) throw new ArgumentException("Path cannot be empty.", nameof(path));
-        if(path.Count == 1) return Children[path[0]];
-        return Children[path[0]].Get<LayerTreeNode>().GetDescendant(path.Skip(1).ToArray());
+        if (path.Count == 0) throw new ArgumentException("Path cannot be empty.", nameof(path));
+        if (path.Count == 1) return Children[path[0]];
+        return Children[path[0]].Get<T>().GetDescendant(path.Skip(1).ToArray());
     }
     
-    public LayerTreeNode GetDescendantNode([NotNull] IReadOnlyList<int> path)
+    public T GetDescendantNode([NotNull] IReadOnlyList<int> path)
     {
-        if(path.Count == 0) return this;
-        return Children[path[0]].Get<LayerTreeNode>().GetDescendantNode(path.Skip(1).ToArray());
+        if (path.Count == 0) return (T)this;
+        return Children[path[0]].Get<T>().GetDescendantNode(path.Skip(1).ToArray());
     }
     
-    public LayerTreeNode GetNodeOrNull([NotNull] IReadOnlyList<int> path)
+    public T GetNodeOrNull([NotNull] IReadOnlyList<int> path)
     {
-        if(path.Count == 0) return this;
+        if (path.Count == 0) return (T)this;
         int idx = path[0];
         if (idx < 0 || idx >= Children.Count) return null;
-        var childNode = Children[idx].Get<LayerTreeNode>();
+        var childNode = Children[idx].Get<T>();
         return childNode.GetNodeOrNull(path.Skip(1).ToArray());
     }
     
     public List<int> SearchPathTo(Entity target)
     {
-        var node = target.Get<LayerTreeNode>();
-        BreadthFirstSearch(this, node, out var path);
+        var node = target.Get<T>();
+        BreadthFirstSearch((T)this, node, out var path);
         return path;
     }
     
@@ -155,15 +151,15 @@ public class LayerTreeNode
     /// <param name="targetNode"></param>
     /// <param name="path">Indices list to the target, in parent to child order</param>
     /// <returns></returns>
-    public static List<Entity> BreadthFirstSearch(LayerTreeNode node, LayerTreeNode targetNode, out List<int> path)
+    public static List<Entity> BreadthFirstSearch(T node, T targetNode, out List<int> path)
     {
-        if(node == targetNode)
+        if (node == targetNode)
         {
             path = [];
             return [];
         }
         
-        var childNodes = node.Children.Select(e => e.Get<LayerTreeNode>()).ToList();
+        var childNodes = node.Children.Select(e => e.Get<T>()).ToList();
         var index = childNodes.IndexOf(targetNode);
         if (index >= 0) // found
         {
@@ -196,7 +192,7 @@ public class LayerTreeNode
         int remaining = preorderIdx;
         List<int> path = [];
 
-        bool Dfs(LayerTreeNode node)
+        bool Dfs(T node)
         {
             for (int i = 0; i < node.Children.Count; i++)
             {
@@ -206,7 +202,7 @@ public class LayerTreeNode
                 remaining--;
 
                 // Traverse its subtree in preorder.
-                var childNode = node.Children[i].Get<LayerTreeNode>();
+                var childNode = node.Children[i].Get<T>();
                 if (Dfs(childNode)) return true;
 
                 // Backtrack and continue with next sibling.
@@ -215,10 +211,10 @@ public class LayerTreeNode
             return false;
         }
 
-        return Dfs(this) ? path :
+        return Dfs((T)this) ? path :
             throw new ArgumentOutOfRangeException(nameof(preorderIdx), "Index exceeds the number of nodes in the tree.");
     }
-    
+
     /// <summary>
     /// Turn a path to a preorder index.
     /// </summary>
@@ -227,30 +223,28 @@ public class LayerTreeNode
     public int PathToPreorderIndex([NotNull] IReadOnlyList<int> path)
     {
         int index = 0;
-        var node = this;
+        var node = (T)this;
 
         for (int depth = 0; depth < path.Count; depth++)
         {
             int idx = path[depth];
-            // add sizes of all sibling subtrees before idx
             for (int i = 0; i < idx; i++)
-                index += CountSubtreeNodes(node.Children[i].Get<LayerTreeNode>());
+                index += CountSubtreeNodes(node.Children[i].Get<T>());
 
-            // after the first level, count the parent node itself
             if (depth > 0) index++;
 
-            node = node.Children[idx].Get<LayerTreeNode>();
+            node = node.Children[idx].Get<T>();
         }
 
         return index;
     }
 
     // compute total nodes in subtree (including the root of that subtree)
-    public static int CountSubtreeNodes(LayerTreeNode n)
+    public static int CountSubtreeNodes(T n)
     {
         int cnt = 1;
         foreach (var e in n.Children)
-            cnt += CountSubtreeNodes(e.Get<LayerTreeNode>());
+            cnt += CountSubtreeNodes(e.Get<T>());
         return cnt;
     }
 
