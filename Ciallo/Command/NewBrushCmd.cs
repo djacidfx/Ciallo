@@ -13,9 +13,9 @@ public class NewBrushCmd : CommandBase
     public Entity BrushE = Entity.Null;
     private readonly BrushSetting _setting;
 
-    public NewBrushCmd(BrushSetting inputSetting)
+    public NewBrushCmd(BrushSetting inputSetting = null)
     {
-        _setting = inputSetting.Clone();
+        _setting = inputSetting?.Clone() ?? new BrushSetting();
         _setting.Labels.Remove(BrushLabel.BuiltIn);
         
         // Dirty hack

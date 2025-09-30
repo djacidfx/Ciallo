@@ -22,7 +22,7 @@ public class StrokeSelectionHintInteractor : InteractorBase
         {
             CollideWithBodies = true,
             Position = data.WorldPosition,
-            CollisionMask = (uint)AppLayers.Physics2DLayerMask.Stroke
+            CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke
         };
         var points = Document.Get<WorldOverlay>().GetWorld2D().DirectSpaceState.IntersectPoint(pp, 1);
         if(points.Count > 0)
