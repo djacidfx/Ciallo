@@ -9,7 +9,6 @@ using Ciallo.NodeControl;
 using Ciallo.Tool;
 using Ciallo.Widget;
 using Godot;
-using Humanizer;
 using ObservableCollections;
 using R3;
 

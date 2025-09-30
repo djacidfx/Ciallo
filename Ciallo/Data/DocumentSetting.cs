@@ -1,7 +1,6 @@
 ﻿using System.Runtime.Serialization;
 using R3;
 using Godot;
-using MessagePack;
 
 namespace Ciallo.Data;
 

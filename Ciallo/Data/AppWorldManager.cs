@@ -31,7 +31,6 @@ public static class AppWorldManager
         WorkingWorld.Select(w => w?.Document() ?? Entity.Null).ToReadOnlyReactiveProperty();
     
     private static readonly System.Collections.Generic.Dictionary<World, Entity> DocumentSingletons = [];
-    private static readonly SceneTree SceneTree = (SceneTree)Engine.GetMainLoop();
 
     public static World Create([NotNull] DocumentSetting settings)
     {

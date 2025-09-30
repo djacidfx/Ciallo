@@ -4,8 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using Godot;
 
-using Ciallo.Misc;
-
 public static class GodotNodeExtension
 {
     public static Node GetDecedentAt(this Node node, IReadOnlyList<int> path)
