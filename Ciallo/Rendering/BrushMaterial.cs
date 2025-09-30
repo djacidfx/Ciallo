@@ -10,7 +10,22 @@ public partial class BrushMaterial : ShaderMaterial
 {
     public CompositeDisposable Subs;
     public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
-    
+
+    private static BrushMaterial _missingBrushMaterial;
+    public static BrushMaterial MissingBrushMaterial
+    {
+        get
+        {
+            if (_missingBrushMaterial != null) return _missingBrushMaterial;
+            var m = _missingBrushMaterial = new();
+            m.SetShaderParameter("strokeType", 0);
+            m.SetShaderParameter("materialColor", Colors.Crimson);
+            m.SetShaderParameter("dashLength", 1f);
+            m.SetShaderParameter("dashForwardSpeed", 1f);
+            return m;
+        }
+    }
+
     public BrushMaterial()
     {
         Shader = StrokeShader;

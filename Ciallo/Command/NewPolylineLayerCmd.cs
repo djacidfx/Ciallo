@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
+using Ciallo.Misc;
 using Ciallo.Rendering;
 using Godot;
 
@@ -27,7 +28,7 @@ public class NewPolylineLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
             _layerE = WorkingWorld.Create();
             var node = new LayerTreeNode()
             {
-                Name = { Value = $"{TranslationServer.Translate("Line layer")} {tree.Root.ChildCount+1}" },
+                Name = { Value = $"{"Line layer".Tr()} {tree.Root.ChildCount+1}" },
             };
             _layerE.Add(new PolylineLayerSetting(), node);
         }

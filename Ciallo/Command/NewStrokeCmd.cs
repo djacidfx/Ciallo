@@ -8,12 +8,19 @@ using Godot;
 
 namespace Ciallo.Command;
 
-public class NewStrokeCmd(IReadOnlyList<int> insertPath, Entity brushE) : CommandBase
+public class NewStrokeCmd : CommandBase
 {
-    private readonly ImmutableArray<int> _insertPath = [..insertPath];
+    private readonly ImmutableArray<int> _insertPath;
     private Entity _strokeE = Entity.Null;
     private readonly List<Node> _refNodes = [];
-    
+    private readonly Entity _brushE;
+
+    public NewStrokeCmd(IReadOnlyList<int> insertPath, Entity brushE)
+    {
+        _brushE = brushE;
+        _insertPath = [..insertPath];
+    }
+
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(_strokeE);
     public override IEnumerable<GodotObject> DoRefObjects => _refNodes;
 
@@ -25,7 +32,7 @@ public class NewStrokeCmd(IReadOnlyList<int> insertPath, Entity brushE) : Comman
             _strokeE = WorkingWorld.Create();
             var node = new LayerTreeNode();
             _strokeE.Add(new StrokeGeometry(), node);
-            _strokeE.Add<BrushEntity>(brushE);
+            _strokeE.Add<BrushEntity>(_brushE);
         }
 
         // Data
@@ -39,7 +46,7 @@ public class NewStrokeCmd(IReadOnlyList<int> insertPath, Entity brushE) : Comman
         var strokeView =  (StrokeView)_refNodes[0];
         view.InsertNodeAt(strokeView, _insertPath);
         _strokeE.Add(strokeView);
-        strokeView.Material = brushE.Get<BrushMaterial>();
+        strokeView.Material = _brushE.Get<BrushMaterial>();
         
         // Overlay
         var overlay = Document.Get<WorldOverlay>();
