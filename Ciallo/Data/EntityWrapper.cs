@@ -5,7 +5,7 @@ using Arch.Core.Extensions;
 
 namespace Ciallo.Data;
 
-[DataContract, ToSerialize] class BrushEntity : EntityWrapper;
+[DataContract, ToSerialize] public class BrushEntity : EntityWrapper;
 
 [DataContract]
 public class EntityWrapper

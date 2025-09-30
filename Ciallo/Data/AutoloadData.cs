@@ -64,21 +64,4 @@ public partial class AutoloadData : Node
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         GC.WaitForPendingFinalizers();
     }
-    
-    public static IEnumerable<Type> GetSerializableTypes()
-    {
-        var allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a =>
-        {
-            try
-            {
-                return a.GetTypes();
-            }
-            catch (ReflectionTypeLoadException e)
-            {
-                return e.Types.Where(t => t != null);
-            }
-        }).Where(t => t is { IsAbstract: false });
-        
-        return allTypes.Where(t => t!.GetCustomAttributes(typeof(ToSerializeAttribute), false).Length > 0);
-    }
 }

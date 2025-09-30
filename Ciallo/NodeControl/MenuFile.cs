@@ -1,5 +1,4 @@
 using Godot;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
@@ -51,8 +50,12 @@ public partial class MenuFile : PopupMenu
                 dialogOpen.Popup();
                 break;
             case 2: // Close Document
-                if(AppWorldManager.WorkingWorld == null) break;
+                if(AppWorldManager.WorkingWorld == null) return;
                 AppWorldManager.Remove(AppWorldManager.WorkingWorld.Value);
+                break;
+            case 4: // Save
+                if(AppWorldManager.WorkingDocument == null) return;
+                AppWorldManager.SaveCurrentDocument();
                 break;
             default:
                 GD.PrintErr($"Unhandled menu item index: {id}");
