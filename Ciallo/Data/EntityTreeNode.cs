@@ -12,7 +12,7 @@ namespace Ciallo.Data;
 /// Generic entity tree node component providing hierarchical structure.
 /// </summary>
 /// <typeparam name="T">The derived type of the tree node.</typeparam>
-[DataContract, ToSerialize]
+[DataContract]
 public abstract class EntityTreeNode<T> where T : EntityTreeNode<T>
 {
     [DataMember] public List<Entity> Children = [];
