@@ -23,7 +23,7 @@ public class LayerTreeManager
     /// <param name="path">The given node path.</param>
     /// <returns>
     /// Return priority: next sibling > previous sibling > parent > empty array (no nodes after deletion)
-    /// If the node is root (path is empty), return null.
+    /// If the node is root (path is empty), return empty array.
     /// </returns>
     public ImmutableArray<int> GetNextFocusPathAfterDeletion(IReadOnlyList<int> path)
     {

@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Godot;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Command;
+using Godot;
 using ObservableCollections;
 using R3;
 
@@ -54,15 +53,15 @@ public static partial class AppWorldManager
         
         // Add initial layer
         AppBrushLibrary.SelectedIndex.Value = 0;
-        new NewPolylineLayerCmd([0]).Do();
-        new ChangeWorkingLayerCmd([0]).Do();
+        new NewPolylineLayerCmd().Do();
+        new ChangeWorkingLayerCmd(^1).Do();
         
         return world;
     }
 
     public static void Remove([NotNull] World world)
     {
-        if (!LoadedWorlds.Contains(world)) throw new KeyNotFoundException("The specified world does not exist.");
+        if (!LoadedWorlds.Contains(world)) throw new Sys.KeyNotFoundException("The specified world does not exist.");
         
         // Remove working world
         LoadedWorlds.Remove(world);
@@ -108,18 +107,18 @@ public static partial class AppWorldManager
         world.SubscribeComponentAdded((in Entity e, ref Rect2 _) => throwError());
         world.SubscribeComponentAdded((in Entity e, ref Rect2I _) => throwError());
         var throwCollectionError = new Action(() => throw new InvalidOperationException("List of primitive types cannot be used as components."));
-        world.SubscribeComponentAdded((in Entity e, ref List<Entity> _)  => throwCollectionError());
-        world.SubscribeComponentAdded((in Entity e, ref List<int> _) => throwCollectionError());
-        world.SubscribeComponentAdded((in Entity e, ref List<float> _) => throwCollectionError());
-        world.SubscribeComponentAdded((in Entity e, ref List<double> _) => throwCollectionError());
-        world.SubscribeComponentAdded((in Entity e, ref List<bool> _) => throwCollectionError());
-        world.SubscribeComponentAdded((in Entity e, ref List<string> _) => throwCollectionError());
-        world.SubscribeComponentAdded((in Entity e, ref List<char> _) => throwCollectionError());
-        world.SubscribeComponentAdded((in Entity e, ref List<Vector2> _) => throwCollectionError());
-        world.SubscribeComponentAdded((in Entity e, ref List<Vector2I> _) => throwCollectionError());
-        world.SubscribeComponentAdded((in Entity e, ref List<Transform2D> _) => throwCollectionError());
-        world.SubscribeComponentAdded((in Entity e, ref List<Rect2> _) => throwCollectionError());
-        world.SubscribeComponentAdded((in Entity e, ref List<Rect2I> _) => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<Entity> _)  => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<int> _) => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<float> _) => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<double> _) => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<bool> _) => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<string> _) => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<char> _) => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<Vector2> _) => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<Vector2I> _) => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<Transform2D> _) => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<Rect2> _) => throwCollectionError());
+        world.SubscribeComponentAdded((in Entity e, ref Sys.List<Rect2I> _) => throwCollectionError());
     }
     
     public static World GetWorldById(int id) => LoadedWorlds.Single(w => w.Id == id);

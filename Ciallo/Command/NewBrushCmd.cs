@@ -26,11 +26,7 @@ public class NewBrushCmd : CommandBase
     
     public override void Do()
     {
-        if (BrushE == Entity.Null)
-        {
-            BrushE = WorkingWorld.Create();
-            BrushE.Add(_setting);
-        }
+        InitEntity();
         // Data
         BrushE.Add(new ToSerializeTag());
         var bm = Document.Get<BrushManager>();
@@ -73,5 +69,16 @@ public class NewBrushCmd : CommandBase
         // Data
         bm.Remove(BrushE);
         BrushE.Remove<ToSerializeTag>();
+    }
+
+    public Entity InitEntity()
+    {
+        if (BrushE == Entity.Null)
+        {
+            BrushE = WorkingWorld.Create();
+            BrushE.Add(_setting);
+        }
+
+        return BrushE;
     }
 }

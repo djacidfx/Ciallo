@@ -1,7 +1,5 @@
-using Godot;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
@@ -9,8 +7,8 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.Widget;
+using Godot;
 using R3;
-
 
 /// <summary>
 /// Manage the layer UI controls. Also hold layer properties.
@@ -46,14 +44,22 @@ public partial class LayerContainer : Container
         _workingLayerButtonGroup.Pressed += button =>
         {
             var layerControl = (Control)button.GetOwner();
-            new ChangeWorkingLayerCmd([layerControl.GetIndex()]).Commit();
+            new ChangeWorkingLayerCmd(layerControl.GetIndex()).Commit();
         };
     }
 
-    public void CreateInsert(Entity layer, IReadOnlyList<int> path)
+    public void CreateInsert(Entity layerE, int index)
     {
-        var layerControl = Create(layer);
-        Insert(path, layerControl);
+        var control = CreateAdd(layerE);
+        _rootControl.MoveChild(control, index);
+    }
+
+    public Control CreateAdd(Entity layerE)
+    {
+        var layerControl = Create(layerE);
+        _rootControl.AddChild(layerControl);
+        layerE.Add(layerControl);
+        return layerControl;
     }
 
     private Control Create(Entity e)
@@ -123,16 +129,11 @@ public partial class LayerContainer : Container
         return layerControl;
     }
 
-    private void Insert(IReadOnlyList<int> path, Control layerControl)
+    private void Insert(int index, Control layerControl)
     {
         if (!_subscriptions.ContainsKey(layerControl))
             throw new ArgumentException("The given layer control is not created by this LayerTreeControl.");
-        if (path.Count == 0)
-        {
-            _rootControl.AddSibling(layerControl);
-            return;
-        }
-        var index = path[0];
+        
         _rootControl.AddChild(layerControl);
         _rootControl.MoveChild(layerControl, index);
     }
@@ -144,9 +145,11 @@ public partial class LayerContainer : Container
         _rootControl.MoveChild(_rootControl.GetChild(srcIdx), dstIdx);
     }
 
-    public void RemoveFree(IReadOnlyList<int> path)
+    public void RemoveFree(Entity layerE)
     {
-        var layerControl = (Control)_rootControl.GetDecedentAt(path);
+        // TODO: Warning: I'm being lazy to create a dedicated class for the layer control here.
+        var layerControl = layerE.Get<Control>();
+        layerE.Remove<Control>();
         var subscription = _subscriptions[layerControl];
         subscription.Dispose();
         _subscriptions.Remove(layerControl);
@@ -202,14 +205,11 @@ public partial class LayerContainer : Container
         new MoveLayerCmd([srcIndex], [dstIndex]).Commit();
     }
     
-    public void SetWorkingLayerNoSignal([NotNull] IReadOnlyList<int> path)
+    public void SetWorkingLayerNoSignal(Entity layerE)
     {
-        if (path.Count == 0)
-        {
-            _workingLayerButtonGroup.GetPressedButton().ButtonPressed = false;
-            return;
-        }
-        var layerControl = (Control)_rootControl.GetDecedentAt(path);
+        _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
+        if (layerE == Entity.Null) return;
+        var layerControl = layerE.Get<Control>();
         var activeButton = layerControl.GetNode<CheckBox>("%Active");
         // Note: button group will not be updated.
         _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);

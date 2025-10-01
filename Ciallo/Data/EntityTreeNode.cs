@@ -28,6 +28,8 @@ public abstract class EntityTreeNode<T> where T : EntityTreeNode<T>
         if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
         Children.Add(child);
     }
+    
+    public Entity GetChild(Index index) => Children[index];
 
     public void InsertChild(int idx, Entity child)
     {
@@ -132,7 +134,7 @@ public abstract class EntityTreeNode<T> where T : EntityTreeNode<T>
         return childNode.GetNodeOrNull(path.Skip(1).ToArray());
     }
     
-    public List<int> SearchPathTo(Entity target)
+    public List<int> FindPathTo(Entity target)
     {
         var node = target.Get<T>();
         BreadthFirstSearch((T)this, node, out var path);

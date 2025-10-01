@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
@@ -7,34 +7,44 @@ using Godot;
 
 namespace Ciallo.Command;
 
-public class DeleteLayerCmd(IReadOnlyList<int> target) : CommandBase
+public class DeletePolylineLayerCmd : CommandBase
 {
-    private readonly ImmutableArray<int> _targetPath = [..target];
-    private Entity _targetE = Entity.Null;
+    private Entity _targetE;
+    private int _targetIndex;
     private readonly List<Node> _refNodes = [];
+
+    public DeletePolylineLayerCmd(Entity targetE)
+    {
+        // Hierarchy not implemented, always remove from root.
+        _targetE = targetE;
+        _targetIndex = Document.Get<LayerTreeManager>().Root.FindPathTo(_targetE).Single();
+    }
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_targetE);
     public override IEnumerable<GodotObject> UndoRefObjects => _refNodes;
 
     public override void Do()
     {
-        // Layer tree data
+        // Data
+        // TODO: Remove children's ToSerializeTag.
         var tree = Document.Get<LayerTreeManager>();
-        _targetE = tree.Root.RemoveDescendant(_targetPath);
+        tree.Root.RemoveChild(_targetIndex);
         _targetE.Remove<ToSerializeTag>();
         
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.RemoveFree(_targetPath);
+        layerTreeControl.RemoveFree(_targetE);
         
         // View
         var worldView = Document.Get<WorldView>();
-        var node = worldView.RemoveNodeAt(_targetPath);
+        var node = worldView.GetChild(_targetIndex);
+        worldView.RemoveChild(node);
         if(_refNodes.Count == 0) _refNodes.Add(node);
         
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
-        var overlayNode = worldOverlay.RemoveNodeAt(_targetPath);
+        var overlayNode = worldOverlay.GetChild(_targetIndex);
+        worldOverlay.RemoveChild(overlayNode);
         if(_refNodes.Count == 1) _refNodes.Add(overlayNode);
     }
 
@@ -43,20 +53,20 @@ public class DeleteLayerCmd(IReadOnlyList<int> target) : CommandBase
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
         var overlayNode = _refNodes[1];
-        worldOverlay.InsertNodeAt(overlayNode, _targetPath);
+        worldOverlay.InsertNodeAt(overlayNode, _targetIndex);
         
         // View
         var worldView = Document.Get<WorldView>();
         var node = _refNodes[0];
-        worldView.InsertNodeAt(node, _targetPath);
+        worldView.InsertNodeAt(node, _targetIndex);
         
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.CreateInsert(_targetE, _targetPath);
+        layerTreeControl.CreateInsert(_targetE, _targetIndex);
         
-        // Layer tree data
+        // Data
         _targetE.Add(new ToSerializeTag());
         var tree = Document.Get<LayerTreeManager>();
-        tree.Root.InsertDescendant(_targetPath, _targetE);
+        tree.Root.InsertChild(_targetIndex, _targetE);
     }
 }
