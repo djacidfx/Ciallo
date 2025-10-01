@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
@@ -10,15 +9,13 @@ namespace Ciallo.Command;
 
 public class NewStrokeCmd : CommandBase
 {
-    private readonly ImmutableArray<int> _insertPath;
-    private Entity _strokeE = Entity.Null;
+    private Entity _layerE;
+    private Entity _strokeE = new();
     private readonly List<Node> _refNodes = [];
-    private readonly Entity _brushE;
 
-    public NewStrokeCmd(IReadOnlyList<int> insertPath, Entity brushE)
+    public NewStrokeCmd(Entity layerE)
     {
-        _brushE = brushE;
-        _insertPath = [..insertPath];
+        _layerE = layerE;
     }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(_strokeE);
@@ -27,52 +24,55 @@ public class NewStrokeCmd : CommandBase
     public override void Do()
     {
         // Creation
-        if (_strokeE == Entity.Null)
-        {
-            _strokeE = WorkingWorld.Create();
-            var node = new LayerTreeNode();
-            _strokeE.Add(new StrokeGeometry(), node);
-            _strokeE.Add<BrushEntity>(_brushE);
-        }
+        InitEntity();
 
         // Data
-        var tree = Document.Get<LayerTreeManager>();
         _strokeE.Add(new ToSerializeTag());
-        tree.Root.InsertDescendant(_insertPath, _strokeE);
+        _layerE.Get<LayerTreeNode>().AddChild(_strokeE);
         
         // View
-        var view = Document.Get<WorldView>();
-        if (_refNodes.Count == 0) _refNodes.Add(new StrokeView());
+        if (_refNodes.Count == 0) _refNodes.Add(new StrokeView()
+        {
+            Material = BrushMaterial.MissingBrushMaterial,
+        });
         var strokeView =  (StrokeView)_refNodes[0];
-        view.InsertNodeAt(strokeView, _insertPath);
+        var layerView = _layerE.Get<PolylineLayerView>();
+        layerView.AddChild(strokeView);
         _strokeE.Add(strokeView);
-        strokeView.Material = _brushE.Get<BrushMaterial>();
-        
+
         // Overlay
-        var overlay = Document.Get<WorldOverlay>();
         if(_refNodes.Count == 1) _refNodes.Add(new StrokeOverlay());
         var strokeOverlay = (StrokeOverlay)_refNodes[1];
-        overlay.InsertNodeAt(strokeOverlay, _insertPath);
+        var layerOverlay = _layerE.Get<PolylineLayerOverlay>();
+        layerOverlay.AddChild(strokeOverlay);
         _strokeE.Add(strokeOverlay);
     }
 
     public override void Undo()
     {
-        var tree = Document.Get<LayerTreeManager>();
+        var layerE = _layerE;
         // Overlay
-        var overlay = Document.Get<WorldOverlay>();
         _strokeE.Remove<StrokeOverlay>();
-        overlay.RemoveNodeAt(_insertPath);
+        var layerOverlay = layerE.Get<PolylineLayerOverlay>();
+        layerOverlay.RemoveChild(_refNodes[1]);
         
         // View
-        var worldView = Document.Get<WorldView>();
-        var strokeView = _strokeE.Get<StrokeView>();
-        strokeView.Material = null;
         _strokeE.Remove<StrokeView>();
-        worldView.RemoveNodeAt(_insertPath);
+        var layerView = layerE.Get<PolylineLayerView>();
+        layerView.RemoveChild(_refNodes[0]);
         
         // Data
-        tree.Root.RemoveDescendant(_insertPath);
+        _layerE.Get<LayerTreeNode>().RemoveChild(^1);
         _strokeE.Remove<ToSerializeTag>();
+    }
+
+    public Entity InitEntity()
+    {
+        if (_strokeE != Entity.Null) return _strokeE;
+        _strokeE = WorkingWorld.Create();
+        var node = new LayerTreeNode();
+        _strokeE.Add(new StrokeGeometry(), node);
+        _strokeE.Add<BrushEntity>(Entity.Null);
+        return _strokeE;
     }
 }

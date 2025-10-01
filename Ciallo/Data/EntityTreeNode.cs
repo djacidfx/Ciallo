@@ -42,9 +42,9 @@ public abstract class EntityTreeNode<T> where T : EntityTreeNode<T>
         Children.Insert(dstIdx, moving);
     }
     
-    public void RemoveChild(int idx)
+    public void RemoveChild(Index idx)
     {
-        Children.RemoveAt(idx);
+        Children.RemoveAt(idx.GetOffset(Children.Count));
     }
     
     public void AddDescendant(IReadOnlyList<int> parentPath, Entity child)

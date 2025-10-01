@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Command;
@@ -130,11 +129,12 @@ public class PaintInteractor : InteractorBase
 
     public override void End(CursorButtonData data)
     {
-        var parentPath = SelectionManager.WorkingLayerPath;
-        var parentE = SelectionManager.WorkingLayer.Value;
-        ImmutableArray<int> path = [..parentPath, parentE.Get<LayerTreeNode>().ChildCount];
-        new NewStrokeCmd(path, _brushE)
-            .Combine(new SetStrokeGeometryCmd(path, _points, _radii)).Commit();
+        var layerE = SelectionManager.WorkingLayer.Value;
+        var cmd = new NewStrokeCmd(layerE);
+        var strokeE = cmd.InitEntity();
+        cmd.Combine(new ChangeStrokeBrushCmd(strokeE, _brushE))
+            .Combine(new SetStrokeGeometryCmd(strokeE, _points, _radii))
+            .Commit();
         Clear();
     }
 

@@ -102,11 +102,12 @@ The current document user working on is globally accessible, so are those docume
 You can see self-explanatory code like `Document.Get<LayerTreeManager>()` to visit the document's layer tree.
 
 > Note: There are several annoying issues have to bear with when coding:
-> - `Entity.Add()` can lag Rider a lot.
+> - `Entity.Add()` and `Set`, `Remove` can lag Rider a lot.
 > - Rider crashes much more often after using Arch (Tell me if you have the same feeling, rather than my own hallucination).
 > - Remember to include both `Arch.Core` and `Arch.Core.Extensions`
 >   - When adding component(s), `e.Add(Obj)` is in Arch.Core.Extensions namespace but `e.Add(Obj1, Obj2)` is in `Arch.Core` namespace.
->   - I have wasted a lot of time on finding this issue.
+>   - I have wasted a lot of time on debugging this after starting using Arch.
+> - If you have a field `Entity e;` `e` is not initialized as Entity.Null. Must use `Entity e = new();` or `Entity e = Entity.Null;`
 
 <details>
 <summary>Why using an ECS framework?</summary>
