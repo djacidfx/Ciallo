@@ -1,58 +1,51 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
+using Ciallo.Misc;
 using Ciallo.Rendering;
 using Godot;
 
 namespace Ciallo.Command;
 
-public class NewPolylineLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
+public class NewPolylineLayerCmd : CommandBase
 {
-    private readonly ImmutableArray<int> _insertPath = [..insertPath];
     private Entity _layerE = Entity.Null;
     private readonly List<Node> _refObjects = [];
+
+    public NewPolylineLayerCmd()
+    {
+        // Hierarchy not implemented, always add to root
+    }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(_layerE);
     public override IEnumerable<GodotObject> DoRefObjects => _refObjects;
 
     public override void Do()
     {
+        InitEntity();
+
+        // Data
         var tree = Document.Get<LayerTreeManager>();
-        
-        // Creation
-        if (_layerE == Entity.Null)
-        {
-            _layerE = WorkingWorld.Create();
-            var node = new LayerTreeNode()
-            {
-                Name = { Value = $"{TranslationServer.Translate("Line layer")} {tree.Root.ChildCount+1}" },
-            };
-            _layerE.Add(new PolylineLayerSetting(), node);
-        }
-        
-        // Layer tree data
         _layerE.Add(new ToSerializeTag());
-        tree.Root.InsertDescendant(_insertPath, _layerE);
+        tree.Root.AddChild(_layerE);
         
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.CreateInsert(_layerE, _insertPath);
+        layerContainer.CreateAdd(_layerE);
         
         // View
         var worldView = Document.Get<WorldView>();
         if (_refObjects.Count == 0) _refObjects.Add(new PolylineLayerView());
         var layerView =  (PolylineLayerView)_refObjects[0];
-        worldView.InsertNodeAt(layerView, _insertPath);
+        worldView.AddChild(layerView);
         _layerE.Add(layerView);
         
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
         if(_refObjects.Count == 1) _refObjects.Add(new PolylineLayerOverlay());
         var layerOverlay = (PolylineLayerOverlay)_refObjects[1];
-        worldOverlay.InsertNodeAt(layerOverlay, _insertPath);
+        worldOverlay.AddChild(layerOverlay);
         _layerE.Add(layerOverlay);
     }
 
@@ -61,20 +54,37 @@ public class NewPolylineLayerCmd(IReadOnlyList<int> insertPath) : CommandBase
         // Overlay
         var overlay = Document.Get<WorldOverlay>();
         _layerE.Remove<PolylineLayerOverlay>();
-        overlay.RemoveNodeAt(_insertPath);
+        overlay.RemoveChild(_refObjects[1]);
         
         // View
         _layerE.Remove<PolylineLayerView>();
         var worldView = Document.Get<WorldView>();
-        worldView.RemoveNodeAt(_insertPath);
+        worldView.RemoveChild(_refObjects[0]);
         
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.RemoveFree(_insertPath);
+        layerTreeControl.RemoveFree(_layerE);
         
-        // Layer tree data
+        // Data
         var tree = Document.Get<LayerTreeManager>();
-        tree.Root.RemoveDescendant(_insertPath);
+        tree.Root.RemoveChild(^1);
         _layerE.Remove<ToSerializeTag>();
+    }
+    
+    public Entity InitEntity()
+    {
+        var tree = Document.Get<LayerTreeManager>();
+        
+        if (_layerE == Entity.Null)
+        {
+            _layerE = WorkingWorld.Create();
+            var node = new LayerTreeNode()
+            {
+                Name = { Value = $"{"Line layer".Tr()} {tree.Root.ChildCount+1}" },
+            };
+            _layerE.Add(new PolylineLayerSetting(), node);
+        }
+
+        return _layerE;
     }
 }

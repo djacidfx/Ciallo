@@ -1,8 +1,6 @@
 ﻿using System.Runtime.Serialization;
-using Ciallo.Command;
 using Ciallo.Geometry;
 using Ciallo.Misc;
-using Ciallo.Tool;
 using Ciallo.Widget;
 using Godot;
 using R3;

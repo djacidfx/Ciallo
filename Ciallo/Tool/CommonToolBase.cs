@@ -7,7 +7,7 @@ namespace Ciallo.Tool;
 
 using TriggerButton = StateMachine<CommonToolBase.State,CommonToolBase.Event>.TriggerWithParameters<CursorButtonData>;
 using TriggerMotion = StateMachine<CommonToolBase.State,CommonToolBase.Event>.TriggerWithParameters<CursorMotionData>;
-using TriggerKey = StateMachine<CommonToolBase.State,CommonToolBase.Event>.TriggerWithParameters<InputEventKey>;
+
 /// <summary>
 /// The base class for common tools that need for three states: Hovering, left mouse drag, right mouse drag.
 /// (Middle mouse has dedicated usage for canvas navigation.)

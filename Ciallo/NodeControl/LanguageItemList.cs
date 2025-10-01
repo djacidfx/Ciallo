@@ -1,7 +1,5 @@
 using Godot;
-using System;
 using System.Collections.Generic;
-using Ciallo.Data;
 using System.Globalization;
 using Ciallo.Misc;
 

@@ -1,11 +1,10 @@
 ﻿using System;
-using MessagePack;
 
 namespace Ciallo.Data;
 /*
 When an entity is tagged with `ToSerializeTag`, it will be serialized.
-When its components are attributed with [ToSerialize] (and also [MemoryPackObject] when necessary). these components are serialized
-An entity without `ToSerializeTag` but has [ToSerialize] component won't be serialized at all, entity itself and its components.
+When its components are attributed with [ToSerialize] (and also [DataContract] when necessary). these components are serialized.
+An entity without `ToSerializeTag` but has [ToSerialize] component won't be serialized, including entity itself and its components.
 */
 
 /// <summary>

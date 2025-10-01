@@ -1,8 +1,5 @@
 using Godot;
-using System;
-using Ciallo.Command;
 using Ciallo.Tool;
-using Ciallo.Widget;
 
 namespace Ciallo.NodeControl;
 

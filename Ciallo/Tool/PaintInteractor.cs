@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System.Collections.Generic;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Command;
@@ -18,7 +16,7 @@ public class PaintInteractor : InteractorBase
     {
         get
         {
-            var l = SelectionManager.WorkingLayer;
+            var l = SelectionManager.WorkingLayer.Value;
             bool layerAvailable = l != Entity.Null && l.Has<PolylineLayerSetting>();
             bool brushAvailable = SelectionManager.WorkingBrush.Value != Entity.Null || AppBrushLibrary.HasSelection;
             
@@ -58,7 +56,7 @@ public class PaintInteractor : InteractorBase
         
         _strokePreview = new StrokeView();
         _strokePreview.Material = brushMaterial;
-        var layerE = SelectionManager.WorkingLayer;
+        var layerE = SelectionManager.WorkingLayer.Value;
         var layerView = layerE.Get<PolylineLayerView>();
         layerView.AddChild(_strokePreview);
         
@@ -131,11 +129,12 @@ public class PaintInteractor : InteractorBase
 
     public override void End(CursorButtonData data)
     {
-        var parentPath = SelectionManager.WorkingLayerPath;
-        var parentE = SelectionManager.WorkingLayer;
-        ImmutableArray<int> path = [..parentPath, parentE.Get<LayerTreeNode>().ChildCount];
-        new NewStrokeCmd(path, _brushE)
-            .Combine(new SetStrokeGeometryCmd(path, _points, _radii)).Commit();
+        var layerE = SelectionManager.WorkingLayer.Value;
+        var cmd = new NewStrokeCmd(layerE);
+        var strokeE = cmd.InitEntity();
+        cmd.Combine(new ChangeStrokeBrushCmd(strokeE, _brushE))
+            .Combine(new SetStrokeGeometryCmd(strokeE, _points, _radii))
+            .Commit();
         Clear();
     }
 
@@ -148,6 +147,7 @@ public class PaintInteractor : InteractorBase
     {
         _points.Clear();
         _radii.Clear();
+        _strokePreview.QueueFree();
         OS.LowProcessorUsageMode = true;
     }
 }

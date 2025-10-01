@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
+﻿using System;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
@@ -8,31 +6,41 @@ using Ciallo.Data;
 namespace Ciallo.Command;
 
 // ReSharper disable once Godot.MissingParameterlessConstructor
-public class ChangeWorkingLayerCmd(IReadOnlyList<int> newPath) : CommandBase
+public class ChangeWorkingLayerCmd : CommandBase
 {
-    private readonly ImmutableArray<int> _newPath = [..newPath];
-    private ImmutableArray<int>? _oldPath;
-    
+    public Entity NewE;
+    public Entity OldE = Entity.Null;
+
+    public ChangeWorkingLayerCmd(Index index)
+    {
+        NewE = Document.Get<LayerTreeManager>().Root.GetChild(index);
+    }
+
+    public ChangeWorkingLayerCmd(Entity layerE)
+    {
+        NewE = layerE;
+    }
+
     public override void Do()
     {
         // Selection manager
         var sm = Document.Get<SelectionManager>();
-        _oldPath ??= sm.WorkingLayerPath;
-        sm.WorkingLayer = _newPath.Length > 0 ? Document.Get<LayerTreeManager>().Root.GetDescendant(_newPath) : Entity.Null;
+        OldE = sm.WorkingLayer.Value;
+        sm.WorkingLayer.Value = NewE;
         
-        // Layer tree view
+        // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.SetWorkingLayerNoSignal(_newPath);
+        layerContainer.SetWorkingLayerNoSignal(NewE);
     }
 
     public override void Undo()
     {
-        // Layer tree view
+        // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.SetWorkingLayerNoSignal(_oldPath);
+        layerContainer.SetWorkingLayerNoSignal(OldE);
         
         // Selection manager
         var sm = Document.Get<SelectionManager>();
-        sm.WorkingLayer = _oldPath!.Value.Length > 0 ? Document.Get<LayerTreeManager>().Root.GetDescendant(_oldPath) : Entity.Null;
+        sm.WorkingLayer.Value = OldE;
     }
 }

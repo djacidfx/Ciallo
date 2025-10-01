@@ -1,5 +1,4 @@
 ﻿global using static Ciallo.Data.Global;
-using ObservableCollections;
 
 namespace Ciallo.Data;
 

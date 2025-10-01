@@ -6,7 +6,7 @@ using Ciallo.Data;
 namespace Ciallo.Command;
 
 // ReSharper disable once Godot.MissingParameterlessConstructor
-public partial class MoveLayerCmd : CommandBase
+public class MoveLayerCmd : CommandBase
 {
     private readonly ImmutableArray<int> _src;
     private readonly ImmutableArray<int> _dst;

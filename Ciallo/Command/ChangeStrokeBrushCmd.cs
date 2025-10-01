@@ -1,0 +1,34 @@
+﻿using Arch.Core;
+using Arch.Core.Extensions;
+using Ciallo.Data;
+using Ciallo.Rendering;
+
+namespace Ciallo.Command;
+
+public class ChangeStrokeBrushCmd(Entity strokeE, Entity newBrushE) : CommandBase
+{
+    private Entity _oldBrushE = Entity.Null;
+    
+    public override void Do()
+    {
+        // Data
+        var wrapper = strokeE.Get<BrushEntity>();
+        _oldBrushE = wrapper.Value;
+        wrapper.Value = newBrushE;
+        
+        // View
+        strokeE.Get<StrokeView>().Material = newBrushE != Entity.Null ? 
+            newBrushE.Get<BrushMaterial>() : BrushMaterial.MissingBrushMaterial;
+    }
+
+    public override void Undo()
+    {
+        // View
+        strokeE.Get<StrokeView>().Material = _oldBrushE != Entity.Null ? 
+            _oldBrushE.Get<BrushMaterial>() : BrushMaterial.MissingBrushMaterial;
+        
+        // Data
+        var wrapper = strokeE.Get<BrushEntity>();
+        wrapper.Value = _oldBrushE;
+    }
+}

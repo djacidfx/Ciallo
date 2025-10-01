@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
 using Ciallo.Misc;
 using Godot;
 using MessagePack;
@@ -11,18 +8,20 @@ using R3;
 
 namespace Ciallo.Data;
 
-public partial class DataAutoload : Node
+public partial class AutoloadData : Node
 {
     public static MessagePackSerializerOptions DefaultOption;
     
     public override void _EnterTree()
     {
+        GetTree().AutoAcceptQuit = false;
         // Message pack serializer setup
         var defaultResolver = CompositeResolver.Create(
-            GodotResolver.Instance,
-            AttributeFormatterResolver.Instance,
-            ReactivePropertyResolver.Instance,
-            StandardResolver.Instance
+            [EntityToIndexFormatter.Instance, TypeFormatter.Instance],
+            [GodotResolver.Instance,
+                AttributeFormatterResolver.Instance,
+                ReactivePropertyResolver.Instance,
+                StandardResolver.Instance]
         );
         MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(defaultResolver);
         DefaultOption = MessagePackSerializer.DefaultOptions;
@@ -41,13 +40,6 @@ public partial class DataAutoload : Node
         if (!brushesFileExists) AppBrushLibrary.ResetBuiltInBrushes();
     }
 
-    public override void _ExitTree()
-    {
-        AppBrushLibrary.Save();
-        AppPreference.Save();
-        AppWorldManager.Clear();
-    }
-
     public override void _Ready()
     {
         AppBrushLibrary.BindToGui();
@@ -55,26 +47,18 @@ public partial class DataAutoload : Node
 
     public override void _Notification(int what)
     {
+        if(what == NotificationWMCloseRequest)
+        {
+            AppBrushLibrary.Save();
+            AppPreference.Save();
+            AppWorldManager.Clear();
+            GetTree().Quit();
+            // Prevent default handler
+            return;
+        }
         // Force garbage collection makes godot memory leak warning disappear
         if (what != NotificationPredelete) return;
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
         GC.WaitForPendingFinalizers();
-    }
-    
-    public static IEnumerable<Type> GetSerializableTypes()
-    {
-        var allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a =>
-        {
-            try
-            {
-                return a.GetTypes();
-            }
-            catch (ReflectionTypeLoadException e)
-            {
-                return e.Types.Where(t => t != null);
-            }
-        }).Where(t => t is { IsAbstract: false });
-        
-        return allTypes.Where(t => t!.GetCustomAttributes(typeof(ToSerializeAttribute), false).Length > 0);
     }
 }

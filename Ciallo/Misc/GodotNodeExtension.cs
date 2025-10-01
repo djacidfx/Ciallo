@@ -4,8 +4,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using Godot;
 
-using Ciallo.Misc;
-
 public static class GodotNodeExtension
 {
     public static Node GetDecedentAt(this Node node, IReadOnlyList<int> path)
@@ -28,6 +26,11 @@ public static class GodotNodeExtension
         // add then move to desired position
         parent.AddChild(newNode);
         parent.MoveChild(newNode, idx);
+    }
+    
+    public static void InsertNodeAt(this Node node, Node newNode, int index)
+    {
+        InsertNodeAt(node, newNode, [index]);
     }
     
     public static Node RemoveNodeAt(this Node node, IReadOnlyList<int> path)

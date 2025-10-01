@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
@@ -14,9 +13,9 @@ public class NewBrushCmd : CommandBase
     public Entity BrushE = Entity.Null;
     private readonly BrushSetting _setting;
 
-    public NewBrushCmd(BrushSetting inputSetting)
+    public NewBrushCmd(BrushSetting inputSetting = null)
     {
-        _setting = inputSetting.Clone();
+        _setting = inputSetting?.Clone() ?? new BrushSetting();
         _setting.Labels.Remove(BrushLabel.BuiltIn);
         
         // Dirty hack
@@ -27,11 +26,7 @@ public class NewBrushCmd : CommandBase
     
     public override void Do()
     {
-        if (BrushE == Entity.Null)
-        {
-            BrushE = WorkingWorld.Create();
-            BrushE.Add(_setting);
-        }
+        InitEntity();
         // Data
         BrushE.Add(new ToSerializeTag());
         var bm = Document.Get<BrushManager>();
@@ -74,5 +69,16 @@ public class NewBrushCmd : CommandBase
         // Data
         bm.Remove(BrushE);
         BrushE.Remove<ToSerializeTag>();
+    }
+
+    public Entity InitEntity()
+    {
+        if (BrushE == Entity.Null)
+        {
+            BrushE = WorkingWorld.Create();
+            BrushE.Add(_setting);
+        }
+
+        return BrushE;
     }
 }

@@ -1,17 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Godot;
-using ObservableCollections;
-using R3;
-using Arch.Core;
-using Ciallo.Geometry;
-using MessagePack;
+﻿using Godot;
 
 namespace Ciallo.Misc;
 
-public partial class MiscAutoload : Node
+public partial class AutoloadMisc : Node
 {
     public override void _EnterTree()
     {

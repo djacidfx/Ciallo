@@ -10,8 +10,8 @@ public partial class StrokeBody : StaticBody2D
     
     public override void _Ready()
     {
-        CollisionLayer = AppLayers.Physics2D.Stroke;
-        CollisionMask = AppLayers.Physics2D.Empty; // Only detect mouse input
+        CollisionLayer = AppGodotLayers.Physics2D.Stroke;
+        CollisionMask = AppGodotLayers.Physics2D.Empty; // Only detect mouse input
         InputPickable = true;
     }
     

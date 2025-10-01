@@ -1,7 +1,6 @@
 using Godot;
 using System;
 using System.IO;
-using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Widget;
 
@@ -61,7 +60,8 @@ public partial class NewDocumentDialog : ConfirmationDialog
             FilePath = filePath,
         };
         AppWorldManager.Create(setting);
-        this.Hide();
+        AppWorldManager.SaveCurrentDocument();
+        Hide();
     }
     
     // Gen by copilot

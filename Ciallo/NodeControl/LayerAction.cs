@@ -1,24 +1,30 @@
-using Godot;
-using System;
+using System.Linq;
+using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Command;
 using Ciallo.Data;
+using Godot;
 
 public partial class LayerAction : Control
 {
     public void OnNewLayer()
     {
         if (AppWorldManager.WorkingWorld.Value == null) return;
-        new NewPolylineLayerCmd([0]).Combine(new ChangeWorkingLayerCmd([0])).Commit();
+        var cmd = new NewPolylineLayerCmd();
+        var e = cmd.InitEntity();
+        cmd.Combine(new ChangeWorkingLayerCmd(e)).Commit();
     }
 
     public void OnRemoveLayer()
     {
         if (AppWorldManager.WorkingWorld.Value == null) return;
-        var document = AppWorldManager.WorkingDocument;
+        var document = AppWorldManager.WorkingDocument.CurrentValue;
+        var workingLayerE = document.Get<SelectionManager>().WorkingLayer.Value;
+        if (workingLayerE == Entity.Null) return;
         var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
-        if (workingLayerPath == null) return;
         var nextLayerPath = document.Get<LayerTreeManager>().GetNextFocusPathAfterDeletion(workingLayerPath);
-        new ChangeWorkingLayerCmd(nextLayerPath).Combine(new DeleteLayerCmd(workingLayerPath)).Commit();
+        
+        ChangeWorkingLayerCmd cmd = nextLayerPath.IsEmpty ? new(Entity.Null) : new(nextLayerPath.Single());
+        cmd.Combine(new DeletePolylineLayerCmd(workingLayerE)).Commit();
     }
 }

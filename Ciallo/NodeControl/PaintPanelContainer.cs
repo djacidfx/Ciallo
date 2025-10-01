@@ -1,10 +1,9 @@
 using Godot;
-using System;
 using Arch.Core;
 using Arch.Core.Extensions;
 using Ciallo.Data;
-using Ciallo.NodeControl;
-using Ciallo.Widget;
+
+namespace Ciallo.NodeControl;
 
 public partial class PaintPanelContainer : Control
 {

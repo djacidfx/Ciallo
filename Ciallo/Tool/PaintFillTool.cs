@@ -1,5 +1,3 @@
-using Godot;
-using System;
 using Arch.Core;
 using Ciallo.Tool;
 using Ciallo.Widget;
