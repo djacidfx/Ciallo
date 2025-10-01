@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -16,14 +15,13 @@ using Sys = System.Collections.Generic;
 
 public static partial class AppWorldManager
 {
-    public static readonly HashSet<Type> ToSerializeTypes = [..GetToSerializeTypes()];
-    public static readonly HashSet<Type> ToSerializeTags = ToSerializeTypes.Where(t => t.IsTag()).ToHashSet();
+    public static readonly Sys.HashSet<Type> ToSerializeTypes = [..GetToSerializeTypes()];
+    public static readonly Sys.HashSet<Type> ToSerializeTags = ToSerializeTypes.Where(t => t.IsTag()).ToHashSet();
 
     public static void SaveCurrentDocument()
     {
         if (WorkingDocument.CurrentValue == Entity.Null) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
-        bool canSave = CanSaveFile(settings.FilePath);
         if (CanSaveFile(settings.FilePath))
             Save(WorkingWorld.Value, settings.FilePath);
     }
@@ -71,9 +69,9 @@ public static partial class AppWorldManager
     /// </remarks>
     public static Array<byte[]> Serialize([NotNull] World world)
     {
-        List<Entity> entities = [world.Document()];
+        Sys.List<Entity> entities = [world.Document()];
         world.Query(in new QueryDescription().WithAll<ToSerializeTag>(), e => entities.Add(e));
-        List<List<Type>> ecData = [];
+        Sys.List<Sys.List<Type>> ecData = [];
         foreach (var e in entities)
         {
             var componentTypes = e.GetComponentTypes().Components.ToArray().Select(ct => ct.Type)
@@ -86,7 +84,7 @@ public static partial class AppWorldManager
         EntityToIndexFormatter.Instance.EntityList = entities;
 
         // Note, directly using List<object> will cause losing type information in deserialization.
-        Sys.Dictionary<Type, List<byte[]>> componentData = [];
+        Sys.Dictionary<Type, Sys.List<byte[]>> componentData = [];
         foreach (var e in entities)
         {
             var types = e.GetComponentTypes().Components.ToArray().Select(ct => ct.Type).ToArray();
@@ -114,8 +112,8 @@ public static partial class AppWorldManager
         world.AddForbiddenComponents();
 
         var ecBin = bins[0];
-        var ecData = MessagePackSerializer.Deserialize<List<List<Type>>>(ecBin);
-        var entities = new List<Entity>(ecData.Count);
+        var ecData = MessagePackSerializer.Deserialize<Sys.List<Sys.List<Type>>>(ecBin);
+        var entities = new Sys.List<Entity>(ecData.Count);
         foreach (var types in ecData)
         {
             ComponentType[] cTypes = types.Select(t => ComponentRegistry.TypeToComponentType[t]).ToArray();
@@ -129,7 +127,7 @@ public static partial class AppWorldManager
         EntityToIndexFormatter.Instance.EntityList = entities;
 
         var componentBin = bins[1];
-        var componentData = MessagePackSerializer.Deserialize<Sys.Dictionary<Type, Queue<byte[]>>>(componentBin);
+        var componentData = MessagePackSerializer.Deserialize<Sys.Dictionary<Type, Sys.Queue<byte[]>>>(componentBin);
         foreach (var e in entities)
         {
             foreach (var ct in e.GetComponentTypes().Components)
@@ -146,7 +144,7 @@ public static partial class AppWorldManager
         return world;
     }
 
-    public static IEnumerable<Type> GetToSerializeTypes()
+    public static Sys.IEnumerable<Type> GetToSerializeTypes()
     {
         var allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a =>
         {
