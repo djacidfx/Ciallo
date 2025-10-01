@@ -34,10 +34,12 @@ public class EntityWrapper
 
 public static class EntityExtension
 {
-    public static void Add<TWrapper>(this Entity self, Entity e) where TWrapper : EntityWrapper
+    public static void Add<TWrapper>(this Entity self, Entity e) where TWrapper : EntityWrapper, new()
     {
-        var wrapper = (TWrapper)Activator.CreateInstance(typeof(TWrapper));
-        wrapper!.E = e;
+        var wrapper = new TWrapper
+        {
+            E = e
+        };
         self.Add(wrapper);
     }
 }

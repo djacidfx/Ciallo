@@ -20,8 +20,8 @@ public partial class BrushMaterial : ShaderMaterial
             var m = _missingBrushMaterial = new();
             m.SetShaderParameter("strokeType", 0);
             m.SetShaderParameter("materialColor", Colors.Crimson);
-            m.SetShaderParameter("dashLength", 1f);
-            m.SetShaderParameter("dashForwardSpeed", 1f);
+            m.SetShaderParameter("dashLength", 5f);
+            m.SetShaderParameter("dashForwardSpeed", 7f);
             return m;
         }
     }
