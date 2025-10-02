@@ -72,7 +72,7 @@ public class NewStrokeCmd : CommandBase
         StrokeE = WorkingWorld.Create();
         var node = new LayerTreeNode();
         StrokeE.Add(new StrokeGeometry(), node);
-        StrokeE.Add<BrushEntity>(Entity.Null);
+        StrokeE.Add<StrokeBrush>(Entity.Null);
         return StrokeE;
     }
 }

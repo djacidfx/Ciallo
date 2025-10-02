@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Arch.Core;
 using Arch.Core.Extensions;
+using Ciallo.Command;
 using Ciallo.Misc;
 using Godot;
 using Godot.Collections;
@@ -17,21 +18,62 @@ public static partial class AppWorldManager
 {
     public static readonly Sys.HashSet<Type> ToSerializeTypes = [..GetToSerializeTypes()];
     public static readonly Sys.HashSet<Type> ToSerializeTags = ToSerializeTypes.Where(t => t.IsTag()).ToHashSet();
+    
+    public static void CopyWorldByData(World dataWorld, Entity dataDocument)
+    {
+        // Load brushes
+        var resultWorld = Create(dataDocument.Get<DocumentSetting>());
+        WorkingWorld.Value = resultWorld;
+        Sys.Dictionary<Entity, Entity> brushMap = [];
+        foreach (var brushDataE in dataDocument.Get<BrushManager>().Brushes)
+        {
+            var setting = brushDataE.Get<BrushSetting>();
+            var cmd = new NewBrushCmd(setting);
+            cmd.Do();
+            brushMap.Add(brushDataE, cmd.BrushE);
+        }
+        
+        // Load layers and strokes
+        var dataTreeRoot = dataDocument.Get<LayerTreeManager>().Root;
+        foreach (var layerDataE in dataTreeRoot.Children)
+        {
+            if (layerDataE.Has<PolylineLayerSetting>())
+            {
+                var setting = layerDataE.Get<PolylineLayerSetting>();
+                var newPolylineLayerCmd = new NewPolylineLayerCmd(setting);
+                newPolylineLayerCmd.Do();
+                var layerE = newPolylineLayerCmd.LayerE;
 
-    public static void SaveCurrentDocument()
+                foreach (var polylineDataE in layerDataE.Get<LayerTreeNode>().Children)
+                {
+                    var geometry = polylineDataE.Get<StrokeGeometry>();
+                    var newStrokeCmd = new NewStrokeCmd(layerE);
+                    newStrokeCmd.Do();
+                    var polylineE = newStrokeCmd.StrokeE;
+                    new SetStrokeGeometryCmd(polylineE, geometry).Do();
+                    
+                    var strokeBrush = polylineDataE.Get<StrokeBrush>();
+                    new ChangeStrokeBrushCmd(polylineE, brushMap[strokeBrush.Value]).Do();
+                }
+            }
+        }
+    }
+
+    public static void SaveWorkingWorld()
     {
         if (WorkingDocument.CurrentValue == Entity.Null) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
-        if (CanSaveFile(settings.FilePath))
-            Save(WorkingWorld.Value, settings.FilePath);
+        if (CanSaveFile(settings.FilePath.Value))
+            Save(WorkingWorld.Value, settings.FilePath.Value);
     }
 
-    public static void LoadCurrentDocument() // for debug
+    public static void ReloadWorkingDocument() // for debug
     {
         if(WorkingDocument.CurrentValue == Entity.Null) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
-        if (!File.Exists(settings.FilePath)) return;
-        var world = Load(settings.FilePath, out var document);
+        if (!File.Exists(settings.FilePath.Value)) return;
+        var world = Load(settings.FilePath.Value, out var document);
+        CopyWorldByData(world, document);
     }
 
     public static void Save(World world, string filePath)
@@ -58,7 +100,9 @@ public static partial class AppWorldManager
         var componentBin = reader.ReadFile("ComponentData.bin");
         reader.Close();
 
-        return Deserialize([ecBin, componentBin], out document);
+        var world = Deserialize([ecBin, componentBin], out document);
+        document.Get<DocumentSetting>().FilePath.Value = filePath;
+        return world;
     }
 
     /// <remarks>
@@ -96,8 +140,8 @@ public static partial class AppWorldManager
                 if (!ToSerializeTypes.Contains(t) || ToSerializeTags.Contains(t)) continue;
                 if (!componentData.ContainsKey(t))
                     componentData[t] = [];
-                
-                componentData[t].Add(MessagePackSerializer.Serialize(data[i]));
+                var bytes = MessagePackSerializer.Serialize(data[i]);
+                componentData[t].Add(bytes);
             }
         }
         
@@ -117,9 +161,7 @@ public static partial class AppWorldManager
         foreach (var types in ecData)
         {
             ComponentType[] cTypes = types.Select(t => ComponentRegistry.TypeToComponentType[t]).ToArray();
-            // var e = world.Create(new Signature(cTypes));// Don't work, created entity loses type information.
-            var e = world.Create();
-            e.AddRange(cTypes);
+            var e = world.Create(cTypes);
             entities.Add(e);
         }
         document = entities[0];

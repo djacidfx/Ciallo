@@ -12,7 +12,7 @@ public class ChangeStrokeBrushCmd(Entity strokeE, Entity newBrushE) : CommandBas
     public override void Do()
     {
         // Data
-        var wrapper = strokeE.Get<BrushEntity>();
+        var wrapper = strokeE.Get<StrokeBrush>();
         _oldBrushE = wrapper.Value;
         wrapper.Value = newBrushE;
         
@@ -28,7 +28,7 @@ public class ChangeStrokeBrushCmd(Entity strokeE, Entity newBrushE) : CommandBas
             _oldBrushE.Get<BrushMaterial>() : BrushMaterial.MissingBrushMaterial;
         
         // Data
-        var wrapper = strokeE.Get<BrushEntity>();
+        var wrapper = strokeE.Get<StrokeBrush>();
         wrapper.Value = _oldBrushE;
     }
 }

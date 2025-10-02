@@ -57,7 +57,7 @@ public partial class NewDocumentDialog : ConfirmationDialog
             Name = { Value = docName },
             ReferenceSize = { Value = referenceSize },
             BackgroundColor = { Value = bgColor },
-            FilePath = filePath,
+            FilePath = {Value = filePath},
         };
         var world = AppWorldManager.Create(setting);
         AppWorldManager.WorkingWorld.Value = world;
