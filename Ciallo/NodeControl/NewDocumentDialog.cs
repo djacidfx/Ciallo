@@ -1,8 +1,8 @@
-using Godot;
 using System;
 using System.IO;
 using Ciallo.Data;
 using Ciallo.Widget;
+using Godot;
 
 namespace Ciallo.NodeControl;
 
@@ -59,8 +59,10 @@ public partial class NewDocumentDialog : ConfirmationDialog
             BackgroundColor = { Value = bgColor },
             FilePath = filePath,
         };
-        AppWorldManager.Create(setting);
-        AppWorldManager.SaveCurrentDocument();
+        var world = AppWorldManager.Create(setting);
+        AppWorldManager.WorkingWorld.Value = world;
+        AppWorldManager.InitialEmptyWorldForUser(world);
+        AppWorldManager.SaveWorkingWorld();
         Hide();
     }
     

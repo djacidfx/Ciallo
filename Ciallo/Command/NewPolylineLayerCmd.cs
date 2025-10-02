@@ -10,15 +10,16 @@ namespace Ciallo.Command;
 
 public class NewPolylineLayerCmd : CommandBase
 {
-    private Entity _layerE = Entity.Null;
+    public Entity LayerE = Entity.Null;
     private readonly List<Node> _refObjects = [];
+    private readonly PolylineLayerSetting _setting;
 
-    public NewPolylineLayerCmd()
+    public NewPolylineLayerCmd(PolylineLayerSetting setting = null)
     {
-        // Hierarchy not implemented, always add to root
+        _setting = setting?.Clone() ?? new PolylineLayerSetting();
     }
 
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(_layerE);
+    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(LayerE);
     public override IEnumerable<GodotObject> DoRefObjects => _refObjects;
 
     public override void Do()
@@ -27,64 +28,64 @@ public class NewPolylineLayerCmd : CommandBase
 
         // Data
         var tree = Document.Get<LayerTreeManager>();
-        _layerE.Add(new ToSerializeTag());
-        tree.Root.AddChild(_layerE);
+        LayerE.Add(new ToSerializeTag());
+        tree.Root.AddChild(LayerE);
         
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.CreateAdd(_layerE);
+        layerContainer.CreateAdd(LayerE);
         
         // View
         var worldView = Document.Get<WorldView>();
         if (_refObjects.Count == 0) _refObjects.Add(new PolylineLayerView());
-        var layerView =  (PolylineLayerView)_refObjects[0];
+        var layerView = (PolylineLayerView)_refObjects[0];
         worldView.AddChild(layerView);
-        _layerE.Add(layerView);
+        LayerE.Add(layerView);
         
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
         if(_refObjects.Count == 1) _refObjects.Add(new PolylineLayerOverlay());
         var layerOverlay = (PolylineLayerOverlay)_refObjects[1];
         worldOverlay.AddChild(layerOverlay);
-        _layerE.Add(layerOverlay);
+        LayerE.Add(layerOverlay);
     }
 
     public override void Undo()
     {
         // Overlay
         var overlay = Document.Get<WorldOverlay>();
-        _layerE.Remove<PolylineLayerOverlay>();
+        LayerE.Remove<PolylineLayerOverlay>();
         overlay.RemoveChild(_refObjects[1]);
         
         // View
-        _layerE.Remove<PolylineLayerView>();
+        LayerE.Remove<PolylineLayerView>();
         var worldView = Document.Get<WorldView>();
         worldView.RemoveChild(_refObjects[0]);
         
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.RemoveFree(_layerE);
+        layerTreeControl.RemoveFree(LayerE);
         
         // Data
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.RemoveChild(^1);
-        _layerE.Remove<ToSerializeTag>();
+        LayerE.Remove<ToSerializeTag>();
     }
     
     public Entity InitEntity()
     {
         var tree = Document.Get<LayerTreeManager>();
         
-        if (_layerE == Entity.Null)
+        if (LayerE == Entity.Null)
         {
-            _layerE = WorkingWorld.Create();
+            LayerE = WorkingWorld.Create();
             var node = new LayerTreeNode()
             {
                 Name = { Value = $"{"Line layer".Tr()} {tree.Root.ChildCount+1}" },
             };
-            _layerE.Add(new PolylineLayerSetting(), node);
+            LayerE.Add(_setting, node);
         }
 
-        return _layerE;
+        return LayerE;
     }
 }

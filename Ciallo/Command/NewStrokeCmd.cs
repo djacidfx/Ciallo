@@ -10,7 +10,7 @@ namespace Ciallo.Command;
 public class NewStrokeCmd : CommandBase
 {
     private Entity _layerE;
-    private Entity _strokeE = new();
+    public Entity StrokeE = Entity.Null;
     private readonly List<Node> _refNodes = [];
 
     public NewStrokeCmd(Entity layerE)
@@ -18,7 +18,7 @@ public class NewStrokeCmd : CommandBase
         _layerE = layerE;
     }
 
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(_strokeE);
+    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(StrokeE);
     public override IEnumerable<GodotObject> DoRefObjects => _refNodes;
 
     public override void Do()
@@ -27,8 +27,8 @@ public class NewStrokeCmd : CommandBase
         InitEntity();
 
         // Data
-        _strokeE.Add(new ToSerializeTag());
-        _layerE.Get<LayerTreeNode>().AddChild(_strokeE);
+        StrokeE.Add(new ToSerializeTag());
+        _layerE.Get<LayerTreeNode>().AddChild(StrokeE);
         
         // View
         if (_refNodes.Count == 0) _refNodes.Add(new StrokeView()
@@ -38,41 +38,41 @@ public class NewStrokeCmd : CommandBase
         var strokeView =  (StrokeView)_refNodes[0];
         var layerView = _layerE.Get<PolylineLayerView>();
         layerView.AddChild(strokeView);
-        _strokeE.Add(strokeView);
+        StrokeE.Add(strokeView);
 
         // Overlay
         if(_refNodes.Count == 1) _refNodes.Add(new StrokeOverlay());
         var strokeOverlay = (StrokeOverlay)_refNodes[1];
         var layerOverlay = _layerE.Get<PolylineLayerOverlay>();
         layerOverlay.AddChild(strokeOverlay);
-        _strokeE.Add(strokeOverlay);
+        StrokeE.Add(strokeOverlay);
     }
 
     public override void Undo()
     {
         var layerE = _layerE;
         // Overlay
-        _strokeE.Remove<StrokeOverlay>();
+        StrokeE.Remove<StrokeOverlay>();
         var layerOverlay = layerE.Get<PolylineLayerOverlay>();
         layerOverlay.RemoveChild(_refNodes[1]);
         
         // View
-        _strokeE.Remove<StrokeView>();
+        StrokeE.Remove<StrokeView>();
         var layerView = layerE.Get<PolylineLayerView>();
         layerView.RemoveChild(_refNodes[0]);
         
         // Data
         _layerE.Get<LayerTreeNode>().RemoveChild(^1);
-        _strokeE.Remove<ToSerializeTag>();
+        StrokeE.Remove<ToSerializeTag>();
     }
 
     public Entity InitEntity()
     {
-        if (_strokeE != Entity.Null) return _strokeE;
-        _strokeE = WorkingWorld.Create();
+        if (StrokeE != Entity.Null) return StrokeE;
+        StrokeE = WorkingWorld.Create();
         var node = new LayerTreeNode();
-        _strokeE.Add(new StrokeGeometry(), node);
-        _strokeE.Add<BrushEntity>(Entity.Null);
-        return _strokeE;
+        StrokeE.Add(new StrokeGeometry(), node);
+        StrokeE.Add<BrushEntity>(Entity.Null);
+        return StrokeE;
     }
 }

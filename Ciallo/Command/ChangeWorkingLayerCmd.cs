@@ -8,12 +8,13 @@ namespace Ciallo.Command;
 // ReSharper disable once Godot.MissingParameterlessConstructor
 public class ChangeWorkingLayerCmd : CommandBase
 {
-    public Entity NewE;
+    public Index NewIndex = int.MaxValue;
+    public Entity NewE = Entity.Null;
     public Entity OldE = Entity.Null;
 
     public ChangeWorkingLayerCmd(Index index)
     {
-        NewE = Document.Get<LayerTreeManager>().Root.GetChild(index);
+        NewIndex = index;
     }
 
     public ChangeWorkingLayerCmd(Entity layerE)
@@ -23,6 +24,8 @@ public class ChangeWorkingLayerCmd : CommandBase
 
     public override void Do()
     {
+        if (NewE == Entity.Null && NewIndex.Value != int.MaxValue)
+            NewE = Document.Get<LayerTreeManager>().Root.GetChild(NewIndex);
         // Selection manager
         var sm = Document.Get<SelectionManager>();
         OldE = sm.WorkingLayer.Value;
