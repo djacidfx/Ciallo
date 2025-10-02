@@ -11,7 +11,7 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class LayerTreeManager
 {
-    [DataMember] public readonly LayerTreeNode Root = new()
+    [DataMember] public LayerTreeNode Root = new()
     {
         Name = { Value = "Root" },
     };

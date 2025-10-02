@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -8,23 +9,21 @@ using Arch.Core.Extensions;
 using Ciallo.Command;
 using Ciallo.Misc;
 using Godot;
-using Godot.Collections;
 using MessagePack;
 
 namespace Ciallo.Data;
-using Sys = System.Collections.Generic;
 
 public static partial class AppWorldManager
 {
-    public static readonly Sys.HashSet<Type> ToSerializeTypes = [..GetToSerializeTypes()];
-    public static readonly Sys.HashSet<Type> ToSerializeTags = ToSerializeTypes.Where(t => t.IsTag()).ToHashSet();
+    public static readonly HashSet<Type> ToSerializeTypes = [..GetToSerializeTypes()];
+    public static readonly HashSet<Type> ToSerializeTags = ToSerializeTypes.Where(t => t.IsTag()).ToHashSet();
     
     public static void CopyWorldByData(World dataWorld, Entity dataDocument)
     {
         // Load brushes
         var resultWorld = Create(dataDocument.Get<DocumentSetting>());
         WorkingWorld.Value = resultWorld;
-        Sys.Dictionary<Entity, Entity> brushMap = [];
+        Dictionary<Entity, Entity> brushMap = [];
         foreach (var brushDataE in dataDocument.Get<BrushManager>().Brushes)
         {
             var setting = brushDataE.Get<BrushSetting>();
@@ -35,6 +34,7 @@ public static partial class AppWorldManager
         
         // Load layers and strokes
         var dataTreeRoot = dataDocument.Get<LayerTreeManager>().Root;
+        Dictionary<Entity, Entity> layerMap = [];
         foreach (var layerDataE in dataTreeRoot.Children)
         {
             if (layerDataE.Has<PolylineLayerSetting>())
@@ -43,6 +43,7 @@ public static partial class AppWorldManager
                 var newPolylineLayerCmd = new NewPolylineLayerCmd(setting);
                 newPolylineLayerCmd.Do();
                 var layerE = newPolylineLayerCmd.LayerE;
+                layerMap.Add(layerDataE, layerE);
 
                 foreach (var polylineDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
@@ -57,6 +58,12 @@ public static partial class AppWorldManager
                 }
             }
         }
+        
+        // Load selection
+        var dataSm = dataDocument.Get<SelectionManager>();
+        new ChangeWorkingLayerCmd(layerMap[dataSm.WorkingLayer.CurrentValue]).Do();
+        var idx = dataDocument.Get<BrushManager>().Brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
+        new ChangeWorkingBrushCmd(idx).Do();
     }
 
     public static void SaveWorkingWorld()
@@ -111,11 +118,11 @@ public static partial class AppWorldManager
     /// 1. Entity-Component structure data: ListListType`, each inner list corresponds to an entity and contains its component types.
     /// 2. Component data: `Dictionary(Type, List(object))`, each list contains the data of that component type for all entities in order.
     /// </remarks>
-    public static Array<byte[]> Serialize([NotNull] World world)
+    public static byte[][] Serialize([NotNull] World world)
     {
-        Sys.List<Entity> entities = [world.Document()];
+        List<Entity> entities = [world.Document()];
         world.Query(in new QueryDescription().WithAll<ToSerializeTag>(), e => entities.Add(e));
-        Sys.List<Sys.List<Type>> ecData = [];
+        List<List<Type>> ecData = [];
         foreach (var e in entities)
         {
             var componentTypes = e.GetComponentTypes().Components.ToArray().Select(ct => ct.Type)
@@ -128,7 +135,7 @@ public static partial class AppWorldManager
         EntityToIndexFormatter.Instance.EntityList = entities;
 
         // Note, directly using List<object> will cause losing type information in deserialization.
-        Sys.Dictionary<Type, Sys.List<byte[]>> componentData = [];
+        Dictionary<Type, List<byte[]>> componentData = [];
         foreach (var e in entities)
         {
             var types = e.GetComponentTypes().Components.ToArray().Select(ct => ct.Type).ToArray();
@@ -150,14 +157,14 @@ public static partial class AppWorldManager
         return [ecBin, componentBin];
     }
 
-    public static World Deserialize(Array<byte[]> bins, out Entity document)
+    public static World Deserialize(byte[][] bins, out Entity document)
     {
         var world = World.Create();
         world.AddForbiddenComponents();
 
         var ecBin = bins[0];
-        var ecData = MessagePackSerializer.Deserialize<Sys.List<Sys.List<Type>>>(ecBin);
-        var entities = new Sys.List<Entity>(ecData.Count);
+        var ecData = MessagePackSerializer.Deserialize<List<List<Type>>>(ecBin);
+        var entities = new List<Entity>(ecData.Count);
         foreach (var types in ecData)
         {
             ComponentType[] cTypes = types.Select(t => ComponentRegistry.TypeToComponentType[t]).ToArray();
@@ -169,7 +176,7 @@ public static partial class AppWorldManager
         EntityToIndexFormatter.Instance.EntityList = entities;
 
         var componentBin = bins[1];
-        var componentData = MessagePackSerializer.Deserialize<Sys.Dictionary<Type, Sys.Queue<byte[]>>>(componentBin);
+        var componentData = MessagePackSerializer.Deserialize<Dictionary<Type, Queue<byte[]>>>(componentBin);
         foreach (var e in entities)
         {
             foreach (var ct in e.GetComponentTypes().Components)
@@ -186,7 +193,7 @@ public static partial class AppWorldManager
         return world;
     }
 
-    public static Sys.IEnumerable<Type> GetToSerializeTypes()
+    public static IEnumerable<Type> GetToSerializeTypes()
     {
         var allTypes = AppDomain.CurrentDomain.GetAssemblies().SelectMany(a =>
         {

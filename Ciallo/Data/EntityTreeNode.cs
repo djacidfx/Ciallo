@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Arch.Core;
 using Arch.Core.Extensions;
-using MessagePack;
 
 namespace Ciallo.Data;
 
@@ -14,10 +13,9 @@ namespace Ciallo.Data;
 /// </summary>
 /// <typeparam name="T">The derived type of the tree node.</typeparam>
 [DataContract]
-[Union(0, typeof(LayerTreeNode))]
 public class EntityTreeNode<T> where T : EntityTreeNode<T>
 {
-    [DataMember] public List<Entity> Children { get; set; }= [];
+    [DataMember] public List<Entity> Children = [];
     
     public int ChildCount => Children.Count;
     public int DescendantCount => CountSubtreeNodes((T)this) - 1;
