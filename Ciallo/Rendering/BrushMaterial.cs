@@ -1,6 +1,8 @@
 ﻿using System.Linq;
+using System.Runtime.InteropServices;
 using Ciallo.Data;
 using Ciallo.Geometry;
+using CommunityToolkit.HighPerformance;
 using Godot;
 using R3;
 
@@ -62,11 +64,11 @@ public partial class BrushMaterial : ShaderMaterial
 
     public static Image BakeCurve(BezierCurve curve)
     {
-        int n = 256;
+        int n = 512;
         var data = curve.SampleXList(Enumerable.Range(0, n).Select(i => (float)i / n).ToArray());
-        var img = Image.CreateFromData(data.Count, 1, false, Image.Format.L8, data.Select(c => (byte)(c * 255)).ToArray());
+        var bytes = MemoryMarshal.AsBytes(data.AsSpan()).ToArray();
+        var img = Image.CreateFromData(data.Count, 1, false, Image.Format.Rf, bytes);
         img.GenerateMipmaps();
-        // img.GenerateMipmaps();
         return img;
     }
 }
