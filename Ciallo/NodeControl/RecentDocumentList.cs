@@ -14,5 +14,13 @@ public partial class RecentDocumentList : ItemList
             var success = OpenDocument.LoadWorldFile(path);
             if(!success) AppPreference.RecentFiles.Remove(path);
         };
+
+        ItemClicked += (index, _, buttonIndex) =>
+        {
+            if ((MouseButton)buttonIndex == MouseButton.Right)
+            {
+                AppPreference.RecentFiles.RemoveAt((int)index);
+            }
+        };
     }
 }
