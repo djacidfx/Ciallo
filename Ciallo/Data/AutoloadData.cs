@@ -17,7 +17,7 @@ public partial class AutoloadData : Node
         GetTree().AutoAcceptQuit = false;
         // Message pack serializer setup
         var defaultResolver = CompositeResolver.Create(
-            [EntityToIndexFormatter.Instance, TypeFormatter.Instance],
+            [EntityToIndexFormatter.Instance, TypeFormatter.Instance, Texture2DFormatter.Instance, ImageFormatter.Instance],
             [GodotResolver.Instance,
                 AttributeFormatterResolver.Instance,
                 ReactivePropertyResolver.Instance,

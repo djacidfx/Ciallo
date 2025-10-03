@@ -26,6 +26,7 @@ public class BrushSetting
     
     // Stamp
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
+    // [DataMember] public ReactiveProperty<Texture2D> Footprint = new(null);
     
     // Airbrush
     [DataMember] public BezierCurve FalloffCurve = BezierCurve.Linear(1.0f, 0.0f);
@@ -38,7 +39,7 @@ public class BrushSetting
             AutoTranslateMode = Node.AutoTranslateModeEnum.Disabled,
         };
         nameEdit.BindString(Name);
-        var box = container.AddProperty("Name", nameEdit);
+        container.AddProperty("Name", nameEdit);
         
         var baseRadiusControl = new SpinSlider
         {
@@ -70,6 +71,9 @@ public class BrushSetting
         typeButton.BindEnum(RenderingType);
         container.AddProperty("Rendering type", typeButton);
         
+        // Stamp
+        
+        // Airbrush
         var falloffCurveEdit = new MappingCurveEdit();
         falloffCurveEdit.Curve = FalloffCurve;
         container.AddProperty("Opacity falloff", falloffCurveEdit)
