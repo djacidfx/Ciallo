@@ -13,7 +13,7 @@ namespace Ciallo.Data;
 /// </summary>
 /// <typeparam name="T">The derived type of the tree node.</typeparam>
 [DataContract]
-public abstract class EntityTreeNode<T> where T : EntityTreeNode<T>
+public class EntityTreeNode<T> where T : EntityTreeNode<T>
 {
     [DataMember] public List<Entity> Children = [];
     

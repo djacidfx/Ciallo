@@ -13,7 +13,7 @@ namespace Ciallo.Data;
 using Sys = System.Collections.Generic;
 
 /// <summary>
-/// We consider world and document has one-to-one relationship.
+/// World and document has one-to-one relationship.
 /// In practice, a document is a special singleton entity of the world.
 /// All the "document-level singleton data" should be stored in this "document" entity. (For the program-level singletons we commonly use static class).
 /// The "document-level singleton data" is the data one per document, such as the DocumentSetting, LayerTree, etc.
@@ -45,18 +45,20 @@ public static partial class AppWorldManager
         var commandManager = new CommandManager();
         var brushManager = new BrushManager();
         document.Add(settings, layerTreeManager, selectionManager, commandManager, brushManager);
-        
-        // Set as working world
-        WorkingWorld.Value = world;
+
         // Always init first, then add to list
         LoadedWorlds.Add(world);
         
-        // Add initial layer
-        AppBrushLibrary.SelectedIndex.Value = 0;
-        new NewPolylineLayerCmd().Do();
-        new ChangeWorkingLayerCmd(^1).Do();
-        
         return world;
+    }
+
+    public static void InitialEmptyWorldForUser(World world)
+    {
+        AppBrushLibrary.SelectedIndex.Value = 0;
+
+        new NewPolylineLayerCmd { WorkingWorld = world }
+            .Combine(new ChangeWorkingLayerCmd(0))
+            .DoAllCombination();
     }
 
     public static void Remove([NotNull] World world)

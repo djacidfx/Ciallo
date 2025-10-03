@@ -13,15 +13,15 @@ public class NewBrushCmd : CommandBase
     public Entity BrushE = Entity.Null;
     private readonly BrushSetting _setting;
 
-    public NewBrushCmd(BrushSetting inputSetting = null)
+    public NewBrushCmd(BrushSetting setting = null)
     {
-        _setting = inputSetting?.Clone() ?? new BrushSetting();
+        _setting = setting?.Clone() ?? new BrushSetting();
         _setting.Labels.Remove(BrushLabel.BuiltIn);
         
         // Dirty hack
         AppBrushLibrary.SelectedIndex.Value = -1;
     }
-
+    
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(BrushE);
     
     public override void Do()
@@ -38,7 +38,7 @@ public class NewBrushCmd : CommandBase
         BrushE.Add(material);
         
         // UI
-        // Note: suppose to have a dedicate custom widget to handle this.
+        // Note: Should have a dedicate custom widget to handle this.
         var setting = BrushE.Get<BrushSetting>();
         var list = Document.Get<DocumentBrushList>();
         

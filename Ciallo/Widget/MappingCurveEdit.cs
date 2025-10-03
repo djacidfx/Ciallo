@@ -5,6 +5,7 @@ Sep 15 2025: Given the complexity of this control, Shen still consider this as a
 */
 
 //Pitfall: Godot C++ constructs `Transform2D` default value is Transform2D.Identity, but in C# it is zero.
+
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Geometry;
@@ -207,7 +208,7 @@ public partial class MappingCurveEdit : Control
                     else
                     {
                         int pointToRemove = GetPointAt(mpos);
-                        if (pointToRemove == -1)
+                        if (pointToRemove == -1 || _curve.Count <= 1)
                         {
                             SetSelectedIndex(-1);
                         }
@@ -261,7 +262,16 @@ public partial class MappingCurveEdit : Control
 
                     newPos.X = GetOffsetWithoutCollision(_selectedIndex, newPos.X, mpos.X >= GetViewPos(newPos).X);
                     var p = _curve.GetClosestPoint(newPos, out var t);
-                    if(p.DistanceTo(newPos) < DomainRange/100.0 ) // Can split
+                    if (_curve.Count == 1)
+                    {
+                        int idx = 1;
+                        if (newPos.X < p.X) idx = 0;
+                        _curve.AddPoint(new(newPos.X, p.Y), new(-0.1f, 0), new(0.1f, 0), idx);
+                        SetSelectedIndex(idx);
+                        _grabbing = GrabMode.Add;
+                        _initialGrabPos = newPos;
+                    }
+                    else if(p.DistanceTo(newPos) < DomainRange/83.0f) // Can split
                     {
                         var idx = _curve.TryInsertPoint(t);
                         SetSelectedIndex(idx);

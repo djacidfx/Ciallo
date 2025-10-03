@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Reflection;
+using Newtonsoft.Json;
+
+namespace Ciallo.Misc;
 
 public class ReactivePropertyConverter : JsonConverter
 {

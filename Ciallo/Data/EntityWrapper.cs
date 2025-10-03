@@ -4,7 +4,7 @@ using Arch.Core.Extensions;
 
 namespace Ciallo.Data;
 
-[DataContract, ToSerialize] public class BrushEntity : EntityWrapper;
+[DataContract, ToSerialize] public class StrokeBrush : EntityWrapper;
 
 [DataContract]
 public class EntityWrapper

@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using MessagePack;
 using R3;
 
 namespace Ciallo.Data;
@@ -7,6 +8,12 @@ namespace Ciallo.Data;
 public class PolylineLayerSetting
 {
     [DataMember] public ReactiveProperty<PolylineLayerRenderMode> RenderMode = new(PolylineLayerRenderMode.Realtime);
+
+    public PolylineLayerSetting Clone()
+    {
+        var bytes = MessagePackSerializer.Serialize(this);
+        return MessagePackSerializer.Deserialize<PolylineLayerSetting>(bytes);
+    }
 }
 
 public enum PolylineLayerRenderMode

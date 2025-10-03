@@ -3,9 +3,9 @@ using Ciallo.Geometry;
 using Ciallo.Misc;
 using Ciallo.Widget;
 using Godot;
-using R3;
 using MessagePack;
 using ObservableCollections;
+using R3;
 
 namespace Ciallo.Data;
 
@@ -60,7 +60,7 @@ public class BrushSetting
         colorPickerButton.BindColor(Color);
         container.AddProperty("RGB+Flow", colorPickerButton);
 
-        var pressureCurveEdit = new MappingCurveEdit();
+        var pressureCurveEdit = new MappingCurveEdit {MinValue = 0.01f}; // MinValue avoid potential zero radius issue.
         pressureCurveEdit.Curve = Pressure2RadiusRatioCurve;
         var aspectBox = new AspectRatioContainer();
         aspectBox.AddChild(pressureCurveEdit);

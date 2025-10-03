@@ -1,6 +1,6 @@
 ﻿using System.Runtime.Serialization;
-using R3;
 using Godot;
+using R3;
 
 namespace Ciallo.Data;
 
@@ -12,5 +12,5 @@ public class DocumentSetting
     [DataMember] public ReactiveProperty<Vector2> ReferenceSize = new(new(1920, 1080));
     [DataMember] public ReactiveProperty<Color> BackgroundColor = new(Colors.White);
     
-    public string FilePath = new(OS.GetSystemDir(OS.SystemDir.Documents));
+    public ReactiveProperty<string> FilePath = new(OS.GetSystemDir(OS.SystemDir.Documents));
 }

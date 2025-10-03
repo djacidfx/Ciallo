@@ -1,8 +1,8 @@
-using Godot;
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
+using Godot;
 
 namespace Ciallo.NodeControl;
 
@@ -42,21 +42,20 @@ public partial class MenuFile : PopupMenu
         switch (id)
         {
             case 0: // New Document
-                var dialogNew = GetTree().GetNodesInGroup("Dialog").OfType<ConfirmationDialog>().Single(n => n.Name == "NewDocument");
+                var dialogNew = GetTree().GetNodesInGroup("Dialog").OfType<NewDocumentDialog>().Single(n => n.Name == "NewDocument");
                 dialogNew.Popup();
                 break;
             case 1: // Open Document
-                // var dialogOpen = GetTree().GetNodesInGroup("Dialog").OfType<FileDialog>().Single(n => n.Name == "OpenDocument");
-                // dialogOpen.Popup();
-                AppWorldManager.LoadCurrentDocument();
+                var dialogOpen = GetTree().GetNodesInGroup("Dialog").OfType<OpenDocument>().Single(n => n.Name == "OpenDocument");
+                dialogOpen.Popup();
                 break;
             case 2: // Close Document
-                if(AppWorldManager.WorkingWorld == null) return;
+                if(AppWorldManager.WorkingWorld.Value == null) return;
                 AppWorldManager.Remove(AppWorldManager.WorkingWorld.Value);
                 break;
             case 4: // Save
-                if(AppWorldManager.WorkingDocument == null) return;
-                AppWorldManager.SaveCurrentDocument();
+                if(AppWorldManager.WorkingWorld.Value == null) return;
+                AppWorldManager.SaveWorkingWorld();
                 break;
             default:
                 GD.PrintErr($"Unhandled menu item index: {id}");

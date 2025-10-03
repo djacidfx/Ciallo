@@ -64,10 +64,13 @@ public abstract class CommandBase
         cm.CommitAction(execute);
     }
     
-    public void DoDepthFirst()
+    public void DoAllCombination(bool useRootWorld = true)
     {
         foreach (var cmd in GetDepthFirstCommands())
+        {
+            if(useRootWorld) cmd.WorkingWorld = WorkingWorld;
             cmd.Do();
+        }
     }
 
     private readonly List<CommandBase> _combinations = [];

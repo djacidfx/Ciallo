@@ -1,8 +1,10 @@
-﻿using Godot;
-using R3;
-using Newtonsoft.Json;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Ciallo.Misc;
+using Godot;
+using Newtonsoft.Json;
+using ObservableCollections;
+using R3;
 
 namespace Ciallo.Data;
 
@@ -31,7 +33,7 @@ public class Preference
     [DataMember]
     public ReactiveProperty<string> Language = new("en");
     [DataMember]
-    public List<string> RecentFiles = [];
+    public ObservableList<string> RecentFiles = [];
     
     [DataMember]
     public Color StrokeWireframeColor = Colors.NavyBlue;

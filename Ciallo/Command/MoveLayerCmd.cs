@@ -2,6 +2,8 @@
 using System.Collections.Immutable;
 using Arch.Core.Extensions;
 using Ciallo.Data;
+using Ciallo.Rendering;
+using Godot;
 
 namespace Ciallo.Command;
 
