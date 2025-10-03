@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using Ciallo.Data;
 using Ciallo.Widget;
@@ -28,7 +27,7 @@ public partial class NewDocumentDialog : ConfirmationDialog
             errorMessage.Visible = true;
             return;
         }
-        if (!IsValidFileName(docName))
+        if (docName.IsValidFileName())
         {
             errorMessage.Text = "Invalid document name. Please use a valid file name.";
             errorMessage.Visible = true;
@@ -66,27 +65,5 @@ public partial class NewDocumentDialog : ConfirmationDialog
         Hide();
         
         AppPreference.RecentFiles.Add(filePath);
-    }
-    
-    // Gen by copilot
-    public static bool IsValidFileName(string fileName)
-    {
-        if (string.IsNullOrWhiteSpace(fileName)) return false;
-    
-        // Check for invalid characters
-        char[] invalidChars = Path.GetInvalidFileNameChars();
-        if (fileName.IndexOfAny(invalidChars) >= 0) return false;
-
-        // Optionally: Check for reserved Windows names
-        string[] reservedNames =
-        [
-            "CON", "PRN", "AUX", "NUL",
-            "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9",
-            "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9"
-        ];
-        string nameWithoutExtension = Path.GetFileNameWithoutExtension(fileName).ToUpperInvariant();
-        if (Array.Exists(reservedNames, rn => rn == nameWithoutExtension)) return false;
-
-        return true;
     }
 }

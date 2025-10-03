@@ -78,6 +78,8 @@ public static class AppBrushLibrary
         var invalids = Path.GetInvalidFileNameChars();
         foreach (var c in invalids)
             fileName = fileName.Replace(c, '_');
+        if(string.IsNullOrWhiteSpace(fileName))
+            fileName = "Unknown name brush";
         return fileName;
     }
 
