@@ -32,6 +32,8 @@ visible = false
 
 [node name="OpenDocument" type="FileDialog" parent="." groups=["Dialog"]]
 title = "Open a File"
+initial_position = 1
+size = Vector2i(1080, 720)
 ok_button_text = "Open"
 file_mode = 0
 display_mode = 1
@@ -47,6 +49,9 @@ visible = false
 
 [node name="BrushLibrary" parent="." groups=["Dialog"] instance=ExtResource("5_j4qnp")]
 visible = false
+
+[node name="WarnUser" type="AcceptDialog" parent="." groups=["Dialog"]]
+initial_position = 2
 
 [node name="MainGui" type="VBoxContainer" parent="."]
 layout_mode = 1

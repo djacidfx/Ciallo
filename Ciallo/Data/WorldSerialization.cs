@@ -17,8 +17,16 @@ public static partial class AppWorldManager
 {
     public static readonly HashSet<Type> ToSerializeTypes = [..GetToSerializeTypes()];
     public static readonly HashSet<Type> ToSerializeTags = ToSerializeTypes.Where(t => t.IsTag()).ToHashSet();
-    
-    public static void CopyWorldByData(World dataWorld, Entity dataDocument)
+
+    static AppWorldManager()
+    {
+        foreach (var type in ToSerializeTypes)
+        {
+            ComponentRegistry.Add(type);
+        }
+    }
+
+    public static void CopyWorldByData(Entity dataDocument)
     {
         // Load brushes
         var resultWorld = Create(dataDocument.Get<DocumentSetting>());
@@ -63,7 +71,7 @@ public static partial class AppWorldManager
         var dataSm = dataDocument.Get<SelectionManager>();
         new ChangeWorkingLayerCmd(layerMap[dataSm.WorkingLayer.CurrentValue]).Do();
         var idx = dataDocument.Get<BrushManager>().Brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
-        new ChangeWorkingBrushCmd(idx).Do();
+        if (idx != -1) new ChangeWorkingBrushCmd(idx).Do();
     }
 
     public static void SaveWorkingWorld()
@@ -74,13 +82,13 @@ public static partial class AppWorldManager
             Save(WorkingWorld.Value, settings.FilePath.Value);
     }
 
-    public static void ReloadWorkingDocument() // for debug
+    public static void ReloadWorkingWorld() // for debug
     {
         if(WorkingDocument.CurrentValue == Entity.Null) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (!File.Exists(settings.FilePath.Value)) return;
         var world = Load(settings.FilePath.Value, out var document);
-        CopyWorldByData(world, document);
+        CopyWorldByData(document);
     }
 
     public static void Save(World world, string filePath)

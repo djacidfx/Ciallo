@@ -28,7 +28,6 @@ public partial class CommandManager : UndoRedo
         cmdWrapper.UndoWrapper = new WrapperObject(cmdWrapper.Command.UndoRefEntities, cmdWrapper.Command.UndoRefObjects);
         AddUndoMethod(new(cmdWrapper, CommandWrapperObject.MethodName.Undo));
         AddUndoReference(cmdWrapper.UndoWrapper);
-        // cmdWrapper.Command.UndoRefObjects.ForEach(AddUndoReference);
         AddUndoReference(cmdWrapper);
     }
 }
@@ -68,7 +67,9 @@ public partial class WrapperObject(IEnumerable<Entity> entities, IEnumerable<God
         
         if (entities?.Any() == true)
         {
-            var world = World.Worlds.First(w => w.Id == entities.First().WorldId);
+            // w can be null but Rider hint it cannot be.
+            // ReSharper disable once ConstantConditionalAccessQualifier
+            var world = World.Worlds.First(w => w?.Id == entities.First().WorldId);
             foreach(var e in entities)
                 world.Destroy(e);
         }
