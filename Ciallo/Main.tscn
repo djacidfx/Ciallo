@@ -1,6 +1,7 @@
-[gd_scene load_steps=15 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=16 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
+[ext_resource type="Script" uid="uid://co17yxacb7838" path="res://NodeControl/OpenDocument.cs" id="3_j4qnp"]
 [ext_resource type="PackedScene" uid="uid://bpntrjged60df" path="res://Widget/NewDocumentDialog.tscn" id="3_sc1dx"]
 [ext_resource type="PackedScene" uid="uid://b605gtasdgmsb" path="res://Widget/About.tscn" id="4_fpfj3"]
 [ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icon/star.svg" id="4_kjvhd"]
@@ -33,9 +34,11 @@ visible = false
 title = "Open a File"
 ok_button_text = "Open"
 file_mode = 0
+display_mode = 1
 access = 2
 filters = PackedStringArray("*.ciallo")
 use_native_dialog = true
+script = ExtResource("3_j4qnp")
 
 [node name="AboutCiallo" parent="." groups=["Dialog"] instance=ExtResource("4_fpfj3")]
 visible = false
