@@ -6,7 +6,7 @@ using Ciallo.Misc;
 using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Godot;
-using Newtonsoft.Json;
+using MessagePack;
 using ObservableCollections;
 using R3;
 
@@ -67,13 +67,13 @@ public static class AppBrushLibrary
         BrushSettings.AddRange(userBrushes);
     }
 
-    public static readonly string Path = "user://Brush.json";
+    public static readonly string Path = "user://Brush.bin";
 
     public static void Save()
     {
-        var content = JsonConvert.SerializeObject(BrushSettings, Preference.JsonOptions);
+        var content = MessagePackSerializer.Serialize(BrushSettings);
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
-        file.StoreString(content);
+        file.StoreBuffer(content);
     }
 
     public static bool TryLoad()
@@ -82,9 +82,9 @@ public static class AppBrushLibrary
             return false;
         BrushSettings.Clear();
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
-        string content = file.GetAsText();
-        
-        JsonConvert.PopulateObject(content, BrushSettings, Preference.JsonOptions);
+        var content = file.GetBuffer((long)file.GetLength());
+        var settings = MessagePackSerializer.Deserialize<BrushSetting[]>(content);
+        BrushSettings.AddRange(settings);
         return true;
     }
 

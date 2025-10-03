@@ -26,7 +26,7 @@ public class BrushSetting
     
     // Stamp
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
-    // [DataMember] public ReactiveProperty<Texture2D> Footprint = new(null);
+    [DataMember] public ReactiveProperty<Texture2D> Footprint = new(null);
     
     // Airbrush
     [DataMember] public BezierCurve FalloffCurve = BezierCurve.Linear(1.0f, 0.0f);
