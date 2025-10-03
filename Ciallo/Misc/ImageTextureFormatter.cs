@@ -4,11 +4,11 @@ using MessagePack.Formatters;
 
 namespace Ciallo.Misc;
 
-public class Texture2DFormatter : IMessagePackFormatter<Texture2D>
+public class ImageTextureFormatter : IMessagePackFormatter<ImageTexture>
 {
-    public static readonly Texture2DFormatter Instance = new();
+    public static readonly ImageTextureFormatter Instance = new();
     
-    public void Serialize(ref MessagePackWriter writer, Texture2D value, MessagePackSerializerOptions options)
+    public void Serialize(ref MessagePackWriter writer, ImageTexture value, MessagePackSerializerOptions options)
     {
         if (value == null)
         {
@@ -19,7 +19,7 @@ public class Texture2DFormatter : IMessagePackFormatter<Texture2D>
         MessagePackSerializer.Serialize(ref writer, image, options);
     }
 
-    public Texture2D Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
+    public ImageTexture Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         if (reader.TryReadNil())
         {
