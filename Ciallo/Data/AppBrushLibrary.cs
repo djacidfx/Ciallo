@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using Ciallo.Geometry;
 using Ciallo.Misc;
@@ -9,6 +10,9 @@ using Godot;
 using MessagePack;
 using ObservableCollections;
 using R3;
+using FileAccess = Godot.FileAccess;
+
+// for filename sanitization
 
 namespace Ciallo.Data;
 
@@ -67,24 +71,80 @@ public static class AppBrushLibrary
         BrushSettings.AddRange(userBrushes);
     }
 
-    public static readonly string Path = "user://Brush.bin";
+    public static readonly string BrushFolder = "user://Brush/";
+
+    private static string SanitizeFileName(string fileName)
+    {
+        var invalids = Path.GetInvalidFileNameChars();
+        foreach (var c in invalids)
+            fileName = fileName.Replace(c, '_');
+        return fileName;
+    }
 
     public static void Save()
     {
-        var content = MessagePackSerializer.Serialize(BrushSettings);
-        using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
-        file.StoreBuffer(content);
+        // Ensure folder exists
+        using var baseDir = DirAccess.Open("user://");
+        if (!baseDir.DirExists("Brush"))
+            baseDir.MakeDir("Brush");
+
+        // Clear
+        using var dirAccess = DirAccess.Open(BrushFolder);
+        dirAccess.ListDirBegin();
+        string fileName;
+        while ((fileName = dirAccess.GetNext()) != "")
+            if (fileName.EndsWith(".bin"))
+                dirAccess.Remove(fileName);
+        dirAccess.ListDirEnd();
+
+        HashSet<string> seenNames = new();
+        // Save
+        foreach (var brush in BrushSettings)
+        {
+            var name = SanitizeFileName(brush.Name.Value);
+            if(seenNames.Contains(name))
+            {
+                int suffix = 1;
+                while (seenNames.Contains(name + "_" + suffix))
+                    suffix++;
+                name = name + "_" + suffix;
+            }
+            var path = BrushFolder + name + ".bin";
+            seenNames.Add(name);
+            
+            var content = MessagePackSerializer.Serialize(brush);
+            using var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
+            file.StoreBuffer(content);
+        }
     }
 
     public static bool TryLoad()
     {
-        if (!FileAccess.FileExists(Path))
-            return false;
+        // Check folder
+        using var baseDir = DirAccess.Open("user://");
+        if (!baseDir.DirExists("Brush")) return false;
+
+        // List files
+        using var brushDir = DirAccess.Open(BrushFolder);
+        var files = new List<string>();
+        brushDir.ListDirBegin();
+        string fileEntry;
+        while ((fileEntry = brushDir.GetNext()) != "")
+            if (fileEntry.EndsWith(".bin"))
+                files.Add(fileEntry);
+        brushDir.ListDirEnd();
+
+        if (files.Count == 0) return false;
+
+        // Load
         BrushSettings.Clear();
-        using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
-        var content = file.GetBuffer((long)file.GetLength());
-        var settings = MessagePackSerializer.Deserialize<BrushSetting[]>(content);
-        BrushSettings.AddRange(settings);
+        foreach (var fn in files)
+        {
+            using var file = FileAccess.Open(BrushFolder + fn, FileAccess.ModeFlags.Read);
+            var content = file.GetBuffer((long)file.GetLength());
+            var brush = MessagePackSerializer.Deserialize<BrushSetting>(content);
+            BrushSettings.Add(brush);
+        }
         return true;
     }
 

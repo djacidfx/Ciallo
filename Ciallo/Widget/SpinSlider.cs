@@ -76,6 +76,30 @@ public partial class SpinSlider : HBoxContainer
         }
     }
 
+    private bool _allowLesser = false;
+    [Export] public bool AllowLesser
+    {
+        get => _allowLesser;
+        set
+        {
+            _allowLesser = value;
+            if (IsInstanceValid(Slider)) Slider.AllowLesser = value;
+            if (IsInstanceValid(SpinBox)) SpinBox.AllowLesser = value;
+        }
+    }
+
+    private bool _allowGreater = false;
+    [Export] public bool AllowGreater
+    {
+        get => _allowGreater;
+        set
+        {
+            _allowGreater = value;
+            if (IsInstanceValid(Slider)) Slider.AllowGreater = value;
+            if (IsInstanceValid(SpinBox)) SpinBox.AllowGreater = value;
+        }
+    }
+
     #endregion
 
     public override void _Ready()
@@ -86,6 +110,8 @@ public partial class SpinSlider : HBoxContainer
             MaxValue = _maxValue,
             Step = _step,
             ExpEdit = _expEdit,
+            AllowLesser = _allowLesser,
+            AllowGreater = _allowGreater,
             Value = _value,
             CustomMinimumSize = new(100, 0),
             Scrollable = false,
@@ -98,6 +124,8 @@ public partial class SpinSlider : HBoxContainer
             MaxValue = _maxValue,
             Step = _step,
             ExpEdit = _expEdit,
+            AllowLesser = _allowLesser,
+            AllowGreater = _allowGreater,
             Value = _value,
         };
         AddChild(Slider);
@@ -108,7 +136,7 @@ public partial class SpinSlider : HBoxContainer
         SpinBox.SetOwner(this);
     }
 
-    private void Connect(Godot.Range control)
+    private void Connect(Range control)
     {
         control.ValueChanged += value =>
         {

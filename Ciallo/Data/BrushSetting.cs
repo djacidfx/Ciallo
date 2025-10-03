@@ -46,7 +46,7 @@ public class BrushSetting
             MinValue = 0.1,
             MaxValue = 256,
             Step = 0.03333333,
-            ExpEdit = true
+            ExpEdit = true,
         };
         baseRadiusControl.BindNumber(BaseRadius);
         container.AddProperty("Base radius", baseRadiusControl);
@@ -72,6 +72,18 @@ public class BrushSetting
         container.AddProperty("Rendering type", typeButton);
         
         // Stamp
+        var stampIntervalControl = new SpinSlider
+        {
+            MinValue = 1f/32,
+            MaxValue = 6,
+            Step = 0.03333333,
+            ExpEdit = true,
+            AllowLesser = true,
+            AllowGreater = true,
+        };
+        stampIntervalControl.BindNumber(StampInterval);
+        container.AddProperty("Stamp interval", stampIntervalControl)
+            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
         
         // Airbrush
         var falloffCurveEdit = new MappingCurveEdit();
