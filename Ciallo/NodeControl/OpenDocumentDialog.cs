@@ -7,7 +7,7 @@ using Godot;
 
 namespace Ciallo.NodeControl;
 
-public partial class OpenDocument : FileDialog
+public partial class OpenDocumentDialog : FileDialog
 {
     public override void _Ready()
     {
