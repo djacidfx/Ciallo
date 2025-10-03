@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://duv6uwd686wfj"]
+[gd_scene load_steps=6 format=3 uid="uid://duv6uwd686wfj"]
 
 [ext_resource type="Script" uid="uid://gt4adx4emf1t" path="res://NodeControl/LanguageItemList.cs" id="1_ad8c8"]
 [ext_resource type="Texture2D" uid="uid://43k5wfcj0bkj" path="res://Icon/ciallo.svg" id="1_xhgsw"]
+[ext_resource type="Script" uid="uid://6yiex6jbsgdt" path="res://NodeControl/RecentDocumentList.cs" id="3_8on0h"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xhgsw"]
 draw_center = false
@@ -68,6 +69,7 @@ text = "Languages"
 [node name="LanguageList" type="ItemList" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Language"]
 auto_translate_mode = 2
 layout_mode = 2
+allow_search = false
 auto_width = true
 auto_height = true
 item_count = 7
@@ -90,8 +92,17 @@ text = "Start"
 
 [node name="Recent" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer"]
 layout_mode = 2
+theme_override_constants/separation = 20
 
 [node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Recent"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Recent documents"
+
+[node name="ItemList" type="ItemList" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Recent"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+allow_search = false
+auto_width = true
+auto_height = true
+script = ExtResource("3_8on0h")

@@ -1,0 +1,18 @@
+using Ciallo.Misc;
+using Godot;
+
+namespace Ciallo.NodeControl;
+
+public partial class RecentDocumentList : ItemList
+{
+    public override void _Ready()
+    {
+        this.ObserveObservableList(AppPreference.RecentFiles);
+        ItemActivated += idx =>
+        {
+            var path = AppPreference.RecentFiles[(int)idx];
+            var success = OpenDocument.LoadWorldFile(path);
+            if(!success) AppPreference.RecentFiles.Remove(path);
+        };
+    }
+}

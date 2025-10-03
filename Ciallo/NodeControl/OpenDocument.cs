@@ -11,10 +11,10 @@ public partial class OpenDocument : FileDialog
 {
     public override void _Ready()
     {
-        FileSelected += LoadWorldFile;
+        FileSelected += path => LoadWorldFile(path);
     }
 
-    public static void LoadWorldFile(string path)
+    public static bool LoadWorldFile(string path)
     {
         World dataWorld;
         Entity dataDocument;
@@ -27,9 +27,11 @@ public partial class OpenDocument : FileDialog
             var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<AcceptDialog>().Single(n => n.Name == "WarnUser");
             dialog.DialogText = "Cannot open document: the file is corrupted".Tr();
             dialog.Popup();
-            return;
+            return false;
         }
         AppWorldManager.CopyWorldByData(dataDocument);
         dataWorld.Dispose();
+        if(!AppPreference.RecentFiles.Contains(path)) AppPreference.RecentFiles.Add(path);
+        return true;
     }
 }

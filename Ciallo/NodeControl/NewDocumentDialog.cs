@@ -64,6 +64,8 @@ public partial class NewDocumentDialog : ConfirmationDialog
         AppWorldManager.InitialEmptyWorldForUser(world);
         AppWorldManager.SaveWorkingWorld();
         Hide();
+        
+        AppPreference.RecentFiles.Add(filePath);
     }
     
     // Gen by copilot

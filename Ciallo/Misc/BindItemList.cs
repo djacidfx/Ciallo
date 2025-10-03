@@ -36,7 +36,6 @@ public static class BindItemList
         subs.AddTo(control);
     }
     
-    // --------------------------------------------------------------------------------
     // Binds dynamic list
     public static void ObserveObservableList<T>(this ItemList control,
         ObservableList<T> list,
@@ -104,6 +103,46 @@ public static class BindItemList
                     control.Clear();
                     foreach (var subOld in subList) subOld.Dispose();
                     subList.Clear();
+                    break;
+                default: throw new ArgumentOutOfRangeException();
+            }
+        }).AddTo(subs);
+
+        subs.AddTo(control);
+    }
+
+    public static void ObserveObservableList(this ItemList control, ObservableList<string> list)
+    {
+        if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
+        control.Clear();
+
+        var subs = new CompositeDisposable();
+        // Initialize items
+        foreach (var item in list)
+            control.AddItem(item);
+
+        // Handle dynamic list changes
+        list.ObserveChanged().Subscribe(e =>
+        {
+            switch (e.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    control.AddItem(e.NewItem);
+                    control.MoveItem(control.GetItemCount() - 1, e.NewStartingIndex);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    control.RemoveItem(e.OldStartingIndex);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    control.SetItemText(e.NewStartingIndex, e.NewItem);
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    control.MoveItem(e.OldStartingIndex, e.NewStartingIndex);
+                    break;
+                case NotifyCollectionChangedAction.Reset:
+                    control.Clear();
+                    foreach (var v in list)
+                        control.AddItem(v);
                     break;
                 default: throw new ArgumentOutOfRangeException();
             }

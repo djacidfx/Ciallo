@@ -42,7 +42,7 @@ public partial class MenuFile : PopupMenu
         switch (id)
         {
             case 0: // New Document
-                var dialogNew = GetTree().GetNodesInGroup("Dialog").OfType<ConfirmationDialog>().Single(n => n.Name == "NewDocument");
+                var dialogNew = GetTree().GetNodesInGroup("Dialog").OfType<NewDocumentDialog>().Single(n => n.Name == "NewDocument");
                 dialogNew.Popup();
                 break;
             case 1: // Open Document
