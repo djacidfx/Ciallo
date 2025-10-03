@@ -4,9 +4,8 @@ To get a little bit more than a minimum viable product, below are the features f
 Will make a release on steam and start version "v0.1 EA" after finish these features.
 
 - [x] Document/world manager
-- [ ] Serialization
-  - [ ] Export to Godot
-  - [ ] .Ciallo binary format
+- [ ] Export to Godot
+- [x] .Ciallo project file
 - [x] Command undo/redo system
 - [ ] Property undo/redo
 - [ ] Tool system
