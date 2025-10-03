@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Godot;
+
+namespace Godot;
 
 public static class GodotNodeExtension
 {
