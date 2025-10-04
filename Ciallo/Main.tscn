@@ -51,7 +51,8 @@ visible = false
 visible = false
 
 [node name="WarnUser" type="AcceptDialog" parent="." groups=["Dialog"]]
-initial_position = 2
+initial_position = 1
+always_on_top = true
 
 [node name="MainGui" type="VBoxContainer" parent="."]
 layout_mode = 1
