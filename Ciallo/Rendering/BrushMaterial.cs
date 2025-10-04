@@ -45,6 +45,11 @@ public partial class BrushMaterial : ShaderMaterial
         
         setting.StampInterval.Subscribe(interval => SetShaderParameter("stampInterval", interval)).AddTo(Subs);
         SetShaderParameter("stampTexture", setting.StampTexture);
+        setting.StampRotation.Subscribe(rotation =>
+        {
+            var transform = new Transform2D(rotation, Vector2.Zero);
+            SetShaderParameter("coordinateTransform", transform);
+        }).AddTo(Subs);
         
         var falloffTex = ImageTexture.CreateFromImage(BakeCurve(setting.FalloffCurve));
         setting.FalloffCurve.Changed.Prepend(new Unit()).Subscribe(_ =>

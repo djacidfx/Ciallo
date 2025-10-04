@@ -20,6 +20,8 @@ uniform float dashForwardSpeed = 0.0;
 // const float intervalMin = 1.0/64.0;
 // const float intervalStep = 1.0/128.0;
 uniform float stampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
+uniform sampler2D stampTexture;
+uniform mat2 coordinateTransform;
 // ---------------------------------
 
 uniform sampler2D falloffCurve;
@@ -153,13 +155,18 @@ void fragment() {
  		int MAX_i = 128;
  		float currIdx = ceil(startIdx);
  		float currA = 1e-7;
+		float flow = materialColor.a;
  		while(i < MAX_i && currIdx < endIdx){
  			float currStampLocalX = n2x(currIdx * stampInterval - n0);
  			vec2 pToCurrStamp = pLocal - vec2(currStampLocalX, 0.0);
- 			//vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
-			vec2 c = pToCurrStamp/r;
-			//float sampledA = length(uv) > 1.0 ? 1e-7 : 0.5;
- 			float sampledA = abs(c.x) > 1.0 || abs(c.y) > 1.0 ? 1e-7 : 0.5;
+			pToCurrStamp *= coordinateTransform;
+ 			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
+			float sampledA;
+			if(uv.x > 1.0 || uv.y > 1.0 || length(pToCurrStamp/r) > 1.0)
+				sampledA = 1e-7;
+			else
+ 				sampledA = flow * texture(stampTexture, uv).r;
+			
  			currA = sampledA + currA * (1.0 - sampledA);
 			i++;
 			currIdx += 1.0;

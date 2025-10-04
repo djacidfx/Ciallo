@@ -8,7 +8,7 @@ namespace Ciallo.Misc;
 
 public static class BindRange
 {
-    private static void BindNumber<T>(Godot.Range rangeControl,
+    private static void BindNumber<T>(Range rangeControl,
         [NotNull] ReactiveProperty<T> property,
         out CompositeDisposable subs) where T : INumber<T>
     {
@@ -20,7 +20,7 @@ public static class BindRange
             .Subscribe(value => property.Value = T.CreateChecked(value)).AddTo(subs);
     }
     
-    public static void BindNumber<T>(this Godot.Range rangeControl, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
+    public static void BindNumber<T>(this Range rangeControl, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
         BindNumber(rangeControl, property, out var subs);
         subs.AddTo(rangeControl);
@@ -28,17 +28,17 @@ public static class BindRange
     
     public static void BindNumber<T>(this HSlider slider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindNumber((Godot.Range)slider, property);
+        BindNumber((Range)slider, property);
     }
     
     public static void BindNumber<T>(this VSlider slider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindNumber((Godot.Range)slider, property);
+        BindNumber((Range)slider, property);
     }
     
     public static void BindNumber<T>(this SpinBox spinBox, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindNumber((Godot.Range)spinBox, property);
+        BindNumber((Range)spinBox, property);
     }
     
     public static void BindNumber<T>(this SpinSlider spinSlider,
@@ -57,6 +57,7 @@ public static class BindRange
         subs.AddTo(spinSlider);
     }
 
+    
     public static void ReactiveBindNumber<T>(this SpinSlider spinSlider,
         ReadOnlyReactiveProperty<ReactiveProperty<T>> view,
         out CompositeDisposable subs) where T : INumber<T>
@@ -76,6 +77,9 @@ public static class BindRange
         }).AddTo(subs);
     }
     
+    /// <summary>
+    /// Binds a SpinSlider dynamically to a ReactiveProperty provided by the ReadOnlyReactiveProperty.
+    /// </summary>
     public static void ReactiveBindNumber<T>(this SpinSlider spinSlider,
         ReadOnlyReactiveProperty<ReactiveProperty<T>> view) where T : INumber<T>
     {

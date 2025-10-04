@@ -45,8 +45,8 @@ stretch_mode = 4
 
 [node name="FileDialog" type="FileDialog" parent="."]
 unique_name_in_owner = true
-title = "Select an image"
+title = "Open a File"
 file_mode = 0
 access = 2
-filters = PackedStringArray("*.bmp,*.dds,*.ktx,*.exr,*.hdr,*.jpg,*.jpeg,*.png,*.tga,*.svg,*.webp")
+filters = PackedStringArray(".jpg,*.jpeg,*.png,*.svg,*.webp,*.tga,*.bmp,*.dds,*.ktx,*.exr,*.hdr,*")
 use_native_dialog = true

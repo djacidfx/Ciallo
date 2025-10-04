@@ -37,6 +37,7 @@ public class BrushSetting
         }
         set => _stampTexture = value;
     }
+    [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
 
     // Airbrush
     [DataMember] public BezierCurve FalloffCurve = BezierCurve.Linear(1.0f, 0.0f);
@@ -84,19 +85,31 @@ public class BrushSetting
         // Stamp
         var stampIntervalControl = new SpinSlider
         {
-            MinValue = 1f/32,
+            MinValue = 1f/16,
             MaxValue = 6,
-            Step = 0.03333333,
+            Step = 0.01,
             ExpEdit = true,
             AllowLesser = true,
             AllowGreater = true,
         };
         stampIntervalControl.BindNumber(StampInterval);
-        container.AddProperty("Stamp interval", stampIntervalControl)
+        container.AddProperty("Interval", stampIntervalControl)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
         
         var footprintEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage);
         container.AddProperty("Stamp texture", footprintEdit)
+            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+
+        var stampRotationControl = new SpinSlider
+        {
+            MinValue = -180,
+            MaxValue = 180,
+            Step = 0.1,
+        };
+        var view = StampRotation.Project(Mathf.RadToDeg, Mathf.DegToRad, out var subs);
+        subs.AddTo(stampRotationControl);
+        stampRotationControl.BindNumber(view);
+        container.AddProperty("Rotation", stampRotationControl)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
         
         // Airbrush
