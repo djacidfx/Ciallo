@@ -42,14 +42,8 @@ public class ImageFormatter : IMessagePackFormatter<Image>
             writer.WriteNil();
             return;
         }
-        // Serialize as [width, height, format, data]
-        writer.WriteArrayHeader(4);
-        writer.Write(value.GetWidth());
-        writer.Write(value.GetHeight());
-        writer.Write((int)value.GetFormat());
-        // Raw pixel data
-        var data = value.GetData();
-        writer.Write(data);
+        
+        writer.Write(value.SavePngToBuffer());
     }
 
     public Image Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
@@ -58,15 +52,10 @@ public class ImageFormatter : IMessagePackFormatter<Image>
         {
             return null;
         }
-        // Expect [width, height, format, data]
-        _ = reader.ReadArrayHeader();
-        // Let it crash if count != 4
-        var width = reader.ReadInt32();
-        var height = reader.ReadInt32();
-        var format = (Image.Format)reader.ReadInt32();
+        
         var data = MessagePackSerializer.Deserialize<byte[]>(ref reader, options);
-
-        var image = Image.CreateFromData(width, height, false, format, data);
+        var image = Image.CreateEmpty(1, 1, false, Image.Format.L8);
+        image.LoadPngFromBuffer(data);
         image.GenerateMipmaps();
         return image;
     }
