@@ -27,7 +27,6 @@ public class BrushSetting
     
     // Stamp
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
-
     private ImageTexture _stampTexture;
     [DataMember] public ImageTexture StampTexture
     {
@@ -96,7 +95,7 @@ public class BrushSetting
         container.AddProperty("Stamp interval", stampIntervalControl)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
         
-        var footprintEdit = ImageTextureEdit.Instantiate(StampTexture);
+        var footprintEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage);
         container.AddProperty("Stamp texture", footprintEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
         
@@ -105,6 +104,19 @@ public class BrushSetting
         falloffCurveEdit.Curve = FalloffCurve;
         container.AddProperty("Opacity falloff", falloffCurveEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Airbrush);
+    }
+
+    private static void ConvertStampImage(Image img)
+    {
+        img.Convert(Image.Format.L8);
+        var size = img.GetSize();
+        Vector2I maxSize = 256 * Vector2I.One;
+        size = size.Min(maxSize);
+        if (size.X != size.Y)
+        {
+            size.X = size.Y = Mathf.Max(size.X, size.Y);
+        }
+        img.Resize(size.X, size.Y);
     }
 
     public BrushSetting Clone()
