@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using Ciallo.Geometry;
 using Ciallo.Misc;
+using Ciallo.NodeControl;
 using Ciallo.Widget;
 using Godot;
 using MessagePack;
@@ -26,11 +27,21 @@ public class BrushSetting
     
     // Stamp
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
-    [DataMember] public ReactiveProperty<ImageTexture> Footprint = new(null);
-    
+
+    private ImageTexture _stampTexture;
+    [DataMember] public ImageTexture StampTexture
+    {
+        get
+        {
+            _stampTexture ??= new();
+            return _stampTexture;
+        }
+        set => _stampTexture = value;
+    }
+
     // Airbrush
     [DataMember] public BezierCurve FalloffCurve = BezierCurve.Linear(1.0f, 0.0f);
-    
+
     public void DrawProperty(PropertyContainer container)
     {
         var nameEdit = new LineEdit()
@@ -83,6 +94,10 @@ public class BrushSetting
         };
         stampIntervalControl.BindNumber(StampInterval);
         container.AddProperty("Stamp interval", stampIntervalControl)
+            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        
+        var footprintEdit = ImageTextureEdit.Instantiate(StampTexture);
+        container.AddProperty("Stamp texture", footprintEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
         
         // Airbrush

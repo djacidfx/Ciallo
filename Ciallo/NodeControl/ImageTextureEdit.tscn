@@ -1,0 +1,39 @@
+[gd_scene load_steps=4 format=3 uid="uid://dvy6gjoyohxh3"]
+
+[ext_resource type="Script" uid="uid://d0tvejqc5yhxk" path="res://NodeControl/ImageTextureEdit.cs" id="1_pccdo"]
+[ext_resource type="Texture2D" uid="uid://dhjldtye0na35" path="res://Icon/FixedSize/folder-edit-outline-sized.svg" id="2_cdoaa"]
+[ext_resource type="Texture2D" uid="uid://dk26wrfpr3ml7" path="res://Icon/FixedSize/minus-sized.svg" id="3_xysc2"]
+
+[node name="ImageTextureEdit" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pccdo")
+
+[node name="VBoxContainer" type="HBoxContainer" parent="."]
+custom_minimum_size = Vector2(0, 27.96)
+layout_mode = 2
+
+[node name="LoadButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+icon = ExtResource("2_cdoaa")
+
+[node name="ClearButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+icon = ExtResource("3_xysc2")
+
+[node name="TexturePreview" type="TextureRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="FileDialog" type="FileDialog" parent="."]
+unique_name_in_owner = true
+title = "Select an image"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.bmp,*.dds,*.ktx,*.exr,*.hdr,*.jpg,*.jpeg,*.png,*.tga,*.svg,*.webp")
+use_native_dialog = true

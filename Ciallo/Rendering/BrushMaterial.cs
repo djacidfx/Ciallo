@@ -44,6 +44,7 @@ public partial class BrushMaterial : ShaderMaterial
         setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("dashForwardSpeed", speed)).AddTo(Subs);
         
         setting.StampInterval.Subscribe(interval => SetShaderParameter("stampInterval", interval)).AddTo(Subs);
+        SetShaderParameter("stampTexture", setting.StampTexture);
         
         var falloffTex = ImageTexture.CreateFromImage(BakeCurve(setting.FalloffCurve));
         setting.FalloffCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
