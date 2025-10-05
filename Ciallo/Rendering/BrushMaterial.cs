@@ -43,13 +43,18 @@ public partial class BrushMaterial : ShaderMaterial
         setting.GapLength.Subscribe(length => SetShaderParameter("gapLength", length)).AddTo(Subs);
         setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("dashForwardSpeed", speed)).AddTo(Subs);
         
+        // Stamp
         setting.StampInterval.Subscribe(interval => SetShaderParameter("stampInterval", interval)).AddTo(Subs);
         SetShaderParameter("stampTexture", setting.StampTexture);
+        SetShaderParameter("noiseTexture", setting.NoiseTexture);
         setting.StampRotation.Subscribe(rotation =>
         {
             var transform = new Transform2D(rotation, Vector2.Zero);
             SetShaderParameter("coordinateTransform", transform);
         }).AddTo(Subs);
+        setting.RotationNoiseType.Subscribe(type => SetShaderParameter("rotationNoiseType", (int)type)).AddTo(Subs);
+        setting.RotationNoiseAmplitude.Subscribe(amp => SetShaderParameter("rotationNoiseAmplitude", amp)).AddTo(Subs);
+        setting.RotationNoiseFrequency.Subscribe(freq => SetShaderParameter("rotationNoiseFrequency", freq)).AddTo(Subs);
         
         var falloffTex = ImageTexture.CreateFromImage(BakeCurve(setting.FalloffCurve));
         setting.FalloffCurve.Changed.Prepend(new Unit()).Subscribe(_ =>

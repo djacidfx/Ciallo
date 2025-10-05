@@ -8,6 +8,7 @@
 
 [node name="NewDocumentDialog" type="ConfirmationDialog"]
 auto_translate_mode = 1
+oversampling_override = 1.0
 title = "New document - Ciallo"
 initial_position = 2
 size = Vector2i(568, 512)

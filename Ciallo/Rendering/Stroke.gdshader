@@ -2,6 +2,8 @@
 shader_type canvas_item;
 render_mode unshaded;
 
+#include "FastNoiseLite2D.gdshaderinc"
+
 const int Vanilla = 0, Stamp = 1, Airbrush = 2;
 uniform int strokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
 uniform vec4 materialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
@@ -21,7 +23,11 @@ uniform float dashForwardSpeed = 0.0;
 // const float intervalStep = 1.0/128.0;
 uniform float stampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
 uniform sampler2D stampTexture;
+uniform sampler2D noiseTexture;
 uniform mat2 coordinateTransform;
+uniform int rotationNoiseType;
+uniform float rotationNoiseAmplitude = 3.1415926; // `= PI` don't compile
+uniform float rotationNoiseFrequency;
 // ---------------------------------
 
 uniform sampler2D falloffCurve;
@@ -142,6 +148,10 @@ void fragment() {
 	}
 	/*----------------------------------------------------------*/
  	if(strokeType == Stamp){
+		fnl_state noise = fnlCreateState(1137);
+		noise.noise_type = rotationNoiseType;
+		noise.frequency = rotationNoiseFrequency;
+		
  		float x1 = pLocal.x - r;
  		float x2 = pLocal.x + r;
  		float x1Idx = x2n(x1) + n0;
@@ -156,17 +166,24 @@ void fragment() {
  		float currIdx = ceil(startIdx);
  		float currA = 1e-7;
 		float flow = materialColor.a;
+		// Main loop
  		while(i < MAX_i && currIdx < endIdx){
- 			float currStampLocalX = n2x(currIdx * stampInterval - n0);
+			float currN = currIdx * stampInterval;
+ 			float currStampLocalX = n2x(currN - n0);
  			vec2 pToCurrStamp = pLocal - vec2(currStampLocalX, 0.0);
+			// Transform
 			pToCurrStamp *= coordinateTransform;
- 			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
-			float sampledA;
-			if(uv.x > 1.0 || uv.y > 1.0 || length(pToCurrStamp/r) > 1.0)
-				sampledA = 1e-7;
-			else
- 				sampledA = flow * texture(stampTexture, uv).r;
+			// Rotation noise
+			float rotationNoise = rotationNoiseAmplitude * fnlGetNoise2D(noise, currN, 0.0);
+			float cosRot = cos(rotationNoise);
+			float sinRot = sin(rotationNoise);
+			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
 			
+ 			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
+			float noise = texture(noiseTexture, uv).r;
+			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || length(pToCurrStamp/r) > 1.0;
+			float sampledA = isOutDisk ? 1e-7 : noise * flow * texture(stampTexture, uv).r;
+	
  			currA = sampledA + currA * (1.0 - sampledA);
 			i++;
 			currIdx += 1.0;
