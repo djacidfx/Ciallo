@@ -52,7 +52,7 @@ public class ImageFormatter : IMessagePackFormatter<Image>
         {
             return null;
         }
-        
+        // Image class doesn't have a static function like Image.CreateLoadFromBuffer
         var data = MessagePackSerializer.Deserialize<byte[]>(ref reader, options);
         var image = Image.CreateEmpty(1, 1, false, Image.Format.L8);
         image.LoadPngFromBuffer(data);

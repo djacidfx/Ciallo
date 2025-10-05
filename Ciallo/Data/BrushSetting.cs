@@ -29,7 +29,7 @@ public class BrushSetting
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
     [DataMember] public ImageTexture StampTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
-    [DataMember] public ImageTexture NoiseTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
+    [DataMember] public ImageTexture MultiplyTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
 
     [DataMember] public ReactiveProperty<FastNoiseLite.NoiseTypeEnum> RotationNoiseType = new(FastNoiseLite.NoiseTypeEnum.Simplex);
     [DataMember] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
@@ -97,8 +97,8 @@ public class BrushSetting
         container.AddProperty("Stamp texture", stampTextureEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
         
-        var noiseTextureEdit = ImageTextureEdit.Instantiate(NoiseTexture, ConvertStampImage);
-        container.AddProperty("Noise texture", noiseTextureEdit)
+        var multiplyTextureEdit = ImageTextureEdit.Instantiate(MultiplyTexture, ConvertStampImage);
+        container.AddProperty("Multiply texture", multiplyTextureEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
         
         var noiseTypeButton = new OptionButton();
@@ -121,7 +121,7 @@ public class BrushSetting
         var rotationNoiseAmplitudeControl = new SpinSlider
         {
             MinValue = 0,
-            MaxValue = Mathf.Pi * 10,
+            MaxValue = Mathf.Pi * 4,
             Step = 0.01,
         };
         rotationNoiseAmplitudeControl.BindNumber(RotationNoiseAmplitude);
@@ -130,9 +130,10 @@ public class BrushSetting
         
         var rotationNoiseFrequencyControl = new SpinSlider
         {
-            MinValue = 0.0001,
-            MaxValue = 0.4,
+            MinValue = 0.001,
+            MaxValue = 1.0,
             Step = 0.0001,
+            AllowGreater = true,
             ExpEdit = true,
         };
         rotationNoiseFrequencyControl.BindNumber(RotationNoiseFrequency);

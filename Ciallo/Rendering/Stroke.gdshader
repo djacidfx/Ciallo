@@ -23,7 +23,7 @@ uniform float dashForwardSpeed = 0.0;
 // const float intervalStep = 1.0/128.0;
 uniform float stampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
 uniform sampler2D stampTexture;
-uniform sampler2D noiseTexture;
+uniform sampler2D multiplyTexture;
 uniform mat2 coordinateTransform;
 uniform int rotationNoiseType;
 uniform float rotationNoiseAmplitude = 3.1415926; // `= PI` don't compile
@@ -180,7 +180,7 @@ void fragment() {
 			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
 			
  			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
-			float noise = texture(noiseTexture, uv).r;
+			float noise = texture(multiplyTexture, uv).r;
 			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || length(pToCurrStamp/r) > 1.0;
 			float sampledA = isOutDisk ? 1e-7 : noise * flow * texture(stampTexture, uv).r;
 	

@@ -46,7 +46,7 @@ public partial class BrushMaterial : ShaderMaterial
         // Stamp
         setting.StampInterval.Subscribe(interval => SetShaderParameter("stampInterval", interval)).AddTo(Subs);
         SetShaderParameter("stampTexture", setting.StampTexture);
-        SetShaderParameter("noiseTexture", setting.NoiseTexture);
+        SetShaderParameter("multiplyTexture", setting.MultiplyTexture);
         setting.StampRotation.Subscribe(rotation =>
         {
             var transform = new Transform2D(rotation, Vector2.Zero);
