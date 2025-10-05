@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Ciallo.Data;
 using Ciallo.Misc;
 using Godot;
 
@@ -42,7 +43,7 @@ public partial class ImageTextureEdit : BoxContainer
         LoadButton.Pressed += () => FileDialog.PopupCentered();
         ClearButton.Pressed += () =>
         {
-            Texture.SetImage(Image.CreateEmpty(1, 1, false, Image.Format.L8));
+            Texture.SetImage(BrushSetting.CreateDefaultWhiteImage());
         };
         RotateButton.Pressed += () =>
         {

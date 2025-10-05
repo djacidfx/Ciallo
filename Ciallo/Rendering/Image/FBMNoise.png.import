@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://p66gwa4e73t4"
+path="res://.godot/imported/FBMNoise.png-ef441026dc20dec016d6d4ada01df066.image"
+
+[deps]
+
+source_file="res://Rendering/Image/FBMNoise.png"
+dest_files=["res://.godot/imported/FBMNoise.png-ef441026dc20dec016d6d4ada01df066.image"]
+
+[params]
+

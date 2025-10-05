@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://les300a8nju2"
+path="res://.godot/imported/StampPencil.png-4eb6df6950eeb151cad6ef3b73798834.image"
+
+[deps]
+
+source_file="res://Rendering/Image/StampPencil.png"
+dest_files=["res://.godot/imported/StampPencil.png-4eb6df6950eeb151cad6ef3b73798834.image"]
+
+[params]
+

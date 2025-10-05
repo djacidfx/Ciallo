@@ -58,6 +58,36 @@ public static class AppBrushLibrary
             ]),
         });
 
+        var dirPath = "res://Rendering/Image/";
+        Image[] images =
+        [
+            GD.Load<Image>(dirPath + "StampPencil.png"),
+            GD.Load<Image>(dirPath + "StampSplatter.png"),
+            GD.Load<Image>(dirPath + "FBMNoise.png")
+        ];
+        foreach (var image in images)
+        {
+            image.GenerateMipmaps();
+        }
+        
+        brushes.Add(new()
+        {
+            Name = { Value = "Pencil".Tr()},
+            RenderingType = {Value = BrushRenderingType.Stamp},
+            Labels = { BrushLabel.BuiltIn },
+            Color = { Value = new(0,0,0,0.5f) },
+            StampTexture = ImageTexture.CreateFromImage(images[0]),
+            MultiplyTexture = ImageTexture.CreateFromImage(images[2]),
+        });
+        
+        brushes.Add(new()
+        {
+            Name = { Value = "Splatter".Tr()},
+            RenderingType = {Value = BrushRenderingType.Stamp},
+            Labels = { BrushLabel.BuiltIn },
+            StampTexture = ImageTexture.CreateFromImage(images[1]),
+        });
+
         return brushes;
     }
 
