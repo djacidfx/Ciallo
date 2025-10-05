@@ -26,7 +26,7 @@ uniform sampler2D stampTexture;
 uniform sampler2D multiplyTexture;
 uniform mat2 coordinateTransform;
 uniform int rotationNoiseType;
-uniform float rotationNoiseAmplitude = 3.1415926; // `= PI` don't compile
+uniform float rotationNoiseAmplitude = 0; // `= PI` don't compile
 uniform float rotationNoiseFrequency;
 // ---------------------------------
 
