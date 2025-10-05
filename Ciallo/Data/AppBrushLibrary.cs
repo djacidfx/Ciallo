@@ -195,8 +195,6 @@ public static class AppBrushLibrary
         int count = 1;
         panel.Add.Pressed += () =>
         {
-            if (SelectedIndex.Value < 0)
-                return;
             var newBrush = new BrushSetting()
             {
                 Name = { Value = "New brush".Tr() + " " + count++},
