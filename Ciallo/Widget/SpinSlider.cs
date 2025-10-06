@@ -100,6 +100,18 @@ public partial class SpinSlider : HBoxContainer
         }
     }
 
+    private bool _rounded = false;
+    [Export] public bool Rounded
+    {
+        get => _rounded;
+        set
+        {
+            _rounded = value;
+            if (IsInstanceValid(Slider)) Slider.Rounded = value;
+            if (IsInstanceValid(SpinBox)) SpinBox.Rounded = value;
+        }
+    }
+
     #endregion
 
     public override void _Ready()
@@ -112,6 +124,7 @@ public partial class SpinSlider : HBoxContainer
             ExpEdit = _expEdit,
             AllowLesser = _allowLesser,
             AllowGreater = _allowGreater,
+            Rounded = _rounded,
             Value = _value,
             CustomMinimumSize = new(100, 0),
             Scrollable = false,
@@ -126,6 +139,7 @@ public partial class SpinSlider : HBoxContainer
             ExpEdit = _expEdit,
             AllowLesser = _allowLesser,
             AllowGreater = _allowGreater,
+            Rounded = _rounded,
             Value = _value,
         };
         AddChild(Slider);

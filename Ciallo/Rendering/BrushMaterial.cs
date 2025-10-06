@@ -52,7 +52,7 @@ public partial class BrushMaterial : ShaderMaterial
             var transform = new Transform2D(rotation, Vector2.Zero);
             SetShaderParameter("coordinateTransform", transform);
         }).AddTo(Subs);
-        setting.RotationNoiseType.Subscribe(type => SetShaderParameter("rotationNoiseType", (int)type)).AddTo(Subs);
+        setting.RotationNoiseOctave.Subscribe(value => SetShaderParameter("rotationNoiseOctave", value)).AddTo(Subs);
         setting.RotationNoiseAmplitude.Subscribe(amp => SetShaderParameter("rotationNoiseAmplitude", amp)).AddTo(Subs);
         setting.RotationNoiseFrequency.Subscribe(freq => SetShaderParameter("rotationNoiseFrequency", freq)).AddTo(Subs);
         

@@ -78,6 +78,8 @@ public static class AppBrushLibrary
             Color = { Value = new(0,0,0,0.5f) },
             StampTexture = ImageTexture.CreateFromImage(images[0]),
             MultiplyTexture = ImageTexture.CreateFromImage(images[2]),
+            RotationNoiseAmplitude = {Value = Mathf.Pi},
+            RotationNoiseFrequency = {Value = 1.0f},
         });
         
         brushes.Add(new()
@@ -86,6 +88,8 @@ public static class AppBrushLibrary
             RenderingType = {Value = BrushRenderingType.Stamp},
             Labels = { BrushLabel.BuiltIn },
             StampTexture = ImageTexture.CreateFromImage(images[1]),
+            RotationNoiseAmplitude = {Value = Mathf.Pi},
+            RotationNoiseFrequency = {Value = 1.0f},
         });
 
         return brushes;

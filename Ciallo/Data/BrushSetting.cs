@@ -31,7 +31,7 @@ public class BrushSetting
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
     [DataMember] public ImageTexture MultiplyTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
 
-    [DataMember] public ReactiveProperty<FastNoiseLite.NoiseTypeEnum> RotationNoiseType = new(FastNoiseLite.NoiseTypeEnum.Simplex);
+    [DataMember] public ReactiveProperty<int> RotationNoiseOctave = new(1);
     [DataMember] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
     [DataMember] public ReactiveProperty<float> RotationNoiseFrequency = new(0.01f);
 
@@ -100,10 +100,17 @@ public class BrushSetting
         var multiplyTextureEdit = ImageTextureEdit.Instantiate(MultiplyTexture, ConvertStampImage);
         container.AddProperty("Multiply texture", multiplyTextureEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
-        
-        var noiseTypeButton = new OptionButton();
-        noiseTypeButton.BindEnum(RotationNoiseType);
-        container.AddProperty("Rotation noise type", noiseTypeButton)
+
+        var noiseOctaveControl = new SpinSlider()
+        {
+            MinValue = 1,
+            MaxValue = 8,
+            Step = 1,
+            AllowGreater = true,
+            Rounded = true,
+        };
+        noiseOctaveControl.BindNumber(RotationNoiseOctave);
+        container.AddProperty("Rotation noise octave", noiseOctaveControl)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
 
         var stampRotationControl = new SpinSlider

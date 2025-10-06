@@ -2,8 +2,6 @@
 shader_type canvas_item;
 render_mode unshaded;
 
-#include "FastNoiseLite2D.gdshaderinc"
-
 const int Vanilla = 0, Stamp = 1, Airbrush = 2;
 uniform int strokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
 uniform vec4 materialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
@@ -25,7 +23,7 @@ uniform float stampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
 uniform sampler2D stampTexture;
 uniform sampler2D multiplyTexture;
 uniform mat2 coordinateTransform;
-uniform int rotationNoiseType;
+uniform int rotationNoiseOctave;
 uniform float rotationNoiseAmplitude = 0; // `= PI` don't compile
 uniform float rotationNoiseFrequency;
 // ---------------------------------
@@ -118,6 +116,55 @@ float sampleFalloffCurve(float t){
 	return texture(falloffCurve, vec2(t, 0)).r;
 }
 
+// ---------------------noise helper gen by copilot--------------------
+const int MAX_OCTAVES = 16;
+float fade(float t) {
+    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
+float grad1(float i) {
+    // Simple hash based on sine; deterministic without textures
+    float h = fract(sin(i * 127.1) * 43758.5453123);
+    return h * 2.0 - 1.0;
+}
+float perlinNoise1D(float x) {
+    float i0 = floor(x);
+    float i1 = i0 + 1.0;
+    float t  = x - i0;
+
+    float g0 = grad1(i0);
+    float g1 = grad1(i1);
+
+    float u = fade(t);
+    
+    return 2.0 * mix(g0 * t, g1 * (t - 1.0), u);
+}
+
+// Fractal Brownian Motion (FBM) over 1D Perlin
+float noise1D(float x) {
+	x = mod(x, 512.0);
+	x = abs(x - 256.0);
+    float sum = 0.0;
+    float amp = 1.0;      // start at 1.0, halve each octave (persistence = 0.5)
+    float freq = rotationNoiseFrequency; // start at base frequency, double each octave (lacunarity = 2.0)
+    float ampSum = 0.0;
+
+    for (int i = 0; i < MAX_OCTAVES; ++i) {
+        if (i >= rotationNoiseOctave) break;
+        sum += perlinNoise1D(x * freq) * amp;
+        ampSum += amp;
+
+        freq *= 2.0;
+        amp  *= 0.5;
+    }
+
+    // Normalize by cumulative amp so final amplitude parameter is consistent
+    if (ampSum > 0.0) {
+        sum /= ampSum;
+    }
+
+    return sum * rotationNoiseAmplitude;
+}
+
 void fragment() {
 	vec2 pLocal = vec2(dot(p-p0, tangent), dot(p-p0, normal));
 	float d0 = distance(p, p0);
@@ -148,9 +195,6 @@ void fragment() {
 	}
 	/*----------------------------------------------------------*/
  	if(strokeType == Stamp){
-		fnl_state noise = fnlCreateState(1137);
-		noise.noise_type = rotationNoiseType;
-		noise.frequency = rotationNoiseFrequency;
 		
  		float x1 = pLocal.x - r;
  		float x2 = pLocal.x + r;
@@ -174,7 +218,7 @@ void fragment() {
 			// Transform
 			pToCurrStamp *= coordinateTransform;
 			// Rotation noise
-			float rotationNoise = rotationNoiseAmplitude * fnlGetNoise2D(noise, currN, 0.0);
+			float rotationNoise = noise1D(currN);
 			float cosRot = cos(rotationNoise);
 			float sinRot = sin(rotationNoise);
 			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
