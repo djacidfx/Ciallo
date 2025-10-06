@@ -1,6 +1,4 @@
-﻿using System;
-using Ciallo.Data;
-using Godot;
+﻿using Godot;
 
 namespace Ciallo.Rendering;
 
@@ -10,11 +8,6 @@ public partial class PolylineLayerView : CanvasGroup
     {
     }
 
-    /// <summary>
-    /// Create the best node type for the layer view and will be exported to Godot.
-    /// </summary>
-    public static Node2D CreateOptimized(PolylineLayerSetting setting)
-    {
-        throw new NotImplementedException();
-    }
+    // If can be replace by a regular node2D
+    public bool IsDefault => true;
 }

@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=17 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://co17yxacb7838" path="res://NodeControl/OpenDocumentDialog.cs" id="3_j4qnp"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://NodeControl/MenuFile.cs" id="5_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://dw0q5mir7loyl" path="res://NodeControl/BrushPanel.tscn" id="5_j4qnp"]
 [ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://NodeControl/MenuEdit.cs" id="6_2gh4u"]
+[ext_resource type="Script" uid="uid://desmnb4wwk1h0" path="res://NodeControl/ExportGodotScene.cs" id="6_fpfj3"]
 [ext_resource type="Script" uid="uid://cwjtb7r01fcf7" path="res://NodeControl/MenuWindow.cs" id="8_c2ibq"]
 [ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://NodeControl/MenuHelp.cs" id="8_sc1dx"]
 [ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://NodeControl/ToolButtonPanel.tscn" id="9_5vvyt"]
@@ -49,6 +50,14 @@ visible = false
 
 [node name="BrushLibrary" parent="." groups=["Dialog"] instance=ExtResource("5_j4qnp")]
 visible = false
+
+[node name="ExportGodotScene" type="FileDialog" parent="." groups=["Dialog"]]
+initial_position = 2
+display_mode = 1
+access = 2
+filters = PackedStringArray("*.scn", "*.tscn")
+use_native_dialog = true
+script = ExtResource("6_fpfj3")
 
 [node name="WarnUser" type="AcceptDialog" parent="." groups=["Dialog"]]
 initial_position = 1

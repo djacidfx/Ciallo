@@ -13,8 +13,9 @@ public partial class StrokeView : MultiMeshInstance2D
 {
     public static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
 
-    public StrokeView()
+    public override void _Ready()
     {
+        if (Multimesh != null) return; 
         var multiMesh = new MultiMesh
         {
             TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,
@@ -24,13 +25,6 @@ public partial class StrokeView : MultiMeshInstance2D
         };
         Multimesh = multiMesh;
         TextureFilter = TextureFilterEnum.LinearWithMipmaps;
-    }
-
-    public override void _Ready()
-    {
-        // For editor preview, convenient rendering test.
-        if (!Engine.IsEditorHint()) return;
-        SetGeometry([new(1, 1), new(100, 0), new(150, 50), new(200, 0)], [4f, 10f, 5f, 15f]);
     }
 
     public void SetGeometry(

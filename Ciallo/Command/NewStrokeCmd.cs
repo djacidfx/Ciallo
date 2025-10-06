@@ -39,6 +39,7 @@ public class NewStrokeCmd : CommandBase
         var layerView = _layerE.Get<PolylineLayerView>();
         layerView.AddChild(strokeView);
         StrokeE.Add(strokeView);
+        strokeView.SetOwner(layerView.Owner);
 
         // Overlay
         if(_refNodes.Count == 1) _refNodes.Add(new StrokeOverlay());

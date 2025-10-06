@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Arch.Core.Extensions;
 using Ciallo.Command;
 using Ciallo.Data;
 using Godot;
@@ -57,6 +58,16 @@ public partial class MenuFile : PopupMenu
                 if(AppWorldManager.WorkingWorld.Value == null) return;
                 AppWorldManager.SaveWorkingWorld();
                 break;
+            
+            case 8: // Export as Godot scene
+                if(AppWorldManager.WorkingWorld.Value == null) return;
+                var dialogExportGodot = GetTree().GetNodesInGroup("Dialog").OfType<ExportGodotScene>().Single();
+                var documentSetting = AppWorldManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
+                dialogExportGodot.CurrentFile = documentSetting.Name.Value;
+                dialogExportGodot.CurrentDir = documentSetting.FilePath.CurrentValue.GetBaseDir();
+                dialogExportGodot.Popup();
+                break;
+            
             default:
                 GD.PrintErr($"Unhandled menu item index: {id}");
                 break;

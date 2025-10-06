@@ -4,29 +4,26 @@ To get a little bit more than a minimum viable product, below are the features f
 Will make a release on steam and start version "v0.1 EA" after finish these features.
 
 - [x] Document/world manager
-- [ ] Export to Godot
+- [x] Export to Godot
 - [x] .Ciallo project file
 - [x] Command undo/redo system
 - [ ] Property undo/redo
-- [ ] Tool system
-  - [x] Infrastructure
-  - [x] Brush tool
-    - [x] Basic interaction
-    - [x] Basic brush engine
-      - [ ] More brushes
-      - [ ] More brush parameters
-    - [x] Paint stabilizer
-    - [ ] Resize brush interactor
-  - [ ] Paint fill tool
-  - [ ] Vector fill tool
-    - [x] CGAL C++ code
-    - [ ] Integration
-  - [ ] Selection/move tool
-    - [ ] Line binding system (Bézier curve only)
-      - [x] Bézier curve geometry
-    - [ ] Design
-    - [x] Polyline overlay rendering
-  - [ ] Basic lasso tool
+- [x] Tool system infrastructure
+- [x] Brush tool
+  - [ ] More brushes
+  - [ ] More brush parameters
+  - [x] Paint stabilizer
+  - [ ] Resize brush interactor
+- [ ] Paint fill tool
+- [ ] Vector fill tool
+  - [x] CGAL C++ code
+  - [ ] Integration
+- [ ] Selection/move tool
+  - [ ] Line binding system (Bézier curve only)
+    - [x] Bézier curve geometry
+  - [ ] Design
+  - [x] Polyline overlay rendering
+- [ ] Basic lasso tool
 - [x] Layer system
   - [x] Add, delete
   - [x] Rename
