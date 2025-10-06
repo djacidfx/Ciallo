@@ -1,0 +1,14 @@
+[remap]
+
+importer="image"
+type="Image"
+uid="uid://b0uyn81qcaxqj"
+path="res://.godot/imported/StampSplatter.png-4bd0130e9e478b98ef4f64646e3afc0d.image"
+
+[deps]
+
+source_file="res://Rendering/Image/StampSplatter.png"
+dest_files=["res://.godot/imported/StampSplatter.png-4bd0130e9e478b98ef4f64646e3afc0d.image"]
+
+[params]
+

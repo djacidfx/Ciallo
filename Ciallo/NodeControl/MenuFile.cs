@@ -46,7 +46,7 @@ public partial class MenuFile : PopupMenu
                 dialogNew.Popup();
                 break;
             case 1: // Open Document
-                var dialogOpen = GetTree().GetNodesInGroup("Dialog").OfType<OpenDocument>().Single(n => n.Name == "OpenDocument");
+                var dialogOpen = GetTree().GetNodesInGroup("Dialog").OfType<OpenDocumentDialog>().Single(n => n.Name == "OpenDocument");
                 dialogOpen.Popup();
                 break;
             case 2: // Close Document

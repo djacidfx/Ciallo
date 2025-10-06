@@ -3,7 +3,7 @@
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_kllcm"]
 [ext_resource type="Texture2D" uid="uid://cklq1oyy3bwjg" path="res://Icon/eye.svg" id="2_2bwx2"]
 [ext_resource type="Texture2D" uid="uid://dxxuxp83ybahu" path="res://Widget/TextureCheckBoxBackgound.tres" id="3_2evga"]
-[ext_resource type="Texture2D" uid="uid://cfh5fqjqt20ay" path="res://Icon/FixedSize/brush_icon_sized.svg" id="4_wk5tg"]
+[ext_resource type="Texture2D" uid="uid://cfh5fqjqt20ay" path="res://Icon/FixedSize/brush-icon-sized.svg" id="4_wk5tg"]
 [ext_resource type="Script" uid="uid://cnkmrjlwncaqf" path="res://Widget/LabelLineEdit.cs" id="5_pd0q4"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qp082"]

@@ -151,7 +151,7 @@ public static partial class AppWorldManager
             
             for (int i = 0; i < types.Length; i++)
             {
-                var t = types[i];
+                var t = types[i];                                                                                                                                                                   
                 if (!ToSerializeTypes.Contains(t) || ToSerializeTags.Contains(t)) continue;
                 if (!componentData.ContainsKey(t))
                     componentData[t] = [];

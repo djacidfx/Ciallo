@@ -20,6 +20,12 @@ uniform float dashForwardSpeed = 0.0;
 // const float intervalMin = 1.0/64.0;
 // const float intervalStep = 1.0/128.0;
 uniform float stampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
+uniform sampler2D stampTexture;
+uniform sampler2D multiplyTexture;
+uniform mat2 coordinateTransform;
+uniform int rotationNoiseOctave;
+uniform float rotationNoiseAmplitude = 0; // `= PI` don't compile
+uniform float rotationNoiseFrequency;
 // ---------------------------------
 
 uniform sampler2D falloffCurve;
@@ -110,6 +116,55 @@ float sampleFalloffCurve(float t){
 	return texture(falloffCurve, vec2(t, 0)).r;
 }
 
+// ---------------------noise helper gen by copilot--------------------
+const int MAX_OCTAVES = 16;
+float fade(float t) {
+    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+}
+float grad1(float i) {
+    // Simple hash based on sine; deterministic without textures
+    float h = fract(sin(i * 127.1) * 43758.5453123);
+    return h * 2.0 - 1.0;
+}
+float perlinNoise1D(float x) {
+    float i0 = floor(x);
+    float i1 = i0 + 1.0;
+    float t  = x - i0;
+
+    float g0 = grad1(i0);
+    float g1 = grad1(i1);
+
+    float u = fade(t);
+    
+    return 2.0 * mix(g0 * t, g1 * (t - 1.0), u);
+}
+
+// Fractal Brownian Motion (FBM) over 1D Perlin
+float noise1D(float x) {
+	x = mod(x, 512.0);
+	x = abs(x - 256.0);
+    float sum = 0.0;
+    float amp = 1.0;      // start at 1.0, halve each octave (persistence = 0.5)
+    float freq = rotationNoiseFrequency; // start at base frequency, double each octave (lacunarity = 2.0)
+    float ampSum = 0.0;
+
+    for (int i = 0; i < MAX_OCTAVES; ++i) {
+        if (i >= rotationNoiseOctave) break;
+        sum += perlinNoise1D(x * freq) * amp;
+        ampSum += amp;
+
+        freq *= 2.0;
+        amp  *= 0.5;
+    }
+
+    // Normalize by cumulative amp so final amplitude parameter is consistent
+    if (ampSum > 0.0) {
+        sum /= ampSum;
+    }
+
+    return sum * rotationNoiseAmplitude;
+}
+
 void fragment() {
 	vec2 pLocal = vec2(dot(p-p0, tangent), dot(p-p0, normal));
 	float d0 = distance(p, p0);
@@ -140,6 +195,7 @@ void fragment() {
 	}
 	/*----------------------------------------------------------*/
  	if(strokeType == Stamp){
+		
  		float x1 = pLocal.x - r;
  		float x2 = pLocal.x + r;
  		float x1Idx = x2n(x1) + n0;
@@ -153,13 +209,25 @@ void fragment() {
  		int MAX_i = 128;
  		float currIdx = ceil(startIdx);
  		float currA = 1e-7;
+		float flow = materialColor.a;
+		// Main loop
  		while(i < MAX_i && currIdx < endIdx){
- 			float currStampLocalX = n2x(currIdx * stampInterval - n0);
+			float currN = currIdx * stampInterval;
+ 			float currStampLocalX = n2x(currN - n0);
  			vec2 pToCurrStamp = pLocal - vec2(currStampLocalX, 0.0);
- 			//vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
-			vec2 c = pToCurrStamp/r;
-			//float sampledA = length(uv) > 1.0 ? 1e-7 : 0.5;
- 			float sampledA = abs(c.x) > 1.0 || abs(c.y) > 1.0 ? 1e-7 : 0.5;
+			// Transform
+			pToCurrStamp *= coordinateTransform;
+			// Rotation noise
+			float rotationNoise = noise1D(currN);
+			float cosRot = cos(rotationNoise);
+			float sinRot = sin(rotationNoise);
+			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
+			
+ 			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
+			float noise = texture(multiplyTexture, uv).r;
+			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || length(pToCurrStamp/r) > 1.0;
+			float sampledA = isOutDisk ? 1e-7 : noise * flow * texture(stampTexture, uv).r;
+	
  			currA = sampledA + currA * (1.0 - sampledA);
 			i++;
 			currIdx += 1.0;

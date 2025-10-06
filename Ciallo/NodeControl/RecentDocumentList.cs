@@ -11,7 +11,7 @@ public partial class RecentDocumentList : ItemList
         ItemActivated += idx =>
         {
             var path = AppPreference.RecentFiles[(int)idx];
-            var success = OpenDocument.LoadWorldFile(path);
+            var success = OpenDocumentDialog.LoadWorldFile(path);
             if(!success) AppPreference.RecentFiles.Remove(path);
         };
 

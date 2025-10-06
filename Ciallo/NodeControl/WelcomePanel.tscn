@@ -106,3 +106,5 @@ allow_search = false
 auto_width = true
 auto_height = true
 script = ExtResource("3_8on0h")
+
+[node name="Node2D" type="Node2D" parent="."]

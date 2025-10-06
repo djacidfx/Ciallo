@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using Ciallo.Geometry;
 using Ciallo.Misc;
+using Ciallo.NodeControl;
 using Ciallo.Widget;
 using Godot;
 using MessagePack;
@@ -26,10 +27,18 @@ public class BrushSetting
     
     // Stamp
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
-    
+    [DataMember] public ImageTexture StampTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
+    [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
+    [DataMember] public ImageTexture MultiplyTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
+
+    [DataMember] public ReactiveProperty<int> RotationNoiseOctave = new(1);
+    [DataMember] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
+    [DataMember] public ReactiveProperty<float> RotationNoiseFrequency = new(0.01f);
+
+
     // Airbrush
     [DataMember] public BezierCurve FalloffCurve = BezierCurve.Linear(1.0f, 0.0f);
-    
+
     public void DrawProperty(PropertyContainer container)
     {
         var nameEdit = new LineEdit()
@@ -38,14 +47,14 @@ public class BrushSetting
             AutoTranslateMode = Node.AutoTranslateModeEnum.Disabled,
         };
         nameEdit.BindString(Name);
-        var box = container.AddProperty("Name", nameEdit);
+        container.AddProperty("Name", nameEdit);
         
         var baseRadiusControl = new SpinSlider
         {
             MinValue = 0.1,
             MaxValue = 256,
             Step = 0.03333333,
-            ExpEdit = true
+            ExpEdit = true,
         };
         baseRadiusControl.BindNumber(BaseRadius);
         container.AddProperty("Base radius", baseRadiusControl);
@@ -70,10 +79,96 @@ public class BrushSetting
         typeButton.BindEnum(RenderingType);
         container.AddProperty("Rendering type", typeButton);
         
+        // Stamp
+        var stampIntervalControl = new SpinSlider
+        {
+            MinValue = 1f/16,
+            MaxValue = 6,
+            Step = 0.001,
+            ExpEdit = true,
+            AllowLesser = true,
+            AllowGreater = true,
+        };
+        stampIntervalControl.BindNumber(StampInterval);
+        container.AddProperty("Interval", stampIntervalControl)
+            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        
+        var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage);
+        container.AddProperty("Stamp texture", stampTextureEdit)
+            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        
+        var multiplyTextureEdit = ImageTextureEdit.Instantiate(MultiplyTexture, ConvertStampImage);
+        container.AddProperty("Multiply texture", multiplyTextureEdit)
+            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+
+        var stampRotationControl = new SpinSlider
+        {
+            MinValue = -180,
+            MaxValue = 180,
+            Step = 0.1,
+        };
+        var degreeView = StampRotation.Project(Mathf.RadToDeg, Mathf.DegToRad, out var subs);
+        subs.AddTo(stampRotationControl);
+        stampRotationControl.BindNumber(degreeView);
+        container.AddProperty("Rotation", stampRotationControl)
+            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        
+        var noiseOctaveControl = new SpinSlider()
+        {
+            MinValue = 1,
+            MaxValue = 8,
+            Step = 1,
+            AllowGreater = true,
+            Rounded = true,
+        };
+        noiseOctaveControl.BindNumber(RotationNoiseOctave);
+        container.AddProperty("Rotation noise octave", noiseOctaveControl)
+            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        
+        var rotationNoiseAmplitudeControl = new SpinSlider
+        {
+            MinValue = 0,
+            MaxValue = Mathf.Pi * 4,
+            Step = 0.01,
+        };
+        rotationNoiseAmplitudeControl.BindNumber(RotationNoiseAmplitude);
+        container.AddProperty("Rotation noise amplitude", rotationNoiseAmplitudeControl)
+            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        
+        var rotationNoiseFrequencyControl = new SpinSlider
+        {
+            MinValue = 0.001,
+            MaxValue = 1.0,
+            Step = 0.0001,
+            AllowGreater = true,
+            ExpEdit = true,
+        };
+        rotationNoiseFrequencyControl.BindNumber(RotationNoiseFrequency);
+        container.AddProperty("Rotation noise frequency", rotationNoiseFrequencyControl)
+            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        
+        // Airbrush
         var falloffCurveEdit = new MappingCurveEdit();
         falloffCurveEdit.Curve = FalloffCurve;
         container.AddProperty("Opacity falloff", falloffCurveEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Airbrush);
+    }
+    
+    /// <summary>
+    /// Converts the stamp image to L8 format, enforces a maximum size of 256x256 pixels,
+    /// and resizes the image to ensure a square aspect ratio.
+    /// </summary>
+    private static void ConvertStampImage(Image img)
+    {
+        img.Convert(Image.Format.L8);
+        var size = img.GetSize();
+        Vector2I maxSize = 256 * Vector2I.One;
+        size = size.Min(maxSize);
+        if (size.X != size.Y)
+        {
+            size.X = size.Y = Mathf.Max(size.X, size.Y);
+        }
+        img.Resize(size.X, size.Y);
     }
 
     public BrushSetting Clone()
@@ -83,7 +178,13 @@ public class BrushSetting
         setting.Labels.Remove(BrushLabel.BuiltIn);
         return setting;
     }
+
+    public static Image CreateDefaultWhiteImage()
+    {
+        return Image.CreateFromData(1, 1, true, Image.Format.L8, new byte[] { 255 } );
+    }
 }
+
 
 public enum BrushRenderingType
 {

@@ -1,14 +1,16 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Linq;
 using Ciallo.Geometry;
 using Ciallo.Misc;
 using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Godot;
-using Newtonsoft.Json;
+using MessagePack;
 using ObservableCollections;
 using R3;
+using FileAccess = Godot.FileAccess;
 
 namespace Ciallo.Data;
 
@@ -54,6 +56,40 @@ public static class AppBrushLibrary
             ]),
         });
 
+        var dirPath = "res://Rendering/Image/";
+        Image[] images =
+        [
+            GD.Load<Image>(dirPath + "StampPencil.png"),
+            GD.Load<Image>(dirPath + "StampSplatter.png"),
+            GD.Load<Image>(dirPath + "FBMNoise.png")
+        ];
+        foreach (var image in images)
+        {
+            image.GenerateMipmaps();
+        }
+        
+        brushes.Add(new()
+        {
+            Name = { Value = "Pencil".Tr()},
+            RenderingType = {Value = BrushRenderingType.Stamp},
+            Labels = { BrushLabel.BuiltIn },
+            Color = { Value = new(0,0,0,0.5f) },
+            StampTexture = ImageTexture.CreateFromImage(images[0]),
+            MultiplyTexture = ImageTexture.CreateFromImage(images[2]),
+            RotationNoiseAmplitude = {Value = Mathf.Pi},
+            RotationNoiseFrequency = {Value = 1.0f},
+        });
+        
+        brushes.Add(new()
+        {
+            Name = { Value = "Splatter".Tr()},
+            RenderingType = {Value = BrushRenderingType.Stamp},
+            Labels = { BrushLabel.BuiltIn },
+            StampTexture = ImageTexture.CreateFromImage(images[1]),
+            RotationNoiseAmplitude = {Value = Mathf.Pi},
+            RotationNoiseFrequency = {Value = 1.0f},
+        });
+
         return brushes;
     }
 
@@ -67,24 +103,82 @@ public static class AppBrushLibrary
         BrushSettings.AddRange(userBrushes);
     }
 
-    public static readonly string Path = "user://Brush.json";
+    public static readonly string BrushFolder = "user://Brush/";
+
+    private static string SanitizeFileName(string fileName)
+    {
+        var invalids = Path.GetInvalidFileNameChars();
+        foreach (var c in invalids)
+            fileName = fileName.Replace(c, '_');
+        if(string.IsNullOrWhiteSpace(fileName))
+            fileName = "Unknown name brush";
+        return fileName;
+    }
 
     public static void Save()
     {
-        var content = JsonConvert.SerializeObject(BrushSettings, Preference.JsonOptions);
-        using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
-        file.StoreString(content);
+        // Ensure folder exists
+        using var baseDir = DirAccess.Open("user://");
+        if (!baseDir.DirExists("Brush"))
+            baseDir.MakeDir("Brush");
+
+        // Clear
+        using var dirAccess = DirAccess.Open(BrushFolder);
+        dirAccess.ListDirBegin();
+        string fileName;
+        while ((fileName = dirAccess.GetNext()) != "")
+            if (fileName.EndsWith(".bin"))
+                dirAccess.Remove(fileName);
+        dirAccess.ListDirEnd();
+
+        HashSet<string> seenNames = new();
+        // Save
+        foreach (var brush in BrushSettings)
+        {
+            var name = SanitizeFileName(brush.Name.Value);
+            if(seenNames.Contains(name))
+            {
+                int suffix = 1;
+                while (seenNames.Contains(name + "_" + suffix))
+                    suffix++;
+                name = name + "_" + suffix;
+            }
+            var path = BrushFolder + name + ".bin";
+            seenNames.Add(name);
+            
+            var content = MessagePackSerializer.Serialize(brush);
+            using var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
+            file.StoreBuffer(content);
+        }
     }
 
     public static bool TryLoad()
     {
-        if (!FileAccess.FileExists(Path))
-            return false;
+        // Check folder
+        using var baseDir = DirAccess.Open("user://");
+        if (!baseDir.DirExists("Brush")) return false;
+
+        // List files
+        using var brushDir = DirAccess.Open(BrushFolder);
+        var files = new List<string>();
+        brushDir.ListDirBegin();
+        string fileEntry;
+        while ((fileEntry = brushDir.GetNext()) != "")
+            if (fileEntry.EndsWith(".bin"))
+                files.Add(fileEntry);
+        brushDir.ListDirEnd();
+
+        if (files.Count == 0) return false;
+
+        // Load
         BrushSettings.Clear();
-        using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
-        string content = file.GetAsText();
-        
-        JsonConvert.PopulateObject(content, BrushSettings, Preference.JsonOptions);
+        foreach (var fn in files)
+        {
+            using var file = FileAccess.Open(BrushFolder + fn, FileAccess.ModeFlags.Read);
+            var content = file.GetBuffer((long)file.GetLength());
+            var brush = MessagePackSerializer.Deserialize<BrushSetting>(content);
+            BrushSettings.Add(brush);
+        }
         return true;
     }
 
@@ -133,8 +227,6 @@ public static class AppBrushLibrary
         int count = 1;
         panel.Add.Pressed += () =>
         {
-            if (SelectedIndex.Value < 0)
-                return;
             var newBrush = new BrushSetting()
             {
                 Name = { Value = "New brush".Tr() + " " + count++},
