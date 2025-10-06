@@ -45,7 +45,7 @@ public partial class ExportGodotScene : FileDialog
                 child.SetScript(new());
             }
 
-            root.Name = filePath.GetBaseName();
+            root.Name = filePath.GetFile().GetBaseName();
             var outputView = new PackedScene();
             outputView.Pack(root);
             ResourceSaver.Save(outputView, filePath);

@@ -31,6 +31,7 @@ public partial class BrushMaterial : ShaderMaterial
     public BrushMaterial()
     {
         Shader = StrokeShader;
+        ResourceLocalToScene = true;
     }
     
     public void ObserveBrushSetting(BrushSetting setting)

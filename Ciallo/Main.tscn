@@ -55,7 +55,7 @@ visible = false
 initial_position = 2
 display_mode = 1
 access = 2
-filters = PackedStringArray("*.tscn")
+filters = PackedStringArray("*.scn", "*.tscn")
 use_native_dialog = true
 script = ExtResource("6_fpfj3")
 

@@ -7,6 +7,11 @@ namespace Ciallo.NodeControl;
 
 public partial class NewDocumentDialog : ConfirmationDialog
 {
+    public override void _Ready()
+    {
+        Confirmed += OnCreate;
+    }
+
     public void OnCreate()
     {
         var docNameControl = GetNode<LineEdit>("%DocumentNameControl");
