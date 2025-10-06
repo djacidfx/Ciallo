@@ -34,6 +34,13 @@ public partial class NewDocumentDialog : ConfirmationDialog
             return;
         }
         
+        if (!docName.IsValidFileName())
+        {
+            errorMessage.Text = "Invalid document name. Please use a valid file name.";
+            errorMessage.Visible = true;
+            return;
+        }
+        
         // Compute file path
         if(!saveFolder.EndsWith('/'))
             saveFolder += "/";
@@ -42,13 +49,6 @@ public partial class NewDocumentDialog : ConfirmationDialog
         while(File.Exists(filePath))
         {
             filePath = saveFolder + docName + index++ + ".ciallo";
-        }
-        
-        if (filePath.IsValidFileName())
-        {
-            errorMessage.Text = "Invalid document name. Please use a valid file name.";
-            errorMessage.Visible = true;
-            return;
         }
         
         // Create the document

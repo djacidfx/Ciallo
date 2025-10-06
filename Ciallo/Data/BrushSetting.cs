@@ -101,18 +101,6 @@ public class BrushSetting
         container.AddProperty("Multiply texture", multiplyTextureEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
 
-        var noiseOctaveControl = new SpinSlider()
-        {
-            MinValue = 1,
-            MaxValue = 8,
-            Step = 1,
-            AllowGreater = true,
-            Rounded = true,
-        };
-        noiseOctaveControl.BindNumber(RotationNoiseOctave);
-        container.AddProperty("Rotation noise octave", noiseOctaveControl)
-            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
-
         var stampRotationControl = new SpinSlider
         {
             MinValue = -180,
@@ -123,6 +111,18 @@ public class BrushSetting
         subs.AddTo(stampRotationControl);
         stampRotationControl.BindNumber(degreeView);
         container.AddProperty("Rotation", stampRotationControl)
+            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        
+        var noiseOctaveControl = new SpinSlider()
+        {
+            MinValue = 1,
+            MaxValue = 8,
+            Step = 1,
+            AllowGreater = true,
+            Rounded = true,
+        };
+        noiseOctaveControl.BindNumber(RotationNoiseOctave);
+        container.AddProperty("Rotation noise octave", noiseOctaveControl)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
         
         var rotationNoiseAmplitudeControl = new SpinSlider
@@ -153,7 +153,11 @@ public class BrushSetting
         container.AddProperty("Opacity falloff", falloffCurveEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Airbrush);
     }
-
+    
+    /// <summary>
+    /// Converts the stamp image to L8 format, enforces a maximum size of 256x256 pixels,
+    /// and resizes the image to ensure a square aspect ratio.
+    /// </summary>
     private static void ConvertStampImage(Image img)
     {
         img.Convert(Image.Format.L8);

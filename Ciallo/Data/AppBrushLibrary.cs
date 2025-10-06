@@ -12,8 +12,6 @@ using ObservableCollections;
 using R3;
 using FileAccess = Godot.FileAccess;
 
-// for filename sanitization
-
 namespace Ciallo.Data;
 
 public static class AppBrushLibrary
