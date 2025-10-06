@@ -4,11 +4,7 @@ namespace Ciallo.Rendering;
 
 public partial class WorldView : Node2D
 {
-    public override void _Ready()
-    {
-        foreach (var previewNode in GetChildren())
-        {
-            previewNode.QueueFree();
-        }
-    }
+
+    //// _Ready() invoke when PackScene and Exporting to godot.
+    // Should always avoid this.
 }

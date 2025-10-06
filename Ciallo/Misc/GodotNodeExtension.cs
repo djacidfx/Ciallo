@@ -106,4 +106,15 @@ public static class GodotNodeExtension
             child.QueueFree();
         }
     }
+
+    public static List<Node> GetAllDescendants(this Node node)
+    {
+        var descendants = new List<Node>();
+        foreach (Node child in node.GetChildren())
+        {
+            descendants.Add(child);
+            descendants.AddRange(child.GetAllDescendants());
+        }
+        return descendants;
+    }
 }

@@ -57,6 +57,13 @@ public partial class MenuFile : PopupMenu
                 if(AppWorldManager.WorkingWorld.Value == null) return;
                 AppWorldManager.SaveWorkingWorld();
                 break;
+            
+            case 8: // Export as Godot scene
+                if(AppWorldManager.WorkingWorld.Value == null) return;
+                var dialogExport = GetTree().GetNodesInGroup("Dialog").OfType<ExportGodotScene>().Single();
+                dialogExport.PopupCentered();
+                break;
+            
             default:
                 GD.PrintErr($"Unhandled menu item index: {id}");
                 break;

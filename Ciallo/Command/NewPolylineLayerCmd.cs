@@ -41,6 +41,7 @@ public class NewPolylineLayerCmd : CommandBase
         var layerView = (PolylineLayerView)_refObjects[0];
         worldView.AddChild(layerView);
         LayerE.Add(layerView);
+        layerView.SetOwner(worldView);
         
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
