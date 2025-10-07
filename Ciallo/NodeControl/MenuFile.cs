@@ -59,6 +59,13 @@ public partial class MenuFile : PopupMenu
                 AppWorldManager.SaveWorkingWorld();
                 break;
             
+            case 7: // Export as image
+                if(AppWorldManager.WorkingWorld.Value == null) return;
+                var dialogExportImage = GetTree().GetNodesInGroup("Dialog").OfType<ExportImage>().Single();
+                dialogExportImage.Init();
+                dialogExportImage.Popup();
+                break;
+            
             case 8: // Export as Godot scene
                 if(AppWorldManager.WorkingWorld.Value == null) return;
                 var dialogExportGodot = GetTree().GetNodesInGroup("Dialog").OfType<ExportGodotScene>().Single();
