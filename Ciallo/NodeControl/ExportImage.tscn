@@ -36,31 +36,35 @@ texture = SubResource("ViewportTexture_rwryi")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="GridContainer" type="GridContainer" parent="MarginContainer/HBoxContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 59
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/HBoxContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/h_separation = 40
 theme_override_constants/v_separation = 10
 columns = 2
 
-[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/GridContainer"]
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_vertical = 1
 text = "Reference size"
 vertical_alignment = 1
 
-[node name="ReferenceSizeNumber" type="Label" parent="MarginContainer/HBoxContainer/GridContainer"]
+[node name="ReferenceSizeNumber" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Label3" type="Label" parent="MarginContainer/HBoxContainer/GridContainer"]
+[node name="Label3" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_vertical = 1
 text = "Scale"
 vertical_alignment = 1
 
-[node name="ScaleNumber" type="HBoxContainer" parent="MarginContainer/HBoxContainer/GridContainer"]
+[node name="ScaleNumber" type="HBoxContainer" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("2_3aowm")
@@ -70,49 +74,57 @@ Value = 1.0
 ExpEdit = true
 metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 
-[node name="Label4" type="Label" parent="MarginContainer/HBoxContainer/GridContainer"]
+[node name="Label4" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_vertical = 1
-text = "Final image resolution"
+text = "Output image resolution"
 vertical_alignment = 1
 
-[node name="FinalImageSizeNumber" type="Label" parent="MarginContainer/HBoxContainer/GridContainer"]
+[node name="FinalImageSizeNumber" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="Label5" type="Label" parent="MarginContainer/HBoxContainer/GridContainer"]
+[node name="Label5" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_vertical = 1
 text = "Save folder"
 vertical_alignment = 1
 
-[node name="FilePathPicker" type="HBoxContainer" parent="MarginContainer/HBoxContainer/GridContainer"]
+[node name="FilePathPicker" type="HBoxContainer" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("3_3aowm")
 metadata/_custom_type_script = "uid://ckillqfnqh8wc"
 
-[node name="Label6" type="Label" parent="MarginContainer/HBoxContainer/GridContainer"]
+[node name="Label6" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 30)
 layout_mode = 2
 size_flags_vertical = 1
 text = "File name"
 vertical_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/GridContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 layout_mode = 2
 
-[node name="FileNameEdit" type="LineEdit" parent="MarginContainer/HBoxContainer/GridContainer/HBoxContainer"]
+[node name="FileNameEdit" type="LineEdit" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer/HBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/GridContainer/HBoxContainer"]
+[node name="Label" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer/HBoxContainer"]
+auto_translate_mode = 2
 layout_mode = 2
 text = ".png"
+
+[node name="Message" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5024004, 0.7368643, 0.32554895, 1)
+text = "Success"
+horizontal_alignment = 1
 
 [node name="ImageSubViewport" type="SubViewport" parent="."]
 unique_name_in_owner = true

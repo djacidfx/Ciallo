@@ -19,6 +19,7 @@ public partial class ExportImage : ConfirmationDialog
     private DocumentSetting _setting;
     private Camera2D _camera;
     private TextureRect ImageTextureRect;
+    private Label Message;
 
     public override void _EnterTree()
     {
@@ -29,6 +30,7 @@ public partial class ExportImage : ConfirmationDialog
         PathPicker = GetNode<FilePathPicker>("%FilePathPicker");
         FileNameEdit = GetNode<LineEdit>("%FileNameEdit");
         ImageTextureRect = GetNode<TextureRect>("%ImageTextureRect");
+        Message = GetNode<Label>("%Message");
     }
 
     public override void _Ready()
@@ -51,11 +53,13 @@ public partial class ExportImage : ConfirmationDialog
         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
         var image = ImageSubViewport.GetTexture().GetImage();
         image.SavePng(filePath);
+        Message.Show();
     }
 
     public void Init()
     {
         ImageSubViewport.QueueFreeChildren();
+        Message.Hide();
         
         var document = AppWorldManager.WorkingDocument.CurrentValue;
         _setting = document.Get<DocumentSetting>();
