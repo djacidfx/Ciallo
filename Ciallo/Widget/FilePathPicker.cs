@@ -12,7 +12,7 @@ public partial class FilePathPicker : HBoxContainer
     
     public string Path
     {
-        get => PathEdit?.Text;
+        get => IsInstanceValid(PathEdit) ? PathEdit.Text : string.Empty;
         set => PathEdit.Text = value;
     }
 
@@ -43,8 +43,6 @@ public partial class FilePathPicker : HBoxContainer
         
         AddChild(OpenExplorerButton);
         AddChild(PathEdit);
-        PathEdit.SetOwner(this);
-        OpenExplorerButton.SetOwner(this);
         OpenExplorerButton.Pressed += OnOpenExplorer;
     }
 

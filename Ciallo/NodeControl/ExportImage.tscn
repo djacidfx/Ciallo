@@ -71,6 +71,7 @@ script = ExtResource("2_3aowm")
 MinValue = 0.25
 MaxValue = 8.0
 Value = 1.0
+Step = 0.0
 ExpEdit = true
 metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 
@@ -84,6 +85,18 @@ vertical_alignment = 1
 [node name="FinalImageSizeNumber" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 unique_name_in_owner = true
 layout_mode = 2
+
+[node name="Label7" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Background color"
+vertical_alignment = 1
+
+[node name="BackgroundColorButton" type="ColorPickerButton" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+edit_intensity = false
 
 [node name="Label5" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 30)

@@ -9,6 +9,7 @@ using R3;
 public partial class ExportImage : ConfirmationDialog
 {
     public readonly ReactiveProperty<float> Scale = new(1f);
+    public readonly ReactiveProperty<Color> BackgroundColor = new(Colors.Transparent);
 
     public Label ReferenceSizeNumber;
     public SpinSlider ScaleNumber;
@@ -16,12 +17,15 @@ public partial class ExportImage : ConfirmationDialog
     public SubViewport ImageSubViewport;
     public FilePathPicker PathPicker;
     public LineEdit FileNameEdit;
-    private DocumentSetting _setting;
-    private Camera2D _camera;
     private TextureRect ImageTextureRect;
     private Label Message;
+    private ColorPickerButton BackgroundColorButton;
+    
+    private DocumentSetting _setting;
+    private Camera2D _camera;
+    private Polygon2D _backgournd;
 
-    public override void _EnterTree()
+    public override void _Ready()
     {
         ReferenceSizeNumber = GetNode<Label>("%ReferenceSizeNumber");
         ScaleNumber = GetNode<SpinSlider>("%ScaleNumber");
@@ -31,11 +35,10 @@ public partial class ExportImage : ConfirmationDialog
         FileNameEdit = GetNode<LineEdit>("%FileNameEdit");
         ImageTextureRect = GetNode<TextureRect>("%ImageTextureRect");
         Message = GetNode<Label>("%Message");
-    }
-
-    public override void _Ready()
-    {
+        BackgroundColorButton = GetNode<ColorPickerButton>("%BackgroundColorButton");
+        
         ScaleNumber.BindNumber(Scale);
+        BackgroundColorButton.BindColor(BackgroundColor);
         Confirmed += OnExport;
     }
 
@@ -69,12 +72,21 @@ public partial class ExportImage : ConfirmationDialog
         var scene = new PackedScene();
         scene.Pack(view);
         var root = scene.Instantiate();
+        _backgournd = new();
+        ImageSubViewport.AddChild(_backgournd);
+        BackgroundColor.Subscribe(c =>
+        {
+            _backgournd.Color = c;
+            ImageSubViewport.RenderTargetClearMode = SubViewport.ClearMode.Once;
+            ImageSubViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
+        });
         ImageSubViewport.AddChild(root);
         _camera = new Camera2D();
         ImageSubViewport.AddChild(_camera);
 
         // Size
         var rSize = _setting.ReferenceSize.Value;
+        _backgournd.Polygon = [ new(-rSize.X/2, -rSize.Y/2), new(rSize.X/2, -rSize.Y/2), new(rSize.X/2, rSize.Y/2), new(-rSize.X/2, rSize.Y/2) ];
         ReferenceSizeNumber.Text = $"{rSize.X} x {rSize.Y}";
         Vector2I sizei = new((int)rSize.X, (int)rSize.Y);
         Scale.Subscribe(s => 
