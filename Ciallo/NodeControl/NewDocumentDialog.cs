@@ -47,13 +47,11 @@ public partial class NewDocumentDialog : ConfirmationDialog
         }
         
         // Compute file path
-        if(!saveFolder.EndsWith('/'))
-            saveFolder += "/";
-        string filePath = saveFolder + docName + ".ciallo";
+        string filePath = saveFolder.PathJoin(docName) + ".ciallo";
         int index = 1;
         while(File.Exists(filePath))
         {
-            filePath = saveFolder + docName + index++ + ".ciallo";
+            filePath = saveFolder.PathJoin(docName) + index++ + ".ciallo";
         }
         
         // Create the document

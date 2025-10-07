@@ -17,13 +17,13 @@ public partial class ExportImage : ConfirmationDialog
     public SubViewport ImageSubViewport;
     public FilePathPicker PathPicker;
     public LineEdit FileNameEdit;
-    private TextureRect ImageTextureRect;
-    private Label Message;
-    private ColorPickerButton BackgroundColorButton;
+    public TextureRect ImageTextureRect;
+    public Label Message;
+    public ColorPickerButton BackgroundColorButton;
     
     private DocumentSetting _setting;
     private Camera2D _camera;
-    private Polygon2D _backgournd;
+    private Polygon2D _background;
 
     public override void _Ready()
     {
@@ -44,9 +44,7 @@ public partial class ExportImage : ConfirmationDialog
 
     private async void OnExport()
     {
-        if(!PathPicker.Path.EndsWith('/'))
-            PathPicker.Path += '/';
-        var filePath = PathPicker.Path + FileNameEdit.Text + ".png";
+        var filePath = PathPicker.Path.PathJoin(FileNameEdit.Text) + ".png";
         var imageSize = _setting.ReferenceSize.Value * Scale.Value;
         ImageSubViewport.Size = new((int)imageSize.X, (int)imageSize.Y);
         _camera.Zoom = Vector2.One * Scale.Value;
@@ -72,11 +70,11 @@ public partial class ExportImage : ConfirmationDialog
         var scene = new PackedScene();
         scene.Pack(view);
         var root = scene.Instantiate();
-        _backgournd = new();
-        ImageSubViewport.AddChild(_backgournd);
+        _background = new();
+        ImageSubViewport.AddChild(_background);
         BackgroundColor.Subscribe(c =>
         {
-            _backgournd.Color = c;
+            _background.Color = c;
             ImageSubViewport.RenderTargetClearMode = SubViewport.ClearMode.Once;
             ImageSubViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
         });
@@ -86,7 +84,7 @@ public partial class ExportImage : ConfirmationDialog
 
         // Size
         var rSize = _setting.ReferenceSize.Value;
-        _backgournd.Polygon = [ new(-rSize.X/2, -rSize.Y/2), new(rSize.X/2, -rSize.Y/2), new(rSize.X/2, rSize.Y/2), new(-rSize.X/2, rSize.Y/2) ];
+        _background.Polygon = [ new(-rSize.X/2, -rSize.Y/2), new(rSize.X/2, -rSize.Y/2), new(rSize.X/2, rSize.Y/2), new(-rSize.X/2, rSize.Y/2) ];
         ReferenceSizeNumber.Text = $"{rSize.X} x {rSize.Y}";
         Vector2I sizei = new((int)rSize.X, (int)rSize.Y);
         Scale.Subscribe(s => 
