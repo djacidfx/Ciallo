@@ -75,17 +75,17 @@ layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("2_acvj3")
 FileMode = 2
-DefaultPath = 0
+DefaultPath = 2
 metadata/_custom_type_script = "uid://ckillqfnqh8wc"
 
 [node name="Label2" type="Label" parent="NewDocument/VBoxContainer/GridContainer"]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-size_flags_horizontal = 4
+size_flags_horizontal = 0
 size_flags_vertical = 1
 tooltip_text = "Set your canvas reference size in pixels—you can always export your artwork at a higher resolution."
 mouse_filter = 0
-text = "Reference size (?)"
+text = "Reference size"
 vertical_alignment = 1
 
 [node name="ReferenceSizeControl" type="HBoxContainer" parent="NewDocument/VBoxContainer/GridContainer"]
@@ -109,6 +109,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 color = Color(1, 1, 1, 1)
+edit_intensity = false
 
 [node name="ErrorMessage" type="Label" parent="NewDocument/VBoxContainer"]
 unique_name_in_owner = true

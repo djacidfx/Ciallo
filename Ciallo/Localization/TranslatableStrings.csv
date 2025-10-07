@@ -24,7 +24,7 @@ Open a File,,打开文件,開啟檔案,ファイルを開く,파일 열기,Datei
 Open document,,打开文档,開啟文檔,ドキュメントを開く,문서 열기,Dokument öffnen,Ouvrir un document
 Paste,,粘贴,貼上,貼り付け,붙여넣기,Einfügen,Coller
 Redo,,重做,重做,やり直し,다시 실행,Wiederholen,Rétablir
-Reference size (?),,参考尺寸 (?),參考尺寸 (?),参照サイズ (?),"참조 크기 (?)",Referenzgröße (?),Taille de référence (?)
+Reference size,,参考尺寸,參考尺寸,参照サイズ,"참조 크기",Referenzgröße,Taille de référence
 Reload,,重新加载,重新載入,再読み込み,새로고침,Neu laden,Recharger
 Rotation,,旋转,旋轉,回転,회전,Rotation,Rotation
 Save,,保存,儲存,保存,저장,Speichern,Sauvegarder
@@ -80,5 +80,8 @@ New brush,,新笔刷,,,,,
 [Mapping Curve Tooltip],- Hold alt and drag to disconnect handles\n- Right click to delete points or reset handles\n- Left click on curve to add points,- 按住 Alt 并拖动以断开控制柄\n- 右键点击以删除点或重置控制柄\n- 左键点击曲线以添加点,,,,,
 Select an image,,,,,,,
 [Cannot Load Image],Cannot load image,,,,,,
-Pencil,,,,,,,
-Splatter,,,,,,,
+Pencil,,铅笔,,,,,
+Splatter,,飞溅,,,,,
+Success,,成功,,,,,
+Output image resolution,,输出的图像分辨率,,,,,
+Scale,,缩放,,,,,

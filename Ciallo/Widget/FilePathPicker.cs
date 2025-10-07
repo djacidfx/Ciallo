@@ -10,15 +10,18 @@ public partial class FilePathPicker : HBoxContainer
     public Button OpenExplorerButton;
     public FileDialog FileDialog;
     
-    public string Path => PathEdit.Text;
+    public string Path
+    {
+        get => IsInstanceValid(PathEdit) ? PathEdit.Text : string.Empty;
+        set => PathEdit.Text = value;
+    }
+
     
-    #region Export
     [Export]
     public FileDialog.FileModeEnum FileMode = FileDialog.FileModeEnum.OpenFile;
     
     [Export(PropertyHint.Enum, "None:-1,Desktop:0,Dcim:1,Documents:2,Downloads:3")] // From OS.SystemDir
     public int DefaultPath = -1;
-    #endregion
 
     public override void _Ready()
     {
@@ -40,8 +43,6 @@ public partial class FilePathPicker : HBoxContainer
         
         AddChild(OpenExplorerButton);
         AddChild(PathEdit);
-        PathEdit.SetOwner(this);
-        OpenExplorerButton.SetOwner(this);
         OpenExplorerButton.Pressed += OnOpenExplorer;
     }
 

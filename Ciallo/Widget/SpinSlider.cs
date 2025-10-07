@@ -1,4 +1,5 @@
-﻿using Godot;
+﻿using Ciallo.Misc;
+using Godot;
 
 namespace Ciallo.Widget;
 
@@ -146,8 +147,17 @@ public partial class SpinSlider : HBoxContainer
         AddChild(SpinBox);
         Connect(Slider);
         Connect(SpinBox);
-        Slider.SetOwner(this);
-        SpinBox.SetOwner(this);
+        
+        // Pitfall: LineEdit has no way to show rounded number without modifying the number itself.
+        // Have to do this manually.
+        // // This not work
+        // SpinBox.GetLineEdit().TextChanged += text =>
+        // {
+        //     if (text.Length > 6)
+        //         SpinBox.GetLineEdit().Text = text[..6];
+        // };
+        SpinBox.GetLineEdit().TextDirection = TextDirection.Ltr;
+        SpinBox.GetLineEdit().SubmitOnFocusExit();
     }
 
     private void Connect(Range control)

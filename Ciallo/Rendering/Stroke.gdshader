@@ -45,6 +45,7 @@ varying flat float segmentLength;
 varying flat float sinTheta;
 varying flat float cosTheta;
 varying flat float tanTheta;
+varying flat float canvasZoom;
 
 vec2 unpack2floats(float f) {
     uint word = floatBitsToUint(f);
@@ -62,8 +63,8 @@ void vertex() {
 	vec2 ns = unpack2floats(COLOR.y);
 	n0 = ns.x;
 	n1 = ns.y;
+	canvasZoom = length(CANVAS_MATRIX[0].xy); // Cannot support shear (or skew in godot)
 	if(radiusMode > 0){
-		float canvasZoom = length(CANVAS_MATRIX[0].xy); // Cannot support shear (or skew in godot)
 		canvasZoom = canvasZoom > canvasZoomThreshold ? canvasZoom : canvasZoomThreshold;
 		r0 /= canvasZoom;
 		r1 /= canvasZoom;
@@ -178,7 +179,8 @@ void fragment() {
 
 		COLOR = overridingColor.a >= 0.0 ? overridingColor : materialColor;
 		//// Anti antialiasing
-		const float aaStart = 0.97;
+		float aaEdge = 0.25 / canvasZoom;
+		float aaStart = 1.0 - aaEdge;
 		float lambda;
 		if (cosPhi0 < cosTheta) lambda = d0/r0;
 		else if (cosPhi1 > cosTheta) lambda = d1/r1;

@@ -15,7 +15,7 @@ public partial class StrokeView : MultiMeshInstance2D
 
     public override void _Ready()
     {
-        if (Multimesh != null) return; 
+        if (Multimesh != null) return;
         var multiMesh = new MultiMesh
         {
             TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,
