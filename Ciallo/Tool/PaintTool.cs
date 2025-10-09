@@ -1,7 +1,5 @@
 using System.Collections.Specialized;
 using System.Linq;
-using Arch.Core;
-using Arch.Core.Extensions;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Misc;
@@ -9,12 +7,13 @@ using Ciallo.NodeControl;
 using Ciallo.Tool;
 using Ciallo.Widget;
 using Godot;
+using Massive;
 using ObservableCollections;
 using R3;
 
 public partial class PaintTool : CommonToolBase
 {
-    public readonly ReactiveProperty<Entity> BrushE = new(Entity.Null);
+    public readonly ReactiveProperty<Entity> BrushE = new(new Entity());
     
     public override InteractorBase LeftInteractor => PaintInteractor;
     
@@ -44,7 +43,7 @@ public partial class PaintTool : CommonToolBase
                     panel.Visible = false;
                     panel.PopupWindow = true; // Hint user this is different from the brush library panel
                     panel.Exclusive = false; // Allow propagating input (redo/undo mainly) to main window
-                    docAdd.Add(panel);
+                    docAdd.Set(panel);
                     ((SceneTree)Engine.GetMainLoop()).GetCurrentScene().AddChild(panel);
 
                     panel.BrushPreviewContainer.Visible = false; // Add preview someday
@@ -138,7 +137,7 @@ public partial class PaintTool : CommonToolBase
         var selectionM = document.Get<SelectionManager>();
         foreach(var brushE in brushM.Brushes)
             brushList.AddItem(brushE.Get<BrushSetting>().Name.Value);
-        document.Add(brushList);
+        document.Set(brushList);
         container.AddProperty("Brush in document", brushList);
         
         var radiusControl = new SpinSlider
@@ -149,9 +148,9 @@ public partial class PaintTool : CommonToolBase
             ExpEdit = true,
         };
         var radiusBox = container.AddProperty("Radius", radiusControl);
-        radiusBox.VisibleIf(selectionM.WorkingBrush, e => e != Entity.Null);
+        radiusBox.VisibleIf(selectionM.WorkingBrush, e => e.IsNotNull());
         var rView = selectionM.WorkingBrush
-            .Select(e => e == Entity.Null ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
+            .Select(e => e.IsNull() ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
         radiusControl.ReactiveBindNumber(rView);
         
         var manageDocumentBrush = new Button()

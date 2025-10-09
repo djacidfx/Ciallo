@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Arch.Core;
-using Arch.Core.Extensions;
 using Ciallo.Data;
 using Ciallo.Rendering;
 using Godot;
+using Massive;
 
 namespace Ciallo.Command;
 
@@ -66,7 +65,7 @@ public class DeletePolylineLayerCmd : CommandBase
         layerTreeControl.CreateInsert(_targetE, _targetIndex);
         
         // Data
-        _targetE.Add(new ToSerializeTag());
+        _targetE.Add<ToSerializeTag>();
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.InsertChild(_targetIndex, _targetE);
     }

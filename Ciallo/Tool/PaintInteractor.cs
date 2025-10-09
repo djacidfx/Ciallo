@@ -1,12 +1,11 @@
 ﻿using System.Collections.Generic;
-using Arch.Core;
-using Arch.Core.Extensions;
+using System.Diagnostics;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Godot;
-using System.Diagnostics;
+using Massive;
 
 namespace Ciallo.Tool;
 
@@ -17,14 +16,14 @@ public class PaintInteractor : InteractorBase
         get
         {
             var l = SelectionManager.WorkingLayer.Value;
-            bool layerAvailable = l != Entity.Null && l.Has<PolylineLayerSetting>();
-            bool brushAvailable = SelectionManager.WorkingBrush.Value != Entity.Null || AppBrushLibrary.HasSelection;
+            bool layerAvailable = l.IsNotNull() && l.Has<PolylineLayerSetting>();
+            bool brushAvailable = SelectionManager.WorkingBrush.Value.IsNotNull() || AppBrushLibrary.HasSelection;
             
             return layerAvailable && brushAvailable;
         }
     }
 
-    private Entity _brushE = Entity.Null;
+    private Entity _brushE;
     private StrokeView _strokePreview;
     private readonly List<Vector2> _points = new(){Capacity = 2048};
     private readonly List<float> _radii = new(){Capacity = 2048};

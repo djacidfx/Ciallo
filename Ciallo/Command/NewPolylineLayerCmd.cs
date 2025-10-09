@@ -1,16 +1,15 @@
 ﻿using System.Collections.Generic;
-using Arch.Core;
-using Arch.Core.Extensions;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.Rendering;
 using Godot;
+using Massive;
 
 namespace Ciallo.Command;
 
 public class NewPolylineLayerCmd : CommandBase
 {
-    public Entity LayerE = Entity.Null;
+    public Entity LayerE;
     private readonly List<Node> _refObjects = [];
     private readonly PolylineLayerSetting _setting;
 
@@ -28,7 +27,7 @@ public class NewPolylineLayerCmd : CommandBase
 
         // Data
         var tree = Document.Get<LayerTreeManager>();
-        LayerE.Add(new ToSerializeTag());
+        LayerE.Add<ToSerializeTag>();
         tree.Root.AddChild(LayerE);
         
         // Layer panel
@@ -40,7 +39,7 @@ public class NewPolylineLayerCmd : CommandBase
         if (_refObjects.Count == 0) _refObjects.Add(new PolylineLayerView());
         var layerView = (PolylineLayerView)_refObjects[0];
         worldView.AddChild(layerView);
-        LayerE.Add(layerView);
+        LayerE.Set(layerView);
         layerView.SetOwner(worldView);
         
         // Overlay
@@ -48,7 +47,7 @@ public class NewPolylineLayerCmd : CommandBase
         if(_refObjects.Count == 1) _refObjects.Add(new PolylineLayerOverlay());
         var layerOverlay = (PolylineLayerOverlay)_refObjects[1];
         worldOverlay.AddChild(layerOverlay);
-        LayerE.Add(layerOverlay);
+        LayerE.Set(layerOverlay);
     }
 
     public override void Undo()
@@ -77,14 +76,15 @@ public class NewPolylineLayerCmd : CommandBase
     {
         var tree = Document.Get<LayerTreeManager>();
         
-        if (LayerE == Entity.Null)
+        if (LayerE.IsNull())
         {
-            LayerE = WorkingWorld.Create();
+            LayerE = WorkingWorld.CreateEntity();
             var node = new LayerTreeNode()
             {
                 Name = { Value = $"{"Line layer".Tr()} {tree.Root.ChildCount+1}" },
             };
-            LayerE.Add(_setting, node);
+            LayerE.Set(_setting);
+            LayerE.Set(node);
         }
 
         return LayerE;

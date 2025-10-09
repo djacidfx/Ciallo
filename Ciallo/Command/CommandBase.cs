@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Arch.Core;
-using Arch.Core.Extensions;
 using Ciallo.Data;
 using Godot;
 using Godot.Collections;
 using Humanizer;
+using Massive;
 
 namespace Ciallo.Command;
 
@@ -97,6 +96,6 @@ public abstract class CommandBase
     
     public static IEnumerable<Entity> ToEnumerable(Entity value)
     {
-        if (value != Entity.Null) yield return value;
+        if (value.IsNotNull()) yield return value;
     }
 }

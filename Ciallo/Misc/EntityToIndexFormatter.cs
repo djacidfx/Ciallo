@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Arch.Core;
+using Massive;
 using MessagePack;
 using MessagePack.Formatters;
 
@@ -35,7 +35,7 @@ public class EntityToIndexFormatter : IMessagePackFormatter<Entity>
         int index = MessagePackSerializer.Deserialize<int>(ref reader, options);
         
         return index < 0 || index >= _indexToEntity.Count
-            ? Entity.Null
+            ? new Entity()
             : _indexToEntity[index];
     }
 }

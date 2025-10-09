@@ -1,16 +1,15 @@
 ﻿using System.Collections.Generic;
-using Arch.Core;
-using Arch.Core.Extensions;
 using Ciallo.Data;
 using Ciallo.Rendering;
 using Godot;
+using Massive;
 using R3;
 
 namespace Ciallo.Command;
 
 public class NewBrushCmd : CommandBase
 {
-    public Entity BrushE = Entity.Null;
+    public Entity BrushE;
     private readonly BrushSetting _setting;
 
     public NewBrushCmd(BrushSetting setting = null)
@@ -28,14 +27,14 @@ public class NewBrushCmd : CommandBase
     {
         InitEntity();
         // Data
-        BrushE.Add(new ToSerializeTag());
+        BrushE.Add<ToSerializeTag>();
         var bm = Document.Get<BrushManager>();
         bm.Add(BrushE);
         
         // Material
         var material = new BrushMaterial();
         material.ObserveBrushSetting(BrushE.Get<BrushSetting>());
-        BrushE.Add(material);
+        BrushE.Set(material);
         
         // UI
         // Note: Should have a dedicate custom widget to handle this.
@@ -73,10 +72,10 @@ public class NewBrushCmd : CommandBase
 
     public Entity InitEntity()
     {
-        if (BrushE == Entity.Null)
+        if (BrushE.IsNull())
         {
-            BrushE = WorkingWorld.Create();
-            BrushE.Add(_setting);
+            BrushE = WorkingWorld.CreateEntity();
+            BrushE.Set(_setting);
         }
 
         return BrushE;

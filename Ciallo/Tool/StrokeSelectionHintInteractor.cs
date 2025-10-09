@@ -1,9 +1,8 @@
-﻿using Arch.Core;
-using Arch.Core.Extensions;
-using Ciallo.Command;
+﻿using Ciallo.Command;
 using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Godot;
+using Massive;
 
 namespace Ciallo.Tool;
 
@@ -11,7 +10,7 @@ public class StrokeSelectionHintInteractor : InteractorBase
 {
     private StrokeOverlay _hintingOverlay;
 
-    public override bool CanInteract => SelectionManager.WorkingLayer.Value != Entity.Null;
+    public override bool CanInteract => SelectionManager.WorkingLayer.Value.IsNotNull();
     
     public override void Interacting(CursorMotionData data)
     {

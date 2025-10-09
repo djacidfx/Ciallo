@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Arch.Core;
-using Arch.Core.Extensions;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.Widget;
 using Godot;
+using Massive;
 using R3;
 
 /// <summary>
@@ -58,7 +57,7 @@ public partial class LayerContainer : Container
     {
         var layerControl = Create(layerE);
         _rootControl.AddChild(layerControl);
-        layerE.Add(layerControl);
+        layerE.Set(layerControl);
         return layerControl;
     }
 
@@ -208,7 +207,7 @@ public partial class LayerContainer : Container
     public void SetWorkingLayerNoSignal(Entity layerE)
     {
         _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
-        if (layerE == Entity.Null) return;
+        if (layerE.IsNull()) return;
         var layerControl = layerE.Get<Control>();
         var activeButton = layerControl.GetNode<CheckBox>("%Active");
         // Note: button group will not be updated.

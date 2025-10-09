@@ -2,7 +2,6 @@
 using System.Runtime.InteropServices;
 using Ciallo.Data;
 using Ciallo.Geometry;
-using CommunityToolkit.HighPerformance;
 using Godot;
 using R3;
 
@@ -78,7 +77,7 @@ public partial class BrushMaterial : ShaderMaterial
     {
         int n = 512;
         var data = curve.SampleXList(Enumerable.Range(0, n).Select(i => (float)i / n).ToArray());
-        var bytes = MemoryMarshal.AsBytes(data.AsSpan()).ToArray();
+        var bytes = MemoryMarshal.AsBytes(CollectionsMarshal.AsSpan(data));
         var img = Image.CreateFromData(data.Count, 1, false, Image.Format.Rf, bytes);
         img.GenerateMipmaps();
         return img;

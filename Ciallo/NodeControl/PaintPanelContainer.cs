@@ -1,7 +1,6 @@
-using Godot;
-using Arch.Core;
-using Arch.Core.Extensions;
 using Ciallo.Data;
+using Godot;
+using Massive;
 
 namespace Ciallo.NodeControl;
 
@@ -11,7 +10,7 @@ public partial class PaintPanelContainer : Control
     {
         var panel = PaintPanel.Instantiate(document.Get<DocumentSetting>());
         AddChild(panel);
-        document.Add(panel);
+        document.Set(panel);
         return panel;
     }
     
