@@ -82,7 +82,7 @@ public class BrushSetting
         // Stamp
         var stampIntervalControl = new SpinSlider
         {
-            MinValue = 1f/16,
+            MinValue = 1f/64,
             MaxValue = 6,
             Step = 0.001,
             ExpEdit = true,
@@ -127,8 +127,8 @@ public class BrushSetting
         
         var rotationNoiseAmplitudeControl = new SpinSlider
         {
-            MinValue = 0,
-            MaxValue = Mathf.Pi * 4,
+            MinValue = -Mathf.Pi * 8,
+            MaxValue = Mathf.Pi * 8,
             Step = 0.01,
         };
         rotationNoiseAmplitudeControl.BindNumber(RotationNoiseAmplitude);
@@ -138,7 +138,7 @@ public class BrushSetting
         var rotationNoiseFrequencyControl = new SpinSlider
         {
             MinValue = 0.001,
-            MaxValue = 1.0,
+            MaxValue = 0.5,
             Step = 0.0001,
             AllowGreater = true,
             ExpEdit = true,

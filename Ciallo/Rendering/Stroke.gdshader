@@ -101,7 +101,7 @@ void vertex() {
 	}
 
 	VERTEX = p;
-	VERTEX = (MODEL_MATRIX * vec4(VERTEX, 0.0, 1.0)).xy;
+	VERTEX = vec4(VERTEX, 0.0, 1.0).xy;
 }
 
 float x2n(float x) {
@@ -220,7 +220,7 @@ void fragment() {
 			// Transform
 			pToCurrStamp *= coordinateTransform;
 			// Rotation noise
-			float rotationNoise = noise1D(currN);
+			float rotationNoise = noise1D(currIdx);
 			float cosRot = cos(rotationNoise);
 			float sinRot = sin(rotationNoise);
 			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
