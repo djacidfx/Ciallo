@@ -98,7 +98,7 @@ public class BrushSetting
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
         
         var multiplyTextureEdit = ImageTextureEdit.Instantiate(MultiplyTexture, ConvertStampImage);
-        container.AddProperty("Multiply texture", multiplyTextureEdit)
+        container.AddProperty("Mask texture", multiplyTextureEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
 
         var stampRotationControl = new SpinSlider
