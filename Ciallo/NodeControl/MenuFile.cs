@@ -43,12 +43,10 @@ public partial class MenuFile : PopupMenu
         switch (id)
         {
             case 0: // New Document
-                var dialogNew = GetTree().GetNodesInGroup("Dialog").OfType<NewDocumentDialog>().Single(n => n.Name == "NewDocument");
-                dialogNew.Popup();
+                AppGuiCommand.PopupNewDocumentDialog();
                 break;
             case 1: // Open Document
-                var dialogOpen = GetTree().GetNodesInGroup("Dialog").OfType<OpenDocumentDialog>().Single(n => n.Name == "OpenDocument");
-                dialogOpen.Popup();
+                AppGuiCommand.PopupOpenDocumentDialog();
                 break;
             case 2: // Close Document
                 if(AppWorldManager.WorkingWorld.Value == null) return;

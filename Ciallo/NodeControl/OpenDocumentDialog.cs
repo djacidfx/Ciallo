@@ -12,6 +12,7 @@ public partial class OpenDocumentDialog : FileDialog
     public override void _Ready()
     {
         FileSelected += path => LoadWorldFile(path);
+        CurrentDir = OS.GetSystemDir(OS.SystemDir.Documents);
     }
 
     public static bool LoadWorldFile(string path)
