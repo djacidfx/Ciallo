@@ -20,9 +20,9 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
   - [x] CGAL C++ code
   - [ ] Integration
 - [ ] Selection/move tool
+  - [ ] Rect transform (control + T mode)
   - [ ] Line binding system (Bézier curve only)
     - [x] Bézier curve geometry
-  - [ ] Design
   - [x] Polyline overlay rendering
 - [ ] Basic lasso tool
 - [x] Layer system
@@ -30,7 +30,7 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
   - [x] Rename
   - [x] Reorder
   - [ ] Merge, split
-- [ ] Import image as a layer
+- [x] Import image as a layer
 - [ ] Localization
   - [x] Infrastructure (ai translation)
   - [ ] Complete
