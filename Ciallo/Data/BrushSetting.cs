@@ -127,8 +127,8 @@ public class BrushSetting
         
         var rotationNoiseAmplitudeControl = new SpinSlider
         {
-            MinValue = -Mathf.Pi * 8,
-            MaxValue = Mathf.Pi * 8,
+            MinValue = 0.0,
+            MaxValue = Mathf.Pi * 16,
             Step = 0.01,
         };
         rotationNoiseAmplitudeControl.BindNumber(RotationNoiseAmplitude);

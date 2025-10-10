@@ -6,6 +6,8 @@ using Massive;
 
 public partial class LayerAction : Control
 {
+    private FileDialog _fileDialog;
+
     public void OnNewLayer()
     {
         if (AppWorldManager.WorkingWorld.Value == null) return;
@@ -25,5 +27,27 @@ public partial class LayerAction : Control
         
         ChangeWorkingLayerCmd cmd = nextLayerPath.IsEmpty ? new(new Entity()) : new(nextLayerPath.Single());
         cmd.Combine(new DeletePolylineLayerCmd(workingLayerE)).Commit();
+    }
+
+    public void OnAddImage()
+    {
+        if (AppWorldManager.WorkingWorld.Value == null) return;
+        _fileDialog = GetNode<FileDialog>("%FileDialog");
+        _fileDialog.Popup();
+    }
+
+    public void OnImageFileSelected(string path)
+    {
+        Image image;
+        try
+        {
+            image = Image.LoadFromFile(path);
+        }
+        catch
+        {
+            return;
+        }
+        if (image == null) return;
+        new NewImageLayerCmd(image).Commit();
     }
 }
