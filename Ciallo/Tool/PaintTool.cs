@@ -125,6 +125,8 @@ public partial class PaintTool : CommonToolBase
         box.AddChild(useBrushButton);
         container.AddChild(box);
         // ---------------------------------------------
+        container.AddChild(new HSeparator());
+        // ---------------------------------------------
         var brushList = new DocumentBrushList()
         {
             CustomMinimumSize = new(0, 200),

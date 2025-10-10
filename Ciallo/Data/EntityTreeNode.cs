@@ -48,6 +48,13 @@ public class EntityTreeNode<T> where T : EntityTreeNode<T>
         Children.RemoveAt(idx.GetOffset(Children.Count));
     }
     
+    public void RemoveChild(Entity child)
+    {
+        int idx = Children.IndexOf(child);
+        if (idx < 0) throw new ArgumentException("The specified entity is not a child of this node.");
+        Children.RemoveAt(idx);
+    }
+    
     public void AddDescendant(IReadOnlyList<int> parentPath, Entity child)
     {
         GetDescendantNode(parentPath).AddChild(child);

@@ -36,7 +36,14 @@ public static partial class AppWorldManager
         Dictionary<Entity, Entity> layerMap = [];
         foreach (var layerDataE in dataTreeRoot.Children)
         {
-            if (layerDataE.Has<PolylineLayerSetting>())
+            if (layerDataE.Has<ImageLayerSetting>())
+            {
+                var newImageLayerCmd = new NewImageLayerCmd(layerDataE.Get<ImageLayerSetting>());
+                newImageLayerCmd.Do();
+                var layerE = newImageLayerCmd.LayerE;
+                layerMap.Add(layerDataE, layerE);
+            }
+            else if (layerDataE.Has<PolylineLayerSetting>())
             {
                 var setting = layerDataE.Get<PolylineLayerSetting>();
                 var newPolylineLayerCmd = new NewPolylineLayerCmd(setting);
