@@ -48,6 +48,12 @@ public class NewImageLayerCmd : CommandBase
         Sprite.SetOwner(worldView);
         LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(Sprite.SetVisible).AddTo(Sprite);
         
+        // Overlay
+        var worldOverlay = Document.Get<WorldOverlay>();
+        var layerOverlay = new ImageLayerOverlay();
+        LayerE.Set(layerOverlay);
+        worldOverlay.AddChild(layerOverlay);
+        
         // Panel
         var layerContainer = Document.Get<LayerContainer>();
         layerContainer.CreateAdd(LayerE);
@@ -59,6 +65,10 @@ public class NewImageLayerCmd : CommandBase
         var layerContainer = Document.Get<LayerContainer>();
         layerContainer.RemoveFree(LayerE);
         
+        // Overlay
+        LayerE.Get<ImageLayerOverlay>().QueueFree();
+        LayerE.Remove<ImageLayerOverlay>();
+
         // View
         Sprite.QueueFree();
         
