@@ -4,6 +4,7 @@ using Ciallo.Misc;
 using Ciallo.Rendering;
 using Godot;
 using Massive;
+using R3;
 
 namespace Ciallo.Command;
 
@@ -41,6 +42,7 @@ public class NewPolylineLayerCmd : CommandBase
         worldView.AddChild(layerView);
         LayerE.Set(layerView);
         layerView.SetOwner(worldView);
+        LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(layerView.SetVisible).AddTo(layerView);
         
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
@@ -48,6 +50,7 @@ public class NewPolylineLayerCmd : CommandBase
         var layerOverlay = (PolylineLayerOverlay)_refObjects[1];
         worldOverlay.AddChild(layerOverlay);
         LayerE.Set(layerOverlay);
+        LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(layerOverlay.SetVisible).AddTo(layerOverlay);
     }
 
     public override void Undo()

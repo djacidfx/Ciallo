@@ -46,6 +46,7 @@ public class NewImageLayerCmd : CommandBase
         Setting.ImageTransform.Subscribe(Sprite.SetTransform).AddTo(Sprite);
         LayerE.Set(Sprite);
         Sprite.SetOwner(worldView);
+        LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(Sprite.SetVisible).AddTo(Sprite);
         
         // Panel
         var layerContainer = Document.Get<LayerContainer>();
