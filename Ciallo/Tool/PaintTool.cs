@@ -26,7 +26,7 @@ public partial class PaintTool : CommonToolBase
         SetPressed(true);
     }
 
-    public override void DrawProperty(PropertyContainer container, Entity document)
+    public override void DrawProperty(PropertyContainer container)
     {
         var brushSelector = new OptionButton();
         brushSelector.ObserveObservableList(AppBrushLibrary.BrushSettings, s => s.Name);
@@ -91,11 +91,11 @@ public partial class PaintTool : CommonToolBase
         {
             new ChangeWorkingBrushCmd((int)idx).Commit();
         };
-        var brushM = document.Get<BrushManager>();
-        var selectionM = document.Get<SelectionManager>();
+        var brushM = Document.Get<BrushManager>();
+        var selectionM = Document.Get<SelectionManager>();
         foreach(var brushE in brushM.Brushes)
             brushList.AddItem(brushE.Get<BrushSetting>().Name.Value);
-        document.Set(brushList);
+        Document.Set(brushList);
         container.AddProperty("Brush in document", brushList);
         
         var radiusControl = new SpinSlider
@@ -118,7 +118,7 @@ public partial class PaintTool : CommonToolBase
             CustomMinimumSize = new(0, 30),
             SizeFlagsHorizontal = SizeFlags.Fill
         };
-        manageDocumentBrush.Pressed += () => document.Get<BrushPanel>().Popup();
+        manageDocumentBrush.Pressed += () => Document.Get<BrushPanel>().Popup();
         container.AddChild(manageDocumentBrush);
     }
     

@@ -28,6 +28,7 @@ AutoloadMisc="*res://Misc/AutoloadMisc.cs"
 AutoloadData="*res://Data/AutoloadData.cs"
 AutoloadRendering="*res://Rendering/AutoloadRendering.cs"
 AutoloadNodeControl="*res://NodeControl/AutoloadNodeControl.cs"
+AutoloadTool="*res://Tool/AutoloadTool.cs"
 
 [display]
 

@@ -7,8 +7,6 @@ namespace Ciallo.Tool;
 
 public interface ITool
 {
-    public Entity Document => AppWorldManager.WorkingDocument.CurrentValue;
-    
     public void OnLeftClick(CursorButtonData data);
     public void OnLeftRelease(CursorButtonData data);
     public void OnRightClick(CursorButtonData data);

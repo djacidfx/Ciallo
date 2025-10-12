@@ -1,3 +1,4 @@
+using Ciallo.Data;
 using Godot;
 using Ciallo.Tool;
 
@@ -123,34 +124,36 @@ public partial class WorldEventDispatcher : SubViewportContainer
         }
     }
 
+    private ToolButtonPanel ToolManager => AppWorldManager.WorkingDocument.CurrentValue.Get<ToolButtonPanel>();
+
     private void DispatchKey(InputEventKey key)
     {
-        AppToolManager.ActiveTool.Value?.OnKey(key);
+        ToolManager.ActiveTool.Value?.OnKey(key);
     }
 
     public void DispatchLeftClick(CursorButtonData data)
     {
-        AppToolManager.ActiveTool.Value?.OnLeftClick(data);
+        ToolManager.ActiveTool.Value?.OnLeftClick(data);
     }
     
     public void DispatchLeftRelease(CursorButtonData data)
     {
-        AppToolManager.ActiveTool.Value?.OnLeftRelease(data);
+        ToolManager.ActiveTool.Value?.OnLeftRelease(data);
     }
 
     public void DispatchMotion(CursorMotionData data)
     {
-        AppToolManager.ActiveTool.Value?.OnMoving(data);
+        ToolManager.ActiveTool.Value?.OnMoving(data);
     }
     
     public void DispatchRightClick(CursorButtonData data)
     {
-        AppToolManager.ActiveTool.Value?.OnRightClick(data);
+        ToolManager.ActiveTool.Value?.OnRightClick(data);
     }
     
     public void DispatchRightRelease(CursorButtonData data)
     {
-        AppToolManager.ActiveTool.Value?.OnRightRelease(data);
+        ToolManager.ActiveTool.Value?.OnRightRelease(data);
     }
 
     public void OnMouseEnter()

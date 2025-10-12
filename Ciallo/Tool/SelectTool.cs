@@ -34,7 +34,7 @@ public partial class SelectTool : CommonToolBase
     }
 
     public override InteractorBase HoveringInteractor => HintInteractor;
-    public override void DrawProperty(PropertyContainer container, Entity Document)
+    public override void DrawProperty(PropertyContainer container)
     {
         
     }

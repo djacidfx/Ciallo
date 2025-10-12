@@ -9,7 +9,7 @@ namespace Ciallo.NodeControl;
 
 public partial class ToolButtonPanelContainer : Container
 {
-    public static PackedScene ToolButtonPanelScene = GD.Load<PackedScene>("res://NodeControl/ToolButtonPanel.tscn");
+    public static readonly PackedScene ToolButtonPanelScene = GD.Load<PackedScene>("res://NodeControl/ToolButtonPanel.tscn");
     public override void _Ready()
     {
         this.QueueFreeChildren();

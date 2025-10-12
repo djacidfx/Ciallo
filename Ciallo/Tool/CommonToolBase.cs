@@ -13,7 +13,7 @@ using motionParameterEvent = StateMachine<CommonToolBase.State,CommonToolBase.Ev
 /// (Middle mouse has dedicated usage for canvas navigation.)
 /// For more complex tools, we can write state machine code and implement ITool directly.
 /// </summary>
-public abstract partial class CommonToolBase : ToolButtonBase, ITool
+public abstract partial class CommonToolBase : ToolButtonBase
 {
     public virtual InteractorBase LeftInteractor => null;
     public virtual InteractorBase HoveringInteractor => null;
@@ -114,15 +114,15 @@ public abstract partial class CommonToolBase : ToolButtonBase, ITool
         
     }
 
-    public void OnLeftClick(CursorButtonData data) => Machine.Fire(_etLeftClick, data);
+    public override void OnLeftClick(CursorButtonData data) => Machine.Fire(_etLeftClick, data);
 
-    public void OnLeftRelease(CursorButtonData data) => Machine.Fire(_etLeftRelease, data);
+    public override void OnLeftRelease(CursorButtonData data) => Machine.Fire(_etLeftRelease, data);
 
-    public void OnRightClick(CursorButtonData data) => Machine.Fire(_etRightClick, data);
+    public override void OnRightClick(CursorButtonData data) => Machine.Fire(_etRightClick, data);
 
-    public void OnRightRelease(CursorButtonData data) => Machine.Fire(_etRightRelease, data);
+    public override void OnRightRelease(CursorButtonData data) => Machine.Fire(_etRightRelease, data);
 
-    public void OnMoving(CursorMotionData data)
+    public override void OnMoving(CursorMotionData data)
     {
         Machine.Fire(_etMove, data);
         if(Machine.State == State.HoverInteracting) HoveringInteractor.Interacting(data);
@@ -130,7 +130,7 @@ public abstract partial class CommonToolBase : ToolButtonBase, ITool
         if(Machine.State == State.RightInteracting) RightInteractor.Interacting(data);
     }
 
-    public void OnKey(InputEventKey key)
+    public override void OnKey(InputEventKey key)
     {
         if(AppActions.CancelInteraction.IsJustPressed) Machine.Fire(Event.Cancel);
     }
