@@ -125,6 +125,7 @@ public static class PolylineExtension
         if (polyline.Count == 1) return polyline[0].Y;
         if (polyline.Count == 2) return SampleSegment(polyline[0], polyline[1], x);
 
+        // Memory allocation here and Rider warns quite a lot, but it's ok. 
         var searchResult = polyline.Select(v=>v.X).ToImmutableArray().BinarySearch(x);
         if (searchResult >= 0) return polyline[searchResult].Y;
         // Get the index of the closest point after x

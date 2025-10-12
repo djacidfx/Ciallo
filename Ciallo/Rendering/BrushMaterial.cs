@@ -10,7 +10,6 @@ namespace Ciallo.Rendering;
 public partial class BrushMaterial : ShaderMaterial
 {
     public CompositeDisposable Subs;
-    public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
 
     private static BrushMaterial _missingBrushMaterial;
     public static BrushMaterial MissingBrushMaterial
@@ -29,7 +28,7 @@ public partial class BrushMaterial : ShaderMaterial
 
     public BrushMaterial()
     {
-        Shader = StrokeShader;
+        Shader = AutoloadRendering.StrokeShader;
         ResourceLocalToScene = true;
     }
     

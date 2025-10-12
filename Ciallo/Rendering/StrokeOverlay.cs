@@ -7,16 +7,13 @@ namespace Ciallo.Rendering;
 
 public partial class StrokeOverlay : Node2D
 {
-    public static readonly ShaderMaterial WireframeMaterial = GD.Load<ShaderMaterial>("res://Rendering/WireframeMaterial.tres");
-    public static readonly ShaderMaterial WireframeDotMaterial = GD.Load<ShaderMaterial>("res://Rendering/WireframeDotMaterial.tres");
-
     public StrokeView Wireframe;
     public MultiMeshInstance2D WireframeDot;
     public StrokeBody HitTestBody;
 
     public override void _Ready()
     {
-        Wireframe = new() { Material = WireframeMaterial };
+        Wireframe = new() { Material = AutoloadRendering.WireframeMaterial };
         Wireframe.SetInstanceShaderParameter("overridingColor", AppPreference.StrokeWireframeColor);
         var multiMesh = new MultiMesh
         {
@@ -26,7 +23,7 @@ public partial class StrokeOverlay : Node2D
         };
         WireframeDot = new()
         {
-            Material = WireframeDotMaterial,
+            Material = AutoloadRendering.WireframeDotMaterial,
             Multimesh = multiMesh
         };
         HitTestBody = new();

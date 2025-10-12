@@ -11,8 +11,6 @@ namespace Ciallo.Rendering;
 [Tool, GlobalClass]
 public partial class StrokeView : MultiMeshInstance2D
 {
-    public static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
-
     public override void _Ready()
     {
         if (Multimesh != null) return;
@@ -21,7 +19,7 @@ public partial class StrokeView : MultiMeshInstance2D
             TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,
             UseColors = true,
             UseCustomData = true,
-            Mesh = DummyMesh,
+            Mesh = AutoloadRendering.DummyMesh,
         };
         Multimesh = multiMesh;
         TextureFilter = TextureFilterEnum.LinearWithMipmaps;
