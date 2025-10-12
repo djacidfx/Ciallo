@@ -129,7 +129,5 @@ auto_width = true
 auto_height = true
 script = ExtResource("3_8on0h")
 
-[node name="Node2D" type="Node2D" parent="."]
-
 [connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start/Button" to="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start" method="OnNewDocumentPressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start/Button2" to="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start" method="OnOpenDocumentPressed"]

@@ -44,8 +44,8 @@ public class NewStrokeCmd : CommandBase
         // Overlay
         if(_refNodes.Count == 1) _refNodes.Add(new StrokeOverlay());
         var strokeOverlay = (StrokeOverlay)_refNodes[1];
-        var layerOverlay = _layerE.Get<PolylineLayerOverlay>();
-        layerOverlay.AddChild(strokeOverlay);
+        var worldOverlay = Document.Get<WorldOverlay>();
+        worldOverlay.AddChild(strokeOverlay);
         StrokeE.Set(strokeOverlay);
     }
 
@@ -53,8 +53,7 @@ public class NewStrokeCmd : CommandBase
     {
         // Overlay
         StrokeE.Remove<StrokeOverlay>();
-        var layerOverlay = _layerE.Get<PolylineLayerOverlay>();
-        layerOverlay.RemoveChild(_refNodes[1]);
+        _refNodes[1].GetParent().RemoveChild(_refNodes[1]);
         
         // View
         StrokeE.Remove<StrokeView>();

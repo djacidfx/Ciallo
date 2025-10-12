@@ -43,23 +43,10 @@ public class NewPolylineLayerCmd : CommandBase
         LayerE.Set(layerView);
         layerView.SetOwner(worldView);
         LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(layerView.SetVisible).AddTo(layerView);
-        
-        // Overlay
-        var worldOverlay = Document.Get<WorldOverlay>();
-        if(_refObjects.Count == 1) _refObjects.Add(new PolylineLayerOverlay());
-        var layerOverlay = (PolylineLayerOverlay)_refObjects[1];
-        worldOverlay.AddChild(layerOverlay);
-        LayerE.Set(layerOverlay);
-        LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(layerOverlay.SetVisible).AddTo(layerOverlay);
     }
 
     public override void Undo()
     {
-        // Overlay
-        var overlay = Document.Get<WorldOverlay>();
-        LayerE.Remove<PolylineLayerOverlay>();
-        overlay.RemoveChild(_refObjects[1]);
-        
         // View
         LayerE.Remove<PolylineLayerView>();
         var worldView = Document.Get<WorldView>();

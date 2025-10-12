@@ -33,17 +33,11 @@ public class MoveLayerCmd : CommandBase
         var worldView = Document.Get<WorldView>();
         worldView.MoveNode(_src, _dst);
         
-        // Overlay
-        var worldOverlay = Document.Get<WorldOverlay>();
-        worldOverlay.MoveNode(_src, _dst);
+        // Overlay if order-free
     }
 
     public override void Undo()
     {
-        // Overlay
-        var worldOverlay = Document.Get<WorldOverlay>();
-        worldOverlay.MoveNode(_dst, _src);
-        
         // View
         var worldView = Document.Get<WorldView>();
         worldView.MoveNode(_dst, _src);

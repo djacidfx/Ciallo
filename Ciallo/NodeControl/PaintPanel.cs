@@ -30,9 +30,9 @@ public partial class PaintPanel : PanelContainer
         _background.Polygon = [ new(-w/2, -h/2), new(w/2, -h/2), new(w/2, h/2), new(-w/2, h/2) ];
         
         Zoom.Subscribe(v => _camera.Zoom = Vector2.One * v);
-        CanvasRotation.Subscribe(v => _camera.Rotation = Mathf.DegToRad(v));
+        CanvasRotation.Subscribe(v => _camera.Rotation = -Mathf.DegToRad(v));
         Offset.Subscribe(v => _camera.Position = v);
-        _documentSetting.BackgroundColor.Subscribe(c => _background.Color = c);
+        _documentSetting.BackgroundColor.Subscribe(_background.SetColor).AddTo(this);
         
         GetNode<SpinSlider>("%ZoomControl").BindNumber(Zoom);
         GetNode<SpinSlider>("%RotationControl").BindNumber(CanvasRotation);
