@@ -9,6 +9,8 @@ using Ciallo.Widget;
 using ObservableCollections;
 using R3;
 
+namespace Ciallo.NodeControl;
+
 public partial class ToolPropertyPanel : PanelContainer
 {
     public VBoxContainer HubBox;
@@ -29,7 +31,7 @@ public partial class ToolPropertyPanel : PanelContainer
                 case NotifyCollectionChangedAction.Add:
                     var holder = new DocumentToolPropertyContainer();
                     holder.VisibleIf(AppWorldManager.WorkingWorld, e.NewItem);
-                    e.NewItem.Document().Set(holder);
+                    e.NewItem.Document().Set(holder); 
                     HubBox.AddChild(holder);
                     HubBox.MoveChild(holder, e.NewStartingIndex);
                     

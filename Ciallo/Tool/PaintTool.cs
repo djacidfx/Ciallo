@@ -8,7 +8,6 @@ using Ciallo.Tool;
 using Ciallo.Widget;
 using Godot;
 using Massive;
-using ObservableCollections;
 using R3;
 
 public partial class PaintTool : CommonToolBase
@@ -25,49 +24,6 @@ public partial class PaintTool : CommonToolBase
     {
         base._Ready();
         SetPressed(true);
-
-        RegisterDocumentBrushPanel();
-    }
-
-    // Refactor: Move to another place when writing deserialization logic.
-    private static void RegisterDocumentBrushPanel()
-    {
-        AppWorldManager.LoadedWorlds.ObserveChanged().Subscribe(e =>
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    var docAdd = e.NewItem.Document();
-                    var panel = BrushPanel.Instantiate();
-                    panel.Title = "Brush in document";
-                    panel.Visible = false;
-                    panel.PopupWindow = true; // Hint user this is different from the brush library panel
-                    panel.Exclusive = false; // Allow propagating input (redo/undo mainly) to main window
-                    docAdd.Set(panel);
-                    ((SceneTree)Engine.GetMainLoop()).GetCurrentScene().AddChild(panel);
-
-                    panel.BrushPreviewContainer.Visible = false; // Add preview someday
-                    var bm = docAdd.Get<BrushManager>();
-                    panel.BindBrushSetting(bm.Brushes, ent => ent.Get<BrushSetting>());
-
-                    panel.Operators.Visible = false;
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    var docRemove = e.OldItem.Document();
-                    docRemove.Get<BrushPanel>().QueueFree();
-                    docRemove.Remove<BrushPanel>();
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    foreach (var world in AppWorldManager.LoadedWorlds)
-                    {
-                        var doc = world.Document();
-                        doc.Get<BrushPanel>().QueueFree();
-                        doc.Remove<BrushPanel>();
-                    }
-                    break;
-                default: throw new("unreachable");
-            }
-        });
     }
 
     public override void DrawProperty(PropertyContainer container, Entity document)
