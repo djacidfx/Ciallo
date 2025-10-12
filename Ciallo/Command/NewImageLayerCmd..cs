@@ -50,7 +50,7 @@ public class NewImageLayerCmd : CommandBase
         
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
-        var layerOverlay = new ImageLayerOverlay();
+        var layerOverlay = new ImageLayerOverlay(Sprite);
         LayerE.Set(layerOverlay);
         worldOverlay.AddChild(layerOverlay);
         

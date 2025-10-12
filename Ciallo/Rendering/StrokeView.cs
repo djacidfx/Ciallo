@@ -11,7 +11,7 @@ namespace Ciallo.Rendering;
 [Tool, GlobalClass]
 public partial class StrokeView : MultiMeshInstance2D
 {
-    public override void _Ready()
+    public StrokeView()
     {
         if (Multimesh != null) return;
         var multiMesh = new MultiMesh
@@ -23,6 +23,11 @@ public partial class StrokeView : MultiMeshInstance2D
         };
         Multimesh = multiMesh;
         TextureFilter = TextureFilterEnum.LinearWithMipmaps;
+    }
+    
+    public void SetGeometry([NotNull] IReadOnlyList<Vector2> points, float radius)
+    {
+        SetGeometry(points, Enumerable.Repeat(radius, points.Count).ToImmutableArray());
     }
 
     public void SetGeometry(

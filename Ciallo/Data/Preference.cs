@@ -39,6 +39,10 @@ public class Preference
     public Color StrokeWireframeColor = Colors.NavyBlue;
     [DataMember]
     public Color StrokeWireframeHintColor = Colors.Orange;
+    [DataMember]
+    public float StrokeWireframeRadius = 2f;
+    [DataMember]
+    public float StrokeDotRadius = 12f;
     
     #region Save Load Json
     public static readonly string Path = "user://Preference.json";

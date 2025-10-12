@@ -35,9 +35,9 @@ public partial class StrokeOverlay : Node2D
 
     public void SetGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
-        const float wireframeRadius = 2f;
-        const float dotRadius = 12f;
-        Wireframe.SetGeometry(points, Enumerable.Repeat(wireframeRadius, points.Count).ToImmutableArray());
+        float wireframeRadius = AppPreference.StrokeWireframeRadius;
+        float dotRadius = AppPreference.StrokeDotRadius;
+        Wireframe.SetGeometry(points, wireframeRadius);
         WireframeDot.SetDotGeometry(points, Enumerable.Repeat(dotRadius, points.Count).ToImmutableArray());
         HitTestBody.SetGeometry(points, radii);
     }
