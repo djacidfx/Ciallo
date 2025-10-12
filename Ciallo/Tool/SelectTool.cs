@@ -1,7 +1,6 @@
 using Massive;
 using Ciallo.Widget;
 using Stateless;
-using R3;
 
 namespace Ciallo.Tool;
 

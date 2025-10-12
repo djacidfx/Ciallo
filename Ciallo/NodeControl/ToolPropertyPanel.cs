@@ -1,10 +1,6 @@
 using Godot;
-using System;
-using System.Collections.Specialized;
-using Massive;
 using Ciallo.Data;
 using Ciallo.Misc;
-using Ciallo.Tool;
 using Ciallo.Widget;
 using ObservableCollections;
 using R3;

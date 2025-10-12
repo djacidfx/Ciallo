@@ -1,7 +1,4 @@
-﻿using Ciallo.Data;
-using Godot;
-using ObservableCollections;
-using R3;
+﻿using Godot;
 
 namespace Ciallo.Tool;
 

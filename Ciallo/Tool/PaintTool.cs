@@ -1,4 +1,3 @@
-using System.Collections.Specialized;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
@@ -23,7 +22,6 @@ public partial class PaintTool : CommonToolBase
     public override void _Ready()
     {
         base._Ready();
-        SetPressed(true);
     }
 
     public override void DrawProperty(PropertyContainer container)

@@ -1,6 +1,5 @@
 using Ciallo.Data;
 using Godot;
-using Ciallo.Tool;
 
 namespace Ciallo.NodeControl;
 

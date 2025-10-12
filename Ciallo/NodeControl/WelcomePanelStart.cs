@@ -1,5 +1,4 @@
 using Godot;
-using System;
 using Ciallo.NodeControl;
 
 public partial class WelcomePanelStart : VBoxContainer
