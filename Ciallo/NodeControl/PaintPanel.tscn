@@ -39,7 +39,8 @@ theme_override_constants/separation = 15
 layout_mode = 2
 tooltip_text = "[Canvas Navigation Guide Tooltip]"
 mouse_filter = 0
-text = "Canvas navigation guide (?)"
+mouse_default_cursor_shape = 16
+text = "Canvas navigation guide"
 
 [node name="VSeparator2" type="VSeparator" parent="VBoxContainer/Bar/HBoxContainer"]
 layout_mode = 2
