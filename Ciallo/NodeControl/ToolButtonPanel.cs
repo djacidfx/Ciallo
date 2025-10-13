@@ -13,7 +13,13 @@ public partial class ToolButtonPanel : Container
     
     public ToolButtonPanel()
     {
-        ToolButtonGroup.Pressed += button => ActiveTool.Value = (ITool)button;
+        ToolButtonGroup.Pressed += button =>
+        {
+            var tool = (ITool)button;
+            ActiveTool.Value?.OnDeactivate();
+            ActiveTool.Value = tool;
+            tool.OnActivate();
+        };
     }
     
     public override void _Ready()

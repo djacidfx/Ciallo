@@ -11,7 +11,7 @@ public interface ITool
     public void OnRightRelease(CursorButtonData data);
     public void OnMoving(CursorMotionData data);
     public void OnKey(InputEventKey key);
-    
-    public void OnActivate(){}
-    public void OnDeactivate(){}
+
+    public void OnActivate();
+    public void OnDeactivate();
 }

@@ -19,11 +19,6 @@ public partial class PaintTool : CommonToolBase
     // Will have dual interactors
     // public readonly ResizeBrushInteractor ResizeInteractor = new();
 
-    public override void _Ready()
-    {
-        base._Ready();
-    }
-
     public override void DrawProperty(PropertyContainer container)
     {
         var brushSelector = new OptionButton();
@@ -119,7 +114,10 @@ public partial class PaintTool : CommonToolBase
         manageDocumentBrush.Pressed += () => Document.Get<BrushPanel>().Popup();
         container.AddChild(manageDocumentBrush);
     }
-    
+
+    public override void OnActivate() { }
+    public override void OnDeactivate() { }
+
     private void OnUseBrushPressed()
     {
         if (!AppBrushLibrary.HasSelection) return;

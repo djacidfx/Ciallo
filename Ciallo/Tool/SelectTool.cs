@@ -1,6 +1,11 @@
+using System;
+using Ciallo.Data;
 using Massive;
 using Ciallo.Widget;
+using Godot;
 using Stateless;
+using Ciallo.Rendering;
+using R3;
 
 namespace Ciallo.Tool;
 
@@ -10,26 +15,50 @@ public partial class SelectTool : CommonToolBase
 {
     public readonly StrokeSelectionHintInteractor HintInteractor = new();
 
-    public readonly StateMachine<State, Event> ToolStateMachine = new(State.Idle);
+    public readonly StateMachine<State, Event> ToolStateMachine = new(State.Inactive);
 
     public new enum State
     {
-        Idle,
-        ImageLayerEdit,
+        Active,
+        Inactive,
+        EditingImageLayer,
     }
 
     public new enum Event
     {
-        WorkingLayerSwitch,
-        Cancel,
+        SwitchWorkingLayer,
+        Activate,
+        Deactivate,
     }
     
     private readonly EntityParameterEvent _etWorkingLayerSwitch;
-
-
-    public SelectTool() : base()
+    
+    public SelectTool()
     {
-        
+        ToolStateMachine.OnUnhandledTrigger((_, _) => { });
+        _etWorkingLayerSwitch = ToolStateMachine.SetTriggerParameters<Entity>(Event.SwitchWorkingLayer);
+        ToolStateMachine.Configure(State.Inactive)
+            .Permit(Event.Activate, State.Active);
+        ToolStateMachine.Configure(State.Active)
+            .Permit(Event.Deactivate, State.Inactive)
+            .PermitDynamic(_etWorkingLayerSwitch, e =>
+            {
+                if (e.IsNull()) return State.Active;
+                if (e.Has<ImageLayerSetting>()) return State.EditingImageLayer;
+                return State.Active;
+            });
+        Entity currLayerE = new(); 
+        ToolStateMachine.Configure(State.EditingImageLayer)
+            .SubstateOf(State.Active)
+            .OnEntryFrom(_etWorkingLayerSwitch, (layerE, _) =>
+            {
+                layerE.Get<ImageLayerOverlay>().Visible = true;
+                currLayerE = layerE;
+            })
+            .OnExit(() =>
+            {
+                currLayerE.Get<ImageLayerOverlay>().Visible = false;
+            });
     }
 
     public override InteractorBase HoveringInteractor => HintInteractor;
@@ -38,8 +67,16 @@ public partial class SelectTool : CommonToolBase
         
     }
 
-    public override void _Ready()
+    private IDisposable subsToWorkingLayer;
+    public override void OnActivate()
     {
-        
+        ToolStateMachine.Fire(Event.Activate);
+        subsToWorkingLayer = Document.Get<SelectionManager>().WorkingLayer.Subscribe(e=>ToolStateMachine.Fire(_etWorkingLayerSwitch, e));
+    }
+
+    public override void OnDeactivate()
+    {
+        subsToWorkingLayer?.Dispose();
+        ToolStateMachine.Fire(Event.Deactivate);
     }
 }

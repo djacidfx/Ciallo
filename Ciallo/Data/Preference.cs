@@ -36,7 +36,7 @@ public class Preference
     public ObservableList<string> RecentFiles = [];
     
     [DataMember]
-    public Color StrokeWireframeColor = Colors.NavyBlue;
+    public Color StrokeWireframeColor = Colors.Orange;
     [DataMember]
     public Color StrokeWireframeHintColor = Colors.Orange;
     [DataMember]

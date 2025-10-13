@@ -21,4 +21,7 @@ public abstract partial class ToolButtonBase : Button, ITool
     public abstract void OnRightRelease(CursorButtonData data);
     public abstract void OnMoving(CursorMotionData data);
     public abstract void OnKey(InputEventKey key);
+
+    public abstract void OnActivate();
+    public abstract void OnDeactivate();
 }

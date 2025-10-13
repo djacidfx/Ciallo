@@ -67,9 +67,9 @@ public abstract partial class CommonToolBase : ToolButtonBase
             {
                 BeforeLeftStart();
                 LeftInteractor.Start(data);
-            })
+            }) 
             .Permit(Event.Cancel, State.Idle)
-            .PermitIf(_etLeftRelease, State.Idle) // Permit() cannot accept parameterized trigger, annoying
+            .PermitIf(_etLeftRelease, State.Idle) //Permit() cannot accept parameterized trigger, annoying
             .PermitIf(_etRightClick, State.Idle) // Cancel left interaction if right click
             .OnExit(t =>
             {

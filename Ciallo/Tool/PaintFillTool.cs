@@ -8,4 +8,14 @@ public partial class PaintFillTool : CommonToolBase
     {
         
     }
+
+    public override void OnActivate()
+    {
+        
+    }
+
+    public override void OnDeactivate()
+    {
+        
+    }
 }
