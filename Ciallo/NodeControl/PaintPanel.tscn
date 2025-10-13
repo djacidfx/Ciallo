@@ -92,6 +92,7 @@ layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 0
 stretch = true
+mouse_target = true
 script = ExtResource("3_7pmtm")
 
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldViewContainer"]
@@ -114,7 +115,3 @@ ignore_rotation = false
 [node name="WorldOverlay" type="Node2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
 unique_name_in_owner = true
 script = ExtResource("6_je3d8")
-
-[connection signal="gui_input" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnGuiInput"]
-[connection signal="mouse_entered" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnMouseEnter"]
-[connection signal="mouse_exited" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnMouseExit"]

@@ -21,6 +21,10 @@ public partial class WorldEventDispatcher : SubViewportContainer
     public override void _Ready()
     {
         _camera = GetNode<Camera2D>("%Camera2D");
+            
+        GuiInput += OnGuiInput;
+        MouseEntered += OnMouseEnter;
+        MouseExited += OnMouseExit;
     }
     
     public void OnGuiInput(InputEvent e)
@@ -167,6 +171,8 @@ public partial class WorldEventDispatcher : SubViewportContainer
     public void OnMouseExit()
     {
         CallDeferred(Control.MethodName.ReleaseFocus);
+        Input.SetDefaultCursorShape(Input.CursorShape.Arrow);
+        // Input.MouseMode = Input.MouseModeEnum.Visible;
         _isHovering = false;
     }
 }
