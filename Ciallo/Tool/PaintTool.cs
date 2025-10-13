@@ -13,9 +13,12 @@ public partial class PaintTool : CommonToolBase
 {
     public readonly ReactiveProperty<Entity> BrushE = new(new Entity());
     
-    public override InteractorBase LeftInteractor => PaintInteractor;
-    
     public readonly PaintInteractor PaintInteractor = new();
+    public readonly PaintHover PaintHover = new();
+    
+    public override InteractorBase LeftInteractor => PaintInteractor;
+    public override InteractorBase HoveringInteractor => PaintHover;
+    
     // Will have dual interactors
     // public readonly ResizeBrushInteractor ResizeInteractor = new();
 
@@ -127,3 +130,25 @@ public partial class PaintTool : CommonToolBase
 }
 
 public partial class DocumentBrushList : ItemList;
+
+public class PaintHover : HoverBase
+{
+    public override bool CanInteract
+    {
+        get
+        {
+            var l = SelectionManager.WorkingLayer.Value;
+            return l.IsNotNull() && l.Has<PolylineLayerSetting>();   
+        }
+    }
+
+    public override void Interacting(CursorMotionData data)
+    {
+        Input.SetDefaultCursorShape(Input.CursorShape.Cross);
+    }
+
+    public override void Cancel()
+    {
+        Input.SetDefaultCursorShape(Input.CursorShape.Arrow);
+    }
+}

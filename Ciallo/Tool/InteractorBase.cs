@@ -18,11 +18,18 @@ public abstract class InteractorBase
     
     public abstract bool CanInteract { get; }
 
-    public virtual void Start(CursorButtonData data) { }
+    public abstract void Start(CursorButtonData data);
     
-    public virtual void Interacting(CursorMotionData data) { }
+    public abstract void Interacting(CursorMotionData data);
 
-    public virtual void End(CursorButtonData data) { }
+    public abstract void End(CursorButtonData data);
 
-    public virtual void Cancel() { }
+    public abstract void Cancel();
+}
+
+public abstract class HoverBase : InteractorBase
+{
+    // No needs to implement:
+    public override void Start(CursorButtonData data) { }
+    public override void End(CursorButtonData data) { }
 }

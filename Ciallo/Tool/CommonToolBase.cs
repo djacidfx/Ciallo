@@ -5,8 +5,8 @@ using Stateless;
 
 namespace Ciallo.Tool;
 
-using buttonParameterEvent = StateMachine<CommonToolBase.State,CommonToolBase.Event>.TriggerWithParameters<CursorButtonData>;
-using motionParameterEvent = StateMachine<CommonToolBase.State,CommonToolBase.Event>.TriggerWithParameters<CursorMotionData>;
+using buttonParameterEvent = StateMachine<CommonToolBase.State, CommonToolBase.Event>.TriggerWithParameters<CursorButtonData>;
+using motionParameterEvent = StateMachine<CommonToolBase.State, CommonToolBase.Event>.TriggerWithParameters<CursorMotionData>;
 
 /// <summary>
 /// The base class for common tools that need for three states: Hovering, left mouse drag, right mouse drag.
@@ -56,7 +56,7 @@ public abstract partial class CommonToolBase : ToolButtonBase
         Machine.Configure(State.Idle)
             .PermitIf(_etLeftClick, State.LeftInteracting, _ => LeftInteractor?.CanInteract == true)
             .PermitIf(_etRightClick, State.RightInteracting, _ => RightInteractor?.CanInteract == true)
-            .PermitIf(_etMove, State.HoverInteracting, _ => HoveringInteractor?.CanInteract == true);
+            .PermitIf(_etMove, State.HoverInteracting);
         Machine.Configure(State.HoverInteracting)
             .PermitIf(_etLeftClick, State.LeftInteracting, _ => LeftInteractor?.CanInteract == true)
             .PermitIf(_etRightClick, State.RightInteracting, _ => RightInteractor?.CanInteract == true)
@@ -125,7 +125,7 @@ public abstract partial class CommonToolBase : ToolButtonBase
     public override void OnMoving(CursorMotionData data)
     {
         Machine.Fire(_etMove, data);
-        if(Machine.State == State.HoverInteracting) HoveringInteractor.Interacting(data);
+        if(Machine.State == State.HoverInteracting && HoveringInteractor?.CanInteract == true) HoveringInteractor.Interacting(data);
         if(Machine.State == State.LeftInteracting) LeftInteractor.Interacting(data);
         if(Machine.State == State.RightInteracting) RightInteractor.Interacting(data);
     }

@@ -1,15 +1,14 @@
 using System;
 using Ciallo.Data;
-using Massive;
-using Ciallo.Widget;
-using Godot;
-using Stateless;
 using Ciallo.Rendering;
+using Ciallo.Widget;
+using Massive;
 using R3;
+using Stateless;
 
 namespace Ciallo.Tool;
 
-using EntityParameterEvent = StateMachine<SelectTool.State,SelectTool.Event>.TriggerWithParameters<Entity>;
+using EntityParameterEvent = StateMachine<SelectTool.State, SelectTool.Event>.TriggerWithParameters<Entity>;
 
 public partial class SelectTool : CommonToolBase
 {
@@ -67,16 +66,16 @@ public partial class SelectTool : CommonToolBase
         
     }
 
-    private IDisposable subsToWorkingLayer;
+    private IDisposable _subsToWorkingLayer;
     public override void OnActivate()
     {
         ToolStateMachine.Fire(Event.Activate);
-        subsToWorkingLayer = Document.Get<SelectionManager>().WorkingLayer.Subscribe(e=>ToolStateMachine.Fire(_etWorkingLayerSwitch, e));
+        _subsToWorkingLayer = Document.Get<SelectionManager>().WorkingLayer.Subscribe(e=>ToolStateMachine.Fire(_etWorkingLayerSwitch, e));
     }
 
     public override void OnDeactivate()
     {
-        subsToWorkingLayer?.Dispose();
+        _subsToWorkingLayer?.Dispose();
         ToolStateMachine.Fire(Event.Deactivate);
     }
 }
