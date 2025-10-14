@@ -4,8 +4,8 @@ namespace Ciallo.Tool;
 
 public abstract class HoverBase : InteractorBase
 {
-    // Optional to implement:
-    public override void Start(CursorButtonData _)
+    // Optional to implement
+    public virtual void Start(CursorMotionData data)
     {
     }
 
@@ -15,6 +15,10 @@ public abstract class HoverBase : InteractorBase
 
     // Don't implement
     public sealed override void End(CursorButtonData _)
+    {
+    }
+    
+    public sealed override void Start(CursorButtonData _)
     {
     }
     

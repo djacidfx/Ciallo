@@ -12,8 +12,6 @@ public class StrokeSelectionHintInteractor : HoverBase
 
     public override bool CanInteract => SelectionManager.WorkingLayer.Value.IsNotNull();
 
-    public override void Start(CursorButtonData data) { }
-
     public override void Interacting(CursorMotionData data)
     {
         // See 2D ray cast for the method:

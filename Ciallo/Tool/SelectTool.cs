@@ -13,8 +13,10 @@ using EntityParameterEvent = StateMachine<SelectTool.State, SelectTool.Event>.Tr
 public partial class SelectTool : CommonToolBase
 {
     public readonly StrokeSelectionHintInteractor HintInteractor = new();
-    
-    public override HoverBase HoveringInteractor => HintInteractor;
+    public readonly ImageEditHover ImageEditHover = new();
+
+    private HoverBase _hover;
+    public override HoverBase HoveringInteractor => _hover;
 
     public readonly StateMachine<State, Event> ToolStateMachine = new(State.Inactive);
     
@@ -57,9 +59,11 @@ public partial class SelectTool : CommonToolBase
             {
                 layerE.Get<ImageLayerOverlay>().Visible = true;
                 currLayerE = layerE;
+                _hover = ImageEditHover;
             })
             .OnExit(() =>
             {
+                _hover = null;
                 currLayerE.Get<ImageLayerOverlay>().Visible = false;
             });
     }
@@ -78,6 +82,7 @@ public partial class SelectTool : CommonToolBase
 
     public override void OnDeactivate()
     {
+        base.OnDeactivate();
         _subsToWorkingLayer?.Dispose();
         ToolStateMachine.Fire(Event.Deactivate);
     }

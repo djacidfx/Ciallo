@@ -56,8 +56,9 @@ public abstract partial class CommonToolBase : ToolButtonBase
         _machine.Configure(State.Idle)
             .PermitIf(_etLeftClick, State.LeftInteracting, _ => LeftInteractor?.CanInteract == true)
             .PermitIf(_etRightClick, State.RightInteracting, _ => RightInteractor?.CanInteract == true)
-            .PermitIf(_etMove, State.HoverInteracting);
+            .PermitIf(_etMove, State.HoverInteracting, _ => HoveringInteractor?.CanInteract == true);
         _machine.Configure(State.HoverInteracting)
+            .OnEntryFrom(_etMove, data => HoveringInteractor.Start(data))
             .PermitIf(_etLeftClick, State.LeftInteracting, _ => LeftInteractor?.CanInteract == true)
             .PermitIf(_etRightClick, State.RightInteracting, _ => RightInteractor?.CanInteract == true)
             .Permit(Event.Cancel, State.Idle)
@@ -125,7 +126,7 @@ public abstract partial class CommonToolBase : ToolButtonBase
     public override void OnMoving(CursorMotionData data)
     {
         _machine.Fire(_etMove, data);
-        if(_machine.State == State.HoverInteracting && HoveringInteractor?.CanInteract == true) HoveringInteractor.Interacting(data);
+        if(_machine.State == State.HoverInteracting) HoveringInteractor.Interacting(data);
         if(_machine.State == State.LeftInteracting) LeftInteractor.Interacting(data);
         if(_machine.State == State.RightInteracting) RightInteractor.Interacting(data);
     }
