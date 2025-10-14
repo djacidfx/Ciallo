@@ -16,6 +16,7 @@ public partial class PaintTool : CommonToolBase
     public PaintTool()
     {
         LeftInteractor = new PaintInteractor();
+        HoverInteractor = new PaintHover();
     }
 
     // Will have dual interactors
