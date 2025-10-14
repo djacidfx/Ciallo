@@ -13,11 +13,10 @@ public partial class PaintTool : CommonToolBase
 {
     public readonly ReactiveProperty<Entity> BrushE = new(new Entity());
 
-    public readonly PaintInteractor PaintInteractor = new();
-    public readonly PaintHover PaintHover = new();
-
-    public override InteractorBase LeftInteractor => PaintInteractor;
-    public override HoverBase HoveringInteractor => PaintHover;
+    public PaintTool()
+    {
+        LeftInteractor = new PaintInteractor();
+    }
 
     // Will have dual interactors
     // public readonly ResizeBrushInteractor ResizeInteractor = new();

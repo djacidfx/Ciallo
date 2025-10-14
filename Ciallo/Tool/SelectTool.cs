@@ -15,9 +15,6 @@ public partial class SelectTool : CommonToolBase
     public readonly StrokeSelectionHintInteractor HintInteractor = new();
     public readonly ImageEditHover ImageEditHover = new();
 
-    private HoverBase _hover;
-    public override HoverBase HoveringInteractor => _hover;
-
     public readonly StateMachine<State, Event> ToolStateMachine = new(State.Inactive);
 
     public new enum State
@@ -58,12 +55,11 @@ public partial class SelectTool : CommonToolBase
             {
                 layerE.Get<ImageLayerOverlay>().Visible = true;
                 currLayerE = layerE;
-                _hover = ImageEditHover;
+                HoverInteractor = ImageEditHover;
             })
             .OnExit(() =>
             {
-                base.OnDeactivate();
-                _hover = null;
+                HoverInteractor = null;
                 currLayerE.Get<ImageLayerOverlay>().Visible = false;
             });
     }
