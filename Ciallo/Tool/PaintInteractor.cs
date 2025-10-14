@@ -41,7 +41,6 @@ public class PaintInteractor : InteractorBase
     {
         // Shen: I guess this will improve graphics responsiveness
         OS.LowProcessorUsageMode = false;
-        Input.UseAccumulatedInput = false;
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
         _interactStopwatch = Stopwatch.StartNew();
@@ -152,7 +151,6 @@ public class PaintInteractor : InteractorBase
         _radii.Clear();
         _strokePreview.QueueFree();
         OS.LowProcessorUsageMode = true;
-        Input.UseAccumulatedInput = true;
         Input.MouseMode = Input.MouseModeEnum.Visible;
     }
 }

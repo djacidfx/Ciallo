@@ -15,21 +15,14 @@ public abstract class InteractorBase
     public World WorkingWorld => AppWorldManager.WorkingWorld.Value;
     public Entity Document => WorkingWorld.Document();
     public SelectionManager SelectionManager => Document.Get<SelectionManager>();
-    
+
     public abstract bool CanInteract { get; }
 
     public abstract void Start(CursorButtonData data);
-    
+
     public abstract void Interacting(CursorMotionData data);
 
     public abstract void End(CursorButtonData data);
 
     public abstract void Cancel();
-}
-
-public abstract class HoverBase : InteractorBase
-{
-    // No needs to implement:
-    public override void Start(CursorButtonData data) { }
-    public override void End(CursorButtonData data) { }
 }

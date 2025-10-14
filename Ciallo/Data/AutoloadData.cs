@@ -14,6 +14,7 @@ public partial class AutoloadData : Node
     
     public override void _EnterTree()
     {
+        Input.UseAccumulatedInput = false;
         GetTree().AutoAcceptQuit = false;
         // Message pack serializer setup
         var defaultResolver = CompositeResolver.Create(

@@ -11,7 +11,9 @@ public class StrokeSelectionHintInteractor : HoverBase
     private StrokeOverlay _hintingOverlay;
 
     public override bool CanInteract => SelectionManager.WorkingLayer.Value.IsNotNull();
-    
+
+    public override void Start(CursorButtonData data) { }
+
     public override void Interacting(CursorMotionData data)
     {
         // See 2D ray cast for the method:
@@ -42,12 +44,6 @@ public class StrokeSelectionHintInteractor : HoverBase
             _hintingOverlay?.SetColor(AppPreference.StrokeWireframeColor);
             _hintingOverlay = null;
         }
-    }
-
-    public override void End(CursorButtonData _)
-    {
-        _hintingOverlay?.SetColor(AppPreference.StrokeWireframeColor);
-        _hintingOverlay = null;
     }
 
     public override void Cancel()

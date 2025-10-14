@@ -12,13 +12,13 @@ using R3;
 public partial class PaintTool : CommonToolBase
 {
     public readonly ReactiveProperty<Entity> BrushE = new(new Entity());
-    
+
     public readonly PaintInteractor PaintInteractor = new();
     public readonly PaintHover PaintHover = new();
-    
+
     public override InteractorBase LeftInteractor => PaintInteractor;
-    public override InteractorBase HoveringInteractor => PaintHover;
-    
+    public override HoverBase HoveringInteractor => PaintHover;
+
     // Will have dual interactors
     // public readonly ResizeBrushInteractor ResizeInteractor = new();
 
@@ -28,7 +28,7 @@ public partial class PaintTool : CommonToolBase
         brushSelector.ObserveObservableList(AppBrushLibrary.BrushSettings, s => s.Name);
         brushSelector.BindSelectionIndex(AppBrushLibrary.SelectedIndex);
         container.AddProperty("Library brush", brushSelector);
-        
+
         var appBrushRadiusControl = new SpinSlider()
         {
             MinValue = 0.1f,
@@ -39,19 +39,20 @@ public partial class PaintTool : CommonToolBase
         var boxBrushRadius = container.AddProperty("Radius", appBrushRadiusControl);
         boxBrushRadius.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
         var radiusView = AppBrushLibrary.SelectedIndex
-            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.BaseRadius).ToReadOnlyReactiveProperty();
+            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.BaseRadius)
+            .ToReadOnlyReactiveProperty();
         appBrushRadiusControl.ReactiveBindNumber(radiusView);
-        
+
         var appBrushColorControl = new ColorPickerButton()
         {
             CustomMinimumSize = new(0, 30),
         };
         var boxBrushColor = container.AddProperty("Color", appBrushColorControl);
-                boxBrushColor.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
+        boxBrushColor.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
         var colorView = AppBrushLibrary.SelectedIndex
-            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color ).ToReadOnlyReactiveProperty();
+            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color).ToReadOnlyReactiveProperty();
         appBrushColorControl.ReactiveBindColor(colorView);
-        
+
         var useBrushButton = new Button()
         {
             Text = "Use brush",
@@ -83,17 +84,14 @@ public partial class PaintTool : CommonToolBase
         {
             CustomMinimumSize = new(0, 200),
         };
-        brushList.ItemSelected += idx =>
-        {
-            new ChangeWorkingBrushCmd((int)idx).Commit();
-        };
+        brushList.ItemSelected += idx => { new ChangeWorkingBrushCmd((int)idx).Commit(); };
         var brushM = Document.Get<BrushManager>();
         var selectionM = Document.Get<SelectionManager>();
-        foreach(var brushE in brushM.Brushes)
+        foreach (var brushE in brushM.Brushes)
             brushList.AddItem(brushE.Get<BrushSetting>().Name.Value);
         Document.Set(brushList);
         container.AddProperty("Brush in document", brushList);
-        
+
         var radiusControl = new SpinSlider
         {
             MinValue = 0.1f,
@@ -106,7 +104,7 @@ public partial class PaintTool : CommonToolBase
         var rView = selectionM.WorkingBrush
             .Select(e => e.IsNull() ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
         radiusControl.ReactiveBindNumber(rView);
-        
+
         var manageDocumentBrush = new Button()
         {
             Text = "Manage brush in document",
@@ -118,8 +116,13 @@ public partial class PaintTool : CommonToolBase
         container.AddChild(manageDocumentBrush);
     }
 
-    public override void OnActivate() { }
-    public override void OnDeactivate() { }
+    public override void OnActivate()
+    {
+    }
+
+    public override void OnDeactivate()
+    {
+    }
 
     private void OnUseBrushPressed()
     {
@@ -138,7 +141,7 @@ public class PaintHover : HoverBase
         get
         {
             var l = SelectionManager.WorkingLayer.Value;
-            return l.IsNotNull() && l.Has<PolylineLayerSetting>();   
+            return l.IsNotNull() && l.Has<PolylineLayerSetting>();
         }
     }
 

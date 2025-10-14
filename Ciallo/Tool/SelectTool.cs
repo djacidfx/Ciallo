@@ -13,9 +13,11 @@ using EntityParameterEvent = StateMachine<SelectTool.State, SelectTool.Event>.Tr
 public partial class SelectTool : CommonToolBase
 {
     public readonly StrokeSelectionHintInteractor HintInteractor = new();
+    
+    public override HoverBase HoveringInteractor => HintInteractor;
 
     public readonly StateMachine<State, Event> ToolStateMachine = new(State.Inactive);
-
+    
     public new enum State
     {
         Active,
@@ -29,13 +31,15 @@ public partial class SelectTool : CommonToolBase
         Activate,
         Deactivate,
     }
-    
+
     private readonly EntityParameterEvent _etWorkingLayerSwitch;
-    
+
+
     public SelectTool()
     {
         ToolStateMachine.OnUnhandledTrigger((_, _) => { });
         _etWorkingLayerSwitch = ToolStateMachine.SetTriggerParameters<Entity>(Event.SwitchWorkingLayer);
+        
         ToolStateMachine.Configure(State.Inactive)
             .Permit(Event.Activate, State.Active);
         ToolStateMachine.Configure(State.Active)
@@ -60,7 +64,6 @@ public partial class SelectTool : CommonToolBase
             });
     }
 
-    public override InteractorBase HoveringInteractor => HintInteractor;
     public override void DrawProperty(PropertyContainer container)
     {
         
