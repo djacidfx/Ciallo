@@ -17,12 +17,23 @@ public partial class WorldButtonManager : Node2D
     // Note: not implement screen position, world size
     public Button AddRectButton(Vector2 position, float size, WorldButtonFlags flags = default)
     {
-        var button = new Button
-        {
-            Position = flags.HasFlag(WorldButtonFlags.CornerPosition) ? position : position - size * 0.5f * Vector2.One,
-            Size = size * Vector2.One,
-            PivotOffset = flags.HasFlag(WorldButtonFlags.CornerPosition) ? Vector2.Zero : size * 0.5f * Vector2.One,
-        };
+        return AddRectButton(position, new Vector2(size, size), flags);
+    }
+    
+    public Button AddRectButton(Vector2 position, Vector2 size, WorldButtonFlags flags = default)
+    {
+        var button = AddRectButton(flags);
+        button.Position = flags.HasFlag(WorldButtonFlags.CornerPosition) ? position : position - size * 0.5f;
+        button.Size = size;
+        button.PivotOffset = flags.HasFlag(WorldButtonFlags.CornerPosition) ? Vector2.Zero : size * 0.5f;
+
+        return button;
+    }
+
+    public Button AddRectButton(WorldButtonFlags flags = default)
+    {
+        var button = new Button();
+        
         if (flags.HasFlag(WorldButtonFlags.ScreenPosition))
             CanvasLayer.AddChild(button);
         else

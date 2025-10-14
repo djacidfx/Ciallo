@@ -21,9 +21,22 @@ public class ImageEditHover : HoverBase
     public override void Start(CursorMotionData data)
     {
         var layerE = SelectionManager.WorkingLayer.Value;
-        var corners = layerE.Get<ImageLayerSetting>().GetCorners();
+        var setting = layerE.Get<ImageLayerSetting>();
         var manager = Document.Get<WorldButtonManager>();
         
+        // Rotation button
+        var rotationButton = manager.AddRectButton(setting.Position, setting.Size);
+        rotationButton.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+        rotationButton.Rotation = setting.Rotation;
+        rotationButton.Scale = Vector2.One * 1.2f;
+
+        // Image move button
+        var moveButton = manager.AddRectButton(setting.Position, setting.Size);
+        moveButton.MouseDefaultCursorShape = Control.CursorShape.Drag;
+        moveButton.Rotation = setting.Rotation;
+        
+        // Corner buttons
+        var corners = layerE.Get<ImageLayerSetting>().GetCorners();
         foreach (var (idx, pos) in corners.Index())
         {
             var b = manager.AddRectButton(pos, 100.0f / 3, WorldButtonFlags.ScreenSize);
