@@ -4,26 +4,36 @@ namespace Ciallo.Rendering;
 
 public partial class ImageLayerOverlay : Node2D
 {
-    public Vector2[] Corners;
+    public Vector2 Size;
     public StrokeView Wireframe;
     public MultiMeshInstance2D Dots;
     public TouchScreenButton[] Buttons;
 
-    public ImageLayerOverlay(Vector2[] corners)
+    // Note: Transform is set by Node2D, only size is necessary here
+    public ImageLayerOverlay(Vector2 size)
     {
-        Corners = corners;
+        Size = size;
+        Wireframe = new() { Material = AutoloadRendering.WireframeMaterial };
+        Wireframe.SetInstanceShaderParameter("overridingColor", AppPreference.StrokeWireframeColor);
+
+        Dots = AutoloadRendering.CreateDots();
     }
 
     public override void _Ready()
     {
-        Wireframe = new() { Material = AutoloadRendering.WireframeMaterial };
-        Wireframe.SetInstanceShaderParameter("overridingColor", AppPreference.StrokeWireframeColor);
-        Vector2[] positions = [..Corners, Corners[0]];
+        Vector2 half = Size * 0.5f;
+        Vector2[] positions =
+        [
+            -half,
+            new(half.X, -half.Y),
+            half,
+            new(-half.X, half.Y),
+            half,
+        ];
         Wireframe.SetGeometry(positions, AppPreference.StrokeWireframeRadius);
         AddChild(Wireframe);
-        
-        Dots = AutoloadRendering.CreateDots();
-        Dots.SetDotGeometry(positions, AppPreference.StrokeDotRadius * 2);
+
+        Dots.SetDotGeometry(positions[..4], AppPreference.StrokeDotRadius * 2);
         AddChild(Dots);
     }
 }

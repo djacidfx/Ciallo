@@ -23,7 +23,7 @@ public class ImageLayerSetting
         ];
     }
 
-    public Vector2 Size => Texture.GetSize();
+    public Vector2 ImageSize => Texture.GetSize();
     public Vector2 Position => ImageTransform.Value.Origin;
     public float Rotation => ImageTransform.Value.Rotation;
 }

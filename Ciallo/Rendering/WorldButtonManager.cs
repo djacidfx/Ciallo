@@ -41,6 +41,7 @@ public partial class WorldButtonManager : Node2D
 
         if (flags.HasFlag(WorldButtonFlags.ScreenSize) && !flags.HasFlag(WorldButtonFlags.ScreenPosition))
             ButtonsToUpdate.Add(button);
+        button.Flat = true;
 
         return button;
     }

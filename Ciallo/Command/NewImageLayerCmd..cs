@@ -50,9 +50,10 @@ public class NewImageLayerCmd : CommandBase
         
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
-        var layerOverlay = new ImageLayerOverlay(Setting.GetCorners()){Visible = false};
+        var layerOverlay = new ImageLayerOverlay(Setting.ImageSize){Visible = false};
         LayerE.Set(layerOverlay);
         worldOverlay.AddChild(layerOverlay);
+        Setting.ImageTransform.Subscribe(layerOverlay.SetTransform).AddTo(layerOverlay);
         
         // Panel
         var layerContainer = Document.Get<LayerContainer>();
