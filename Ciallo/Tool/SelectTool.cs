@@ -19,7 +19,7 @@ public partial class SelectTool : CommonToolBase
     public override HoverBase HoveringInteractor => _hover;
 
     public readonly StateMachine<State, Event> ToolStateMachine = new(State.Inactive);
-    
+
     public new enum State
     {
         Active,
@@ -35,13 +35,12 @@ public partial class SelectTool : CommonToolBase
     }
 
     private readonly EntityParameterEvent _etWorkingLayerSwitch;
-
-
+    
     public SelectTool()
     {
         ToolStateMachine.OnUnhandledTrigger((_, _) => { });
         _etWorkingLayerSwitch = ToolStateMachine.SetTriggerParameters<Entity>(Event.SwitchWorkingLayer);
-        
+
         ToolStateMachine.Configure(State.Inactive)
             .Permit(Event.Activate, State.Active);
         ToolStateMachine.Configure(State.Active)
@@ -52,7 +51,7 @@ public partial class SelectTool : CommonToolBase
                 if (e.Has<ImageLayerSetting>()) return State.EditingImageLayer;
                 return State.Active;
             });
-        Entity currLayerE = new(); 
+        Entity currLayerE = new();
         ToolStateMachine.Configure(State.EditingImageLayer)
             .SubstateOf(State.Active)
             .OnEntryFrom(_etWorkingLayerSwitch, (layerE, _) =>
@@ -63,6 +62,7 @@ public partial class SelectTool : CommonToolBase
             })
             .OnExit(() =>
             {
+                base.OnDeactivate();
                 _hover = null;
                 currLayerE.Get<ImageLayerOverlay>().Visible = false;
             });
@@ -70,20 +70,21 @@ public partial class SelectTool : CommonToolBase
 
     public override void DrawProperty(PropertyContainer container)
     {
-        
     }
 
     private IDisposable _subsToWorkingLayer;
+
     public override void OnActivate()
     {
         ToolStateMachine.Fire(Event.Activate);
-        _subsToWorkingLayer = Document.Get<SelectionManager>().WorkingLayer.Subscribe(e=>ToolStateMachine.Fire(_etWorkingLayerSwitch, e));
+        _subsToWorkingLayer = Document.Get<SelectionManager>().WorkingLayer
+            .Subscribe(e => ToolStateMachine.Fire(_etWorkingLayerSwitch, e));
     }
 
     public override void OnDeactivate()
     {
-        base.OnDeactivate();
         _subsToWorkingLayer?.Dispose();
         ToolStateMachine.Fire(Event.Deactivate);
+        base.OnDeactivate();
     }
 }

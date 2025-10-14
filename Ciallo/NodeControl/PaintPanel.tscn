@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cmxkg61nilwq8"]
+[gd_scene load_steps=9 format=3 uid="uid://cmxkg61nilwq8"]
 
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://NodeControl/PaintPanel.cs" id="1_ract4"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_jsupi"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://Rendering/WorldView.tscn" id="4_3trrc"]
 [ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Rendering/Checkerboard.gdshader" id="5_ercqw"]
 [ext_resource type="Script" uid="uid://ci7loyp0at1cr" path="res://Rendering/WorldOverlay.cs" id="6_je3d8"]
+[ext_resource type="Script" uid="uid://dc5n5euy0qfdj" path="res://Rendering/WorldButtonManager.cs" id="7_8h3gs"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_je3d8"]
 shader = ExtResource("5_ercqw")
@@ -116,3 +117,9 @@ ignore_rotation = false
 [node name="WorldOverlay" type="Node2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
 unique_name_in_owner = true
 script = ExtResource("6_je3d8")
+
+[node name="WorldButtonManager" type="Node2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
+unique_name_in_owner = true
+script = ExtResource("7_8h3gs")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="VBoxContainer/WorldViewContainer/SubViewport/WorldButtonManager"]

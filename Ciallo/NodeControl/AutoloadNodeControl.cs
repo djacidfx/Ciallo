@@ -39,13 +39,16 @@ public partial class AutoloadNodeControl : Node
             panel.Exclusive = false; // Allow propagating input (redo/undo mainly) to main window
             document.Set(panel);
             ((SceneTree)Engine.GetMainLoop()).GetCurrentScene().AddChild(panel);
-
             // Hide controls for being lazy
             panel.BrushPreviewContainer.Visible = false; 
             panel.Operators.Visible = false;
-                        
+            // Bind to document brush settings
             var bm = document.Get<BrushManager>();
-            panel.BindBrushSetting(bm.Brushes, ent => ent.Get<BrushSetting>());
+            panel.BindBrushSetting(bm.Brushes, e => e.Get<BrushSetting>());
+            
+            // World button manager
+            var worldButtonManager = paintPanel.GetNode<WorldButtonManager>("%WorldButtonManager");
+            document.Set(worldButtonManager);
         }).AddTo(this);
         
         AppWorldManager.LoadedWorlds.ObserveRemove().Subscribe(et =>
