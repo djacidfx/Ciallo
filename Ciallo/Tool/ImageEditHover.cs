@@ -33,12 +33,13 @@ public class ImageEditHover : HoverBase
         RotationButton = manager.AddRectButton(setting.Position, setting.ImageSize);
         RotationButton.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
         RotationButton.Rotation = setting.Rotation;
-        RotationButton.Scale = Vector2.One * 1.2f;
+        RotationButton.Scale = setting.Scale * 1.2f;
 
         // Image move button
         MoveButton = manager.AddRectButton(setting.Position, setting.ImageSize);
         MoveButton.MouseDefaultCursorShape = Control.CursorShape.Drag;
         MoveButton.Rotation = setting.Rotation;
+        MoveButton.Scale = setting.Scale;
 
         // Corner buttons
         var corners = layerE.Get<ImageLayerSetting>().GetCorners();
