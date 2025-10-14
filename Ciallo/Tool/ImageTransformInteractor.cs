@@ -41,7 +41,6 @@ public class ImageTransformInteractor : InteractorBase
     private ImageLayerSetting _setting;
     private Vector2 _startPos;
     private Transform2D _startTransform;
-    // Store starting corners so we can anchor the opposite one during resize
     private Vector2[] _startCorners = [];
 
     public ImageTransformInteractor(ImageEditHover hover)
@@ -77,40 +76,101 @@ public class ImageTransformInteractor : InteractorBase
 
         if (_transformType >= 2)
         {
-            // Gen by copilot, GPT-5 do this correctly.
-            // Corner resize. Keep the opposite corner fixed, adjust center and scale along the original axes.
+            bool fixRatio = Input.IsKeyPressed(Key.Shift);
+            bool fixCenter = Input.IsKeyPressed(Key.Alt); // Fix the center of transform
+
             var cornerIndex = _transformType - 2; // 0..3
             var oppositeIndex = (cornerIndex + 2) & 3; // (index + 2) % 4
             var fixedCorner = _startCorners[oppositeIndex];
             var draggedPos = data.WorldPosition;
 
-            // New center is midpoint between fixed corner and current pointer.
-            var newCenter = (fixedCorner + draggedPos) * 0.5f;
+            var origCenter = _startTransform.Origin;
 
             // Axis directions from original transform (normalized)
             var axisXDir = _startTransform.X.Normalized();
             var axisYDir = _startTransform.Y.Normalized();
+            var origScaleXLen = _startTransform.X.Length();
+            var origScaleYLen = _startTransform.Y.Length();
 
-            // Vector from center to dragged corner (half diagonal in world space)
-            var halfDiag = draggedPos - newCenter;
+            // Sign of the dragged corner relative to center along each axis (used when anchoring opposite corner)
+            var startOffsetCorner = _startCorners[cornerIndex] - origCenter;
+            var signX = Mathf.Sign(startOffsetCorner.Dot(axisXDir));
+            var signY = Mathf.Sign(startOffsetCorner.Dot(axisYDir));
+            // let it crash philosophy normally, but zero would break orientation; treat 0 as positive
+            if (signX == 0) signX = 1;
+            if (signY == 0) signY = 1;
 
-            // Project half diagonal onto axes to get new half sizes in world along each axis
-            var newHalfXWorld = Mathf.Abs(halfDiag.Dot(axisXDir));
-            var newHalfYWorld = Mathf.Abs(halfDiag.Dot(axisYDir));
-
-            // Original half extents in local space (image pixel space)
+            // Local half extents in local space (image units)
             var startHalfLocal = _setting.ImageSize * 0.5f;
 
-            // New scale lengths for basis vectors (world length per 1 local unit)
-            // newHalfXWorld = startHalfLocal.X * scaleXLength  => scaleXLength = newHalfXWorld / startHalfLocal.X
-            var newScaleXLength = newHalfXWorld / startHalfLocal.X;
-            var newScaleYLength = newHalfYWorld / startHalfLocal.Y;
+            Transform2D result;
 
-            // Compose new basis vectors maintaining rotation
-            var newX = axisXDir * newScaleXLength;
-            var newY = axisYDir * newScaleYLength;
+            if (fixCenter)
+            {
+                // Scale about original center. Opposite corner is not fixed; center remains.
+                var delta = draggedPos - origCenter;
+                var newHalfXWorld = Mathf.Abs(delta.Dot(axisXDir));
+                var newHalfYWorld = Mathf.Abs(delta.Dot(axisYDir));
 
-            _setting.ImageTransform.Value = new Transform2D(newX, newY, newCenter);
+                var newScaleXLength = newHalfXWorld / startHalfLocal.X;
+                var newScaleYLength = newHalfYWorld / startHalfLocal.Y;
+
+                if (fixRatio)
+                {
+                    // Uniform factor; take larger so the dragged distance isn't constrained inside the box.
+                    var factorX = newScaleXLength / origScaleXLen;
+                    var factorY = newScaleYLength / origScaleYLen;
+                    var uniformFactor = Mathf.Max(factorX, factorY);
+                    newScaleXLength = origScaleXLen * uniformFactor;
+                    newScaleYLength = origScaleYLen * uniformFactor;
+                }
+
+                var newX = axisXDir * newScaleXLength;
+                var newY = axisYDir * newScaleYLength;
+                result = new Transform2D(newX, newY, origCenter);
+            }
+            else
+            {
+                // Anchor opposite corner (fixedCorner) similar to Illustrator standard behavior.
+                // New center is midpoint initially (non-uniform) but recomputed for uniform scaling to keep anchor exact.
+                var newCenter = (fixedCorner + draggedPos) * 0.5f;
+
+                // Vector from center to dragged corner (half diagonal in world space)
+                var halfDiag = draggedPos - newCenter;
+
+                // Project half diagonal onto axes to get new half sizes in world along each axis
+                var newHalfXWorld = Mathf.Abs(halfDiag.Dot(axisXDir));
+                var newHalfYWorld = Mathf.Abs(halfDiag.Dot(axisYDir));
+
+                var newScaleXLength = newHalfXWorld / startHalfLocal.X;
+                var newScaleYLength = newHalfYWorld / startHalfLocal.Y;
+
+                if (fixRatio)
+                {
+                    var factorX = newScaleXLength / origScaleXLen;
+                    var factorY = newScaleYLength / origScaleYLen;
+                    var uniformFactor = Mathf.Max(factorX, factorY);
+                    newScaleXLength = origScaleXLen * uniformFactor;
+                    newScaleYLength = origScaleYLen * uniformFactor;
+                    // Recompute center so fixedCorner stays fixed with the new uniform scaling.
+                    // Vector from center to dragged corner after uniform scaling:
+                    var centerToDragged = axisXDir * (signX * startHalfLocal.X * newScaleXLength) +
+                                          axisYDir * (signY * startHalfLocal.Y * newScaleYLength);
+                    // fixedCorner is opposite corner: fixedCorner = newCenter - centerToDragged (since signs are opposite)
+                    newCenter = fixedCorner + centerToDragged * 1.0f;
+                    // because fixedCorner + (centerToDragged) = center + ... wait adjust below
+                    
+                    // Actually: dragged corner = newCenter + centerToDragged; fixedCorner = newCenter - centerToDragged.
+                    // So newCenter = (dragged + fixed)/2 = fixedCorner + centerToDragged.
+                    // The above line already matches formula: newCenter = fixedCorner + centerToDragged.
+                }
+
+                var newX = axisXDir * newScaleXLength;
+                var newY = axisYDir * newScaleYLength;
+                result = new Transform2D(newX, newY, newCenter);
+            }
+
+            _setting.ImageTransform.Value = result;
         }
     }
 
