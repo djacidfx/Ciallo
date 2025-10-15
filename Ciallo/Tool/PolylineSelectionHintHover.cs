@@ -6,7 +6,7 @@ using Massive;
 
 namespace Ciallo.Tool;
 
-public class StrokeSelectionHintInteractor : HoverBase
+public class PolylineSelectionHintHover : HoverBase
 {
     private StrokeOverlay _hintingOverlay;
 

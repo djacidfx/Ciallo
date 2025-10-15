@@ -8,6 +8,6 @@ public partial class PolylineLayerView : CanvasGroup
     {
     }
 
-    // If can be replace by a regular node2D
+    // if true, this node can be replaced by a regular node2D
     public bool IsDefault => true;
 }

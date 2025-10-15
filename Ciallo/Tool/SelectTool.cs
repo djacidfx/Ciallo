@@ -12,10 +12,9 @@ using EntityParameterEvent = StateMachine<SelectTool.State, SelectTool.Event>.Tr
 
 public partial class SelectTool : CommonToolBase
 {
-    public readonly StrokeSelectionHintInteractor HintInteractor = new();
+    public readonly PolylineSelectionHintHover PolylineSelectionHover = new();
     public readonly ImageEditHover ImageEditHover = new();
     public readonly ImageTransformInteractor ImageTransformInteractor;
-
 
     public readonly StateMachine<State, Event> ToolStateMachine = new(State.Inactive);
 
@@ -23,7 +22,11 @@ public partial class SelectTool : CommonToolBase
     {
         Active,
         Inactive,
+
         EditingImageLayer,
+
+        EditingPolylineLayer,
+        TransformingPolyline,
     }
 
     public new enum Event
@@ -31,31 +34,36 @@ public partial class SelectTool : CommonToolBase
         SwitchWorkingLayer,
         Activate,
         Deactivate,
+
+        SelectPolyline,
+        DeselectPolyline,
     }
 
-    private readonly EntityParameterEvent _etWorkingLayerSwitch;
+    private readonly EntityParameterEvent _etSwitchWorkingLayer;
 
     public SelectTool()
     {
         ImageTransformInteractor = new(ImageEditHover);
 
         ToolStateMachine.OnUnhandledTrigger((_, _) => { });
-        _etWorkingLayerSwitch = ToolStateMachine.SetTriggerParameters<Entity>(Event.SwitchWorkingLayer);
+        _etSwitchWorkingLayer = ToolStateMachine.SetTriggerParameters<Entity>(Event.SwitchWorkingLayer);
 
         ToolStateMachine.Configure(State.Inactive)
             .Permit(Event.Activate, State.Active);
         ToolStateMachine.Configure(State.Active)
             .Permit(Event.Deactivate, State.Inactive)
-            .PermitDynamic(_etWorkingLayerSwitch, e =>
+            .PermitDynamic(_etSwitchWorkingLayer, e =>
             {
                 if (e.IsNull()) return State.Active;
                 if (e.Has<ImageLayerSetting>()) return State.EditingImageLayer;
+                if (e.Has<PolylineLayerSetting>()) return State.EditingPolylineLayer;
                 return State.Active;
             });
+
         Entity currLayerE = new();
-        ToolStateMachine.Configure(State.EditingImageLayer)
-            .SubstateOf(State.Active)
-            .OnEntryFrom(_etWorkingLayerSwitch, (layerE, _) =>
+        ToolStateMachine.Configure(State.EditingImageLayer).SubstateOf(State.Active)
+            .Permit(Event.SelectPolyline, State.TransformingPolyline)
+            .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {
                 layerE.Get<ImageLayerOverlay>().Visible = true;
                 currLayerE = layerE;
@@ -67,6 +75,26 @@ public partial class SelectTool : CommonToolBase
                 LeftInteractor = null;
                 HoverInteractor = null;
                 currLayerE.Get<ImageLayerOverlay>().Visible = false;
+            });
+
+        ToolStateMachine.Configure(State.EditingPolylineLayer).SubstateOf(State.Active)
+            .Permit(Event.SelectPolyline, State.TransformingPolyline)
+            .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
+            {
+                currLayerE = layerE;
+                HoverInteractor = PolylineSelectionHover;
+            })
+            .OnExit(() =>
+            {
+                HoverInteractor = null;
+            });
+        ToolStateMachine.Configure(State.TransformingPolyline).SubstateOf(State.EditingPolylineLayer)
+            .Permit(Event.DeselectPolyline, State.EditingPolylineLayer)
+            .OnEntry(() =>
+            {
+            })
+            .OnExit(() =>
+            {
             });
     }
 
@@ -80,7 +108,7 @@ public partial class SelectTool : CommonToolBase
     {
         ToolStateMachine.Fire(Event.Activate);
         _subsToWorkingLayer = Document.Get<SelectionManager>().WorkingLayer
-            .Subscribe(e => ToolStateMachine.Fire(_etWorkingLayerSwitch, e));
+            .Subscribe(e => ToolStateMachine.Fire(_etSwitchWorkingLayer, e));
     }
 
     public override void OnDeactivate()
