@@ -39,9 +39,9 @@ public partial class StrokeBody : StaticBody2D
         }
     }
 
-    public override void _ExitTree()
+    public override void _Notification(int what)
     {
-        ClearFree();
+        if (what == NotificationPredelete) ClearFree();
     }
 
     public void ClearFree()

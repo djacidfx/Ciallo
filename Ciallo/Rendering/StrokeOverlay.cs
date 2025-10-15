@@ -9,18 +9,15 @@ public partial class StrokeOverlay : Node2D
 {
     public StrokeView Wireframe;
     public MultiMeshInstance2D Dots;
-    public StrokeBody HitTestBody;
 
     public override void _Ready()
     {
         Wireframe = new() { Material = AutoloadRendering.WireframeMaterial };
         Wireframe.SetInstanceShaderParameter("overridingColor", AppPreference.StrokeWireframeColor);
         Dots = AutoloadRendering.CreateDots();
-        HitTestBody = new();
 
         AddChild(Wireframe);
         AddChild(Dots);
-        AddChild(HitTestBody);
     }
 
     public void SetGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
@@ -29,7 +26,6 @@ public partial class StrokeOverlay : Node2D
         float dotRadius = AppPreference.StrokeDotRadius;
         Wireframe.SetGeometry(points, wireframeRadius);
         Dots.SetDotGeometry(points, dotRadius);
-        HitTestBody.SetGeometry(points, radii);
     }
 
     public void SetColor(Color color)
@@ -44,8 +40,7 @@ public partial class StrokeOverlay : Node2D
 
 public static class DotExtension
 {
-    public static void SetDotGeometry(this MultiMeshInstance2D instance, IReadOnlyList<Vector2> points,
-        IReadOnlyList<float> radii)
+    public static void SetDotGeometry(this MultiMeshInstance2D instance, IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
         if (points.Count == 0)
         {
