@@ -30,11 +30,11 @@ public class NewPolylineLayerCmd : CommandBase
         var tree = Document.Get<LayerTreeManager>();
         LayerE.Add<ToSerializeTag>();
         tree.Root.AddChild(LayerE);
-        
+
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
         layerContainer.CreateAdd(LayerE);
-        
+
         // View
         var worldView = Document.Get<WorldView>();
         if (_refObjects.Count == 0) _refObjects.Add(new PolylineLayerView());
@@ -51,27 +51,27 @@ public class NewPolylineLayerCmd : CommandBase
         LayerE.Remove<PolylineLayerView>();
         var worldView = Document.Get<WorldView>();
         worldView.RemoveChild(_refObjects[0]);
-        
+
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.RemoveFree(LayerE);
-        
+
         // Data
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.RemoveChild(^1);
         LayerE.Remove<ToSerializeTag>();
     }
-    
+
     public Entity InitEntity()
     {
         var tree = Document.Get<LayerTreeManager>();
-        
+
         if (LayerE.IsNull())
         {
             LayerE = WorkingWorld.CreateEntity();
             var node = new LayerTreeNode()
             {
-                Name = { Value = $"{"Line layer".Tr()} {tree.Root.ChildCount+1}" },
+                Name = { Value = $"{"Line layer".Tr()} {tree.Root.ChildCount + 1}" },
             };
             LayerE.Set(_setting);
             LayerE.Set(node);

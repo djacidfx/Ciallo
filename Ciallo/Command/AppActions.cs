@@ -15,11 +15,14 @@ public class AppAction(StringName name)
     public StringName Name => name;
     public readonly Shortcut Shortcut = new()
     {
-        Events = [new InputEventAction
-        {
-            Action = name,
-            Pressed = true,
-        }],
+        Events =
+        [
+            new InputEventAction
+            {
+                Action = name,
+                Pressed = true,
+            }
+        ],
     };
 
     public bool IsPressed => Input.IsActionPressed(name);

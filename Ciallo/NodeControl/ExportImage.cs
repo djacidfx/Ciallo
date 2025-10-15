@@ -19,7 +19,7 @@ public partial class ExportImage : ConfirmationDialog
     public TextureRect ImageTextureRect;
     public Label Message;
     public ColorPickerButton BackgroundColorButton;
-    
+
     private DocumentSetting _setting;
     private Camera2D _camera;
     private Polygon2D _background;
@@ -35,7 +35,7 @@ public partial class ExportImage : ConfirmationDialog
         ImageTextureRect = GetNode<TextureRect>("%ImageTextureRect");
         Message = GetNode<Label>("%Message");
         BackgroundColorButton = GetNode<ColorPickerButton>("%BackgroundColorButton");
-        
+
         ScaleNumber.BindNumber(Scale);
         BackgroundColorButton.BindColor(BackgroundColor);
         Confirmed += OnExport;
@@ -47,7 +47,7 @@ public partial class ExportImage : ConfirmationDialog
         var imageSize = _setting.ReferenceSize.Value * Scale.Value;
         ImageSubViewport.Size = new((int)imageSize.X, (int)imageSize.Y);
         _camera.Zoom = Vector2.One * Scale.Value;
-        
+
         ImageSubViewport.RenderTargetClearMode = SubViewport.ClearMode.Once;
         ImageSubViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
         await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
@@ -60,11 +60,11 @@ public partial class ExportImage : ConfirmationDialog
     {
         ImageSubViewport.QueueFreeChildren();
         Message.Hide();
-        
+
         var document = AppWorldManager.WorkingDocument.CurrentValue;
         _setting = document.Get<DocumentSetting>();
         var view = document.Get<WorldView>();
-        
+
         // Duplicate view
         var scene = new PackedScene();
         scene.Pack(view);
@@ -83,19 +83,19 @@ public partial class ExportImage : ConfirmationDialog
 
         // Size
         var rSize = _setting.ReferenceSize.Value;
-        _background.Polygon = [ new(-rSize.X/2, -rSize.Y/2), new(rSize.X/2, -rSize.Y/2), new(rSize.X/2, rSize.Y/2), new(-rSize.X/2, rSize.Y/2) ];
+        _background.Polygon = [new(-rSize.X / 2, -rSize.Y / 2), new(rSize.X / 2, -rSize.Y / 2), new(rSize.X / 2, rSize.Y / 2), new(-rSize.X / 2, rSize.Y / 2)];
         ReferenceSizeNumber.Text = $"{rSize.X} x {rSize.Y}";
         Vector2I sizei = new((int)rSize.X, (int)rSize.Y);
-        Scale.Subscribe(s => 
+        Scale.Subscribe(s =>
         {
             Vector2I size = new((int)(rSize.X * s), (int)(rSize.Y * s));
             FinalImageSizeNumber.Text = $"{size.X} x {size.Y}";
         });
-        
+
         ImageSubViewport.Size = sizei;
         ImageSubViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
         ImageSubViewport.RenderTargetClearMode = SubViewport.ClearMode.Once;
-        
+
         // Path, filename
         FileNameEdit.Text = _setting.Name.Value;
         PathPicker.Path = _setting.FilePath.Value.GetBaseDir();

@@ -24,7 +24,7 @@ public partial class NewDocumentDialog : ConfirmationDialog
         var bgColor = bgControl.Color;
         var errorMessage = GetNode<Label>("%ErrorMessage");
         errorMessage.Visible = false;
-        
+
         // Sanity checks
         if (string.IsNullOrEmpty(docName))
         {
@@ -32,42 +32,42 @@ public partial class NewDocumentDialog : ConfirmationDialog
             errorMessage.Visible = true;
             return;
         }
-        if(!Directory.Exists(saveFolder))
+        if (!Directory.Exists(saveFolder))
         {
             errorMessage.Text = "Save folder does not exist.";
             errorMessage.Visible = true;
             return;
         }
-        
+
         if (!docName.IsValidFileName())
         {
             errorMessage.Text = "Invalid document name. Please use a valid file name.";
             errorMessage.Visible = true;
             return;
         }
-        
+
         // Compute file path
         string filePath = saveFolder.PathJoin(docName) + ".ciallo";
         int index = 1;
-        while(File.Exists(filePath))
+        while (File.Exists(filePath))
         {
             filePath = saveFolder.PathJoin(docName) + index++ + ".ciallo";
         }
-        
+
         // Create the document
         var setting = new DocumentSetting
         {
             Name = { Value = docName },
             ReferenceSize = { Value = referenceSize },
             BackgroundColor = { Value = bgColor },
-            FilePath = {Value = filePath},
+            FilePath = { Value = filePath },
         };
         var world = AppWorldManager.Create(setting);
         AppWorldManager.WorkingWorld.Value = world;
         AppWorldManager.InitialEmptyWorldForUser(world);
         AppWorldManager.SaveWorkingWorld();
         Hide();
-        
+
         AppPreference.RecentFiles.Add(filePath);
     }
 }

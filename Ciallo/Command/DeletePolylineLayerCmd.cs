@@ -30,22 +30,22 @@ public class DeletePolylineLayerCmd : CommandBase
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.RemoveChild(_targetIndex);
         _targetE.Remove<ToSerializeTag>();
-        
+
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.RemoveFree(_targetE);
-        
+
         // View
         var worldView = Document.Get<WorldView>();
         var node = worldView.GetChild(_targetIndex);
         worldView.RemoveChild(node);
-        if(_refNodes.Count == 0) _refNodes.Add(node);
-        
+        if (_refNodes.Count == 0) _refNodes.Add(node);
+
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
         var overlayNode = worldOverlay.GetChild(_targetIndex);
         worldOverlay.RemoveChild(overlayNode);
-        if(_refNodes.Count == 1) _refNodes.Add(overlayNode);
+        if (_refNodes.Count == 1) _refNodes.Add(overlayNode);
     }
 
     public override void Undo()
@@ -54,16 +54,16 @@ public class DeletePolylineLayerCmd : CommandBase
         var worldOverlay = Document.Get<WorldOverlay>();
         var overlayNode = _refNodes[1];
         worldOverlay.InsertNodeAt(overlayNode, _targetIndex);
-        
+
         // View
         var worldView = Document.Get<WorldView>();
         var node = _refNodes[0];
         worldView.InsertNodeAt(node, _targetIndex);
-        
+
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.CreateInsert(_targetE, _targetIndex);
-        
+
         // Data
         _targetE.Add<ToSerializeTag>();
         var tree = Document.Get<LayerTreeManager>();

@@ -16,20 +16,19 @@ using R3;
 public partial class LayerContainer : Container
 {
     public static readonly PackedScene LayerScene = GD.Load<PackedScene>("res://NodeControl/Layer.tscn");
-    
+
     private VBoxContainer _rootControl; // all layers controls are direct children of this container, in preorder.
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 
     private bool _isDragging = false;
     private Control _visibleDragHint;
     private Control _mouseHoveringLayer;
-    
+
     private readonly Dictionary<Control, CompositeDisposable> _subscriptions = [];
-    
+
     [OnInstantiate]
     private void Initialise()
     {
-        
     }
 
     public override void _Ready()
@@ -67,26 +66,26 @@ public partial class LayerContainer : Container
         var layerControl = LayerScene.Instantiate<Container>();
         var subs = new CompositeDisposable();
         _subscriptions[layerControl] = subs;
-        
+
         var activeButton = layerControl.GetNode<CheckBox>("%Active");
         activeButton.ButtonGroup = _workingLayerButtonGroup;
-        
+
         var visibleButton = layerControl.GetNode<CheckBox>("%Visible");
         visibleButton.BindBool(node.IsVisible).AddTo(subs);
 
         var lineEdit = layerControl.GetNode<LabelLineEdit>("%LabelLineEdit");
         lineEdit.BindString(node.Name);
-        
+
         layerControl.MouseEntered += () => _mouseHoveringLayer = layerControl;
         layerControl.MouseExited += () => _mouseHoveringLayer = null;
-        
+
         var guiInput = lineEdit
             .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
-            .Where(_=>!lineEdit.IsEditing());
+            .Where(_ => !lineEdit.IsEditing());
         var leftMouse = guiInput
             .OfType<InputEvent, InputEventMouseButton>()
             .Where(button => button.ButtonIndex == MouseButton.Left);
-        
+
         // Single click without drag and double click
         var singleClickObs = leftMouse
             .Where(button => button.IsPressed() || button.IsReleased())
@@ -94,7 +93,7 @@ public partial class LayerContainer : Container
             .Where(xs => xs.Length == 2 && xs.First().IsPressed() && xs.Last().IsReleased())
             .Select(xs => xs.First());
         singleClickObs.Subscribe(_ => activeButton.SetPressed(true)).AddTo(subs);
-        
+
         // Drag
         var mouseState = leftMouse.ToReadOnlyReactiveProperty();
         var dragStart = guiInput
@@ -124,7 +123,7 @@ public partial class LayerContainer : Container
             _isDragging = false;
             OnDragEnd(layerControl, button);
         }).AddTo(subs);
-        
+
         return layerControl;
     }
 
@@ -132,7 +131,7 @@ public partial class LayerContainer : Container
     {
         if (!_subscriptions.ContainsKey(layerControl))
             throw new ArgumentException("The given layer control is not created by this LayerTreeControl.");
-        
+
         _rootControl.AddChild(layerControl);
         _rootControl.MoveChild(layerControl, index);
     }
@@ -154,10 +153,9 @@ public partial class LayerContainer : Container
         _subscriptions.Remove(layerControl);
         layerControl.QueueFree();
     }
-    
+
     private void OnDragStart(Control srcLayer, InputEventMouseMotion motion)
     {
-        
     }
 
     private void OnDragging(Control _, InputEventMouseMotion e)
@@ -168,10 +166,10 @@ public partial class LayerContainer : Container
             _visibleDragHint = null;
             return;
         }
-        
+
         var locPos = _mouseHoveringLayer.GetLocalMousePosition();
         var size = _mouseHoveringLayer.Size;
-            
+
         var sep = size.Y / 2; // separation on whether the drop target is above or below the hovering layer.
         var hintToShow = _mouseHoveringLayer.GetNode<HSeparator>(locPos.Y < sep ? "%AboveHint" : "%BelowHint");
         if (_visibleDragHint == hintToShow) return;
@@ -183,11 +181,11 @@ public partial class LayerContainer : Container
     private void OnDragEnd(Control srcLayer, InputEventMouseButton button)
     {
         // Drag hint
-        if(_visibleDragHint != null) _visibleDragHint.Visible = false;
+        if (_visibleDragHint != null) _visibleDragHint.Visible = false;
         _visibleDragHint = null;
-        
+
         // Move layer
-        if(_mouseHoveringLayer == null || ReferenceEquals(_mouseHoveringLayer, srcLayer))
+        if (_mouseHoveringLayer == null || ReferenceEquals(_mouseHoveringLayer, srcLayer))
         {
             _mouseHoveringLayer = null;
             return;
@@ -200,10 +198,10 @@ public partial class LayerContainer : Container
         var size = _mouseHoveringLayer.Size;
         var sep = size.Y / 2;
         if (locPos.Y >= sep) dstIndex++; // insert after the hovering layer.
-        
+
         new MoveLayerCmd([srcIndex], [dstIndex]).Commit();
     }
-    
+
     public void SetWorkingLayerNoSignal(Entity layerE)
     {
         _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);

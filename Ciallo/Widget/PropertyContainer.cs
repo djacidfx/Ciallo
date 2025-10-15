@@ -17,14 +17,14 @@ public partial class PropertyContainer : VBoxContainer
         AddChild(box);
         return box;
     }
-    
+
     public Container RemoveProperty(string name)
     {
         var child = GetNode<Container>(name);
         RemoveChild(child);
         return child;
     }
-    
+
     public static Container CreatePropertyControl(string name, [NotNull] Control control)
     {
         var box = new VBoxContainer()

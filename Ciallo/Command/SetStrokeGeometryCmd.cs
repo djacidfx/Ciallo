@@ -21,7 +21,7 @@ public class SetStrokeGeometryCmd : CommandBase
             Radii = [..newRadii],
         };
     }
-    
+
     public SetStrokeGeometryCmd(Entity strokeE, StrokeGeometry newGeometry)
     {
         _strokeE = strokeE;
@@ -33,10 +33,10 @@ public class SetStrokeGeometryCmd : CommandBase
         // Data
         _oldGeometry ??= _strokeE.Get<StrokeGeometry>();
         _strokeE.Set(_newGeometry);
-        
+
         // View
         _strokeE.Get<StrokeView>().SetGeometry(_newGeometry.Points, _newGeometry.Radii);
-        
+
         // Overlay
         _strokeE.Get<StrokeOverlay>().SetGeometry(_newGeometry.Points, _newGeometry.Radii);
     }
@@ -48,7 +48,7 @@ public class SetStrokeGeometryCmd : CommandBase
 
         // View
         _strokeE.Get<StrokeView>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
-        
+
         // Data
         _strokeE.Set(_oldGeometry);
     }

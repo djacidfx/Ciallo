@@ -19,28 +19,28 @@ public static class BindRange
         rangeControl.OnValueChangedAsObservable()
             .Subscribe(value => property.Value = T.CreateChecked(value)).AddTo(subs);
     }
-    
+
     public static void BindNumber<T>(this Range rangeControl, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
         BindNumber(rangeControl, property, out var subs);
         subs.AddTo(rangeControl);
     }
-    
+
     public static void BindNumber<T>(this HSlider slider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
         BindNumber((Range)slider, property);
     }
-    
+
     public static void BindNumber<T>(this VSlider slider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
         BindNumber((Range)slider, property);
     }
-    
+
     public static void BindNumber<T>(this SpinBox spinBox, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
         BindNumber((Range)spinBox, property);
     }
-    
+
     public static void BindNumber<T>(this SpinSlider spinSlider,
         [NotNull] ReactiveProperty<T> property,
         out CompositeDisposable subs) where T : INumber<T>
@@ -50,14 +50,14 @@ public static class BindRange
         spinSlider.SignalAsObservable<float>(SpinSlider.SignalName.ValueChanged)
             .Subscribe(value => property.Value = T.CreateChecked(value)).AddTo(subs);
     }
-    
+
     public static void BindNumber<T>(this SpinSlider spinSlider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
     {
         BindNumber(spinSlider, property, out var subs);
         subs.AddTo(spinSlider);
     }
 
-    
+
     public static void ReactiveBindNumber<T>(this SpinSlider spinSlider,
         ReadOnlyReactiveProperty<ReactiveProperty<T>> view,
         out CompositeDisposable subs) where T : INumber<T>
@@ -76,7 +76,7 @@ public static class BindRange
             }
         }).AddTo(subs);
     }
-    
+
     /// <summary>
     /// Binds a SpinSlider dynamically to a ReactiveProperty provided by the ReadOnlyReactiveProperty.
     /// </summary>

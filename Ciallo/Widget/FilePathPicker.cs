@@ -9,7 +9,7 @@ public partial class FilePathPicker : HBoxContainer
     public LineEdit PathEdit;
     public Button OpenExplorerButton;
     public FileDialog FileDialog;
-    
+
     public string Path
     {
         get => IsInstanceValid(PathEdit) ? PathEdit.Text : string.Empty;
@@ -22,7 +22,7 @@ public partial class FilePathPicker : HBoxContainer
 
     [Export]
     public FileDialog.FileModeEnum FileMode = FileDialog.FileModeEnum.OpenFile;
-    
+
     [Export(PropertyHint.Enum, "None:-1,Desktop:0,Dcim:1,Documents:2,Downloads:3")] // From OS.SystemDir
     public int DefaultPath = -1;
 
@@ -32,7 +32,7 @@ public partial class FilePathPicker : HBoxContainer
         {
             Icon = GD.Load<Texture2D>("res://Icon/folder-edit-outline.svg"),
             SizeFlagsHorizontal = SizeFlags.ShrinkCenter,
-            TooltipText = $"Select a {(FileMode == FileDialog.FileModeEnum.OpenDir? "folder":"file")}",
+            TooltipText = $"Select a {(FileMode == FileDialog.FileModeEnum.OpenDir ? "folder" : "file")}",
             ExpandIcon = true,
             CustomMinimumSize = new Vector2(32, 32),
         };
@@ -41,9 +41,9 @@ public partial class FilePathPicker : HBoxContainer
             CustomMinimumSize = new Vector2(200, 0),
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
         };
-        if(DefaultPath != -1)
+        if (DefaultPath != -1)
             PathEdit.Text = OS.GetSystemDir((OS.SystemDir)DefaultPath) ?? string.Empty;
-        
+
         AddChild(OpenExplorerButton);
         AddChild(PathEdit);
         OpenExplorerButton.Pressed += OnOpenExplorer;
@@ -66,14 +66,14 @@ public partial class FilePathPicker : HBoxContainer
         {
             path = OS.GetSystemDir(OS.SystemDir.Desktop);
         }
-        
+
         FileDialog = new FileDialog
         {
             Access = FileDialog.AccessEnum.Filesystem,
             FileMode = FileMode,
             CurrentDir = path,
             Size = new Vector2I(800, 600),
-            Title = $"Select a {(FileMode == FileDialog.FileModeEnum.OpenDir? "folder":"file")}",
+            Title = $"Select a {(FileMode == FileDialog.FileModeEnum.OpenDir ? "folder" : "file")}",
             Unresizable = false,
             DialogCloseOnEscape = true,
             UseNativeDialog = true,
@@ -82,7 +82,7 @@ public partial class FilePathPicker : HBoxContainer
         {
             FileDialog.DirSelected += OnSelected;
         }
-        if(FileMode == FileDialog.FileModeEnum.OpenFile)
+        if (FileMode == FileDialog.FileModeEnum.OpenFile)
         {
             FileDialog.FileSelected += OnSelected;
         }
@@ -90,7 +90,7 @@ public partial class FilePathPicker : HBoxContainer
         FileDialog.SetOwner(this);
         FileDialog.PopupCentered();
     }
-    
+
     private void OnSelected(string path)
     {
         PathEdit.Text = path;

@@ -39,7 +39,7 @@ public partial class ImageTextureEdit : BoxContainer
     public override void _Ready()
     {
         TexturePreview.Texture = Texture;
-        
+
         LoadButton.Pressed += () => FileDialog.PopupCentered();
         ClearButton.Pressed += () =>
         {
@@ -49,8 +49,8 @@ public partial class ImageTextureEdit : BoxContainer
         {
             var image = Texture.GetImage();
             image.Rotate90(ClockDirection.Clockwise);
-            if(!image.HasMipmaps()) image.GenerateMipmaps();
-            
+            if (!image.HasMipmaps()) image.GenerateMipmaps();
+
             Texture.Update(image);
         };
         InvertColorButton.Pressed += () =>
@@ -65,10 +65,10 @@ public partial class ImageTextureEdit : BoxContainer
                 image.SetPixel(x, y, image.GetPixel(x, y).Inverted());
             }
             image.GenerateMipmaps();
-            
+
             Texture.Update(image);
         };
-        
+
         FileDialog.FileSelected += path =>
         {
             var image = Image.LoadFromFile(path);

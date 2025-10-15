@@ -1,6 +1,6 @@
-using Godot;
 using Ciallo.Data;
 using Ciallo.Misc;
+using Godot;
 using ObservableCollections;
 using R3;
 
@@ -19,7 +19,7 @@ public partial class ToolButtonPanelContainer : Container
             document.Set(root);
             AddChild(root);
         }).AddTo(this);
-        
+
         AppWorldManager.LoadedWorlds.ObserveRemove().Select(et => et.Value.Document()).Subscribe(document =>
         {
             document.Get<ToolButtonPanel>().QueueFree();

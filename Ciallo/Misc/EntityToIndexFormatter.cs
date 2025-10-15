@@ -11,7 +11,7 @@ public class EntityToIndexFormatter : IMessagePackFormatter<Entity>
     public static readonly EntityToIndexFormatter Instance = new();
     private Dictionary<Entity, int> _entityToIndex = [];
     private List<Entity> _indexToEntity = [];
-    
+
     public List<Entity> EntityList
     {
         get => _indexToEntity;
@@ -23,7 +23,7 @@ public class EntityToIndexFormatter : IMessagePackFormatter<Entity>
                 .ToDictionary(x => x.entity, x => x.index);
         }
     }
-    
+
     public void Serialize(ref MessagePackWriter writer, Entity value, MessagePackSerializerOptions options)
     {
         var i = _entityToIndex.GetValueOrDefault(value, -1);
@@ -33,7 +33,7 @@ public class EntityToIndexFormatter : IMessagePackFormatter<Entity>
     public Entity Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
         int index = MessagePackSerializer.Deserialize<int>(ref reader, options);
-        
+
         return index < 0 || index >= _indexToEntity.Count
             ? new Entity()
             : _indexToEntity[index];

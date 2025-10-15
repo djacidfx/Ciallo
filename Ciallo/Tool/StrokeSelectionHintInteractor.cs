@@ -25,12 +25,12 @@ public class StrokeSelectionHintInteractor : HoverBase
             CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke
         };
         var points = Document.Get<WorldOverlay>().GetWorld2D().DirectSpaceState.IntersectPoint(pp, 1);
-        if(points.Count > 0)
+        if (points.Count > 0)
         {
             var hit = points[0];
             var collider = (Node)hit["collider"];
             var overlay = (StrokeOverlay)collider.GetParent();
-            if(overlay != _hintingOverlay)
+            if (overlay != _hintingOverlay)
             {
                 _hintingOverlay?.SetColor(AppPreference.StrokeWireframeColor);
                 overlay.SetColor(AppPreference.StrokeWireframeHintColor);

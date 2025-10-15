@@ -8,7 +8,7 @@ using Godot;
 using Newtonsoft.Json;
 using R3;
 
-namespace Ciallo.Geometry;  
+namespace Ciallo.Geometry;
 
 /// <summary>
 /// This class is a combination of Godot's Curve2D and Curve.
@@ -22,8 +22,10 @@ namespace Ciallo.Geometry;
 [DataContract]
 public class BezierCurve
 {
-    #region Curve2D /// Members from godot's `Curve2D` class.
-    
+    #region Curve2D
+
+    /// Members from godot's `Curve2D` class.
+
     // When populating json object, list adds items rather than replace. Force replace here.
     [DataMember(Order = 0), JsonProperty(ObjectCreationHandling = ObjectCreationHandling.Replace)]
     public List<Point> Points
@@ -45,7 +47,7 @@ public class BezierCurve
     private bool IsCacheInvalid => _cachedPolyline == null;
     private List<Vector2> _cachedPolyline;
     private List<float> _cachedT; // Fractional T values of the points of the cached polyline
-    
+
     public Rect2 BoundingBox => _points.GetBoundingBox();
 
     public BezierCurve()
@@ -132,17 +134,17 @@ public class BezierCurve
         if (_points.Count < 2) return;
         // sort splits descending to avoid index shift issues
         var ts = polyT.Where(t => t > 0f && t < _points.Count - 1)
-                   .Distinct()
-                   .OrderByDescending(t => t)
-                   .ToList();
+            .Distinct()
+            .OrderByDescending(t => t)
+            .ToList();
         foreach (var t in ts) TryInsertPoint(t);
     }
-    
+
     public void Tessellate(int subdivisionsPerSegment = 32)
     {
         (_cachedPolyline, _cachedT) = _points.Tessellate(subdivisionsPerSegment);
     }
-    
+
     /// <summary>
     /// Change the position of an existing point.
     /// </summary>
@@ -185,7 +187,7 @@ public class BezierCurve
         _points[index] = pt;
         OnChanged();
     }
-    
+
     public void SetPointOutLinearly(int index, Vector2 outHandle)
     {
         var pt = _points[index];
@@ -203,10 +205,10 @@ public class BezierCurve
     /// <returns>Point position, output fractional t of the closest point</returns>
     public Vector2 GetClosestPoint(Vector2 p, out float t)
     {
-        if(IsCacheInvalid) Tessellate();
+        if (IsCacheInvalid) Tessellate();
         _cachedPolyline.GetClosestPoint(p, out var polyT);
         var (idx, lt) = polyT.ResolvePolyT();
-        if(idx >= _cachedT.Count - 1)
+        if (idx >= _cachedT.Count - 1)
         {
             t = _cachedT[^1];
             return _cachedPolyline[^1];
@@ -215,18 +217,18 @@ public class BezierCurve
         t = _cachedT[idx] + deltaT;
         return Sample(t);
     }
-    
+
     [DataContract]
     public struct Point(Vector2 p, Vector2 @in, Vector2 @out)
     {
         [DataMember(Order = 0)] public Vector2 P = p;
-        [DataMember(Order = 1)] public Vector2 In = @in;// Relative to position
+        [DataMember(Order = 1)] public Vector2 In = @in; // Relative to position
         [DataMember(Order = 2)] public Vector2 Out = @out;
 
         [Pure] public Point WithIn(Vector2 newIn) => new(P, newIn, Out);
         [Pure] public Point WithOut(Vector2 newOut) => new(P, In, newOut);
         [Pure] public Point WithPoint(Vector2 newP) => new(newP, In, Out);
-        
+
         /// <remarks>
         /// Duck style design: As it is computed as a control mode, it's the control mode.
         /// </remarks>>
@@ -268,13 +270,12 @@ public class BezierCurve
     #region Curve
 
     /// All methods in this region assume the curve is X-monotone.
-
     /// <summary>
     /// Check if the curve is a monotone in X.
     /// So that each element of the function's domain X maps to a single element of its range Y.
     /// </summary>
     public bool IsXMonotone => _points.IsXMonotone();
-    
+
     // Members from Godot's `Curve` class.
     public float MinX => BoundingBox.Position.X;
     public float MaxX => BoundingBox.End.X;
@@ -291,7 +292,7 @@ public class BezierCurve
         if (IsCacheInvalid) Tessellate(64);
         return _cachedPolyline.SampleX(x);
     }
-    
+
     /// <summary>
     /// Sample by the given x ordered list from small to large.
     /// </summary>
@@ -337,10 +338,11 @@ public class BezierCurve
     }
 
     private static float l = 0.25f;
-    public static BezierCurve Constant(float y = 0.0f) => new([
-        new(new(0f, y), new(-l, 0f), new(l, 0f)),
-        new(new(1f, y), new(-l, 0f), new(l, 0f))
-    ]);
+    public static BezierCurve Constant(float y = 0.0f) =>
+        new([
+            new(new(0f, y), new(-l, 0f), new(l, 0f)),
+            new(new(1f, y), new(-l, 0f), new(l, 0f))
+        ]);
 
     public static BezierCurve Linear(float y0 = 0.0f, float y1 = 1.0f)
     {
@@ -358,8 +360,8 @@ public class BezierCurve
     {
         // horizontal handles produce zero slope at start/end → S‐curve in between
         return new BezierCurve([
-            new(new(0f, y0), new(-l, 0f), new(l,  0f)),
-            new(new(1f, y1), new(-l, 0f), new(l,  0f))
+            new(new(0f, y0), new(-l, 0f), new(l, 0f)),
+            new(new(1f, y1), new(-l, 0f), new(l, 0f))
         ]);
     }
 

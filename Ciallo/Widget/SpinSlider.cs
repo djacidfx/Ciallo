@@ -11,12 +11,12 @@ public partial class SpinSlider : HBoxContainer
 {
     [Signal]
     public delegate void ValueChangedEventHandler(double newValue);
-    
+
     public HSlider Slider { get; private set; }
     public SpinBox SpinBox { get; private set; }
-    
+
     #region Export
-    
+
     private double _minValue = 0.0;
     [Export] public double MinValue
     {
@@ -24,8 +24,8 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _minValue = value;
-            if(IsInstanceValid(Slider)) Slider.MinValue = value;
-            if(IsInstanceValid(SpinBox)) SpinBox.MinValue = value;
+            if (IsInstanceValid(Slider)) Slider.MinValue = value;
+            if (IsInstanceValid(SpinBox)) SpinBox.MinValue = value;
         }
     }
 
@@ -36,11 +36,11 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _maxValue = value;
-            if(IsInstanceValid(Slider)) Slider.MaxValue = value;
-            if(IsInstanceValid(SpinBox)) SpinBox.MaxValue = value;
+            if (IsInstanceValid(Slider)) Slider.MaxValue = value;
+            if (IsInstanceValid(SpinBox)) SpinBox.MaxValue = value;
         }
     }
-    
+
     private double _value = 0.0;
     [Export] public double Value
     {
@@ -48,11 +48,11 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _value = value;
-            if(IsInstanceValid(Slider)) Slider.Value = value;
-            if(IsInstanceValid(SpinBox)) SpinBox.Value = value;
+            if (IsInstanceValid(Slider)) Slider.Value = value;
+            if (IsInstanceValid(SpinBox)) SpinBox.Value = value;
         }
     }
-    
+
     private double _step = 0.01;
     [Export] public double Step
     {
@@ -60,8 +60,8 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _step = value;
-            if(IsInstanceValid(Slider)) Slider.Step = value;
-            if(IsInstanceValid(SpinBox)) SpinBox.Step = value;
+            if (IsInstanceValid(Slider)) Slider.Step = value;
+            if (IsInstanceValid(SpinBox)) SpinBox.Step = value;
         }
     }
 
@@ -72,8 +72,8 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _expEdit = value;
-            if(IsInstanceValid(Slider)) Slider.ExpEdit = value;
-            if(IsInstanceValid(SpinBox)) SpinBox.ExpEdit = value;
+            if (IsInstanceValid(Slider)) Slider.ExpEdit = value;
+            if (IsInstanceValid(SpinBox)) SpinBox.ExpEdit = value;
         }
     }
 
@@ -147,7 +147,7 @@ public partial class SpinSlider : HBoxContainer
         AddChild(SpinBox);
         Connect(Slider);
         Connect(SpinBox);
-        
+
         // Pitfall: LineEdit has no way to show rounded number without modifying the number itself.
         // Have to do this manually.
         // // This not work

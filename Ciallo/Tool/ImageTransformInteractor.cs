@@ -159,7 +159,7 @@ public class ImageTransformInteractor : InteractorBase
                     // fixedCorner is opposite corner: fixedCorner = newCenter - centerToDragged (since signs are opposite)
                     newCenter = fixedCorner + centerToDragged * 1.0f;
                     // because fixedCorner + (centerToDragged) = center + ... wait adjust below
-                    
+
                     // Actually: dragged corner = newCenter + centerToDragged; fixedCorner = newCenter - centerToDragged.
                     // So newCenter = (dragged + fixed)/2 = fixedCorner + centerToDragged.
                     // The above line already matches formula: newCenter = fixedCorner + centerToDragged.

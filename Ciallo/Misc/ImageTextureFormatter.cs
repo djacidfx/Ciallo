@@ -7,7 +7,7 @@ namespace Ciallo.Misc;
 public class ImageTextureFormatter : IMessagePackFormatter<ImageTexture>
 {
     public static readonly ImageTextureFormatter Instance = new();
-    
+
     public void Serialize(ref MessagePackWriter writer, ImageTexture value, MessagePackSerializerOptions options)
     {
         if (value == null)
@@ -34,7 +34,7 @@ public class ImageTextureFormatter : IMessagePackFormatter<ImageTexture>
 public class ImageFormatter : IMessagePackFormatter<Image>
 {
     public static readonly ImageFormatter Instance = new();
-    
+
     public void Serialize(ref MessagePackWriter writer, Image value, MessagePackSerializerOptions options)
     {
         if (value == null)
@@ -42,7 +42,7 @@ public class ImageFormatter : IMessagePackFormatter<Image>
             writer.WriteNil();
             return;
         }
-        
+
         writer.Write(value.SavePngToBuffer());
     }
 

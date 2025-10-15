@@ -7,7 +7,7 @@ namespace Ciallo.Misc;
 public class ReactivePropertyConverter : JsonConverter
 {
     public static readonly ReactivePropertyConverter Instance = new();
-    
+
     public override bool CanConvert(Type objectType)
     {
         return objectType.IsGenericType &&
@@ -16,7 +16,7 @@ public class ReactivePropertyConverter : JsonConverter
 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
     {
-        if(value == null) 
+        if (value == null)
         {
             writer.WriteNull();
             return;
@@ -32,7 +32,7 @@ public class ReactivePropertyConverter : JsonConverter
         {
             return null;
         }
-        
+
         var valueType = objectType.GetGenericArguments()[0];
         var deserializedValue = serializer.Deserialize(reader, valueType);
         if (existingValue == null) return Activator.CreateInstance(objectType, deserializedValue);

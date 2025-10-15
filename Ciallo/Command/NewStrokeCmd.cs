@@ -11,7 +11,7 @@ public class NewStrokeCmd : CommandBase
     private Entity _layerE;
     public Entity StrokeE;
     private readonly List<Node> _refNodes = [];
-    
+
     public NewStrokeCmd(Entity layerE)
     {
         _layerE = layerE;
@@ -29,20 +29,21 @@ public class NewStrokeCmd : CommandBase
         StrokeE.Add<ToSerializeTag>();
         _layerE.Get<LayerTreeNode>().AddChild(StrokeE);
         StrokeE.Set<StrokeBrush>(new Entity());
-        
+
         // View
-        if (_refNodes.Count == 0) _refNodes.Add(new StrokeView()
-        {
-            Material = BrushMaterial.MissingBrushMaterial,
-        });
-        var strokeView =  (StrokeView)_refNodes[0];
+        if (_refNodes.Count == 0)
+            _refNodes.Add(new StrokeView()
+            {
+                Material = BrushMaterial.MissingBrushMaterial,
+            });
+        var strokeView = (StrokeView)_refNodes[0];
         var layerView = _layerE.Get<PolylineLayerView>();
         layerView.AddChild(strokeView);
         StrokeE.Set(strokeView);
         strokeView.SetOwner(layerView.Owner);
 
         // Overlay
-        if(_refNodes.Count == 1) _refNodes.Add(new StrokeOverlay());
+        if (_refNodes.Count == 1) _refNodes.Add(new StrokeOverlay());
         var strokeOverlay = (StrokeOverlay)_refNodes[1];
         var worldOverlay = Document.Get<WorldOverlay>();
         worldOverlay.AddChild(strokeOverlay);
@@ -54,12 +55,12 @@ public class NewStrokeCmd : CommandBase
         // Overlay
         StrokeE.Remove<StrokeOverlay>();
         _refNodes[1].GetParent().RemoveChild(_refNodes[1]);
-        
+
         // View
         StrokeE.Remove<StrokeView>();
         var layerView = _layerE.Get<PolylineLayerView>();
         layerView.RemoveChild(_refNodes[0]);
-        
+
         // Data
         StrokeE.Remove<StrokeBrush>();
         _layerE.Get<LayerTreeNode>().RemoveChild(^1);

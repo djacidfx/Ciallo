@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using Godot;
+using Range = Godot.Range;
 
 namespace R3;
 
@@ -41,13 +42,13 @@ public static class GodotUINodeExtensions
     }
 
     /// <summary>Observe ValueChanged with current `Value` on subscribe.</summary>
-    public static Observable<double> OnValueChangedAsObservable(this Godot.Range range, CancellationToken cancellationToken = default)
+    public static Observable<double> OnValueChangedAsObservable(this Range range, CancellationToken cancellationToken = default)
     {
-        return Observable.Create<double, (Godot.Range, CancellationToken)>((range, cancellationToken), static (observer, state) =>
+        return Observable.Create<double, (Range, CancellationToken)>((range, cancellationToken), static (observer, state) =>
         {
             var (s, cancellationToken) = state;
             observer.OnNext(s.Value);
-            return Observable.FromEvent<Godot.Range.ValueChangedEventHandler, double>(h => new Godot.Range.ValueChangedEventHandler(h), h => s.ValueChanged += h, h => s.ValueChanged -= h, cancellationToken).Subscribe(observer);
+            return Observable.FromEvent<Range.ValueChangedEventHandler, double>(h => new Range.ValueChangedEventHandler(h), h => s.ValueChanged += h, h => s.ValueChanged -= h, cancellationToken).Subscribe(observer);
         });
     }
 

@@ -15,7 +15,7 @@ public partial class SelectTool : CommonToolBase
     public readonly StrokeSelectionHintInteractor HintInteractor = new();
     public readonly ImageEditHover ImageEditHover = new();
     public readonly ImageTransformInteractor ImageTransformInteractor;
-    
+
 
     public readonly StateMachine<State, Event> ToolStateMachine = new(State.Inactive);
 
@@ -34,11 +34,11 @@ public partial class SelectTool : CommonToolBase
     }
 
     private readonly EntityParameterEvent _etWorkingLayerSwitch;
-    
+
     public SelectTool()
     {
         ImageTransformInteractor = new(ImageEditHover);
-        
+
         ToolStateMachine.OnUnhandledTrigger((_, _) => { });
         _etWorkingLayerSwitch = ToolStateMachine.SetTriggerParameters<Entity>(Event.SwitchWorkingLayer);
 

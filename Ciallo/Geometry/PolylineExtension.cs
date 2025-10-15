@@ -1,9 +1,9 @@
 ﻿using System;
-using Godot;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Godot;
 
 namespace Ciallo.Geometry;
 
@@ -40,7 +40,7 @@ public static class PolylineExtension
 
         return new Rect2(new Vector2(minX, minY), new Vector2(maxX - minX, maxY - minY));
     }
-    
+
     /// <summary>
     /// Find the closest point on the polyline to the given point.
     /// </summary>
@@ -93,12 +93,12 @@ public static class PolylineExtension
             if (!(distSq < minDistanceSq)) continue;
             minDistanceSq = distSq;
             closestPoint = currentClosest;
-            t = i-1 + currentT;
+            t = i - 1 + currentT;
         }
 
         return closestPoint;
     }
-    
+
     /// <summary>
     /// Check if the curve is a monotone in X.
     /// So that each element of the function's domain X maps to a single, well-defined element of its range Y.
@@ -126,21 +126,21 @@ public static class PolylineExtension
         if (polyline.Count == 2) return SampleSegment(polyline[0], polyline[1], x);
 
         // Memory allocation here and Rider warns quite a lot, but it's ok. 
-        var searchResult = polyline.Select(v=>v.X).ToImmutableArray().BinarySearch(x);
+        var searchResult = polyline.Select(v => v.X).ToImmutableArray().BinarySearch(x);
         if (searchResult >= 0) return polyline[searchResult].Y;
         // Get the index of the closest point after x
         // see https://learn.microsoft.com/en-us/dotnet/api/system.array.binarysearch for the return value.
         int idx = ~searchResult;
-        if(idx == 0) return polyline[0].Y;
-        if(idx == polyline.Count) return polyline[^1].Y;
-        return SampleSegment(polyline[idx-1], polyline[idx], x);
+        if (idx == 0) return polyline[0].Y;
+        if (idx == polyline.Count) return polyline[^1].Y;
+        return SampleSegment(polyline[idx - 1], polyline[idx], x);
     }
 
     private static float SampleSegment(Vector2 p0, Vector2 p1, float xValue)
     {
-        if(xValue < p0.X) return p0.Y;
-        if(xValue > p1.X) return p1.Y;
-        if (MathF.Abs(p1.X - p0.X) < 1e-5f) 
+        if (xValue < p0.X) return p0.Y;
+        if (xValue > p1.X) return p1.Y;
+        if (MathF.Abs(p1.X - p0.X) < 1e-5f)
             return (p0.Y + p1.Y) / 2; // vertical
         float slope = (p1.Y - p0.Y) / (p1.X - p0.X);
         return p0.Y + slope * (xValue - p0.X);

@@ -24,7 +24,7 @@ public partial class StrokeView : MultiMeshInstance2D
         Multimesh = multiMesh;
         TextureFilter = TextureFilterEnum.LinearWithMipmaps;
     }
-    
+
     public void SetGeometry([NotNull] IReadOnlyList<Vector2> points, float radius)
     {
         SetGeometry(points, Enumerable.Repeat(radius, points.Count).ToImmutableArray());
@@ -34,24 +34,24 @@ public partial class StrokeView : MultiMeshInstance2D
         [NotNull] IReadOnlyList<Vector2> points,
         [NotNull] IReadOnlyList<float> radii)
     {
-        if(points.Count != radii.Count)
+        if (points.Count != radii.Count)
         {
             GD.PushError("Points and radii count mismatch.");
             return;
         }
-        if(points.Count == 0 || radii.Count == 0)
+        if (points.Count == 0 || radii.Count == 0)
         {
             Multimesh.InstanceCount = 0;
             return;
         }
-        
+
         var multiMesh = Multimesh;
         multiMesh.InstanceCount = 0; // Also clear buffer
-        
+
         ImmutableArray<Vector2> ps;
         ImmutableArray<float> rs;
         List<float> ns = [];
-        
+
         if (points.Count > 1) // regular case
         {
             multiMesh.InstanceCount = points.Count - 1;
@@ -61,30 +61,30 @@ public partial class StrokeView : MultiMeshInstance2D
         else if (points.Count == 1) // a point, render it as an ultra short segment
         {
             multiMesh.InstanceCount = 1;
-            ps = [points[0], points[0] + 1e-5f*Vector2.Right];
+            ps = [points[0], points[0] + 1e-5f * Vector2.Right];
             rs = [radii[0], radii[0] + 1e-5f];
         }
         else throw new("Unreachable");
-        
+
         ns.Add(0f);
-        for(int i = 0; i < ps.Length - 1; i++)
+        for (int i = 0; i < ps.Length - 1; i++)
         {
             var l = (ps[i + 1] - ps[i]).Length();
             var r0 = rs[i];
             var r1 = rs[i + 1];
-            if(Mathf.Abs(r0 - r1) < 1e-10f)
+            if (Mathf.Abs(r0 - r1) < 1e-10f)
             {
                 // Nearly equal radius, avoid division by zero
                 var r = (r0 + r1) * 0.5f;
                 ns.Add(ns.Last() + l / r);
                 continue;
             }
-            
+
             var n = l / (r0 - r1) * Mathf.Log(r0 / r1);
             ns.Add(ns.Last() + n);
         }
-        
-        for(int i = 0; i < multiMesh.InstanceCount; i++)
+
+        for (int i = 0; i < multiMesh.InstanceCount; i++)
         {
             Color customPos = new()
             {
@@ -93,15 +93,15 @@ public partial class StrokeView : MultiMeshInstance2D
                 B = ps[i + 1].X,
                 A = ps[i + 1].Y,
             };
-            
+
             multiMesh.SetInstanceCustomData(i, customPos);
             // Have to use instance color to store t.
-            multiMesh.SetInstanceColor(i, new(Float32Packer.Pack(rs[i],rs[i+1]), Float32Packer.Pack(ns[i], ns[i+1]), 0, 0)); // empty spaces for tilt
+            multiMesh.SetInstanceColor(i, new(Float32Packer.Pack(rs[i], rs[i + 1]), Float32Packer.Pack(ns[i], ns[i + 1]), 0, 0)); // empty spaces for tilt
             // Have to set transform or do not render, this transform values are not used in shaders
             // Cannot access this matrix from the CanvasItem shader, so cannot be used for passing data.
             multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);
         }
-        
+
         // Set bounding box
         var boundingBox = points.GetBoundingBox(radii);
         // Incorrect method:
@@ -121,14 +121,14 @@ public static class Float32Packer
     {
         ushort hx = BitConverter.HalfToUInt16Bits((Half)x);
         ushort hy = BitConverter.HalfToUInt16Bits((Half)y);
-        
+
         uint word = ((uint)hy << 16) | hx;
-        
+
         return BitConverter.Int32BitsToSingle((int)word);
     }
-    
+
     public static float Pack(Vector2 v) => Pack(v.X, v.Y);
-    
+
     // ReSharper disable once UnusedMember.Global
     public static Vector2 Unpack(float packed)
     {

@@ -43,7 +43,7 @@ public abstract class CommandBase
     public abstract void Do();
     public abstract void Undo();
 
-    
+
     public void Commit(bool execute = true)
     {
         if (WorkingWorld == null)
@@ -52,22 +52,22 @@ public abstract class CommandBase
             return;
         }
         var cm = WorkingWorld.Document().Get<CommandManager>();
-        
+
         // Add Do/Undo Reference method order matters:
         var commands = GetDepthFirstCommands().ToArray();
         var objects = commands.Select(c => new CommandWrapperObject(c)).ToArray();
-        
+
         cm.CreateAction(Name);
         foreach (var obj in objects) cm.AddDo(obj);
         foreach (var obj in objects.Reverse()) cm.AddUndo(obj);
         cm.CommitAction(execute);
     }
-    
+
     public void DoAllCombination(bool useRootWorld = true)
     {
         foreach (var cmd in GetDepthFirstCommands())
         {
-            if(useRootWorld) cmd.WorkingWorld = WorkingWorld;
+            if (useRootWorld) cmd.WorkingWorld = WorkingWorld;
             cmd.Do();
         }
     }
@@ -85,15 +85,15 @@ public abstract class CommandBase
     {
         yield return this;
         foreach (var cmd in _combinations)
-            foreach (var subCmd in cmd.GetDepthFirstCommands())
-                yield return subCmd;
+        foreach (var subCmd in cmd.GetDepthFirstCommands())
+            yield return subCmd;
     }
 
     public override string ToString()
     {
         return $"{Name}";
     }
-    
+
     public static IEnumerable<Entity> ToEnumerable(Entity value)
     {
         if (value.IsNotNull()) yield return value;

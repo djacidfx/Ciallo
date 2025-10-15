@@ -31,7 +31,7 @@ public partial class BrushMaterial : ShaderMaterial
         Shader = AutoloadRendering.StrokeShader;
         ResourceLocalToScene = true;
     }
-    
+
     public void ObserveBrushSetting(BrushSetting setting)
     {
         Subs?.Dispose();
@@ -41,7 +41,7 @@ public partial class BrushMaterial : ShaderMaterial
         setting.DashLength.Subscribe(length => SetShaderParameter("dashLength", length)).AddTo(Subs);
         setting.GapLength.Subscribe(length => SetShaderParameter("gapLength", length)).AddTo(Subs);
         setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("dashForwardSpeed", speed)).AddTo(Subs);
-        
+
         // Stamp
         setting.StampInterval.Subscribe(interval => SetShaderParameter("stampInterval", interval)).AddTo(Subs);
         SetShaderParameter("stampTexture", setting.StampTexture);
@@ -54,7 +54,7 @@ public partial class BrushMaterial : ShaderMaterial
         setting.RotationNoiseOctave.Subscribe(value => SetShaderParameter("rotationNoiseOctave", value)).AddTo(Subs);
         setting.RotationNoiseAmplitude.Subscribe(amp => SetShaderParameter("rotationNoiseAmplitude", amp)).AddTo(Subs);
         setting.RotationNoiseFrequency.Subscribe(freq => SetShaderParameter("rotationNoiseFrequency", freq)).AddTo(Subs);
-        
+
         var falloffTex = ImageTexture.CreateFromImage(BakeCurve(setting.FalloffCurve));
         setting.FalloffCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
         {

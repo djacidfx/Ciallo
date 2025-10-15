@@ -10,37 +10,37 @@ namespace Ciallo.NodeControl;
 public partial class WorldEventDispatcher : SubViewportContainer
 {
     private Camera2D _camera;
-    
+
     private bool _isHovering = false;
     private bool _isPanning = false;
     private Vector2 _prevScreenPos;
     private Vector2 _prevWorldPos;
     private float _prevPressure;
     private Vector2 _prevTilt;
-    
+
     public override void _Ready()
     {
         _camera = GetNode<Camera2D>("%Camera2D");
-            
+
         GuiInput += OnGuiInput;
         MouseEntered += OnMouseEnter;
         MouseExited += OnMouseExit;
     }
-    
+
     public void OnGuiInput(InputEvent e)
     {
         if (e is InputEventKey key) DispatchKey(key);
         if (e is not InputEventMouse mouseEvent) return;
-        
+
         var screenPos = mouseEvent.Position;
         var screenDelta = screenPos - _prevScreenPos;
         var worldPos = _camera.GetViewportTransform().AffineInverse() * mouseEvent.Position;
         var prevWorldPosWithCurrentCamera = _camera.GetViewportTransform().AffineInverse() * _prevScreenPos;
         var worldDelta = worldPos - prevWorldPosWithCurrentCamera;
-        
+
         _prevScreenPos = screenPos;
         _prevWorldPos = worldPos;
-        
+
         if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } lClick && _isHovering)
         {
             DispatchLeftClick(new()
@@ -50,8 +50,8 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 RawData = lClick
             });
         }
-        
-        if(mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false } lRelease)
+
+        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false } lRelease)
         {
             DispatchLeftRelease(new()
             {
@@ -60,7 +60,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 RawData = lRelease
             });
         }
-        
+
         if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true } rClick && _isHovering)
         {
             DispatchRightClick(new()
@@ -70,8 +70,8 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 RawData = rClick
             });
         }
-        
-        if(mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false } rRelease)
+
+        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false } rRelease)
         {
             DispatchRightRelease(new()
             {
@@ -80,7 +80,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 RawData = rRelease
             });
         }
-        
+
         var panel = (PaintPanel)Owner;
         if (mouseEvent is InputEventMouseMotion motion)
         {
@@ -96,20 +96,20 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 TiltDelta = motion.Tilt - _prevTilt,
                 RawData = motion
             };
-            
+
             _prevPressure = motion.Pressure;
             _prevTilt = motion.Tilt;
-            
+
             DispatchMotion(data);
         }
-        
+
         // ------------ Canvas navigation handling -------------
         if (mouseEvent is InputEventMouseMotion && _isPanning) panel.Offset.Value -= worldDelta;
-        
+
         // Drag middle mouse to pan
         if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: true } && _isHovering) _isPanning = true;
         if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: false }) _isPanning = false;
-        
+
         // Double click to reset camera position.
         if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, DoubleClick: true })
         {
@@ -138,7 +138,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
     {
         ToolManager.ActiveTool.Value?.OnLeftClick(data);
     }
-    
+
     public void DispatchLeftRelease(CursorButtonData data)
     {
         ToolManager.ActiveTool.Value?.OnLeftRelease(data);
@@ -148,12 +148,12 @@ public partial class WorldEventDispatcher : SubViewportContainer
     {
         ToolManager.ActiveTool.Value?.OnMoving(data);
     }
-    
+
     public void DispatchRightClick(CursorButtonData data)
     {
         ToolManager.ActiveTool.Value?.OnRightClick(data);
     }
-    
+
     public void DispatchRightRelease(CursorButtonData data)
     {
         ToolManager.ActiveTool.Value?.OnRightRelease(data);

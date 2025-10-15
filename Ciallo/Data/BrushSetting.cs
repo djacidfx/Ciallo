@@ -23,7 +23,7 @@ public class BrushSetting
     [DataMember] public ReactiveProperty<float> DashLength = new(-1.0f);
     [DataMember] public ReactiveProperty<float> GapLength = new(-1.0f);
     [DataMember] public ReactiveProperty<float> DashForwardSpeed = new(0.0f);
-    
+
     // Stamp
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
     [DataMember] public ImageTexture StampTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
@@ -47,7 +47,7 @@ public class BrushSetting
         };
         nameEdit.BindString(Name);
         container.AddProperty("Name", nameEdit);
-        
+
         var baseRadiusControl = new SpinSlider
         {
             MinValue = 0.1,
@@ -57,7 +57,7 @@ public class BrushSetting
         };
         baseRadiusControl.BindNumber(BaseRadius);
         container.AddProperty("Base radius", baseRadiusControl);
-        
+
         var colorPickerButton = new ColorPickerButton()
         {
             CustomMinimumSize = new(0, 30),
@@ -68,7 +68,7 @@ public class BrushSetting
         colorPickerButton.BindColor(Color);
         container.AddProperty("RGB+Flow", colorPickerButton);
 
-        var pressureCurveEdit = new MappingCurveEdit {MinValue = 0.01f}; // MinValue avoid potential zero radius issue.
+        var pressureCurveEdit = new MappingCurveEdit { MinValue = 0.01f }; // MinValue avoid potential zero radius issue.
         pressureCurveEdit.Curve = Pressure2RadiusRatioCurve;
         var aspectBox = new AspectRatioContainer();
         aspectBox.AddChild(pressureCurveEdit);
@@ -77,11 +77,11 @@ public class BrushSetting
         var typeButton = new OptionButton();
         typeButton.BindEnum(RenderingType);
         container.AddProperty("Rendering type", typeButton);
-        
+
         // Stamp
         var stampIntervalControl = new SpinSlider
         {
-            MinValue = 1f/64,
+            MinValue = 1f / 64,
             MaxValue = 6,
             Step = 0.001,
             ExpEdit = true,
@@ -91,11 +91,11 @@ public class BrushSetting
         stampIntervalControl.BindNumber(StampInterval);
         container.AddProperty("Interval", stampIntervalControl)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
-        
+
         var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage);
         container.AddProperty("Stamp texture", stampTextureEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
-        
+
         var multiplyTextureEdit = ImageTextureEdit.Instantiate(MultiplyTexture, ConvertStampImage);
         container.AddProperty("Mask texture", multiplyTextureEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
@@ -111,7 +111,7 @@ public class BrushSetting
         stampRotationControl.BindNumber(degreeView);
         container.AddProperty("Rotation", stampRotationControl)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
-        
+
         var noiseOctaveControl = new SpinSlider()
         {
             MinValue = 1,
@@ -123,7 +123,7 @@ public class BrushSetting
         noiseOctaveControl.BindNumber(RotationNoiseOctave);
         container.AddProperty("Rotation noise octave", noiseOctaveControl)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
-        
+
         var rotationNoiseAmplitudeControl = new SpinSlider
         {
             MinValue = 0.0,
@@ -133,7 +133,7 @@ public class BrushSetting
         rotationNoiseAmplitudeControl.BindNumber(RotationNoiseAmplitude);
         container.AddProperty("Rotation noise amplitude", rotationNoiseAmplitudeControl)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
-        
+
         var rotationNoiseFrequencyControl = new SpinSlider
         {
             MinValue = 0.001,
@@ -145,14 +145,14 @@ public class BrushSetting
         rotationNoiseFrequencyControl.BindNumber(RotationNoiseFrequency);
         container.AddProperty("Rotation noise frequency", rotationNoiseFrequencyControl)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
-        
+
         // Airbrush
         var falloffCurveEdit = new MappingCurveEdit();
         falloffCurveEdit.Curve = FalloffCurve;
         container.AddProperty("Opacity falloff", falloffCurveEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Airbrush);
     }
-    
+
     /// <summary>
     /// Converts the stamp image to L8 format, enforces a maximum size of 256x256 pixels,
     /// and resizes the image to ensure a square aspect ratio.
@@ -180,10 +180,9 @@ public class BrushSetting
 
     public static Image CreateDefaultWhiteImage()
     {
-        return Image.CreateFromData(1, 1, true, Image.Format.L8, new byte[] { 255 } );
+        return Image.CreateFromData(1, 1, true, Image.Format.L8, new byte[] { 255 });
     }
 }
-
 
 public enum BrushRenderingType
 {

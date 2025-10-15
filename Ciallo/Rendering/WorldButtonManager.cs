@@ -19,7 +19,7 @@ public partial class WorldButtonManager : Node2D
     {
         return AddRectButton(position, new Vector2(size, size), flags);
     }
-    
+
     public Button AddRectButton(Vector2 position, Vector2 size, WorldButtonFlags flags = default)
     {
         var button = AddRectButton(flags);
@@ -33,7 +33,7 @@ public partial class WorldButtonManager : Node2D
     public Button AddRectButton(WorldButtonFlags flags = default)
     {
         var button = new Button();
-        
+
         if (flags.HasFlag(WorldButtonFlags.ScreenPosition))
             CanvasLayer.AddChild(button);
         else
@@ -55,7 +55,8 @@ public partial class WorldButtonManager : Node2D
     public void Clear()
     {
         foreach (var child in this.GetAllDescendants())
-            if(child != CanvasLayer) child.QueueFree();
+            if (child != CanvasLayer)
+                child.QueueFree();
 
         ButtonsToUpdate.Clear();
     }

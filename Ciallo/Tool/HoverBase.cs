@@ -17,10 +17,10 @@ public abstract class HoverBase : InteractorBase
     public sealed override void End(CursorButtonData _)
     {
     }
-    
+
     public sealed override void Start(CursorButtonData _)
     {
     }
-    
+
     // Must implement cancel
 }

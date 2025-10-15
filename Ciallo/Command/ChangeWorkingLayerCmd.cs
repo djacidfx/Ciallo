@@ -29,7 +29,7 @@ public class ChangeWorkingLayerCmd : CommandBase
         var sm = Document.Get<SelectionManager>();
         OldE = sm.WorkingLayer.Value;
         sm.WorkingLayer.Value = NewE;
-        
+
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
         layerContainer.SetWorkingLayerNoSignal(NewE);
@@ -40,7 +40,7 @@ public class ChangeWorkingLayerCmd : CommandBase
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
         layerContainer.SetWorkingLayerNoSignal(OldE);
-        
+
         // Selection manager
         var sm = Document.Get<SelectionManager>();
         sm.WorkingLayer.Value = OldE;

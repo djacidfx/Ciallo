@@ -12,7 +12,7 @@ public static class PolyCubicBezierExtension
 {
     [Pure] public static Rect2 GetBoundingBox(this IReadOnlyList<BezierCurve.Point> points)
     {
-        if(points == null || points.Count == 0) throw new InvalidOperationException("Cannot compute bounding box of an empty PolyCubicBezier.");
+        if (points == null || points.Count == 0) throw new InvalidOperationException("Cannot compute bounding box of an empty PolyCubicBezier.");
         if (points.Count == 1) return new(points[0].P, Vector2.Zero);
 
         Vector2 min = Vector2.Inf;
@@ -39,8 +39,8 @@ public static class PolyCubicBezierExtension
             min = min.Min(p0).Min(p3);
             max = max.Max(p0).Max(p3);
         }
-        return new (min, max - min);
-        
+        return new(min, max - min);
+
         // Return an array of t values where the derivative is zero and within [0, 1]
         float[] GetExtreme(float a, float b, float c)
         {
@@ -73,7 +73,7 @@ public static class PolyCubicBezierExtension
             Vector2 a = 3 * (p1 - p0) - 6 * (p2 - p1) + 3 * (p3 - p2);
             Vector2 b = -6 * (p1 - p0) + 6 * (p2 - p1);
             Vector2 c = 3 * (p1 - p0);
-                
+
             float ax = a.X;
             float bx = b.X;
             float cx = c.X;
@@ -90,7 +90,7 @@ public static class PolyCubicBezierExtension
             else
             {
                 float disc = bx * bx - 4 * ax * cx;
-                if (disc <= 1e-5f) 
+                if (disc <= 1e-5f)
                     continue; // no real or double root ⇒ no sign change
                 float sqrtD = MathF.Sqrt(disc);
                 float t1 = (-bx + sqrtD) / (2 * ax);
@@ -101,7 +101,7 @@ public static class PolyCubicBezierExtension
         }
         return true;
     }
-    
+
     [Pure] public static (Vector2, BezierCurve.Point, Vector2) CalculateInsertPoint(
         this IReadOnlyList<BezierCurve.Point> points, int idx, float t)
     {
@@ -112,14 +112,14 @@ public static class PolyCubicBezierExtension
         Vector2 p1 = p0 + left.Out;
         Vector2 p3 = right.P;
         Vector2 p2 = p3 + right.In;
-        
+
         var p01 = p0.Lerp(p1, t);
         var p12 = p1.Lerp(p2, t);
         var p23 = p2.Lerp(p3, t);
         var p012 = p01.Lerp(p12, t);
         var p123 = p12.Lerp(p23, t);
         var p0123 = p012.Lerp(p123, t);
-        
+
         // compute new handles
         var newLeftOut = p01 - p0;
         var newRightIn = p23 - p3;
@@ -129,7 +129,7 @@ public static class PolyCubicBezierExtension
 
         return (newLeftOut, newTri, newRightIn);
     }
-    
+
     /// <summary>
     /// Split the PolyCubicBezier at the given polyT into two new PolyCubicBeziers.
     /// </summary>
@@ -153,7 +153,7 @@ public static class PolyCubicBezierExtension
 
         return (leftPoints, rightPoints);
     }
-    
+
     [Pure] public static List<BezierCurve.Point> Insert(this IReadOnlyList<BezierCurve.Point> points, float polyT)
     {
         var (idx, t) = ResolvePolyT(polyT);
@@ -170,7 +170,7 @@ public static class PolyCubicBezierExtension
 
         return newPoints;
     }
-    
+
     public static void Insert(this List<BezierCurve.Point> points, float polyT)
     {
         var (idx, t) = ResolvePolyT(polyT);
@@ -179,14 +179,14 @@ public static class PolyCubicBezierExtension
         points[idx + 1] = points[idx + 1].WithIn(rightIn);
         points.Insert(idx + 1, tri);
     }
-    
+
     [Pure] public static (int idx, float t) ResolvePolyT(this float polyT)
     {
         int idx = (int)Math.Floor(polyT);
         float t = polyT - idx;
         return (idx, t);
     }
-    
+
     // Sample curve segment at index, t in [0,1]
     [Pure] public static Vector2 Sample(this IReadOnlyList<BezierCurve.Point> _points, int index, float t)
     {
@@ -207,7 +207,7 @@ public static class PolyCubicBezierExtension
         var (idx, t) = ResolvePolyT(polyT);
         return _points.Sample(idx, t);
     }
-    
+
     [Pure] public static (List<Vector2>, List<float>) Tessellate(this IReadOnlyList<BezierCurve.Point> points, int subdivisionsPerSegment)
     {
         if (points.Count == 0) return ([], []);

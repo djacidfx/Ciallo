@@ -30,7 +30,7 @@ public static partial class AppWorldManager
             cmd.Do();
             brushMap.Add(brushDataE, cmd.BrushE);
         }
-        
+
         // Load layers and strokes
         var dataTreeRoot = dataDocument.Get<LayerTreeManager>().Root;
         Dictionary<Entity, Entity> layerMap = [];
@@ -58,13 +58,13 @@ public static partial class AppWorldManager
                     newStrokeCmd.Do();
                     var polylineE = newStrokeCmd.StrokeE;
                     new SetStrokeGeometryCmd(polylineE, geometry).Do();
-                    
+
                     var strokeBrush = polylineDataE.Get<StrokeBrush>();
                     new ChangeStrokeBrushCmd(polylineE, brushMap[strokeBrush.Value]).Do();
                 }
             }
         }
-        
+
         // Load selection
         var dataSm = dataDocument.Get<SelectionManager>();
         new ChangeWorkingLayerCmd(layerMap[dataSm.WorkingLayer.CurrentValue]).Do();
@@ -82,7 +82,7 @@ public static partial class AppWorldManager
 
     public static void ReloadWorkingWorld() // for debug
     {
-        if(WorkingDocument.CurrentValue.IsNull()) return;
+        if (WorkingDocument.CurrentValue.IsNull()) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (!File.Exists(settings.FilePath.Value)) return;
         var world = Load(settings.FilePath.Value, out var document);
@@ -103,7 +103,7 @@ public static partial class AppWorldManager
         writer.CloseFile();
         writer.Close();
     }
-    
+
     public static World Load(string filePath, out Entity document)
     {
         if (!File.Exists(filePath)) throw new FileNotFoundException($"File {filePath} not found.");
@@ -135,45 +135,45 @@ public static partial class AppWorldManager
                 .Invoke(new DynamicFilter(world).Include<ToSerializeTag>(), null);
             world.Filter(filter).ForEach(id =>
             {
-                if(!sortedEcData.ContainsKey(id))
+                if (!sortedEcData.ContainsKey(id))
                     sortedEcData[id] = [];
                 sortedEcData[id].Add(t);
             });
         }
-        
+
         var ecBin = MessagePackSerializer.Serialize(sortedEcData.Values.ToList());
-        
+
         EntityToIndexFormatter.Instance.EntityList = sortedEcData.Keys.Select(world.GetEntity).ToList();
-        
+
         // Note, directly using List<object> will cause losing type information in deserialization.
         Dictionary<Type, List<byte[]>> componentData = [];
         Dictionary<Type, MethodInfo> worldGetFunctions = [];
-        var getMethodDef = typeof(WorldIdExtensions).GetMethods().Single(info=>info.Name == "Get");
+        var getMethodDef = typeof(WorldIdExtensions).GetMethods().Single(info => info.Name == "Get");
         foreach (var t in ToSerializeTypes.Where(t => !t.IsTag()))
             worldGetFunctions[t] = getMethodDef!.MakeGenericMethod(t);
-        
+
         foreach (var (id, types) in sortedEcData)
         {
             foreach (var t in types)
             {
                 if (ToSerializeTags.Contains(t)) continue;
-                
+
                 var obj = worldGetFunctions[t].Invoke(null, [world, id]);
                 if (!componentData.ContainsKey(t)) componentData[t] = [];
                 var bytes = MessagePackSerializer.Serialize(t, obj);
                 componentData[t].Add(bytes);
             }
         }
-        
+
         var componentBin = MessagePackSerializer.Serialize(componentData);
-        
+
         return [ecBin, componentBin];
     }
 
     public static World Deserialize(byte[][] bins, out Entity document)
     {
         var world = new World();
-        
+
         var ecBin = bins[0];
         var ecData = MessagePackSerializer.Deserialize<List<List<Type>>>(ecBin);
         var entities = new List<Entity>(ecData.Count);
@@ -183,9 +183,9 @@ public static partial class AppWorldManager
             entities.Add(e);
         }
         document = entities[0];
-        
+
         EntityToIndexFormatter.Instance.EntityList = entities;
-        
+
         var componentBin = bins[1];
         var componentData = MessagePackSerializer.Deserialize<Dictionary<Type, Queue<byte[]>>>(componentBin);
         Dictionary<Type, MethodInfo> entityAddFunctions = [];
@@ -212,7 +212,7 @@ public static partial class AppWorldManager
                 }
             }
         }
-        
+
         return world;
     }
 

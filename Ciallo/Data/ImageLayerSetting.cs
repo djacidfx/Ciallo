@@ -9,7 +9,7 @@ public class ImageLayerSetting
 {
     [DataMember] public ImageTexture Texture = new();
     [DataMember] public ReactiveProperty<Transform2D> ImageTransform = new(Transform2D.Identity);
-    
+
     public Vector2[] GetCorners()
     {
         var transform = ImageTransform.Value;

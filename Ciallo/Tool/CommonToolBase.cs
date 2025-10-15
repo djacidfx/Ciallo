@@ -69,7 +69,7 @@ public abstract partial class CommonToolBase : ToolButtonBase
     private readonly buttonParameterEvent _etRightClick;
     private readonly buttonParameterEvent _etRightRelease;
     private readonly motionParameterEvent _etMove;
-    
+
     private InteractorBase _rightInteractor;
     private HoverBase _hoverInteractor;
     private InteractorBase _leftInteractor;

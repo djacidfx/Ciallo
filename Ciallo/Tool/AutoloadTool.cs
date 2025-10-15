@@ -6,6 +6,5 @@ public partial class AutoloadTool : Node
 {
     public override void _Ready()
     {
-        
     }
 }

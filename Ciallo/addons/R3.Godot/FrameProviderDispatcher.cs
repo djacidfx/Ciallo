@@ -1,10 +1,11 @@
 ﻿#nullable enable
 
 using System.Runtime.CompilerServices;
+using Godot;
 
 namespace R3;
 
-public partial class FrameProviderDispatcher : global::Godot.Node
+public partial class FrameProviderDispatcher : Node
 {
     StrongBox<double> processDelta = new StrongBox<double>();
     StrongBox<double> physicsProcessDelta = new StrongBox<double>();

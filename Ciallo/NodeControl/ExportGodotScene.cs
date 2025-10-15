@@ -33,7 +33,7 @@ public partial class ExportGodotScene : FileDialog
                     node.SetOwner(root);
                     layer.QueueFree();
                 }
-                
+
                 // Remove script
                 if (child is StrokeView stroke)
                 {

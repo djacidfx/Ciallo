@@ -10,7 +10,7 @@ public partial class ToolButtonPanel : Container
     public ButtonGroup ToolButtonGroup { get; } = new();
     public readonly ReactiveProperty<ITool> ActiveTool = new(null);
     public List<T> GetAllTools<T>() => ToolButtonGroup.GetButtons().Where(b => b.IsVisible()).Cast<T>().ToList();
-    
+
     public ToolButtonPanel()
     {
         ToolButtonGroup.Pressed += button =>
@@ -21,7 +21,7 @@ public partial class ToolButtonPanel : Container
             tool.OnActivate();
         };
     }
-    
+
     public override void _Ready()
     {
         foreach (var child in GetChildren())

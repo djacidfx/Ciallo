@@ -15,19 +15,19 @@ namespace Ciallo.Data;
 public class EntityTreeNode<T> where T : EntityTreeNode<T>
 {
     [DataMember] public List<Entity> Children = [];
-    
+
     public int ChildCount => Children.Count;
     public int DescendantCount => CountSubtreeNodes((T)this) - 1;
     public bool IsLeaf => Children.Count == 0;
 
     #region Modify
-    
+
     public void AddChild(Entity child)
     {
         if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
         Children.Add(child);
     }
-    
+
     public Entity GetChild(Index index) => Children[index];
 
     public void InsertChild(int idx, Entity child)
@@ -35,26 +35,26 @@ public class EntityTreeNode<T> where T : EntityTreeNode<T>
         if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
         Children.Insert(idx, child);
     }
-    
+
     public void MoveChild(int srcIdx, int dstIdx)
     {
         var moving = Children[srcIdx];
         Children.RemoveAt(srcIdx);
         Children.Insert(dstIdx, moving);
     }
-    
+
     public void RemoveChild(Index idx)
     {
         Children.RemoveAt(idx.GetOffset(Children.Count));
     }
-    
+
     public void RemoveChild(Entity child)
     {
         int idx = Children.IndexOf(child);
         if (idx < 0) throw new ArgumentException("The specified entity is not a child of this node.");
         Children.RemoveAt(idx);
     }
-    
+
     public void AddDescendant(IReadOnlyList<int> parentPath, Entity child)
     {
         GetDescendantNode(parentPath).AddChild(child);
@@ -65,7 +65,7 @@ public class EntityTreeNode<T> where T : EntityTreeNode<T>
         int idx = targetPath[^1];
         GetDescendantNode(targetPath.SkipLast(1).ToArray()).InsertChild(idx, descendant);
     }
-    
+
     public Entity RemoveDescendant(IReadOnlyList<int> targetPath)
     {
         var parentNode = GetDescendantNode(targetPath.SkipLast(1).ToArray());
@@ -73,7 +73,7 @@ public class EntityTreeNode<T> where T : EntityTreeNode<T>
         parentNode.Children.RemoveAt(targetPath[^1]);
         return removed;
     }
-    
+
     /// <summary>
     /// Move a descendant node to another position.
     /// </summary>
@@ -95,9 +95,12 @@ public class EntityTreeNode<T> where T : EntityTreeNode<T>
         bool IsPrefix(IReadOnlyList<int> prefix, IReadOnlyList<int> full)
         {
             if (prefix.Count > full.Count) return false;
-            for (int i = 0; i < prefix.Count; i++) if (prefix[i] != full[i]) return false;
+            for (int i = 0; i < prefix.Count; i++)
+                if (prefix[i] != full[i])
+                    return false;
             return true;
         }
+
         if (IsPrefix(srcPath, dstParentPath)) throw new InvalidOperationException("Cannot move a node into its own descendant.");
 
         var dstParent = GetDescendantNode(dstParentPath);
@@ -113,9 +116,9 @@ public class EntityTreeNode<T> where T : EntityTreeNode<T>
         srcParent.RemoveChild(srcIdx);
         dstParent.InsertChild(dstIdx, moving);
     }
-    
+
     #endregion
-    
+
     #region Visit
 
     public Entity GetDescendant([NotNull] IReadOnlyList<int> path)
@@ -124,13 +127,13 @@ public class EntityTreeNode<T> where T : EntityTreeNode<T>
         if (path.Count == 1) return Children[path[0]];
         return Children[path[0]].Get<T>().GetDescendant(path.Skip(1).ToArray());
     }
-    
+
     public T GetDescendantNode([NotNull] IReadOnlyList<int> path)
     {
         if (path.Count == 0) return (T)this;
         return Children[path[0]].Get<T>().GetDescendantNode(path.Skip(1).ToArray());
     }
-    
+
     public T GetNodeOrNull([NotNull] IReadOnlyList<int> path)
     {
         if (path.Count == 0) return (T)this;
@@ -139,14 +142,14 @@ public class EntityTreeNode<T> where T : EntityTreeNode<T>
         var childNode = Children[idx].Get<T>();
         return childNode.GetNodeOrNull(path.Skip(1).ToArray());
     }
-    
+
     public List<int> FindPathTo(Entity target)
     {
         var node = target.Get<T>();
         BreadthFirstSearch((T)this, node, out var path);
         return path;
     }
-    
+
     #endregion
 
     #region utility
@@ -166,7 +169,7 @@ public class EntityTreeNode<T> where T : EntityTreeNode<T>
             path = [];
             return [];
         }
-        
+
         var childNodes = node.Children.Select(e => e.Get<T>()).ToList();
         var index = childNodes.IndexOf(targetNode);
         if (index >= 0) // found
@@ -219,8 +222,7 @@ public class EntityTreeNode<T> where T : EntityTreeNode<T>
             return false;
         }
 
-        return Dfs((T)this) ? path :
-            throw new ArgumentOutOfRangeException(nameof(preorderIdx), "Index exceeds the number of nodes in the tree.");
+        return Dfs((T)this) ? path : throw new ArgumentOutOfRangeException(nameof(preorderIdx), "Index exceeds the number of nodes in the tree.");
     }
 
     /// <summary>

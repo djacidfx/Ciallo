@@ -7,7 +7,7 @@ namespace Ciallo.Tool;
 
 public class PaintFillInteractor : InteractorBase
 {
-    public override bool CanInteract 
+    public override bool CanInteract
     {
         get
         {
@@ -18,7 +18,6 @@ public class PaintFillInteractor : InteractorBase
 
     public override void Start(CursorButtonData data)
     {
-        
     }
 
     public override void Interacting(CursorMotionData data)
