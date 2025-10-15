@@ -1,9 +1,9 @@
-using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.NodeControl;
+using Godot;
 
 public partial class MenuWindow : PopupMenu
 {
@@ -11,12 +11,12 @@ public partial class MenuWindow : PopupMenu
     {
         { "Brush library", null },
     };
-    
+
     public override void _Ready()
     {
-        foreach(var (i, item) in MenuItems.Index())
+        foreach (var (i, item) in MenuItems.Index())
         {
-            if(item.Key.StartsWith('-'))
+            if (item.Key.StartsWith('-'))
             {
                 AddSeparator();
                 continue;
@@ -24,10 +24,10 @@ public partial class MenuWindow : PopupMenu
             AddItem(Tr(item.Key));
             if (item.Value != null) SetItemShortcut(i, item.Value.Shortcut);
         }
-        
+
         IndexPressed += id => OnIndexPressed((int)id);
     }
-    
+
     private void OnIndexPressed(int id)
     {
         switch (id)

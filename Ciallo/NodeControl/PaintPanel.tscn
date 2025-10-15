@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cmxkg61nilwq8"]
+[gd_scene load_steps=9 format=3 uid="uid://cmxkg61nilwq8"]
 
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://NodeControl/PaintPanel.cs" id="1_ract4"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_jsupi"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" path="res://Rendering/WorldView.tscn" id="4_3trrc"]
 [ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Rendering/Checkerboard.gdshader" id="5_ercqw"]
 [ext_resource type="Script" uid="uid://ci7loyp0at1cr" path="res://Rendering/WorldOverlay.cs" id="6_je3d8"]
+[ext_resource type="Script" uid="uid://dc5n5euy0qfdj" path="res://Rendering/WorldButtonManager.cs" id="7_8h3gs"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_je3d8"]
 shader = ExtResource("5_ercqw")
@@ -39,7 +40,8 @@ theme_override_constants/separation = 15
 layout_mode = 2
 tooltip_text = "[Canvas Navigation Guide Tooltip]"
 mouse_filter = 0
-text = "Canvas navigation guide (?)"
+mouse_default_cursor_shape = 16
+text = "Canvas navigation guide"
 
 [node name="VSeparator2" type="VSeparator" parent="VBoxContainer/Bar/HBoxContainer"]
 layout_mode = 2
@@ -92,10 +94,12 @@ layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 0
 stretch = true
+mouse_target = true
 script = ExtResource("3_7pmtm")
 
 [node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldViewContainer"]
 handle_input_locally = false
+msaa_2d = 1
 gui_snap_controls_to_pixels = false
 size = Vector2i(1920, 1042)
 render_target_update_mode = 4
@@ -115,6 +119,8 @@ ignore_rotation = false
 unique_name_in_owner = true
 script = ExtResource("6_je3d8")
 
-[connection signal="gui_input" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnGuiInput"]
-[connection signal="mouse_entered" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnMouseEnter"]
-[connection signal="mouse_exited" from="VBoxContainer/WorldViewContainer" to="VBoxContainer/WorldViewContainer" method="OnMouseExit"]
+[node name="WorldButtonManager" type="Node2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
+unique_name_in_owner = true
+script = ExtResource("7_8h3gs")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="VBoxContainer/WorldViewContainer/SubViewport/WorldButtonManager"]

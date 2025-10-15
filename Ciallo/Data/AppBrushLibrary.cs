@@ -27,32 +27,32 @@ public static class AppBrushLibrary
         List<BrushSetting> brushes = [];
         brushes.Add(new()
         {
-            Name = { Value = "Solid".Tr()},
+            Name = { Value = "Solid".Tr() },
             RenderingType = { Value = BrushRenderingType.Vanilla },
             Labels = { BrushLabel.BuiltIn },
         });
-        
+
         brushes.Add(new()
         {
-            Name = { Value = "High performance".Tr() + " " + "Soft airbrush".Tr()},
+            Name = { Value = "High performance".Tr() + " " + "Soft airbrush".Tr() },
             RenderingType = { Value = BrushRenderingType.Airbrush },
             Labels = { BrushLabel.BuiltIn },
-            Color = { Value = new(0,0,0,0.2f) },
+            Color = { Value = new(0, 0, 0, 0.2f) },
             FalloffCurve = new([
-                new(new(0,1), new(-0.25f,0), new(0.5f,0)),
-                new(new(1,0), new(-0.25f,0), new(0.25f,0))
+                new(new(0, 1), new(-0.25f, 0), new(0.5f, 0)),
+                new(new(1, 0), new(-0.25f, 0), new(0.25f, 0))
             ]),
         });
-        
+
         brushes.Add(new()
         {
-            Name = { Value = "High performance".Tr() + " " + "Hard airbrush".Tr()},
+            Name = { Value = "High performance".Tr() + " " + "Hard airbrush".Tr() },
             RenderingType = { Value = BrushRenderingType.Airbrush },
             Labels = { BrushLabel.BuiltIn },
-            Color = { Value = new(0,0,0,0.3f) },
+            Color = { Value = new(0, 0, 0, 0.3f) },
             FalloffCurve = new([
-                new(new(0,1), new(-0.25f,0), new(0.65f,0)),
-                new(new(1,0), new(0,0.25f), new(0.25f,0))
+                new(new(0, 1), new(-0.25f, 0), new(0.65f, 0)),
+                new(new(1, 0), new(0, 0.25f), new(0.25f, 0))
             ]),
         });
 
@@ -67,28 +67,28 @@ public static class AppBrushLibrary
         {
             image.GenerateMipmaps();
         }
-        
+
         brushes.Add(new()
         {
-            Name = { Value = "Pencil".Tr()},
-            RenderingType = {Value = BrushRenderingType.Stamp},
+            Name = { Value = "Pencil".Tr() },
+            RenderingType = { Value = BrushRenderingType.Stamp },
             Labels = { BrushLabel.BuiltIn },
-            Color = { Value = new(0,0,0,0.5f) },
+            Color = { Value = new(0, 0, 0, 0.5f) },
             StampTexture = ImageTexture.CreateFromImage(images[0]),
-            StampInterval = {Value = 0.2f},
+            StampInterval = { Value = 0.2f },
             MultiplyTexture = ImageTexture.CreateFromImage(images[2]),
-            RotationNoiseAmplitude = {Value = 8*Mathf.Pi},
-            RotationNoiseFrequency = {Value = 0.343234f},
+            RotationNoiseAmplitude = { Value = 8 * Mathf.Pi },
+            RotationNoiseFrequency = { Value = 0.343234f },
         });
-        
+
         brushes.Add(new()
         {
-            Name = { Value = "Splatter".Tr()},
-            RenderingType = {Value = BrushRenderingType.Stamp},
+            Name = { Value = "Splatter".Tr() },
+            RenderingType = { Value = BrushRenderingType.Stamp },
             Labels = { BrushLabel.BuiltIn },
             StampTexture = ImageTexture.CreateFromImage(images[1]),
-            RotationNoiseAmplitude = {Value = Mathf.Pi},
-            RotationNoiseFrequency = {Value = 0.5f},
+            RotationNoiseAmplitude = { Value = Mathf.Pi },
+            RotationNoiseFrequency = { Value = 0.5f },
         });
 
         return brushes;
@@ -111,7 +111,7 @@ public static class AppBrushLibrary
         var invalids = Path.GetInvalidFileNameChars();
         foreach (var c in invalids)
             fileName = fileName.Replace(c, '_');
-        if(string.IsNullOrWhiteSpace(fileName))
+        if (string.IsNullOrWhiteSpace(fileName))
             fileName = "Unknown name brush";
         return fileName;
     }
@@ -137,7 +137,7 @@ public static class AppBrushLibrary
         foreach (var brush in BrushSettings)
         {
             var name = SanitizeFileName(brush.Name.Value);
-            if(seenNames.Contains(name))
+            if (seenNames.Contains(name))
             {
                 int suffix = 1;
                 while (seenNames.Contains(name + "_" + suffix))
@@ -146,7 +146,7 @@ public static class AppBrushLibrary
             }
             var path = BrushFolder + name + ".bin";
             seenNames.Add(name);
-            
+
             var content = MessagePackSerializer.Serialize(brush);
             using var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
             file.StoreBuffer(content);
@@ -189,12 +189,12 @@ public static class AppBrushLibrary
         var panel = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<BrushPanel>().First();
         SelectedIndex = panel.SelectedIndex;
         panel.BindBrushSetting(BrushSettings, s => s);
-        
+
         // Note about `BrushSettings.ObserveChanged().ToReadOnlyReactiveProperty()`
         // ToReadOnlyReactiveProperty() is necessary to trigger the initial value of observable.
         // Or CombineLatest lacks of the first value to get to work. Or use `Prepend` function.
         SelectedBrushSetting = SelectedIndex
-            .CombineLatest(BrushSettings.ObserveChanged().ToReadOnlyReactiveProperty(), (idx, _) =>idx)
+            .CombineLatest(BrushSettings.ObserveChanged().ToReadOnlyReactiveProperty(), (idx, _) => idx)
             .Select(idx => idx < 0 || idx >= BrushSettings.Count ? null : BrushSettings[idx])
             .ToReadOnlyReactiveProperty();
 
@@ -203,7 +203,7 @@ public static class AppBrushLibrary
         panel.BrushPreviewViewport.AddChild(preview);
         // Note: Lazy on clearing these caches on destruction. I don't believe user will view 1e5 brushes in one session.
         Dictionary<BrushSetting, BrushMaterial> materialCache = new();
-        CompositeDisposable curveChangeSubs = new(); 
+        CompositeDisposable curveChangeSubs = new();
         curveChangeSubs.AddTo(panel);
         SelectedBrushSetting.Subscribe(setting =>
         {
@@ -218,24 +218,24 @@ public static class AppBrushLibrary
                 material = new();
                 material.ObserveBrushSetting(setting);
                 materialCache[setting] = material;
-                setting.Pressure2RadiusRatioCurve.Changed.Prepend(new Unit()).Subscribe(_ => 
+                setting.Pressure2RadiusRatioCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
                     UpdateStrokePreview(preview, setting.Pressure2RadiusRatioCurve)).AddTo(curveChangeSubs);
             }
             preview.Material = material;
         }).AddTo(panel);
-        
+
         // Brush list operations and buttons
         int count = 1;
         panel.Add.Pressed += () =>
         {
             var newBrush = new BrushSetting()
             {
-                Name = { Value = "New brush".Tr() + " " + count++},
+                Name = { Value = "New brush".Tr() + " " + count++ },
             };
             BrushSettings.Add(newBrush);
             SelectedIndex.Value = BrushSettings.Count - 1;
         };
-        
+
         panel.Remove.Pressed += () =>
         {
             if (SelectedIndex.Value < 0)
@@ -249,7 +249,7 @@ public static class AppBrushLibrary
             else
                 SelectedIndex.OnNext(idx);
         };
-        
+
         panel.Copy.Pressed += () =>
         {
             int idx = SelectedIndex.Value;
@@ -259,7 +259,7 @@ public static class AppBrushLibrary
             BrushSettings.Add(newBrush);
             SelectedIndex.Value = BrushSettings.Count - 1;
         };
-        
+
         panel.Reset.Pressed += () =>
         {
             int prev = SelectedIndex.Value;
@@ -273,7 +273,7 @@ public static class AppBrushLibrary
             else
                 SelectedIndex.OnNext(prev);
         };
-        
+
         panel.Up.Pressed += () =>
         {
             int idx = SelectedIndex.Value;
@@ -315,12 +315,12 @@ public static class AppBrushLibrary
             .Select(i => i / (n - 1f))
             .Select(i => (i * 2 - 1f) * Mathf.Pi)
             .ToImmutableArray(); // [-pi, pi]
-        
+
         var points = ts.Select(t => new Vector2(t, Mathf.Sin(t) / gr)).ToImmutableArray();
         var radii = ts
             .Select(t => Mathf.Cos(t / 2.0f))
             .Select(pressureCurve.SampleX)
-            .Select(radiusRatio => radiusRatio * 0.5f/gr)
+            .Select(radiusRatio => radiusRatio * 0.5f / gr)
             .ToImmutableArray();
         view.SetGeometry(points, radii);
     }

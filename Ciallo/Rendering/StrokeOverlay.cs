@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Collections.Immutable;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Godot;
 
@@ -7,64 +7,52 @@ namespace Ciallo.Rendering;
 
 public partial class StrokeOverlay : Node2D
 {
-    public static readonly ShaderMaterial WireframeMaterial = GD.Load<ShaderMaterial>("res://Rendering/WireframeMaterial.tres");
-    public static readonly ShaderMaterial WireframeDotMaterial = GD.Load<ShaderMaterial>("res://Rendering/WireframeDotMaterial.tres");
-
     public StrokeView Wireframe;
-    public MultiMeshInstance2D WireframeDot;
+    public MultiMeshInstance2D Dots;
     public StrokeBody HitTestBody;
 
     public override void _Ready()
     {
-        Wireframe = new() { Material = WireframeMaterial };
+        Wireframe = new() { Material = AutoloadRendering.WireframeMaterial };
         Wireframe.SetInstanceShaderParameter("overridingColor", AppPreference.StrokeWireframeColor);
-        var multiMesh = new MultiMesh
-        {
-            TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,
-            UseColors = true,
-            Mesh = GD.Load<Mesh>("res://Rendering/WireframeDotMesh.tres"),
-        };
-        WireframeDot = new()
-        {
-            Material = WireframeDotMaterial,
-            Multimesh = multiMesh
-        };
+        Dots = AutoloadRendering.CreateDots();
         HitTestBody = new();
-        
+
         AddChild(Wireframe);
-        AddChild(WireframeDot);
+        AddChild(Dots);
         AddChild(HitTestBody);
     }
 
     public void SetGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
-        const float wireframeRadius = 2f;
-        const float dotRadius = 12f;
-        Wireframe.SetGeometry(points, Enumerable.Repeat(wireframeRadius, points.Count).ToImmutableArray());
-        WireframeDot.SetDotGeometry(points, Enumerable.Repeat(dotRadius, points.Count).ToImmutableArray());
+        float wireframeRadius = AppPreference.StrokeWireframeRadius;
+        float dotRadius = AppPreference.StrokeDotRadius;
+        Wireframe.SetGeometry(points, wireframeRadius);
+        Dots.SetDotGeometry(points, dotRadius);
         HitTestBody.SetGeometry(points, radii);
     }
-    
+
     public void SetColor(Color color)
     {
         Wireframe.SetInstanceShaderParameter("overridingColor", color);
-        for(int i = 0; i < WireframeDot.Multimesh.InstanceCount; i++)
+        for (int i = 0; i < Dots.Multimesh.InstanceCount; i++)
         {
-            WireframeDot.Multimesh.SetInstanceColor(i, color);
+            Dots.Multimesh.SetInstanceColor(i, color);
         }
     }
 }
 
 public static class DotExtension
 {
-    public static void SetDotGeometry(this MultiMeshInstance2D instance, IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
+    public static void SetDotGeometry(this MultiMeshInstance2D instance, IReadOnlyList<Vector2> points,
+        IReadOnlyList<float> radii)
     {
         if (points.Count == 0)
         {
             instance.Multimesh.InstanceCount = 0;
             return;
         }
-        if(points.Count != radii.Count) throw new System.ArgumentException("Points and radii count mismatch.");
+        if (points.Count != radii.Count) throw new ArgumentException("Points and radii count mismatch.");
 
         var multiMesh = instance.Multimesh;
         multiMesh.InstanceCount = points.Count;
@@ -74,5 +62,10 @@ public static class DotExtension
             multiMesh.SetInstanceTransform2D(i, transform);
             multiMesh.SetInstanceColor(i, AppPreference.StrokeWireframeColor);
         }
+    }
+
+    public static void SetDotGeometry(this MultiMeshInstance2D instance, IReadOnlyList<Vector2> points, float radius)
+    {
+        SetDotGeometry(instance, points, Enumerable.Repeat(radius, points.Count).ToArray());
     }
 }

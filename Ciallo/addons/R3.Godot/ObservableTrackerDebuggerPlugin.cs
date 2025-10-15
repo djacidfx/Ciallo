@@ -1,9 +1,9 @@
 ﻿#if TOOLS
 #nullable enable
 
-using Godot;
 using System;
 using System.Collections.Generic;
+using Godot;
 using GDArray = Godot.Collections.Array;
 
 namespace R3;
@@ -51,7 +51,7 @@ public partial class ObservableTrackerDebuggerPlugin : EditorDebuggerPlugin
         sessions[sessionId] = new TrackerSession(currentSession);
 
         // NotifyOnSessionSetup gives the tab a reference to the debugger plugin, as well as the sessionId which is needed for messages.
-		var tab = new ObservableTrackerTab();
+        var tab = new ObservableTrackerTab();
         tab.NotifyOnSessionSetup(this, sessionId);
         currentSession.AddSessionTab(tab);
 
@@ -85,7 +85,7 @@ public partial class ObservableTrackerDebuggerPlugin : EditorDebuggerPlugin
         // so we need to trim it here.
         string messageWithoutHeader = message.Substring(message.IndexOf(':') + 1);
         //GD.Print(nameof(ObservableTrackerDebuggerPlugin) + " received " + messageWithoutHeader);
-        switch(messageWithoutHeader)
+        switch (messageWithoutHeader)
         {
             case Message_ReceiveActiveTasks:
                 // Only invoke event if updated.
@@ -101,7 +101,8 @@ public partial class ObservableTrackerDebuggerPlugin : EditorDebuggerPlugin
                             FormattedType = item[1].AsString(),
                             AddTime = new DateTime(item[2].AsInt64()),
                             StackTrace = item[3].AsString(),
-                        };;
+                        };
+                        ;
                         session.states.Add(state);
                     }
                     session.InvokeReceivedActiveTasks();
@@ -127,7 +128,7 @@ public partial class ObservableTrackerDebuggerPlugin : EditorDebuggerPlugin
     {
         if (sessions.Count > 0 && sessions[sessionId].debuggerSession.IsActive())
         {
-            sessions[sessionId].debuggerSession.SendMessage(MessageHeader + ":" + Message_RequestActiveTasks, new () { forceUpdate });
+            sessions[sessionId].debuggerSession.SendMessage(MessageHeader + ":" + Message_RequestActiveTasks, new() { forceUpdate });
         }
     }
 
@@ -135,7 +136,7 @@ public partial class ObservableTrackerDebuggerPlugin : EditorDebuggerPlugin
     {
         if (sessions.Count > 0 && sessions[sessionId].debuggerSession.IsActive())
         {
-            sessions[sessionId].debuggerSession.SendMessage(MessageHeader + ":" + Message_SetEnableStates, new () { enableTracking, enableStackTrace});
+            sessions[sessionId].debuggerSession.SendMessage(MessageHeader + ":" + Message_SetEnableStates, new() { enableTracking, enableStackTrace });
         }
     }
 

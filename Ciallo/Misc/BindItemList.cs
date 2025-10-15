@@ -15,14 +15,14 @@ namespace Ciallo.Misc;
 public static class BindItemList
 {
     // Fix item list
-    public static void BindValue<T>(this ItemList control, [NotNull] IReadOnlyList<T> items, 
+    public static void BindValue<T>(this ItemList control, [NotNull] IReadOnlyList<T> items,
         [NotNull] ReactiveProperty<T> property, Func<T, string> toName = null)
     {
         if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
         control.Clear();
         foreach (var item in items)
             control.AddItem(toName != null ? toName(item) : item.ToString());
-        
+
         var subs = new CompositeDisposable();
         property.Subscribe(value =>
         {
@@ -35,7 +35,7 @@ public static class BindItemList
             .AddTo(subs);
         subs.AddTo(control);
     }
-    
+
     // Binds dynamic list
     public static void ObserveObservableList<T>(this ItemList control,
         ObservableList<T> list,

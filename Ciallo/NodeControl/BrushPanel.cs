@@ -14,7 +14,7 @@ namespace Ciallo.NodeControl;
 public partial class BrushPanel : AcceptDialog
 {
     public readonly ReactiveProperty<int> SelectedIndex = new(-1);
-    
+
     public ItemList BrushSelector;
     public Container PropertiesHolder;
     public Button Add;
@@ -26,8 +26,10 @@ public partial class BrushPanel : AcceptDialog
     public Button Down;
     public Button Bottom;
     public Container Operators;
+
     public Viewport BrushPreviewViewport;
     public SubViewportContainer BrushPreviewContainer;
+    public Camera2D Camera;
     public float PreviewBaseWidth = Single.Pi * (2f + 0.3f); // 2pi + padding blank
     public const float PreviewAspectRatio = 1.618f * 2;
 
@@ -38,7 +40,6 @@ public partial class BrushPanel : AcceptDialog
 
     public override void _EnterTree()
     {
-        GetOkButton().Visible = false;
         BrushSelector = GetNode<ItemList>("%BrushSelector");
         PropertiesHolder = GetNode<Container>("%PropertiesHolder");
         Add = GetNode<Button>("%Add");
@@ -50,16 +51,20 @@ public partial class BrushPanel : AcceptDialog
         Down = GetNode<Button>("%Down");
         Bottom = GetNode<Button>("%Bottom");
         Operators = GetNode<Container>("%Operators");
+
         BrushPreviewViewport = GetNode<SubViewport>("%BrushPreviewViewport");
         BrushPreviewContainer = BrushPreviewViewport.GetParent<SubViewportContainer>();
+        Camera = BrushPreviewViewport.GetChild<Camera2D>(0);
     }
 
     public override void _Ready()
     {
+        GetOkButton().Visible = false;
+
         var background = (GradientTexture2D)BrushPreviewViewport.GetChild<Sprite2D>(1).Texture;
         background.Width = (int)Mathf.Ceil(PreviewBaseWidth);
         background.Height = (int)Mathf.Ceil(PreviewBaseWidth / PreviewAspectRatio);
-        
+
         BrushPreviewContainer.Resized += () =>
         {
             Vector2 size = BrushPreviewContainer.Size;
@@ -73,10 +78,37 @@ public partial class BrushPanel : AcceptDialog
         {
             var size = BrushPreviewContainer.Size;
             var zoomLevel = size.X / PreviewBaseWidth;
-            BrushPreviewViewport.GetChild<Camera2D>(0).Zoom = Vector2.One * zoomLevel;
+            Camera.Zoom = Vector2.One * zoomLevel;
         };
-        
+
         BrushPreviewContainer.ResetSize();
+
+        var _isPanning = false;
+        BrushPreviewContainer.GuiInput += et =>
+        {
+            if (et is InputEventMouseMotion button && _isPanning) Camera.Offset -= button.Relative / Camera.Zoom;
+
+            // Drag middle mouse to pan
+            if (et is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: true }) _isPanning = true;
+            if (et is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: false }) _isPanning = false;
+            // Double click to reset camera position.
+            if (et is InputEventMouseButton { ButtonIndex: MouseButton.Middle, DoubleClick: true })
+            {
+                Camera.Offset = Vector2.Zero;
+                var size = BrushPreviewContainer.Size;
+                var zoomLevel = size.X / PreviewBaseWidth;
+                Camera.Zoom = Vector2.One * zoomLevel;
+            }
+            var zoomFactor = AppPreference.MouseWheelZoomFactor.Value;
+            if (et is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp })
+            {
+                Camera.Zoom *= 1.0f + zoomFactor;
+            }
+            else if (et is InputEventMouseButton { ButtonIndex: MouseButton.WheelDown })
+            {
+                Camera.Zoom *= 1.0f - zoomFactor;
+            }
+        };
     }
 
     public override void _UnhandledInput(InputEvent @event)
@@ -93,7 +125,7 @@ public partial class BrushPanel : AcceptDialog
     {
         BrushSelector.ObserveObservableList(list, e => toBrushSetting(e).Name);
         BrushSelector.BindSelectionIndex(SelectedIndex);
-        
+
         foreach (var item in list)
         {
             var propertyBox = new PropertyContainer();
@@ -101,7 +133,7 @@ public partial class BrushPanel : AcceptDialog
             propertyBox.VisibleIf(SelectedIndex, idx => EqualityComparer<T>.Default.Equals(list.ElementAtOrDefault(idx), item));
             PropertiesHolder.AddChild(propertyBox);
         }
-        
+
         list.ObserveChanged().Subscribe(e =>
         {
             switch (e.Action)
@@ -109,7 +141,7 @@ public partial class BrushPanel : AcceptDialog
                 case NotifyCollectionChangedAction.Add:
                     var propertyBox = new PropertyContainer();
                     toBrushSetting(e.NewItem).DrawProperty(propertyBox);
-                    propertyBox.VisibleIf(SelectedIndex, idx=>EqualityComparer<T>.Default.Equals(list.ElementAtOrDefault(idx), e.NewItem));
+                    propertyBox.VisibleIf(SelectedIndex, idx => EqualityComparer<T>.Default.Equals(list.ElementAtOrDefault(idx), e.NewItem));
                     PropertiesHolder.AddChild(propertyBox);
                     PropertiesHolder.MoveChild(propertyBox, e.NewStartingIndex);
                     break;

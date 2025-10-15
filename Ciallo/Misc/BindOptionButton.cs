@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Collections.Immutable;
 using Godot;
-using R3;
 using ObservableCollections;
+using R3;
 
 namespace Ciallo.Misc;
 
 public static class BindOptionButton
 {
-    
     /// <summary>
     /// Take enum members as OptionButton items and two-way bind the ReactiveProperty. Will clean existing option items.
     /// </summary>
@@ -38,11 +37,11 @@ public static class BindOptionButton
     public static void BindValue<T>(this OptionButton button, IReadOnlyList<T> items,
         [NotNull] ReactiveProperty<T> property, Func<T, string> toString, out CompositeDisposable subs)
     {
-        if(button.AllowReselect) throw new ArgumentException("AllowReselect must be false.");
+        if (button.AllowReselect) throw new ArgumentException("AllowReselect must be false.");
         button.Clear();
         foreach (var item in items)
             button.AddItem(toString(item));
-        
+
         // Bind
         subs = new();
         property.Subscribe(value => button.Selected = items.IndexOf(value)).AddTo(subs);
@@ -52,7 +51,7 @@ public static class BindOptionButton
             if (index == -1) property.Value = default;
         }).AddTo(subs);
     }
-    
+
     public static void BindValue<T>(this OptionButton button, IReadOnlyList<T> items,
         [NotNull] ReactiveProperty<T> property, Func<T, string> toString = null)
     {
@@ -60,7 +59,7 @@ public static class BindOptionButton
         BindValue(button, items, property, toString, out var subs);
         subs.AddTo(button);
     }
-    
+
     //---------------------------------------------------------------
     // Pitfall: OptionButton lacks MoveItem, so we need to rebuild items on Move
     public static void MoveItem(this OptionButton button, int from, int to)
@@ -95,7 +94,7 @@ public static class BindOptionButton
         var subs = new CompositeDisposable();
         var subList = new List<IDisposable>();
 
-                // Initialize items
+        // Initialize items
         foreach (var item in list)
         {
             var name = toName(item);
@@ -109,7 +108,7 @@ public static class BindOptionButton
             subList.Add(sub);
         }
 
-                // Handle dynamic list changes
+        // Handle dynamic list changes
         list.ObserveChanged().Subscribe(e =>
         {
             switch (e.Action)

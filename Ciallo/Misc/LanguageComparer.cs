@@ -12,7 +12,7 @@ public sealed class LanguageComparer : StringComparer
     {
         if (string.IsNullOrEmpty(s))
             return string.Empty;
-        
+
         var parts = s.Split(['_', '-']);
         return parts[0];
     }
@@ -24,7 +24,7 @@ public sealed class LanguageComparer : StringComparer
     {
         var nx = Normalize(x);
         var ny = Normalize(y);
-        return StringComparer.OrdinalIgnoreCase.Compare(nx, ny);
+        return OrdinalIgnoreCase.Compare(nx, ny);
     }
 
     /// <summary>
@@ -34,7 +34,7 @@ public sealed class LanguageComparer : StringComparer
     {
         var nx = Normalize(x);
         var ny = Normalize(y);
-        return StringComparer.OrdinalIgnoreCase.Equals(nx, ny);
+        return OrdinalIgnoreCase.Equals(nx, ny);
     }
 
     /// <summary>
@@ -43,7 +43,7 @@ public sealed class LanguageComparer : StringComparer
     public override int GetHashCode(string obj)
     {
         var n = Normalize(obj);
-        return StringComparer.OrdinalIgnoreCase.GetHashCode(n);
+        return OrdinalIgnoreCase.GetHashCode(n);
     }
 
     /// <summary>

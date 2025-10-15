@@ -1,10 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Ciallo.Command;
 using Massive;
 using ObservableCollections;
 using R3;
-using System.Diagnostics;
 
 namespace Ciallo.Data;
 
@@ -42,10 +42,10 @@ public static partial class AppWorldManager
         document.Set(new LayerTreeManager());
         document.Set(new CommandManager());
         document.Set(new BrushManager());
-        
+
         // Always init first, then add to list
         LoadedWorlds.Add(world);
-        
+
         return world;
     }
 
@@ -61,18 +61,18 @@ public static partial class AppWorldManager
     public static void Remove([NotNull] World world)
     {
         if (!LoadedWorlds.Contains(world)) throw new Sys.KeyNotFoundException("The specified world does not exist.");
-        
+
         // Remove working world
         LoadedWorlds.Remove(world);
-        if(WorkingWorld.Value == world) WorkingWorld.Value = LoadedWorlds.Count > 0 ? LoadedWorlds[0] : null;
+        if (WorkingWorld.Value == world) WorkingWorld.Value = LoadedWorlds.Count > 0 ? LoadedWorlds[0] : null;
 
         // Dispose or free managers
         world.Document().Get<CommandManager>().Free();
-        
+
         // Dispose world
         world.Clear();
     }
-    
+
     public static void Clear()
     {
         // Don't use `clear` on LoadedWorlds since it will trigger reset rather than remove event.
@@ -81,7 +81,7 @@ public static partial class AppWorldManager
             Remove(world);
         }
     }
-    
+
     public static Entity Document([NotNull] this World world)
     {
         return world.GetEntity(0);

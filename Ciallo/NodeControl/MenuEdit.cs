@@ -1,9 +1,8 @@
-using Godot;
 using System.Collections.Generic;
 using System.Linq;
-using Massive;
 using Ciallo.Command;
 using Ciallo.Data;
+using Godot;
 
 namespace Ciallo.NodeControl;
 
@@ -19,12 +18,12 @@ public partial class MenuEdit : PopupMenu
         { "Paste", AppActions.Paste },
         { "Delete", AppActions.Delete },
     };
-    
+
     public override void _Ready()
     {
-        foreach(var (i, item) in MenuItems.Index())
+        foreach (var (i, item) in MenuItems.Index())
         {
-            if(item.Key.StartsWith('-'))
+            if (item.Key.StartsWith('-'))
             {
                 AddSeparator();
                 continue;
@@ -32,13 +31,13 @@ public partial class MenuEdit : PopupMenu
             AddItem(Tr(item.Key));
             if (item.Value != null) SetItemShortcut(i, item.Value.Shortcut);
         }
-        
+
         IndexPressed += id => OnIndexPressed((int)id);
     }
-    
+
     public static void OnIndexPressed(int id)
     {
-        if(AppWorldManager.WorkingWorld.Value == null) return;
+        if (AppWorldManager.WorkingWorld.Value == null) return;
         var cmdM = AppWorldManager.WorkingDocument.CurrentValue.Get<CommandManager>();
         switch (id)
         {

@@ -28,14 +28,14 @@ public class NewImageLayerCmd : CommandBase
     {
         Setting = setting;
     }
-    
+
     public override void Do()
     {
         // Data
         InitEntity();
         LayerE.Add<ToSerializeTag>();
         Document.Get<LayerTreeManager>().Root.AddChild(LayerE);
-        
+
         // View
         var worldView = Document.Get<WorldView>();
         Sprite = new Sprite2D
@@ -46,7 +46,15 @@ public class NewImageLayerCmd : CommandBase
         Setting.ImageTransform.Subscribe(Sprite.SetTransform).AddTo(Sprite);
         LayerE.Set(Sprite);
         Sprite.SetOwner(worldView);
-        
+        LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(Sprite.SetVisible).AddTo(Sprite);
+
+        // Overlay
+        var worldOverlay = Document.Get<WorldOverlay>();
+        var layerOverlay = new ImageLayerOverlay(Setting.ImageSize) { Visible = false };
+        LayerE.Set(layerOverlay);
+        worldOverlay.AddChild(layerOverlay);
+        Setting.ImageTransform.Subscribe(layerOverlay.SetTransform).AddTo(layerOverlay);
+
         // Panel
         var layerContainer = Document.Get<LayerContainer>();
         layerContainer.CreateAdd(LayerE);
@@ -57,10 +65,14 @@ public class NewImageLayerCmd : CommandBase
         // Panel
         var layerContainer = Document.Get<LayerContainer>();
         layerContainer.RemoveFree(LayerE);
-        
+
+        // Overlay
+        LayerE.Get<ImageLayerOverlay>().QueueFree();
+        LayerE.Remove<ImageLayerOverlay>();
+
         // View
         Sprite.QueueFree();
-        
+
         // Data
         Document.Get<LayerTreeManager>().Root.RemoveChild(LayerE);
         LayerE.Remove<ToSerializeTag>();

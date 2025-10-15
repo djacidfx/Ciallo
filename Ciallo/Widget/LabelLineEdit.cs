@@ -9,7 +9,7 @@ namespace Ciallo.Widget;
 public partial class LabelLineEdit : LineEdit
 {
     public CursorShape DefaultCursorShape;
-    
+
     public override void _Ready()
     {
         Editable = false;
@@ -19,7 +19,7 @@ public partial class LabelLineEdit : LineEdit
 
         Connect(LineEdit.SignalName.TextSubmitted, new Callable(this, nameof(OnTextSubmitted)));
         Connect(Control.SignalName.FocusExited, new Callable(this, nameof(OnFocusExited)));
-        
+
         MouseDefaultCursorShape = DefaultCursorShape;
     }
 
@@ -41,7 +41,7 @@ public partial class LabelLineEdit : LineEdit
         Unedit();
         MouseDefaultCursorShape = DefaultCursorShape;
     }
-    
+
     public void OnFocusExited()
     {
         if (!Editable) return; // IsEditing is false here.

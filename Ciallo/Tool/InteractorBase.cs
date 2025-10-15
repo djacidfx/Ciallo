@@ -15,14 +15,14 @@ public abstract class InteractorBase
     public World WorkingWorld => AppWorldManager.WorkingWorld.Value;
     public Entity Document => WorkingWorld.Document();
     public SelectionManager SelectionManager => Document.Get<SelectionManager>();
-    
+
     public abstract bool CanInteract { get; }
 
-    public virtual void Start(CursorButtonData data) { }
-    
-    public virtual void Interacting(CursorMotionData data) { }
+    public abstract void Start(CursorButtonData data);
 
-    public virtual void End(CursorButtonData data) { }
+    public abstract void Interacting(CursorMotionData data);
 
-    public virtual void Cancel() { }
+    public abstract void End(CursorButtonData data);
+
+    public abstract void Cancel();
 }

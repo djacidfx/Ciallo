@@ -7,14 +7,14 @@ namespace Ciallo.Rendering;
 public partial class StrokeBody : StaticBody2D
 {
     private readonly List<Rid> _shapes = [];
-    
+
     public override void _Ready()
     {
         CollisionLayer = AppGodotLayers.Physics2D.Stroke;
         CollisionMask = AppGodotLayers.Physics2D.Empty; // Only detect mouse input
         InputPickable = true;
     }
-    
+
     public void SetGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
         ClearFree();
@@ -31,7 +31,7 @@ public partial class StrokeBody : StaticBody2D
             vertices[1] = p1 + (tangent - normal) * r1;
             vertices[2] = p1 + (tangent + normal) * r1;
             vertices[3] = p0 + (-tangent + normal) * r0;
-            
+
             var shape = PhysicsServer2D.ConvexPolygonShapeCreate();
             PhysicsServer2D.ShapeSetData(shape, vertices);
             _shapes.Add(shape);

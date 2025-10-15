@@ -12,7 +12,7 @@ public partial class RecentDocumentList : ItemList
         {
             var path = AppPreference.RecentFiles[(int)idx];
             var success = OpenDocumentDialog.LoadWorldFile(path);
-            if(!success) AppPreference.RecentFiles.Remove(path);
+            if (!success) AppPreference.RecentFiles.Remove(path);
         };
 
         ItemClicked += (index, _, buttonIndex) =>

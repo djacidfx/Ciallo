@@ -28,11 +28,13 @@ AutoloadMisc="*res://Misc/AutoloadMisc.cs"
 AutoloadData="*res://Data/AutoloadData.cs"
 AutoloadRendering="*res://Rendering/AutoloadRendering.cs"
 AutoloadNodeControl="*res://NodeControl/AutoloadNodeControl.cs"
+AutoloadTool="*res://Tool/AutoloadTool.cs"
 
 [display]
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
+window/energy_saving/keep_screen_on=false
 window/subwindows/embed_subwindows=false
 window/vsync/vsync_mode=0
 
@@ -172,6 +174,7 @@ CancelInteraction={
 [input_devices]
 
 pen_tablet/driver.windows="winink"
+pointing/emulate_mouse_from_touch=false
 
 [internationalization]
 

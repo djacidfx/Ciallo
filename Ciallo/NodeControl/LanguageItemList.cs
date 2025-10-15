@@ -1,7 +1,7 @@
-using Godot;
 using System.Collections.Generic;
 using System.Globalization;
 using Ciallo.Misc;
+using Godot;
 
 namespace Ciallo.NodeControl;
 
@@ -14,7 +14,7 @@ public partial class LanguageItemList : ItemList
 
         if (Engine.IsEditorHint())
         {
-            foreach(var langCode in AppPreference.SupportedLanguages)
+            foreach (var langCode in AppPreference.SupportedLanguages)
             {
                 AddItem(ToNativeName(langCode));
             }
@@ -27,8 +27,8 @@ public partial class LanguageItemList : ItemList
         {
             Dictionary<string, string> codeConvert = new()
             {
-                {"zh_CN", "zh-Hans"},
-                {"zh_TW", "zh-Hant"}
+                { "zh_CN", "zh-Hans" },
+                { "zh_TW", "zh-Hant" }
             };
             langCode = codeConvert.GetValueOrDefault(langCode, langCode);
             return CultureInfo.GetCultureInfo(langCode).NativeName;

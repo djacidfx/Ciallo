@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=19 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://co17yxacb7838" path="res://NodeControl/OpenDocumentDialog.cs" id="3_j4qnp"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://NodeControl/MenuHelp.cs" id="8_sc1dx"]
 [ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://NodeControl/ToolButtonPanel.tscn" id="9_5vvyt"]
 [ext_resource type="PackedScene" uid="uid://cbe5uqtdiejke" path="res://NodeControl/ToolPropertyPanel.tscn" id="10_c6i3y"]
+[ext_resource type="Script" uid="uid://dqewxa0t2mptr" path="res://NodeControl/ToolButtonPanelContainer.cs" id="13_kjvhd"]
 [ext_resource type="Script" uid="uid://b7mwe7nmkxh5d" path="res://NodeControl/PaintPanelContainer.cs" id="16_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://NodeControl/WelcomePanel.tscn" id="16_fpfj3"]
 [ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://NodeControl/LayerPanel.tscn" id="16_kjvhd"]
@@ -144,12 +145,13 @@ split_offset = 500
 [node name="HSplitContainer" type="HSplitContainer" parent="MainGui/MarginContainer/UIBlock/VSplit"]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer"]
+[node name="ToolButtonPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer"]
 layout_mode = 2
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 5
+script = ExtResource("13_kjvhd")
 
-[node name="ToolButtonPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/MarginContainer" instance=ExtResource("9_5vvyt")]
+[node name="ToolButtonPanelPreview" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolButtonPanelContainer" instance=ExtResource("9_5vvyt")]
 layout_mode = 2
 
 [node name="ToolPropertyPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer" instance=ExtResource("10_c6i3y")]

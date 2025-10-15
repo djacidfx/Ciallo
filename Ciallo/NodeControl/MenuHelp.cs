@@ -1,8 +1,8 @@
-using Godot;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
+using Godot;
 
 namespace Ciallo.NodeControl;
 
@@ -13,12 +13,12 @@ public partial class MenuHelp : PopupMenu
         { "User manual", null },
         { "About Ciallo", null },
     };
-    
+
     public override void _Ready()
     {
-        foreach(var (i, item) in MenuItems.Index())
+        foreach (var (i, item) in MenuItems.Index())
         {
-            if(item.Key.StartsWith('-'))
+            if (item.Key.StartsWith('-'))
             {
                 AddSeparator();
                 continue;
@@ -26,7 +26,7 @@ public partial class MenuHelp : PopupMenu
             AddItem(Tr(item.Key));
             if (item.Value != null) SetItemShortcut(i, item.Value.Shortcut);
         }
-        
+
         IndexPressed += id => OnIndexPressed((int)id);
     }
 

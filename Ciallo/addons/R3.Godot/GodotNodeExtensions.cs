@@ -18,7 +18,7 @@ public static class GodotNodeExtensions
     public static T AddTo<T>(this T disposable, Node node) where T : IDisposable
     {
         // Shen note: Decide to remove the "Node must inside the tree" constraints here. Always be mindful.
-        
+
         // // oringal code:
         // // Note: Dispose when tree exited, so if node is not inside tree, dispose immediately.
         // if (!node.IsInsideTree()) 
@@ -31,7 +31,7 @@ public static class GodotNodeExtensions
         //     disposable.Dispose();
         //     return disposable;
         // }
-        
+
         node.TreeExited += () => disposable.Dispose();
         return disposable;
     }

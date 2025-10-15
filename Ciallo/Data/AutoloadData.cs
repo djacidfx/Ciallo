@@ -11,17 +11,20 @@ namespace Ciallo.Data;
 public partial class AutoloadData : Node
 {
     public static MessagePackSerializerOptions DefaultOption;
-    
+
     public override void _EnterTree()
     {
+        Input.UseAccumulatedInput = false;
         GetTree().AutoAcceptQuit = false;
         // Message pack serializer setup
         var defaultResolver = CompositeResolver.Create(
             [EntityToIndexFormatter.Instance, TypeFormatter.Instance, ImageTextureFormatter.Instance, ImageFormatter.Instance],
-            [GodotResolver.Instance,
+            [
+                GodotResolver.Instance,
                 AttributeFormatterResolver.Instance,
                 ReactivePropertyResolver.Instance,
-                StandardResolver.Instance]
+                StandardResolver.Instance
+            ]
         );
         MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(defaultResolver);
         DefaultOption = MessagePackSerializer.DefaultOptions;
@@ -31,7 +34,7 @@ public partial class AutoloadData : Node
         if (!preferenceFileExists)
         {
             var idx = AppPreference.SupportedLanguages.IndexOf(OS.GetLocale(), LanguageComparer.Instance);
-            if(idx != -1)
+            if (idx != -1)
                 AppPreference.Language.Value = AppPreference.SupportedLanguages[idx];
         }
         AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
@@ -47,7 +50,7 @@ public partial class AutoloadData : Node
 
     public override void _Notification(int what)
     {
-        if(what == NotificationWMCloseRequest)
+        if (what == NotificationWMCloseRequest)
         {
             AppBrushLibrary.Save();
             AppPreference.Save();

@@ -1,9 +1,9 @@
 ﻿#if TOOLS
 #nullable enable
 
-using Godot;
 using System;
 using System.Collections.Generic;
+using Godot;
 
 namespace R3;
 
@@ -50,7 +50,7 @@ public partial class ObservableTrackerTree : Tree
     {
         Clear();
         TreeItem root = CreateItem();
-        foreach(TrackingState state in states)
+        foreach (TrackingState state in states)
         {
             TreeItem row = CreateItem(root);
             var now = DateTime.Now;
@@ -60,7 +60,8 @@ public partial class ObservableTrackerTree : Tree
             row.SetText(1, (now - state.AddTime).TotalSeconds.ToString("00.00"));
             // StackTrace
             row.SetText(2, state.StackTrace);
-        };
+        }
+        ;
     }
 }
 #endif

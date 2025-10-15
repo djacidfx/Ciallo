@@ -1,8 +1,7 @@
-﻿
-#nullable enable
+﻿#nullable enable
 
-using Godot;
 using System;
+using Godot;
 using GDArray = Godot.Collections.Array;
 
 namespace R3;
@@ -15,7 +14,7 @@ public partial class ObservableTrackerRuntimeHook : Node
     {
 #if TOOLS
         EngineDebugger.RegisterMessageCapture(ObservableTrackerDebuggerPlugin.MessageHeader, Callable.From((string message, GDArray data) =>
-        { 
+        {
             //GD.Print(nameof(ObservableTrackerRuntimeHook) + " received " + message);
             switch (message)
             {
@@ -29,11 +28,11 @@ public partial class ObservableTrackerRuntimeHook : Node
                             // DateTime is not a Variant type, so we serialize it using Ticks instead.
                             states.Add(new GDArray { state.TrackingId, state.FormattedType, state.AddTime.Ticks, state.StackTrace });
                         });
-                        EngineDebugger.SendMessage(ObservableTrackerDebuggerPlugin.MessageHeader + ":" + ObservableTrackerDebuggerPlugin.Message_ReceiveActiveTasks, new () { true, states });
+                        EngineDebugger.SendMessage(ObservableTrackerDebuggerPlugin.MessageHeader + ":" + ObservableTrackerDebuggerPlugin.Message_ReceiveActiveTasks, new() { true, states });
                     }
                     else
                     {
-                        EngineDebugger.SendMessage(ObservableTrackerDebuggerPlugin.MessageHeader + ":" + ObservableTrackerDebuggerPlugin.Message_ReceiveActiveTasks, new () { false, });
+                        EngineDebugger.SendMessage(ObservableTrackerDebuggerPlugin.MessageHeader + ":" + ObservableTrackerDebuggerPlugin.Message_ReceiveActiveTasks, new() { false, });
                     }
                     break;
                 case ObservableTrackerDebuggerPlugin.Message_SetEnableStates:

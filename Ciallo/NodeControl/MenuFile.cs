@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Massive;
 using Ciallo.Command;
 using Ciallo.Data;
 using Godot;
@@ -21,12 +20,12 @@ public partial class MenuFile : PopupMenu
         { "Export as image", null },
         { "Export as Godot scene", null },
     };
-    
+
     public override void _Ready()
     {
-        foreach(var (i, item) in MenuItems.Index())
+        foreach (var (i, item) in MenuItems.Index())
         {
-            if(item.Key.StartsWith('-'))
+            if (item.Key.StartsWith('-'))
             {
                 AddSeparator();
                 continue;
@@ -34,10 +33,10 @@ public partial class MenuFile : PopupMenu
             AddItem(Tr(item.Key));
             if (item.Value != null) SetItemShortcut(i, item.Value.Shortcut);
         }
-        
+
         IndexPressed += id => OnIndexPressed((int)id);
     }
-    
+
     public void OnIndexPressed(int id)
     {
         switch (id)
@@ -49,30 +48,30 @@ public partial class MenuFile : PopupMenu
                 AppGuiCommand.PopupOpenDocumentDialog();
                 break;
             case 2: // Close Document
-                if(AppWorldManager.WorkingWorld.Value == null) return;
+                if (AppWorldManager.WorkingWorld.Value == null) return;
                 AppWorldManager.Remove(AppWorldManager.WorkingWorld.Value);
                 break;
             case 4: // Save
-                if(AppWorldManager.WorkingWorld.Value == null) return;
+                if (AppWorldManager.WorkingWorld.Value == null) return;
                 AppWorldManager.SaveWorkingWorld();
                 break;
-            
+
             case 7: // Export as image
-                if(AppWorldManager.WorkingWorld.Value == null) return;
+                if (AppWorldManager.WorkingWorld.Value == null) return;
                 var dialogExportImage = GetTree().GetNodesInGroup("Dialog").OfType<ExportImage>().Single();
                 dialogExportImage.Init();
                 dialogExportImage.Popup();
                 break;
-            
+
             case 8: // Export as Godot scene
-                if(AppWorldManager.WorkingWorld.Value == null) return;
+                if (AppWorldManager.WorkingWorld.Value == null) return;
                 var dialogExportGodot = GetTree().GetNodesInGroup("Dialog").OfType<ExportGodotScene>().Single();
                 var documentSetting = AppWorldManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
                 dialogExportGodot.CurrentFile = documentSetting.Name.Value;
                 dialogExportGodot.CurrentDir = documentSetting.FilePath.CurrentValue.GetBaseDir();
                 dialogExportGodot.Popup();
                 break;
-            
+
             default:
                 GD.PrintErr($"Unhandled menu item index: {id}");
                 break;

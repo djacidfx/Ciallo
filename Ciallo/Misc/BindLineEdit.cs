@@ -11,7 +11,7 @@ public static class BindLineEdit
         property.Subscribe(value =>
         {
             // `lineEdit.Text = value` makes the control reset its cursor. Must manually check to get correct input behavior.
-            if(lineEdit.Text == value) return; 
+            if (lineEdit.Text == value) return;
             lineEdit.Text = value;
         }).AddTo(subs);
         lineEdit.OnTextSubmittedAsObservable()
@@ -24,7 +24,7 @@ public static class BindLineEdit
         BindString(lineEdit, property, out var subs);
         subs.AddTo(lineEdit);
     }
-    
+
     public static void SubmitOnFocusExit(this LineEdit lineEdit)
     {
         lineEdit.FocusExited += () => lineEdit.EmitSignal(LineEdit.SignalName.TextSubmitted, lineEdit.Text);

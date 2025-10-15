@@ -35,7 +35,7 @@ public partial class ObservableTrackerTab : VBoxContainer
         Name = "Observable Tracker";
 
         tree ??= new ObservableTrackerTree();
-        
+
         // Head panel
         var headPanelLayout = new HBoxContainer();
         headPanelLayout.SetAnchor(Side.Left, 0);

@@ -8,6 +8,5 @@ public class TestGodot
     [TestCase]
     public void Test()
     {
-        
     }
 }

@@ -19,8 +19,8 @@ public static class ReactivePropertyExtension
         source.Subscribe(v => view.Value = readSelector(v)).AddTo(subs);
         return view;
     }
-    
-    public static ReactiveProperty<T> ProjectFloatingNumber<T>( 
+
+    public static ReactiveProperty<T> ProjectFloatingNumber<T>(
         this ReactiveProperty<T> source,
         Func<T, T> readSelector,
         Func<T, T> writeSelector,
@@ -37,7 +37,7 @@ public static class ReactivePropertyExtension
 public class FloatComparer<T> : IEqualityComparer<T> where T : IFloatingPoint<T>
 {
     public static FloatComparer<T> Instance { get; } = new();
-    
+
     private readonly T _tolerance = T.CreateChecked(1e-5);
 
     /// <summary>

@@ -16,13 +16,13 @@ public class NewBrushCmd : CommandBase
     {
         _setting = setting?.Clone() ?? new BrushSetting();
         _setting.Labels.Remove(BrushLabel.BuiltIn);
-        
+
         // Dirty hack
         AppBrushLibrary.SelectedIndex.Value = -1;
     }
-    
+
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(BrushE);
-    
+
     public override void Do()
     {
         InitEntity();
@@ -30,17 +30,17 @@ public class NewBrushCmd : CommandBase
         BrushE.Add<ToSerializeTag>();
         var bm = Document.Get<BrushManager>();
         bm.Add(BrushE);
-        
+
         // Material
         var material = new BrushMaterial();
         material.ObserveBrushSetting(BrushE.Get<BrushSetting>());
         BrushE.Set(material);
-        
+
         // UI
         // Note: Should have a dedicate custom widget to handle this.
         var setting = BrushE.Get<BrushSetting>();
         var list = Document.Get<DocumentBrushList>();
-        
+
         list.AddItem(setting.Name.Value);
         var sub = setting.Name.Subscribe(s =>
         {
@@ -60,11 +60,11 @@ public class NewBrushCmd : CommandBase
         var callableSub = (Callable)list.GetItemMetadata(idx);
         callableSub.Call();
         list.RemoveItem(idx);
-        
+
         // Material
         // Note: Material is RefCounted, cannot be manually freed
         BrushE.Remove<BrushMaterial>();
-        
+
         // Data
         bm.Remove(BrushE);
         BrushE.Remove<ToSerializeTag>();

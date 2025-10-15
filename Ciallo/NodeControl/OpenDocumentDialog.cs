@@ -1,9 +1,9 @@
 using System;
 using System.Linq;
-using Massive;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Godot;
+using Massive;
 
 namespace Ciallo.NodeControl;
 
@@ -32,7 +32,7 @@ public partial class OpenDocumentDialog : FileDialog
         }
         AppWorldManager.CopyWorldByData(dataDocument);
         dataWorld.Clear();
-        if(!AppPreference.RecentFiles.Contains(path)) AppPreference.RecentFiles.Add(path);
+        if (!AppPreference.RecentFiles.Contains(path)) AppPreference.RecentFiles.Add(path);
         return true;
     }
 }

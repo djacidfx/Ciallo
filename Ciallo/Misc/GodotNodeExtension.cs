@@ -14,7 +14,7 @@ public static class GodotNodeExtension
         var childNode = node.GetChild(idx);
         return childNode.GetDecedentAt(path.Skip(1).ToImmutableArray());
     }
-    
+
     /// <summary>
     /// Insert new node at path. Should be identical to LayerTreeNode.InsertDescendant
     /// </summary>
@@ -28,19 +28,19 @@ public static class GodotNodeExtension
         parent.AddChild(newNode);
         parent.MoveChild(newNode, idx);
     }
-    
+
     public static void InsertNodeAt(this Node node, Node newNode, int index)
     {
         InsertNodeAt(node, newNode, [index]);
     }
-    
+
     public static Node RemoveNodeAt(this Node node, IReadOnlyList<int> path)
     {
         var target = node.GetDecedentAt(path);
         target.GetParent().RemoveChild(target);
         return target;
     }
-    
+
     // Gen by asking copilot refer to LayerTreeNode.MoveDescendant
     public static void MoveNode(this Node node, IReadOnlyList<int> srcPath, IReadOnlyList<int> dstPath)
     {
@@ -59,9 +59,11 @@ public static class GodotNodeExtension
         {
             if (prefix.Count > full.Count) return false;
             for (int i = 0; i < prefix.Count; i++)
-                if (prefix[i] != full[i]) return false;
+                if (prefix[i] != full[i])
+                    return false;
             return true;
         }
+
         if (IsPrefix(srcPath, dstParentPath))
             throw new InvalidOperationException("Cannot move a node into its own descendant.");
 
@@ -78,7 +80,7 @@ public static class GodotNodeExtension
             dstParent.MoveChild(moving, dstIdx);
         }
     }
-    
+
     public static ImmutableArray<int> GetIndexPathTo(this Node node, Node root)
     {
         var path = new List<int>();

@@ -24,13 +24,13 @@ public static class BindColorPicker
         button.SignalAsObservable<Color>(ColorPickerButton.SignalName.ColorChanged)
             .Subscribe(c => property.Value = c).AddTo(subs);
     }
-    
+
     public static void BindColor(this ColorPickerButton button, ReactiveProperty<Color> property)
     {
         BindColor(button, property, out var subs);
         subs.AddTo(button);
     }
-    
+
     public static void ReactiveBindColor(this ColorPickerButton button, ReadOnlyReactiveProperty<ReactiveProperty<Color>> view)
     {
         var subs = new CompositeDisposable();
@@ -45,7 +45,7 @@ public static class BindColorPicker
                 curSub.AddTo(subs);
             }
         }).AddTo(subs);
-        
+
         subs.AddTo(button);
     }
 }

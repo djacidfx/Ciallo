@@ -13,7 +13,7 @@ public partial class PaintPanelContainer : Control
         document.Set(panel);
         return panel;
     }
-    
+
     public void RemoveFreePaintPanel(Entity document)
     {
         var panel = document.Get<PaintPanel>();

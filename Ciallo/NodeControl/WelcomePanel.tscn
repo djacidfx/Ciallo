@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://gt4adx4emf1t" path="res://NodeControl/LanguageItemList.cs" id="1_ad8c8"]
 [ext_resource type="Texture2D" uid="uid://43k5wfcj0bkj" path="res://Icon/ciallo.svg" id="1_xhgsw"]
 [ext_resource type="Script" uid="uid://6yiex6jbsgdt" path="res://NodeControl/RecentDocumentList.cs" id="3_8on0h"]
-[ext_resource type="Script" uid="uid://dldw0lk3es817" path="res://NodeControl/Start.cs" id="3_w3byx"]
+[ext_resource type="Script" uid="uid://dldw0lk3es817" path="res://NodeControl/WelcomePanelStart.cs" id="3_w3byx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xhgsw"]
 draw_center = false
@@ -128,8 +128,6 @@ allow_search = false
 auto_width = true
 auto_height = true
 script = ExtResource("3_8on0h")
-
-[node name="Node2D" type="Node2D" parent="."]
 
 [connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start/Button" to="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start" method="OnNewDocumentPressed"]
 [connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start/Button2" to="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start" method="OnOpenDocumentPressed"]

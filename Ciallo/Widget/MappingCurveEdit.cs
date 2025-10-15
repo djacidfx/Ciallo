@@ -1,4 +1,4 @@
-﻿/* This file is originally copied from Godot 4.4 curve_editor_plugin.cpp, translated to C# with AI tool, proof-edited and modified by human. 
+﻿/* This file is originally copied from Godot 4.4 curve_editor_plugin.cpp, translated to C# with AI tool, proof-edited and modified by human.
 Shen: this control took me around two hours to make it work correctly at basic level.
 Shen: Bezier curve took me two and this control took me one entire working day to further modify.
 Sep 15 2025: Given the complexity of this control, Shen still consider this as a productive workflow.
@@ -36,7 +36,7 @@ public partial class MappingCurveEdit : Control
     private int _hoveredIndex = -1;
     private TangentIndex _selectedTangentIndex = TangentIndex.None;
     private TangentIndex _hoveredTangentIndex = TangentIndex.None;
-    
+
     private int _pointRadius = 4; // in pixel
     private int _hoverRadius = 10;
     private int _tangentRadius = 3;
@@ -151,7 +151,7 @@ public partial class MappingCurveEdit : Control
     {
         if (_curve == null)
             return;
-        
+
         if (@event is InputEventKey { Pressed: true } keyEvent)
         {
             if (keyEvent.Keycode == Key.Delete)
@@ -271,7 +271,7 @@ public partial class MappingCurveEdit : Control
                         _grabbing = GrabMode.Add;
                         _initialGrabPos = newPos;
                     }
-                    else if(p.DistanceTo(newPos) < DomainRange/83.0f) // Can split
+                    else if (p.DistanceTo(newPos) < DomainRange / 83.0f) // Can split
                     {
                         var idx = _curve.TryInsertPoint(t);
                         SetSelectedIndex(idx);
@@ -297,7 +297,7 @@ public partial class MappingCurveEdit : Control
             {
                 _grabbing = GrabMode.None;
             }
-            
+
             QueueRedraw();
         }
 
@@ -320,7 +320,7 @@ public partial class MappingCurveEdit : Control
                         newPos.Y = Mathf.Clamp(newPos.Y, MinValue, MaxValue);
                         var oldPos = _curve.GetPointPosition(_selectedIndex);
                         _curve.SetPointPosition(_selectedIndex, newPos);
-                        if(!_curve.IsXMonotone) _curve.SetPointPosition(_selectedIndex, oldPos);
+                        if (!_curve.IsXMonotone) _curve.SetPointPosition(_selectedIndex, oldPos);
                     }
                     else
                     {
@@ -333,7 +333,7 @@ public partial class MappingCurveEdit : Control
                         {
                             // Shit code but work
                             var oldPos = _curve.Points.ToArray();
-                            if(Input.IsKeyPressed(Key.Alt) || _initialHandleMode == BezierCurve.HandleControlMode.Free)
+                            if (Input.IsKeyPressed(Key.Alt) || _initialHandleMode == BezierCurve.HandleControlMode.Free)
                                 _curve.SetPointIn(_selectedIndex, newPos);
                             else
                                 _curve.SetPointInLinearly(_selectedIndex, newPos);
@@ -344,7 +344,7 @@ public partial class MappingCurveEdit : Control
                         else
                         {
                             var oldPos = _curve.Points.ToArray();
-                            if(Input.IsKeyPressed(Key.Alt) || _initialHandleMode == BezierCurve.HandleControlMode.Free)
+                            if (Input.IsKeyPressed(Key.Alt) || _initialHandleMode == BezierCurve.HandleControlMode.Free)
                                 _curve.SetPointOut(_selectedIndex, newPos);
                             else
                                 _curve.SetPointOutLinearly(_selectedIndex, newPos);
@@ -362,13 +362,12 @@ public partial class MappingCurveEdit : Control
                 QueueRedraw();
             }
         }
-        
+
         _CurveChanged();
     }
 
     private void _CurveChanged()
     {
-        
         QueueRedraw();
         if (_selectedIndex >= _curve.Count)
             SetSelectedIndex(-1);
@@ -493,7 +492,7 @@ public partial class MappingCurveEdit : Control
 
         if (_initialGrabPos == pos)
             return;
-        
+
         _curve.SetPointPosition(index, pos);
         SetSelectedIndex(index);
     }
@@ -511,7 +510,7 @@ public partial class MappingCurveEdit : Control
         var point = _curve.GetPoint(index);
         var prevMode = point.EstimatedHandleMode;
         BezierCurve.HandleControlMode mode;
-        if(prevMode == BezierCurve.HandleControlMode.Linear)
+        if (prevMode == BezierCurve.HandleControlMode.Linear)
             mode = BezierCurve.HandleControlMode.LinearEqual;
         else if (prevMode == BezierCurve.HandleControlMode.Free)
             mode = BezierCurve.HandleControlMode.Linear;
@@ -520,15 +519,15 @@ public partial class MappingCurveEdit : Control
 
         if (mode == BezierCurve.HandleControlMode.LinearEqual)
         {
-            if (tangent == TangentIndex.Left) 
+            if (tangent == TangentIndex.Left)
                 _curve.SetPointIn(index, -_curve.GetPoint(index).Out);
-            else 
+            else
                 _curve.SetPointOut(index, -_curve.GetPoint(index).In);
         }
 
         if (mode == BezierCurve.HandleControlMode.Linear)
         {
-            if (tangent == TangentIndex.Left) 
+            if (tangent == TangentIndex.Left)
                 _curve.SetPointInTangent(index, _curve.GetPointOutTangent(index));
             else
                 _curve.SetPointOutTangent(index, _curve.GetPointInTangent(index));
@@ -566,8 +565,8 @@ public partial class MappingCurveEdit : Control
 
     private Vector2 GetTangentViewPos(int index, TangentIndex tangent)
     {
-        var tanPos = _curve.GetPointPosition(index) + 
-            (tangent == TangentIndex.Left ? _curve.GetPoint(index).In : _curve.GetPoint(index).Out);
+        var tanPos = _curve.GetPointPosition(index) +
+                     (tangent == TangentIndex.Left ? _curve.GetPoint(index).In : _curve.GetPoint(index).Out);
         return GetViewPos(tanPos);
     }
 
@@ -594,7 +593,7 @@ public partial class MappingCurveEdit : Control
         List<Vector2> samples = new(nSample);
         for (int i = 0; i < nSample; i++)
         {
-            float x = MinDomain + i * (DomainRange / (nSample-1));
+            float x = MinDomain + i * (DomainRange / (nSample - 1));
             samples.Add(new(x, _curve.SampleX(x)));
         }
         for (int i = 1; i < nSample; i++)
@@ -602,7 +601,7 @@ public partial class MappingCurveEdit : Control
             DrawLine(GetViewPos(samples[i - 1]), GetViewPos(samples[i]), lineColor, LineWidth, true);
         }
     }
-    
+
 
     public override void _Draw()
     {
@@ -611,7 +610,7 @@ public partial class MappingCurveEdit : Control
         //// Godot 4.4.1 bug: UpdateMinimumSize causes split container crash. So change the container into box.
         //// More bugs: This also causes crash when one is visible and another is not.
         // Use a aspect ratio container to fix this.
-        
+
         // UpdateMinimumSize();
         UpdateViewTransform();
 
@@ -726,7 +725,7 @@ public partial class MappingCurveEdit : Control
                     Color rightTangentColor = _selectedTangentIndex == TangentIndex.Right ? selectedTangentColor : tangentColor;
 
                     DrawLine(GetViewPos(pointPos), controlPos, rightTangentColor, 0.5f, true);
-                        DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentRadius), rightTangentColor);
+                    DrawRect(new Rect2(controlPos, Vector2.Zero).Grow(_tangentRadius), rightTangentColor);
 
                     var mode = _curve.GetPoint(_selectedIndex).EstimatedHandleMode;
                     bool isLinear = mode == BezierCurve.HandleControlMode.Linear || mode == BezierCurve.HandleControlMode.LinearEqual;

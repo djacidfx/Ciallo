@@ -12,12 +12,13 @@ namespace Ciallo.Data;
 public class Preference
 {
     #region WorldView
+
     public ReactiveProperty<Viewport.Msaa> Msaa = new(Viewport.Msaa.Msaa4X);
     public ReactiveProperty<bool> UseTAA = new(false);
     public ReactiveProperty<bool> UseFXAA = new(false);
     public readonly ReactiveProperty<float> MouseWheelZoomFactor = new(0.1f);
 
-    public List<string> SupportedLanguages = 
+    public List<string> SupportedLanguages =
     [
         "en",
         "fr",
@@ -34,13 +35,18 @@ public class Preference
     public ReactiveProperty<string> Language = new("en");
     [DataMember]
     public ObservableList<string> RecentFiles = [];
-    
+
     [DataMember]
-    public Color StrokeWireframeColor = Colors.NavyBlue;
+    public Color StrokeWireframeColor = Colors.Orange;
     [DataMember]
     public Color StrokeWireframeHintColor = Colors.Orange;
-    
+    [DataMember]
+    public float StrokeWireframeRadius = 2f;
+    [DataMember]
+    public float StrokeDotRadius = 12f;
+
     #region Save Load Json
+
     public static readonly string Path = "user://Preference.json";
 
     public static readonly JsonSerializerSettings JsonOptions = new()
@@ -57,8 +63,8 @@ public class Preference
             return false;
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
-        
-        JsonConvert.PopulateObject(content,this, JsonOptions);
+
+        JsonConvert.PopulateObject(content, this, JsonOptions);
         return true;
     }
 
@@ -68,5 +74,6 @@ public class Preference
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Write);
         file.StoreString(content);
     }
+
     #endregion
 }

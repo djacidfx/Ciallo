@@ -1,9 +1,9 @@
 ﻿#nullable enable
 
-using Godot;
-using R3.Collections;
 using System;
 using System.Runtime.CompilerServices;
+using Godot;
+using R3.Collections;
 
 namespace R3;
 
