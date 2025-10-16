@@ -38,7 +38,6 @@ public partial class CursorDetectionArea : StaticBody2D
     {
         if (what == NotificationPredelete)
         {
-            PhysicsServer2D.BodyClearShapes(GetRid());
             _shapes.ForEach(PhysicsServer2D.FreeRid);
             _shapes.Clear();
         }

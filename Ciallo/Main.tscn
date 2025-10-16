@@ -66,6 +66,7 @@ script = ExtResource("6_fpfj3")
 
 [node name="WarnUser" type="AcceptDialog" parent="." groups=["Dialog"]]
 initial_position = 1
+transient = false
 always_on_top = true
 
 [node name="MainGui" type="VBoxContainer" parent="."]
