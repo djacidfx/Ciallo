@@ -15,7 +15,7 @@ public partial class ToolButtonPanelContainer : Container
         {
             var root = ToolButtonPanel.Instantiate(document);
             root.VisibleIf(AppWorldManager.WorkingDocument, document);
-            document.Set(root);
+            document.Add(root);
             AddChild(root);
         }).AddTo(this);
 

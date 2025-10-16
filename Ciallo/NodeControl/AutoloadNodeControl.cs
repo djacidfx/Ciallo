@@ -25,11 +25,11 @@ public partial class AutoloadNodeControl : Node
 
             // World view
             var worldView = paintPanel.GetNode<WorldView>("%WorldView");
-            document.Set(worldView);
+            document.Add(worldView);
 
             // World overlay
             var worldOverlay = paintPanel.GetNode<WorldOverlay>("%WorldOverlay");
-            document.Set(worldOverlay);
+            document.Add(worldOverlay);
 
             // Document brush editor
             var panel = BrushPanel.Instantiate();
@@ -37,7 +37,7 @@ public partial class AutoloadNodeControl : Node
             panel.Visible = false;
             panel.PopupWindow = true; // Hint user this is different from the brush library panel
             panel.Exclusive = false; // Allow propagating input (redo/undo mainly) to main window
-            document.Set(panel);
+            document.Add(panel);
             ((SceneTree)Engine.GetMainLoop()).GetCurrentScene().AddChild(panel);
             // Hide controls for being lazy
             panel.BrushPreviewContainer.Visible = false;
@@ -48,7 +48,7 @@ public partial class AutoloadNodeControl : Node
 
             // World button manager
             var worldButtonManager = paintPanel.GetNode<WorldCursorDetectionArea>("%WorldCursorDetectionArea");
-            document.Set(worldButtonManager);
+            document.Add(worldButtonManager);
         }).AddTo(this);
 
         AppWorldManager.LoadedWorlds.ObserveRemove().Subscribe(et =>

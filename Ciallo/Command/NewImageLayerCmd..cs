@@ -2,8 +2,8 @@
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.Rendering;
+using Frent;
 using Godot;
-using Massive;
 using R3;
 
 namespace Ciallo.Command;
@@ -33,7 +33,7 @@ public class NewImageLayerCmd : CommandBase
     {
         // Data
         InitEntity();
-        LayerE.Add<ToSerializeTag>();
+        LayerE.Tag<ToSerializeTag>();
         Document.Get<LayerTreeManager>().Root.AddChild(LayerE);
 
         // View
@@ -44,14 +44,14 @@ public class NewImageLayerCmd : CommandBase
         };
         worldView.AddChild(Sprite);
         Setting.ImageTransform.Subscribe(Sprite.SetTransform).AddTo(Sprite);
-        LayerE.Set(Sprite);
+        LayerE.Add(Sprite);
         Sprite.SetOwner(worldView);
         LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(Sprite.SetVisible).AddTo(Sprite);
 
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
         var layerOverlay = new ImageLayerOverlay(Setting.ImageSize) { Visible = false };
-        LayerE.Set(layerOverlay);
+        LayerE.Add(layerOverlay);
         worldOverlay.AddChild(layerOverlay);
         Setting.ImageTransform.Subscribe(layerOverlay.SetTransform).AddTo(layerOverlay);
 
@@ -75,17 +75,17 @@ public class NewImageLayerCmd : CommandBase
 
         // Data
         Document.Get<LayerTreeManager>().Root.RemoveChild(LayerE);
-        LayerE.Remove<ToSerializeTag>();
+        LayerE.Detach<ToSerializeTag>();
     }
 
     public Entity InitEntity()
     {
         if (LayerE.IsNull())
         {
-            LayerE = WorkingWorld.CreateEntity();
+            LayerE = WorkingWorld.Create();
             var node = new LayerTreeNode { Name = { Value = "Image".Tr() } };
-            LayerE.Set(node);
-            LayerE.Set(Setting);
+            LayerE.Add(node);
+            LayerE.Add(Setting);
         }
 
         return LayerE;

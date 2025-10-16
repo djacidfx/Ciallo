@@ -1,7 +1,7 @@
 using Ciallo.Data;
 using Ciallo.Misc;
+using Frent;
 using Godot;
-using Massive;
 
 namespace Ciallo.NodeControl;
 
@@ -20,7 +20,7 @@ public partial class LayerPanel : VBoxContainer
         var layerContainer = LayerContainer.Instantiate();
         layerContainer.VisibleIf(AppWorldManager.WorkingDocument, document);
         AddChild(layerContainer);
-        document.Set(layerContainer);
+        document.Add(layerContainer);
     }
 
     public void RemoveFreeLayerContainer(Entity document)

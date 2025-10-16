@@ -6,8 +6,8 @@ using System.Linq;
 using System.Reflection;
 using Ciallo.Command;
 using Ciallo.Misc;
+using Frent;
 using Godot;
-using Massive;
 using MessagePack;
 
 namespace Ciallo.Data;
@@ -179,7 +179,7 @@ public static partial class AppWorldManager
         var entities = new List<Entity>(ecData.Count);
         foreach (var types in ecData)
         {
-            var e = world.CreateEntity();
+            var e = world.Create();
             entities.Add(e);
         }
         document = entities[0];

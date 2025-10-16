@@ -1,6 +1,6 @@
 using Ciallo.Data;
+using Frent;
 using Godot;
-using Massive;
 
 namespace Ciallo.NodeControl;
 
@@ -10,7 +10,7 @@ public partial class PaintPanelContainer : Control
     {
         var panel = PaintPanel.Instantiate(document.Get<DocumentSetting>());
         AddChild(panel);
-        document.Set(panel);
+        document.Add(panel);
         return panel;
     }
 

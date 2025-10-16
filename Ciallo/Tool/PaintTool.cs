@@ -6,8 +6,8 @@ using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Ciallo.Tool;
 using Ciallo.Widget;
+using Frent;
 using Godot;
-using Massive;
 using R3;
 
 public partial class PaintTool : CommonToolBase
@@ -90,7 +90,7 @@ public partial class PaintTool : CommonToolBase
         var selectionM = Document.Get<SelectionManager>();
         foreach (var brushE in brushM.Brushes)
             brushList.AddItem(brushE.Get<BrushSetting>().Name.Value);
-        Document.Set(brushList);
+        Document.Add(brushList);
         container.AddProperty("Brush in document", brushList);
 
         var radiusControl = new SpinSlider

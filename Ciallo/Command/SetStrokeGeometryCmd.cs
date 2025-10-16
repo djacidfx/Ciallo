@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Ciallo.Command;
 using Ciallo.Rendering;
+using Frent;
 using Godot;
-using Massive;
 
 namespace Ciallo.Data;
 
@@ -32,7 +32,7 @@ public class SetStrokeGeometryCmd : CommandBase
     {
         // Data
         _oldGeometry ??= _strokeE.Get<StrokeGeometry>();
-        _strokeE.Set(_newGeometry);
+        _strokeE.Add(_newGeometry);
 
         // View
         _strokeE.Get<StrokeView>().SetGeometry(_newGeometry.Points, _newGeometry.Radii);
@@ -50,6 +50,6 @@ public class SetStrokeGeometryCmd : CommandBase
         _strokeE.Get<StrokeView>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
 
         // Data
-        _strokeE.Set(_oldGeometry);
+        _strokeE.Add(_oldGeometry);
     }
 }
