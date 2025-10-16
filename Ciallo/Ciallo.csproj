@@ -1,4 +1,4 @@
-<Project Sdk="Godot.NET.Sdk/4.5.0">
+<Project Sdk="Godot.NET.Sdk/4.5.1">
     <PropertyGroup>
         <EnableDynamicLoading>true</EnableDynamicLoading>
         <LangVersion>default</LangVersion>
@@ -8,28 +8,28 @@
         <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="GodotSharp.SourceGenerators" Version="2.6.0-250721-1041.Release"/>
-        <PackageReference Include="Humanizer" Version="3.0.0-beta.96"/>
-        <PackageReference Include="MessagePack" Version="3.1.4"/>
-        <PackageReference Include="MessagePackGodot" Version="1.0.2"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1"/>
-        <PackageReference Include="gdUnit4.api" Version="5.0.0"/>
-        <PackageReference Include="gdUnit4.test.adapter" Version="3.0.0"/>
+        <PackageReference Include="GodotSharp.SourceGenerators" Version="2.6.0-250721-1041.Release" />
+        <PackageReference Include="Humanizer" Version="3.0.0-beta.96" />
+        <PackageReference Include="MessagePack" Version="3.1.4" />
+        <PackageReference Include="MessagePackGodot" Version="1.0.2" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+        <PackageReference Include="gdUnit4.api" Version="5.0.0" />
+        <PackageReference Include="gdUnit4.test.adapter" Version="3.0.0" />
         <PackageReference Include="gdUnit4.analyzers" Version="1.0.0">
             <PrivateAssets>none</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
-        <PackageReference Include="ObservableCollections.R3" Version="3.3.4"/>
-        <PackageReference Include="R3" Version="1.3.0"/>
-        <PackageReference Include="Stateless" Version="5.19.0"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+        <PackageReference Include="ObservableCollections.R3" Version="3.3.4" />
+        <PackageReference Include="R3" Version="1.3.0" />
+        <PackageReference Include="Stateless" Version="5.19.0" />
     </ItemGroup>
     <ItemGroup>
-        <Folder Include="Localization\*.csv"/>
-        <None Include="**\*.gdshader"/>
+        <Folder Include="Localization\*.csv" />
+        <None Include="**\*.gdshader" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\massive-ecs\Runtime\Massive.csproj"/>
+        <ProjectReference Include="..\massive-ecs\Runtime\Massive.csproj" />
     </ItemGroup>
 
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
