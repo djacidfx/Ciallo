@@ -27,7 +27,7 @@ public class ImageEditHover : HoverBase
     {
         var layerE = SelectionManager.WorkingLayer.Value;
         var setting = layerE.Get<ImageLayerSetting>();
-        var manager = Document.Get<WorldButtonManager>();
+        var manager = Document.Get<WorldArea>();
 
         // Rotation button
         RotationButton = manager.AddRectButton(setting.Position, setting.ImageSize);

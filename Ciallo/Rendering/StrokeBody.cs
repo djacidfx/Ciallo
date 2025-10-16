@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Ciallo.Command;
+using Ciallo.Data;
 using Godot;
 
 namespace Ciallo.Rendering;
@@ -11,7 +11,7 @@ public partial class StrokeBody : StaticBody2D
     public override void _Ready()
     {
         CollisionLayer = AppGodotLayers.Physics2D.Stroke;
-        CollisionMask = AppGodotLayers.Physics2D.Empty; // Only detect mouse input
+        CollisionMask = AppGodotLayers.Physics2D.Empty; // Only detect mouse input, don't collide with anything else
         InputPickable = true;
     }
 

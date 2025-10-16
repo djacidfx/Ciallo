@@ -1,4 +1,5 @@
 using Ciallo.Data;
+using Ciallo.Rendering;
 using Godot;
 
 namespace Ciallo.NodeControl;
@@ -10,6 +11,7 @@ namespace Ciallo.NodeControl;
 public partial class WorldEventDispatcher : SubViewportContainer
 {
     private Camera2D _camera;
+    private WorldArea _worldArea;
 
     private bool _isHovering = false;
     private bool _isPanning = false;
@@ -18,9 +20,11 @@ public partial class WorldEventDispatcher : SubViewportContainer
     private float _prevPressure;
     private Vector2 _prevTilt;
 
+
     public override void _Ready()
     {
         _camera = GetNode<Camera2D>("%Camera2D");
+        _worldArea = GetNode<WorldArea>("%WorldArea");
 
         GuiInput += OnGuiInput;
         MouseEntered += OnMouseEnter;
@@ -147,6 +151,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
     public void DispatchMotion(CursorMotionData data)
     {
         ToolManager.ActiveTool.Value?.OnMoving(data);
+        _worldArea.OnCursorMove(data);
     }
 
     public void DispatchRightClick(CursorButtonData data)
