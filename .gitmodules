@@ -1,3 +1,0 @@
-[submodule "massive-ecs"]
-	path = massive-ecs
-	url = git@github.com:nilpunch/massive-ecs.git
