@@ -48,10 +48,21 @@ public class NewStrokeCmd : CommandBase
         var worldOverlay = Document.Get<WorldOverlay>();
         worldOverlay.AddChild(strokeOverlay);
         StrokeE.Set(strokeOverlay);
+
+        // Cursor detection
+        var geom = StrokeE.Get<StrokeGeometry>();
+        var worldArea = Document.Get<WorldCursorDetectionArea>();
+        var strokeArea = worldArea.CreateAddStroke(geom.Points, geom.Radii);
+        strokeArea.Visible = false;
+        StrokeE.Set(strokeArea);
     }
 
     public override void Undo()
     {
+        // Cursor detection
+        StrokeE.Get<CursorDetectionArea>().QueueFree();
+        StrokeE.Remove<CursorDetectionArea>();
+
         // Overlay
         StrokeE.Remove<StrokeOverlay>();
         _refNodes[1].GetParent().RemoveChild(_refNodes[1]);

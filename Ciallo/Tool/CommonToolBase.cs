@@ -23,7 +23,7 @@ public abstract partial class CommonToolBase : ToolButtonBase
         get => _leftInteractor;
         set
         {
-            FireCancel();
+            if (_machine.IsInState(State.LeftInteracting)) FireCancel();
             _leftInteractor = value;
         }
     }
@@ -33,7 +33,7 @@ public abstract partial class CommonToolBase : ToolButtonBase
         get => _hoverInteractor;
         set
         {
-            FireCancel();
+            if (_machine.IsInState(State.HoverInteracting)) FireCancel();
             _hoverInteractor = value;
         }
     }
@@ -43,7 +43,7 @@ public abstract partial class CommonToolBase : ToolButtonBase
         get => _rightInteractor;
         set
         {
-            FireCancel();
+            if (_machine.IsInState(State.RightInteracting)) FireCancel();
             _rightInteractor = value;
         }
     }

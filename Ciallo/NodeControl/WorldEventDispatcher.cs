@@ -11,7 +11,7 @@ namespace Ciallo.NodeControl;
 public partial class WorldEventDispatcher : SubViewportContainer
 {
     private Camera2D _camera;
-    private WorldArea _worldArea;
+    private WorldCursorDetectionArea _worldCursorDetectionArea;
 
     private bool _isHovering = false;
     private bool _isPanning = false;
@@ -24,7 +24,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
     public override void _Ready()
     {
         _camera = GetNode<Camera2D>("%Camera2D");
-        _worldArea = GetNode<WorldArea>("%WorldArea");
+        _worldCursorDetectionArea = GetNode<WorldCursorDetectionArea>("%WorldCursorDetectionArea");
 
         GuiInput += OnGuiInput;
         MouseEntered += OnMouseEnter;
@@ -151,7 +151,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
     public void DispatchMotion(CursorMotionData data)
     {
         ToolManager.ActiveTool.Value?.OnMoving(data);
-        _worldArea.OnCursorMove(data);
+        _worldCursorDetectionArea.OnCursorMove(data);
     }
 
     public void DispatchRightClick(CursorButtonData data)
