@@ -32,7 +32,7 @@ public class SetStrokeGeometryCmd : CommandBase
     {
         // Data
         _oldGeometry ??= _strokeE.Get<StrokeGeometry>();
-        _strokeE.Add(_newGeometry);
+        _strokeE.Get<StrokeGeometry>() = _newGeometry;
 
         // View
         _strokeE.Get<StrokeView>().SetGeometry(_newGeometry.Points, _newGeometry.Radii);

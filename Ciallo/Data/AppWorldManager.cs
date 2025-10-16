@@ -30,7 +30,6 @@ public static partial class AppWorldManager
 
         // Init empty document
         var document = world.Create();
-        document.Tag<ToSerializeTag>();
 
         // Add managers
         document.Add(settings);
@@ -38,6 +37,8 @@ public static partial class AppWorldManager
         document.Add(new LayerTreeManager());
         document.Add(new CommandManager());
         document.Add(new BrushManager());
+
+        WorldToDocument.Add(world, document);
 
         // Always init first, then add to list
         LoadedWorlds.Add(world);
