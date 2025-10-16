@@ -35,7 +35,6 @@ public partial class ToolPropertyPanel : PanelContainer
 
                 var container = hub.GetNode<PropertyContainer>("%PropertyContainer");
                 container.QueueFreeChildren();
-                tool.Document = document;
                 tool.DrawProperty(container);
 
                 hub.GetNode<Label>("%ToolNameLabel").Text = tool.ToolName;

@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
 using Ciallo.NodeControl;
@@ -12,7 +12,7 @@ public class ImageEditHover : HoverBase
 {
     public Button RotationButton;
     public Button MoveButton;
-    public ImmutableArray<Button> CornerButtons = [];
+    public List<Button> CornerButtons = [];
 
     public override bool CanInteract
     {
@@ -55,7 +55,9 @@ public class ImageEditHover : HoverBase
 
     public override void Cancel()
     {
-        Document.Get<WorldButtonManager>().Clear();
+        RotationButton.QueueFree();
+        MoveButton.QueueFree();
+        CornerButtons.ForEach(b => b.QueueFree());
         RotationButton = null;
         MoveButton = null;
         CornerButtons = [];

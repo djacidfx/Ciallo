@@ -3,6 +3,7 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.NodeControl;
+using Ciallo.Rendering;
 using Ciallo.Tool;
 using Ciallo.Widget;
 using Godot;
@@ -116,14 +117,6 @@ public partial class PaintTool : CommonToolBase
         container.AddChild(manageDocumentBrush);
     }
 
-    public override void OnActivate()
-    {
-    }
-
-    public override void OnDeactivate()
-    {
-    }
-
     private void OnUseBrushPressed()
     {
         if (!AppBrushLibrary.HasSelection) return;
@@ -136,22 +129,17 @@ public partial class DocumentBrushList : ItemList;
 
 public class PaintHover : HoverBase
 {
-    public override bool CanInteract
-    {
-        get
-        {
-            var l = SelectionManager.WorkingLayer.Value;
-            return l.IsNotNull() && l.Has<PolylineLayerSetting>();
-        }
-    }
+    public override bool CanInteract => true;
 
-    public override void Interacting(CursorMotionData data)
+    public override void Start(CursorMotionData _)
     {
-        Input.SetDefaultCursorShape(Input.CursorShape.Cross);
+        var layerE = Document.Get<SelectionManager>().WorkingLayer.Value;
+        bool layerValid = layerE.IsNotNull() && layerE.Has<PolylineLayerSetting>();
+        Document.Get<WorldButtonManager>().DefaultCursorShape = layerValid ? Control.CursorShape.Cross : Control.CursorShape.Forbidden;
     }
 
     public override void Cancel()
     {
-        Input.SetDefaultCursorShape(Input.CursorShape.Arrow);
+        Document.Get<WorldButtonManager>().DefaultCursorShape = Control.CursorShape.Arrow;
     }
 }

@@ -8,13 +8,12 @@ namespace Ciallo.NodeControl;
 
 public partial class ToolButtonPanelContainer : Container
 {
-    public static readonly PackedScene ToolButtonPanelScene = GD.Load<PackedScene>("res://NodeControl/ToolButtonPanel.tscn");
     public override void _Ready()
     {
         this.QueueFreeChildren();
         AppWorldManager.LoadedWorlds.ObserveAdd().Select(et => et.Value.Document()).Subscribe(document =>
         {
-            var root = ToolButtonPanelScene.Instantiate<ToolButtonPanel>();
+            var root = ToolButtonPanel.Instantiate(document);
             root.VisibleIf(AppWorldManager.WorkingDocument, document);
             document.Set(root);
             AddChild(root);

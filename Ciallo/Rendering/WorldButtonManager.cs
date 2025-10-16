@@ -1,17 +1,23 @@
 using System;
-using System.Collections.Generic;
 using Godot;
 
 namespace Ciallo.Rendering;
 
 public partial class WorldButtonManager : Node2D
 {
-    public CanvasLayer CanvasLayer;
-    public List<Control> ButtonsToUpdate = [];
+    private CanvasLayer _canvasLayer;
+    private Button _cursorSwitcher;
+
+    public Control.CursorShape DefaultCursorShape
+    {
+        get => _cursorSwitcher.MouseDefaultCursorShape;
+        set => _cursorSwitcher.MouseDefaultCursorShape = value;
+    }
 
     public override void _EnterTree()
     {
-        CanvasLayer = GetChild<CanvasLayer>(0);
+        _canvasLayer = GetChild<CanvasLayer>(0);
+        _cursorSwitcher = _canvasLayer.GetChild<Button>(0);
     }
 
     // Note: not implement screen position, world size
@@ -35,30 +41,13 @@ public partial class WorldButtonManager : Node2D
         var button = new Button();
 
         if (flags.HasFlag(WorldButtonFlags.ScreenPosition))
-            CanvasLayer.AddChild(button);
+            _canvasLayer.AddChild(button);
         else
             AddChild(button);
 
-        if (flags.HasFlag(WorldButtonFlags.ScreenSize) && !flags.HasFlag(WorldButtonFlags.ScreenPosition))
-            ButtonsToUpdate.Add(button);
         button.Flat = true;
 
         return button;
-    }
-
-    public override void _PhysicsProcess(double delta)
-    {
-        foreach (var b in ButtonsToUpdate)
-            b.Scale = GetViewportTransform().Scale.Inverse();
-    }
-
-    public void Clear()
-    {
-        foreach (var child in this.GetAllDescendants())
-            if (child != CanvasLayer)
-                child.QueueFree();
-
-        ButtonsToUpdate.Clear();
     }
 }
 

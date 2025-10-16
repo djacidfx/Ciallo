@@ -124,3 +124,14 @@ unique_name_in_owner = true
 script = ExtResource("7_8h3gs")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="VBoxContainer/WorldViewContainer/SubViewport/WorldButtonManager"]
+
+[node name="Button" type="Button" parent="VBoxContainer/WorldViewContainer/SubViewport/WorldButtonManager/CanvasLayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+button_mask = 0
+flat = true

@@ -1,6 +1,9 @@
-﻿using Ciallo.Command;
+﻿using System;
+using Ciallo.Command;
+using Ciallo.Data;
 using Ciallo.NodeControl;
 using Godot;
+using R3;
 using Stateless;
 
 namespace Ciallo.Tool;
@@ -162,7 +165,17 @@ public abstract partial class CommonToolBase : ToolButtonBase
         if (AppActions.CancelInteraction.IsJustPressed) FireCancel();
     }
 
-    public override void OnDeactivate() => FireCancel();
+    private IDisposable _subToWorkingLayer;
+    public override void OnActivate()
+    {
+        var sm = Document.Get<SelectionManager>();
+        _subToWorkingLayer = sm.WorkingLayer.Skip(1).Subscribe(_ => FireCancel());
+    }
+    public override void OnDeactivate()
+    {
+        FireCancel();
+        _subToWorkingLayer.Dispose();
+    }
 
     public void FireCancel() => _machine.Fire(Event.Cancel);
 }

@@ -171,8 +171,6 @@ public partial class WorldEventDispatcher : SubViewportContainer
     public void OnMouseExit()
     {
         CallDeferred(Control.MethodName.ReleaseFocus);
-        Input.SetDefaultCursorShape(Input.CursorShape.Arrow);
-        // Input.MouseMode = Input.MouseModeEnum.Visible;
         _isHovering = false;
     }
 }
