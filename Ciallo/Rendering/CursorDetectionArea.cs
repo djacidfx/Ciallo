@@ -25,4 +25,5 @@ public partial class CursorDetectionArea : StaticBody2D
         CollisionMask = AppGodotLayers.Physics2D.Empty; // Only detect mouse input, don't collide with anything else
         InputPickable = true;
     }
+    // Note: There is a button overlay on world, _MouseEntered won't work. 
 }

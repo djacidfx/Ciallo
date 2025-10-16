@@ -1,7 +1,9 @@
 using System;
+using System.Linq;
 using Ciallo.Data;
 using Ciallo.NodeControl;
 using Godot;
+using Godot.Collections;
 
 namespace Ciallo.Rendering;
 
@@ -10,9 +12,9 @@ public partial class WorldArea : Node2D
     private CanvasLayer _canvasLayer;
     private Control _cursorSwitcher; // This is supposed to be the job of ViewportContainer, but it doesn't reponse even if changing MouseDefaultCursorShape.
 
-    public Control.CursorShape DefaultCursorShape { get; set; }
-    private CursorDetectArea _hoveringArea;
-    public CursorDetectArea HoveringArea
+    public Control.CursorShape MouseDefaultCursorShape { get; set; }
+    private CursorDetectionArea _hoveringArea;
+    public CursorDetectionArea HoveringArea
     {
         get => _hoveringArea;
         private set
@@ -22,7 +24,7 @@ public partial class WorldArea : Node2D
             if (HoveringArea != null) HoveringArea.IsHovered = false;
             if (value != null) value.IsHovered = true;
             _hoveringArea = value;
-            _cursorSwitcher.MouseDefaultCursorShape = value?.CursorShape ?? DefaultCursorShape;
+            _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
         }
     }
 
@@ -33,35 +35,50 @@ public partial class WorldArea : Node2D
     }
 
     // Note: not implement screen position, world size
-    public Button AddRectButton(Vector2 position, float size, WorldButtonFlags flags = default)
+    public CursorDetectionArea AddRect(Vector2 position, float size, CursorRectFlags flags = default)
     {
-        return AddRectButton(position, new Vector2(size, size), flags);
+        return AddRect(position, new Vector2(size, size), flags);
     }
 
-    public Button AddRectButton(Vector2 position, Vector2 size, WorldButtonFlags flags = default)
+    public CursorDetectionArea AddRect(Vector2 position, Vector2 size, CursorRectFlags flags = default)
     {
-        var button = AddRectButton(flags);
-        button.Position = flags.HasFlag(WorldButtonFlags.CornerPosition) ? position : position - size * 0.5f;
-        button.Size = size;
-        button.PivotOffset = flags.HasFlag(WorldButtonFlags.CornerPosition) ? Vector2.Zero : size * 0.5f;
+        var area = AddRect(flags);
+        area.AddChild(new CollisionShape2D()
+        {
+            Shape = new RectangleShape2D { Size = size },
+        });
+        area.Position = flags.HasFlag(CursorRectFlags.CornerPosition) ? position - size * 0.5f : position;
 
-        return button;
+        return area;
     }
 
-    public Button AddRectButton(WorldButtonFlags flags = default)
+    public CursorDetectionArea AddRect(CursorRectFlags flags = default)
     {
-        var button = new Button();
+        var area = new CursorDetectionArea();
 
-        if (flags.HasFlag(WorldButtonFlags.ScreenPosition))
-            _canvasLayer.AddChild(button);
+        if (flags.HasFlag(CursorRectFlags.ScreenPosition))
+            _canvasLayer.AddChild(area);
         else
-            AddChild(button);
+            AddChild(area);
 
-        button.Flat = true;
-
-        return button;
+        return area;
     }
 
+    private static int GetCanvasLayer(Node n)
+    {
+        while (n is not null && n is not CanvasLayer) n = n.GetParent();
+        return (n as CanvasLayer)?.Layer ?? 0;
+    }
+
+    private static CursorDetectionArea TopMostFromHits(Array<Dictionary> hits)
+    {
+        return hits
+            .Select(d => (CursorDetectionArea)d["collider"])
+            .OrderByDescending(GetCanvasLayer)
+            .ThenByDescending(n => n.ZIndex)
+            .ThenByDescending(n => n.GetIndex())
+            .First();
+    }
 
     public void OnCursorMove(CursorMotionData data)
     {
@@ -73,23 +90,15 @@ public partial class WorldArea : Node2D
         {
             CollideWithBodies = true,
             Position = data.WorldPosition,
-            CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke
+            CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke,
         };
-        var points = GetWorld2D().DirectSpaceState.IntersectPoint(pp, 1);
-        if (points.Count > 0)
-        {
-            var area = (CursorDetectArea)points[0]["collider"];
-            HoveringArea = area;
-        }
-        else
-        {
-            HoveringArea = null;
-        }
+        var points = GetWorld2D().DirectSpaceState.IntersectPoint(pp, 32);
+        HoveringArea = points.Count > 0 ? TopMostFromHits(points) : null;
     }
 }
 
 [Flags]
-public enum WorldButtonFlags
+public enum CursorRectFlags
 {
     None = 0,
 

@@ -13,22 +13,22 @@ public class ImageTransformInteractor : InteractorBase
     {
         get
         {
-            if (_hover.RotationButton == null || _hover.MoveButton == null || _hover.CornerButtons.Count == 0)
+            if (_hover.RotationArea == null || _hover.MoveArea == null || _hover.CornerAreas.Count == 0)
                 return false;
 
-            if (_hover.RotationButton.IsHovered())
+            if (_hover.RotationArea.IsHovered)
             {
                 _transformType = 0;
                 return true;
             }
-            if (_hover.MoveButton.IsHovered())
+            if (_hover.MoveArea.IsHovered)
             {
                 _transformType = 1;
                 return true;
             }
-            for (int i = 0; i < _hover.CornerButtons.Count; i++)
+            for (int i = 0; i < _hover.CornerAreas.Count; i++)
             {
-                if (_hover.CornerButtons[i].IsHovered())
+                if (_hover.CornerAreas[i].IsHovered)
                 {
                     _transformType = 2 + i;
                     return true;
