@@ -2,12 +2,12 @@
 
 namespace Ciallo.Rendering;
 
+// ReSharper disable once Godot.MissingParameterlessConstructor
 public partial class ImageLayerOverlay : Node2D
 {
     public Vector2 Size;
     public StrokeView Wireframe;
     public MultiMeshInstance2D Dots;
-    public TouchScreenButton[] Buttons;
 
     // Note: Transform is set by Node2D, only size is necessary here
     public ImageLayerOverlay(Vector2 size)
@@ -28,7 +28,7 @@ public partial class ImageLayerOverlay : Node2D
             new(half.X, -half.Y),
             half,
             new(-half.X, half.Y),
-            half,
+            -half,
         ];
         Wireframe.SetGeometry(positions, AppPreference.StrokeWireframeRadius);
         AddChild(Wireframe);
