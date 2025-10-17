@@ -13,6 +13,7 @@ public class ImageEditHover : HoverBase
     public CursorDetectionArea RotationArea;
     public CursorDetectionArea MoveArea;
     public List<CursorDetectionArea> CornerAreas = [];
+    private Entity _layerE;
 
     public override bool CanInteract
     {
@@ -25,10 +26,13 @@ public class ImageEditHover : HoverBase
 
     public override void Start(CursorMotionData data)
     {
-        var layerE = SelectionManager.WorkingLayer.Value;
-        var setting = layerE.Get<ImageLayerSetting>();
+        _layerE = SelectionManager.WorkingLayer.Value;
+        var setting = _layerE.Get<ImageLayerSetting>();
         var manager = Document.Get<WorldCursorDetectionArea>();
 
+        _layerE.Get<ImageLayerOverlay>().Visible = true;
+
+        // Create areas
         // Rotation
         RotationArea = manager.CreateAddRect(setting.Position, setting.ImageSize);
         RotationArea.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
@@ -42,7 +46,7 @@ public class ImageEditHover : HoverBase
         MoveArea.Scale = setting.Scale;
 
         // Corner
-        var corners = layerE.Get<ImageLayerSetting>().GetCorners();
+        var corners = _layerE.Get<ImageLayerSetting>().GetCorners();
         var areas = new CursorDetectionArea[corners.Length];
         foreach (var (idx, pos) in corners.Index())
         {
@@ -61,5 +65,7 @@ public class ImageEditHover : HoverBase
         RotationArea = null;
         MoveArea = null;
         CornerAreas = [];
+        _layerE.Get<ImageLayerOverlay>().Visible = false;
+        _layerE = Entity.Null;
     }
 }

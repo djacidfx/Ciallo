@@ -1,5 +1,6 @@
 ﻿using System;
 using Ciallo.Command;
+using Ciallo.Data;
 using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Frent;
@@ -8,37 +9,44 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public class PolylineHintHover : HoverBase
+public class PolylineHover : HoverBase
 {
-    private StrokeOverlay _hintingOverlay;
+    public Entity HoveredPolyline;
 
-    public override bool CanInteract => SelectionManager.WorkingLayer.Value.IsNotNull();
+    public override bool CanInteract
+    {
+        get
+        {
+            var layerE = SelectionManager.WorkingLayer.Value;
+            return !layerE.IsNull && layerE.Has<PolylineLayerSetting>();
+        }
+    }
 
     private IDisposable _hoverSub;
     private Entity _layerE;
     public override void Start(CursorMotionData data)
     {
         _layerE = SelectionManager.WorkingLayer.Value;
+
         _layerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
 
         _hoverSub = Document.Get<WorldCursorDetectionArea>().HoveringArea.Skip(1).Subscribe(area =>
         {
-            _hintingOverlay?.SetVisible(false);
+            if (!HoveredPolyline.IsNull) HoveredPolyline.Get<StrokeOverlay>().SetVisible(false);
             if (area == null)
             {
-                _hintingOverlay = null;
+                HoveredPolyline = Entity.Null;
                 return;
             }
-            _hintingOverlay = area.SelfEntity.Get<StrokeOverlay>();
-            _hintingOverlay.SetVisible(true);
+            HoveredPolyline = area.SelfEntity;
+            if (!HoveredPolyline.IsNull) HoveredPolyline.Get<StrokeOverlay>().SetVisible(true);
         });
     }
 
     public override void Cancel()
     {
         _hoverSub.Dispose();
-        _hintingOverlay?.SetVisible(false);
-        _hintingOverlay = null;
+        if (!HoveredPolyline.IsNull) HoveredPolyline.Get<StrokeOverlay>().SetVisible(false);
 
         _layerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
     }

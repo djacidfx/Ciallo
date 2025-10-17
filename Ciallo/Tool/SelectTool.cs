@@ -1,6 +1,5 @@
 using System;
 using Ciallo.Data;
-using Ciallo.Rendering;
 using Ciallo.Widget;
 using Frent;
 using R3;
@@ -12,8 +11,8 @@ using EntityParameterEvent = StateMachine<SelectTool.State, SelectTool.Event>.Tr
 
 public partial class SelectTool : CommonToolBase
 {
-    public readonly PolylineHintHover PolylineHover = new();
-    public readonly PolylineTransformInteractor PolylineTransformInteractor = new();
+    public readonly PolylineHover PolylineHover = new();
+    public readonly PolylineTransformInteractor PolylineTransformInteractor;
     public readonly ImageEditHover ImageEditHover = new();
     public readonly ImageTransformInteractor ImageTransformInteractor;
 
@@ -39,6 +38,7 @@ public partial class SelectTool : CommonToolBase
 
     public SelectTool()
     {
+        PolylineTransformInteractor = new(PolylineHover);
         ImageTransformInteractor = new(ImageEditHover);
 
         ToolStateMachine.OnUnhandledTrigger((_, _) => { });
@@ -56,12 +56,9 @@ public partial class SelectTool : CommonToolBase
                 return State.Active;
             });
 
-        Entity currLayerE = new();
         ToolStateMachine.Configure(State.EditingImageLayer).SubstateOf(State.Active)
             .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {
-                layerE.Get<ImageLayerOverlay>().Visible = true;
-                currLayerE = layerE;
                 HoverInteractor = ImageEditHover;
                 LeftInteractor = ImageTransformInteractor;
             })
@@ -69,13 +66,11 @@ public partial class SelectTool : CommonToolBase
             {
                 LeftInteractor = null;
                 HoverInteractor = null;
-                currLayerE.Get<ImageLayerOverlay>().Visible = false;
             });
 
         ToolStateMachine.Configure(State.EditingPolylineLayer).SubstateOf(State.Active)
             .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {
-                currLayerE = layerE;
                 LeftInteractor = PolylineTransformInteractor;
                 HoverInteractor = PolylineHover;
             })
