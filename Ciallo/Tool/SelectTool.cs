@@ -12,7 +12,8 @@ using EntityParameterEvent = StateMachine<SelectTool.State, SelectTool.Event>.Tr
 
 public partial class SelectTool : CommonToolBase
 {
-    public readonly PolylineSelectionHintHover PolylineSelectionHover = new();
+    public readonly PolylineHintHover PolylineHover = new();
+    public readonly PolylineTransformInteractor PolylineTransformInteractor = new();
     public readonly ImageEditHover ImageEditHover = new();
     public readonly ImageTransformInteractor ImageTransformInteractor;
 
@@ -20,13 +21,11 @@ public partial class SelectTool : CommonToolBase
 
     public new enum State
     {
-        Active,
         Inactive,
+        Active,
 
         EditingImageLayer,
-
         EditingPolylineLayer,
-        TransformingPolyline,
     }
 
     public new enum Event
@@ -34,9 +33,6 @@ public partial class SelectTool : CommonToolBase
         SwitchWorkingLayer,
         Activate,
         Deactivate,
-
-        SelectPolyline,
-        DeselectPolyline,
     }
 
     private readonly EntityParameterEvent _etSwitchWorkingLayer;
@@ -77,24 +73,16 @@ public partial class SelectTool : CommonToolBase
             });
 
         ToolStateMachine.Configure(State.EditingPolylineLayer).SubstateOf(State.Active)
-            .Permit(Event.SelectPolyline, State.TransformingPolyline)
             .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {
                 currLayerE = layerE;
-
-                HoverInteractor = PolylineSelectionHover;
+                LeftInteractor = PolylineTransformInteractor;
+                HoverInteractor = PolylineHover;
             })
             .OnExit(() =>
             {
                 HoverInteractor = null;
-            });
-        ToolStateMachine.Configure(State.TransformingPolyline).SubstateOf(State.EditingPolylineLayer)
-            .Permit(Event.DeselectPolyline, State.EditingPolylineLayer)
-            .OnEntry(() =>
-            {
-            })
-            .OnExit(() =>
-            {
+                LeftInteractor = null;
             });
     }
 

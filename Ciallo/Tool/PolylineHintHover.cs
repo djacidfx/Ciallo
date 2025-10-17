@@ -8,7 +8,7 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public class PolylineSelectionHintHover : HoverBase
+public class PolylineHintHover : HoverBase
 {
     private StrokeOverlay _hintingOverlay;
 
