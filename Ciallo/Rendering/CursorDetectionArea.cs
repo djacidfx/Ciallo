@@ -55,6 +55,7 @@ public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
         }
         PhysicsServer2D.BodyClearShapes(GetRid());
         _shapes.ForEach(PhysicsServer2D.FreeRid);
+        _shapes.Clear();
     }
 
     public void SetStrokeGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)

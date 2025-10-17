@@ -29,19 +29,19 @@ public class ImageEditHover : HoverBase
         var setting = layerE.Get<ImageLayerSetting>();
         var manager = Document.Get<WorldCursorDetectionArea>();
 
-        // Rotation button
+        // Rotation
         RotationArea = manager.CreateAddRect(setting.Position, setting.ImageSize);
         RotationArea.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
         RotationArea.Rotation = setting.Rotation;
         RotationArea.Scale = setting.Scale * 1.2f;
 
-        // Image move button
+        // Image move
         MoveArea = manager.CreateAddRect(setting.Position, setting.ImageSize);
         MoveArea.MouseDefaultCursorShape = Control.CursorShape.Drag;
         MoveArea.Rotation = setting.Rotation;
         MoveArea.Scale = setting.Scale;
 
-        // Corner buttons
+        // Corner
         var corners = layerE.Get<ImageLayerSetting>().GetCorners();
         var areas = new CursorDetectionArea[corners.Length];
         foreach (var (idx, pos) in corners.Index())

@@ -21,13 +21,13 @@ public partial class WorldCursorDetectionArea : Node2D
 
     private void SetHoveringArea(CursorDetectionArea value)
     {
+        _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
         var area = _hoveringArea.Value;
         if (area == value) return;
 
         if (area != null) area.IsHovered = false;
         if (value != null) value.IsHovered = true;
         _hoveringArea.Value = value;
-        _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
     }
 
     public override void _EnterTree()
