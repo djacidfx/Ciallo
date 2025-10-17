@@ -5,6 +5,7 @@ using Ciallo.Data;
 using Ciallo.NodeControl;
 using Godot;
 using Godot.Collections;
+using R3;
 
 namespace Ciallo.Rendering;
 
@@ -14,19 +15,19 @@ public partial class WorldCursorDetectionArea : Node2D
     private Control _cursorSwitcher; // This is supposed to be the job of ViewportContainer, but it doesn't reponse even if changing MouseDefaultCursorShape.
 
     public Control.CursorShape MouseDefaultCursorShape { get; set; }
-    private CursorDetectionArea _hoveringArea;
-    public CursorDetectionArea HoveringArea
-    {
-        get => _hoveringArea;
-        private set
-        {
-            if (_hoveringArea == value) return;
 
-            if (HoveringArea != null) HoveringArea.IsHovered = false;
-            if (value != null) value.IsHovered = true;
-            _hoveringArea = value;
-            _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
-        }
+    private readonly ReactiveProperty<CursorDetectionArea> _hoveringArea = new();
+    public ReadOnlyReactiveProperty<CursorDetectionArea> HoveringArea => _hoveringArea;
+
+    private void SetHoveringArea(CursorDetectionArea value)
+    {
+        var area = _hoveringArea.Value;
+        if (area == value) return;
+
+        if (area != null) area.IsHovered = false;
+        if (value != null) value.IsHovered = true;
+        _hoveringArea.Value = value;
+        _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
     }
 
     public override void _EnterTree()
@@ -65,9 +66,26 @@ public partial class WorldCursorDetectionArea : Node2D
         return area;
     }
 
-    public CursorDetectionArea CreateAddStroke(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
+    public static CursorDetectionArea CreateRect(Vector2 position, Vector2 size)
     {
-        if (points.Count == 1) return CreateAddRect(points[0], radii[0] * 2);
+        var area = new CursorDetectionArea();
+        area.AddChild(new CollisionShape2D()
+        {
+            Shape = new RectangleShape2D { Size = size },
+        });
+        area.Position = position;
+
+        return area;
+    }
+
+    public static CursorDetectionArea CreateRect(Vector2 position, float size)
+    {
+        return CreateRect(position, new Vector2(size, size));
+    }
+
+    public static CursorDetectionArea CreateStroke(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
+    {
+        if (points.Count == 1) return CreateRect(points[0], radii[0] * 2);
         if (points.Count != radii.Count) throw new ArgumentException("Points and radii count mismatch");
 
         var area = new CursorDetectionArea();
@@ -89,7 +107,7 @@ public partial class WorldCursorDetectionArea : Node2D
             PhysicsServer2D.ShapeSetData(shape, vertices);
             area.AddShapeRid(shape);
         }
-        AddChild(area);
+
         return area;
     }
 
@@ -122,7 +140,7 @@ public partial class WorldCursorDetectionArea : Node2D
             CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke,
         };
         var points = GetWorld2D().DirectSpaceState.IntersectPoint(pp, 32);
-        HoveringArea = points.Count > 0 ? TopMostFromHits(points) : null;
+        SetHoveringArea(points.Count > 0 ? TopMostFromHits(points) : null);
     }
 }
 

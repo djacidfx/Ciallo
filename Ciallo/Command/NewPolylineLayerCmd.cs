@@ -43,10 +43,21 @@ public class NewPolylineLayerCmd : CommandBase
         LayerE.Add(layerView);
         layerView.SetOwner(worldView);
         LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(layerView.SetVisible).AddTo(layerView);
+
+        // Cursor detection
+        var worldArea = Document.Get<WorldCursorDetectionArea>();
+        var holder = new PolylineAreaHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
+        worldArea.AddChild(holder);
+        LayerE.Add(holder);
     }
 
     public override void Undo()
     {
+        // Cursor detection
+        var holder = LayerE.Get<PolylineAreaHolder>();
+        holder.QueueFree();
+        LayerE.Remove<PolylineAreaHolder>();
+
         // View
         LayerE.Remove<PolylineLayerView>();
         var worldView = Document.Get<WorldView>();
@@ -80,3 +91,5 @@ public class NewPolylineLayerCmd : CommandBase
         return LayerE;
     }
 }
+
+public partial class PolylineAreaHolder : Node2D;

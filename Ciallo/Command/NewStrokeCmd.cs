@@ -43,7 +43,7 @@ public class NewStrokeCmd : CommandBase
         strokeView.SetOwner(layerView.Owner);
 
         // Overlay
-        if (_refNodes.Count == 1) _refNodes.Add(new StrokeOverlay());
+        if (_refNodes.Count == 1) _refNodes.Add(new StrokeOverlay() { Visible = false });
         var strokeOverlay = (StrokeOverlay)_refNodes[1];
         var worldOverlay = Document.Get<WorldOverlay>();
         worldOverlay.AddChild(strokeOverlay);
@@ -51,9 +51,8 @@ public class NewStrokeCmd : CommandBase
 
         // Cursor detection
         var geom = StrokeE.Get<StrokeGeometry>();
-        var worldArea = Document.Get<WorldCursorDetectionArea>();
-        var strokeArea = worldArea.CreateAddStroke(geom.Points, geom.Radii);
-        strokeArea.Visible = false;
+        var strokeArea = WorldCursorDetectionArea.CreateStroke(geom.Points, geom.Radii);
+        _layerE.Get<PolylineAreaHolder>().AddChild(strokeArea);
         StrokeE.Add(strokeArea);
     }
 

@@ -62,7 +62,6 @@ public partial class SelectTool : CommonToolBase
 
         Entity currLayerE = new();
         ToolStateMachine.Configure(State.EditingImageLayer).SubstateOf(State.Active)
-            .Permit(Event.SelectPolyline, State.TransformingPolyline)
             .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {
                 layerE.Get<ImageLayerOverlay>().Visible = true;
@@ -82,6 +81,7 @@ public partial class SelectTool : CommonToolBase
             .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {
                 currLayerE = layerE;
+
                 HoverInteractor = PolylineSelectionHover;
             })
             .OnExit(() =>

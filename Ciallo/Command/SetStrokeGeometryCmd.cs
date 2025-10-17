@@ -39,10 +39,16 @@ public class SetStrokeGeometryCmd : CommandBase
 
         // Overlay
         _strokeE.Get<StrokeOverlay>().SetGeometry(_newGeometry.Points, _newGeometry.Radii);
+
+        // Cursor detection
+        _strokeE.Get<CursorDetectionArea>().SetStrokeGeometry(_newGeometry.Points, _newGeometry.Radii);
     }
 
     public override void Undo()
     {
+        // Cursor detection
+        _strokeE.Get<CursorDetectionArea>().SetStrokeGeometry(_oldGeometry.Points, _oldGeometry.Radii);
+
         // Overlay
         _strokeE.Get<StrokeOverlay>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
 
@@ -50,6 +56,6 @@ public class SetStrokeGeometryCmd : CommandBase
         _strokeE.Get<StrokeView>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
 
         // Data
-        _strokeE.Add(_oldGeometry);
+        _strokeE.Get<StrokeGeometry>() = _oldGeometry;
     }
 }
