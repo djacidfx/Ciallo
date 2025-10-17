@@ -42,20 +42,20 @@ public static class DotExtension
 {
     public static void SetDotGeometry(this MultiMeshInstance2D instance, IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
-        if (points.Count == 0)
-        {
-            instance.Multimesh.InstanceCount = 0;
-            return;
-        }
+        instance.Multimesh.InstanceCount = 0;
+        if (points.Count == 0) return;
+
         if (points.Count != radii.Count) throw new ArgumentException("Points and radii count mismatch.");
 
         var multiMesh = instance.Multimesh;
+        multiMesh.UseCustomData = true;
         multiMesh.InstanceCount = points.Count;
         for (int i = 0; i < points.Count; i++)
         {
-            var transform = Transform2D.Identity.Scaled(Vector2.One * radii[i]).Translated(points[i]);
+            var transform = Transform2D.Identity.Translated(points[i]);
             multiMesh.SetInstanceTransform2D(i, transform);
             multiMesh.SetInstanceColor(i, AppPreference.StrokeWireframeColor);
+            multiMesh.SetInstanceCustomData(i, new(radii[i], 0, 0, 0));
         }
     }
 

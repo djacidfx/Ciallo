@@ -33,7 +33,7 @@ public partial class ImageLayerOverlay : Node2D
         Wireframe.SetGeometry(positions, AppPreference.StrokeWireframeRadius);
         AddChild(Wireframe);
 
-        Dots.SetDotGeometry(positions[..4], AppPreference.StrokeDotRadius * 2);
+        Dots.SetDotGeometry(positions[..4], AppPreference.StrokeDotRadius * 2f);
         AddChild(Dots);
     }
 }
