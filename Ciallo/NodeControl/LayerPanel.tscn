@@ -32,6 +32,7 @@ use_native_dialog = true
 [node name="New" type="Button" parent="LayerAction"]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Add a layer"
 theme_type_variation = &"ToolButton"
 icon = ExtResource("1_ulw2x")
 expand_icon = true
@@ -46,6 +47,7 @@ expand_icon = true
 [node name="AddImage" type="Button" parent="LayerAction"]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
+tooltip_text = "Import an image"
 theme_type_variation = &"ToolButton"
 icon = ExtResource("5_4cr57")
 expand_icon = true

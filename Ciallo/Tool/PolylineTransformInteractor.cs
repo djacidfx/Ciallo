@@ -38,6 +38,8 @@ public class PolylineTransformInteractor(PolylineHover hover) : InteractorBase
             var newGeom = _polylineE.Get<StrokeGeometry>().Clone();
             newGeom.Points = newGeom.Points.Select(p => transform * p).ToList();
             new SetStrokeGeometryCmd(_polylineE, newGeom).Commit();
+            SelectionManager.SelectedPolylines.Clear();
+            SelectionManager.SelectedPolylines.Add(_polylineE);
         }
 
         Clear();
