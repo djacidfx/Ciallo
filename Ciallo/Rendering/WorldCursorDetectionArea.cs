@@ -145,28 +145,35 @@ public partial class WorldCursorDetectionArea : Node2D
     }
     public CursorDetectionArea[] CreateAddTransformAreas(Vector2 size, Transform2D transform)
     {
-        var rotation = CreateAddRect(size, transform.ScaledLocal(new(1.2f, 1.2f)));
-        rotation.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-        var translation = CreateAddRect(size, transform);
-        translation.MouseDefaultCursorShape = Control.CursorShape.Move;
-
         var half = size * 0.5f;
-        Vector2[] cornerPos =
+        Vector2[] corners =
         [
             transform * -half,
             transform * new Vector2(-half.X, half.Y),
             transform * half,
             transform * new Vector2(half.X, -half.Y)
         ];
-        var corners = new CursorDetectionArea[cornerPos.Length];
-        foreach (var (idx, pos) in cornerPos.Index())
+        var dotAreaSize = Vector2.One * 100.0f / 3;
+
+        var barDir = (corners[0] - corners[1]).Normalized();
+        var barLength = AppPreference.StrokeDotRadius * 4f;
+        var topMid = (corners[0] + corners[3]) * 0.5f;
+        Vector2 rotationDotPos = topMid + barLength * barDir;
+
+        var rotation = CreateAddRect(dotAreaSize, rotationDotPos);
+        rotation.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+        var translation = CreateAddRect(size, transform);
+        translation.MouseDefaultCursorShape = Control.CursorShape.Move;
+
+        var cornerAreas = new CursorDetectionArea[corners.Length];
+        foreach (var (idx, pos) in corners.Index())
         {
-            var a = CreateAddRect(Vector2.One * 100.0f / 3, pos, CursorRectFlags.ScreenSize);
+            var a = CreateAddRect(dotAreaSize, pos, CursorRectFlags.ScreenSize);
             a.MouseDefaultCursorShape = idx % 2 == 0 ? Control.CursorShape.Fdiagsize : Control.CursorShape.Bdiagsize;
-            corners[idx] = a;
+            cornerAreas[idx] = a;
         }
 
-        return [rotation, translation, ..corners];
+        return [rotation, translation, ..cornerAreas];
     }
 
     public CursorDetectionArea[] CreateAddTransformAreas(Vector2 size, Vector2 position)
