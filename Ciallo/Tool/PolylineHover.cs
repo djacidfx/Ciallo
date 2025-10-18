@@ -13,6 +13,8 @@ namespace Ciallo.Tool;
 public class PolylineHover : HoverBase
 {
     public Entity HoveredPolyline;
+    public CursorDetectionArea RotationArea;
+    public CursorDetectionArea[] CornerAreas = [];
 
     public override bool CanInteract
     {
@@ -36,6 +38,7 @@ public class PolylineHover : HoverBase
         var holder = _layerE.Get<PolylineAreaHolder>();
         holder.ProcessMode = Node.ProcessModeEnum.Inherit;
         holder.SetAreaCursor(Control.CursorShape.Move);
+
         // Polyline transform
         if (SelectionManager.SelectedPolylines.Count > 0)
         {
@@ -49,11 +52,18 @@ public class PolylineHover : HoverBase
             worldOverlay.AddChild(_midAxis);
             _midAxis.Visible = true;
 
-            // transform box
+            // transform box overlay
             var geom = _polylineE.Get<StrokeGeometry>();
-            var boundingRect = geom.Points.GetBoundingBox();
-            _transformBox = new TransformBox(boundingRect.Size, boundingRect.GetCenter());
+            var rect = geom.Points.GetBoundingBox();
+            _transformBox = new TransformBox(rect.Size, rect.GetCenter());
             worldOverlay.AddChild(_transformBox);
+
+            // transform cursor area
+            var worldArea = Document.Get<WorldCursorDetectionArea>();
+            CursorDetectionArea[] areas = worldArea.CreateAddTransformAreas(rect.Size, rect.GetCenter());
+            RotationArea = areas[0];
+            areas[1].QueueFree();
+            CornerAreas = areas[2..6];
         }
 
         // hover hinter
@@ -73,12 +83,21 @@ public class PolylineHover : HoverBase
     public override void Cancel()
     {
         _hoverSub.Dispose();
-        if (!HoveredPolyline.IsNull) HoveredPolyline.Get<StrokeCenterline>().SetVisible(false);
 
+        // cursor areas
+        RotationArea?.QueueFree();
+        RotationArea = null;
+        Array.ForEach(CornerAreas, b => b.QueueFree());
+        CornerAreas = [];
+        _layerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
+
+        // overlays
+        if (!HoveredPolyline.IsNull) HoveredPolyline.Get<StrokeCenterline>().SetVisible(false);
         _midAxis?.QueueFree();
         _midAxis = null;
         _transformBox?.QueueFree();
         _transformBox = null;
-        _layerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
+
+        // _layerE = Entity.Null; // Don't clear entity, transform interactor need this value.
     }
 }

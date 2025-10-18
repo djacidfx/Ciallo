@@ -9,7 +9,7 @@ namespace Ciallo.Tool;
 public class ImageEditHover : HoverBase
 {
     public CursorDetectionArea RotationArea;
-    public CursorDetectionArea MoveArea;
+    public CursorDetectionArea TranslationArea;
     public CursorDetectionArea[] CornerAreas = [];
     private Entity _layerE;
 
@@ -33,18 +33,18 @@ public class ImageEditHover : HoverBase
         // Create areas
         CursorDetectionArea[] areas = manager.CreateAddTransformAreas(setting.ImageSize, setting.ImageTransform.Value);
         RotationArea = areas[0];
-        MoveArea = areas[1];
+        TranslationArea = areas[1];
         CornerAreas = areas[2..6];
     }
 
     public override void Cancel()
     {
         RotationArea.QueueFree();
-        MoveArea.QueueFree();
+        TranslationArea.QueueFree();
 
         Array.ForEach(CornerAreas, b => b.QueueFree());
         RotationArea = null;
-        MoveArea = null;
+        TranslationArea = null;
         CornerAreas = [];
         _layerE.Get<TransformBox>().Visible = false;
         _layerE = Entity.Null;

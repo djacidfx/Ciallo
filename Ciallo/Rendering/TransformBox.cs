@@ -47,4 +47,11 @@ public partial class TransformBox : Node2D
         Wireframe.SetGeometry(positions, AppPreference.StrokeWireframeRadius);
         Dots.SetDotGeometry(positions[..4], AppPreference.StrokeDotRadius * 2f);
     }
+
+    public void UpdateGeometry(Rect2 rect)
+    {
+        Size = rect.Size;
+        LocalTransform = new Transform2D(0, rect.GetCenter());
+        UpdateGeometry();
+    }
 }

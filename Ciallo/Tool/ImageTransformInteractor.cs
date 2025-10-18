@@ -13,7 +13,7 @@ public class ImageTransformInteractor : InteractorBase
     {
         get
         {
-            if (_hover.RotationArea == null || _hover.MoveArea == null || _hover.CornerAreas.Length == 0)
+            if (_hover.RotationArea == null || _hover.TranslationArea == null || _hover.CornerAreas.Length == 0)
                 return false;
 
             if (_hover.RotationArea.IsHovered)
@@ -21,7 +21,7 @@ public class ImageTransformInteractor : InteractorBase
                 _transformType = 0;
                 return true;
             }
-            if (_hover.MoveArea.IsHovered)
+            if (_hover.TranslationArea.IsHovered)
             {
                 _transformType = 1;
                 return true;
@@ -74,7 +74,7 @@ public class ImageTransformInteractor : InteractorBase
             _setting.ImageTransform.Value = _startTransform.Translated(data.WorldPosition - _startPos);
         }
 
-        if (_transformType >= 2)
+        if (_transformType >= 2) // gen by copilot
         {
             bool fixRatio = Input.IsKeyPressed(Key.Shift);
             bool fixCenter = Input.IsKeyPressed(Key.Alt); // Fix the center of transform

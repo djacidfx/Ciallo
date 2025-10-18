@@ -72,26 +72,21 @@ public partial class WorldCursorDetectionArea : Node2D
         return area;
     }
 
-    public static CursorDetectionArea CreateRect(Vector2 size, Vector2 position)
+    public static CursorDetectionArea CreateRect(Vector2 size, Vector2 center)
     {
         var area = new CursorDetectionArea();
         area.AddChild(new CollisionShape2D()
         {
             Shape = new RectangleShape2D { Size = size },
         });
-        area.Position = position;
+        area.Position = center;
 
         return area;
     }
 
-    public static CursorDetectionArea CreateRect(Vector2 position, float size)
-    {
-        return CreateRect(new Vector2(size, size), position);
-    }
-
     public static CursorDetectionArea CreateStroke(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
-        if (points.Count == 1) return CreateRect(points[0], radii[0] * 2);
+        if (points.Count == 1) return CreateRect(points[0], radii[0] * 2 * Vector2.One);
         if (points.Count != radii.Count) throw new ArgumentException("Points and radii count mismatch");
 
         var area = new CursorDetectionArea();
@@ -151,7 +146,7 @@ public partial class WorldCursorDetectionArea : Node2D
     public CursorDetectionArea[] CreateAddTransformAreas(Vector2 size, Transform2D transform)
     {
         var rotation = CreateAddRect(size, transform.ScaledLocal(new(1.2f, 1.2f)));
-        rotation.MouseDefaultCursorShape = Control.CursorShape.Drag;
+        rotation.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
         var translation = CreateAddRect(size, transform);
         translation.MouseDefaultCursorShape = Control.CursorShape.Move;
 
@@ -159,9 +154,9 @@ public partial class WorldCursorDetectionArea : Node2D
         Vector2[] cornerPos =
         [
             transform * -half,
-            transform * new Vector2(half.X, -half.Y),
+            transform * new Vector2(-half.X, half.Y),
             transform * half,
-            transform * new Vector2(-half.X, half.Y)
+            transform * new Vector2(half.X, -half.Y)
         ];
         var corners = new CursorDetectionArea[cornerPos.Length];
         foreach (var (idx, pos) in cornerPos.Index())
@@ -172,6 +167,11 @@ public partial class WorldCursorDetectionArea : Node2D
         }
 
         return [rotation, translation, ..corners];
+    }
+
+    public CursorDetectionArea[] CreateAddTransformAreas(Vector2 size, Vector2 position)
+    {
+        return CreateAddTransformAreas(size, new Transform2D(0, position));
     }
 }
 

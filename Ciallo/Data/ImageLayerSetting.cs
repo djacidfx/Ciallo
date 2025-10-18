@@ -17,9 +17,9 @@ public class ImageLayerSetting
         return
         [
             transform * -half,
-            transform * new Vector2(half.X, -half.Y),
+            transform * new Vector2(-half.X, half.Y),
             transform * half,
-            transform * new Vector2(-half.X, half.Y)
+            transform * new Vector2(half.X, -half.Y)
         ];
     }
 
