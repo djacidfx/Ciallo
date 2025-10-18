@@ -37,12 +37,7 @@ public partial class WorldCursorDetectionArea : Node2D
     }
 
     // Note: not implement screen position, world size
-    public CursorDetectionArea CreateAddRect(Vector2 position, float size, CursorRectFlags flags = default)
-    {
-        return CreateAddRect(position, new Vector2(size, size), flags);
-    }
-
-    public CursorDetectionArea CreateAddRect(Vector2 position, Vector2 size, CursorRectFlags flags = default)
+    public CursorDetectionArea CreateAddRect(Vector2 size, Vector2 position, CursorRectFlags flags = default)
     {
         var area = CreateAddRect(flags);
         area.AddChild(new CollisionShape2D()
@@ -51,6 +46,17 @@ public partial class WorldCursorDetectionArea : Node2D
         });
         area.Position = flags.HasFlag(CursorRectFlags.CornerPosition) ? position - size * 0.5f : position;
 
+        return area;
+    }
+
+    public CursorDetectionArea CreateAddRect(Vector2 size, Transform2D transform)
+    {
+        var area = CreateAddRect();
+        area.AddChild(new CollisionShape2D()
+        {
+            Shape = new RectangleShape2D { Size = size },
+            Transform = transform,
+        });
         return area;
     }
 
@@ -66,7 +72,7 @@ public partial class WorldCursorDetectionArea : Node2D
         return area;
     }
 
-    public static CursorDetectionArea CreateRect(Vector2 position, Vector2 size)
+    public static CursorDetectionArea CreateRect(Vector2 size, Vector2 position)
     {
         var area = new CursorDetectionArea();
         area.AddChild(new CollisionShape2D()
@@ -80,7 +86,7 @@ public partial class WorldCursorDetectionArea : Node2D
 
     public static CursorDetectionArea CreateRect(Vector2 position, float size)
     {
-        return CreateRect(position, new Vector2(size, size));
+        return CreateRect(new Vector2(size, size), position);
     }
 
     public static CursorDetectionArea CreateStroke(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)

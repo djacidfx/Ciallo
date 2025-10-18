@@ -34,23 +34,19 @@ public class ImageEditHover : HoverBase
 
         // Create areas
         // Rotation
-        RotationArea = manager.CreateAddRect(setting.Position, setting.ImageSize);
+        RotationArea = manager.CreateAddRect(setting.ImageSize, setting.ImageTransform.Value.ScaledLocal(new(1.2f, 1.2f)));
         RotationArea.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-        RotationArea.Rotation = setting.Rotation;
-        RotationArea.Scale = setting.Scale * 1.2f;
 
         // Image move
-        MoveArea = manager.CreateAddRect(setting.Position, setting.ImageSize);
+        MoveArea = manager.CreateAddRect(setting.ImageSize, setting.ImageTransform.Value);
         MoveArea.MouseDefaultCursorShape = Control.CursorShape.Drag;
-        MoveArea.Rotation = setting.Rotation;
-        MoveArea.Scale = setting.Scale;
 
         // Corner
         var corners = _layerE.Get<ImageLayerSetting>().GetCorners();
         var areas = new CursorDetectionArea[corners.Length];
         foreach (var (idx, pos) in corners.Index())
         {
-            var a = manager.CreateAddRect(pos, 100.0f / 3, CursorRectFlags.ScreenSize);
+            var a = manager.CreateAddRect(Vector2.One * 100.0f / 3, pos, CursorRectFlags.ScreenSize);
             a.MouseDefaultCursorShape = idx % 2 == 0 ? Control.CursorShape.Fdiagsize : Control.CursorShape.Bdiagsize;
             areas[idx] = a;
         }
