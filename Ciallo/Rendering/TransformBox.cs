@@ -1,25 +1,34 @@
-﻿using Godot;
+﻿using System.Linq;
+using Godot;
 
 namespace Ciallo.Rendering;
 
 // ReSharper disable once Godot.MissingParameterlessConstructor
-public partial class ImageLayerOverlay : Node2D
+public partial class TransformBox : Node2D
 {
     public Vector2 Size;
+    public Transform2D LocalTransform;
     public StrokeView Wireframe;
     public MultiMeshInstance2D Dots;
 
-    // Note: Transform is set by Node2D, only size is necessary here
-    public ImageLayerOverlay(Vector2 size)
+    public TransformBox(Vector2 size, Transform2D localTransform)
     {
         Size = size;
+        LocalTransform = localTransform;
         Wireframe = new() { Material = AutoloadRendering.WireframeMaterial };
         Wireframe.SetInstanceShaderParameter("overridingColor", AppPreference.StrokeWireframeColor);
 
         Dots = AutoloadRendering.CreateDots();
+        AddChild(Wireframe);
+        AddChild(Dots);
+        UpdateGeometry();
     }
 
-    public override void _Ready()
+    public TransformBox(Vector2 size) : this(size, Transform2D.Identity) // Transform2D.Identity is not static const
+    {
+    }
+
+    public void UpdateGeometry()
     {
         Vector2 half = Size * 0.5f;
         Vector2[] positions =
@@ -30,10 +39,8 @@ public partial class ImageLayerOverlay : Node2D
             new(-half.X, half.Y),
             -half,
         ];
+        positions = positions.Select(p => LocalTransform * p).ToArray();
         Wireframe.SetGeometry(positions, AppPreference.StrokeWireframeRadius);
-        AddChild(Wireframe);
-
         Dots.SetDotGeometry(positions[..4], AppPreference.StrokeDotRadius * 2f);
-        AddChild(Dots);
     }
 }

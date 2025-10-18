@@ -50,10 +50,14 @@ public class NewImageLayerCmd : CommandBase
 
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
-        var layerOverlay = new ImageLayerOverlay(Setting.ImageSize) { Visible = false };
+        var layerOverlay = new TransformBox(Setting.ImageSize) { Visible = false };
         LayerE.Add(layerOverlay);
         worldOverlay.AddChild(layerOverlay);
-        Setting.ImageTransform.Subscribe(layerOverlay.SetTransform).AddTo(layerOverlay);
+        Setting.ImageTransform.Subscribe(t =>
+        {
+            layerOverlay.LocalTransform = t;
+            layerOverlay.UpdateGeometry();
+        }).AddTo(layerOverlay);
 
         // Panel
         var layerContainer = Document.Get<LayerContainer>();
@@ -67,8 +71,8 @@ public class NewImageLayerCmd : CommandBase
         layerContainer.RemoveFree(LayerE);
 
         // Overlay
-        LayerE.Get<ImageLayerOverlay>().QueueFree();
-        LayerE.Remove<ImageLayerOverlay>();
+        LayerE.Get<TransformBox>().QueueFree();
+        LayerE.Remove<TransformBox>();
 
         // View
         Sprite.QueueFree();
