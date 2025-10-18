@@ -12,7 +12,7 @@ namespace Ciallo.Rendering;
 public partial class WorldCursorDetectionArea : Node2D
 {
     private CanvasLayer _canvasLayer;
-    private Control _cursorSwitcher; // This is supposed to be the job of ViewportContainer, but it doesn't reponse even if changing MouseDefaultCursorShape.
+    private Control _cursorSwitcher; // This is supposed to be the job of ViewportContainer, but it doesn't respond even if changing MouseDefaultCursorShape.
 
     public Control.CursorShape MouseDefaultCursorShape { get; set; }
 
@@ -44,7 +44,7 @@ public partial class WorldCursorDetectionArea : Node2D
         {
             Shape = new RectangleShape2D { Size = size },
         });
-        area.Position = flags.HasFlag(CursorRectFlags.CornerPosition) ? position - size * 0.5f : position;
+        area.Position = flags.HasFlag(CursorRectFlags.CornerPosition) ? position + size * 0.5f : position;
 
         return area;
     }
@@ -86,7 +86,7 @@ public partial class WorldCursorDetectionArea : Node2D
 
     public static CursorDetectionArea CreateStroke(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
-        if (points.Count == 1) return CreateRect(points[0], radii[0] * 2 * Vector2.One);
+        if (points.Count == 1) return CreateRect(radii[0] * 2 * Vector2.One, points[0]);
         if (points.Count != radii.Count) throw new ArgumentException("Points and radii count mismatch");
 
         var area = new CursorDetectionArea();
