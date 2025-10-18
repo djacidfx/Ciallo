@@ -27,5 +27,5 @@ public class SelectionManager
 
     [DataMember] public ReactiveProperty<Entity> WorkingBrush = new(new Entity());
 
-    public ObservableList<Entity> SelectedPolylines;
+    public ObservableList<Entity> SelectedPolylines = [];
 }

@@ -28,6 +28,10 @@ public partial class TransformBox : Node2D
     {
     }
 
+    public TransformBox(Vector2 size, Vector2 position) : this(size, new Transform2D(0, position))
+    {
+    }
+
     public void UpdateGeometry()
     {
         Vector2 half = Size * 0.5f;

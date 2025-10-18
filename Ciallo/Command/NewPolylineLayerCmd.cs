@@ -92,4 +92,14 @@ public class NewPolylineLayerCmd : CommandBase
     }
 }
 
-public partial class PolylineAreaHolder : Node2D;
+public partial class PolylineAreaHolder : Node2D
+{
+    public void SetAreaCursor(Control.CursorShape shape)
+    {
+        foreach (var child in this.GetChildren())
+        {
+            var area = (CursorDetectionArea)child;
+            area.MouseDefaultCursorShape = shape;
+        }
+    }
+};

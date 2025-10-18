@@ -1,6 +1,7 @@
 ﻿using System;
 using Ciallo.Command;
 using Ciallo.Data;
+using Ciallo.Geometry;
 using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Frent;
@@ -24,11 +25,28 @@ public class PolylineHover : HoverBase
 
     private IDisposable _hoverSub;
     private Entity _layerE;
+    private TransformBox _transformBox;
+    private Entity _polylineE;
+    
     public override void Start(CursorMotionData data)
     {
         _layerE = SelectionManager.WorkingLayer.Value;
+        // Enable cursor detections on polyline
+        var holder = _layerE.Get<PolylineAreaHolder>();
+        holder.ProcessMode = Node.ProcessModeEnum.Inherit;
+        holder.SetAreaCursor(Control.CursorShape.Move);
+        // Polyline transform
+        if (SelectionManager.SelectedPolylines.Count > 0)
+        {
+            var worldOverlay = Document.Get<WorldOverlay>();
+            // Support single selection currently
+            _polylineE = SelectionManager.SelectedPolylines[0];
 
-        _layerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
+            var geom = _polylineE.Get<StrokeGeometry>();
+            var boundingRect = geom.Points.GetBoundingBox();
+            _transformBox = new TransformBox(boundingRect.Size, boundingRect.GetCenter());
+            worldOverlay.AddChild(_transformBox);
+        }
 
         _hoverSub = Document.Get<WorldCursorDetectionArea>().HoveringArea.Skip(1).Subscribe(area =>
         {
@@ -48,6 +66,8 @@ public class PolylineHover : HoverBase
         _hoverSub.Dispose();
         if (!HoveredPolyline.IsNull) HoveredPolyline.Get<StrokeOverlay>().SetVisible(false);
 
+        _transformBox?.QueueFree();
+        _transformBox = null;
         _layerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
     }
 }
