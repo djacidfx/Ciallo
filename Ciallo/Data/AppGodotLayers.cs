@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace Ciallo.Command;
+namespace Ciallo.Data;
 
 /// <summary>
 /// The layers defined in Godot editor, not those user created layers. 

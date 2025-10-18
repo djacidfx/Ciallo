@@ -1,6 +1,7 @@
 // Ciallo's articulated line shader!
 shader_type canvas_item;
 render_mode unshaded;
+render_mode skip_vertex_transform;
 
 const int Vanilla = 0, Stamp = 1, Airbrush = 2;
 uniform int strokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
@@ -45,7 +46,7 @@ varying flat float segmentLength;
 varying flat float sinTheta;
 varying flat float cosTheta;
 varying flat float tanTheta;
-varying flat float canvasZoom;
+varying flat vec2 scale;
 
 vec2 unpack2floats(float f) {
     uint word = floatBitsToUint(f);
@@ -63,14 +64,11 @@ void vertex() {
 	vec2 ns = unpack2floats(COLOR.y);
 	n0 = ns.x;
 	n1 = ns.y;
-	canvasZoom = length(CANVAS_MATRIX[0].xy); // Cannot support shear (or skew in godot)
-	if(radiusMode > 0){
-		canvasZoom = canvasZoom > canvasZoomThreshold ? canvasZoom : canvasZoomThreshold;
-		r0 /= canvasZoom;
-		r1 /= canvasZoom;
-		n0 *= canvasZoom;
-		n1 *= canvasZoom;
-	}
+	// Trying to be invariant to model scale.
+	vec2 canvasZoom = vec2(length(CANVAS_MATRIX[0].xy), length(CANVAS_MATRIX[1].xy));
+	vec2 modelScale = vec2(length(MODEL_MATRIX[0].xy), length(MODEL_MATRIX[1].xy));
+	scale = canvasZoom * modelScale;
+
 	segmentLength = distance(p1, p0);
 	cosTheta = (r0 - r1)/distance(p0, p1);
 	sinTheta = sqrt(1.0 - cosTheta * cosTheta);
@@ -95,13 +93,12 @@ void vertex() {
 
 	if(!isIll)
 	{
-		p = position +
-        offsetSign.x * r * tangent +
-        offsetSign.y * r * normal * normalTanValue;
+		vec2 offset = offsetSign.x * r * tangent + offsetSign.y * r * normal * normalTanValue;
+		if(radiusMode == 1) offset /= scale;
+		p = position + offset;
 	}
 
-	VERTEX = p;
-	VERTEX = vec4(VERTEX, 0.0, 1.0).xy;
+	VERTEX = (MODEL_MATRIX * vec4(p, 0.0, 1.0)).xy;
 }
 
 float x2n(float x) {
@@ -179,7 +176,8 @@ void fragment() {
 
 		COLOR = overridingColor.a >= 0.0 ? overridingColor : materialColor;
 		//// Anti antialiasing
-		float aaEdge = 0.25 / canvasZoom;
+		float zoom = min(scale.x, scale.y);
+		float aaEdge = 0.25 / zoom;
 		float aaStart = 1.0 - aaEdge;
 		float lambda;
 		if (cosPhi0 < cosTheta) lambda = d0/r0;

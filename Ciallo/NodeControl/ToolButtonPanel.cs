@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Tool;
+using Frent;
 using Godot;
 using R3;
 
@@ -11,7 +12,8 @@ public partial class ToolButtonPanel : Container
     public readonly ReactiveProperty<ITool> ActiveTool = new(null);
     public List<T> GetAllTools<T>() => ToolButtonGroup.GetButtons().Where(b => b.IsVisible()).Cast<T>().ToList();
 
-    public ToolButtonPanel()
+    [OnInstantiate]
+    public void Initialise(Entity document)
     {
         ToolButtonGroup.Pressed += button =>
         {
@@ -20,14 +22,19 @@ public partial class ToolButtonPanel : Container
             ActiveTool.Value = tool;
             tool.OnActivate();
         };
-    }
 
-    public override void _Ready()
-    {
+        // Button group
         foreach (var child in GetChildren())
         {
             var button = (Button)child;
             button.ButtonGroup = ToolButtonGroup;
+        }
+
+        // Assign document
+        foreach (var child in GetChildren())
+        {
+            if (child is not ToolButtonBase button) continue;
+            button.Document = document;
         }
     }
 }

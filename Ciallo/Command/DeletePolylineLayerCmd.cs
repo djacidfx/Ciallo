@@ -2,8 +2,8 @@
 using System.Linq;
 using Ciallo.Data;
 using Ciallo.Rendering;
+using Frent;
 using Godot;
-using Massive;
 
 namespace Ciallo.Command;
 
@@ -29,7 +29,7 @@ public class DeletePolylineLayerCmd : CommandBase
         // TODO: Remove children's ToSerializeTag.
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.RemoveChild(_targetIndex);
-        _targetE.Remove<ToSerializeTag>();
+        _targetE.Detach<ToSerializeTag>();
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
@@ -65,7 +65,7 @@ public class DeletePolylineLayerCmd : CommandBase
         layerTreeControl.CreateInsert(_targetE, _targetIndex);
 
         // Data
-        _targetE.Add<ToSerializeTag>();
+        _targetE.Tag<ToSerializeTag>();
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.InsertChild(_targetIndex, _targetE);
     }

@@ -10,7 +10,7 @@ public class StrokeGeometry
     [DataMember(Order = 0)] public List<Vector2> Points = [];
     [DataMember(Order = 1)] public List<float> Radii = [];
 
-    public StrokeGeometry DeepClone()
+    public StrokeGeometry Clone()
     {
         return new StrokeGeometry()
         {

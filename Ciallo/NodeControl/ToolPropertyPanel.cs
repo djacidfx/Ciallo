@@ -24,7 +24,7 @@ public partial class ToolPropertyPanel : PanelContainer
         {
             var holder = new DocumentToolPropertyContainer();
             holder.VisibleIf(AppWorldManager.WorkingDocument, document);
-            document.Set(holder);
+            document.Add(holder);
             HubBox.AddChild(holder);
 
             var toolManager = document.Get<ToolButtonPanel>();
@@ -35,7 +35,6 @@ public partial class ToolPropertyPanel : PanelContainer
 
                 var container = hub.GetNode<PropertyContainer>("%PropertyContainer");
                 container.QueueFreeChildren();
-                tool.Document = document;
                 tool.DrawProperty(container);
 
                 hub.GetNode<Label>("%ToolNameLabel").Text = tool.ToolName;

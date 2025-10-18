@@ -49,6 +49,7 @@ script = ExtResource("3_j4qnp")
 visible = false
 
 [node name="NewLayer" type="ConfirmationDialog" parent="." groups=["Dialog"]]
+oversampling_override = 1.0
 
 [node name="BrushLibrary" parent="." groups=["Dialog"] instance=ExtResource("5_j4qnp")]
 visible = false
@@ -66,6 +67,7 @@ script = ExtResource("6_fpfj3")
 
 [node name="WarnUser" type="AcceptDialog" parent="." groups=["Dialog"]]
 initial_position = 1
+transient = false
 always_on_top = true
 
 [node name="MainGui" type="VBoxContainer" parent="."]

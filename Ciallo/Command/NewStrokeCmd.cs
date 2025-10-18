@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.Rendering;
+using Frent;
 using Godot;
-using Massive;
 
 namespace Ciallo.Command;
 
@@ -26,9 +26,9 @@ public class NewStrokeCmd : CommandBase
         InitEntity();
 
         // Data
-        StrokeE.Add<ToSerializeTag>();
+        StrokeE.Tag<ToSerializeTag>();
         _layerE.Get<LayerTreeNode>().AddChild(StrokeE);
-        StrokeE.Set<StrokeBrush>(new Entity());
+        StrokeE.Add<StrokeBrush>(new Entity());
 
         // View
         if (_refNodes.Count == 0)
@@ -39,21 +39,31 @@ public class NewStrokeCmd : CommandBase
         var strokeView = (StrokeView)_refNodes[0];
         var layerView = _layerE.Get<PolylineLayerView>();
         layerView.AddChild(strokeView);
-        StrokeE.Set(strokeView);
+        StrokeE.Add(strokeView);
         strokeView.SetOwner(layerView.Owner);
 
         // Overlay
-        if (_refNodes.Count == 1) _refNodes.Add(new StrokeOverlay());
-        var strokeOverlay = (StrokeOverlay)_refNodes[1];
+        if (_refNodes.Count == 1) _refNodes.Add(new StrokeCenterline() { Visible = false });
+        var strokeOverlay = (StrokeCenterline)_refNodes[1];
         var worldOverlay = Document.Get<WorldOverlay>();
         worldOverlay.AddChild(strokeOverlay);
-        StrokeE.Set(strokeOverlay);
+        StrokeE.Add(strokeOverlay);
+
+        // Cursor detection
+        var geom = StrokeE.Get<StrokeGeometry>();
+        var strokeArea = WorldCursorDetectionArea.CreateStroke(geom.Points, geom.Radii);
+        _layerE.Get<PolylineAreaHolder>().AddChild(strokeArea);
+        StrokeE.Add(strokeArea);
     }
 
     public override void Undo()
     {
+        // Cursor detection
+        StrokeE.Get<CursorDetectionArea>().QueueFree();
+        StrokeE.Remove<CursorDetectionArea>();
+
         // Overlay
-        StrokeE.Remove<StrokeOverlay>();
+        StrokeE.Remove<StrokeCenterline>();
         _refNodes[1].GetParent().RemoveChild(_refNodes[1]);
 
         // View
@@ -64,16 +74,16 @@ public class NewStrokeCmd : CommandBase
         // Data
         StrokeE.Remove<StrokeBrush>();
         _layerE.Get<LayerTreeNode>().RemoveChild(^1);
-        StrokeE.Remove<ToSerializeTag>();
+        StrokeE.Detach<ToSerializeTag>();
     }
 
     public Entity InitEntity()
     {
         if (StrokeE.IsNotNull()) return StrokeE;
-        StrokeE = WorkingWorld.CreateEntity();
+        StrokeE = WorkingWorld.Create();
         var node = new LayerTreeNode();
-        StrokeE.Set(new StrokeGeometry());
-        StrokeE.Set(node);
+        StrokeE.Add(new StrokeGeometry());
+        StrokeE.Add(node);
         return StrokeE;
     }
 }

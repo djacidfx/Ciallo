@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Frent;
 using Godot;
-using Massive;
 
 namespace Ciallo.Command;
 
@@ -68,7 +68,7 @@ public partial class WrapperObject(IEnumerable<Entity> entities, IEnumerable<God
         if (entities?.Any() == true)
         {
             foreach (var e in entities)
-                e.Destroy();
+                e.Delete();
         }
 
         if (objects != null)

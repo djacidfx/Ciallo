@@ -1,5 +1,5 @@
 ﻿using System.Runtime.Serialization;
-using Massive;
+using Frent;
 
 namespace Ciallo.Data;
 
@@ -19,8 +19,8 @@ public class EntityWrapper
 
     // public void Add<T>() where T : new() => Value.Add<T>();
     // public void Add<T>(in T component) => Value.Add(component);
-    // public void Set<T>() where T : new() => Value.Set<T>();
-    // public void Set<T>(in T component) => Value.Set(component);
+    // public void Set<T>() where T : new() => Value.Add<T>();
+    // public void Set<T>(in T component) => Value.Add(component);
     // public void Remove<T>() => Value.Remove<T>();
     public bool Has<T>() => Value.Has<T>();
     public T Get<T>() => Value.Get<T>();

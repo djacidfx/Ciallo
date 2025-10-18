@@ -2,8 +2,8 @@
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.Rendering;
+using Frent;
 using Godot;
-using Massive;
 using R3;
 
 namespace Ciallo.Command;
@@ -28,7 +28,7 @@ public class NewPolylineLayerCmd : CommandBase
 
         // Data
         var tree = Document.Get<LayerTreeManager>();
-        LayerE.Add<ToSerializeTag>();
+        LayerE.Tag<ToSerializeTag>();
         tree.Root.AddChild(LayerE);
 
         // Layer panel
@@ -40,13 +40,24 @@ public class NewPolylineLayerCmd : CommandBase
         if (_refObjects.Count == 0) _refObjects.Add(new PolylineLayerView());
         var layerView = (PolylineLayerView)_refObjects[0];
         worldView.AddChild(layerView);
-        LayerE.Set(layerView);
+        LayerE.Add(layerView);
         layerView.SetOwner(worldView);
         LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(layerView.SetVisible).AddTo(layerView);
+
+        // Cursor detection
+        var worldArea = Document.Get<WorldCursorDetectionArea>();
+        var holder = new PolylineAreaHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
+        worldArea.AddChild(holder);
+        LayerE.Add(holder);
     }
 
     public override void Undo()
     {
+        // Cursor detection
+        var holder = LayerE.Get<PolylineAreaHolder>();
+        holder.QueueFree();
+        LayerE.Remove<PolylineAreaHolder>();
+
         // View
         LayerE.Remove<PolylineLayerView>();
         var worldView = Document.Get<WorldView>();
@@ -59,7 +70,7 @@ public class NewPolylineLayerCmd : CommandBase
         // Data
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.RemoveChild(^1);
-        LayerE.Remove<ToSerializeTag>();
+        LayerE.Detach<ToSerializeTag>();
     }
 
     public Entity InitEntity()
@@ -68,15 +79,27 @@ public class NewPolylineLayerCmd : CommandBase
 
         if (LayerE.IsNull())
         {
-            LayerE = WorkingWorld.CreateEntity();
+            LayerE = WorkingWorld.Create();
             var node = new LayerTreeNode()
             {
                 Name = { Value = $"{"Line layer".Tr()} {tree.Root.ChildCount + 1}" },
             };
-            LayerE.Set(_setting);
-            LayerE.Set(node);
+            LayerE.Add(_setting);
+            LayerE.Add(node);
         }
 
         return LayerE;
     }
 }
+
+public partial class PolylineAreaHolder : Node2D
+{
+    public void SetAreaCursor(Control.CursorShape shape)
+    {
+        foreach (var child in this.GetChildren())
+        {
+            var area = (CursorDetectionArea)child;
+            area.MouseDefaultCursorShape = shape;
+        }
+    }
+};

@@ -1,14 +1,12 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Ciallo.Command;
-using Massive;
+using Frent;
 using ObservableCollections;
 using R3;
 
 namespace Ciallo.Data;
-
-using Sys = System.Collections.Generic;
 
 /// <summary>
 /// World and document has one-to-one relationship.
@@ -31,17 +29,16 @@ public static partial class AppWorldManager
         var world = new World();
 
         // Init empty document
-        var i = world.Create();
-        Debug.Assert(i == 0);
-        var document = world.GetEntity(i);
-        document.Add<ToSerializeTag>();
+        var document = world.Create();
 
         // Add managers
-        document.Set(settings);
-        document.Set(new SelectionManager());
-        document.Set(new LayerTreeManager());
-        document.Set(new CommandManager());
-        document.Set(new BrushManager());
+        document.Add(settings);
+        document.Add(new SelectionManager());
+        document.Add(new LayerTreeManager());
+        document.Add(new CommandManager());
+        document.Add(new BrushManager());
+
+        WorldToDocument.Add(world, document);
 
         // Always init first, then add to list
         LoadedWorlds.Add(world);
@@ -60,7 +57,7 @@ public static partial class AppWorldManager
 
     public static void Remove([NotNull] World world)
     {
-        if (!LoadedWorlds.Contains(world)) throw new Sys.KeyNotFoundException("The specified world does not exist.");
+        if (!LoadedWorlds.Contains(world)) throw new KeyNotFoundException("The specified world does not exist.");
 
         // Remove working world
         LoadedWorlds.Remove(world);
@@ -70,7 +67,7 @@ public static partial class AppWorldManager
         world.Document().Get<CommandManager>().Free();
 
         // Dispose world
-        world.Clear();
+        world.Dispose();
     }
 
     public static void Clear()
@@ -82,8 +79,6 @@ public static partial class AppWorldManager
         }
     }
 
-    public static Entity Document([NotNull] this World world)
-    {
-        return world.GetEntity(0);
-    }
+    private static Dictionary<World, Entity> WorldToDocument = [];
+    public static Entity Document([NotNull] this World world) => WorldToDocument[world];
 }

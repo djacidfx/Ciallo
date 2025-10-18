@@ -5,8 +5,8 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.Widget;
+using Frent;
 using Godot;
-using Massive;
 using R3;
 
 /// <summary>
@@ -56,7 +56,7 @@ public partial class LayerContainer : Container
     {
         var layerControl = Create(layerE);
         _rootControl.AddChild(layerControl);
-        layerE.Set(layerControl);
+        layerE.Add(layerControl);
         return layerControl;
     }
 

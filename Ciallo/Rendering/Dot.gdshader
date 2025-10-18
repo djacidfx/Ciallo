@@ -6,10 +6,16 @@ uniform int radiusMode : hint_enum("World", "Canvas") = 0;
 uniform float canvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
 
 void vertex(){
+	float radius = INSTANCE_CUSTOM.r;
 	if(radiusMode == 1){
-		float canvasZoom = length(CANVAS_MATRIX[0].xy); // Cannot support shear (or skew in godot)
-		canvasZoom = canvasZoom > canvasZoomThreshold ? canvasZoom : canvasZoomThreshold;
-		VERTEX /= canvasZoom;
+		vec2 canvasZoom = vec2(length(CANVAS_MATRIX[0].xy), length(CANVAS_MATRIX[1].xy));
+		vec2 modelScale = vec2(length(MODEL_MATRIX[0].xy), length(MODEL_MATRIX[1].xy));
+		
+		canvasZoom.x = max(canvasZoom.x, canvasZoomThreshold);
+		canvasZoom.y = max(canvasZoom.y, canvasZoomThreshold);
+		
+		VERTEX /= canvasZoom * modelScale;
+		VERTEX *= radius;
 	}
 }
 

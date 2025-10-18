@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.Rendering;
+using Frent;
 using Godot;
-using Massive;
 using R3;
 
 namespace Ciallo.Command;
@@ -27,14 +27,14 @@ public class NewBrushCmd : CommandBase
     {
         InitEntity();
         // Data
-        BrushE.Add<ToSerializeTag>();
+        BrushE.Tag<ToSerializeTag>();
         var bm = Document.Get<BrushManager>();
         bm.Add(BrushE);
 
         // Material
         var material = new BrushMaterial();
         material.ObserveBrushSetting(BrushE.Get<BrushSetting>());
-        BrushE.Set(material);
+        BrushE.Add(material);
 
         // UI
         // Note: Should have a dedicate custom widget to handle this.
@@ -67,15 +67,15 @@ public class NewBrushCmd : CommandBase
 
         // Data
         bm.Remove(BrushE);
-        BrushE.Remove<ToSerializeTag>();
+        BrushE.Detach<ToSerializeTag>();
     }
 
     public Entity InitEntity()
     {
         if (BrushE.IsNull())
         {
-            BrushE = WorkingWorld.CreateEntity();
-            BrushE.Set(_setting);
+            BrushE = WorkingWorld.Create();
+            BrushE.Add(_setting);
         }
 
         return BrushE;

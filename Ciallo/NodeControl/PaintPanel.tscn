@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" path="res://Rendering/WorldView.tscn" id="4_3trrc"]
 [ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Rendering/Checkerboard.gdshader" id="5_ercqw"]
 [ext_resource type="Script" uid="uid://ci7loyp0at1cr" path="res://Rendering/WorldOverlay.cs" id="6_je3d8"]
-[ext_resource type="Script" uid="uid://dc5n5euy0qfdj" path="res://Rendering/WorldButtonManager.cs" id="7_8h3gs"]
+[ext_resource type="Script" uid="uid://dc5n5euy0qfdj" path="res://Rendering/WorldCursorDetectionArea.cs" id="7_8h3gs"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_je3d8"]
 shader = ExtResource("5_ercqw")
@@ -119,8 +119,18 @@ ignore_rotation = false
 unique_name_in_owner = true
 script = ExtResource("6_je3d8")
 
-[node name="WorldButtonManager" type="Node2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
+[node name="WorldCursorDetectionArea" type="Node2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
 unique_name_in_owner = true
 script = ExtResource("7_8h3gs")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="VBoxContainer/WorldViewContainer/SubViewport/WorldButtonManager"]
+[node name="CanvasLayer" type="CanvasLayer" parent="VBoxContainer/WorldViewContainer/SubViewport/WorldCursorDetectionArea"]
+
+[node name="ControlCoverWholeCanvas" type="Control" parent="VBoxContainer/WorldViewContainer/SubViewport/WorldCursorDetectionArea/CanvasLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3

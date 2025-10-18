@@ -1,4 +1,4 @@
-<Project Sdk="Godot.NET.Sdk/4.5.0">
+<Project Sdk="Godot.NET.Sdk/4.5.1">
     <PropertyGroup>
         <EnableDynamicLoading>true</EnableDynamicLoading>
         <LangVersion>default</LangVersion>
@@ -8,6 +8,7 @@
         <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="Frent" Version="0.5.9-beta"/>
         <PackageReference Include="GodotSharp.SourceGenerators" Version="2.6.0-250721-1041.Release"/>
         <PackageReference Include="Humanizer" Version="3.0.0-beta.96"/>
         <PackageReference Include="MessagePack" Version="3.1.4"/>
@@ -27,9 +28,6 @@
     <ItemGroup>
         <Folder Include="Localization\*.csv"/>
         <None Include="**\*.gdshader"/>
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\massive-ecs\Runtime\Massive.csproj"/>
     </ItemGroup>
 
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">

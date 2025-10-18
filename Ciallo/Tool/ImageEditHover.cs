@@ -1,18 +1,17 @@
-﻿using System.Collections.Immutable;
-using System.Linq;
+﻿using System;
 using Ciallo.Data;
 using Ciallo.NodeControl;
 using Ciallo.Rendering;
-using Godot;
-using Massive;
+using Frent;
 
 namespace Ciallo.Tool;
 
 public class ImageEditHover : HoverBase
 {
-    public Button RotationButton;
-    public Button MoveButton;
-    public ImmutableArray<Button> CornerButtons = [];
+    public CursorDetectionArea RotationArea;
+    public CursorDetectionArea TranslationArea;
+    public CursorDetectionArea[] CornerAreas = [];
+    private Entity _layerE;
 
     public override bool CanInteract
     {
@@ -25,39 +24,29 @@ public class ImageEditHover : HoverBase
 
     public override void Start(CursorMotionData data)
     {
-        var layerE = SelectionManager.WorkingLayer.Value;
-        var setting = layerE.Get<ImageLayerSetting>();
-        var manager = Document.Get<WorldButtonManager>();
+        _layerE = SelectionManager.WorkingLayer.Value;
+        var setting = _layerE.Get<ImageLayerSetting>();
+        var manager = Document.Get<WorldCursorDetectionArea>();
 
-        // Rotation button
-        RotationButton = manager.AddRectButton(setting.Position, setting.ImageSize);
-        RotationButton.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-        RotationButton.Rotation = setting.Rotation;
-        RotationButton.Scale = setting.Scale * 1.2f;
+        _layerE.Get<TransformOverlayBox>().Visible = true;
 
-        // Image move button
-        MoveButton = manager.AddRectButton(setting.Position, setting.ImageSize);
-        MoveButton.MouseDefaultCursorShape = Control.CursorShape.Drag;
-        MoveButton.Rotation = setting.Rotation;
-        MoveButton.Scale = setting.Scale;
-
-        // Corner buttons
-        var corners = layerE.Get<ImageLayerSetting>().GetCorners();
-        var buttons = new Button[corners.Length];
-        foreach (var (idx, pos) in corners.Index())
-        {
-            var b = manager.AddRectButton(pos, 100.0f / 3, WorldButtonFlags.ScreenSize);
-            b.MouseDefaultCursorShape = idx % 2 == 0 ? Control.CursorShape.Fdiagsize : Control.CursorShape.Bdiagsize;
-            buttons[idx] = b;
-        }
-        CornerButtons = [..buttons];
+        // Create areas
+        CursorDetectionArea[] areas = manager.CreateAddTransformAreas(setting.ImageSize, setting.ImageTransform.Value);
+        RotationArea = areas[0];
+        TranslationArea = areas[1];
+        CornerAreas = areas[2..6];
     }
 
     public override void Cancel()
     {
-        Document.Get<WorldButtonManager>().Clear();
-        RotationButton = null;
-        MoveButton = null;
-        CornerButtons = [];
+        RotationArea.QueueFree();
+        TranslationArea.QueueFree();
+
+        Array.ForEach(CornerAreas, b => b.QueueFree());
+        RotationArea = null;
+        TranslationArea = null;
+        CornerAreas = [];
+        _layerE.Get<TransformOverlayBox>().Visible = false;
+        _layerE = Entity.Null;
     }
 }

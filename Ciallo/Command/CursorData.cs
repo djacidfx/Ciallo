@@ -23,4 +23,6 @@ public struct CursorMotionData
     public Vector2 TiltDelta;
 
     public InputEventMouseMotion RawData;
+    public Vector2 PrevWorldPosition => WorldPosition - WorldDelta;
+    public Vector2 PrevScreenPosition => ScreenPosition - ScreenDelta;
 }
