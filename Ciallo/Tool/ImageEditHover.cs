@@ -28,7 +28,7 @@ public class ImageEditHover : HoverBase
         var setting = _layerE.Get<ImageLayerSetting>();
         var manager = Document.Get<WorldCursorDetectionArea>();
 
-        _layerE.Get<TransformBox>().Visible = true;
+        _layerE.Get<TransformOverlayBox>().Visible = true;
 
         // Create areas
         CursorDetectionArea[] areas = manager.CreateAddTransformAreas(setting.ImageSize, setting.ImageTransform.Value);
@@ -46,7 +46,7 @@ public class ImageEditHover : HoverBase
         RotationArea = null;
         TranslationArea = null;
         CornerAreas = [];
-        _layerE.Get<TransformBox>().Visible = false;
+        _layerE.Get<TransformOverlayBox>().Visible = false;
         _layerE = Entity.Null;
     }
 }

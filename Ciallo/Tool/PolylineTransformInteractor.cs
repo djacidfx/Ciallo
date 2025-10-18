@@ -45,7 +45,7 @@ public class PolylineTransformInteractor(PolylineHover hover) : InteractorBase
     private Transform2D _currTransform;
     private Vector2[] _startCorners;
     private Rect2 _origRect;
-    private TransformBox _transformBox;
+    private TransformOverlayBox _transformBox;
 
     public override void Start(CursorButtonData data)
     {
@@ -78,7 +78,7 @@ public class PolylineTransformInteractor(PolylineHover hover) : InteractorBase
                 new(center.X + half.X, center.Y - half.Y),
             ];
 
-            _transformBox = new TransformBox(_origRect.Size, _origRect.GetCenter());
+            _transformBox = new TransformOverlayBox(_origRect.Size, _origRect.GetCenter());
             Document.Get<WorldOverlay>().AddChild(_transformBox);
         }
     }

@@ -27,7 +27,7 @@ public class PolylineHover : HoverBase
 
     private IDisposable _hoverSub;
     private Entity _layerE;
-    private TransformBox _transformBox;
+    private TransformOverlayBox _transformBox;
     private Entity _polylineE;
     private Node2D _midAxis;
 
@@ -55,7 +55,7 @@ public class PolylineHover : HoverBase
             // transform box overlay
             var geom = _polylineE.Get<StrokeGeometry>();
             var rect = geom.Points.GetBoundingBox();
-            _transformBox = new TransformBox(rect.Size, rect.GetCenter());
+            _transformBox = new TransformOverlayBox(rect.Size, rect.GetCenter());
             worldOverlay.AddChild(_transformBox);
 
             // transform cursor area

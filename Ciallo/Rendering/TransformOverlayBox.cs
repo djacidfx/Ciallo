@@ -4,14 +4,14 @@ using Godot;
 namespace Ciallo.Rendering;
 
 // ReSharper disable once Godot.MissingParameterlessConstructor
-public partial class TransformBox : Node2D
+public partial class TransformOverlayBox : Node2D
 {
     public Vector2 Size;
     public Transform2D LocalTransform;
     public StrokeView Wireframe;
     public MultiMeshInstance2D Dots;
 
-    public TransformBox(Vector2 size, Transform2D localTransform)
+    public TransformOverlayBox(Vector2 size, Transform2D localTransform)
     {
         Size = size;
         LocalTransform = localTransform;
@@ -24,11 +24,11 @@ public partial class TransformBox : Node2D
         UpdateGeometry();
     }
 
-    public TransformBox(Vector2 size) : this(size, Transform2D.Identity) // Transform2D.Identity is not static const
+    public TransformOverlayBox(Vector2 size) : this(size, Transform2D.Identity) // Transform2D.Identity is not static const
     {
     }
 
-    public TransformBox(Vector2 size, Vector2 position) : this(size, new Transform2D(0, position))
+    public TransformOverlayBox(Vector2 size, Vector2 position) : this(size, new Transform2D(0, position))
     {
     }
 
