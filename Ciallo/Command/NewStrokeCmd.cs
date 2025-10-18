@@ -43,8 +43,8 @@ public class NewStrokeCmd : CommandBase
         strokeView.SetOwner(layerView.Owner);
 
         // Overlay
-        if (_refNodes.Count == 1) _refNodes.Add(new StrokeOverlay() { Visible = false });
-        var strokeOverlay = (StrokeOverlay)_refNodes[1];
+        if (_refNodes.Count == 1) _refNodes.Add(new StrokeCenterline() { Visible = false });
+        var strokeOverlay = (StrokeCenterline)_refNodes[1];
         var worldOverlay = Document.Get<WorldOverlay>();
         worldOverlay.AddChild(strokeOverlay);
         StrokeE.Add(strokeOverlay);
@@ -63,7 +63,7 @@ public class NewStrokeCmd : CommandBase
         StrokeE.Remove<CursorDetectionArea>();
 
         // Overlay
-        StrokeE.Remove<StrokeOverlay>();
+        StrokeE.Remove<StrokeCenterline>();
         _refNodes[1].GetParent().RemoveChild(_refNodes[1]);
 
         // View

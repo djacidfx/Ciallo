@@ -38,7 +38,7 @@ public class SetStrokeGeometryCmd : CommandBase
         _strokeE.Get<StrokeView>().SetGeometry(_newGeometry.Points, _newGeometry.Radii);
 
         // Overlay
-        _strokeE.Get<StrokeOverlay>().SetGeometry(_newGeometry.Points, _newGeometry.Radii);
+        _strokeE.Get<StrokeCenterline>().SetGeometry(_newGeometry.Points, _newGeometry.Radii);
 
         // Cursor detection
         _strokeE.Get<CursorDetectionArea>().SetStrokeGeometry(_newGeometry.Points, _newGeometry.Radii);
@@ -50,7 +50,7 @@ public class SetStrokeGeometryCmd : CommandBase
         _strokeE.Get<CursorDetectionArea>().SetStrokeGeometry(_oldGeometry.Points, _oldGeometry.Radii);
 
         // Overlay
-        _strokeE.Get<StrokeOverlay>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
+        _strokeE.Get<StrokeCenterline>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
 
         // View
         _strokeE.Get<StrokeView>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
