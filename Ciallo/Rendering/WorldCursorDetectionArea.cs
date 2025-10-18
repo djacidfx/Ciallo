@@ -148,6 +148,31 @@ public partial class WorldCursorDetectionArea : Node2D
         var points = GetWorld2D().DirectSpaceState.IntersectPoint(pp, 32);
         SetHoveringArea(points.Count > 0 ? TopMostFromHits(points) : null);
     }
+    public CursorDetectionArea[] CreateAddTransformAreas(Vector2 size, Transform2D transform)
+    {
+        var rotation = CreateAddRect(size, transform.ScaledLocal(new(1.2f, 1.2f)));
+        rotation.MouseDefaultCursorShape = Control.CursorShape.Drag;
+        var translation = CreateAddRect(size, transform);
+        translation.MouseDefaultCursorShape = Control.CursorShape.Move;
+
+        var half = size * 0.5f;
+        Vector2[] cornerPos =
+        [
+            transform * -half,
+            transform * new Vector2(half.X, -half.Y),
+            transform * half,
+            transform * new Vector2(-half.X, half.Y)
+        ];
+        var corners = new CursorDetectionArea[cornerPos.Length];
+        foreach (var (idx, pos) in cornerPos.Index())
+        {
+            var a = CreateAddRect(Vector2.One * 100.0f / 3, pos, CursorRectFlags.ScreenSize);
+            a.MouseDefaultCursorShape = idx % 2 == 0 ? Control.CursorShape.Fdiagsize : Control.CursorShape.Bdiagsize;
+            corners[idx] = a;
+        }
+
+        return [rotation, translation, ..corners];
+    }
 }
 
 [Flags]

@@ -56,6 +56,7 @@ public partial class SelectTool : CommonToolBase
                 return State.Active;
             });
 
+        // Image layer
         ToolStateMachine.Configure(State.EditingImageLayer).SubstateOf(State.Active)
             .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {
@@ -68,6 +69,7 @@ public partial class SelectTool : CommonToolBase
                 HoverInteractor = null;
             });
 
+        // Polyline layer
         ToolStateMachine.Configure(State.EditingPolylineLayer).SubstateOf(State.Active)
             .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {

@@ -13,7 +13,7 @@ public class ImageTransformInteractor : InteractorBase
     {
         get
         {
-            if (_hover.RotationArea == null || _hover.MoveArea == null || _hover.CornerAreas.Count == 0)
+            if (_hover.RotationArea == null || _hover.MoveArea == null || _hover.CornerAreas.Length == 0)
                 return false;
 
             if (_hover.RotationArea.IsHovered)
@@ -26,7 +26,7 @@ public class ImageTransformInteractor : InteractorBase
                 _transformType = 1;
                 return true;
             }
-            for (int i = 0; i < _hover.CornerAreas.Count; i++)
+            for (int i = 0; i < _hover.CornerAreas.Length; i++)
             {
                 if (_hover.CornerAreas[i].IsHovered)
                 {

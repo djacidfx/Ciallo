@@ -1,10 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System;
 using Ciallo.Data;
 using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Frent;
-using Godot;
 
 namespace Ciallo.Tool;
 
@@ -12,7 +10,7 @@ public class ImageEditHover : HoverBase
 {
     public CursorDetectionArea RotationArea;
     public CursorDetectionArea MoveArea;
-    public List<CursorDetectionArea> CornerAreas = [];
+    public CursorDetectionArea[] CornerAreas = [];
     private Entity _layerE;
 
     public override bool CanInteract
@@ -33,31 +31,18 @@ public class ImageEditHover : HoverBase
         _layerE.Get<TransformBox>().Visible = true;
 
         // Create areas
-        // Rotation
-        RotationArea = manager.CreateAddRect(setting.ImageSize, setting.ImageTransform.Value.ScaledLocal(new(1.2f, 1.2f)));
-        RotationArea.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-
-        // Image move
-        MoveArea = manager.CreateAddRect(setting.ImageSize, setting.ImageTransform.Value);
-        MoveArea.MouseDefaultCursorShape = Control.CursorShape.Drag;
-
-        // Corner
-        var corners = _layerE.Get<ImageLayerSetting>().GetCorners();
-        var areas = new CursorDetectionArea[corners.Length];
-        foreach (var (idx, pos) in corners.Index())
-        {
-            var a = manager.CreateAddRect(Vector2.One * 100.0f / 3, pos, CursorRectFlags.ScreenSize);
-            a.MouseDefaultCursorShape = idx % 2 == 0 ? Control.CursorShape.Fdiagsize : Control.CursorShape.Bdiagsize;
-            areas[idx] = a;
-        }
-        CornerAreas = [..areas];
+        CursorDetectionArea[] areas = manager.CreateAddTransformAreas(setting.ImageSize, setting.ImageTransform.Value);
+        RotationArea = areas[0];
+        MoveArea = areas[1];
+        CornerAreas = areas[2..6];
     }
 
     public override void Cancel()
     {
         RotationArea.QueueFree();
         MoveArea.QueueFree();
-        CornerAreas.ForEach(b => b.QueueFree());
+
+        Array.ForEach(CornerAreas, b => b.QueueFree());
         RotationArea = null;
         MoveArea = null;
         CornerAreas = [];
