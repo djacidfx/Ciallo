@@ -2,7 +2,6 @@
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
-using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -31,7 +30,7 @@ public class PolylineHover : HoverBase
     private Entity _polylineE;
     private Node2D _midAxis;
 
-    public override void Start(CursorMotionData data)
+    public override void Start()
     {
         _layerE = SelectionManager.WorkingLayer.Value;
         // Enable cursor detections on polyline
@@ -80,7 +79,7 @@ public class PolylineHover : HoverBase
         });
     }
 
-    public override void Cancel()
+    public override void End()
     {
         _hoverSub.Dispose();
 

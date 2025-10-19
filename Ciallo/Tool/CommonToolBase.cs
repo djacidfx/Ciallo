@@ -1,5 +1,4 @@
-﻿using System;
-using Ciallo.Command;
+﻿using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.NodeControl;
 using Godot;
@@ -63,7 +62,8 @@ public abstract partial class CommonToolBase : ToolButtonBase
         RightClick,
         RightRelease,
         Move,
-        Cancel
+        Cancel,
+        RefreshHover,
     }
 
     private readonly StateMachine<State, Event> _machine = new(State.Idle);
@@ -89,13 +89,17 @@ public abstract partial class CommonToolBase : ToolButtonBase
         _machine.Configure(State.Idle)
             .PermitIf(_etLeftClick, State.LeftInteracting, _ => LeftInteractor?.CanInteract == true)
             .PermitIf(_etRightClick, State.RightInteracting, _ => RightInteractor?.CanInteract == true)
-            .PermitIf(_etMove, State.HoverInteracting, _ => HoverInteractor?.CanInteract == true);
+            .PermitIf(_etMove, State.HoverInteracting, _ => HoverInteractor?.CanInteract == true)
+            .PermitIf(Event.RefreshHover, State.HoverInteracting, () => HoverInteractor?.CanInteract == true);
+
         _machine.Configure(State.HoverInteracting)
-            .OnEntryFrom(_etMove, data => HoverInteractor.Start(data))
+            .OnEntry(() => HoverInteractor.Start())
             .PermitIf(_etLeftClick, State.LeftInteracting, _ => LeftInteractor?.CanInteract == true)
             .PermitIf(_etRightClick, State.RightInteracting, _ => RightInteractor?.CanInteract == true)
+            .PermitReentry(Event.RefreshHover)
             .Permit(Event.Cancel, State.Idle)
-            .OnExit(() => HoverInteractor.Cancel());
+            .OnExit(() => HoverInteractor.End());
+
         _machine.Configure(State.LeftInteracting)
             .OnEntryFrom(_etLeftClick, data =>
             {
@@ -111,6 +115,7 @@ public abstract partial class CommonToolBase : ToolButtonBase
                 else LeftInteractor.End((CursorButtonData)t.Parameters[0]);
                 AfterLeftEnd();
             });
+
         _machine.Configure(State.RightInteracting)
             .OnEntryFrom(_etRightClick, data =>
             {
@@ -165,17 +170,20 @@ public abstract partial class CommonToolBase : ToolButtonBase
         if (AppActions.CancelInteraction.IsJustPressed) FireCancel();
     }
 
-    private IDisposable _subToWorkingLayer;
+    private CompositeDisposable _subs;
     public override void OnActivate()
     {
-        var sm = Document.Get<SelectionManager>();
-        _subToWorkingLayer = sm.WorkingLayer.Skip(1).Subscribe(_ => FireCancel());
+        _subs = new();
+        Document.Get<SelectionManager>().WorkingLayer.Skip(1).Subscribe(_ => FireCancel()).AddTo(_subs);
+        Document.Get<CommandManager>().SignalAsObservable(UndoRedo.SignalName.VersionChanged)
+            .Subscribe(_ => FireRefreshHover()).AddTo(_subs);
     }
     public override void OnDeactivate()
     {
         FireCancel();
-        _subToWorkingLayer.Dispose();
+        _subs.Dispose();
     }
 
     public void FireCancel() => _machine.Fire(Event.Cancel);
+    public void FireRefreshHover() => _machine.Fire(Event.RefreshHover);
 }

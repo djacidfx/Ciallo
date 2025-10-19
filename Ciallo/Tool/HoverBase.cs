@@ -1,26 +1,26 @@
-﻿using Ciallo.NodeControl;
+﻿using Ciallo.Data;
+using Ciallo.NodeControl;
+using Frent;
 
 namespace Ciallo.Tool;
 
-public abstract class HoverBase : InteractorBase
+public abstract class HoverBase
 {
-    // Optional to implement
-    public virtual void Start(CursorMotionData data)
+    public World WorkingWorld => AppWorldManager.WorkingWorld.Value;
+    public Entity Document => WorkingWorld.Document();
+    public SelectionManager SelectionManager => Document.Get<SelectionManager>();
+
+    public abstract bool CanInteract { get; }
+
+    public virtual void Start()
     {
     }
 
-    public override void Interacting(CursorMotionData _)
-    {
-    }
-
-    // Don't implement
-    public sealed override void End(CursorButtonData _)
-    {
-    }
-
-    public sealed override void Start(CursorButtonData _)
+    public virtual void Interacting(CursorMotionData _)
     {
     }
 
     // Must implement cancel
+    // Called after ESC pressed, switch tool, switch layer.
+    public abstract void End();
 }
