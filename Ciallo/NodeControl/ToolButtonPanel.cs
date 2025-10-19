@@ -42,7 +42,7 @@ public partial class ToolButtonPanel : Container
     {
         var tool = (ITool)ToolButtonGroup.GetPressedButton();
         tool?.OnDeactivate();
-        ToolButtonGroup.GetPressedButton().SetPressed(false);
+        ToolButtonGroup.GetPressedButton()?.SetPressed(false);
         ActiveTool.Value = null;
     }
 }
