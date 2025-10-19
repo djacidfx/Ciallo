@@ -5,7 +5,7 @@ on:
       - main
 
 env:
-  GODOT_VERSION: 4.5.stable.mono
+  GODOT_VERSION: 4.5.1.stable.mono
   EXPORT_NAME: Ciallo
   PROJECT_PATH: ./Ciallo
 
@@ -14,7 +14,7 @@ jobs:
     name: Build
     runs-on: ubuntu-24.04
     container:
-      image: barichello/godot-ci:mono-4.5
+      image: barichello/godot-ci:mono-4.5.1
     steps:
       - name: Checkout
         uses: actions/checkout@v5

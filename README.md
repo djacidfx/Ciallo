@@ -101,7 +101,7 @@ The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", an
 ### Coding frameworks/libraries
 
 - [Godot C#](https://godotengine.org/): [Why godot?](#tech-faq)
-- [Massive-ecs](https://github.com/nilpunch/massive-ecs): Unity-like (gameobject/entity) component pattern (ECS library without need for the 'S').
+- [Frent](https://github.com/itsBuggingMe/Frent): Unity-like (gameobject/entity) component pattern (ECS library without need for the 'S').
 - [CGAL](https://www.cgal.org/): Complex geometry operations.
 - [R3](https://github.com/Cysharp/R3): Signal on steroids and reactive programming.
 - [GdUnit4](https://github.com/MikeSchulze/gdUnit4): Unit test framework.

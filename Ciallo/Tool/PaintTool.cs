@@ -131,14 +131,14 @@ public class PaintHover : HoverBase
 {
     public override bool CanInteract => true;
 
-    public override void Start(CursorMotionData _)
+    public override void Start()
     {
         var layerE = Document.Get<SelectionManager>().WorkingLayer.Value;
         bool layerValid = layerE.IsNotNull() && layerE.Has<PolylineLayerSetting>();
         Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = layerValid ? Control.CursorShape.Cross : Control.CursorShape.Forbidden;
     }
 
-    public override void Cancel()
+    public override void End()
     {
         Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = Control.CursorShape.Arrow;
     }

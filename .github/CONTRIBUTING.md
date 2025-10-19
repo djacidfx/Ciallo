@@ -14,13 +14,12 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
   - [ ] More brushes
   - [ ] More brush parameters
   - [x] Paint stabilizer
-  - [ ] Resize brush interactor
 - [ ] Paint fill tool
 - [ ] Vector fill tool
   - [x] CGAL C++ code
   - [ ] Integration
-- [ ] Selection/move tool
-  - [ ] Rect transform (control + T mode)
+- [x] Selection/move tool
+  - [x] Rect transform
   - [ ] Line binding system (Bézier curve only)
     - [x] Bézier curve geometry
   - [x] Polyline overlay rendering
@@ -78,17 +77,16 @@ So if you have solid experience in VS Code or Visual Studio to script Godot C#. 
 Designing professional-grade software architectures often takes decades of experience, so my implementations may seem noob trying hard.
 Please contact me if you have recommendations for improvement.
 
-### Godot 2D features
+### Godot 2D
 
-Ciallo will use the vast majority of Godot feature for developing a 2D game, and heavily use nearly all types of GUI control node.
+Ciallo uses the vast majority of Godot features for developing a 2D game, and heavily uses nearly all types of GUI control nodes.
 So every piece of experience you have in 2D game development is helpful, and skills you learn from Ciallo can also be applied your future game development.
 
-### Component pattern and Massive ECS library
-Ciallo heavily uses the [massive-ecs](https://github.com/nilpunch/massive-ecs) library for realizing component pattern in almost every piece of code.
-Make sure you understand the component pattern thoery [(tutorial)](https://gameprogrammingpatterns.com/component.html),
-and the Massive library [documentation](https://github.com/nilpunch/massive-ecs/wiki/Entity-Component-System).
-> __Note__:
-> Ciallo uses Arch for writing clean code, but not for CPU-cache optimization (the "S" part of ECS).
+### Component pattern and Frent ECS library
+Ciallo heavily uses the [frent](https://github.com/itsBuggingMe/Frent) library for realizing component pattern in almost every piece of code.
+Make sure you understand the component pattern theory [(tutorial)](https://gameprogrammingpatterns.com/component.html),
+and the first page of the frent library [documentation](https://itsbuggingme.github.io/Frent/docs/ecf.html).
+
 
 See the `AppWorldManager` class. Each user document is stored and managed by a `World` object.
 Each `World` object creates an entity that stores "document-level singletons" data.
@@ -112,8 +110,7 @@ An ECS library is a very nice fit after ignoring the "s" part (cache-friendly sy
 In fact, if you search for a 3rd party library for component pattern, an ECS library is the only choice. There are no dedicate libraries for component pattern.
 
 I used EnTT for my C++ project (undoubtedly overdesigned in that project).
-And when I started C#, I searched for a C# ECS library similar to EnTT, first tried Arch then switch to Massive for sparse set.
-There are other C# ECS libraries, but they are either Unity-specific or force users to write the "System" code.
+And when I started C#, I searched for a C# ECS library similar to EnTT, tried Arch and Massive then switch to Frent.
 
 </details>
 
@@ -131,7 +128,7 @@ So I think this design is reasonable.
 Ciallo heavily uses [R3](https://github.com/Cysharp/R3) library's `ReactiveProperty` implement two-way binding between data and UI.
 You can find code like `colorButton.BindColor(ReactiveProperty<Color> color)` in UI code to intimate WPF's xaml binding behavior.
 
-R3's document is terrible. I put a lot of effort only to take a very basic grasp. Luckily, you don't have to learn too much about R3 to start.
+R3's document is not written for beginners. I put a lot of effort only to take a very basic grasp. Luckily, you don't have to learn too much about R3/ReactiveProgramming to start.
 Just google for what is ReactiveProperty, two-way binding, or MVVM pattern.
 Then you understand most of the R3 usage in Ciallo.
 
@@ -140,16 +137,28 @@ If you have to understand how I handle dragging mouse input with R3 (reactive pr
 1. Know [reactive programming](https://gist.github.com/staltz/868e7e9bc2a7b8c1f754) concept first.
 2. Then read [UniRx](https://github.com/neuecc/UniRx) to know the former version of R3.
 3. Reference [ReactiveX operator document](https://reactivex.io/documentation/operators.html) to choose suitable operators.
-4. Make hard guess on a very unintuitive solution (and still being buggy).
+4. Make hard guess on the problems to solve.
 
 ### MVP pattern
 For those elements (strokes, polygons) visible on the canvas. They hold complex data not suitable for two-way binding.
 Ciallo separates related code into the Data(Model), Rendering(View) and Command(Presenter).
 You can find corresponding folders in the project directory.
 
-The interaction logic between them can be explained by the [MVP pattern](https://www.geeksforgeeks.org/android/mvp-model-view-presenter-architecture-pattern-in-android-with-example/).
-Create command objects to change both data and view.
+The architecture can be explained by the [MVP pattern](https://www.geeksforgeeks.org/android/mvp-model-view-presenter-architecture-pattern-in-android-with-example/).
+The command objects manage both data and view.
 As the "Command" name suggests, it also implements the undo/redo system.
+
+Rendering folder has `*View` node types to render actual objects.
+Command folder has `*Cmd` types inheriting from `CommandBase` and implementing `Do`, `Undo` methods. The `CommandBase` internally utilizes Godot [`UndoRedo` object](https://docs.godotengine.org/en/stable/classes/class_undoredo.html).
+
+### Data serialization and MessagePack
+Data uses [MessagePack](https://github.com/MessagePack-CSharp/MessagePack-CSharp) library with C# built-in [DataContract] to serialize data into `.ciallo` file.
+No DTO by design.
+The mechanism is combined with the component system:
+- When an entity is tagged with `ToSerializeTag`, it will be serialized to .Ciallo files.
+- When its components are attributed with `[ToSerialize]` (and also [DataContract] when necessary). these components are serialized.
+- An entity without `ToSerializeTag` but has `[ToSerialize]` component won't be serialized, including entity itself and its components.
+
 
 ## Code style
 See my [instruction](../Ciallo/.github/copilot-instructions.md) to copilot.

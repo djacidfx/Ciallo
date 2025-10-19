@@ -37,4 +37,12 @@ public partial class ToolButtonPanel : Container
             button.Document = document;
         }
     }
+
+    public void DeactivateTool()
+    {
+        var tool = (ITool)ToolButtonGroup.GetPressedButton();
+        tool?.OnDeactivate();
+        ToolButtonGroup.GetPressedButton()?.SetPressed(false);
+        ActiveTool.Value = null;
+    }
 }

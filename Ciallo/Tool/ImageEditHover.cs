@@ -1,6 +1,5 @@
 ﻿using System;
 using Ciallo.Data;
-using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Frent;
 
@@ -22,7 +21,7 @@ public class ImageEditHover : HoverBase
         }
     }
 
-    public override void Start(CursorMotionData data)
+    public override void Start()
     {
         _layerE = SelectionManager.WorkingLayer.Value;
         var setting = _layerE.Get<ImageLayerSetting>();
@@ -37,7 +36,7 @@ public class ImageEditHover : HoverBase
         CornerAreas = areas[2..6];
     }
 
-    public override void Cancel()
+    public override void End()
     {
         RotationArea.QueueFree();
         TranslationArea.QueueFree();

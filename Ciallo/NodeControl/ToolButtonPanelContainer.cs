@@ -21,7 +21,9 @@ public partial class ToolButtonPanelContainer : Container
 
         AppWorldManager.LoadedWorlds.ObserveRemove().Select(et => et.Value.Document()).Subscribe(document =>
         {
-            document.Get<ToolButtonPanel>().QueueFree();
+            var panel = document.Get<ToolButtonPanel>();
+            panel.DeactivateTool();
+            panel.QueueFree();
             document.Remove<ToolButtonPanel>();
         }).AddTo(this);
     }

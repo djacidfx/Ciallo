@@ -2,6 +2,7 @@
 
 ## Guidelines
 - No defensive programming. Follow the "Let It Crash" philosophy.
+  - Every null check and try-catch imply possible null values or errors raised by user's input.
   - About ["Let It Crash"](https://stackoverflow.com/questions/4393197/erlangs-let-it-crash-philosophy-applicable-elsewhere).
   - Copilot, please stop adding redundant boundary checks. C# lists/arrays will throw on their own, unlike in C++.
   - I'm still learning how to make Ciallo robust while following this philosophy.
@@ -9,7 +10,14 @@
 - Zero memory leaks.
   - After closing Ciallo's window in Rider debug, make sure zero Godot warning messages in the Rider console.
   - Running project in Godot editor seems lacking of necessary check. Must in Rider debug.
-  - Sometimes the warnings are not your fault. Ask for review.
+
+### Solo development
+Following guidelines are suitable for solo development or tiny team. May have to be changed in the future.
+
+- Architect and avoid encapsulation
+  - Encapsulation costs efforts and flexibility.
+  - Architect systems and consider each system as a tool.
+    - Tools always need to be fine-tuned, over encapsulation (make some key stuff `private`) makes the fine-tune hard to achieve.  
 
 ## Details
 - Global variables or static classes (that need to work with) are named as "App*"
