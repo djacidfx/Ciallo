@@ -1,4 +1,5 @@
-﻿using Ciallo.Data;
+﻿using System.Linq;
+using Ciallo.Data;
 using Ciallo.NodeControl;
 using Godot;
 
@@ -15,26 +16,7 @@ public class ImageTransformInteractor : InteractorBase
         {
             if (_hover.RotationArea == null || _hover.TranslationArea == null || _hover.CornerAreas.Length == 0)
                 return false;
-
-            if (_hover.RotationArea.IsHovered)
-            {
-                _transformType = 0;
-                return true;
-            }
-            if (_hover.TranslationArea.IsHovered)
-            {
-                _transformType = 1;
-                return true;
-            }
-            for (int i = 0; i < _hover.CornerAreas.Length; i++)
-            {
-                if (_hover.CornerAreas[i].IsHovered)
-                {
-                    _transformType = 2 + i;
-                    return true;
-                }
-            }
-            return false;
+            return _hover.RotationArea.IsHovered || _hover.TranslationArea.IsHovered || _hover.CornerAreas.Any(a => a.IsHovered);
         }
     }
 
@@ -46,6 +28,26 @@ public class ImageTransformInteractor : InteractorBase
     public ImageTransformInteractor(ImageEditHover hover)
     {
         _hover = hover;
+    }
+
+    public override void Prepare(CursorButtonData data)
+    {
+        if (_hover.RotationArea.IsHovered)
+        {
+            _transformType = 0;
+        }
+        if (_hover.TranslationArea.IsHovered)
+        {
+            _transformType = 1;
+        }
+        for (int i = 0; i < _hover.CornerAreas.Length; i++)
+        {
+            if (_hover.CornerAreas[i].IsHovered)
+            {
+                _transformType = 2 + i;
+                break;
+            }
+        }
     }
 
     public override void Start(CursorButtonData data)

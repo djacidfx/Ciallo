@@ -20,23 +20,7 @@ public class PolylineTransformInteractor(PolylineHover hover) : InteractorBase
             bool rotationHovered = hover.RotationArea?.IsHovered == true;
             bool cornerHovered = hover.CornerAreas.Any(a => a.IsHovered);
 
-            if (translationHovered)
-            {
-                _transformType = 0;
-                return true;
-            }
-            if (rotationHovered)
-            {
-                _transformType = 1;
-                return true;
-            }
-            if (cornerHovered)
-            {
-                _transformType = Array.FindIndex(hover.CornerAreas, a => a.IsHovered) + 2;
-                return true;
-            }
-            if (hasSelection) return true;
-            return false;
+            return hasSelection || translationHovered || rotationHovered || cornerHovered;
         }
     }
     private int _transformType = -1; // -1: Deselect, 0: Move, 1: Rotate, 2~5: Scale corners
@@ -46,6 +30,28 @@ public class PolylineTransformInteractor(PolylineHover hover) : InteractorBase
     private Vector2[] _startCorners;
     private Rect2 _origRect;
     private TransformOverlayBox _transformBox;
+
+    public override void Prepare(CursorButtonData data)
+    {
+        bool hasSelection = SelectionManager.SelectedPolylines.Count > 0;
+        bool translationHovered = !hover.HoveredPolyline.IsNull;
+        bool rotationHovered = hover.RotationArea?.IsHovered == true;
+        bool cornerHovered = hover.CornerAreas.Any(a => a.IsHovered);
+
+        if (translationHovered)
+        {
+            _transformType = 0;
+        }
+        else if (rotationHovered)
+        {
+            _transformType = 1;
+        }
+        else if (cornerHovered)
+        {
+            _transformType = Array.FindIndex(hover.CornerAreas, a => a.IsHovered) + 2;
+        }
+        else if (hasSelection) _transformType = -1;
+    }
 
     public override void Start(CursorButtonData data)
     {
