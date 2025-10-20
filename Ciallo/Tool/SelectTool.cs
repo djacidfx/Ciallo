@@ -117,6 +117,7 @@ public partial class SelectTool : CommonToolBase
 
     public override bool OnSwitchLayer(Entity newLayerE)
     {
+        if (newLayerE.IsNull) return false;
         ToolStateMachine.Fire(_etSwitchWorkingLayer, newLayerE);
         bool isPolyline = newLayerE.Has<PolylineLayerSetting>();
         bool isImage = newLayerE.Has<ImageLayerSetting>();

@@ -11,6 +11,7 @@ public partial class PaintFillTool : CommonToolBase
 
     public override bool OnSwitchLayer(Entity newLayerE)
     {
+        if (newLayerE.IsNull) return false;
         return newLayerE.Has<PolylineLayerSetting>();
     }
 }
