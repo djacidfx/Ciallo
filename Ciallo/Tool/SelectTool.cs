@@ -101,8 +101,8 @@ public partial class SelectTool : CommonToolBase
     private IDisposable _subToWorkingLayer;
     public override void OnActivate()
     {
-        base.OnActivate();
         ToolStateMachine.Fire(Event.Activate);
+        base.OnActivate();
         _subToWorkingLayer = Document.Get<SelectionManager>().WorkingLayer
             .Subscribe(e => ToolStateMachine.Fire(_etSwitchWorkingLayer, e));
     }
@@ -110,7 +110,7 @@ public partial class SelectTool : CommonToolBase
     public override void OnDeactivate()
     {
         _subToWorkingLayer.Dispose();
-        ToolStateMachine.Fire(Event.Deactivate);
         base.OnDeactivate();
+        ToolStateMachine.Fire(Event.Deactivate);
     }
 }

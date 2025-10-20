@@ -22,8 +22,10 @@ public abstract partial class CommonToolBase : ToolButtonBase
         get => _leftInteractor;
         set
         {
-            if (_machine.IsInState(State.LeftInteracting)) FireCancel();
+            bool isActive = _machine.IsInState(State.ToolActive);
+            if (isActive) _machine.Fire(Event.Deactivate);
             _leftInteractor = value;
+            if (isActive) _machine.Fire(Event.Activate);
         }
     }
 
@@ -32,8 +34,10 @@ public abstract partial class CommonToolBase : ToolButtonBase
         get => _hoverInteractor;
         set
         {
-            if (_machine.IsInState(State.HoverInteracting)) FireCancel();
+            bool isActive = _machine.IsInState(State.ToolActive);
+            if (isActive) _machine.Fire(Event.Deactivate);
             _hoverInteractor = value;
+            if (isActive) _machine.Fire(Event.Activate);
         }
     }
 
@@ -42,14 +46,19 @@ public abstract partial class CommonToolBase : ToolButtonBase
         get => _rightInteractor;
         set
         {
-            if (_machine.IsInState(State.RightInteracting)) FireCancel();
+            bool isActive = _machine.IsInState(State.ToolActive);
+            if (isActive) _machine.Fire(Event.Deactivate);
             _rightInteractor = value;
+            if (isActive) _machine.Fire(Event.Activate);
         }
     }
 
     public enum State
     {
-        Inactive,
+        ToolInactive,
+        ToolActive,
+
+        Idle,
         HoverInteracting,
         LeftInteracting,
         RightInteracting
@@ -64,9 +73,11 @@ public abstract partial class CommonToolBase : ToolButtonBase
         Move,
         Cancel,
         RefreshHover,
+        Activate,
+        Deactivate,
     }
 
-    private readonly StateMachine<State, Event> _machine = new(State.Inactive);
+    private readonly StateMachine<State, Event> _machine = new(State.ToolInactive);
     private readonly buttonParameterEvent _etLeftClick;
     private readonly buttonParameterEvent _etLeftRelease;
     private readonly buttonParameterEvent _etRightClick;
@@ -86,37 +97,46 @@ public abstract partial class CommonToolBase : ToolButtonBase
         _etRightRelease = _machine.SetTriggerParameters<CursorButtonData>(Event.RightRelease);
         _etMove = _machine.SetTriggerParameters<CursorMotionData>(Event.Move);
 
-        _machine.Configure(State.Inactive)
+        bool InteractorStartGuard(InteractorBase interactor, CursorButtonData data)
+        {
+            if (interactor?.CanInteract != true) return false;
+            interactor.Prepare(data);
+            return true;
+        }
+
+        _machine.Configure(State.ToolInactive)
+            .Permit(Event.Activate, State.ToolActive);
+        _machine.Configure(State.ToolActive)
+            .Permit(Event.Deactivate, State.ToolInactive)
+            .InitialTransition(State.Idle);
+
+        _machine.Configure(State.Idle).SubstateOf(State.ToolActive)
+            .OnEntry(() =>
+            {
+                if (HoverInteractor != null) _machine.Fire(Event.RefreshHover);
+            })
+            .PermitIf(_etLeftClick, State.LeftInteracting, data => InteractorStartGuard(LeftInteractor, data))
+            .PermitIf(_etRightClick, State.RightInteracting, data => InteractorStartGuard(RightInteractor, data))
             .PermitIf(_etMove, State.HoverInteracting, _ => HoverInteractor?.CanInteract == true)
             .PermitIf(Event.RefreshHover, State.HoverInteracting, () => HoverInteractor?.CanInteract == true);
 
-        _machine.Configure(State.HoverInteracting)
+        _machine.Configure(State.HoverInteracting).SubstateOf(State.ToolActive)
             .OnEntry(() => HoverInteractor.Start())
-            .PermitIf(_etLeftClick, State.LeftInteracting, data =>
-            {
-                if (LeftInteractor?.CanInteract != true) return false;
-                LeftInteractor.Prepare(data);
-                return true;
-            })
-            .PermitIf(_etRightClick, State.RightInteracting, data =>
-            {
-                if (RightInteractor?.CanInteract != true) return false;
-                RightInteractor.Prepare(data);
-                return true;
-            })
+            .PermitIf(_etLeftClick, State.LeftInteracting, data => InteractorStartGuard(LeftInteractor, data))
+            .PermitIf(_etRightClick, State.RightInteracting, data => InteractorStartGuard(RightInteractor, data))
             .PermitReentry(Event.RefreshHover)
-            .Permit(Event.Cancel, State.Inactive)
+            .Permit(Event.Cancel, State.Idle)
             .OnExit(() => HoverInteractor.End());
 
-        _machine.Configure(State.LeftInteracting)
+        _machine.Configure(State.LeftInteracting).SubstateOf(State.ToolActive)
             .OnEntryFrom(_etLeftClick, data =>
             {
                 BeforeLeftStart();
                 LeftInteractor.Start(data);
             })
-            .Permit(Event.Cancel, State.Inactive)
-            .PermitIf(_etLeftRelease, State.HoverInteracting) //Permit() cannot accept parameterized trigger, annoying
-            .PermitIf(_etRightClick, State.HoverInteracting) // Cancel left interaction if right click
+            .Permit(Event.Cancel, State.Idle)
+            .PermitIf(_etLeftRelease, State.Idle) //Permit() cannot accept parameterized trigger, annoying
+            .PermitIf(_etRightClick, State.Idle) // Cancel left interaction if right click
             .OnExit(t =>
             {
                 if (t.Trigger == Event.Cancel) LeftInteractor.Cancel();
@@ -124,15 +144,15 @@ public abstract partial class CommonToolBase : ToolButtonBase
                 AfterLeftEnd();
             });
 
-        _machine.Configure(State.RightInteracting)
+        _machine.Configure(State.RightInteracting).SubstateOf(State.ToolActive)
             .OnEntryFrom(_etRightClick, data =>
             {
                 BeforeRightStart();
                 RightInteractor.Start(data);
             })
-            .Permit(Event.Cancel, State.Inactive)
-            .PermitIf(_etRightRelease, State.HoverInteracting)
-            .PermitIf(_etRightClick, State.HoverInteracting)
+            .Permit(Event.Cancel, State.Idle)
+            .PermitIf(_etRightRelease, State.Idle)
+            .PermitIf(_etLeftClick, State.Idle)
             .OnExit(t =>
             {
                 if (t.Trigger == Event.Cancel) RightInteractor.Cancel();
@@ -175,23 +195,27 @@ public abstract partial class CommonToolBase : ToolButtonBase
 
     public override void OnKey(InputEventKey key)
     {
-        if (AppActions.CancelInteraction.IsJustPressed) FireCancel();
+        if (AppActions.CancelInteraction.IsJustPressed) _machine.Fire(Event.Cancel);
     }
 
     private CompositeDisposable _subs;
     public override void OnActivate()
     {
+        _machine.Fire(Event.Activate);
         _subs = new();
-        Document.Get<SelectionManager>().WorkingLayer.Skip(1).Subscribe(_ => FireCancel()).AddTo(_subs);
+        Document.Get<SelectionManager>().WorkingLayer.Skip(1).Subscribe(_ =>
+        {
+            _machine.Fire(Event.Deactivate);
+            _machine.Fire(Event.Activate);
+        }).AddTo(_subs);
         Document.Get<CommandManager>().SignalAsObservable(UndoRedo.SignalName.VersionChanged)
             .Subscribe(_ => FireRefreshHover()).AddTo(_subs);
     }
     public override void OnDeactivate()
     {
-        FireCancel();
         _subs.Dispose();
+        _machine.Fire(Event.Deactivate);
     }
 
-    public void FireCancel() => _machine.Fire(Event.Cancel);
     public void FireRefreshHover() => _machine.Fire(Event.RefreshHover);
 }
