@@ -16,8 +16,13 @@ public class PaintFillInteractor : InteractorBase
         }
     }
 
+    public override void Prepare(CursorButtonData data)
+    {
+        throw new NotImplementedException();
+    }
     public override void Start(CursorButtonData data)
     {
+        throw new NotImplementedException();
     }
 
     public override void Interacting(CursorMotionData data)

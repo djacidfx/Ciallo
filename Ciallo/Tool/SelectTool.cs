@@ -1,7 +1,9 @@
 using System;
+using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Widget;
 using Frent;
+using Godot;
 using R3;
 using Stateless;
 
@@ -80,7 +82,17 @@ public partial class SelectTool : CommonToolBase
             {
                 HoverInteractor = null;
                 LeftInteractor = null;
+                Document.Get<SelectionManager>().SelectedPolylines.Clear();
             });
+    }
+
+    public override void OnKey(InputEventKey key)
+    {
+        if (AppActions.CancelInteraction.IsJustPressed)
+        {
+            Document.Get<SelectionManager>().SelectedPolylines.Clear();
+        }
+        base.OnKey(key);
     }
 
     public override void DrawProperty(PropertyContainer container)
@@ -90,8 +102,8 @@ public partial class SelectTool : CommonToolBase
     private IDisposable _subToWorkingLayer;
     public override void OnActivate()
     {
-        base.OnActivate();
         ToolStateMachine.Fire(Event.Activate);
+        base.OnActivate();
         _subToWorkingLayer = Document.Get<SelectionManager>().WorkingLayer
             .Subscribe(e => ToolStateMachine.Fire(_etSwitchWorkingLayer, e));
     }
@@ -99,7 +111,16 @@ public partial class SelectTool : CommonToolBase
     public override void OnDeactivate()
     {
         _subToWorkingLayer.Dispose();
-        ToolStateMachine.Fire(Event.Deactivate);
         base.OnDeactivate();
+        ToolStateMachine.Fire(Event.Deactivate);
+    }
+
+    public override bool OnSwitchLayer(Entity newLayerE)
+    {
+        ToolStateMachine.Fire(_etSwitchWorkingLayer, newLayerE);
+        bool isPolyline = newLayerE.Has<PolylineLayerSetting>();
+        bool isImage = newLayerE.Has<ImageLayerSetting>();
+
+        return isPolyline || isImage;
     }
 }

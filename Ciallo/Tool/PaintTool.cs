@@ -123,23 +123,24 @@ public partial class PaintTool : CommonToolBase
         var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
         new NewBrushCmd(setting).Combine(new ChangeWorkingBrushCmd(^1)).Commit();
     }
+
+    public override bool OnSwitchLayer(Entity newLayerE)
+    {
+        return newLayerE.IsNotNull() && newLayerE.Has<PolylineLayerSetting>();
+    }
 }
 
 public partial class DocumentBrushList : ItemList;
 
 public class PaintHover : HoverBase
 {
-    public override bool CanInteract => true;
-
     public override void Start()
     {
-        var layerE = Document.Get<SelectionManager>().WorkingLayer.Value;
-        bool layerValid = layerE.IsNotNull() && layerE.Has<PolylineLayerSetting>();
-        Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = layerValid ? Control.CursorShape.Cross : Control.CursorShape.Forbidden;
+        Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = Control.CursorShape.Cross;
     }
 
     public override void End()
     {
-        Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = Control.CursorShape.Arrow;
+        Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = default;
     }
 }

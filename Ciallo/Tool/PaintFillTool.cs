@@ -1,5 +1,7 @@
+using Ciallo.Data;
 using Ciallo.Tool;
 using Ciallo.Widget;
+using Frent;
 
 public partial class PaintFillTool : CommonToolBase
 {
@@ -7,11 +9,8 @@ public partial class PaintFillTool : CommonToolBase
     {
     }
 
-    public override void OnActivate()
+    public override bool OnSwitchLayer(Entity newLayerE)
     {
-    }
-
-    public override void OnDeactivate()
-    {
+        return newLayerE.Has<PolylineLayerSetting>();
     }
 }

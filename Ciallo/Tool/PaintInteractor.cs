@@ -37,6 +37,9 @@ public class PaintInteractor : InteractorBase
     private readonly float _maxDistance = 15f; // in pixel
     private readonly float _minCosAngle = Mathf.Cos(Mathf.DegToRad(5f));
 
+    public override void Prepare(CursorButtonData data)
+    {
+    }
     public override void Start(CursorButtonData data)
     {
         // Shen: I guess this will improve graphics responsiveness

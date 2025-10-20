@@ -18,6 +18,9 @@ public abstract class InteractorBase
 
     public abstract bool CanInteract { get; }
 
+    // Instantly called after CanInteract, zero state switching
+    public abstract void Prepare(CursorButtonData data);
+    // Called after some tool state switching
     public abstract void Start(CursorButtonData data);
 
     public abstract void Interacting(CursorMotionData data);

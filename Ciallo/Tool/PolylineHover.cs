@@ -15,15 +15,6 @@ public class PolylineHover : HoverBase
     public CursorDetectionArea RotationArea;
     public CursorDetectionArea[] CornerAreas = [];
 
-    public override bool CanInteract
-    {
-        get
-        {
-            var layerE = SelectionManager.WorkingLayer.Value;
-            return !layerE.IsNull && layerE.Has<PolylineLayerSetting>();
-        }
-    }
-
     private IDisposable _hoverSub;
     private Entity _layerE;
     private TransformOverlayBox _transformBox;
