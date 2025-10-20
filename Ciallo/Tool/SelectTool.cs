@@ -82,6 +82,7 @@ public partial class SelectTool : CommonToolBase
             {
                 HoverInteractor = null;
                 LeftInteractor = null;
+                Document.Get<SelectionManager>().SelectedPolylines.Clear();
             });
     }
 
