@@ -8,8 +8,8 @@ namespace Ciallo.Data;
 
 public class SetStrokeGeometryCmd : CommandBase
 {
-    private readonly StrokeGeometry _newGeometry;
-    private StrokeGeometry _oldGeometry;
+    private readonly PolylineGeometry _newGeometry;
+    private PolylineGeometry _oldGeometry;
     private readonly Entity _strokeE;
 
     public SetStrokeGeometryCmd(Entity strokeE, IReadOnlyList<Vector2> newPoints, IReadOnlyList<float> newRadii)
@@ -22,7 +22,7 @@ public class SetStrokeGeometryCmd : CommandBase
         };
     }
 
-    public SetStrokeGeometryCmd(Entity strokeE, StrokeGeometry newGeometry)
+    public SetStrokeGeometryCmd(Entity strokeE, PolylineGeometry newGeometry)
     {
         _strokeE = strokeE;
         _newGeometry = newGeometry;
@@ -31,8 +31,8 @@ public class SetStrokeGeometryCmd : CommandBase
     public override void Do()
     {
         // Data
-        _oldGeometry ??= _strokeE.Get<StrokeGeometry>();
-        _strokeE.Get<StrokeGeometry>() = _newGeometry;
+        _oldGeometry ??= _strokeE.Get<PolylineGeometry>();
+        _strokeE.Get<PolylineGeometry>() = _newGeometry;
 
         // View
         _strokeE.Get<StrokeView>().SetGeometry(_newGeometry.Points, _newGeometry.Radii);
@@ -56,6 +56,6 @@ public class SetStrokeGeometryCmd : CommandBase
         _strokeE.Get<StrokeView>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
 
         // Data
-        _strokeE.Get<StrokeGeometry>() = _oldGeometry;
+        _strokeE.Get<PolylineGeometry>() = _oldGeometry;
     }
 }

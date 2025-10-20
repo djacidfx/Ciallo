@@ -43,7 +43,7 @@ public class PolylineHover : HoverBase
             _midAxis.Visible = true;
 
             // transform box overlay
-            var geom = _polylineE.Get<StrokeGeometry>();
+            var geom = _polylineE.Get<PolylineGeometry>();
             var rect = geom.Points.GetBoundingBox();
             _transformBox = new TransformOverlayBox(rect.Size, rect.GetCenter());
             worldOverlay.AddChild(_transformBox);

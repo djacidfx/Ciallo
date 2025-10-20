@@ -66,7 +66,7 @@ public static partial class AppWorldManager
 
                 foreach (var polylineDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
-                    var geometry = polylineDataE.Get<StrokeGeometry>();
+                    var geometry = polylineDataE.Get<PolylineGeometry>();
                     var newStrokeCmd = new NewStrokeCmd(layerE);
                     newStrokeCmd.Do();
                     var polylineE = newStrokeCmd.StrokeE;

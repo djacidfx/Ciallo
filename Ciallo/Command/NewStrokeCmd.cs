@@ -50,7 +50,7 @@ public class NewStrokeCmd : CommandBase
         StrokeE.Add(strokeOverlay);
 
         // Cursor detection
-        var geom = StrokeE.Get<StrokeGeometry>();
+        var geom = StrokeE.Get<PolylineGeometry>();
         var strokeArea = WorldCursorDetectionArea.CreateStroke(geom.Points, geom.Radii);
         _layerE.Get<PolylineAreaHolder>().AddChild(strokeArea);
         StrokeE.Add(strokeArea);
@@ -82,7 +82,7 @@ public class NewStrokeCmd : CommandBase
         if (StrokeE.IsNotNull()) return StrokeE;
         StrokeE = WorkingWorld.Create();
         var node = new LayerTreeNode();
-        StrokeE.Add(new StrokeGeometry());
+        StrokeE.Add(new PolylineGeometry());
         StrokeE.Add(node);
         return StrokeE;
     }

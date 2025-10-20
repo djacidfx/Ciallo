@@ -72,7 +72,7 @@ public class PolylineTransformInteractor(PolylineHover hover) : InteractorBase
             _polylineE = SelectionManager.SelectedPolylines[0];
             _currTransform = Transform2D.Identity;
 
-            var geom = _polylineE.Get<StrokeGeometry>();
+            var geom = _polylineE.Get<PolylineGeometry>();
             _origRect = geom.Points.GetBoundingBox();
             var center = _origRect.GetCenter();
             var half = _origRect.Size * 0.5f;
@@ -96,7 +96,7 @@ public class PolylineTransformInteractor(PolylineHover hover) : InteractorBase
         if (_transformType == 1)
         {
             var strokeView = _polylineE.Get<StrokeView>();
-            var center = _polylineE.Get<StrokeGeometry>().Points.GetBoundingBox().GetCenter();
+            var center = _polylineE.Get<PolylineGeometry>().Points.GetBoundingBox().GetCenter();
             var angleDelta = (data.PrevWorldPosition - center).AngleTo(data.WorldPosition - center);
             strokeView.Transform = strokeView.GetTransform()
                 .Translated(-center).Rotated(angleDelta).Translated(center);
@@ -141,7 +141,7 @@ public class PolylineTransformInteractor(PolylineHover hover) : InteractorBase
             var origin = pivot - (t * pivot);
             _currTransform = new Transform2D(newX, newY, origin);
 
-            var geom = _polylineE.Get<StrokeGeometry>();
+            var geom = _polylineE.Get<PolylineGeometry>();
             var points = geom.Points.Select(p => _currTransform * p).ToArray();
             _polylineE.Get<StrokeView>().SetGeometry(points, geom.Radii);
             ;
@@ -159,7 +159,7 @@ public class PolylineTransformInteractor(PolylineHover hover) : InteractorBase
 
         if (!resultT.IsEqualApprox(Transform2D.Identity))
         {
-            var newGeom = _polylineE.Get<StrokeGeometry>().Clone();
+            var newGeom = _polylineE.Get<PolylineGeometry>().Clone();
             newGeom.Points = newGeom.Points.Select(p => resultT * p).ToList();
             new SetStrokeGeometryCmd(_polylineE, newGeom).Commit();
         }
