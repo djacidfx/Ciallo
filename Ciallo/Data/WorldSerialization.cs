@@ -87,7 +87,7 @@ public static partial class AppWorldManager
 
     public static void SaveWorkingWorld()
     {
-        if (WorkingDocument.CurrentValue.IsNull()) return;
+        if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (CanSaveFile(settings.FilePath.Value))
             Save(WorkingWorld.Value, settings.FilePath.Value);
@@ -95,7 +95,7 @@ public static partial class AppWorldManager
 
     public static void ReloadWorkingWorld() // for debug
     {
-        if (WorkingDocument.CurrentValue.IsNull()) return;
+        if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (!File.Exists(settings.FilePath.Value)) return;
         var world = Load(settings.FilePath.Value, out var document);

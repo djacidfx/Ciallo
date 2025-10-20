@@ -96,6 +96,6 @@ public abstract class CommandBase
 
     public static IEnumerable<Entity> ToEnumerable(Entity value)
     {
-        if (value.IsNotNull()) yield return value;
+        if (!value.IsNull) yield return value;
     }
 }

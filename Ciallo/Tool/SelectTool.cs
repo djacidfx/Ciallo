@@ -52,7 +52,7 @@ public partial class SelectTool : CommonToolBase
             .Permit(Event.Deactivate, State.Inactive)
             .PermitDynamic(_etSwitchWorkingLayer, e =>
             {
-                if (e.IsNull()) return State.Active;
+                if (e.IsNull) return State.Active;
                 if (e.Has<ImageLayerSetting>()) return State.EditingImageLayer;
                 if (e.Has<PolylineLayerSetting>()) return State.EditingPolylineLayer;
                 return State.Active;

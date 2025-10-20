@@ -1,7 +1,6 @@
 ﻿using System;
 using Ciallo.Data;
 using Ciallo.NodeControl;
-using Frent;
 
 namespace Ciallo.Tool;
 
@@ -12,7 +11,7 @@ public class PaintFillInteractor : InteractorBase
         get
         {
             var l = SelectionManager.WorkingLayer.Value;
-            return l.IsNotNull() && l.Has<PolylineLayerSetting>();
+            return !l.IsNull && l.Has<PolylineLayerSetting>();
         }
     }
 

@@ -16,8 +16,8 @@ public class PaintInteractor : InteractorBase
         get
         {
             var l = SelectionManager.WorkingLayer.Value;
-            bool layerAvailable = l.IsNotNull() && l.Has<PolylineLayerSetting>();
-            bool brushAvailable = SelectionManager.WorkingBrush.Value.IsNotNull() || AppBrushLibrary.HasSelection;
+            bool layerAvailable = !l.IsNull && l.Has<PolylineLayerSetting>();
+            bool brushAvailable = !SelectionManager.WorkingBrush.Value.IsNull || AppBrushLibrary.HasSelection;
 
             return layerAvailable && brushAvailable;
         }

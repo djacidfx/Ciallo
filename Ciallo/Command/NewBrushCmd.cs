@@ -72,7 +72,7 @@ public class NewBrushCmd : CommandBase
 
     public Entity InitEntity()
     {
-        if (BrushE.IsNull())
+        if (BrushE.IsNull)
         {
             BrushE = WorkingWorld.Create();
             BrushE.Add(_setting);

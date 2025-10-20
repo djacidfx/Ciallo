@@ -77,7 +77,7 @@ public class NewPolylineLayerCmd : CommandBase
     {
         var tree = Document.Get<LayerTreeManager>();
 
-        if (LayerE.IsNull())
+        if (LayerE.IsNull)
         {
             LayerE = WorkingWorld.Create();
             var node = new LayerTreeNode()

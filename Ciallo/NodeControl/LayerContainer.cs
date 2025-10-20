@@ -205,7 +205,7 @@ public partial class LayerContainer : Container
     public void SetWorkingLayerNoSignal(Entity layerE)
     {
         _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
-        if (layerE.IsNull()) return;
+        if (layerE.IsNull) return;
         var layerControl = layerE.Get<Control>();
         var activeButton = layerControl.GetNode<CheckBox>("%Active");
         // Note: button group will not be updated.

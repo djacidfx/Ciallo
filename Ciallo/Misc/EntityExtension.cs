@@ -15,7 +15,4 @@ public static class EntityExtension
         };
         self.Add(wrapper);
     }
-
-    public static bool IsNull(this Entity self) => self.IsNull;
-    public static bool IsNotNull(this Entity self) => !self.IsNull;
 }
