@@ -10,8 +10,6 @@ public abstract class HoverBase
     public Entity Document => WorkingWorld.Document();
     public SelectionManager SelectionManager => Document.Get<SelectionManager>();
 
-    public abstract bool CanInteract { get; }
-
     public virtual void Start()
     {
     }

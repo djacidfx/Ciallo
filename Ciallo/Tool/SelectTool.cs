@@ -113,4 +113,13 @@ public partial class SelectTool : CommonToolBase
         base.OnDeactivate();
         ToolStateMachine.Fire(Event.Deactivate);
     }
+
+    public override bool OnSwitchLayer(Entity newLayerE)
+    {
+        ToolStateMachine.Fire(_etSwitchWorkingLayer, newLayerE);
+        bool isPolyline = newLayerE.Has<PolylineLayerSetting>();
+        bool isImage = newLayerE.Has<ImageLayerSetting>();
+
+        return isPolyline || isImage;
+    }
 }

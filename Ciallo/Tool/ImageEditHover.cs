@@ -12,15 +12,6 @@ public class ImageEditHover : HoverBase
     public CursorDetectionArea[] CornerAreas = [];
     private Entity _layerE;
 
-    public override bool CanInteract
-    {
-        get
-        {
-            var layerE = SelectionManager.WorkingLayer.Value;
-            return layerE.IsNotNull() && layerE.Has<ImageLayerSetting>();
-        }
-    }
-
     public override void Start()
     {
         _layerE = SelectionManager.WorkingLayer.Value;

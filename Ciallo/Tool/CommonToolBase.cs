@@ -1,6 +1,8 @@
 ﻿using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.NodeControl;
+using Ciallo.Rendering;
+using Frent;
 using Godot;
 using R3;
 using Stateless;
@@ -117,8 +119,8 @@ public abstract partial class CommonToolBase : ToolButtonBase
             })
             .PermitIf(_etLeftClick, State.LeftInteracting, data => InteractorStartGuard(LeftInteractor, data))
             .PermitIf(_etRightClick, State.RightInteracting, data => InteractorStartGuard(RightInteractor, data))
-            .PermitIf(_etMove, State.HoverInteracting, _ => HoverInteractor?.CanInteract == true)
-            .PermitIf(Event.RefreshHover, State.HoverInteracting, () => HoverInteractor?.CanInteract == true);
+            .PermitIf(_etMove, State.HoverInteracting)
+            .PermitIf(Event.RefreshHover, State.HoverInteracting);
 
         _machine.Configure(State.HoverInteracting).SubstateOf(State.ToolActive)
             .OnEntry(() => HoverInteractor.Start())
@@ -201,21 +203,26 @@ public abstract partial class CommonToolBase : ToolButtonBase
     private CompositeDisposable _subs;
     public override void OnActivate()
     {
-        _machine.Fire(Event.Activate);
         _subs = new();
-        Document.Get<SelectionManager>().WorkingLayer.Skip(1).Subscribe(_ =>
+        Document.Get<SelectionManager>().WorkingLayer.Subscribe(newLayerE =>
         {
             _machine.Fire(Event.Deactivate);
-            _machine.Fire(Event.Activate);
+            bool canHandleLayer = OnSwitchLayer(newLayerE);
+            if (canHandleLayer) _machine.Fire(Event.Activate);
+            else Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = CursorShape.Forbidden;
         }).AddTo(_subs);
         Document.Get<CommandManager>().SignalAsObservable(UndoRedo.SignalName.VersionChanged)
             .Subscribe(_ => FireRefreshHover()).AddTo(_subs);
     }
     public override void OnDeactivate()
     {
+        Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = default;
         _subs.Dispose();
         _machine.Fire(Event.Deactivate);
     }
+
+    // Called on working layer switch and activation. Return true if the tool can handle the new layer.
+    public abstract bool OnSwitchLayer(Entity newLayerE);
 
     public void FireRefreshHover() => _machine.Fire(Event.RefreshHover);
 }
