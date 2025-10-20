@@ -1,7 +1,9 @@
 using System;
+using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Widget;
 using Frent;
+using Godot;
 using R3;
 using Stateless;
 
@@ -81,6 +83,15 @@ public partial class SelectTool : CommonToolBase
                 HoverInteractor = null;
                 LeftInteractor = null;
             });
+    }
+
+    public override void OnKey(InputEventKey key)
+    {
+        if (AppActions.CancelInteraction.IsJustPressed)
+        {
+            Document.Get<SelectionManager>().SelectedPolylines.Clear();
+        }
+        base.OnKey(key);
     }
 
     public override void DrawProperty(PropertyContainer container)
