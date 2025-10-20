@@ -146,13 +146,17 @@ public class PolylineTransformInteractor(PolylineHover hover) : InteractorBase
     public override void End(CursorButtonData data)
     {
         if (_transformType == -1) return;
-        var transform = _transformType is 0 or 1 ? _polylineE.Get<StrokeView>().GetTransform() : _currTransform;
+        var resultT = _transformType is 0 or 1 ? _polylineE.Get<StrokeView>().GetTransform() : _currTransform;
 
-        var newGeom = _polylineE.Get<StrokeGeometry>().Clone();
-        newGeom.Points = newGeom.Points.Select(p => transform * p).ToList();
-        new SetStrokeGeometryCmd(_polylineE, newGeom).Commit();
         SelectionManager.SelectedPolylines.Clear();
         SelectionManager.SelectedPolylines.Add(_polylineE);
+
+        if (!resultT.IsEqualApprox(Transform2D.Identity))
+        {
+            var newGeom = _polylineE.Get<StrokeGeometry>().Clone();
+            newGeom.Points = newGeom.Points.Select(p => resultT * p).ToList();
+            new SetStrokeGeometryCmd(_polylineE, newGeom).Commit();
+        }
 
         Clear();
     }
