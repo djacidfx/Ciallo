@@ -23,8 +23,9 @@ public partial class OpenDocumentDialog : FileDialog
         {
             dataWorld = AppWorldManager.Load(path, out dataDocument);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            GD.PrintErr(exception);
             var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<AcceptDialog>().Single(n => n.Name == "WarnUser");
             dialog.DialogText = "Cannot open document: the file is corrupted".Tr();
             dialog.Popup();

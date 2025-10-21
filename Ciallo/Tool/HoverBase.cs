@@ -10,9 +10,7 @@ public abstract class HoverBase
     public Entity Document => WorkingWorld.Document();
     public SelectionManager SelectionManager => Document.Get<SelectionManager>();
 
-    public virtual void Start()
-    {
-    }
+    public abstract void Start();
 
     public virtual void Interacting(CursorMotionData _)
     {

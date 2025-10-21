@@ -5,7 +5,7 @@ using Frent;
 
 namespace Ciallo.Tool;
 
-public class ImageEditHover : HoverBase
+public class ImageTransformHover : HoverBase
 {
     public CursorDetectionArea RotationArea;
     public CursorDetectionArea TranslationArea;

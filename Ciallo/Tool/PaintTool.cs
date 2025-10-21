@@ -3,7 +3,6 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.NodeControl;
-using Ciallo.Rendering;
 using Ciallo.Tool;
 using Ciallo.Widget;
 using Frent;
@@ -131,16 +130,3 @@ public partial class PaintTool : CommonToolBase
 }
 
 public partial class DocumentBrushList : ItemList;
-
-public class PaintHover : HoverBase
-{
-    public override void Start()
-    {
-        Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = Control.CursorShape.Cross;
-    }
-
-    public override void End()
-    {
-        Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = default;
-    }
-}

@@ -9,7 +9,7 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public class PolylineHover : HoverBase
+public class PolylineTransformHover : HoverBase
 {
     public Entity HoveredPolyline;
     public CursorDetectionArea RotationArea;
