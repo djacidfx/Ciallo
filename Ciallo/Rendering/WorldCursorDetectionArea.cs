@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using Ciallo.Data;
 using Ciallo.Geometry;
+using Ciallo.Misc;
 using Godot;
 using Godot.Collections;
 using R3;
@@ -118,12 +120,18 @@ public partial class WorldCursorDetectionArea : Node2D
         return (n as CanvasLayer)?.Layer ?? 0;
     }
 
-    private static CursorDetectionArea TopMostFromHits(Array<Dictionary> hits)
+    private ImmutableArray<int> GetIndexPath(Node n)
+    {
+        return n.GetIndexPathTo(this);
+    }
+
+    private CursorDetectionArea TopMostFromHits(Array<Dictionary> hits)
     {
         return hits
             .Select(d => (CursorDetectionArea)d["collider"])
             .OrderByDescending(GetCanvasLayer)
             .ThenByDescending(n => n.ZIndex)
+            .ThenByDescending(GetIndexPath, NodeIndexPathComparer.Instance) // child parent hierarchy
             .ThenByDescending(n => n.GetIndex())
             .First();
     }

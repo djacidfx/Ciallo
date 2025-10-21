@@ -4,6 +4,10 @@ using Frent;
 
 namespace Ciallo.Tool;
 
+/// <summary>
+/// Hover does not modify document, only provide visual feedback.
+/// Once the document is about to be modified (by interactor, by command undo, redo) hover should call end().   
+/// </summary>
 public abstract class HoverBase
 {
     public World WorkingWorld => AppWorldManager.WorkingWorld.Value;
@@ -17,6 +21,6 @@ public abstract class HoverBase
     }
 
     // Must implement cancel
-    // Called after ESC pressed, switch tool, switch layer.
+    // Called after ESC pressed, switch tool.
     public abstract void End();
 }
