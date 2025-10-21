@@ -1,6 +1,6 @@
 ﻿using System;
 using Ciallo.Data;
-using Ciallo.NodeControl;
+using Ciallo.Geometry;
 
 namespace Ciallo.Tool;
 
@@ -17,8 +17,8 @@ public class PaintFillInteractor : InteractorBase
 
     public override void Prepare(CursorButtonData data)
     {
-        throw new NotImplementedException();
     }
+
     public override void Start(CursorButtonData data)
     {
         throw new NotImplementedException();

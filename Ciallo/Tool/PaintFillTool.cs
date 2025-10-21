@@ -5,6 +5,12 @@ using Frent;
 
 public partial class PaintFillTool : CommonToolBase
 {
+    public PaintFillTool()
+    {
+        HoverInteractor = new PaintFillHover();
+        LeftInteractor = new PaintFillInteractor();
+    }
+
     public override void DrawProperty(PropertyContainer container)
     {
     }

@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace Ciallo.NodeControl;
+namespace Ciallo.Geometry;
 
 public struct CursorButtonData
 {

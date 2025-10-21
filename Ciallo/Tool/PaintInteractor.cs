@@ -2,7 +2,7 @@
 using System.Diagnostics;
 using Ciallo.Command;
 using Ciallo.Data;
-using Ciallo.NodeControl;
+using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -28,11 +28,12 @@ public class PaintInteractor : InteractorBase
     private readonly List<Vector2> _points = new() { Capacity = 2048 };
     private readonly List<float> _radii = new() { Capacity = 2048 };
 
+    private Stopwatch _interactStopwatch;
+
     private bool _justSavePoint = false;
     private Vector2 _lastScreenPoint;
     private Vector2 _lastDirection;
     private float _lastPressure = -1.0f;
-    private Stopwatch _interactStopwatch;
     private readonly float _minDistance = 3f; // in pixel
     private readonly float _maxDistance = 15f; // in pixel
     private readonly float _minCosAngle = Mathf.Cos(Mathf.DegToRad(5f));
