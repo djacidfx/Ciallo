@@ -1,6 +1,8 @@
-﻿using System;
+﻿using System.Collections.Immutable;
 using Ciallo.Data;
 using Ciallo.Geometry;
+using Ciallo.Rendering;
+using Godot;
 
 namespace Ciallo.Tool;
 
@@ -15,27 +17,50 @@ public class PaintFillInteractor : InteractorBase
         }
     }
 
+    private readonly PolylineInteractiveGenerator _generator = new()
+    {
+        Mode = PolylineInteractiveGenerator.RadiusMode.Fixed,
+        FixedRadius = AppPreference.StrokeWireframeRadius,
+    };
+    private StrokeView _dashPreview;
+
     public override void Prepare(CursorButtonData data)
     {
     }
 
     public override void Start(CursorButtonData data)
     {
-        throw new NotImplementedException();
+        _dashPreview = new StrokeView();
+        _dashPreview.Material = AutoloadRendering.DashWireframeMaterial;
+        var layerE = SelectionManager.WorkingLayer.Value;
+        var layerView = layerE.Get<PolylineLayerView>();
+        layerView.AddChild(_dashPreview);
+
+        _generator.Start(data);
     }
 
     public override void Interacting(CursorMotionData data)
     {
-        throw new NotImplementedException();
+        _generator.Update(data);
+        ImmutableArray<Vector2> points = [.._generator.Points, _generator.Points[0]];
+        ImmutableArray<float> radii = [.._generator.Radii, _generator.Radii[0]];
+        _dashPreview.SetGeometry(points, radii);
     }
 
     public override void End(CursorButtonData data)
     {
-        throw new NotImplementedException();
+        Clear();
     }
 
     public override void Cancel()
     {
-        throw new NotImplementedException();
+        Clear();
+    }
+
+    public void Clear()
+    {
+        _generator.Clear();
+        _dashPreview?.QueueFree();
+        _dashPreview = null;
     }
 }

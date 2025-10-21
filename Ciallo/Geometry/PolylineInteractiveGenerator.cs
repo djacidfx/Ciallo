@@ -31,8 +31,8 @@ public class PolylineInteractiveGenerator
 
     private readonly List<Vector2> _points = new(2048);
     private readonly List<float> _radii = new(2048);
-    public List<Vector2> Points => _points;
-    public List<float> Radii => _radii;
+    public IReadOnlyList<Vector2> Points => _points;
+    public IReadOnlyList<float> Radii => _radii;
 
     private bool _saveLastestPoint = false;
     private Vector2 _lastScreenPoint;
