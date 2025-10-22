@@ -36,7 +36,7 @@ public class PolylineInteractiveGenerator
     public IReadOnlyList<Vector2> Points => _points;
     public IReadOnlyList<float> Radii => _radii;
 
-    private bool _saveLastestPoint = false;
+    private bool _saveLatestPoint = false;
     private Vector2 _lastScreenPoint;
     private Vector2 _lastDirection;
     private float _lastPressure = -1.0f;
@@ -62,7 +62,7 @@ public class PolylineInteractiveGenerator
                 _radii.Add(RadiusSampler!(default));
                 break;
         }
-        _saveLastestPoint = true;
+        _saveLatestPoint = true;
     }
 
     private float CalculateRadius(CursorMotionData data)
@@ -81,13 +81,13 @@ public class PolylineInteractiveGenerator
     // Always add current motion point, then check whether to save current point. If not, remove it on next update.
     public void Update(CursorMotionData data)
     {
-        if (!_saveLastestPoint && !_previewPointAlreadyRemoved)
+        if (!_saveLatestPoint && !_previewPointAlreadyRemoved)
         {
             _points.RemoveAt(_points.Count - 1);
             _radii.RemoveAt(_radii.Count - 1);
         }
         _previewPointAlreadyRemoved = false;
-        _saveLastestPoint = false;
+        _saveLatestPoint = false;
         float pressure = data.Pressure;
         float radius = CalculateRadius(data);
         var position = data.WorldPosition;
@@ -130,7 +130,7 @@ public class PolylineInteractiveGenerator
             _lastDirection = data.ScreenPosition.DirectionTo(_lastScreenPoint).Normalized();
             _lastScreenPoint = data.ScreenPosition;
             _lastPressure = pressure;
-            _saveLastestPoint = true;
+            _saveLatestPoint = true;
         }
     }
 
@@ -146,7 +146,7 @@ public class PolylineInteractiveGenerator
 
     public void Clear()
     {
-        _saveLastestPoint = false;
+        _saveLatestPoint = false;
         _points.Clear();
         _radii.Clear();
     }
