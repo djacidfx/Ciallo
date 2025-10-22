@@ -69,6 +69,13 @@ void vertex() {
 	vec2 modelScale = vec2(length(MODEL_MATRIX[0].xy), length(MODEL_MATRIX[1].xy));
 	scale = canvasZoom * modelScale;
 
+	if(radiusMode == 1){
+		float zoom = max(scale.x, scale.y);
+		r0 /= zoom;
+		r1 /= zoom;
+		n0 *= zoom;
+		n1 *= zoom;
+	}
 	segmentLength = distance(p1, p0);
 	cosTheta = (r0 - r1)/distance(p0, p1);
 	sinTheta = sqrt(1.0 - cosTheta * cosTheta);
@@ -94,7 +101,6 @@ void vertex() {
 	if(!isIll)
 	{
 		vec2 offset = offsetSign.x * r * tangent + offsetSign.y * r * normal * normalTanValue;
-		if(radiusMode == 1) offset /= scale;
 		p = position + offset;
 	}
 

@@ -5,14 +5,14 @@ using Godot;
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
-public class StrokeGeometry
+public class PolylineGeometry
 {
     [DataMember(Order = 0)] public List<Vector2> Points = [];
     [DataMember(Order = 1)] public List<float> Radii = [];
 
-    public StrokeGeometry Clone()
+    public PolylineGeometry Clone()
     {
-        return new StrokeGeometry()
+        return new PolylineGeometry()
         {
             Points = [..Points],
             Radii = [..Radii],

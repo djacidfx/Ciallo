@@ -13,9 +13,9 @@ using EntityParameterEvent = StateMachine<SelectTool.State, SelectTool.Event>.Tr
 
 public partial class SelectTool : CommonToolBase
 {
-    public readonly PolylineHover PolylineHover = new();
+    public readonly PolylineTransformHover PolylineTransformHover = new();
     public readonly PolylineTransformInteractor PolylineTransformInteractor;
-    public readonly ImageEditHover ImageEditHover = new();
+    public readonly ImageTransformHover ImageTransformHover = new();
     public readonly ImageTransformInteractor ImageTransformInteractor;
 
     public readonly StateMachine<State, Event> ToolStateMachine = new(State.Inactive);
@@ -40,8 +40,8 @@ public partial class SelectTool : CommonToolBase
 
     public SelectTool()
     {
-        PolylineTransformInteractor = new(PolylineHover);
-        ImageTransformInteractor = new(ImageEditHover);
+        PolylineTransformInteractor = new(PolylineTransformHover);
+        ImageTransformInteractor = new(ImageTransformHover);
 
         ToolStateMachine.OnUnhandledTrigger((_, _) => { });
         _etSwitchWorkingLayer = ToolStateMachine.SetTriggerParameters<Entity>(Event.SwitchWorkingLayer);
@@ -52,7 +52,7 @@ public partial class SelectTool : CommonToolBase
             .Permit(Event.Deactivate, State.Inactive)
             .PermitDynamic(_etSwitchWorkingLayer, e =>
             {
-                if (e.IsNull()) return State.Active;
+                if (e.IsNull) return State.Active;
                 if (e.Has<ImageLayerSetting>()) return State.EditingImageLayer;
                 if (e.Has<PolylineLayerSetting>()) return State.EditingPolylineLayer;
                 return State.Active;
@@ -62,7 +62,7 @@ public partial class SelectTool : CommonToolBase
         ToolStateMachine.Configure(State.EditingImageLayer).SubstateOf(State.Active)
             .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {
-                HoverInteractor = ImageEditHover;
+                HoverInteractor = ImageTransformHover;
                 LeftInteractor = ImageTransformInteractor;
             })
             .OnExit(() =>
@@ -76,7 +76,7 @@ public partial class SelectTool : CommonToolBase
             .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {
                 LeftInteractor = PolylineTransformInteractor;
-                HoverInteractor = PolylineHover;
+                HoverInteractor = PolylineTransformHover;
             })
             .OnExit(() =>
             {
@@ -117,6 +117,7 @@ public partial class SelectTool : CommonToolBase
 
     public override bool OnSwitchLayer(Entity newLayerE)
     {
+        if (newLayerE.IsNull) return false;
         ToolStateMachine.Fire(_etSwitchWorkingLayer, newLayerE);
         bool isPolyline = newLayerE.Has<PolylineLayerSetting>();
         bool isImage = newLayerE.Has<ImageLayerSetting>();

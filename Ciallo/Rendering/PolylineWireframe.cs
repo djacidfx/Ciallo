@@ -5,12 +5,12 @@ using Godot;
 
 namespace Ciallo.Rendering;
 
-public partial class StrokeCenterline : Node2D
+public partial class PolylineWireframe : Node2D
 {
     public StrokeView Wireframe;
     public MultiMeshInstance2D Dots;
 
-    public StrokeCenterline()
+    public PolylineWireframe()
     {
         Wireframe = new() { Material = AutoloadRendering.WireframeMaterial };
         Wireframe.SetInstanceShaderParameter("overridingColor", AppPreference.StrokeWireframeColor);

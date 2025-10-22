@@ -1,42 +1,77 @@
-﻿using System;
+﻿using System.Collections.Immutable;
+using Ciallo.Command;
 using Ciallo.Data;
-using Ciallo.NodeControl;
-using Frent;
+using Ciallo.Geometry;
+using Ciallo.Rendering;
+using Godot;
 
 namespace Ciallo.Tool;
 
-public class PaintFillInteractor : InteractorBase
+public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
 {
     public override bool CanInteract
     {
         get
         {
             var l = SelectionManager.WorkingLayer.Value;
-            return l.IsNotNull() && l.Has<PolylineLayerSetting>();
+            return !l.IsNull && l.Has<PolylineLayerSetting>();
         }
     }
 
+    private readonly PolylineInteractiveGenerator _generator = new()
+    {
+        Mode = PolylineInteractiveGenerator.RadiusMode.Fixed,
+        FixedRadius = AppPreference.StrokeWireframeRadius,
+        AllowIntersection = false,
+    };
+    private StrokeView _dashPreview;
+
     public override void Prepare(CursorButtonData data)
     {
-        throw new NotImplementedException();
     }
+
     public override void Start(CursorButtonData data)
     {
-        throw new NotImplementedException();
+        _dashPreview = new StrokeView();
+        _dashPreview.Material = AutoloadRendering.DashWireframeMaterial;
+        var layerE = SelectionManager.WorkingLayer.Value;
+        var layerView = layerE.Get<PolylineLayerView>();
+        layerView.AddChild(_dashPreview);
+
+        _generator.Start(data);
     }
 
     public override void Interacting(CursorMotionData data)
     {
-        throw new NotImplementedException();
+        _generator.Update(data);
+        ImmutableArray<Vector2> points = [.._generator.Points, _generator.Points[0]];
+        ImmutableArray<float> radii = [.._generator.Radii, _generator.Radii[0]];
+        _dashPreview.SetGeometry(points, radii);
     }
 
     public override void End(CursorButtonData data)
     {
-        throw new NotImplementedException();
+        var layerE = SelectionManager.WorkingLayer.Value;
+        var setting = new FilledPolygonSetting() { Color = { Value = tool.Color.Value } };
+        var cmd = new NewFilledPolygonCmd(layerE, setting);
+        var polygonE = cmd.InitEntity();
+        var geom = new PolylineGeometry()
+        {
+            Points = [.._generator.Points],
+        };
+        cmd.Combine(new SetPolylineGeometryCmd(polygonE, geom)).Commit();
+        Clear();
     }
 
     public override void Cancel()
     {
-        throw new NotImplementedException();
+        Clear();
+    }
+
+    public void Clear()
+    {
+        _generator.Clear();
+        _dashPreview?.QueueFree();
+        _dashPreview = null;
     }
 }

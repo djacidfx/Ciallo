@@ -26,7 +26,7 @@ public partial class AutoloadData : Node
                 StandardResolver.Instance
             ]
         );
-        MessagePackSerializer.DefaultOptions = MessagePackSerializer.DefaultOptions.WithResolver(defaultResolver);
+        MessagePackSerializer.DefaultOptions = MessagePackSerializerOptions.Standard.WithResolver(defaultResolver);
         DefaultOption = MessagePackSerializer.DefaultOptions;
 
         // Preference and load brush library data
@@ -39,8 +39,8 @@ public partial class AutoloadData : Node
         }
         AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
 
-        bool brushesFileExists = AppBrushLibrary.TryLoad();
-        if (!brushesFileExists) AppBrushLibrary.ResetBuiltInBrushes();
+        bool brushFilesExists = AppBrushLibrary.TryLoad();
+        if (!brushFilesExists) AppBrushLibrary.ResetBuiltInBrushes();
     }
 
     public override void _Ready()

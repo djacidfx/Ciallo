@@ -9,7 +9,7 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public class PolylineHover : HoverBase
+public class PolylineTransformHover : HoverBase
 {
     public Entity HoveredPolyline;
     public CursorDetectionArea RotationArea;
@@ -37,13 +37,13 @@ public class PolylineHover : HoverBase
             _polylineE = SelectionManager.SelectedPolylines[0];
 
             // mid axis
-            var centerline = _polylineE.Get<StrokeCenterline>();
+            var centerline = _polylineE.Get<PolylineWireframe>();
             _midAxis = (Node2D)centerline.Duplicate(0); // Don't duplicate script, or constructor will be called.
             worldOverlay.AddChild(_midAxis);
             _midAxis.Visible = true;
 
             // transform box overlay
-            var geom = _polylineE.Get<StrokeGeometry>();
+            var geom = _polylineE.Get<PolylineGeometry>();
             var rect = geom.Points.GetBoundingBox();
             _transformBox = new TransformOverlayBox(rect.Size, rect.GetCenter());
             worldOverlay.AddChild(_transformBox);
@@ -59,14 +59,14 @@ public class PolylineHover : HoverBase
         // hover hinter
         _hoverSub = Document.Get<WorldCursorDetectionArea>().HoveringArea.Skip(1).Subscribe(area =>
         {
-            if (!HoveredPolyline.IsNull) HoveredPolyline.Get<StrokeCenterline>().SetVisible(false);
+            if (!HoveredPolyline.IsNull) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
             if (area == null)
             {
                 HoveredPolyline = Entity.Null;
                 return;
             }
             HoveredPolyline = area.SelfEntity;
-            if (!HoveredPolyline.IsNull) HoveredPolyline.Get<StrokeCenterline>().SetVisible(true);
+            if (!HoveredPolyline.IsNull) HoveredPolyline.Get<PolylineWireframe>().SetVisible(true);
         });
     }
 
@@ -82,7 +82,7 @@ public class PolylineHover : HoverBase
         _layerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
 
         // overlays
-        if (!HoveredPolyline.IsNull) HoveredPolyline.Get<StrokeCenterline>().SetVisible(false);
+        if (!HoveredPolyline.IsNull) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
         _midAxis?.QueueFree();
         _midAxis = null;
         _transformBox?.QueueFree();

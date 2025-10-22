@@ -16,6 +16,8 @@ namespace Ciallo.Data;
 
 public static partial class AppWorldManager
 {
+    // Pitfall: If serialize an empty class without any [DataMember], then add a new [DataMember] later version and deserialize it back.
+    // MessagePack will throw error without any useful information.
     public static readonly HashSet<Type> ToSerializeTypes = [..GetToSerializeTypes()];
     public static readonly HashSet<Type> ToSerializeTags = ToSerializeTypes.Where(t => t.IsTag()).ToHashSet();
     public static readonly HashSet<Type> ToSerializeComponents = ToSerializeTypes.Except(ToSerializeTags).ToHashSet();
@@ -58,22 +60,32 @@ public static partial class AppWorldManager
             }
             else if (layerDataE.Has<PolylineLayerSetting>())
             {
-                var setting = layerDataE.Get<PolylineLayerSetting>();
-                var newPolylineLayerCmd = new NewPolylineLayerCmd(setting);
+                var newPolylineLayerCmd = new NewPolylineLayerCmd(layerDataE.Get<PolylineLayerSetting>());
                 newPolylineLayerCmd.Do();
                 var layerE = newPolylineLayerCmd.LayerE;
                 layerMap.Add(layerDataE, layerE);
 
                 foreach (var polylineDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
-                    var geometry = polylineDataE.Get<StrokeGeometry>();
-                    var newStrokeCmd = new NewStrokeCmd(layerE);
-                    newStrokeCmd.Do();
-                    var polylineE = newStrokeCmd.StrokeE;
-                    new SetStrokeGeometryCmd(polylineE, geometry).Do();
+                    var geometry = polylineDataE.Get<PolylineGeometry>();
 
-                    var strokeBrush = polylineDataE.Get<StrokeBrush>();
-                    new ChangeStrokeBrushCmd(polylineE, brushMap[strokeBrush.Value]).Do();
+                    if (polylineDataE.Has<StrokeBrush>())
+                    {
+                        var newStrokeCmd = new NewStrokeCmd(layerE);
+                        newStrokeCmd.Do();
+                        var strokeE = newStrokeCmd.StrokeE;
+                        new SetPolylineGeometryCmd(strokeE, geometry).Do();
+                        var strokeBrush = polylineDataE.Get<StrokeBrush>();
+                        new ChangeStrokeBrushCmd(strokeE, brushMap[strokeBrush.Value]).Do();
+                    }
+                    else if (polylineDataE.Has<FilledPolygonSetting>())
+                    {
+                        var setting = polylineDataE.Get<FilledPolygonSetting>();
+                        var newFilledPolygonCmd = new NewFilledPolygonCmd(layerE, setting);
+                        newFilledPolygonCmd.Do();
+                        var polygonE = newFilledPolygonCmd.PolygonE;
+                        new SetPolylineGeometryCmd(polygonE, geometry).Do();
+                    }
                 }
             }
         }
@@ -87,7 +99,7 @@ public static partial class AppWorldManager
 
     public static void SaveWorkingWorld()
     {
-        if (WorkingDocument.CurrentValue.IsNull()) return;
+        if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (CanSaveFile(settings.FilePath.Value))
             Save(WorkingWorld.Value, settings.FilePath.Value);
@@ -95,7 +107,7 @@ public static partial class AppWorldManager
 
     public static void ReloadWorkingWorld() // for debug
     {
-        if (WorkingDocument.CurrentValue.IsNull()) return;
+        if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (!File.Exists(settings.FilePath.Value)) return;
         var world = Load(settings.FilePath.Value, out var document);

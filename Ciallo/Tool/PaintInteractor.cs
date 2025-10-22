@@ -1,8 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Ciallo.Command;
 using Ciallo.Data;
-using Ciallo.NodeControl;
+using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -16,8 +15,8 @@ public class PaintInteractor : InteractorBase
         get
         {
             var l = SelectionManager.WorkingLayer.Value;
-            bool layerAvailable = l.IsNotNull() && l.Has<PolylineLayerSetting>();
-            bool brushAvailable = SelectionManager.WorkingBrush.Value.IsNotNull() || AppBrushLibrary.HasSelection;
+            bool layerAvailable = !l.IsNull && l.Has<PolylineLayerSetting>();
+            bool brushAvailable = !SelectionManager.WorkingBrush.Value.IsNull || AppBrushLibrary.HasSelection;
 
             return layerAvailable && brushAvailable;
         }
@@ -25,21 +24,18 @@ public class PaintInteractor : InteractorBase
 
     private Entity _brushE;
     private StrokeView _strokePreview;
-    private readonly List<Vector2> _points = new() { Capacity = 2048 };
-    private readonly List<float> _radii = new() { Capacity = 2048 };
 
-    private bool _justSavePoint = false;
-    private Vector2 _lastScreenPoint;
-    private Vector2 _lastDirection;
-    private float _lastPressure = -1.0f;
     private Stopwatch _interactStopwatch;
-    private readonly float _minDistance = 3f; // in pixel
-    private readonly float _maxDistance = 15f; // in pixel
-    private readonly float _minCosAngle = Mathf.Cos(Mathf.DegToRad(5f));
+
+    private readonly PolylineInteractiveGenerator _generator = new()
+    {
+        Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
+    };
 
     public override void Prepare(CursorButtonData data)
     {
     }
+
     public override void Start(CursorButtonData data)
     {
         // Shen: I guess this will improve graphics responsiveness
@@ -63,16 +59,10 @@ public class PaintInteractor : InteractorBase
         var layerView = layerE.Get<PolylineLayerView>();
         layerView.AddChild(_strokePreview);
 
-        var brushS = _brushE.Get<BrushSetting>();
-        var t = brushS.Pressure2RadiusRatioCurve.SampleX(0);
-        float radius = brushS.BaseRadius.Value * t;
+        var brushSetting = _brushE.Get<BrushSetting>();
+        _generator.RadiusSampler = PolylineInteractiveGenerator.BrushToRadiusSampler(brushSetting);
 
-        _points.Add(data.WorldPosition);
-        _radii.Add(radius);
-        _lastScreenPoint = data.ScreenPosition;
-        _lastDirection = Vector2.FromAngle(0);
-        _lastPressure = -1.0f;
-        _strokePreview.SetGeometry(_points, _radii);
+        _generator.Start(data);
     }
 
     public override void Interacting(CursorMotionData data)
@@ -81,53 +71,8 @@ public class PaintInteractor : InteractorBase
         // GD.Print($"[PaintInteractor] Interacting delta: {deltaMs} ms");
         _interactStopwatch.Restart();
 
-        var setting = _brushE.Get<BrushSetting>();
-        var transformedPressure = setting.Pressure2RadiusRatioCurve.SampleX(data.Pressure);
-        float radius = setting.BaseRadius.Value * transformedPressure;
-        var position = data.WorldPosition;
-
-        // Always preview the last point to give a smooth drawing experience
-        if (!_justSavePoint)
-        {
-            _points.RemoveAt(_points.Count - 1);
-            _radii.RemoveAt(_radii.Count - 1);
-        }
-        _justSavePoint = false;
-        _points.Add(position);
-        _radii.Add(radius);
-
-        bool isSmaller = data.ScreenPosition.DistanceTo(_lastScreenPoint) < _minDistance;
-        bool isLarger = data.ScreenPosition.DistanceTo(_lastScreenPoint) > _maxDistance;
-        bool isPressureChange = Mathf.Abs(data.Pressure - _lastPressure) > 0.08f;
-        bool isWinding = data.ScreenPosition.DirectionTo(_lastScreenPoint).Dot(_lastDirection) < _minCosAngle;
-        bool saveThisPoint = !isSmaller && (isLarger || isWinding || isPressureChange);
-
-        if (saveThisPoint)
-        {
-            // Basic smoothing
-            const float smoothingFactor = 0.15f;
-            for (int i = 0; i < 5; i++)
-            {
-                int idx = _points.Count - 1 - i;
-                if (idx < 2) break;
-
-                // Don't smooth if two segments have large angle
-                var dir1 = (_points[idx] - _points[idx - 1]).Normalized();
-                var dir2 = (_points[idx - 1] - _points[idx - 2]).Normalized();
-                if (dir1.Dot(dir2) < Mathf.Cos(Mathf.DegToRad(30f)))
-                    break;
-
-                _radii[idx] = Mathf.Lerp(_radii[idx], _radii[idx - 1], smoothingFactor);
-                _points[idx] = _points[idx].Lerp(_points[idx - 1], smoothingFactor);
-            }
-
-            _lastDirection = data.ScreenPosition.DirectionTo(_lastScreenPoint).Normalized();
-            _lastScreenPoint = data.ScreenPosition;
-            _lastPressure = transformedPressure;
-            _justSavePoint = true;
-        }
-
-        _strokePreview.SetGeometry(_points, _radii);
+        _generator.Update(data);
+        _strokePreview.SetGeometry(_generator.Points, _generator.Radii);
     }
 
     public override void End(CursorButtonData data)
@@ -135,8 +80,13 @@ public class PaintInteractor : InteractorBase
         var layerE = SelectionManager.WorkingLayer.Value;
         var cmd = new NewStrokeCmd(layerE);
         var strokeE = cmd.InitEntity();
+        var geom = new PolylineGeometry()
+        {
+            Points = [.._generator.Points],
+            Radii = [.._generator.Radii],
+        };
         cmd.Combine(new ChangeStrokeBrushCmd(strokeE, _brushE))
-            .Combine(new SetStrokeGeometryCmd(strokeE, _points, _radii))
+            .Combine(new SetPolylineGeometryCmd(strokeE, geom))
             .Commit();
         Clear();
     }
@@ -148,8 +98,7 @@ public class PaintInteractor : InteractorBase
 
     public void Clear()
     {
-        _points.Clear();
-        _radii.Clear();
+        _generator.Clear();
         _strokePreview.QueueFree();
         OS.LowProcessorUsageMode = true;
         Input.MouseMode = Input.MouseModeEnum.Visible;

@@ -21,7 +21,7 @@ public partial class LayerAction : Control
         if (AppWorldManager.WorkingWorld.Value == null) return;
         var document = AppWorldManager.WorkingDocument.CurrentValue;
         var workingLayerE = document.Get<SelectionManager>().WorkingLayer.Value;
-        if (workingLayerE.IsNull()) return;
+        if (workingLayerE.IsNull) return;
         var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
         var nextLayerPath = document.Get<LayerTreeManager>().GetNextFocusPathAfterDeletion(workingLayerPath);
 

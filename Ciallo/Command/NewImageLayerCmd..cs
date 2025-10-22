@@ -84,7 +84,7 @@ public class NewImageLayerCmd : CommandBase
 
     public Entity InitEntity()
     {
-        if (LayerE.IsNull())
+        if (LayerE.IsNull)
         {
             LayerE = WorkingWorld.Create();
             var node = new LayerTreeNode { Name = { Value = "Image".Tr() } };

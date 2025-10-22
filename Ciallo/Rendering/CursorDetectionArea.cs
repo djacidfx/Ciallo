@@ -53,12 +53,13 @@ public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
         {
             child.QueueFree();
         }
-        PhysicsServer2D.BodyClearShapes(GetRid());
+        // Pitfall: call queue free on child shapes and BodyClearShapes at the same time will cause index error.
+        // It seems that don't have to remove shape first before calling FreeRid.
         _shapes.ForEach(PhysicsServer2D.FreeRid);
         _shapes.Clear();
     }
 
-    public void SetStrokeGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
+    public void SetStrokeShape(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
         ClearShapes();
         if (points.Count == 1)
@@ -91,6 +92,16 @@ public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
             PhysicsServer2D.ShapeSetData(shapeRid, vertices);
             AddShapeRid(shapeRid);
         }
+    }
+
+    public void SetPolygonShape(IReadOnlyList<Vector2> points)
+    {
+        ClearShapes();
+
+        AddChild(new CollisionPolygon2D()
+        {
+            Polygon = [..points],
+        });
     }
 
     // Note: If there is a button overlay on world, _MouseEntered won't work.

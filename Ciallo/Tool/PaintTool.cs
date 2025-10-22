@@ -3,7 +3,6 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Misc;
 using Ciallo.NodeControl;
-using Ciallo.Rendering;
 using Ciallo.Tool;
 using Ciallo.Widget;
 using Frent;
@@ -101,9 +100,9 @@ public partial class PaintTool : CommonToolBase
             ExpEdit = true,
         };
         var radiusBox = container.AddProperty("Radius", radiusControl);
-        radiusBox.VisibleIf(selectionM.WorkingBrush, e => e.IsNotNull());
+        radiusBox.VisibleIf(selectionM.WorkingBrush, e => !e.IsNull);
         var rView = selectionM.WorkingBrush
-            .Select(e => e.IsNull() ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
+            .Select(e => e.IsNull ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
         radiusControl.ReactiveBindNumber(rView);
 
         var manageDocumentBrush = new Button()
@@ -126,21 +125,8 @@ public partial class PaintTool : CommonToolBase
 
     public override bool OnSwitchLayer(Entity newLayerE)
     {
-        return newLayerE.IsNotNull() && newLayerE.Has<PolylineLayerSetting>();
+        return !newLayerE.IsNull && newLayerE.Has<PolylineLayerSetting>();
     }
 }
 
 public partial class DocumentBrushList : ItemList;
-
-public class PaintHover : HoverBase
-{
-    public override void Start()
-    {
-        Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = Control.CursorShape.Cross;
-    }
-
-    public override void End()
-    {
-        Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = default;
-    }
-}

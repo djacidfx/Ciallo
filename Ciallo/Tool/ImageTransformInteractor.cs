@@ -1,13 +1,13 @@
 ﻿using System.Linq;
 using Ciallo.Data;
-using Ciallo.NodeControl;
+using Ciallo.Geometry;
 using Godot;
 
 namespace Ciallo.Tool;
 
 public class ImageTransformInteractor : InteractorBase
 {
-    private readonly ImageEditHover _hover;
+    private readonly ImageTransformHover _hover;
     private int _transformType = -1; // 0: Rotate, 1: Move, 2~5: Corner Resize
 
     public override bool CanInteract
@@ -25,7 +25,7 @@ public class ImageTransformInteractor : InteractorBase
     private Transform2D _startTransform;
     private Vector2[] _startCorners = [];
 
-    public ImageTransformInteractor(ImageEditHover hover)
+    public ImageTransformInteractor(ImageTransformHover hover)
     {
         _hover = hover;
     }

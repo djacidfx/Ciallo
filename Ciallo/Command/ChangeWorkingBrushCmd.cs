@@ -31,7 +31,7 @@ public class ChangeWorkingBrushCmd(Index idx) : CommandBase
 
         // UI
         var brushList = Document.Get<DocumentBrushList>();
-        if (OldBrushE.IsNull()) brushList.DeselectAll();
+        if (OldBrushE.IsNull) brushList.DeselectAll();
         else
         {
             var oldIdx = bm.Brushes.IndexOf(OldBrushE);

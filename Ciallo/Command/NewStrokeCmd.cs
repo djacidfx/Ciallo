@@ -2,15 +2,13 @@
 using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
-using Godot;
 
 namespace Ciallo.Command;
 
 public class NewStrokeCmd : CommandBase
 {
     private Entity _layerE;
-    public Entity StrokeE;
-    private readonly List<Node> _refNodes = [];
+    public Entity StrokeE { get; private set; } = Entity.Null;
 
     public NewStrokeCmd(Entity layerE)
     {
@@ -18,7 +16,6 @@ public class NewStrokeCmd : CommandBase
     }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(StrokeE);
-    public override IEnumerable<GodotObject> DoRefObjects => _refNodes;
 
     public override void Do()
     {
@@ -28,30 +25,26 @@ public class NewStrokeCmd : CommandBase
         // Data
         StrokeE.Tag<ToSerializeTag>();
         _layerE.Get<LayerTreeNode>().AddChild(StrokeE);
-        StrokeE.Add<StrokeBrush>(new Entity());
+        StrokeE.Add<StrokeBrush>(Entity.Null);
 
         // View
-        if (_refNodes.Count == 0)
-            _refNodes.Add(new StrokeView()
-            {
-                Material = BrushMaterial.MissingBrushMaterial,
-            });
-        var strokeView = (StrokeView)_refNodes[0];
+        var strokeView = new StrokeView()
+        {
+            Material = BrushMaterial.MissingBrushMaterial,
+        };
         var layerView = _layerE.Get<PolylineLayerView>();
         layerView.AddChild(strokeView);
         StrokeE.Add(strokeView);
         strokeView.SetOwner(layerView.Owner);
 
         // Overlay
-        if (_refNodes.Count == 1) _refNodes.Add(new StrokeCenterline() { Visible = false });
-        var strokeOverlay = (StrokeCenterline)_refNodes[1];
+        var strokeOverlay = new PolylineWireframe() { Visible = false };
         var worldOverlay = Document.Get<WorldOverlay>();
         worldOverlay.AddChild(strokeOverlay);
         StrokeE.Add(strokeOverlay);
 
         // Cursor detection
-        var geom = StrokeE.Get<StrokeGeometry>();
-        var strokeArea = WorldCursorDetectionArea.CreateStroke(geom.Points, geom.Radii);
+        var strokeArea = new CursorDetectionArea();
         _layerE.Get<PolylineAreaHolder>().AddChild(strokeArea);
         StrokeE.Add(strokeArea);
     }
@@ -63,13 +56,14 @@ public class NewStrokeCmd : CommandBase
         StrokeE.Remove<CursorDetectionArea>();
 
         // Overlay
-        StrokeE.Remove<StrokeCenterline>();
-        _refNodes[1].GetParent().RemoveChild(_refNodes[1]);
+        var strokeOverlay = StrokeE.Get<PolylineWireframe>();
+        StrokeE.Remove<PolylineWireframe>();
+        strokeOverlay.QueueFree();
 
         // View
+        var strokeView = StrokeE.Get<StrokeView>();
         StrokeE.Remove<StrokeView>();
-        var layerView = _layerE.Get<PolylineLayerView>();
-        layerView.RemoveChild(_refNodes[0]);
+        strokeView.QueueFree();
 
         // Data
         StrokeE.Remove<StrokeBrush>();
@@ -79,10 +73,10 @@ public class NewStrokeCmd : CommandBase
 
     public Entity InitEntity()
     {
-        if (StrokeE.IsNotNull()) return StrokeE;
+        if (!StrokeE.IsNull) return StrokeE;
         StrokeE = WorkingWorld.Create();
         var node = new LayerTreeNode();
-        StrokeE.Add(new StrokeGeometry());
+        StrokeE.Add(new PolylineGeometry());
         StrokeE.Add(node);
         return StrokeE;
     }
