@@ -1,4 +1,5 @@
 ﻿using System;
+using Frent;
 using Godot;
 
 namespace R3;
@@ -17,9 +18,12 @@ public static class GodotNodeExtensions
     /// </remarks>
     public static T AddTo<T>(this T disposable, Node node) where T : IDisposable
     {
-        // Shen note: Decide to remove the "Node must inside the tree" constraints here. Always be mindful.
+        // Shen note: Decide to remove the "Node must inside the tree" constraints here.
+        // Since it's damaging my brain to track the node whether inside tree or not.
+        // Always be mindful.
 
-        // // oringal code:
+        // oringal code:
+
         // // Note: Dispose when tree exited, so if node is not inside tree, dispose immediately.
         // if (!node.IsInsideTree()) 
         // {
@@ -33,6 +37,12 @@ public static class GodotNodeExtensions
         // }
 
         node.TreeExited += () => disposable.Dispose();
+        return disposable;
+    }
+
+    public static T AddTo<T>(this T disposable, Entity e) where T : IDisposable
+    {
+        e.OnDelete += _ => disposable.Dispose();
         return disposable;
     }
 }
