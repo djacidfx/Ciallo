@@ -121,10 +121,6 @@ public class PolylineInteractiveGenerator
             _lastPressure = pressure;
             _saveLastestPoint = true;
         }
-
-
-        _points.Add(data.WorldPosition);
-        _radii.Add(CalculateRadius(data));
     }
 
 

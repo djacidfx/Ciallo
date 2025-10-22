@@ -1,4 +1,5 @@
 ﻿using System.Collections.Immutable;
+using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
@@ -49,6 +50,14 @@ public class PaintFillInteractor : InteractorBase
 
     public override void End(CursorButtonData data)
     {
+        var layerE = SelectionManager.WorkingLayer.Value;
+        var cmd = new NewFilledPolygonCmd(layerE);
+        var polygonE = cmd.InitEntity();
+        var geom = new PolylineGeometry()
+        {
+            Points = [.._generator.Points],
+        };
+        cmd.Combine(new SetPolylineGeometryCmd(polygonE, geom)).Commit();
         Clear();
     }
 

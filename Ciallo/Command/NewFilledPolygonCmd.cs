@@ -63,6 +63,7 @@ public class NewFilledPolygonCmd : CommandBase
         PolygonE.Remove<PolylineWireframe>();
 
         // View
+        // Pitfall: godot cannot deal with polygons shape as arabic numerals '8'.
         PolygonE.Get<Polygon2D>().QueueFree();
         PolygonE.Remove<Polygon2D>();
 
