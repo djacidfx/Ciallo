@@ -44,6 +44,7 @@ public class PolylineInteractiveGenerator
     private readonly float _minDistance = 3f; // in pixel
     private readonly float _maxDistance = 15f; // in pixel
     private readonly float _minCosWindingAngle = Mathf.Cos(Mathf.DegToRad(5f));
+    private bool _previewPointAlreadyRemoved = false;
 
     public void Start(CursorButtonData data)
     {
@@ -80,12 +81,12 @@ public class PolylineInteractiveGenerator
     // Always add current motion point, then check whether to save current point. If not, remove it on next update.
     public void Update(CursorMotionData data)
     {
-        if (!_saveLastestPoint)
+        if (!_saveLastestPoint && !_previewPointAlreadyRemoved)
         {
             _points.RemoveAt(_points.Count - 1);
             _radii.RemoveAt(_radii.Count - 1);
         }
-
+        _previewPointAlreadyRemoved = false;
         _saveLastestPoint = false;
         float pressure = data.Pressure;
         float radius = CalculateRadius(data);
@@ -95,6 +96,9 @@ public class PolylineInteractiveGenerator
 
         if (!AllowIntersection && CheckSelfIntersection())
         {
+            _points.RemoveAt(_points.Count - 1);
+            _radii.RemoveAt(_radii.Count - 1);
+            _previewPointAlreadyRemoved = true;
             return;
         }
 

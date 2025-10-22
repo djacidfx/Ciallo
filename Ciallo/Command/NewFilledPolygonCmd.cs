@@ -33,7 +33,7 @@ public class NewFilledPolygonCmd : CommandBase
         PolygonE.Add(_setting);
 
         // View
-        var polygonView = new Polygon2D();
+        var polygonView = new Polygon2D() { Antialiased = true };
         var layerView = _layerE.Get<PolylineLayerView>();
         layerView.AddChild(polygonView);
         PolygonE.Add(polygonView);
