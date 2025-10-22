@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Ciallo.Data;
@@ -82,34 +81,6 @@ public partial class WorldCursorDetectionArea : Node2D
             Shape = new RectangleShape2D { Size = size },
         });
         area.Position = center;
-
-        return area;
-    }
-
-    public static CursorDetectionArea CreateStroke(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
-    {
-        if (points.Count == 1) return CreateRect(radii[0] * 2 * Vector2.One, points[0]);
-        if (points.Count != radii.Count) throw new ArgumentException("Points and radii count mismatch");
-
-        var area = new CursorDetectionArea();
-        for (var i = 0; i < points.Count - 1; i++)
-        {
-            var r0 = radii[i];
-            var r1 = radii[i + 1];
-            var p0 = points[i];
-            var p1 = points[i + 1];
-            var tangent = (p1 - p0).Normalized();
-            var normal = tangent.Rotated(Mathf.Pi / 2);
-            var vertices = new Vector2[4];
-            vertices[0] = p0 + (-tangent - normal) * r0;
-            vertices[1] = p1 + (tangent - normal) * r1;
-            vertices[2] = p1 + (tangent + normal) * r1;
-            vertices[3] = p0 + (-tangent + normal) * r0;
-
-            var shape = PhysicsServer2D.ConvexPolygonShapeCreate();
-            PhysicsServer2D.ShapeSetData(shape, vertices);
-            area.AddShapeRid(shape);
-        }
 
         return area;
     }

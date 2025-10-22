@@ -38,14 +38,13 @@ public class NewStrokeCmd : CommandBase
         strokeView.SetOwner(layerView.Owner);
 
         // Overlay
-        var strokeOverlay = new StrokeCenterline() { Visible = false };
+        var strokeOverlay = new PolylineWireframe() { Visible = false };
         var worldOverlay = Document.Get<WorldOverlay>();
         worldOverlay.AddChild(strokeOverlay);
         StrokeE.Add(strokeOverlay);
 
         // Cursor detection
-        var geom = StrokeE.Get<PolylineGeometry>();
-        var strokeArea = WorldCursorDetectionArea.CreateStroke(geom.Points, geom.Radii);
+        var strokeArea = new CursorDetectionArea();
         _layerE.Get<PolylineAreaHolder>().AddChild(strokeArea);
         StrokeE.Add(strokeArea);
     }
@@ -57,8 +56,8 @@ public class NewStrokeCmd : CommandBase
         StrokeE.Remove<CursorDetectionArea>();
 
         // Overlay
-        var strokeOverlay = StrokeE.Get<StrokeCenterline>();
-        StrokeE.Remove<StrokeCenterline>();
+        var strokeOverlay = StrokeE.Get<PolylineWireframe>();
+        StrokeE.Remove<PolylineWireframe>();
         strokeOverlay.QueueFree();
 
         // View

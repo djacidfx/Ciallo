@@ -11,7 +11,6 @@ namespace Ciallo.Command;
 public class NewPolylineLayerCmd : CommandBase
 {
     public Entity LayerE;
-    private readonly List<Node> _refObjects = [];
     private readonly PolylineLayerSetting _setting;
 
     public NewPolylineLayerCmd(PolylineLayerSetting setting = null)
@@ -20,11 +19,13 @@ public class NewPolylineLayerCmd : CommandBase
     }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(LayerE);
-    public override IEnumerable<GodotObject> DoRefObjects => _refObjects;
+    private CompositeDisposable _subs;
 
     public override void Do()
     {
         InitEntity();
+        _subs = new();
+        _subs.AddTo(LayerE);
 
         // Data
         var tree = Document.Get<LayerTreeManager>();
@@ -37,12 +38,12 @@ public class NewPolylineLayerCmd : CommandBase
 
         // View
         var worldView = Document.Get<WorldView>();
-        if (_refObjects.Count == 0) _refObjects.Add(new PolylineLayerView());
-        var layerView = (PolylineLayerView)_refObjects[0];
+        var layerView = new PolylineLayerView();
         worldView.AddChild(layerView);
         LayerE.Add(layerView);
         layerView.SetOwner(worldView);
-        LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(layerView.SetVisible).AddTo(layerView);
+
+        LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(layerView.SetVisible).AddTo(_subs);
 
         // Cursor detection
         var worldArea = Document.Get<WorldCursorDetectionArea>();
@@ -54,14 +55,12 @@ public class NewPolylineLayerCmd : CommandBase
     public override void Undo()
     {
         // Cursor detection
-        var holder = LayerE.Get<PolylineAreaHolder>();
-        holder.QueueFree();
+        LayerE.Get<PolylineAreaHolder>().QueueFree();
         LayerE.Remove<PolylineAreaHolder>();
 
         // View
+        LayerE.Get<PolylineLayerView>().QueueFree();
         LayerE.Remove<PolylineLayerView>();
-        var worldView = Document.Get<WorldView>();
-        worldView.RemoveChild(_refObjects[0]);
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
@@ -71,6 +70,8 @@ public class NewPolylineLayerCmd : CommandBase
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.RemoveChild(^1);
         LayerE.Detach<ToSerializeTag>();
+
+        _subs.Dispose();
     }
 
     public Entity InitEntity()
