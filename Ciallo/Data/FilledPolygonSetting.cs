@@ -8,5 +8,5 @@ namespace Ciallo.Data;
 public class FilledPolygonSetting
 {
     // Same as Polygon2D fill color. If texture is set, it will be multiplied by this color.
-    public ReactiveProperty<Color> Color { get; } = new(Colors.White);
+    [DataMember] public ReactiveProperty<Color> Color = new(Colors.White);
 }

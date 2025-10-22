@@ -7,7 +7,7 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class PaintFillInteractor : InteractorBase
+public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
 {
     public override bool CanInteract
     {
@@ -52,7 +52,8 @@ public class PaintFillInteractor : InteractorBase
     public override void End(CursorButtonData data)
     {
         var layerE = SelectionManager.WorkingLayer.Value;
-        var cmd = new NewFilledPolygonCmd(layerE);
+        var setting = new FilledPolygonSetting() { Color = { Value = tool.Color.Value } };
+        var cmd = new NewFilledPolygonCmd(layerE, setting);
         var polygonE = cmd.InitEntity();
         var geom = new PolylineGeometry()
         {

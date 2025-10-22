@@ -16,6 +16,8 @@ namespace Ciallo.Data;
 
 public static partial class AppWorldManager
 {
+    // Pitfall: If serialize an empty class without any [DataMember], then add a new [DataMember] later version and deserialize it back.
+    // MessagePack will throw error without any useful information.
     public static readonly HashSet<Type> ToSerializeTypes = [..GetToSerializeTypes()];
     public static readonly HashSet<Type> ToSerializeTags = ToSerializeTypes.Where(t => t.IsTag()).ToHashSet();
     public static readonly HashSet<Type> ToSerializeComponents = ToSerializeTypes.Except(ToSerializeTags).ToHashSet();
