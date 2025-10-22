@@ -28,6 +28,8 @@ public class PolylineInteractiveGenerator
     public RadiusMode Mode = RadiusMode.Fixed;
     public float FixedRadius = 1f;
     public Func<CursorMotionData, float> RadiusSampler;
+    // Controls if the new points can intersect with existing already generated polyline.
+    public bool AllowIntersection = true;
 
     private readonly List<Vector2> _points = new(2048);
     private readonly List<float> _radii = new(2048);
@@ -91,6 +93,11 @@ public class PolylineInteractiveGenerator
         _points.Add(position);
         _radii.Add(radius);
 
+        if (!AllowIntersection && CheckSelfIntersection())
+        {
+            return;
+        }
+
         bool isSmaller = data.ScreenPosition.DistanceTo(_lastScreenPoint) < _minDistance;
         bool isLarger = data.ScreenPosition.DistanceTo(_lastScreenPoint) > _maxDistance;
         bool isPressureChange = Mathf.Abs(data.Pressure - _lastPressure) > 0.08f;
@@ -138,6 +145,38 @@ public class PolylineInteractiveGenerator
         _saveLastestPoint = false;
         _points.Clear();
         _radii.Clear();
+    }
+
+    // Warning: Brutal algorithm, only suitable for short polylines.
+    private bool CheckSelfIntersection()
+    {
+        if (_points.Count < 4) return false;
+
+        var p3 = _points[^1];
+        var p2 = _points[^2];
+
+        for (var i = 0; i < _points.Count - 3; i++)
+        {
+            var p0 = _points[i];
+            var p1 = _points[i + 1];
+            if (SegmentIntersection(p0, p1, p2, p3))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool SegmentIntersection(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3)
+    {
+        var s1 = p1 - p0;
+        var s2 = p3 - p2;
+
+        var s = (-s1.Y * (p0.X - p2.X) + s1.X * (p0.Y - p2.Y)) / (-s2.X * s1.Y + s1.X * s2.Y);
+        var t = (s2.X * (p0.Y - p2.Y) - s2.Y * (p0.X - p2.X)) / (-s2.X * s1.Y + s1.X * s2.Y);
+
+        return s is >= 0 and <= 1 && t is >= 0 and <= 1;
     }
 
     public static Func<CursorMotionData, float> BrushToRadiusSampler(BrushSetting brush)

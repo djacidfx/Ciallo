@@ -22,6 +22,7 @@ public class PaintFillInteractor : InteractorBase
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Fixed,
         FixedRadius = AppPreference.StrokeWireframeRadius,
+        AllowIntersection = false,
     };
     private StrokeView _dashPreview;
 
