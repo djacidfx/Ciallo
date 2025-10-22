@@ -93,6 +93,12 @@ public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
         }
     }
 
+    public void SetPolygonGeometry(IReadOnlyList<Vector2> points)
+    {
+        ClearShapes();
+        if (points.Count < 3) return;
+    }
+
     // Note: If there is a button overlay on world, _MouseEntered won't work.
 
     public void Init(Entity self)
