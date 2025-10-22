@@ -58,8 +58,7 @@ public static partial class AppWorldManager
             }
             else if (layerDataE.Has<PolylineLayerSetting>())
             {
-                var setting = layerDataE.Get<PolylineLayerSetting>();
-                var newPolylineLayerCmd = new NewPolylineLayerCmd(setting);
+                var newPolylineLayerCmd = new NewPolylineLayerCmd(layerDataE.Get<PolylineLayerSetting>());
                 newPolylineLayerCmd.Do();
                 var layerE = newPolylineLayerCmd.LayerE;
                 layerMap.Add(layerDataE, layerE);
@@ -67,13 +66,24 @@ public static partial class AppWorldManager
                 foreach (var polylineDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
                     var geometry = polylineDataE.Get<PolylineGeometry>();
-                    var newStrokeCmd = new NewStrokeCmd(layerE);
-                    newStrokeCmd.Do();
-                    var polylineE = newStrokeCmd.StrokeE;
-                    new SetPolylineGeometryCmd(polylineE, geometry).Do();
 
-                    var strokeBrush = polylineDataE.Get<StrokeBrush>();
-                    new ChangeStrokeBrushCmd(polylineE, brushMap[strokeBrush.Value]).Do();
+                    if (polylineDataE.Has<StrokeBrush>())
+                    {
+                        var newStrokeCmd = new NewStrokeCmd(layerE);
+                        newStrokeCmd.Do();
+                        var strokeE = newStrokeCmd.StrokeE;
+                        new SetPolylineGeometryCmd(strokeE, geometry).Do();
+                        var strokeBrush = polylineDataE.Get<StrokeBrush>();
+                        new ChangeStrokeBrushCmd(strokeE, brushMap[strokeBrush.Value]).Do();
+                    }
+                    else if (polylineDataE.Has<FilledPolygonSetting>())
+                    {
+                        var setting = polylineDataE.Get<FilledPolygonSetting>();
+                        var newFilledPolygonCmd = new NewFilledPolygonCmd(layerE, setting);
+                        newFilledPolygonCmd.Do();
+                        var polygonE = newFilledPolygonCmd.PolygonE;
+                        new SetPolylineGeometryCmd(polygonE, geometry).Do();
+                    }
                 }
             }
         }
