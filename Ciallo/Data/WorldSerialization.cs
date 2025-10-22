@@ -70,7 +70,7 @@ public static partial class AppWorldManager
                     var newStrokeCmd = new NewStrokeCmd(layerE);
                     newStrokeCmd.Do();
                     var polylineE = newStrokeCmd.StrokeE;
-                    new SetStrokeGeometryCmd(polylineE, geometry).Do();
+                    new SetPolylineGeometryCmd(polylineE, geometry).Do();
 
                     var strokeBrush = polylineDataE.Get<StrokeBrush>();
                     new ChangeStrokeBrushCmd(polylineE, brushMap[strokeBrush.Value]).Do();

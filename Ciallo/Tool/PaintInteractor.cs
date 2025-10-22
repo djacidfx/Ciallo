@@ -81,7 +81,7 @@ public class PaintInteractor : InteractorBase
         var cmd = new NewStrokeCmd(layerE);
         var strokeE = cmd.InitEntity();
         cmd.Combine(new ChangeStrokeBrushCmd(strokeE, _brushE))
-            .Combine(new SetStrokeGeometryCmd(strokeE, _generator.Points, _generator.Radii))
+            .Combine(new SetPolylineGeometryCmd(strokeE, _generator.Points, _generator.Radii))
             .Commit();
         Clear();
     }

@@ -160,7 +160,7 @@ public class PolylineTransformInteractor(PolylineTransformHover transformHover) 
         {
             var newGeom = _polylineE.Get<PolylineGeometry>().Clone();
             newGeom.Points = newGeom.Points.Select(p => resultT * p).ToList();
-            new SetStrokeGeometryCmd(_polylineE, newGeom).Commit();
+            new SetPolylineGeometryCmd(_polylineE, newGeom).Commit();
         }
 
         Clear();
