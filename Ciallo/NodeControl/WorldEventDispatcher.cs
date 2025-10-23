@@ -46,13 +46,13 @@ public partial class WorldEventDispatcher : SubViewportContainer
         _prevScreenPos = screenPos;
         _prevWorldPos = worldPos;
 
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } lClick && _isHovering)
+        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } lClick && _isHovering && !_isPanning)
         {
             DispatchLeftClick(new()
             {
                 ScreenPosition = screenPos,
                 WorldPosition = worldPos,
-                RawData = lClick
+                Tilt = _prevTilt,
             });
         }
 
@@ -62,17 +62,17 @@ public partial class WorldEventDispatcher : SubViewportContainer
             {
                 ScreenPosition = screenPos,
                 WorldPosition = worldPos,
-                RawData = lRelease
+                Tilt = _prevTilt,
             });
         }
 
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true } rClick && _isHovering)
+        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true } rClick && _isHovering && !_isPanning)
         {
             DispatchRightClick(new()
             {
                 ScreenPosition = screenPos,
                 WorldPosition = worldPos,
-                RawData = rClick
+                Tilt = _prevTilt,
             });
         }
 
@@ -82,11 +82,10 @@ public partial class WorldEventDispatcher : SubViewportContainer
             {
                 ScreenPosition = screenPos,
                 WorldPosition = worldPos,
-                RawData = rRelease
+                Tilt = _prevTilt,
             });
         }
 
-        var panel = (PaintPanel)Owner;
         if (mouseEvent is InputEventMouseMotion motion)
         {
             var data = new CursorMotionData()
@@ -109,6 +108,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
         }
 
         // ------------ Canvas navigation handling -------------
+        var panel = (PaintPanel)Owner;
         if (mouseEvent is InputEventMouseMotion && _isPanning) panel.Offset.Value -= worldDelta;
 
         // Drag middle mouse to pan

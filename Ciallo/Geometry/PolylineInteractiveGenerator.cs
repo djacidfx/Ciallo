@@ -54,19 +54,13 @@ public class PolylineInteractiveGenerator
     {
         _lastScreenPoint = data.ScreenPosition;
         _lastDirection = Vector2.FromAngle(0);
-        _lastPressure = -1.0f;
-
-        _positions.Add(data.WorldPosition);
-        switch (Mode)
-        {
-            case RadiusMode.Fixed:
-                _radii.Add(FixedRadius);
-                break;
-            case RadiusMode.Sampled:
-                _radii.Add(RadiusSampler!(default));
-                break;
-        }
         _saveLatestPoint = true;
+
+        _lastPressure = 0;
+        _positions.Add(data.WorldPosition);
+        _pressures.Add(_lastPressure);
+        _tilts.Add(data.Tilt);
+        _radii.Add(CalculateRadius(data));
     }
 
     private float CalculateRadius(CursorMotionData data)
@@ -166,6 +160,7 @@ public class PolylineInteractiveGenerator
     {
         _saveLatestPoint = false;
         _previewPointAlreadyRemoved = false;
+        _lastPressure = -1.0f;
         _positions.Clear();
         _radii.Clear();
         _pressures.Clear();

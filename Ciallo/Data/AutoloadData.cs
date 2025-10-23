@@ -53,8 +53,12 @@ public partial class AutoloadData : Node
         {
             var window = GetWindow();
             AppPreference.WindowMode = window.GetMode();
-            AppPreference.WindowSize = window.GetSize();
-            AppPreference.WindowPosition = window.GetPosition();
+            ;
+            if (window.GetMode() == Window.ModeEnum.Windowed)
+            {
+                AppPreference.WindowPosition = GetWindow().Position;
+                AppPreference.WindowSize = GetWindow().Size;
+            }
         };
 
         bool brushFilesExists = AppBrushLibrary.TryLoad();
