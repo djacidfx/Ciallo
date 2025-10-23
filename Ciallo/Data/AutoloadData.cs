@@ -33,11 +33,29 @@ public partial class AutoloadData : Node
         bool preferenceFileExists = AppPreference.TryLoad();
         if (!preferenceFileExists)
         {
-            var idx = AppPreference.SupportedLanguages.IndexOf(OS.GetLocale(), LanguageComparer.Instance);
+            var idx = Preference.SupportedLanguages.IndexOf(OS.GetLocale(), LanguageComparer.Instance);
             if (idx != -1)
-                AppPreference.Language.Value = AppPreference.SupportedLanguages[idx];
+                AppPreference.Language.Value = Preference.SupportedLanguages[idx];
         }
         AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
+
+        if (preferenceFileExists)
+        {
+            GetWindow().Mode = AppPreference.WindowMode;
+            if (AppPreference.WindowMode == Window.ModeEnum.Windowed)
+            {
+                GetWindow().SetPosition(AppPreference.WindowPosition);
+                GetWindow().SetSize(AppPreference.WindowSize);
+            }
+        }
+
+        GetWindow().SizeChanged += () =>
+        {
+            var window = GetWindow();
+            AppPreference.WindowMode = window.GetMode();
+            AppPreference.WindowSize = window.GetSize();
+            AppPreference.WindowPosition = window.GetPosition();
+        };
 
         bool brushFilesExists = AppBrushLibrary.TryLoad();
         if (!brushFilesExists) AppBrushLibrary.ResetBuiltInBrushes();

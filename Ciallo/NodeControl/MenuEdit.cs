@@ -16,7 +16,7 @@ public partial class MenuEdit : PopupMenu
         // { "Cut", AppActions.Cut },
         // { "Copy", AppActions.Copy },
         // { "Paste", AppActions.Paste },
-        { "Delete", AppActions.Delete },
+        // { "Delete", AppActions.Delete },
     };
 
     public override void _Ready()

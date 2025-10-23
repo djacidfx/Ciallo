@@ -11,14 +11,9 @@ namespace Ciallo.Data;
 [DataContract]
 public class Preference
 {
-    #region WorldView
-
-    public ReactiveProperty<Viewport.Msaa> Msaa = new(Viewport.Msaa.Msaa4X);
-    public ReactiveProperty<bool> UseTAA = new(false);
-    public ReactiveProperty<bool> UseFXAA = new(false);
     public readonly ReactiveProperty<float> MouseWheelZoomFactor = new(0.1f);
 
-    public List<string> SupportedLanguages =
+    public static readonly List<string> SupportedLanguages =
     [
         "en",
         "fr",
@@ -29,8 +24,12 @@ public class Preference
         "zh_TW",
     ];
 
-    #endregion
-
+    [DataMember]
+    public Window.ModeEnum WindowMode;
+    [DataMember]
+    public Vector2I WindowPosition = new(0, 0);
+    [DataMember]
+    public Vector2I WindowSize = new(1920, 1080);
     [DataMember]
     public ReactiveProperty<string> Language = new("en");
     [DataMember]
@@ -38,8 +37,6 @@ public class Preference
 
     [DataMember]
     public Color StrokeWireframeColor = Colors.Orange;
-    [DataMember]
-    public Color StrokeWireframeHintColor = Colors.Orange;
     [DataMember]
     public float StrokeWireframeRadius = 2f;
     [DataMember]
