@@ -30,7 +30,7 @@ Rotation,Rotation,旋转,旋轉,回転,회전,Rotation,Rotation
 Save,Save,保存,儲存,保存,저장,Speichern,Sauvegarder
 Save As...,Save As...,另存为...,另存新檔...,名前を付けて保存...,다른 이름으로 저장...,Speichern unter...,Enregistrer sous...
 Save folder,Save folder,保存文件夹,儲存資料夾,保存フォルダー,저장 폴더,Speicherordner,Dossier de sauvegarde
-Save folder does not exist.,,保存文件夹不存在。,儲存資料夾不存在。,保存フォルダー가 존재しません。,저장 폴더가 존재하지 않습니다.,Speicherordner existiert nicht.,Le dossier de sauvegarde n'existe pas.
+Save folder does not exist.,Save folder does not exist.,保存文件夹不存在。,儲存資料夾不存在。,保存フォルダー가 존재しません。,저장 폴더가 존재하지 않습니다.,Speicherordner existiert nicht.,Le dossier de sauvegarde n'existe pas.
 Selection,Selection,选择,選取,選択,선택,Auswahl,Sélection
 Settings,Settings,设置,設定,設定,설정,Einstellungen,Paramètres
 Start,Start,开始,開始,開始,시작,Start,Démarrer
@@ -42,52 +42,52 @@ Recent document,Recent document,最近的文档,最近的文檔,最近のドキ�
 File,File,文件,檔案,ファイル,파일,Datei,Fichier
 Edit,Edit,编辑,編輯,編集,편집,Bearbeiten,Édition
 Help,Help,帮助,說明,ヘルプ,도움말,Hilfe,Aide
-Window,Window,窗口,,,,,
+Window,Window,窗口,視窗,ウィンドウ,창,Fenster,Fenêtre
 [Vector Fill Tooltip],Vector fill\n- Fill enclose areas with editable fill markers.,矢量填充\n- 用可编辑的填充标记填充封闭区域。,矢量填充\n- 用可編輯的填充標記填充封閉區域。,ベクターフィル\n- 編集可能なフィルマーカーで閉じた領域を塗りつぶします。,벡터 채우기\n- 편집 가능한 채우기 마커로 닫힌 영역을 채웁니다.,Vektor-Füllung\n- Geschlossene Bereiche mit bearbeitbaren Füllmarkern füllen.,Remplissage vectoriel\n- Remplit les zones fermées avec des repères de remplissage modifiables.
 [Paint Fill Tooltip],Paint fill\n- Draw colored area free-handly.,填充\n- 自由手绘彩色区域。,填充\n- 自由手繪彩色區域。,ペイント塗りつぶし\n- フリーハンドでカラー領域を描画します。,페인트 채우기\n- 자유롭게 색칠된 영역을 그립니다.,Farbfüllung\n- Freihändig gezeichnete Farbflächen.,Remplissage au pinceau\n- Dessine des zones colorées à main levée.
 [Paint Brush Tooltip],Paint brush,画笔,畫筆,ペイントブラシ,페인트 브러시,Pinsel,Pinceau
-[About Ciallo],Ciallo is a free and open-source software for digital painting.\n\nCiallo's unique technologies are researched and developed by the developer Shen Ciao — inspired by love and supported by your donations.,Ciallo是一款免费开源的数字绘画软件。\n\nCiallo特有的技术由开发者Shen Ciao研发 - 因爱而生，靠您的捐赠而行。,Ciallo是一款免費开源的數位繪畫軟體。\n\nCiallo特有的技術由開發者Shen Ciao研發──源於愛並由您的捐助支持。,,,,
+[About Ciallo],Ciallo is a free and open-source software for digital painting.\n\nCiallo's unique technologies are researched and developed by the developer Shen Ciao — inspired by love and supported by your donations.,Ciallo是一款免费开源的数字绘画软件。\n\nCiallo特有的技术由开发者Shen Ciao研发 - 因爱而生，靠您的捐赠而行。,Ciallo是一款免費开源的數位繪畫軟體。\n\nCiallo特有的技術由開發者Shen Ciao研發──源於愛並由您的捐助支持。,Cialloは、デジタルペイント用の無料でオープンソースのソフトウェアです。\n\nCialloのユニークな技術は、開発者Shen Ciaoによって研究・開発されています — 愛によって着想され、あなたの寄付によってサポートされています。,Ciallo는 디지털 페인팅을 위한 무료 오픈소스 소프트웨어입니다.\n\nCiallo의 독특한 기술은 개발자 Shen Ciao가 연구하고 개발했습니다 — 사랑에서 영감을 받고 여러분의 기부로 지원됩니다.,Ciallo ist eine kostenlose und quelloffene Software für digitales Malen.\n\nCiallos einzigartige Technologien wurden vom Entwickler Shen Ciao erforscht und entwickelt — inspiriert von Liebe und unterstützt durch Ihre Spenden.,Ciallo est un logiciel gratuit et open-source pour la peinture numérique.\n\nLes technologies uniques de Ciallo sont recherchées et développées par le développeur Shen Ciao — inspiré par l'amour et soutenu par vos dons.
 [Canvas Navigation Guide Tooltip],- Scroll mouse wheel to zoom in/out.\n- Click and drag middle mouse button to pan.\n- Double click middle mouse button to reset canvas view to center.,- 滚动鼠标滚轮以放大/缩小。\n- 按住中键并拖动以平移。\n- 双击中键将画布视图重置到中心。,- 滾動滑鼠滾輪以放大/縮小。\n- 按住中鍵並拖動以平移。\n- 雙擊中鍵將畫布視圖重置到中心。,- マウスホイールをスクロールしてズームイン/ズームアウト。\n- 中ボタンをクリックしてドラッグでパン。\n- 中ボタンダブルクリックでキャンバスビューを中央にリセット。,- 마우스 휠을 굴려서 확대/축소합니다.\n- 중간 버튼을 클릭하고 드래그하여 팬합니다.\n- 중간 버튼을 더블 클릭하여 캔버스 보기를 중앙으로 재설정합니다.,- Am Mausrad drehen zum Rein- und Rauszoomen.\n- Mittlere Maustaste klicken und ziehen zum Verschieben.\n- Mittlere Maustaste doppelt klicken zum Zurücksetzen der Canvas-Ansicht in die Mitte.,- Faire défiler la molette pour zoomer et dézoomer.\n- Cliquer et faire glisser le bouton central pour déplacer.\n- Double-cliquer sur le bouton central pour réinitialiser la vue de la toile au centre。
-Canvas navigation guide,,画布移动方法,,,,,
-Line layer,,线条图层,,,,,
-Paint tool,Paint tool,,,,,,
-Select tool,,,,,,,
-Brush size,Brush size,,,,,,
-Airbrush,Airbrush,喷枪,,,,,
-Vanilla,Vanilla,原始,,,,,
-Stamp,Stamp,印章,,,,,
-Brush type,Brush type,笔刷类型,,,,,
-Pen pressure,Pen pressure,压感,,,,,
-Opacity falloff,Opacity falloff,不透明度下降,,,,,
-RGB+Flow,RGB+Flow,RGB+流量,,,,,
-Solid,Solid,实心,,,,,
-Soft airbrush,Soft airbrush,软喷枪,,,,,
-Hard airbrush,Hard airbrush,硬喷枪,,,,,
-High performance,High performance,高性能,,,,,
-Paint fill tool,,绘制填色工具,,,,,
-Name,,名字,,,,,
-Brush library,,笔刷库,,,,,
-Rendering type,,渲染类型,,,,,
-Reset all built-in brushes,,重置所有内置笔刷,,,,,
-Brush,,笔刷,,,,,
-Library brush,,库笔刷,,,,,
-Manage brush library,,管理笔刷库,,,,,
-Brush in document,,文档中的笔刷,,,,,
-Use brush,,使用笔刷,,,,,
-Cancel,,取消,,,,,
-Manage brush in document,,管理文档中的笔刷,,,,,
-New brush,,新笔刷,,,,,
-[Mapping Curve Tooltip],- Hold alt and drag to disconnect handles\n- Right click to delete points or reset handles\n- Left click on curve to add points,- 按住 Alt 并拖动以断开控制柄\n- 右键点击以删除点或重置控制柄\n- 左键点击曲线以添加点,,,,,
-Select an image,,,,,,,
-[Cannot Load Image],Cannot load image,,,,,,
-Pencil,,铅笔,,,,,
-Splatter,,飞溅,,,,,
-Success,,成功,,,,,
-Output image resolution,,输出的图像分辨率,,,,,
-Scale,,缩放,,,,,
-[Recent Document List Tooltip],- Double click to open\n- Right click to delete,,,,,,
-File name,,文件名,,,,,
-Rotation noise,,旋转噪音,,,,,
-Rotation noise octave,,旋转噪音层数,,,,,
-Rotation noise amplitude,,,,,,,
-Rotation noise frequency,,,,,,,
+Canvas navigation guide,Canvas navigation guide,画布移动方法,畫布導航指南,キャンバスナビゲーションガイド,캔버스 탐색 가이드,Canvas-Navigationshandbuch,Guide de navigation sur le canevas
+Line layer,Line layer,线条图层,線條圖層,ラインレイヤー,선 레이어,Linienebene,Calque de ligne
+Paint tool,Paint tool,绘画工具,繪畫工具,ペイントツール,페인트 도구,Malwerkzeug,Outil de peinture
+Select tool,Select tool,选择工具,選取工具,選択ツール,선택 도구,Auswahlwerkzeug,Outil de sélection
+Brush size,Brush size,笔刷大小,筆刷大小,ブラシサイズ,브러시 크기,Pinselgröße,Taille du pinceau
+Airbrush,Airbrush,喷枪,噴槍,エアブラシ,에어브러시,Airbrush,Aérographe
+Vanilla,Vanilla,原始,原始,バニラ,바닐라,Vanilla,Vanille
+Stamp,Stamp,印章,印章,スタンプ,스탬프,Stempel,Tampon
+Brush type,Brush type,笔刷类型,筆刷類型,ブラシタイプ,브러시 유형,Pinseltyp,Type de pinceau
+Pen pressure,Pen pressure,压感,壓感,筆圧,펜 압력,Stiftdruck,Pression du stylet
+Opacity falloff,Opacity falloff,不透明度下降,不透明度衰減,不透明度の減衰,불투명도 감소,Deckkraftabfall,Atténuation d'opacité
+RGB+Flow,RGB+Flow,RGB+流量,RGB+流量,RGB+フロー,RGB+흐름,RGB+Fluss,RGB+Flux
+Solid,Solid,实心,實心,ソリッド,단색,Fest,Solide
+Soft airbrush,Soft airbrush,软喷枪,軟噴槍,ソフトエアブラシ,부드러운 에어브러시,Weicher Airbrush,Aérographe doux
+Hard airbrush,Hard airbrush,硬喷枪,硬噴槍,ハードエアブラシ,단단한 에어브러시,Harter Airbrush,Aérographe dur
+High performance,High performance,高性能,高性能,高性能,고성능,Hohe Leistung,Haute performance
+Paint fill tool,Paint fill tool,绘制填色工具,繪製填色工具,ペイント塗りつぶしツール,페인트 채우기 도구,Farbfüllwerkzeug,Outil de remplissage au pinceau
+Name,Name,名字,名稱,名前,이름,Name,Nom
+Brush library,Brush library,笔刷库,筆刷庫,ブラシライブラリ,브러시 라이브러리,Pinselbibliothek,Bibliothèque de pinceaux
+Rendering type,Rendering type,渲染类型,渲染類型,レンダリングタイプ,렌더링 유형,Rendering-Typ,Type de rendu
+Reset all built-in brushes,Reset all built-in brushes,重置所有内置笔刷,重置所有內建筆刷,すべての組み込みブラシをリセット,모든 내장 브러시 재설정,Alle integrierten Pinsel zurücksetzen,Réinitialiser tous les pinceaux intégrés
+Brush,Brush,笔刷,筆刷,ブラシ,브러시,Pinsel,Pinceau
+Library brush,Library brush,库笔刷,庫筆刷,ライブラリブラシ,라이브러리 브러시,Bibliothekspinsel,Pinceau de bibliothèque
+Manage brush library,Manage brush library,管理笔刷库,管理筆刷庫,ブラシライブラリを管理,브러시 라이브러리 관리,Pinselbibliothek verwalten,Gérer la bibliothèque de pinceaux
+Brush in document,Brush in document,文档中的笔刷,文檔中的筆刷,ドキュメント内のブラシ,문서의 브러시,Pinsel im Dokument,Pinceau dans le document
+Use brush,Use brush,使用笔刷,使用筆刷,ブラシを使用,브러시 사용,Pinsel verwenden,Utiliser le pinceau
+Cancel,Cancel,取消,取消,キャンセル,취소,Abbrechen,Annuler
+Manage brush in document,Manage brush in document,管理文档中的笔刷,管理文檔中的筆刷,ドキュメント内のブラシを管理,문서의 브러시 관리,Pinsel im Dokument verwalten,Gérer le pinceau dans le document
+New brush,New brush,新笔刷,新筆刷,新しいブラシ,새 브러시,Neuer Pinsel,Nouveau pinceau
+[Mapping Curve Tooltip],- Hold alt and drag to disconnect handles\n- Right click to delete points or reset handles\n- Left click on curve to add points,- 按住 Alt 并拖动以断开控制柄\n- 右键点击以删除点或重置控制柄\n- 左键点击曲线以添加点,- 按住 Alt 並拖動以斷開控制柄\n- 右鍵點擊以刪除點或重置控制柄\n- 左鍵點擊曲線以新增點,- Altキーを押しながらドラッグしてハンドルを切断\n- 右クリックでポイントを削除またはハンドルをリセット\n- 曲線上で左クリックしてポイントを追加,- Alt 키를 누른 상태에서 드래그하여 핸들 분리\n- 오른쪽 클릭으로 점 삭제 또는 핸들 재설정\n- 곡선에서 왼쪽 클릭으로 점 추가,- Alt halten und ziehen, um Griffe zu trennen\n- Rechtsklick zum Löschen von Punkten oder Zurücksetzen von Griffen\n- Linksklick auf Kurve, um Punkte hinzuzufügen,- Maintenez Alt et faites glisser pour déconnecter les poignées\n- Clic droit pour supprimer des points ou réinitialiser les poignées\n- Clic gauche sur la courbe pour ajouter des points
+Select an image,Select an image,选择图像,選擇圖像,画像を選択,이미지 선택,Bild auswählen,Sélectionner une image
+[Cannot Load Image],Cannot load image,无法加载图像,無法載入圖像,画像を読み込めません,이미지를 로드할 수 없습니다,Bild kann nicht geladen werden,Impossible de charger l'image
+Pencil,Pencil,铅笔,鉛筆,鉛筆,연필,Bleistift,Crayon
+Splatter,Splatter,飞溅,飛濺,飛沫,스플래터,Spritzer,Éclaboussure
+Success,Success,成功,成功,成功,성공,Erfolg,Succès
+Output image resolution,Output image resolution,输出的图像分辨率,輸出的圖像解析度,出力画像の解像度,출력 이미지 해상도,Ausgabebildauflösung,Résolution de l'image de sortie
+Scale,Scale,缩放,縮放,スケール,크기 조정,Skalierung,Échelle
+[Recent Document List Tooltip],- Double click to open\n- Right click to delete,- 双击以打开\n- 右键点击以删除,- 雙擊以開啟\n- 右鍵點擊以刪除,- ダブルクリックで開く\n- 右クリックで削除,- 더블 클릭으로 열기\n- 오른쪽 클릭으로 삭제,- Doppelklick zum Öffnen\n- Rechtsklick zum Löschen,- Double-clic pour ouvrir\n- Clic droit pour supprimer
+File name,File name,文件名,檔案名稱,ファイル名,파일 이름,Dateiname,Nom de fichier
+Rotation noise,Rotation noise,旋转噪音,旋轉噪音,回転ノイズ,회전 노이즈,Rotationsrauschen,Bruit de rotation
+Rotation noise octave,Rotation noise octave,旋转噪音层数,旋轉噪音層數,回転ノイズオクターブ,회전 노이즈 옥타브,Rotationsrauschen-Oktave,Octave de bruit de rotation
+Rotation noise amplitude,Rotation noise amplitude,旋转噪音振幅,旋轉噪音振幅,回転ノイズ振幅,회전 노이즈 진폭,Rotationsrauschen-Amplitude,Amplitude du bruit de rotation
+Rotation noise frequency,Rotation noise frequency,旋转噪音频率,旋轉噪音頻率,回転ノイズ周波数,회전 노이즈 주파수,Rotationsrauschen-Frequenz,Fréquence du bruit de rotation
