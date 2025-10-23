@@ -13,7 +13,6 @@ namespace Ciallo.Geometry;
 ///
 /// Design:
 /// - Support both with-radii and without-radii workflows via RadiusMode.
-/// - When RadiusMode.None, radii are generated as zeros (same length as points) for compatibility.
 /// - When RadiusMode.Fixed, use a constant radius for all points.
 /// - When RadiusMode.Sampled, compute radius per motion using a provided sampler (e.g., brush pressure curve).
 /// </summary>
@@ -31,10 +30,15 @@ public class PolylineInteractiveGenerator
     // Controls if the new points can intersect with existing already generated polyline.
     public bool AllowIntersection = true;
 
-    private readonly List<Vector2> _points = new(2048);
+    private readonly List<Vector2> _positions = new(2048);
+    public IReadOnlyList<Vector2> Positions => _positions;
     private readonly List<float> _radii = new(2048);
-    public IReadOnlyList<Vector2> Points => _points;
     public IReadOnlyList<float> Radii => _radii;
+
+    private readonly List<float> _pressures = new(2048);
+    public IReadOnlyList<float> Pressures => _pressures;
+    private readonly List<Vector2> _tilts = new(2048);
+    public IReadOnlyList<Vector2> Tilts => _tilts;
 
     private bool _saveLatestPoint = false;
     private Vector2 _lastScreenPoint;
@@ -52,7 +56,7 @@ public class PolylineInteractiveGenerator
         _lastDirection = Vector2.FromAngle(0);
         _lastPressure = -1.0f;
 
-        _points.Add(data.WorldPosition);
+        _positions.Add(data.WorldPosition);
         switch (Mode)
         {
             case RadiusMode.Fixed:
@@ -79,25 +83,28 @@ public class PolylineInteractiveGenerator
     }
 
     // Always add current motion point, then check whether to save current point. If not, remove it on next update.
+    // This method introduces zero lag.
     public void Update(CursorMotionData data)
     {
         if (!_saveLatestPoint && !_previewPointAlreadyRemoved)
         {
-            _points.RemoveAt(_points.Count - 1);
-            _radii.RemoveAt(_radii.Count - 1);
+            RemoveLatestPoint();
         }
         _previewPointAlreadyRemoved = false;
         _saveLatestPoint = false;
         float pressure = data.Pressure;
         float radius = CalculateRadius(data);
         var position = data.WorldPosition;
-        _points.Add(position);
+        var tilt = data.Tilt;
+
+        _positions.Add(position);
         _radii.Add(radius);
+        _pressures.Add(pressure);
+        _tilts.Add(tilt);
 
         if (!AllowIntersection && CheckSelfIntersection())
         {
-            _points.RemoveAt(_points.Count - 1);
-            _radii.RemoveAt(_radii.Count - 1);
+            RemoveLatestPoint();
             _previewPointAlreadyRemoved = true;
             return;
         }
@@ -114,23 +121,32 @@ public class PolylineInteractiveGenerator
             const float smoothingFactor = 0.15f;
             for (int i = 0; i < 5; i++)
             {
-                int idx = _points.Count - 1 - i;
+                int idx = _positions.Count - 1 - i;
                 if (idx < 2) break;
 
                 // Don't smooth if two segments have large angle
-                var dir1 = (_points[idx] - _points[idx - 1]).Normalized();
-                var dir2 = (_points[idx - 1] - _points[idx - 2]).Normalized();
+                var dir1 = (_positions[idx] - _positions[idx - 1]).Normalized();
+                var dir2 = (_positions[idx - 1] - _positions[idx - 2]).Normalized();
                 if (dir1.Dot(dir2) < Mathf.Cos(Mathf.DegToRad(30f)))
                     break;
 
                 _radii[idx] = Mathf.Lerp(_radii[idx], _radii[idx - 1], smoothingFactor);
-                _points[idx] = _points[idx].Lerp(_points[idx - 1], smoothingFactor);
+                _positions[idx] = _positions[idx].Lerp(_positions[idx - 1], smoothingFactor);
+                // no need to smooth pressure and tilt
             }
 
             _lastDirection = data.ScreenPosition.DirectionTo(_lastScreenPoint).Normalized();
             _lastScreenPoint = data.ScreenPosition;
             _lastPressure = pressure;
             _saveLatestPoint = true;
+        }
+
+        void RemoveLatestPoint()
+        {
+            _positions.RemoveAt(_positions.Count - 1);
+            _radii.RemoveAt(_radii.Count - 1);
+            _pressures.RemoveAt(_pressures.Count - 1);
+            _tilts.RemoveAt(_tilts.Count - 1);
         }
     }
 
@@ -139,30 +155,35 @@ public class PolylineInteractiveGenerator
     {
         return new PolylineGeometry
         {
-            Points = [.._points],
+            Positions = [.._positions],
             Radii = [.._radii],
+            Pressures = [.._pressures],
+            Tilts = [.._tilts],
         };
     }
 
     public void Clear()
     {
         _saveLatestPoint = false;
-        _points.Clear();
+        _previewPointAlreadyRemoved = false;
+        _positions.Clear();
         _radii.Clear();
+        _pressures.Clear();
+        _tilts.Clear();
     }
 
-    // Warning: Brutal algorithm, only suitable for short polylines.
+    // Warning: Brutal algorithm, only suitable for short polyline.
     private bool CheckSelfIntersection()
     {
-        if (_points.Count < 4) return false;
+        if (_positions.Count < 4) return false;
 
-        var p3 = _points[^1];
-        var p2 = _points[^2];
+        var p3 = _positions[^1];
+        var p2 = _positions[^2];
 
-        for (var i = 0; i < _points.Count - 3; i++)
+        for (var i = 0; i < _positions.Count - 3; i++)
         {
-            var p0 = _points[i];
-            var p1 = _points[i + 1];
+            var p0 = _positions[i];
+            var p1 = _positions[i + 1];
             if (SegmentIntersection(p0, p1, p2, p3))
             {
                 return true;

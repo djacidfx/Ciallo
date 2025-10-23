@@ -72,7 +72,7 @@ public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
             AddChild(shape);
             return;
         }
-        if (points.Count != radii.Count) throw new ArgumentException("Points and radii count mismatch");
+        if (points.Count != radii.Count) throw new ArgumentException("Positions and radii count mismatch");
 
         for (var i = 0; i < points.Count - 1; i++)
         {

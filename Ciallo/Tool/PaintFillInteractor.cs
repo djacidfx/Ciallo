@@ -44,7 +44,7 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
     public override void Interacting(CursorMotionData data)
     {
         _generator.Update(data);
-        ImmutableArray<Vector2> points = [.._generator.Points, _generator.Points[0]];
+        ImmutableArray<Vector2> points = [.._generator.Positions, _generator.Positions[0]];
         ImmutableArray<float> radii = [.._generator.Radii, _generator.Radii[0]];
         _dashPreview.SetGeometry(points, radii);
     }
@@ -57,7 +57,7 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
         var polygonE = cmd.InitEntity();
         var geom = new PolylineGeometry()
         {
-            Points = [.._generator.Points],
+            Positions = [.._generator.Positions],
         };
         cmd.Combine(new SetPolylineGeometryCmd(polygonE, geom)).Commit();
         Clear();

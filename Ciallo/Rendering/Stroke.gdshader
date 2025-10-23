@@ -145,8 +145,8 @@ float perlinNoise1D(float x) {
 
 // Fractal Brownian Motion (FBM) over 1D Perlin
 float noise1D(float x) {
-	x = mod(x, 512.0);
-	x = abs(x - 256.0);
+	x = mod(x, 1024.0);
+	x = abs(x - 512.0);
     float sum = 0.0;
     float amp = 1.0;      // start at 1.0, halve each octave (persistence = 0.5)
     float freq = rotationNoiseFrequency; // start at base frequency, double each octave (lacunarity = 2.0)

@@ -36,7 +36,7 @@ public partial class StrokeView : MultiMeshInstance2D
     {
         if (points.Count != radii.Count)
         {
-            GD.PushError("Points and radii count mismatch.");
+            GD.PushError("Positions and radii count mismatch.");
             return;
         }
         if (points.Count == 0 || radii.Count == 0)

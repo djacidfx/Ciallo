@@ -45,7 +45,7 @@ public static class DotExtension
         instance.Multimesh.InstanceCount = 0;
         if (points.Count == 0) return;
 
-        if (points.Count != radii.Count) throw new ArgumentException("Points and radii count mismatch.");
+        if (points.Count != radii.Count) throw new ArgumentException("Positions and radii count mismatch.");
 
         var multiMesh = instance.Multimesh;
         multiMesh.UseCustomData = true;

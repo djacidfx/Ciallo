@@ -72,7 +72,7 @@ public class PaintInteractor : InteractorBase
         _interactStopwatch.Restart();
 
         _generator.Update(data);
-        _strokePreview.SetGeometry(_generator.Points, _generator.Radii);
+        _strokePreview.SetGeometry(_generator.Positions, _generator.Radii);
     }
 
     public override void End(CursorButtonData data)
@@ -82,7 +82,7 @@ public class PaintInteractor : InteractorBase
         var strokeE = cmd.InitEntity();
         var geom = new PolylineGeometry()
         {
-            Points = [.._generator.Points],
+            Positions = [.._generator.Positions],
             Radii = [.._generator.Radii],
         };
         cmd.Combine(new ChangeStrokeBrushCmd(strokeE, _brushE))
