@@ -14,10 +14,9 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
   - [ ] More brushes
   - [ ] More brush parameters
   - [x] Paint stabilizer
-- [ ] Paint fill tool
+- [x] Paint fill tool
 - [ ] Vector fill tool
   - [x] CGAL C++ code
-  - [ ] Integration
 - [x] Selection/move tool
   - [x] Rect transform
   - [ ] Line binding system (Bézier curve only)
@@ -28,11 +27,11 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
   - [x] Add, delete
   - [x] Rename
   - [x] Reorder
-  - [ ] Merge, split
+  - [ ] Revert showing order
+  - [ ] Merge
 - [x] Import image as a layer
 - [ ] Localization
   - [x] Infrastructure (ai translation)
-  - [ ] Complete
 
 
 ## v1.0 plan

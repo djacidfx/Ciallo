@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
+using Ciallo.Data;
 using Ciallo.Misc;
 using Godot;
 
@@ -14,12 +15,12 @@ public partial class LanguageItemList : ItemList
 
         if (Engine.IsEditorHint())
         {
-            foreach (var langCode in AppPreference.SupportedLanguages)
+            foreach (var langCode in Preference.SupportedLanguages)
             {
                 AddItem(ToNativeName(langCode));
             }
         }
-        else this.BindValue(AppPreference.SupportedLanguages, AppPreference.Language, ToNativeName);
+        else this.BindValue(Preference.SupportedLanguages, AppPreference.Language, ToNativeName);
 
         return;
 
