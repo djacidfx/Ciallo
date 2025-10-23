@@ -22,8 +22,10 @@ Following guidelines are suitable for solo development or tiny team. May have to
 ## Details
 - Global variables or static classes (that need to work with) are named as "App*"
 - No plural forms for class, folder, or namespace names.
+  - Use plural for `Enum` represents bit fields same as C# tradtional. 
   - Optionally, use plural names for collection-type variables, fields, and properties to hint collection type.
   - Ignore English countable/uncountable rules.
-    - e.g., `Datas` is an acceptable name for a `List<Data>` object.
+    - e.g., `Datas` is a valid name for a `List<Data>` object.
     - Counting rules in English are legacy system and not worth the effort.
-- Stack (Last-In, First-Out) ordered operations for undo/redo, create/delete
+- Code in stack (Last-In, First-Out) order for undo/redo, create/delete, activate/deactiate
+  - If being confused, check serveral `*Cmd.cs` files. 
