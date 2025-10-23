@@ -13,9 +13,9 @@ public partial class MenuEdit : PopupMenu
         { "Undo", AppActions.Undo },
         { "Redo", AppActions.Redo },
         { "-1", null },
-        { "Cut", AppActions.Cut },
-        { "Copy", AppActions.Copy },
-        { "Paste", AppActions.Paste },
+        // { "Cut", AppActions.Cut },
+        // { "Copy", AppActions.Copy },
+        // { "Paste", AppActions.Paste },
         { "Delete", AppActions.Delete },
     };
 

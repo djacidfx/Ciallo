@@ -46,7 +46,7 @@ Window,Window,窗口,,,,,
 [Vector Fill Tooltip],Vector fill\n- Fill enclose areas with editable fill markers.,矢量填充\n- 用可编辑的填充标记填充封闭区域。,矢量填充\n- 用可編輯的填充標記填充封閉區域。,ベクターフィル\n- 編集可能なフィルマーカーで閉じた領域を塗りつぶします。,벡터 채우기\n- 편집 가능한 채우기 마커로 닫힌 영역을 채웁니다.,Vektor-Füllung\n- Geschlossene Bereiche mit bearbeitbaren Füllmarkern füllen.,Remplissage vectoriel\n- Remplit les zones fermées avec des repères de remplissage modifiables.
 [Paint Fill Tooltip],Paint fill\n- Draw colored area free-handly.,填充\n- 自由手绘彩色区域。,填充\n- 自由手繪彩色區域。,ペイント塗りつぶし\n- フリーハンドでカラー領域を描画します。,페인트 채우기\n- 자유롭게 색칠된 영역을 그립니다.,Farbfüllung\n- Freihändig gezeichnete Farbflächen.,Remplissage au pinceau\n- Dessine des zones colorées à main levée.
 [Paint Brush Tooltip],Paint brush,画笔,畫筆,ペイントブラシ,페인트 브러시,Pinsel,Pinceau
-[About Ciallo],Ciallo is a free and open-source software for digital painting.\n\nCiallo's unique technologies are invented and developed by the developer Shen Ciao — inspired by love and supported by your donations.,Ciallo是一款免费开源的数字绘画软件。\n\nCiallo特有的技术由开发者Shen Ciao发明并开发 - 因爱而生，靠您的捐赠而行。,Ciallo是一款免費开源的數位繪畫軟體。\n\nCiallo特有的技術由開發者沈喬（Shen Ciao）所發明和開發──源於愛並由您的捐助支持。,Cialloはデジタルペインティングのための無料オープンソースソフトウェアです。\n\nCialloの独自技術は開発者Shen Ciaoによって発明・開発されました—愛に触発され、皆様のご寄付によって支えられています。,Ciallo는 디지털 페인팅을 위한 무료 오픈 소스 소프트웨어입니다.\n\nCiallo의 고유 기술은 개발자 Shen Ciao에 의해 발명되고 개발되었습니다 — 사랑에서 영감을 얻었으며 여러분의 후원으로 지원됩니다.,Ciallo ist eine kostenlose Open-Source-Software für digitales Malen.\n\nCiallos einzigartige Technologien wurden vom Entwickler Shen Ciao erfunden und entwickelt – inspiriert von Liebe und unterstützt durch Ihre Spenden.,Ciallo est un logiciel libre et open source pour la peinture numérique.\n\nLes technologies uniques de Ciallo sont inventées et développées par le développeur Shen Ciao — inspirées par l'amour et soutenues par vos dons.
+[About Ciallo],Ciallo is a free and open-source software for digital painting.\n\nCiallo's unique technologies are researched and developed by the developer Shen Ciao — inspired by love and supported by your donations.,Ciallo是一款免费开源的数字绘画软件。\n\nCiallo特有的技术由开发者Shen Ciao研发 - 因爱而生，靠您的捐赠而行。,Ciallo是一款免費开源的數位繪畫軟體。\n\nCiallo特有的技術由開發者Shen Ciao研發──源於愛並由您的捐助支持。,,,,
 [Canvas Navigation Guide Tooltip],- Scroll mouse wheel to zoom in/out.\n- Click and drag middle mouse button to pan.\n- Double click middle mouse button to reset canvas view to center.,- 滚动鼠标滚轮以放大/缩小。\n- 按住中键并拖动以平移。\n- 双击中键将画布视图重置到中心。,- 滾動滑鼠滾輪以放大/縮小。\n- 按住中鍵並拖動以平移。\n- 雙擊中鍵將畫布視圖重置到中心。,- マウスホイールをスクロールしてズームイン/ズームアウト。\n- 中ボタンをクリックしてドラッグでパン。\n- 中ボタンダブルクリックでキャンバスビューを中央にリセット。,- 마우스 휠을 굴려서 확대/축소합니다.\n- 중간 버튼을 클릭하고 드래그하여 팬합니다.\n- 중간 버튼을 더블 클릭하여 캔버스 보기를 중앙으로 재설정합니다.,- Am Mausrad drehen zum Rein- und Rauszoomen.\n- Mittlere Maustaste klicken und ziehen zum Verschieben.\n- Mittlere Maustaste doppelt klicken zum Zurücksetzen der Canvas-Ansicht in die Mitte.,- Faire défiler la molette pour zoomer et dézoomer.\n- Cliquer et faire glisser le bouton central pour déplacer.\n- Double-cliquer sur le bouton central pour réinitialiser la vue de la toile au centre。
 Canvas navigation guide,,画布移动方法,,,,,
 Line layer,,线条图层,,,,,
@@ -86,3 +86,8 @@ Success,,成功,,,,,
 Output image resolution,,输出的图像分辨率,,,,,
 Scale,,缩放,,,,,
 [Recent Document List Tooltip],- Double click to open\n- Right click to delete,,,,,,
+File name,,文件名,,,,,
+Rotation noise,,旋转噪音,,,,,
+Rotation noise octave,,旋转噪音层数,,,,,
+Rotation noise amplitude,,,,,,,
+Rotation noise frequency,,,,,,,
