@@ -59,8 +59,10 @@ public class PolylineTransformInteractor(PolylineTransformHover transformHover) 
         if (_transformType == -1)
         {
             SelectionManager.SelectedPolylines.Clear();
+            return;
         }
-        else if (_transformType == 0)
+
+        if (_transformType == 0)
         {
             _polylineE = transformHover.HoveredPolyline;
         }
