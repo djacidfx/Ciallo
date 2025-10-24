@@ -187,6 +187,15 @@ void fragment() {
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
 
 		COLOR = overridingColor.a >= 0.0 ? overridingColor : materialColor;
+		if(d0 < r0 && d1 < r1){
+        	discard;
+    	}
+    	float flow = COLOR.a;
+    	if(d0 < r0 || d1 < r1){
+        	flow = 1.0 - sqrt(1.0 - COLOR.a);
+    	}
+		COLOR = vec4(COLOR.rgb, flow);
+
 		//// Anti antialiasing
 		float zoom = min(scale.x, scale.y);
 		float aaEdge = 0.25 / zoom;
