@@ -27,16 +27,30 @@ public partial class StrokeView : MultiMeshInstance2D
 
     public void SetGeometry([NotNull] IReadOnlyList<Vector2> positions, float radius)
     {
-        SetGeometry(positions, Enumerable.Repeat(radius, positions.Count).ToImmutableArray());
+        SetGeometry(positions,
+            Enumerable.Repeat(radius, positions.Count).ToImmutableArray());
     }
 
     public void SetGeometry(
         [NotNull] IReadOnlyList<Vector2> positions,
         [NotNull] IReadOnlyList<float> radii)
     {
-        if (positions.Count != radii.Count)
+        SetGeometry(positions, radii, Enumerable.Repeat(1.0f, positions.Count).ToImmutableArray());
+    }
+
+    public void SetGeometry(
+        [NotNull] IReadOnlyList<Vector2> positions,
+        [NotNull] IReadOnlyList<float> radii,
+        [NotNull] IReadOnlyList<float> pressures)
+    {
+        if (pressures.Count == 0)
         {
-            GD.PushError("Positions and radii count mismatch.");
+            pressures = Enumerable.Repeat(1.0f, positions.Count).ToImmutableArray();
+        }
+
+        if (positions.Count != radii.Count || positions.Count != pressures.Count)
+        {
+            GD.PushError("List element number mismatch.");
             return;
         }
         if (positions.Count == 0 || radii.Count == 0)
@@ -48,15 +62,15 @@ public partial class StrokeView : MultiMeshInstance2D
         var multiMesh = Multimesh;
         multiMesh.InstanceCount = 0; // Also clear buffer
 
-        ImmutableArray<Vector2> ps;
-        ImmutableArray<float> rs;
-        List<float> ns = [];
+        IReadOnlyList<Vector2> ps;
+        IReadOnlyList<float> rs;
+        List<float> ns = new() { Capacity = positions.Count };
 
         if (positions.Count > 1) // regular case
         {
             multiMesh.InstanceCount = positions.Count - 1;
-            ps = [..positions];
-            rs = [..radii];
+            ps = positions;
+            rs = radii;
         }
         else if (positions.Count == 1) // a point, render it as an ultra short segment
         {
@@ -67,7 +81,7 @@ public partial class StrokeView : MultiMeshInstance2D
         else throw new("Unreachable");
 
         ns.Add(0f);
-        for (int i = 0; i < ps.Length - 1; i++)
+        for (int i = 0; i < ps.Count - 1; i++)
         {
             var l = (ps[i + 1] - ps[i]).Length();
             var r0 = rs[i];
@@ -96,7 +110,10 @@ public partial class StrokeView : MultiMeshInstance2D
 
             multiMesh.SetInstanceCustomData(i, customPos);
             // Have to use instance color to store t.
-            multiMesh.SetInstanceColor(i, new(Float32Packer.Pack(rs[i], rs[i + 1]), Float32Packer.Pack(ns[i], ns[i + 1]), 0, 0)); // empty spaces for tilt
+            multiMesh.SetInstanceColor(i,
+                new(Float32Packer.Pack(rs[i], rs[i + 1]),
+                    Float32Packer.Pack(ns[i], ns[i + 1]),
+                    Float32Packer.Pack(pressures[i], pressures[i + 1]), 0)); // no enough empty spaces :(
             // Have to set transform or do not render, this transform values are not used in shaders
             // Cannot access this matrix from the CanvasItem shader, so cannot be used for passing data.
             multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);

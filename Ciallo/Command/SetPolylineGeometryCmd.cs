@@ -30,7 +30,7 @@ public class SetPolylineGeometryCmd : CommandBase
         if (_polylineE.Has<StrokeBrush>())
         {
             // View
-            _polylineE.Get<StrokeView>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii);
+            _polylineE.Get<StrokeView>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii, _newGeometry.Pressures);
 
             // Cursor detection
             _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_newGeometry.Positions, _newGeometry.Radii);
@@ -65,7 +65,7 @@ public class SetPolylineGeometryCmd : CommandBase
             _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);
 
             // View
-            _polylineE.Get<StrokeView>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii);
+            _polylineE.Get<StrokeView>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii, _newGeometry.Pressures);
         }
 
         // Overlay

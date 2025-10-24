@@ -45,8 +45,7 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
     {
         _generator.Update(data);
         ImmutableArray<Vector2> points = [.._generator.Positions, _generator.Positions[0]];
-        ImmutableArray<float> radii = [.._generator.Radii, _generator.Radii[0]];
-        _dashPreview.SetGeometry(points, radii);
+        _dashPreview.SetGeometry(points, AppPreference.StrokeWireframeRadius);
     }
 
     public override void End(CursorButtonData data)

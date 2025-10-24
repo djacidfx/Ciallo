@@ -37,6 +37,8 @@ varying flat float r0;
 varying flat float r1;
 varying flat float n0;
 varying flat float n1;
+varying flat float pp0; // pen pressure
+varying flat float pp1;
 varying vec2 p;
 varying float r;
 
@@ -64,6 +66,9 @@ void vertex() {
 	vec2 ns = unpack2floats(COLOR.y);
 	n0 = ns.x;
 	n1 = ns.y;
+	vec2 pps = unpack2floats(COLOR.z);
+	pp0 = pps.x;
+	pp1 = pps.y;
 	// Trying to be invariant to model scale.
 	vec2 canvasZoom = vec2(length(CANVAS_MATRIX[0].xy), length(CANVAS_MATRIX[1].xy));
 	vec2 modelScale = vec2(length(MODEL_MATRIX[0].xy), length(MODEL_MATRIX[1].xy));

@@ -327,12 +327,14 @@ public static class AppBrushLibrary
             lengths[i + 1] = lengths[i] + l;
         }
         var midL = lengths[^1] / 2;
-        var radii = lengths
-            .Select(l => (l - midL) / midL * float.Pi)
-            .Select(p => Mathf.Cos(p * 0.5f))
+        var pressures = lengths
+            .Select(l => (l - midL) / midL * float.Pi * 0.5f)
+            .Select(Mathf.Cos)
+            .ToImmutableArray();
+        var radii = pressures
             .Select(pressureCurve.SampleX)
             .Select(radiusRatio => radiusRatio * 0.5f / gr)
             .ToImmutableArray();
-        view.SetGeometry(positions, radii);
+        view.SetGeometry(positions, radii, pressures);
     }
 }
