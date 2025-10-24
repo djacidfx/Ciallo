@@ -311,17 +311,28 @@ public static class AppBrushLibrary
     {
         int n = 64;
         float gr = (1 + Mathf.Sqrt(5)) / 2; // golden ratio
-        var ts = Enumerable.Range(0, n)
+        var xs = Enumerable.Range(0, n)
             .Select(i => i / (n - 1f))
             .Select(i => (i * 2 - 1f) * Mathf.Pi)
             .ToImmutableArray(); // [-pi, pi]
 
-        var points = ts.Select(t => new Vector2(t, Mathf.Sin(t) / gr)).ToImmutableArray();
-        var radii = ts
-            .Select(t => Mathf.Cos(t / 2.0f))
+        var positions = xs.Select(x => new Vector2(x, Mathf.Sin(x) / gr)).ToImmutableArray();
+        // prefix sum on length
+        var lengths = new float[positions.Length];
+        for (int i = 0; i < positions.Length - 1; i++)
+        {
+            var p0 = positions[i];
+            var p1 = positions[i + 1];
+            var l = (p1 - p0).Length();
+            lengths[i + 1] = lengths[i] + l;
+        }
+        var midL = lengths[^1] / 2;
+        var radii = lengths
+            .Select(l => (l - midL) / midL * float.Pi)
+            .Select(p => Mathf.Cos(p * 0.5f))
             .Select(pressureCurve.SampleX)
             .Select(radiusRatio => radiusRatio * 0.5f / gr)
             .ToImmutableArray();
-        view.SetGeometry(points, radii);
+        view.SetGeometry(positions, radii);
     }
 }

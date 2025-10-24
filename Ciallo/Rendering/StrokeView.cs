@@ -25,21 +25,21 @@ public partial class StrokeView : MultiMeshInstance2D
         TextureFilter = TextureFilterEnum.LinearWithMipmaps;
     }
 
-    public void SetGeometry([NotNull] IReadOnlyList<Vector2> points, float radius)
+    public void SetGeometry([NotNull] IReadOnlyList<Vector2> positions, float radius)
     {
-        SetGeometry(points, Enumerable.Repeat(radius, points.Count).ToImmutableArray());
+        SetGeometry(positions, Enumerable.Repeat(radius, positions.Count).ToImmutableArray());
     }
 
     public void SetGeometry(
-        [NotNull] IReadOnlyList<Vector2> points,
+        [NotNull] IReadOnlyList<Vector2> positions,
         [NotNull] IReadOnlyList<float> radii)
     {
-        if (points.Count != radii.Count)
+        if (positions.Count != radii.Count)
         {
             GD.PushError("Positions and radii count mismatch.");
             return;
         }
-        if (points.Count == 0 || radii.Count == 0)
+        if (positions.Count == 0 || radii.Count == 0)
         {
             Multimesh.InstanceCount = 0;
             return;
@@ -52,16 +52,16 @@ public partial class StrokeView : MultiMeshInstance2D
         ImmutableArray<float> rs;
         List<float> ns = [];
 
-        if (points.Count > 1) // regular case
+        if (positions.Count > 1) // regular case
         {
-            multiMesh.InstanceCount = points.Count - 1;
-            ps = [..points];
+            multiMesh.InstanceCount = positions.Count - 1;
+            ps = [..positions];
             rs = [..radii];
         }
-        else if (points.Count == 1) // a point, render it as an ultra short segment
+        else if (positions.Count == 1) // a point, render it as an ultra short segment
         {
             multiMesh.InstanceCount = 1;
-            ps = [points[0], points[0] + 1e-5f * Vector2.Right];
+            ps = [positions[0], positions[0] + 1e-5f * Vector2.Right];
             rs = [radii[0], radii[0] + 1e-5f];
         }
         else throw new("Unreachable");
@@ -103,7 +103,7 @@ public partial class StrokeView : MultiMeshInstance2D
         }
 
         // Set bounding box
-        var boundingBox = points.GetBoundingBox(radii);
+        var boundingBox = positions.GetBoundingBox(radii);
         // Incorrect method:
         // RenderingServer.CanvasItemSetCustomRect(strokeView.GetCanvasItem(), true, boundingBox);
         // Godot cannot save the value in the scene.
