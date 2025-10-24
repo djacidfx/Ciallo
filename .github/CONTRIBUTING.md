@@ -60,6 +60,7 @@ Ciallo is built on Godot. Building the core part of Ciallo is the same as buildi
 
 - Set up Godot 4.5.1 with .Net9. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
 - Open the `Ciallo/project.godot` file with your Godot editor, then build and run.
+  - Note: Godot will raise annoying errors about autoload before first build, we can safely ignore them.
 - Enable the "Embedded game size stretches..." option in the game run window.
   
 ![](/.github/EnableStretch.png)
