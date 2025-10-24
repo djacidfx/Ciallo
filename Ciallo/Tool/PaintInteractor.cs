@@ -68,7 +68,7 @@ public class PaintInteractor : InteractorBase
     public override void Interacting(CursorMotionData data)
     {
         long deltaMs = _interactStopwatch.ElapsedMilliseconds;
-        GD.Print($"[PaintInteractor] Interacting delta: {deltaMs} ms");
+        // GD.Print($"[PaintInteractor] Interacting delta: {deltaMs} ms");
         _interactStopwatch.Restart();
 
         _generator.Update(data);
