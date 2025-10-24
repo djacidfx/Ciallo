@@ -23,38 +23,44 @@ public class PolylineTransformHover : HoverBase
 
     public override void Start()
     {
-        _layerE = SelectionManager.WorkingLayer.Value;
-        // Enable cursor detections on polyline
-        var holder = _layerE.Get<PolylineAreaHolder>();
-        holder.ProcessMode = Node.ProcessModeEnum.Inherit;
-        holder.SetAreaCursor(Control.CursorShape.Move);
-
         // Polyline transform
         if (SelectionManager.SelectedPolylines.Count > 0)
         {
             var worldOverlay = Document.Get<WorldOverlay>();
             // Support single selection currently
             _polylineE = SelectionManager.SelectedPolylines[0];
+            if (_polylineE.IsRemoved())
+            {
+                SelectionManager.SelectedPolylines.Clear();
+            }
+            else
+            {
+                // mid axis
+                var centerline = _polylineE.Get<PolylineWireframe>();
+                _midAxis = (Node2D)centerline.Duplicate(0); // Don't duplicate script, or constructor will be called.
+                worldOverlay.AddChild(_midAxis);
+                _midAxis.Visible = true;
 
-            // mid axis
-            var centerline = _polylineE.Get<PolylineWireframe>();
-            _midAxis = (Node2D)centerline.Duplicate(0); // Don't duplicate script, or constructor will be called.
-            worldOverlay.AddChild(_midAxis);
-            _midAxis.Visible = true;
+                // transform box overlay
+                var geom = _polylineE.Get<PolylineGeometry>();
+                var rect = geom.Positions.GetBoundingBox();
+                _transformBox = new TransformOverlayBox(rect.Size, rect.GetCenter());
+                worldOverlay.AddChild(_transformBox);
 
-            // transform box overlay
-            var geom = _polylineE.Get<PolylineGeometry>();
-            var rect = geom.Positions.GetBoundingBox();
-            _transformBox = new TransformOverlayBox(rect.Size, rect.GetCenter());
-            worldOverlay.AddChild(_transformBox);
-
-            // transform cursor area
-            var worldArea = Document.Get<WorldCursorDetectionArea>();
-            CursorDetectionArea[] areas = worldArea.CreateAddTransformAreas(rect.Size, rect.GetCenter());
-            RotationArea = areas[0];
-            areas[1].QueueFree();
-            CornerAreas = areas[2..6];
+                // transform cursor area
+                var worldArea = Document.Get<WorldCursorDetectionArea>();
+                CursorDetectionArea[] areas = worldArea.CreateAddTransformAreas(rect.Size, rect.GetCenter());
+                RotationArea = areas[0];
+                areas[1].QueueFree();
+                CornerAreas = areas[2..6];
+            }
         }
+
+        _layerE = SelectionManager.WorkingLayer.Value;
+        // Enable cursor detections on polyline
+        var holder = _layerE.Get<PolylineAreaHolder>();
+        holder.ProcessMode = Node.ProcessModeEnum.Inherit;
+        holder.SetAreaCursor(Control.CursorShape.Move);
 
         // hover hinter
         _hoverSub = Document.Get<WorldCursorDetectionArea>().HoveringArea.Skip(1).Subscribe(area =>

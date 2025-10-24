@@ -1,4 +1,5 @@
 ﻿using System;
+using Frent;
 
 namespace Ciallo.Data;
 /*
@@ -17,3 +18,17 @@ public class ToSerializeAttribute : Attribute;
 /// Label an entity should be serialized by MessagePack
 /// </summary>
 public struct ToSerializeTag;
+
+public static class EntityExtension
+{
+    /// <summary>
+    /// Entity has been remove/deleted by user.
+    /// </summary>
+    /// <remarks>
+    /// It may be deleted by undo stack or not.
+    /// </remarks>
+    public static bool IsRemoved(this Entity self)
+    {
+        return !self.IsAlive || !self.Tagged<ToSerializeTag>();
+    }
+}
