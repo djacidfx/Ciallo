@@ -21,7 +21,6 @@ public partial class WorldEventDispatcher : SubViewportContainer
     private float _prevPressure;
     private Vector2 _prevTilt;
 
-
     public override void _Ready()
     {
         _camera = GetNode<Camera2D>("%Camera2D");
@@ -32,6 +31,11 @@ public partial class WorldEventDispatcher : SubViewportContainer
         MouseExited += OnMouseExit;
     }
 
+    // Very ridiculous thing happens:
+    // When disable low processor usage mode, and shen uses mouse, it works normally, GUI sample events at interval around 1ms
+    // When using touch screen stylus, GUI input events are sampled at interval around 5-9ms, causing very noticeable input lag.
+    // Pitfall invariant to project settings "Input > Mouse > Emulate Touch From Mouse"
+    // Need further test on some wacom device.
     public void OnGuiInput(InputEvent e)
     {
         if (e is InputEventKey key) DispatchKey(key);
@@ -88,7 +92,10 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
         if (mouseEvent is InputEventMouseMotion motion)
         {
-            var data = new CursorMotionData()
+            _prevPressure = motion.Pressure;
+            _prevTilt = motion.Tilt;
+
+            DispatchMotion(new CursorMotionData()
             {
                 ScreenPosition = screenPos,
                 ScreenDelta = screenDelta,
@@ -99,12 +106,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 Tilt = motion.Tilt,
                 TiltDelta = motion.Tilt - _prevTilt,
                 RawData = motion
-            };
-
-            _prevPressure = motion.Pressure;
-            _prevTilt = motion.Tilt;
-
-            DispatchMotion(data);
+            });
         }
 
         // ------------ Canvas navigation handling -------------

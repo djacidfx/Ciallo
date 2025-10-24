@@ -38,7 +38,7 @@ public class PaintInteractor : InteractorBase
 
     public override void Start(CursorButtonData data)
     {
-        // Shen: I guess this will improve graphics responsiveness
+        // Shen: Tested, This make delta time between GUI input event and process smaller when using mouse, reducing input lag.
         OS.LowProcessorUsageMode = false;
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
@@ -68,7 +68,7 @@ public class PaintInteractor : InteractorBase
     public override void Interacting(CursorMotionData data)
     {
         long deltaMs = _interactStopwatch.ElapsedMilliseconds;
-        // GD.Print($"[PaintInteractor] Interacting delta: {deltaMs} ms");
+        GD.Print($"[PaintInteractor] Interacting delta: {deltaMs} ms");
         _interactStopwatch.Restart();
 
         _generator.Update(data);
