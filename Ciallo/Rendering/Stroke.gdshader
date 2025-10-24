@@ -79,7 +79,8 @@ void vertex() {
 	segmentLength = distance(p1, p0);
 	cosTheta = (r0 - r1)/distance(p0, p1);
 	sinTheta = sqrt(1.0 - cosTheta * cosTheta);
-	tanTheta = cosTheta < 1e-7 ? 1e30 : sinTheta/cosTheta;
+	tanTheta = abs(cosTheta) < 1e-5 ? 1e10 * sign(cosTheta) : sinTheta/cosTheta;
+	if(abs(tanTheta) < 1e-5) tanTheta = 1e10;
 
 	tangent = normalize(p1 - p0);
 	normal = vec2(-tangent.y, tangent.x);
@@ -139,7 +140,7 @@ float perlinNoise1D(float x) {
     float g1 = grad1(i1);
 
     float u = fade(t);
-    
+
     return 2.0 * mix(g0 * t, g1 * (t - 1.0), u);
 }
 
@@ -201,7 +202,7 @@ void fragment() {
 	}
 	/*----------------------------------------------------------*/
  	if(strokeType == Stamp){
-		
+
  		float x1 = pLocal.x - r;
  		float x2 = pLocal.x + r;
  		float x1Idx = x2n(x1) + n0;
@@ -228,12 +229,12 @@ void fragment() {
 			float cosRot = cos(rotationNoise);
 			float sinRot = sin(rotationNoise);
 			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
-			
+
  			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
 			float noise = texture(multiplyTexture, uv).r;
 			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || length(pToCurrStamp/r) > 1.0;
 			float sampledA = isOutDisk ? 1e-7 : noise * flow * texture(stampTexture, uv).r;
-	
+
  			currA = sampledA + currA * (1.0 - sampledA);
 			i++;
 			currIdx += 1.0;
@@ -259,7 +260,7 @@ void fragment() {
         }
         if(p_r.x > 0.0 && p_r.x < segmentLength){
 			float r_p = r0 - cosTheta * p_r.x;
-            float lambda = abs(pLocal.y) / r_p * sinTheta;
+            float lambda = abs(pLocal.y) / sinTheta / r_p;
             transparency = (1.0 - flow*sampleFalloffCurve(lambda))/transparency0/transparency1;
         }
         if(p_r.x >= segmentLength){
