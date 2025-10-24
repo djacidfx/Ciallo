@@ -97,6 +97,7 @@ public class PolylineTransformInteractor(PolylineTransformHover transformHover) 
 
     public override void Interacting(CursorMotionData data)
     {
+        if (_transformType == -1) return;
         // Compute transform
         if (_transformType == 0)
             _currTransform = _currTransform.Translated(data.WorldDelta);

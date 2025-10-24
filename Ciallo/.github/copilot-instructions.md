@@ -17,12 +17,12 @@ Following guidelines are suitable for solo development or tiny team. May have to
 - Architect and avoid encapsulation
   - Encapsulation costs efforts and flexibility.
   - Architect systems and consider each system as a tool.
-    - Tools always need to be fine-tuned, over encapsulation (make some key stuff `private`) makes the fine-tune hard to achieve.  
+    - Tools always need to be fine-tuned, over encapsulation (make some key stuff `private`) makes fine-tune hard to achieve.  
 
 ## Details
 - Global variables or static classes (that need to work with) are named as "App*"
 - No plural forms for class, folder, or namespace names.
-  - Use plural for `Enum` represents bit fields same as C# tradtional. 
+  - Use plural for `Enum` represents bit fields same as C# convention. 
   - Optionally, use plural names for collection-type variables, fields, and properties to hint collection type.
   - Ignore English countable/uncountable rules.
     - e.g., `Datas` is a valid name for a `List<Data>` object.
