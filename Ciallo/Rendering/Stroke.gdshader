@@ -14,6 +14,8 @@ uniform float canvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
 uniform float dashLength = -1.0; // length with unit "L/r"
 uniform float gapLength = -1.0;
 uniform float dashForwardSpeed = 0.0;
+// Pen pressure map curve
+uniform sampler2D pressure2FlowCurve;
 
 // ------stamp parameters-----------
 //// Fail to compile:
@@ -122,8 +124,8 @@ float n2x(float n) {
 	return r0/cosTheta * (1.0-exp(-cosTheta*n));
 }
 
-float sampleFalloffCurve(float t){
-	return texture(falloffCurve, vec2(t, 0)).r;
+float sampleCurve(sampler2D curve, float t){
+	return texture(curve, vec2(t, 0)).r;
 }
 
 // ---------------------noise helper gen by copilot--------------------
@@ -181,33 +183,37 @@ void fragment() {
     float d1 = distance(p, p1);
 	float cosPhi0 = pLocal.x / d0;
     float cosPhi1 = (pLocal.x - segmentLength) / d1;
+	vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
+	float r_p = r0 - cosTheta * p_r.x;
+
+	float t = mix(pp0, pp1, p_r.x/segmentLength);
+	float flowRatio = sampleCurve(pressure2FlowCurve, t);
+
 	/*----------------------------------------------------------*/
 	if(strokeType == Vanilla){
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
 
 		COLOR = overridingColor.a >= 0.0 ? overridingColor : materialColor;
-		if(d0 < r0 && d1 < r1){
-        	discard;
-    	}
-    	float flow = COLOR.a;
-    	if(d0 < r0 || d1 < r1){
-        	flow = 1.0 - sqrt(1.0 - COLOR.a);
-    	}
-		COLOR = vec4(COLOR.rgb, flow);
+    	float targetFlow = COLOR.a * flowRatio;
+		COLOR.a = COLOR.a * flowRatio;
+		if(targetFlow < 0.999){ // Can avoid little white dot
+			if(d0 < r0 && d1 < r1){
+        		discard;
+    		}
+			if(d0 < r0 || d1 < r1){
+	        	COLOR.a = 1.0 - sqrt(1.0 - COLOR.a);
+	    	}
+		}
 
 		//// Anti antialiasing
+		//// AA end point makes visible gaps.
 		float zoom = min(scale.x, scale.y);
 		float aaEdge = 0.25 / zoom;
 		float aaStart = 1.0 - aaEdge;
 		float lambda;
-		if (cosPhi0 < cosTheta) lambda = d0/r0;
-		else if (cosPhi1 > cosTheta) lambda = d1/r1;
-		else {
-			vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
-			float r_p = r0 - cosTheta * p_r.x;
-			lambda = abs(pLocal.y) / r_p * sinTheta;
-		}
+
+		lambda = abs(pLocal.y) / (r_p * sinTheta);
 
 		if(lambda > aaStart){
 			float t = (lambda - aaStart)/(1.0 - aaStart);
@@ -216,7 +222,6 @@ void fragment() {
 	}
 	/*----------------------------------------------------------*/
  	if(strokeType == Stamp){
-
  		float x1 = pLocal.x - r;
  		float x2 = pLocal.x + r;
  		float x1Idx = x2n(x1) + n0;
@@ -230,7 +235,7 @@ void fragment() {
  		int MAX_i = 128;
  		float currIdx = ceil(startIdx);
  		float currA = 1e-7;
-		float flow = materialColor.a;
+		float flow = materialColor.a * flowRatio;
 		// Main loop
  		while(i < MAX_i && currIdx < endIdx){
 			float currN = currIdx * stampInterval;
@@ -261,10 +266,9 @@ void fragment() {
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
 
 		// The Whispers Of the olD Ones
-		vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
-		float flow = materialColor.a;
-		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleFalloffCurve(d0/r0));
-        float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleFalloffCurve(d1/r1));
+		float flow = materialColor.a * flowRatio;
+		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleCurve(falloffCurve, d0/r0));
+        float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleCurve(falloffCurve, d1/r1));
 		float transparency;
 
 		// Shen already forget about every details here, and he is too lazy to remind of.
@@ -275,7 +279,7 @@ void fragment() {
         if(p_r.x > 0.0 && p_r.x < segmentLength){
 			float r_p = r0 - cosTheta * p_r.x;
             float lambda = abs(pLocal.y) / sinTheta / r_p;
-            transparency = (1.0 - flow*sampleFalloffCurve(lambda))/transparency0/transparency1;
+            transparency = (1.0 - flow*sampleCurve(falloffCurve, lambda))/transparency0/transparency1;
         }
         if(p_r.x >= segmentLength){
             transparency = transparency1/transparency0;
