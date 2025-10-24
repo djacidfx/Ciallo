@@ -34,6 +34,7 @@ theme = ExtResource("1_j4qnp")
 visible = false
 
 [node name="OpenDocument" type="FileDialog" parent="." groups=["Dialog"]]
+use_hdr_2d = true
 title = "Open a File"
 initial_position = 1
 size = Vector2i(1080, 720)
@@ -58,6 +59,7 @@ visible = false
 visible = false
 
 [node name="ExportGodotScene" type="FileDialog" parent="." groups=["Dialog"]]
+use_hdr_2d = true
 initial_position = 2
 display_mode = 1
 access = 2

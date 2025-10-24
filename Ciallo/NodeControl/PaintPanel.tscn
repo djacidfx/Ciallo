@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://NodeControl/PaintPanel.cs" id="1_ract4"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_jsupi"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://NodeControl/WorldEventDispatcher.cs" id="3_7pmtm"]
-[ext_resource type="PackedScene" path="res://Rendering/WorldView.tscn" id="4_3trrc"]
+[ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Rendering/WorldView.tscn" id="4_3trrc"]
 [ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Rendering/Checkerboard.gdshader" id="5_ercqw"]
 [ext_resource type="Script" uid="uid://ci7loyp0at1cr" path="res://Rendering/WorldOverlay.cs" id="6_je3d8"]
 [ext_resource type="Script" uid="uid://dc5n5euy0qfdj" path="res://Rendering/WorldCursorDetectionArea.cs" id="7_8h3gs"]
@@ -102,6 +102,7 @@ handle_input_locally = false
 msaa_2d = 1
 screen_space_aa = 1
 use_taa = true
+use_hdr_2d = true
 gui_snap_controls_to_pixels = false
 size = Vector2i(1920, 1042)
 render_target_update_mode = 4
