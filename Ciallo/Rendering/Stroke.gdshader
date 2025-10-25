@@ -50,7 +50,7 @@ varying flat float segmentLength;
 varying flat float sinTheta;
 varying flat float cosTheta;
 varying flat float tanTheta;
-varying flat vec2 scale;
+varying flat float scale;
 
 vec2 unpack2floats(float f) {
     uint word = floatBitsToUint(f);
@@ -59,6 +59,8 @@ vec2 unpack2floats(float f) {
 }
 
 void vertex() {
+	mat3 canvas_linear = mat3(CANVAS_MATRIX);  // discard translation
+    scale = length(canvas_linear * vec3(1.0, 0.0, 0.0));  // X-scale
 	// Canvas item not
 	p0 = INSTANCE_CUSTOM.xy;
 	p1 = INSTANCE_CUSTOM.zw;
@@ -71,17 +73,12 @@ void vertex() {
 	vec2 pps = unpack2floats(COLOR.z);
 	pp0 = pps.x;
 	pp1 = pps.y;
-	// Trying to be invariant to model scale.
-	vec2 canvasZoom = vec2(length(CANVAS_MATRIX[0].xy), length(CANVAS_MATRIX[1].xy));
-	vec2 modelScale = vec2(length(MODEL_MATRIX[0].xy), length(MODEL_MATRIX[1].xy));
-	scale = canvasZoom * modelScale;
 
 	if(radiusMode == 1){
-		float zoom = max(scale.x, scale.y);
-		r0 /= zoom;
-		r1 /= zoom;
-		n0 *= zoom;
-		n1 *= zoom;
+		r0 /= scale;
+		r1 /= scale;
+		n0 *= scale;
+		n1 *= scale;
 	}
 	segmentLength = distance(p1, p0);
 	cosTheta = (r0 - r1)/distance(p0, p1);
@@ -201,17 +198,14 @@ void fragment() {
 			if(d0 < r0 && d1 < r1){
         		discard;
     		}
-			if(d0 < r0 || d1 < r1){
-	        	COLOR.a = 1.0 - sqrt(1.0 - COLOR.a);
-	    	}
 		}
 		else{
 			//// Anti antialiasing
 			//// AA end point makes visible gaps with transparency.
-			float zoom = min(scale.x, scale.y);
-			float aaEdge = 0.25 / zoom;
-			float aaStart = 1.0 - aaEdge;
-			float lambda;
+			float aaEdge = 3.0 / scale;
+			float aaStart = 1.0 - aaEdge/r_p;
+			aaStart = clamp(aaStart, 0.0, 1.0);
+			float lambda = abs(pLocal.y) / r_p * sinTheta;
 
 			if (cosPhi0 < cosTheta) lambda = d0/r0;
 			else if (cosPhi1 > cosTheta) lambda = d1/r1;
@@ -223,9 +217,12 @@ void fragment() {
 
 			if(lambda > aaStart){
 				float t = (lambda - aaStart)/(1.0 - aaStart);
-				COLOR.a = COLOR.a * smoothstep(1.0, 0.0, t);
+				COLOR.a = COLOR.a * smoothstep(1.0, 0.3, t);
 			}
 		}
+		if(d0 < r0 || d1 < r1){
+        	COLOR.a = 1.0 - sqrt(1.0 - COLOR.a);
+    	}
 	}
 	/*----------------------------------------------------------*/
  	if(strokeType == Stamp){
