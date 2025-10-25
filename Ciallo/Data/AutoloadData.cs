@@ -81,12 +81,7 @@ public partial class AutoloadData : Node
             // Prevent default handler
             return;
         }
-        
-        if(what == NotificationWMWindowFocusOut)
-            GetTree().Paused = true;
-        else if(what == NotificationWMWindowFocusIn)
-            GetTree().Paused = false;
-        
+
         // Force garbage collection makes godot memory leak warning disappear
         if (what != NotificationPredelete) return;
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);
