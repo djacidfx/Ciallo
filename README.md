@@ -59,12 +59,14 @@ Do you really need this feature? Tell me how to add more support to this.")
 
 Steam | Itch.io
 
-System requirements (A system can run large-sized 2D games.):
+System requirements:
+Require a system can run small to middle size 3D games.
 
 - OS: Windows 10 or higher
 - Memory: 6GB or more
-- Graphics card: Minimum NV GTX 1650 or AMD Radeon RX 6500 XT.
+- GPU: Minimum NV GTX 1650 or AMD Radeon RX 6500 XT.
 - Monitor: Recommend refresh rate greater than 100fps to get the best drawing experience.
+- CPU and Tablet: With an entry-level consumer CPU, Ciallo can response upto 1000Hz reporting/polling rate. So use your tablet with maximum reporting rate for the best drawing experience.
 
 > About MacOS: I literally wish but cannot afford to buy a MacBook Pro (which cost me half a year’s living budget). Consider patreon me, really lacking of money currently.
 
@@ -144,7 +146,7 @@ If we have to give up using Godot for whatever reason someday, we may consider u
 ### Why not GDScript?
 Dynamically-typed languages cannot support our project (or, IMHO, any projects that need more than 5 custom types). C# is a better choice, also for its larger community.
 
-But I do like the GDScript language itself. In my wet dream, Godot will discard GDScript for engine scripting and turn it into a high-level shading language for graphics.
+But I do like the GDScript language itself. In my wet dream, Godot will treat C# as the first citizen and add shader programming support to "GDScript" for graphics.
 
 > The graphics community lacks an advanced programming language for shading. Compared to C#, GDScript lacks many features, but compared to GLSL/HLSL, GDScript is already very feature-rich.
 
