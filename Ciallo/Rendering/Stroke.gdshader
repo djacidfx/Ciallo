@@ -205,19 +205,26 @@ void fragment() {
 	        	COLOR.a = 1.0 - sqrt(1.0 - COLOR.a);
 	    	}
 		}
+		else{
+			//// Anti antialiasing
+			//// AA end point makes visible gaps with transparency.
+			float zoom = min(scale.x, scale.y);
+			float aaEdge = 0.25 / zoom;
+			float aaStart = 1.0 - aaEdge;
+			float lambda;
 
-		//// Anti antialiasing
-		//// AA end point makes visible gaps.
-		float zoom = min(scale.x, scale.y);
-		float aaEdge = 0.25 / zoom;
-		float aaStart = 1.0 - aaEdge;
-		float lambda;
+			if (cosPhi0 < cosTheta) lambda = d0/r0;
+			else if (cosPhi1 > cosTheta) lambda = d1/r1;
+			else {
+				vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
+				float r_p = r0 - cosTheta * p_r.x;
+				lambda = abs(pLocal.y) / r_p * sinTheta;
+			}
 
-		lambda = abs(pLocal.y) / (r_p * sinTheta);
-
-		if(lambda > aaStart){
-			float t = (lambda - aaStart)/(1.0 - aaStart);
-			COLOR.a = COLOR.a * smoothstep(1.0, 0.0, t);
+			if(lambda > aaStart){
+				float t = (lambda - aaStart)/(1.0 - aaStart);
+				COLOR.a = COLOR.a * smoothstep(1.0, 0.0, t);
+			}
 		}
 	}
 	/*----------------------------------------------------------*/
