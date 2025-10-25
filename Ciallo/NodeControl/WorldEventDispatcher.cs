@@ -31,10 +31,49 @@ public partial class WorldEventDispatcher : SubViewportContainer
         MouseExited += OnMouseExit;
     }
 
+    /// A failure attempt to increase sampling rate of cursor movement, it seems that the _Process function cannot get pen position.
+    /// The OnGuiInput invocation interval seems to be decided by user's device.
+    // private bool _dispatchMotionByProcess = false;
+    // private Vector2 _processPrevScreenPos;
+    // private Vector2 _processPrevWorldPos;
+    // private float _processPrevPressure;
+    // private Vector2 _processPrevTilt;
+    // public override void _Process(double delta)
+    // {
+    //     // Cannot get my pen position by this function.
+    //     var screenPos = GetViewport().GetMousePosition() - GlobalPosition;
+    //     var invTransform = _camera.GetViewportTransform().AffineInverse();
+    //     var worldPos = invTransform * screenPos;
+    //
+    //     _dispatchMotionByProcess = !OS.LowProcessorUsageMode;
+    //
+    //     if (_dispatchMotionByProcess && !(screenPos - _processPrevScreenPos).IsZeroApprox())
+    //     {
+    //         var worldDelta = worldPos - invTransform * _prevScreenPos;
+    //
+    //         DispatchMotion(new CursorMotionData()
+    //         {
+    //             ScreenPosition = screenPos,
+    //             ScreenDelta = screenPos - _processPrevScreenPos,
+    //             WorldPosition = worldPos,
+    //             WorldDelta = worldDelta,
+    //             Pressure = _prevPressure,
+    //             PressureDelta = _prevPressure - _processPrevPressure,
+    //             Tilt = _prevTilt,
+    //             TiltDelta = _prevTilt - _processPrevTilt,
+    //         });
+    //
+    //         _processPrevPressure = _prevPressure;
+    //         _processPrevTilt = _prevTilt;
+    //     }
+    //     _processPrevScreenPos = screenPos;
+    //     _processPrevWorldPos = worldPos;
+    // }
+
     // Very ridiculous thing happens:
     // When disable low processor usage mode, and shen uses mouse, it works normally, GUI sample events at interval around 1ms
     // When using touch screen stylus, GUI input events are sampled at interval around 5-9ms, causing very noticeable input lag.
-    // Pitfall invariant to project settings "Input > Mouse > Emulate Touch From Mouse"
+    // Invariant to project settings "Input > Mouse > Emulate Touch From Mouse"
     // Need further test on some wacom device.
     public void OnGuiInput(InputEvent e)
     {
@@ -43,8 +82,9 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
         var screenPos = mouseEvent.Position;
         var screenDelta = screenPos - _prevScreenPos;
-        var worldPos = _camera.GetViewportTransform().AffineInverse() * mouseEvent.Position;
-        var prevWorldPosWithCurrentCamera = _camera.GetViewportTransform().AffineInverse() * _prevScreenPos;
+        var invTransform = _camera.GetViewportTransform().AffineInverse();
+        var worldPos = invTransform * mouseEvent.Position;
+        var prevWorldPosWithCurrentCamera = invTransform * _prevScreenPos;
         var worldDelta = worldPos - prevWorldPosWithCurrentCamera;
 
         _prevScreenPos = screenPos;
@@ -105,7 +145,6 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 PressureDelta = motion.Pressure - _prevPressure,
                 Tilt = motion.Tilt,
                 TiltDelta = motion.Tilt - _prevTilt,
-                RawData = motion
             });
         }
 

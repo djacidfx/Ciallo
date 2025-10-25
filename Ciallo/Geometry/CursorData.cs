@@ -21,7 +21,6 @@ public struct CursorButtonData
             WorldDelta = Vector2.Zero,
             PressureDelta = 0f,
             TiltDelta = Vector2.Zero,
-            RawData = null
         };
 }
 
@@ -36,7 +35,6 @@ public struct CursorMotionData
     public Vector2 Tilt;
     public Vector2 TiltDelta;
 
-    public InputEventMouseMotion RawData;
     public Vector2 PrevWorldPosition => WorldPosition - WorldDelta;
     public Vector2 PrevScreenPosition => ScreenPosition - ScreenDelta;
     public float PrevPressure => Pressure - PressureDelta;

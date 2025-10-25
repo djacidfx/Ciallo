@@ -46,7 +46,7 @@ public class PolylineInteractiveGenerator
     private Vector2 _lastDirection;
     private float _lastPressure = -1.0f;
 
-    private readonly float _minDistance = 4f; // in pixel
+    private readonly float _minDistance = 3f; // in pixel
     private readonly float _maxDistance = 15f; // in pixel
     private readonly float _minCosWindingAngle = Mathf.Cos(Mathf.DegToRad(8f));
     private bool _previewPointAlreadyRemoved = false;
@@ -115,14 +115,17 @@ public class PolylineInteractiveGenerator
         bool isSmaller = data.ScreenPosition.DistanceTo(_lastScreenPoint) < _minDistance;
         bool isLarger = data.ScreenPosition.DistanceTo(_lastScreenPoint) > _maxDistance;
         bool isPressureChange = Mathf.Abs(data.Pressure - _lastPressure) > 0.08f;
-        bool isWinding = data.ScreenPosition.DirectionTo(_lastScreenPoint).Dot(_lastDirection) < _minCosWindingAngle;
+        float cosWindingAngle = data.ScreenPosition.DirectionTo(_lastScreenPoint).Dot(_lastDirection);
+        bool isWinding = cosWindingAngle < _minCosWindingAngle;
+        if (!isSmaller)
+            GD.Print($"{Mathf.RadToDeg(Mathf.Acos(cosWindingAngle))} {isWinding}");
         bool saveThisPoint = !isSmaller && (isLarger || isWinding || isPressureChange);
 
         if (saveThisPoint)
         {
             // Basic smoothing
             const float smoothingFactor = 0.15f;
-            for (int i = 0; i < 6; i++)
+            for (int i = 0; i < 5; i++)
             {
                 int idx = _positions.Count - 1 - i;
                 if (idx < 2) break;
