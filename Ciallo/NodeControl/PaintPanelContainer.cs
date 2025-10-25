@@ -11,6 +11,7 @@ public partial class PaintPanelContainer : Control
         var panel = PaintPanel.Instantiate(document.Get<DocumentSetting>());
         AddChild(panel);
         document.Add(panel);
+        panel.WorldEventDispatcher.Document = document;
         return panel;
     }
 

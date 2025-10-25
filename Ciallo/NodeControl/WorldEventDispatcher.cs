@@ -1,6 +1,6 @@
-using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
+using Frent;
 using Godot;
 
 namespace Ciallo.NodeControl;
@@ -23,7 +23,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
     public override void _Ready()
     {
-        _camera = GetNode<Camera2D>("%Camera2D");
+        _camera = GetNode<Camera2D>("%MainCamera");
         _worldCursorDetectionArea = GetNode<WorldCursorDetectionArea>("%WorldCursorDetectionArea");
 
         GuiInput += OnGuiInput;
@@ -134,7 +134,8 @@ public partial class WorldEventDispatcher : SubViewportContainer
         }
     }
 
-    private ToolButtonPanel ToolManager => AppWorldManager.WorkingDocument.CurrentValue.Get<ToolButtonPanel>();
+    public Entity Document;
+    private ToolButtonPanel ToolManager => Document.Get<ToolButtonPanel>();
 
     private void DispatchKey(InputEventKey key)
     {
