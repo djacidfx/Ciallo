@@ -70,11 +70,13 @@ public partial class WorldEventDispatcher : SubViewportContainer
     //     _processPrevWorldPos = worldPos;
     // }
 
-    // Very ridiculous thing happens:
+    // Following thing happens:
     // When disable low processor usage mode, and shen uses mouse, it works normally, GUI sample events at interval around 1ms
     // When using touch screen stylus, GUI input events are sampled at interval around 5-9ms, causing very noticeable input lag.
     // Invariant to project settings "Input > Mouse > Emulate Touch From Mouse"
-    // Need further test on some wacom device.
+
+    // Seems like shen's mouse reporting at >1000Hz, and stylus at 150Hz.
+    // Need further test on some wacom devices.
     public void OnGuiInput(InputEvent e)
     {
         if (e is InputEventKey key) DispatchKey(key);
