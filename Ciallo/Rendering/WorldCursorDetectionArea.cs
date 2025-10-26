@@ -113,13 +113,13 @@ public partial class WorldCursorDetectionArea : Node2D
         // https://docs.godotengine.org/en/stable/tutorials/physics/ray-casting.html
         // https://godotforums.org/d/34175-collision-with-point
         // Note this is different to RayCast2D node, which is a ray on XY plane. We want a top-down cast here (a point on XY plane).
-        var pp = new PhysicsPointQueryParameters2D()
+        var pointQuery = new PhysicsPointQueryParameters2D()
         {
             CollideWithBodies = true,
             Position = data.WorldPosition,
             CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke,
         };
-        var points = GetWorld2D().DirectSpaceState.IntersectPoint(pp, 32);
+        var points = GetWorld2D().DirectSpaceState.IntersectPoint(pointQuery, 32);
         SetHoveringArea(points.Count > 0 ? TopMostFromHits(points) : null);
     }
     public CursorDetectionArea[] CreateAddTransformAreas(Vector2 size, Transform2D transform)

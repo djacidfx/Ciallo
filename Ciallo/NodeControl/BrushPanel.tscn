@@ -21,6 +21,7 @@ repeat = 1
 
 [node name="BrushPanel" type="AcceptDialog"]
 auto_translate_mode = 1
+use_hdr_2d = true
 oversampling_override = 1.0
 title = "Brush library"
 initial_position = 1
@@ -47,6 +48,7 @@ stretch = true
 unique_name_in_owner = true
 disable_3d = true
 handle_input_locally = false
+use_hdr_2d = true
 size = Vector2i(704, 2)
 render_target_update_mode = 4
 

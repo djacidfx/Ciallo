@@ -41,6 +41,12 @@ public partial class BrushMaterial : ShaderMaterial
         setting.DashLength.Subscribe(length => SetShaderParameter("dashLength", length)).AddTo(Subs);
         setting.GapLength.Subscribe(length => SetShaderParameter("gapLength", length)).AddTo(Subs);
         setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("dashForwardSpeed", speed)).AddTo(Subs);
+        var pp2FlowTex = ImageTexture.CreateFromImage(BakeCurve(setting.Pressure2FlowCurve));
+        setting.Pressure2FlowCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
+        {
+            pp2FlowTex.Update(BakeCurve(setting.Pressure2FlowCurve));
+            SetShaderParameter("pressure2FlowCurve", pp2FlowTex);
+        }).AddTo(Subs);
 
         // Stamp
         setting.StampInterval.Subscribe(interval => SetShaderParameter("stampInterval", interval)).AddTo(Subs);
@@ -74,7 +80,7 @@ public partial class BrushMaterial : ShaderMaterial
 
     public static Image BakeCurve(BezierCurve curve)
     {
-        int n = 256;
+        int n = 512;
         curve.Tessellate(n);
         var data = curve.SampleXList(Enumerable.Range(0, n).Select(i => (float)i / n).ToArray());
         var bytes = MemoryMarshal.AsBytes(CollectionsMarshal.AsSpan(data));

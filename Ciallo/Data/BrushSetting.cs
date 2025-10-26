@@ -15,9 +15,10 @@ public class BrushSetting
     [DataMember] public ReactiveProperty<string> Name = new("");
     [DataMember] public ObservableList<BrushLabel> Labels = [];
     [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
-    [DataMember] public ReactiveProperty<float> BaseRadius = new(8.0f);
+    [DataMember] public ReactiveProperty<float> BaseRadius = new(5.0f);
     [DataMember] public BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(0.2f, 1.0f); // radius = baseRadius * curve(pressure)
     [DataMember] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
+    [DataMember] public BezierCurve Pressure2FlowCurve = BezierCurve.Constant(1.0f); // finalFlow = curve(pressure) * Color.a
 
     // Vanilla
     [DataMember] public ReactiveProperty<float> DashLength = new(-1.0f);
@@ -51,7 +52,7 @@ public class BrushSetting
         var baseRadiusControl = new SpinSlider
         {
             MinValue = 0.1,
-            MaxValue = 256,
+            MaxValue = 128,
             Step = 0.03333333,
             ExpEdit = true,
         };
@@ -68,11 +69,15 @@ public class BrushSetting
         colorPickerButton.BindColor(Color);
         container.AddProperty("RGB+Flow", colorPickerButton);
 
-        var pressureCurveEdit = new MappingCurveEdit { MinValue = 0.01f }; // MinValue avoid potential zero radius issue.
-        pressureCurveEdit.Curve = Pressure2RadiusRatioCurve;
+        var pp2RadiusCurveEdit = new MappingCurveEdit { MinValue = 0.01f }; // MinValue avoid potential zero radius issue.
+        pp2RadiusCurveEdit.Curve = Pressure2RadiusRatioCurve;
         var aspectBox = new AspectRatioContainer();
-        aspectBox.AddChild(pressureCurveEdit);
-        container.AddProperty("Pen pressure", aspectBox);
+        aspectBox.AddChild(pp2RadiusCurveEdit);
+        container.AddProperty("Pressure to radius", aspectBox);
+
+        var pp2FlowCurveEdit = new MappingCurveEdit();
+        pp2FlowCurveEdit.Curve = Pressure2FlowCurve;
+        container.AddProperty("Pressure to flow", pp2FlowCurveEdit);
 
         var typeButton = new OptionButton();
         typeButton.BindEnum(RenderingType);

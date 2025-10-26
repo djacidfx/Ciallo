@@ -12,7 +12,7 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
 - [x] Tool system infrastructure
 - [x] Brush tool
   - [ ] More brushes
-  - [ ] More brush parameters
+  - [x] More brush parameters
   - [x] Paint stabilizer
 - [x] Paint fill tool
 - [ ] Vector fill tool
@@ -60,6 +60,7 @@ Ciallo is built on Godot. Building the core part of Ciallo is the same as buildi
 
 - Set up Godot 4.5.1 with .Net9. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
 - Open the `Ciallo/project.godot` file with your Godot editor, then build and run.
+  - Note: Godot will raise annoying errors about autoload before first build, we can safely ignore them.
 - Enable the "Embedded game size stretches..." option in the game run window.
   
 ![](/.github/EnableStretch.png)
@@ -80,6 +81,8 @@ Please contact me if you have recommendations for improvement.
 
 Ciallo uses the vast majority of Godot features for developing a 2D game, and heavily uses nearly all types of GUI control nodes.
 So every piece of experience you have in 2D game development is helpful, and skills you learn from Ciallo can also be applied your future game development.
+
+You can find all the ui scenes and custom gui nodes in the `NodeControl` or `Widget` folders. (I should have named "NodeControl" as "GuiControl" or something else better).
 
 ### Component pattern and Frent ECS library
 Ciallo heavily uses the [frent](https://github.com/itsBuggingMe/Frent) library for realizing component pattern in almost every piece of code.

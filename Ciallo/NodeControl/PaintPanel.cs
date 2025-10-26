@@ -1,14 +1,13 @@
 using Ciallo.Data;
 using Ciallo.Misc;
-using Ciallo.Widget;
 using Godot;
 using R3;
 
 namespace Ciallo.NodeControl;
 
+[SceneTree]
 public partial class PaintPanel : PanelContainer
 {
-    private Camera2D _camera;
     public readonly ReactiveProperty<float> Zoom = new(1f);
     public readonly ReactiveProperty<float> CanvasRotation = new(0f); // in deg not rad
     public readonly ReactiveProperty<Vector2> Offset = new(Vector2.Zero);
@@ -24,18 +23,17 @@ public partial class PaintPanel : PanelContainer
 
     public override void _Ready()
     {
-        _camera = GetNode<Camera2D>("%Camera2D");
         _background = GetNode<Polygon2D>("%Background");
         float w = _documentSetting.ReferenceSize.Value.X, h = _documentSetting.ReferenceSize.Value.Y;
         _background.Polygon = [new(-w / 2, -h / 2), new(w / 2, -h / 2), new(w / 2, h / 2), new(-w / 2, h / 2)];
 
-        Zoom.Subscribe(v => _camera.Zoom = Vector2.One * v);
-        CanvasRotation.Subscribe(v => _camera.Rotation = -Mathf.DegToRad(v));
-        Offset.Subscribe(v => _camera.Position = v);
+        Zoom.Subscribe(v => MainCamera.Zoom = Vector2.One * v);
+        CanvasRotation.Subscribe(v => MainCamera.Rotation = -Mathf.DegToRad(v));
+        Offset.Subscribe(v => MainCamera.Position = v);
         _documentSetting.BackgroundColor.Subscribe(_background.SetColor).AddTo(this);
 
-        GetNode<SpinSlider>("%ZoomControl").BindNumber(Zoom);
-        GetNode<SpinSlider>("%RotationControl").BindNumber(CanvasRotation);
-        GetNode<ColorPickerButton>("%BackgroundColorControl").BindColor(_documentSetting.BackgroundColor);
+        ZoomControl.BindNumber(Zoom);
+        RotationControl.BindNumber(CanvasRotation);
+        BackgroundColorControl.BindColor(_documentSetting.BackgroundColor);
     }
 }

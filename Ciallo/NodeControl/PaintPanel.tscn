@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://NodeControl/PaintPanel.cs" id="1_ract4"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_jsupi"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://NodeControl/WorldEventDispatcher.cs" id="3_7pmtm"]
-[ext_resource type="PackedScene" path="res://Rendering/WorldView.tscn" id="4_3trrc"]
+[ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Rendering/WorldView.tscn" id="4_3trrc"]
 [ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Rendering/Checkerboard.gdshader" id="5_ercqw"]
 [ext_resource type="Script" uid="uid://ci7loyp0at1cr" path="res://Rendering/WorldOverlay.cs" id="6_je3d8"]
 [ext_resource type="Script" uid="uid://dc5n5euy0qfdj" path="res://Rendering/WorldCursorDetectionArea.cs" id="7_8h3gs"]
@@ -89,7 +89,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 
-[node name="WorldViewContainer" type="SubViewportContainer" parent="VBoxContainer"]
+[node name="WorldEventDispatcher" type="SubViewportContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 0
@@ -97,35 +98,38 @@ stretch = true
 mouse_target = true
 script = ExtResource("3_7pmtm")
 
-[node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldViewContainer"]
+[node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldEventDispatcher"]
 handle_input_locally = false
 msaa_2d = 1
+screen_space_aa = 1
+use_taa = true
+use_hdr_2d = true
 gui_snap_controls_to_pixels = false
 size = Vector2i(1920, 1042)
 render_target_update_mode = 4
 
-[node name="Background" type="Polygon2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
+[node name="Background" type="Polygon2D" parent="VBoxContainer/WorldEventDispatcher/SubViewport"]
 unique_name_in_owner = true
 material = SubResource("ShaderMaterial_je3d8")
 
-[node name="WorldView" parent="VBoxContainer/WorldViewContainer/SubViewport" instance=ExtResource("4_3trrc")]
+[node name="WorldView" parent="VBoxContainer/WorldEventDispatcher/SubViewport" instance=ExtResource("4_3trrc")]
 unique_name_in_owner = true
 
-[node name="Camera2D" type="Camera2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
+[node name="MainCamera" type="Camera2D" parent="VBoxContainer/WorldEventDispatcher/SubViewport"]
 unique_name_in_owner = true
 ignore_rotation = false
 
-[node name="WorldOverlay" type="Node2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
+[node name="WorldOverlay" type="Node2D" parent="VBoxContainer/WorldEventDispatcher/SubViewport"]
 unique_name_in_owner = true
 script = ExtResource("6_je3d8")
 
-[node name="WorldCursorDetectionArea" type="Node2D" parent="VBoxContainer/WorldViewContainer/SubViewport"]
+[node name="WorldCursorDetectionArea" type="Node2D" parent="VBoxContainer/WorldEventDispatcher/SubViewport"]
 unique_name_in_owner = true
 script = ExtResource("7_8h3gs")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="VBoxContainer/WorldViewContainer/SubViewport/WorldCursorDetectionArea"]
+[node name="CanvasLayer" type="CanvasLayer" parent="VBoxContainer/WorldEventDispatcher/SubViewport/WorldCursorDetectionArea"]
 
-[node name="ControlCoverWholeCanvas" type="Control" parent="VBoxContainer/WorldViewContainer/SubViewport/WorldCursorDetectionArea/CanvasLayer"]
+[node name="ControlCoverWholeCanvas" type="Control" parent="VBoxContainer/WorldEventDispatcher/SubViewport/WorldCursorDetectionArea/CanvasLayer"]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

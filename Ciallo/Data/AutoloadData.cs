@@ -53,8 +53,12 @@ public partial class AutoloadData : Node
         {
             var window = GetWindow();
             AppPreference.WindowMode = window.GetMode();
-            AppPreference.WindowSize = window.GetSize();
-            AppPreference.WindowPosition = window.GetPosition();
+            
+            if (window.GetMode() == Window.ModeEnum.Windowed)
+            {
+                AppPreference.WindowPosition = GetWindow().Position;
+                AppPreference.WindowSize = GetWindow().Size;
+            }
         };
 
         bool brushFilesExists = AppBrushLibrary.TryLoad();
@@ -77,6 +81,7 @@ public partial class AutoloadData : Node
             // Prevent default handler
             return;
         }
+
         // Force garbage collection makes godot memory leak warning disappear
         if (what != NotificationPredelete) return;
         GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced);

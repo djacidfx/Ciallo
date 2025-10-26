@@ -25,21 +25,35 @@ public partial class StrokeView : MultiMeshInstance2D
         TextureFilter = TextureFilterEnum.LinearWithMipmaps;
     }
 
-    public void SetGeometry([NotNull] IReadOnlyList<Vector2> points, float radius)
+    public void SetGeometry([NotNull] IReadOnlyList<Vector2> positions, float radius)
     {
-        SetGeometry(points, Enumerable.Repeat(radius, points.Count).ToImmutableArray());
+        SetGeometry(positions,
+            Enumerable.Repeat(radius, positions.Count).ToImmutableArray());
     }
 
     public void SetGeometry(
-        [NotNull] IReadOnlyList<Vector2> points,
+        [NotNull] IReadOnlyList<Vector2> positions,
         [NotNull] IReadOnlyList<float> radii)
     {
-        if (points.Count != radii.Count)
+        SetGeometry(positions, radii, Enumerable.Repeat(1.0f, positions.Count).ToImmutableArray());
+    }
+
+    public void SetGeometry(
+        [NotNull] IReadOnlyList<Vector2> positions,
+        [NotNull] IReadOnlyList<float> radii,
+        [NotNull] IReadOnlyList<float> pressures)
+    {
+        if (pressures.Count == 0)
         {
-            GD.PushError("Points and radii count mismatch.");
+            pressures = Enumerable.Repeat(1.0f, positions.Count).ToImmutableArray();
+        }
+
+        if (positions.Count != radii.Count || positions.Count != pressures.Count)
+        {
+            GD.PushError("List element number mismatch.");
             return;
         }
-        if (points.Count == 0 || radii.Count == 0)
+        if (positions.Count == 0 || radii.Count == 0)
         {
             Multimesh.InstanceCount = 0;
             return;
@@ -48,26 +62,27 @@ public partial class StrokeView : MultiMeshInstance2D
         var multiMesh = Multimesh;
         multiMesh.InstanceCount = 0; // Also clear buffer
 
-        ImmutableArray<Vector2> ps;
-        ImmutableArray<float> rs;
-        List<float> ns = [];
+        IReadOnlyList<Vector2> ps;
+        IReadOnlyList<float> rs;
+        List<float> ns = new() { Capacity = positions.Count };
 
-        if (points.Count > 1) // regular case
+        if (positions.Count > 1) // regular case
         {
-            multiMesh.InstanceCount = points.Count - 1;
-            ps = [..points];
-            rs = [..radii];
+            multiMesh.InstanceCount = positions.Count - 1;
+            ps = positions;
+            rs = radii;
         }
-        else if (points.Count == 1) // a point, render it as an ultra short segment
+        else if (positions.Count == 1) // a point, render it as an ultra short segment
         {
             multiMesh.InstanceCount = 1;
-            ps = [points[0], points[0] + 1e-5f * Vector2.Right];
+            ps = [positions[0], positions[0] + 1e-5f * Vector2.Right];
             rs = [radii[0], radii[0] + 1e-5f];
+            pressures = [0, 0];
         }
         else throw new("Unreachable");
 
         ns.Add(0f);
-        for (int i = 0; i < ps.Length - 1; i++)
+        for (int i = 0; i < ps.Count - 1; i++)
         {
             var l = (ps[i + 1] - ps[i]).Length();
             var r0 = rs[i];
@@ -96,14 +111,17 @@ public partial class StrokeView : MultiMeshInstance2D
 
             multiMesh.SetInstanceCustomData(i, customPos);
             // Have to use instance color to store t.
-            multiMesh.SetInstanceColor(i, new(Float32Packer.Pack(rs[i], rs[i + 1]), Float32Packer.Pack(ns[i], ns[i + 1]), 0, 0)); // empty spaces for tilt
+            multiMesh.SetInstanceColor(i,
+                new(Float32Packer.Pack(rs[i], rs[i + 1]),
+                    Float32Packer.Pack(ns[i], ns[i + 1]),
+                    Float32Packer.Pack(pressures[i], pressures[i + 1]), 0)); // no enough empty spaces :(
             // Have to set transform or do not render, this transform values are not used in shaders
             // Cannot access this matrix from the CanvasItem shader, so cannot be used for passing data.
             multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);
         }
 
         // Set bounding box
-        var boundingBox = points.GetBoundingBox(radii);
+        var boundingBox = positions.GetBoundingBox(radii);
         // Incorrect method:
         // RenderingServer.CanvasItemSetCustomRect(strokeView.GetCanvasItem(), true, boundingBox);
         // Godot cannot save the value in the scene.

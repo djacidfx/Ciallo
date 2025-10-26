@@ -59,8 +59,10 @@ public class PolylineTransformInteractor(PolylineTransformHover transformHover) 
         if (_transformType == -1)
         {
             SelectionManager.SelectedPolylines.Clear();
+            return;
         }
-        else if (_transformType == 0)
+
+        if (_transformType == 0)
         {
             _polylineE = transformHover.HoveredPolyline;
         }
@@ -70,7 +72,7 @@ public class PolylineTransformInteractor(PolylineTransformHover transformHover) 
             _currTransform = Transform2D.Identity;
 
             var geom = _polylineE.Get<PolylineGeometry>();
-            _origRect = geom.Points.GetBoundingBox();
+            _origRect = geom.Positions.GetBoundingBox();
             // Show transform box only when scaling
             if (_transformType > 1)
             {
@@ -95,6 +97,7 @@ public class PolylineTransformInteractor(PolylineTransformHover transformHover) 
 
     public override void Interacting(CursorMotionData data)
     {
+        if (_transformType == -1) return;
         // Compute transform
         if (_transformType == 0)
             _currTransform = _currTransform.Translated(data.WorldDelta);
@@ -150,7 +153,7 @@ public class PolylineTransformInteractor(PolylineTransformHover transformHover) 
 
         // Update view
         var geom = _polylineE.Get<PolylineGeometry>();
-        var points = geom.Points.Select(p => _currTransform * p).ToArray();
+        var points = geom.Positions.Select(p => _currTransform * p).ToArray();
         if (_objectType == 0)
         {
             _polylineE.Get<StrokeView>().SetGeometry(points, geom.Radii);
@@ -172,7 +175,7 @@ public class PolylineTransformInteractor(PolylineTransformHover transformHover) 
         if (!resultT.IsEqualApprox(Transform2D.Identity))
         {
             var newGeom = _polylineE.Get<PolylineGeometry>().Clone();
-            newGeom.Points = newGeom.Points.Select(p => resultT * p).ToList();
+            newGeom.Positions = newGeom.Positions.Select(p => resultT * p).ToList();
             new SetPolylineGeometryCmd(_polylineE, newGeom).Commit();
         }
 

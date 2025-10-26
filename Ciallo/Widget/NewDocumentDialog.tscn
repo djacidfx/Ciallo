@@ -8,6 +8,7 @@
 
 [node name="NewDocumentDialog" type="ConfirmationDialog"]
 auto_translate_mode = 1
+use_hdr_2d = true
 oversampling_override = 1.0
 title = "New document - Ciallo"
 initial_position = 2

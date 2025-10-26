@@ -24,16 +24,16 @@ public class SetPolylineGeometryCmd : CommandBase
         _polylineE.Get<PolylineGeometry>() = _newGeometry;
 
         // Overlay
-        _polylineE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Points, _newGeometry.Radii);
+        _polylineE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii);
 
         // Polyline has stroke
         if (_polylineE.Has<StrokeBrush>())
         {
             // View
-            _polylineE.Get<StrokeView>().SetGeometry(_newGeometry.Points, _newGeometry.Radii);
+            _polylineE.Get<StrokeView>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii, _newGeometry.Pressures);
 
             // Cursor detection
-            _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_newGeometry.Points, _newGeometry.Radii);
+            _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_newGeometry.Positions, _newGeometry.Radii);
         }
 
         // Polyline has fill
@@ -41,10 +41,10 @@ public class SetPolylineGeometryCmd : CommandBase
         {
             // View
             var polygonView = _polylineE.Get<Polygon2D>();
-            polygonView.Polygon = [.._newGeometry.Points];
+            polygonView.Polygon = [.._newGeometry.Positions];
 
             // Cursor detection
-            _polylineE.Get<CursorDetectionArea>().SetPolygonShape(_newGeometry.Points);
+            _polylineE.Get<CursorDetectionArea>().SetPolygonShape(_newGeometry.Positions);
         }
     }
 
@@ -53,23 +53,23 @@ public class SetPolylineGeometryCmd : CommandBase
         if (_polylineE.Has<FilledPolygonSetting>())
         {
             // Cursor detection
-            _polylineE.Get<CursorDetectionArea>().SetPolygonShape(_oldGeometry.Points);
+            _polylineE.Get<CursorDetectionArea>().SetPolygonShape(_oldGeometry.Positions);
 
             // View
             var polygonView = _polylineE.Get<Polygon2D>();
-            polygonView.Polygon = [.._oldGeometry.Points];
+            polygonView.Polygon = [.._oldGeometry.Positions];
         }
         else if (_polylineE.Has<StrokeBrush>())
         {
             // Cursor detection
-            _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_oldGeometry.Points, _oldGeometry.Radii);
+            _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);
 
             // View
-            _polylineE.Get<StrokeView>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
+            _polylineE.Get<StrokeView>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii, _newGeometry.Pressures);
         }
 
         // Overlay
-        _polylineE.Get<PolylineWireframe>().SetGeometry(_oldGeometry.Points, _oldGeometry.Radii);
+        _polylineE.Get<PolylineWireframe>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii);
 
         // Data
         _polylineE.Get<PolylineGeometry>() = _oldGeometry;

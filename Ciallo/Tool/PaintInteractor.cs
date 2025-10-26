@@ -38,7 +38,7 @@ public class PaintInteractor : InteractorBase
 
     public override void Start(CursorButtonData data)
     {
-        // Shen: I guess this will improve graphics responsiveness
+        // Shen: Tested, This make delta time between GUI input event and process smaller when using mouse, reducing input lag.
         OS.LowProcessorUsageMode = false;
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
@@ -72,7 +72,7 @@ public class PaintInteractor : InteractorBase
         _interactStopwatch.Restart();
 
         _generator.Update(data);
-        _strokePreview.SetGeometry(_generator.Points, _generator.Radii);
+        _strokePreview.SetGeometry(_generator.Positions, _generator.Radii);
     }
 
     public override void End(CursorButtonData data)
@@ -82,7 +82,7 @@ public class PaintInteractor : InteractorBase
         var strokeE = cmd.InitEntity();
         var geom = new PolylineGeometry()
         {
-            Points = [.._generator.Points],
+            Positions = [.._generator.Positions],
             Radii = [.._generator.Radii],
         };
         cmd.Combine(new ChangeStrokeBrushCmd(strokeE, _brushE))

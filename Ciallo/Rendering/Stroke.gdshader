@@ -14,6 +14,8 @@ uniform float canvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
 uniform float dashLength = -1.0; // length with unit "L/r"
 uniform float gapLength = -1.0;
 uniform float dashForwardSpeed = 0.0;
+// Pen pressure map curve
+uniform sampler2D pressure2FlowCurve;
 
 // ------stamp parameters-----------
 //// Fail to compile:
@@ -37,6 +39,8 @@ varying flat float r0;
 varying flat float r1;
 varying flat float n0;
 varying flat float n1;
+varying flat float pp0; // pen pressure
+varying flat float pp1;
 varying vec2 p;
 varying float r;
 
@@ -46,7 +50,7 @@ varying flat float segmentLength;
 varying flat float sinTheta;
 varying flat float cosTheta;
 varying flat float tanTheta;
-varying flat vec2 scale;
+varying flat float scale;
 
 vec2 unpack2floats(float f) {
     uint word = floatBitsToUint(f);
@@ -55,6 +59,8 @@ vec2 unpack2floats(float f) {
 }
 
 void vertex() {
+	mat3 canvas_linear = mat3(CANVAS_MATRIX);  // discard translation
+    scale = length(canvas_linear * vec3(1.0, 0.0, 0.0));  // X-scale
 	// Canvas item not
 	p0 = INSTANCE_CUSTOM.xy;
 	p1 = INSTANCE_CUSTOM.zw;
@@ -64,22 +70,21 @@ void vertex() {
 	vec2 ns = unpack2floats(COLOR.y);
 	n0 = ns.x;
 	n1 = ns.y;
-	// Trying to be invariant to model scale.
-	vec2 canvasZoom = vec2(length(CANVAS_MATRIX[0].xy), length(CANVAS_MATRIX[1].xy));
-	vec2 modelScale = vec2(length(MODEL_MATRIX[0].xy), length(MODEL_MATRIX[1].xy));
-	scale = canvasZoom * modelScale;
+	vec2 pps = unpack2floats(COLOR.z);
+	pp0 = pps.x;
+	pp1 = pps.y;
 
 	if(radiusMode == 1){
-		float zoom = max(scale.x, scale.y);
-		r0 /= zoom;
-		r1 /= zoom;
-		n0 *= zoom;
-		n1 *= zoom;
+		r0 /= scale;
+		r1 /= scale;
+		n0 *= scale;
+		n1 *= scale;
 	}
 	segmentLength = distance(p1, p0);
 	cosTheta = (r0 - r1)/distance(p0, p1);
 	sinTheta = sqrt(1.0 - cosTheta * cosTheta);
-	tanTheta = cosTheta < 1e-7 ? 1e30 : sinTheta/cosTheta;
+	tanTheta = abs(cosTheta) < 1e-5 ? 1e10 * sign(cosTheta) : sinTheta/cosTheta;
+	if(abs(tanTheta) < 1e-5) tanTheta = 1e10;
 
 	tangent = normalize(p1 - p0);
 	normal = vec2(-tangent.y, tangent.x);
@@ -116,8 +121,8 @@ float n2x(float n) {
 	return r0/cosTheta * (1.0-exp(-cosTheta*n));
 }
 
-float sampleFalloffCurve(float t){
-	return texture(falloffCurve, vec2(t, 0)).r;
+float sampleCurve(sampler2D curve, float t){
+	return texture(curve, vec2(t, 0)).r;
 }
 
 // ---------------------noise helper gen by copilot--------------------
@@ -139,14 +144,14 @@ float perlinNoise1D(float x) {
     float g1 = grad1(i1);
 
     float u = fade(t);
-    
+
     return 2.0 * mix(g0 * t, g1 * (t - 1.0), u);
 }
 
 // Fractal Brownian Motion (FBM) over 1D Perlin
 float noise1D(float x) {
-	x = mod(x, 512.0);
-	x = abs(x - 256.0);
+	x = mod(x, 1024.0);
+	x = abs(x - 512.0);
     float sum = 0.0;
     float amp = 1.0;      // start at 1.0, halve each octave (persistence = 0.5)
     float freq = rotationNoiseFrequency; // start at base frequency, double each octave (lacunarity = 2.0)
@@ -175,33 +180,52 @@ void fragment() {
     float d1 = distance(p, p1);
 	float cosPhi0 = pLocal.x / d0;
     float cosPhi1 = (pLocal.x - segmentLength) / d1;
+	vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
+	float r_p = r0 - cosTheta * p_r.x;
+
+	float t = mix(pp0, pp1, p_r.x/segmentLength);
+	float flowRatio = sampleCurve(pressure2FlowCurve, t);
+
 	/*----------------------------------------------------------*/
 	if(strokeType == Vanilla){
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
 
 		COLOR = overridingColor.a >= 0.0 ? overridingColor : materialColor;
-		//// Anti antialiasing
-		float zoom = min(scale.x, scale.y);
-		float aaEdge = 0.25 / zoom;
-		float aaStart = 1.0 - aaEdge;
-		float lambda;
-		if (cosPhi0 < cosTheta) lambda = d0/r0;
-		else if (cosPhi1 > cosTheta) lambda = d1/r1;
-		else {
-			vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
-			float r_p = r0 - cosTheta * p_r.x;
-			lambda = abs(pLocal.y) / r_p * sinTheta;
+    	float targetFlow = COLOR.a * flowRatio;
+		COLOR.a = COLOR.a * flowRatio;
+		if(targetFlow < 0.999){ // Can avoid little white dot
+			if(d0 < r0 && d1 < r1){
+        		discard;
+    		}
 		}
+		else{
+			//// Anti antialiasing
+			//// AA end point makes visible gaps with transparency.
+			float aaEdge = 3.0 / scale;
+			float aaStart = 1.0 - aaEdge/r_p;
+			aaStart = clamp(aaStart, 0.0, 1.0);
+			float lambda = abs(pLocal.y) / r_p * sinTheta;
 
-		if(lambda > aaStart){
-			float t = (lambda - aaStart)/(1.0 - aaStart);
-			COLOR.a = COLOR.a * smoothstep(1.0, 0.0, t);
+			if (cosPhi0 < cosTheta) lambda = d0/r0;
+			else if (cosPhi1 > cosTheta) lambda = d1/r1;
+			else {
+				vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
+				float r_p = r0 - cosTheta * p_r.x;
+				lambda = abs(pLocal.y) / r_p * sinTheta;
+			}
+
+			if(lambda > aaStart){
+				float t = (lambda - aaStart)/(1.0 - aaStart);
+				COLOR.a = COLOR.a * smoothstep(1.0, 0.3, t);
+			}
 		}
+		if(d0 < r0 || d1 < r1){
+        	COLOR.a = 1.0 - sqrt(1.0 - COLOR.a);
+    	}
 	}
 	/*----------------------------------------------------------*/
  	if(strokeType == Stamp){
-		
  		float x1 = pLocal.x - r;
  		float x2 = pLocal.x + r;
  		float x1Idx = x2n(x1) + n0;
@@ -215,7 +239,7 @@ void fragment() {
  		int MAX_i = 128;
  		float currIdx = ceil(startIdx);
  		float currA = 1e-7;
-		float flow = materialColor.a;
+		float flow = materialColor.a * flowRatio;
 		// Main loop
  		while(i < MAX_i && currIdx < endIdx){
 			float currN = currIdx * stampInterval;
@@ -228,12 +252,12 @@ void fragment() {
 			float cosRot = cos(rotationNoise);
 			float sinRot = sin(rotationNoise);
 			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
-			
+
  			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
 			float noise = texture(multiplyTexture, uv).r;
 			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || length(pToCurrStamp/r) > 1.0;
 			float sampledA = isOutDisk ? 1e-7 : noise * flow * texture(stampTexture, uv).r;
-	
+
  			currA = sampledA + currA * (1.0 - sampledA);
 			i++;
 			currIdx += 1.0;
@@ -246,10 +270,9 @@ void fragment() {
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
 
 		// The Whispers Of the olD Ones
-		vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
-		float flow = materialColor.a;
-		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleFalloffCurve(d0/r0));
-        float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleFalloffCurve(d1/r1));
+		float flow = materialColor.a * flowRatio;
+		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleCurve(falloffCurve, d0/r0));
+        float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleCurve(falloffCurve, d1/r1));
 		float transparency;
 
 		// Shen already forget about every details here, and he is too lazy to remind of.
@@ -259,8 +282,8 @@ void fragment() {
         }
         if(p_r.x > 0.0 && p_r.x < segmentLength){
 			float r_p = r0 - cosTheta * p_r.x;
-            float lambda = abs(pLocal.y) / r_p * sinTheta;
-            transparency = (1.0 - flow*sampleFalloffCurve(lambda))/transparency0/transparency1;
+            float lambda = abs(pLocal.y) / sinTheta / r_p;
+            transparency = (1.0 - flow*sampleCurve(falloffCurve, lambda))/transparency0/transparency1;
         }
         if(p_r.x >= segmentLength){
             transparency = transparency1/transparency0;
