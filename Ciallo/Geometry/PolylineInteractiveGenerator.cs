@@ -117,8 +117,6 @@ public class PolylineInteractiveGenerator
         bool isPressureChange = Mathf.Abs(data.Pressure - _lastPressure) > 0.08f;
         float cosWindingAngle = data.ScreenPosition.DirectionTo(_lastScreenPoint).Dot(_lastDirection);
         bool isWinding = cosWindingAngle < _minCosWindingAngle;
-        if (!isSmaller)
-            GD.Print($"{Mathf.RadToDeg(Mathf.Acos(cosWindingAngle))} {isWinding}");
         bool saveThisPoint = !isSmaller && (isLarger || isWinding || isPressureChange);
 
         if (saveThisPoint)

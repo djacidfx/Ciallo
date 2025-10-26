@@ -53,7 +53,7 @@ public partial class AutoloadData : Node
         {
             var window = GetWindow();
             AppPreference.WindowMode = window.GetMode();
-            ;
+            
             if (window.GetMode() == Window.ModeEnum.Windowed)
             {
                 AppPreference.WindowPosition = GetWindow().Position;

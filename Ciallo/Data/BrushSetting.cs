@@ -15,7 +15,7 @@ public class BrushSetting
     [DataMember] public ReactiveProperty<string> Name = new("");
     [DataMember] public ObservableList<BrushLabel> Labels = [];
     [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
-    [DataMember] public ReactiveProperty<float> BaseRadius = new(8.0f);
+    [DataMember] public ReactiveProperty<float> BaseRadius = new(5.0f);
     [DataMember] public BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(0.2f, 1.0f); // radius = baseRadius * curve(pressure)
     [DataMember] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
     [DataMember] public BezierCurve Pressure2FlowCurve = BezierCurve.Constant(1.0f); // finalFlow = curve(pressure) * Color.a
@@ -52,7 +52,7 @@ public class BrushSetting
         var baseRadiusControl = new SpinSlider
         {
             MinValue = 0.1,
-            MaxValue = 256,
+            MaxValue = 128,
             Step = 0.03333333,
             ExpEdit = true,
         };
