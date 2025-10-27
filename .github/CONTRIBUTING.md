@@ -27,7 +27,7 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
   - [x] Add, delete
   - [x] Rename
   - [x] Reorder
-  - [ ] Revert showing order
+  - [x] Revert showing order
   - [ ] Merge
 - [x] Import image as a layer
 - [ ] Localization

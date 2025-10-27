@@ -22,7 +22,7 @@ public partial class LayerContainer : Container
     private Control _visibleDragHint;
     private Control _mouseHoveringLayer;
 
-    private readonly Dictionary<Control, CompositeDisposable> _subscriptions = [];
+    private readonly Dictionary<LayerBlock, CompositeDisposable> _subscriptions = [];
 
     [OnInstantiate]
     private void Initialise()
@@ -58,7 +58,7 @@ public partial class LayerContainer : Container
         return layerControl;
     }
 
-    private Control Create(Entity e)
+    private LayerBlock Create(Entity e)
     {
         var node = e.Get<LayerTreeNode>();
         var layer = LayerBlock.Instantiate();
@@ -122,7 +122,7 @@ public partial class LayerContainer : Container
         return layer;
     }
 
-    private void Insert(int index, Control layerControl)
+    private void Insert(int index, LayerBlock layerControl)
     {
         if (!_subscriptions.ContainsKey(layerControl))
             throw new ArgumentException("The given layer control is not created by this LayerTreeControl.");
@@ -141,8 +141,8 @@ public partial class LayerContainer : Container
     public void RemoveFree(Entity layerE)
     {
         // TODO: Warning: I'm being lazy to create a dedicated class for the layer control here.
-        var layerControl = layerE.Get<Control>();
-        layerE.Remove<Control>();
+        var layerControl = layerE.Get<LayerBlock>();
+        layerE.Remove<LayerBlock>();
         var subscription = _subscriptions[layerControl];
         subscription.Dispose();
         _subscriptions.Remove(layerControl);
@@ -175,6 +175,7 @@ public partial class LayerContainer : Container
 
     private void OnDragEnd(Control srcLayer, InputEventMouseButton button)
     {
+        // Note: Layers is shown in reversed order, so the index logic is inverted.
         // Drag hint
         if (_visibleDragHint != null) _visibleDragHint.Visible = false;
         _visibleDragHint = null;
@@ -188,11 +189,11 @@ public partial class LayerContainer : Container
 
         var srcIndex = srcLayer.GetIndex();
         var dstIndex = _mouseHoveringLayer.GetIndex();
-        if (srcIndex < dstIndex) dstIndex--; // after removing the source layer, the destination index is shifted left by 1.
+        if (srcIndex < dstIndex) dstIndex--; // account for the removal of the source layer.
+
         var locPos = _mouseHoveringLayer.GetLocalMousePosition();
         var size = _mouseHoveringLayer.Size;
-        var sep = size.Y / 2;
-        if (locPos.Y >= sep) dstIndex++; // insert after the hovering layer.
+        if (locPos.Y <= size.Y / 2) dstIndex++; // insert after the hovering layer.
 
         new MoveLayerCmd([srcIndex], [dstIndex]).Commit();
     }
@@ -201,9 +202,9 @@ public partial class LayerContainer : Container
     {
         _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
         if (layerE.IsNull) return;
-        var layerControl = layerE.Get<Control>();
-        var activeButton = layerControl.GetNode<CheckBox>("%Active");
-        // Note: button group will not be updated.
+        var layerControl = layerE.Get<LayerBlock>();
+        var activeButton = layerControl.WorkingButton;
+        // Warning note: button group will not be updated by `SetPressedNoSignal`.
         activeButton.SetPressedNoSignal(true);
     }
 }

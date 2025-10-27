@@ -30,7 +30,7 @@ public partial class ReversedVBoxContainer : VBoxContainer
         if (GetChildCount() == 0) return;
 
         // Use the same separation as BoxContainer/VBoxContainer.
-        int separation = GetThemeConstant("separation", "BoxContainer");
+        int separation = GetThemeConstant("separation", "VBoxContainer");
 
         // Start laying out children below the main row, but in reverse order.
         float y = separation;

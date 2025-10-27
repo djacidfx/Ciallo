@@ -33,7 +33,6 @@ layout_mode = 2
 theme_override_constants/separation = 0
 
 [node name="Blank" type="Control" parent="."]
-visible = false
 custom_minimum_size = Vector2(0, 3)
 layout_mode = 2
 mouse_filter = 1

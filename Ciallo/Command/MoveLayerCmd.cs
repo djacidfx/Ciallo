@@ -32,7 +32,7 @@ public class MoveLayerCmd : CommandBase
         var worldView = Document.Get<WorldView>();
         worldView.MoveNode(_src, _dst);
 
-        // Overlay if order-free
+        // Overlay is order-free
     }
 
     public override void Undo()
