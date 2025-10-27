@@ -15,8 +15,6 @@ using R3;
 /// </summary>
 public partial class LayerContainer : Container
 {
-    public static readonly PackedScene LayerScene = GD.Load<PackedScene>("res://NodeControl/Layer.tscn");
-
     private VBoxContainer _rootControl; // all layers controls are direct children of this container, in preorder.
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 
@@ -24,7 +22,7 @@ public partial class LayerContainer : Container
     private Control _visibleDragHint;
     private Control _mouseHoveringLayer;
 
-    private readonly Dictionary<Control, CompositeDisposable> _subscriptions = [];
+    private readonly Dictionary<LayerBlock, CompositeDisposable> _subscriptions = [];
 
     [OnInstantiate]
     private void Initialise()
@@ -60,24 +58,21 @@ public partial class LayerContainer : Container
         return layerControl;
     }
 
-    private Control Create(Entity e)
+    private LayerBlock Create(Entity e)
     {
         var node = e.Get<LayerTreeNode>();
-        var layerControl = LayerScene.Instantiate<Container>();
+        var layer = LayerBlock.Instantiate();
         var subs = new CompositeDisposable();
-        _subscriptions[layerControl] = subs;
+        _subscriptions[layer] = subs;
 
-        var activeButton = layerControl.GetNode<CheckBox>("%Active");
-        activeButton.ButtonGroup = _workingLayerButtonGroup;
+        layer.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
+        layer.VisibleButton.BindBool(node.IsVisible).AddTo(subs);
 
-        var visibleButton = layerControl.GetNode<CheckBox>("%Visible");
-        visibleButton.BindBool(node.IsVisible).AddTo(subs);
-
-        var lineEdit = layerControl.GetNode<LabelLineEdit>("%LabelLineEdit");
+        var lineEdit = layer.GetNode<LabelLineEdit>("%LabelLineEdit");
         lineEdit.BindString(node.Name);
 
-        layerControl.MouseEntered += () => _mouseHoveringLayer = layerControl;
-        layerControl.MouseExited += () => _mouseHoveringLayer = null;
+        layer.MouseEntered += () => _mouseHoveringLayer = layer;
+        layer.MouseExited += () => _mouseHoveringLayer = null;
 
         var guiInput = lineEdit
             .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
@@ -86,13 +81,13 @@ public partial class LayerContainer : Container
             .OfType<InputEvent, InputEventMouseButton>()
             .Where(button => button.ButtonIndex == MouseButton.Left);
 
-        // Single click without drag and double click
+        // Single click without dragging or double click
         var singleClickObs = leftMouse
             .Where(button => button.IsPressed() || button.IsReleased())
             .Chunk(TimeSpan.FromMilliseconds(200))
             .Where(xs => xs.Length == 2 && xs.First().IsPressed() && xs.Last().IsReleased())
             .Select(xs => xs.First());
-        singleClickObs.Subscribe(_ => activeButton.SetPressed(true)).AddTo(subs);
+        singleClickObs.Subscribe(_ => layer.WorkingButton.SetPressed(true)).AddTo(subs);
 
         // Drag
         var mouseState = leftMouse.ToReadOnlyReactiveProperty();
@@ -107,27 +102,27 @@ public partial class LayerContainer : Container
         dragStart.Subscribe(motion =>
         {
             _isDragging = true;
-            OnDragStart(layerControl, motion);
+            OnDragStart(layer, motion);
         }).AddTo(subs);
 
         var dragging = guiInput
             .Where(_ => _isDragging)
             .OfType<InputEvent, InputEventMouseMotion>()
             .Where(motion => motion.ButtonMask == MouseButtonMask.Left);
-        dragging.Subscribe(motion => OnDragging(layerControl, motion)).AddTo(subs);
+        dragging.Subscribe(motion => OnDragging(layer, motion)).AddTo(subs);
 
         var dragEnd = leftMouse
             .Where(button => _isDragging && button.IsReleased());
         dragEnd.Subscribe(button =>
         {
             _isDragging = false;
-            OnDragEnd(layerControl, button);
+            OnDragEnd(layer, button);
         }).AddTo(subs);
 
-        return layerControl;
+        return layer;
     }
 
-    private void Insert(int index, Control layerControl)
+    private void Insert(int index, LayerBlock layerControl)
     {
         if (!_subscriptions.ContainsKey(layerControl))
             throw new ArgumentException("The given layer control is not created by this LayerTreeControl.");
@@ -146,8 +141,8 @@ public partial class LayerContainer : Container
     public void RemoveFree(Entity layerE)
     {
         // TODO: Warning: I'm being lazy to create a dedicated class for the layer control here.
-        var layerControl = layerE.Get<Control>();
-        layerE.Remove<Control>();
+        var layerControl = layerE.Get<LayerBlock>();
+        layerE.Remove<LayerBlock>();
         var subscription = _subscriptions[layerControl];
         subscription.Dispose();
         _subscriptions.Remove(layerControl);
@@ -180,6 +175,7 @@ public partial class LayerContainer : Container
 
     private void OnDragEnd(Control srcLayer, InputEventMouseButton button)
     {
+        // Note: Layers is shown in reversed order, so the index logic is inverted.
         // Drag hint
         if (_visibleDragHint != null) _visibleDragHint.Visible = false;
         _visibleDragHint = null;
@@ -193,11 +189,11 @@ public partial class LayerContainer : Container
 
         var srcIndex = srcLayer.GetIndex();
         var dstIndex = _mouseHoveringLayer.GetIndex();
-        if (srcIndex < dstIndex) dstIndex--; // after removing the source layer, the destination index is shifted left by 1.
+        if (srcIndex < dstIndex) dstIndex--; // account for the removal of the source layer.
+
         var locPos = _mouseHoveringLayer.GetLocalMousePosition();
         var size = _mouseHoveringLayer.Size;
-        var sep = size.Y / 2;
-        if (locPos.Y >= sep) dstIndex++; // insert after the hovering layer.
+        if (locPos.Y <= size.Y / 2) dstIndex++; // insert after the hovering layer.
 
         new MoveLayerCmd([srcIndex], [dstIndex]).Commit();
     }
@@ -206,9 +202,9 @@ public partial class LayerContainer : Container
     {
         _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
         if (layerE.IsNull) return;
-        var layerControl = layerE.Get<Control>();
-        var activeButton = layerControl.GetNode<CheckBox>("%Active");
-        // Note: button group will not be updated.
+        var layerControl = layerE.Get<LayerBlock>();
+        var activeButton = layerControl.WorkingButton;
+        // Warning note: button group will not be updated by `SetPressedNoSignal`.
         activeButton.SetPressedNoSignal(true);
     }
 }
