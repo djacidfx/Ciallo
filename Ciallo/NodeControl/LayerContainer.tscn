@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://NodeControl/LayerContainer.cs" id="1_aydl8"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_icvmy"]
-[ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://NodeControl/Layer.tscn" id="3_3l7of"]
+[ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://NodeControl/LayerBlock.tscn" id="3_3l7of"]
 
 [node name="LayerCotainer" type="VBoxContainer"]
 offset_right = 534.0

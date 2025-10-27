@@ -8,14 +8,22 @@ public partial class ReversedVBoxContainer : VBoxContainer
     [Export] public bool ReverseOrder
     {
         get => _reverseOrder;
-        set => _reverseOrder = value;
+        set
+        {
+            if (value == _reverseOrder) return;
+            _reverseOrder = value;
+            _Notification((int)NotificationSortChildren);
+        }
     }
+
     public override void _Notification(int what)
     {
         if (what == NotificationSortChildren) _resort();
     }
+
     private void _resort()
     {
+        // Gen by gpt-5
         if (!ReverseOrder) return;
 
         // Ensure the main row exists under this node.

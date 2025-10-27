@@ -15,8 +15,6 @@ using R3;
 /// </summary>
 public partial class LayerContainer : Container
 {
-    public static readonly PackedScene LayerScene = GD.Load<PackedScene>("res://NodeControl/Layer.tscn");
-
     private VBoxContainer _rootControl; // all layers controls are direct children of this container, in preorder.
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 
@@ -63,21 +61,18 @@ public partial class LayerContainer : Container
     private Control Create(Entity e)
     {
         var node = e.Get<LayerTreeNode>();
-        var layerControl = LayerScene.Instantiate<Container>();
+        var layer = LayerBlock.Instantiate();
         var subs = new CompositeDisposable();
-        _subscriptions[layerControl] = subs;
+        _subscriptions[layer] = subs;
 
-        var activeButton = layerControl.GetNode<CheckBox>("%Active");
-        activeButton.ButtonGroup = _workingLayerButtonGroup;
+        layer.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
+        layer.VisibleButton.BindBool(node.IsVisible).AddTo(subs);
 
-        var visibleButton = layerControl.GetNode<CheckBox>("%Visible");
-        visibleButton.BindBool(node.IsVisible).AddTo(subs);
-
-        var lineEdit = layerControl.GetNode<LabelLineEdit>("%LabelLineEdit");
+        var lineEdit = layer.GetNode<LabelLineEdit>("%LabelLineEdit");
         lineEdit.BindString(node.Name);
 
-        layerControl.MouseEntered += () => _mouseHoveringLayer = layerControl;
-        layerControl.MouseExited += () => _mouseHoveringLayer = null;
+        layer.MouseEntered += () => _mouseHoveringLayer = layer;
+        layer.MouseExited += () => _mouseHoveringLayer = null;
 
         var guiInput = lineEdit
             .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
@@ -86,13 +81,13 @@ public partial class LayerContainer : Container
             .OfType<InputEvent, InputEventMouseButton>()
             .Where(button => button.ButtonIndex == MouseButton.Left);
 
-        // Single click without drag and double click
+        // Single click without dragging or double click
         var singleClickObs = leftMouse
             .Where(button => button.IsPressed() || button.IsReleased())
             .Chunk(TimeSpan.FromMilliseconds(200))
             .Where(xs => xs.Length == 2 && xs.First().IsPressed() && xs.Last().IsReleased())
             .Select(xs => xs.First());
-        singleClickObs.Subscribe(_ => activeButton.SetPressed(true)).AddTo(subs);
+        singleClickObs.Subscribe(_ => layer.WorkingButton.SetPressed(true)).AddTo(subs);
 
         // Drag
         var mouseState = leftMouse.ToReadOnlyReactiveProperty();
@@ -107,24 +102,24 @@ public partial class LayerContainer : Container
         dragStart.Subscribe(motion =>
         {
             _isDragging = true;
-            OnDragStart(layerControl, motion);
+            OnDragStart(layer, motion);
         }).AddTo(subs);
 
         var dragging = guiInput
             .Where(_ => _isDragging)
             .OfType<InputEvent, InputEventMouseMotion>()
             .Where(motion => motion.ButtonMask == MouseButtonMask.Left);
-        dragging.Subscribe(motion => OnDragging(layerControl, motion)).AddTo(subs);
+        dragging.Subscribe(motion => OnDragging(layer, motion)).AddTo(subs);
 
         var dragEnd = leftMouse
             .Where(button => _isDragging && button.IsReleased());
         dragEnd.Subscribe(button =>
         {
             _isDragging = false;
-            OnDragEnd(layerControl, button);
+            OnDragEnd(layer, button);
         }).AddTo(subs);
 
-        return layerControl;
+        return layer;
     }
 
     private void Insert(int index, Control layerControl)
