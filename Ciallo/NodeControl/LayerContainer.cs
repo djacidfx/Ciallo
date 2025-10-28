@@ -19,7 +19,7 @@ public partial class LayerContainer : Container
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 
     private bool _isDragging = false;
-    private Control _visibleDragHint;
+    private Control _visibleDropHintLine;
     private Control _mouseHoveringLayer;
 
     private readonly Dictionary<LayerBlock, CompositeDisposable> _subscriptions = [];
@@ -149,16 +149,16 @@ public partial class LayerContainer : Container
         layerControl.QueueFree();
     }
 
-    private void OnDragStart(Control srcLayer, InputEventMouseMotion motion)
+    private void OnDragStart(LayerBlock srcLayer, InputEventMouseMotion motion)
     {
     }
 
-    private void OnDragging(Control _, InputEventMouseMotion e)
+    private void OnDragging(LayerBlock _, InputEventMouseMotion e)
     {
         if (_mouseHoveringLayer == null)
         {
-            if (_visibleDragHint != null) _visibleDragHint.Visible = false;
-            _visibleDragHint = null;
+            _visibleDropHintLine?.SetVisible(false);
+            _visibleDropHintLine = null;
             return;
         }
 
@@ -167,18 +167,18 @@ public partial class LayerContainer : Container
 
         var sep = size.Y / 2; // separation on whether the drop target is above or below the hovering layer.
         var hintToShow = _mouseHoveringLayer.GetNode<HSeparator>(locPos.Y < sep ? "%AboveHint" : "%BelowHint");
-        if (_visibleDragHint == hintToShow) return;
-        if (_visibleDragHint != null) _visibleDragHint.Visible = false;
+        if (_visibleDropHintLine == hintToShow) return;
+        if (_visibleDropHintLine != null) _visibleDropHintLine.Visible = false;
         hintToShow.Visible = true;
-        _visibleDragHint = hintToShow;
+        _visibleDropHintLine = hintToShow;
     }
 
-    private void OnDragEnd(Control srcLayer, InputEventMouseButton button)
+    private void OnDragEnd(LayerBlock srcLayer, InputEventMouseButton button)
     {
         // Note: Layers is shown in reversed order, so the index logic is inverted.
         // Drag hint
-        if (_visibleDragHint != null) _visibleDragHint.Visible = false;
-        _visibleDragHint = null;
+        if (_visibleDropHintLine != null) _visibleDropHintLine.Visible = false;
+        _visibleDropHintLine = null;
 
         // Move layer
         if (_mouseHoveringLayer == null || ReferenceEquals(_mouseHoveringLayer, srcLayer))
