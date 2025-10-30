@@ -35,6 +35,8 @@ public struct CursorMotionData
     public Vector2 Tilt;
     public Vector2 TiltDelta;
 
+    public double TimeDeltaMs;
+
     public Vector2 PrevWorldPosition => WorldPosition - WorldDelta;
     public Vector2 PrevScreenPosition => ScreenPosition - ScreenDelta;
     public float PrevPressure => Pressure - PressureDelta;

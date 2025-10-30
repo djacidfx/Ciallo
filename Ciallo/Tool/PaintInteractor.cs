@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Ciallo.Command;
+﻿using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
@@ -25,8 +24,6 @@ public class PaintInteractor : InteractorBase
     private Entity _brushE;
     private StrokeView _strokePreview;
 
-    private Stopwatch _interactStopwatch;
-
     private readonly PolylineInteractiveGenerator _generator = new()
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
@@ -38,11 +35,9 @@ public class PaintInteractor : InteractorBase
 
     public override void Start(CursorButtonData data)
     {
-        // Shen: Tested, This make delta time between GUI input event and process smaller when using mouse, reducing input lag.
+        // Shen: Tested, This make delta time between GUI input event and process smaller when using high polling rate device, reducing input lag.
         OS.LowProcessorUsageMode = false;
         Input.MouseMode = Input.MouseModeEnum.Hidden;
-
-        _interactStopwatch = Stopwatch.StartNew();
 
         // Selection in brush library has higher priority
         if (AppBrushLibrary.HasSelection)
@@ -67,10 +62,6 @@ public class PaintInteractor : InteractorBase
 
     public override void Interacting(CursorMotionData data)
     {
-        long deltaMs = _interactStopwatch.ElapsedMilliseconds;
-        // GD.Print($"[PaintInteractor] Interacting delta: {deltaMs} ms");
-        _interactStopwatch.Restart();
-
         _generator.Update(data);
         _strokePreview.SetGeometry(_generator.Positions, _generator.Radii);
     }

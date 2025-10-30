@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
@@ -21,8 +22,12 @@ public partial class WorldEventDispatcher : SubViewportContainer
     private float _prevPressure;
     private Vector2 _prevTilt;
 
+    private Stopwatch _timer;
+
     public override void _Ready()
     {
+        _timer = Stopwatch.StartNew();
+
         _camera = GetNode<Camera2D>("%MainCamera");
         _worldCursorDetectionArea = GetNode<WorldCursorDetectionArea>("%WorldCursorDetectionArea");
 
@@ -147,7 +152,9 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 PressureDelta = motion.Pressure - _prevPressure,
                 Tilt = motion.Tilt,
                 TiltDelta = motion.Tilt - _prevTilt,
+                TimeDeltaMs = _timer.Elapsed.TotalMilliseconds,
             });
+            _timer.Restart();
         }
 
         // ------------ Canvas navigation handling -------------

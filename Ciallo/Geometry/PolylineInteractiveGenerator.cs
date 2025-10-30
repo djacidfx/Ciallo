@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Ciallo.Data;
 using Godot;
 
@@ -50,12 +49,8 @@ public class PolylineInteractiveGenerator
     private readonly float _minCosWindingAngle = Mathf.Cos(Mathf.DegToRad(8f));
     private bool _previewPointAlreadyRemoved = false;
 
-    private Stopwatch _interactStopwatch;
-
     public void Start(CursorButtonData data)
     {
-        _interactStopwatch = Stopwatch.StartNew();
-
         _lastScreenPoint = data.ScreenPosition;
         _lastDirection = Vector2.FromAngle(0);
         _saveLatestPoint = true;
@@ -84,10 +79,6 @@ public class PolylineInteractiveGenerator
     // This method introduces zero lag.
     public void Update(CursorMotionData data)
     {
-        long deltaMs = _interactStopwatch.ElapsedMilliseconds;
-        // GD.Print($"[PaintInteractor] Interacting delta: {deltaMs} ms");
-        _interactStopwatch.Restart();
-
         if (!_saveLatestPoint && !_previewPointAlreadyRemoved)
         {
             RemoveLatestPoint();
