@@ -143,7 +143,7 @@ public class BrushSetting
         {
             MinValue = 0.001,
             MaxValue = 0.5,
-            Step = 0.0001,
+            Step = float.E / 10000, // May need an irrational numbers
             AllowGreater = true,
             ExpEdit = true,
         };

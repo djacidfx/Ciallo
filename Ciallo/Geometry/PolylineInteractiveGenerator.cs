@@ -35,7 +35,6 @@ public class PolylineInteractiveGenerator
     public IReadOnlyList<Vector2> Positions => _positions;
     private readonly List<float> _radii = new(2048);
     public IReadOnlyList<float> Radii => _radii;
-
     private readonly List<float> _pressures = new(2048);
     public IReadOnlyList<float> Pressures => _pressures;
     private readonly List<Vector2> _tilts = new(2048);
