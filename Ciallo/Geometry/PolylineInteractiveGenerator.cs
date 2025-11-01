@@ -8,14 +8,23 @@ namespace Ciallo.Geometry;
 /// <summary>
 /// Generate polyline geometry with stylus/mouse interaction.
 /// Usage:
-/// - Call Start Update End together with Interactor, can call Collect any time to get current geometry.
+/// - Call Start Update End together with Interactor.
 /// - Call Clear to reset state.
-///
-/// Design:
-/// - Support both with-radii and without-radii workflows via RadiusMode.
-/// - When RadiusMode.Fixed, use a constant radius for all points.
-/// - When RadiusMode.Sampled, compute radius per motion using a provided sampler (e.g., brush pressure curve).
 /// </summary>
+/// <remarks>
+/// Different devices report input events at different rates.
+/// For example, shen's mouse can report at 1000Hz, while his touch screen laptop with stylus only reports around 150Hz.
+/// This low rate results in undersampling even for regular usage.
+/// New Wacom tablets in 2025 have 240-360Hz (DTC-141) polling rates.
+/// Must deal both under and oversampling to avoid inconsistent experience.
+/// </remarks>
+/// <remarks>
+/// Explanation about "regular usage":
+/// Write English letters at a normal writing speed,
+/// you will find 150Hz cannot find enough points to represent the "turning points" of the letters, such as bottoms of "w", "v", "i".
+/// Interpolation is necessary and not a good solution.
+/// I guess this undersampling/interpolation together is the reason why we feel weired when using stylus to write text.
+/// </remarks>
 public class PolylineInteractiveGenerator
 {
     public enum RadiusMode
@@ -27,6 +36,7 @@ public class PolylineInteractiveGenerator
     public RadiusMode Mode = RadiusMode.Fixed;
     public float FixedRadius = 1f;
     public Func<CursorMotionData, float> RadiusSampler;
+
     // Controls if the new points can intersect with existing already generated polyline.
     public bool AllowIntersection = true;
 
@@ -43,11 +53,11 @@ public class PolylineInteractiveGenerator
     private Vector2 _lastScreenPoint;
     private Vector2 _lastDirection;
     private float _lastPressure = -1.0f;
+    private bool _previewPointAlreadyRemoved = false;
 
     private readonly float _minDistance = 3f; // in pixel
     private readonly float _maxDistance = 15f; // in pixel
-    private readonly float _minCosWindingAngle = Mathf.Cos(Mathf.DegToRad(8f));
-    private bool _previewPointAlreadyRemoved = false;
+    private readonly float _minCosWindingAngle = Mathf.Cos(Mathf.DegToRad(7.5f));
 
     public void Start(CursorButtonData data)
     {
@@ -144,6 +154,9 @@ public class PolylineInteractiveGenerator
         }
     }
 
+    public void End(CursorButtonData data)
+    {
+    }
 
     public PolylineGeometry Collect()
     {

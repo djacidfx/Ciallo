@@ -68,6 +68,8 @@ public class PaintInteractor : InteractorBase
 
     public override void End(CursorButtonData data)
     {
+        _generator.End(data);
+
         var layerE = SelectionManager.WorkingLayer.Value;
         var cmd = new NewStrokeCmd(layerE);
         var strokeE = cmd.InitEntity();

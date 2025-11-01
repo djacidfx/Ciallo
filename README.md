@@ -52,7 +52,7 @@ In the invisible-far future, Ciallo may offer AI-powered features --- but always
 
 ### Infinite canvas
 
-(@Shen Ciao: "I never see a professional artist needs an infinite canvas when drawing illustrators, mangas or animes.
+(@Shen: "I never see a professional artist needs an infinite canvas when drawing illustrators, mangas or animes.
 Do you really need this feature? Tell me how to add more support to this.")
 
 ## Download (Free on all platforms)
@@ -66,7 +66,9 @@ Require a system can run small to middle size 3D games.
 - Memory: 6GB or more
 - GPU: Minimum NV GTX 1650 or AMD Radeon RX 6500 XT.
 - Monitor: Recommend refresh rate greater than 100fps to get the best drawing experience.
-- CPU and Tablet: With an entry-level consumer CPU, Ciallo can response upto 1000Hz reporting/polling rate. So use your tablet with maximum reporting rate for the best drawing experience.
+- Tablet: Use your tablet with maximum polling rate (maybe Wacom dtc 141 if you need buy a new one).
+
+> Ciallo is very sentive to your tablet polling/reporting rate. It can response upto 1000Hz tablet/mouse input with dedicate code optimization. But tablets in 2025 can only achieve 360Hz in maximum. Contact the developer if there comes a tablet with 500-1000Hz polling rate, Ciallo will try adding more supports to it.
 
 > About MacOS: I literally wish but cannot afford to buy a MacBook Pro (which cost me half a year’s living budget). Consider patreon me, really lacking of money currently.
 
