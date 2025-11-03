@@ -184,6 +184,7 @@ void fragment() {
 	float r_p = r0 - cosTheta * p_r.x;
 
 	float t = mix(pp0, pp1, p_r.x/segmentLength);
+	t = clamp(t, 0.0, 1.0);
 	float flowRatio = sampleCurve(pressure2FlowCurve, t);
 
 	/*----------------------------------------------------------*/
