@@ -66,11 +66,11 @@ Require a system can run small to middle size 3D games.
 - Memory: 6GB or more
 - GPU: Minimum NV GTX 1650 or AMD Radeon RX 6500 XT.
 - Monitor: Recommend refresh rate greater than 100fps to get the best drawing experience.
-- Tablet: Use your tablet with maximum polling rate (maybe Wacom dtc 141 if you need buy a new one).
+- Tablet: Use your tablet with maximum polling/reporting rate (maybe Wacom dtc 141 if you buy a new one).
 
-> Ciallo is very sentive to your tablet polling/reporting rate. It can response upto 1000Hz tablet/mouse input with dedicate code optimization. But tablets in 2025 can only achieve 360Hz in maximum. Contact the developer if there comes a tablet with 500-1000Hz polling rate, Ciallo will try adding more supports to it.
+> Ciallo is highly sensitive to your tablet polling rate. It can respond up to 1000Hz tablet/mouse input with dedicate code optimization. But tablets in 2025 can only achieve 360Hz in maximum (dtc 141). Contact the developer if there comes a tablet with 500-1000Hz polling rate, Ciallo will try adding more supports to it.
 
-> About MacOS: I literally wish but cannot afford to buy a MacBook Pro (which cost me half a year’s living budget). Consider patreon me, really lacking of money currently.
+> About macOS: I literally wish but cannot afford to buy a MacBook Pro (which cost me half a year’s living budget). Consider patreon me, really lacking of money currently.
 
 ## Development philosophy
 
