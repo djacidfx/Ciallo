@@ -52,7 +52,7 @@ public partial class SelectTool : CommonToolBase
             .Permit(Event.Deactivate, State.Inactive)
             .PermitDynamic(_etSwitchWorkingLayer, e =>
             {
-                if (e.IsNull) return State.Active;
+                if (e.IsDeletedOrNull()) return State.Active;
                 if (e.Has<ImageLayerSetting>()) return State.EditingImageLayer;
                 if (e.Has<PolylineLayerSetting>()) return State.EditingPolylineLayer;
                 return State.Active;
@@ -117,7 +117,7 @@ public partial class SelectTool : CommonToolBase
 
     public override bool OnSwitchLayer(Entity newLayerE)
     {
-        if (newLayerE.IsNull) return false;
+        if (newLayerE.IsDeletedOrNull()) return false;
         ToolStateMachine.Fire(_etSwitchWorkingLayer, newLayerE);
         bool isPolyline = newLayerE.Has<PolylineLayerSetting>();
         bool isImage = newLayerE.Has<ImageLayerSetting>();

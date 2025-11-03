@@ -102,7 +102,7 @@ public partial class PaintTool : CommonToolBase
         var radiusBox = container.AddProperty("Radius", radiusControl);
         radiusBox.VisibleIf(selectionM.WorkingBrush, e => !e.IsNull);
         var rView = selectionM.WorkingBrush
-            .Select(e => e.IsNull ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
+            .Select(e => e.IsDeletedOrNull() ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
         radiusControl.ReactiveBindNumber(rView);
 
         var manageDocumentBrush = new Button()
@@ -125,7 +125,7 @@ public partial class PaintTool : CommonToolBase
 
     public override bool OnSwitchLayer(Entity newLayerE)
     {
-        return !newLayerE.IsNull && newLayerE.Has<PolylineLayerSetting>();
+        return !newLayerE.IsDeletedOrNull() && newLayerE.Has<PolylineLayerSetting>();
     }
 }
 
