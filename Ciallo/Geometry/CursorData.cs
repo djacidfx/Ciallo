@@ -42,8 +42,8 @@ public struct CursorMotionData
     public Vector2 PrevScreenPosition => ScreenPosition - ScreenDelta;
     public float PrevPressure => Pressure - PressureDelta;
     public Vector2 PrevTilt => Tilt - TiltDelta;
-    public float ScreenSpeed => ScreenDelta.Length() / TimeDeltaSec;
-    public float WorldSpeed => WorldDelta.Length() / TimeDeltaSec;
+    public float ScreenSpeed => ScreenDelta.Length() / TimeDeltaMs;
+    public float WorldSpeed => WorldDelta.Length() / TimeDeltaMs;
 
     public static implicit operator CursorButtonData(CursorMotionData m) =>
         new()

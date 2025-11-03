@@ -152,7 +152,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 PressureDelta = motion.Pressure - _prevPressure,
                 Tilt = motion.Tilt,
                 TiltDelta = motion.Tilt - _prevTilt,
-                TimeDeltaMs = _timer.Elapsed.TotalMilliseconds,
+                TimeDeltaMs = (float)_timer.Elapsed.TotalMilliseconds,
             });
             _timer.Restart();
         }
