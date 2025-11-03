@@ -55,7 +55,7 @@ public class PaintInteractor : InteractorBase
         layerView.AddChild(_strokePreview);
 
         var brushSetting = _brushE.Get<BrushSetting>();
-        _generator.RadiusSampler = PolylineInteractiveGenerator.BrushToRadiusSampler(brushSetting);
+        _generator.RadiusSampler = brushSetting.ToRadiusSampler();
 
         _generator.Start(data);
     }

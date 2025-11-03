@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System;
+using System.Runtime.Serialization;
 using Ciallo.Geometry;
 using Ciallo.Misc;
 using Ciallo.Widget;
@@ -186,6 +187,13 @@ public class BrushSetting
     public static Image CreateDefaultWhiteImage()
     {
         return Image.CreateFromData(1, 1, true, Image.Format.L8, new byte[] { 255 });
+    }
+
+    public Func<CursorMotionData, float> ToRadiusSampler()
+    {
+        var baseRadius = BaseRadius.Value;
+        var curve = Pressure2RadiusRatioCurve;
+        return data => baseRadius * curve.SampleX(data.Pressure);
     }
 }
 
