@@ -63,6 +63,7 @@ public class PolylineInteractiveGenerator
     // This is not regular cursor motion, but motion from previous to last saved point
     private CursorMotionData _latestPoint;
     private bool _latestPointIsTurningPoint = false;
+    private bool _latestSegmentNeedInterpolation = false;
     private float _processIntervalMs = 0f; // time interval since last saved point, in ms
 
     // Thresholds about when to process and save sampled points.
@@ -86,19 +87,7 @@ public class PolylineInteractiveGenerator
 
         _latestPoint = data;
         _latestPointIsTurningPoint = true;
-    }
-
-    private float CalculateRadius(CursorMotionData data)
-    {
-        switch (Mode)
-        {
-            case RadiusMode.Fixed:
-                return FixedRadius;
-            case RadiusMode.Sampled:
-                return RadiusSampler!(data);
-            default:
-                throw new InvalidOperationException($"Unsupported RadiusMode: {Mode}");
-        }
+        _latestSegmentNeedInterpolation = false;
     }
 
     // Always add current motion point as a preview point, then check whether to process and save preview points according to serval thresholds.
@@ -113,6 +102,7 @@ public class PolylineInteractiveGenerator
         _radii.Add(CalculateRadius(data));
         _pressures.Add(data.Pressure);
         _tilts.Add(data.Tilt);
+
         _previewPointDatas.Add(data);
 
         // Since we can only detect pixel coordinate in grid, less than 3 or 4 pixels gives invalid forward moving direction and speed.
@@ -130,8 +120,8 @@ public class PolylineInteractiveGenerator
             _pressures.Add(data.PrevPressure);
             _tilts.Add(data.PrevTilt);
 
-
-            UpdateLastestPoint(new()
+            if (_latestSegmentNeedInterpolation) InterpolateSegment();
+            UpdateLastestPoint(new CursorButtonData()
             {
                 WorldPosition = data.PrevWorldPosition,
                 ScreenPosition = data.PrevScreenPosition,
@@ -139,6 +129,8 @@ public class PolylineInteractiveGenerator
                 Tilt = data.PrevTilt,
             });
             _latestPointIsTurningPoint = true;
+            _latestSegmentNeedInterpolation = false;
+
             return;
         }
 
@@ -157,15 +149,50 @@ public class PolylineInteractiveGenerator
 
         RemoveLatestPoints(_previewPointDatas.Count);
 
-        // keep only the last point.
+        // Place the point
         _positions.Add(data.WorldPosition);
         _radii.Add(CalculateRadius(data));
         _pressures.Add(data.Pressure);
         _tilts.Add(data.Tilt);
 
+        if (_latestSegmentNeedInterpolation) InterpolateSegment();
         UpdateLastestPoint(data);
+        _latestSegmentNeedInterpolation = isWinding && !_latestPointIsTurningPoint;
         _latestPointIsTurningPoint = false;
     }
+
+    public void End(CursorButtonData data)
+    {
+        _previewPointDatas.Clear();
+        _latestPointIsTurningPoint = false;
+        _latestSegmentNeedInterpolation = false;
+    }
+
+    public void Clear()
+    {
+        _latestPointIsTurningPoint = false;
+        _latestSegmentNeedInterpolation = false;
+        _positions.Clear();
+        _radii.Clear();
+        _pressures.Clear();
+        _tilts.Clear();
+        _processIntervalMs = 0;
+        _previewPointDatas.Clear();
+    }
+
+    private float CalculateRadius(CursorMotionData data)
+    {
+        switch (Mode)
+        {
+            case RadiusMode.Fixed:
+                return FixedRadius;
+            case RadiusMode.Sampled:
+                return RadiusSampler!(data);
+            default:
+                throw new InvalidOperationException($"Unsupported RadiusMode: {Mode}");
+        }
+    }
+
     private void RemoveLatestPoints(int n)
     {
         for (int i = 0; i < n; i++)
@@ -177,6 +204,7 @@ public class PolylineInteractiveGenerator
             _tilts.RemoveAt(lastIndex);
         }
     }
+
     private void UpdateLastestPoint(CursorButtonData data)
     {
         // Update last point data
@@ -193,27 +221,28 @@ public class PolylineInteractiveGenerator
             TiltDelta = data.Tilt - _latestPoint.Tilt,
             TimeDeltaMs = _processIntervalMs,
         };
-        _latestPointIsTurningPoint = true;
 
         _previewPointDatas.Clear();
         _processIntervalMs = 0;
     }
 
-    public void End(CursorButtonData data)
+    private void InterpolateSegment()
     {
-        _previewPointDatas.Clear();
-        _latestPointIsTurningPoint = false;
-    }
+        if (_positions.Count <= 3) return;
+        var newPosition = Geometry.CatmullRomInterpolation(
+            _positions[^4],
+            _positions[^3],
+            _positions[^2],
+            _positions[^1],
+            0.5f);
+        var newRadius = (_radii[^3] + _radii[^2]) * 0.5f;
+        var newPressure = (_pressures[^3] + _pressures[^2]) * 0.5f;
+        var newTilt = (_tilts[^3] + _tilts[^2]) * 0.5f;
 
-    public void Clear()
-    {
-        _latestPointIsTurningPoint = false;
-        _positions.Clear();
-        _radii.Clear();
-        _pressures.Clear();
-        _tilts.Clear();
-        _processIntervalMs = 0;
-        _previewPointDatas.Clear();
+        _positions.Insert(_positions.Count - 2, newPosition);
+        _radii.Insert(_radii.Count - 2, newRadius);
+        _pressures.Insert(_pressures.Count - 2, newPressure);
+        _tilts.Insert(_tilts.Count - 2, newTilt);
     }
 
     // Warning: Brutal algorithm, only suitable for short polyline.
