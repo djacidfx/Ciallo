@@ -26,7 +26,7 @@ We can manipulate the positions, colors, or any other filling properties by edit
 
 ### Export to game engines
 
-Export your artwork into the Godot game engine (as a .scn/.tscn file), and it keeps resolution independent and rendered in real time.
+Export your artwork into the Godot game engine (as a .scn/.tscn file), and it keeps resolution-independent and rendered in real time.
 Like those old days when Adobe Flash was alive.
 
 Ciallo also exports the original layers as nodes to facilitate creating CG variations.
@@ -48,7 +48,7 @@ In the invisible-far future, Ciallo may offer AI-powered features --- but always
 
 ### Optimized pen feel
 Ciallo aims to provide drawing/pen feel better than _Clip Studio Paint_ and _Procreate_, which takes serval technical advancement in the future updates.
-For the current version, the feel is better than _Photoshop_, _GIMP_, or _MyPaint_. (Report as a bug if it's not).
+For the current version, the feel is not worse than _Krita_ and certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report as a bug if it's not).
 
 ### Infinite canvas
 (@Shen: "I never see a professional artist needs an infinite canvas when drawing illustrators, mangas or animes.
