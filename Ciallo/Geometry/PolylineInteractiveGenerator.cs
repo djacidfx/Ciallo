@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Godot;
 
 namespace Ciallo.Geometry;
@@ -229,20 +230,34 @@ public class PolylineInteractiveGenerator
     private void InterpolateSegment()
     {
         if (_positions.Count <= 3) return;
-        var newPosition = Geometry.CatmullRomInterpolation(
-            _positions[^4],
-            _positions[^3],
-            _positions[^2],
-            _positions[^1],
-            0.5f);
-        var newRadius = (_radii[^3] + _radii[^2]) * 0.5f;
-        var newPressure = (_pressures[^3] + _pressures[^2]) * 0.5f;
-        var newTilt = (_tilts[^3] + _tilts[^2]) * 0.5f;
+        var p0 = _positions[^4];
+        var p1 = _positions[^3];
+        var p2 = _positions[^2];
+        var p3 = _positions[^1];
 
-        _positions.Insert(_positions.Count - 2, newPosition);
-        _radii.Insert(_radii.Count - 2, newRadius);
-        _pressures.Insert(_pressures.Count - 2, newPressure);
-        _tilts.Insert(_tilts.Count - 2, newTilt);
+        // Estimate how many points are needed for smoothness
+        var dir01 = p0.DirectionTo(p1);
+        var dir23 = p2.DirectionTo(p3);
+        var angle = Mathf.Acos(dir01.Dot(dir23));
+        int nSegment = Mathf.CeilToInt(angle / _interpolationAngleTolerance);
+        if (nSegment < 2) return; // no need to interpolate
+        var ts = Enumerable.Range(1, nSegment - 1)
+            .Select(i => i / (float)nSegment)
+            .ToList();
+
+        var newPositions = ts.Select(t =>
+            Geometry.CatmullRomInterpolation(_positions[^4], _positions[^3], _positions[^2], _positions[^1], t));
+        var newRadii = ts.Select(t =>
+            Geometry.CatmullRomInterpolation(_radii[^4], _radii[^3], _radii[^2], _radii[^1], t));
+        var newPressures = ts.Select(t =>
+            Geometry.CatmullRomInterpolation(_pressures[^4], _pressures[^3], _pressures[^2], _pressures[^1], t));
+        var newTilts = ts.Select(t =>
+            Geometry.CatmullRomInterpolation(_tilts[^4], _tilts[^3], _tilts[^2], _tilts[^1], t));
+
+        _positions.InsertRange(_positions.Count - 2, newPositions);
+        _radii.InsertRange(_radii.Count - 2, newRadii);
+        _pressures.InsertRange(_pressures.Count - 2, newPressures);
+        _tilts.InsertRange(_tilts.Count - 2, newTilts);
     }
 
     // Warning: Brutal algorithm, only suitable for short polyline.
