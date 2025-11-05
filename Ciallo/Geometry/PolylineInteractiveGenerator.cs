@@ -68,10 +68,9 @@ public class PolylineInteractiveGenerator
     private float _processIntervalMs = 0f; // time interval since last saved point, in ms
 
     // Thresholds about when to process and save sampled points.
-    private readonly float _underForwardThreshold = 5f; // in screen pixel
+    private readonly float _underForwardThreshold = 3f; // in screen pixel
     private readonly float _overForwardThreshold = 15f;
-    private readonly float _windingAngleMin = Mathf.DegToRad(5);
-    private readonly float _windingAngleMax = Mathf.DegToRad(25); // one pixel tolerance at 5 pixels distance
+    private readonly float _windingOffsetThreshold = 2.5f; // pixel threshold on the offset consider pen is not moving straight.
     private readonly float _pressureDeltaThreshold = 0.08f;
     private readonly float _overTimeThreshold = 100f;
 
@@ -139,16 +138,13 @@ public class PolylineInteractiveGenerator
         // return if not reach distance threshold to determine direction.
         if (_latestPoint.ScreenPosition.DistanceTo(data.ScreenPosition) < _underForwardThreshold) return;
 
-        float cosWindingAngle = _latestPoint.WorldPosition.DirectionTo(data.WorldPosition).Dot(_latestPoint.WorldDirection);
-
         bool isLarger = _latestPoint.ScreenPosition.DistanceTo(data.ScreenPosition) > _overForwardThreshold;
         bool isPressureChanging = Mathf.Abs(data.Pressure - _latestPoint.Pressure) > _pressureDeltaThreshold;
-        bool isWinding = cosWindingAngle < Mathf.Cos(_windingAngleMax);
+        bool isWinding = data.ScreenPosition.DistanceToLine(_latestPoint.ScreenPosition, _latestPoint.ScreenDirection) > _windingOffsetThreshold;
         bool isOvertime = _processIntervalMs > _overTimeThreshold;
 
         bool toProcessPoints = isLarger || isWinding || isPressureChanging || isOvertime;
         if (!toProcessPoints) return;
-
         RemoveLatestPoints(_previewPointDatas.Count);
 
         // Place the point

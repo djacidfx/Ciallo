@@ -50,6 +50,7 @@ public struct CursorMotionData
     public float ScreenSpeed => ScreenDelta.Length() / TimeDeltaMs;
     public float WorldSpeed => WorldDelta.Length() / TimeDeltaMs;
     public Vector2 WorldDirection => WorldDelta.Normalized();
+    public Vector2 ScreenDirection => ScreenDelta.Normalized();
 
     public static implicit operator CursorButtonData(CursorMotionData m) =>
         new()

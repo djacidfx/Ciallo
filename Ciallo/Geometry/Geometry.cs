@@ -60,4 +60,17 @@ public static partial class Geometry
         var c = ((t2 - tt) / (t2 - t1)) * b1 + ((tt - t1) / (t2 - t1)) * b2;
         return c;
     }
+
+    public static float DistanceToLine(this Vector2 p, Vector2 linePoint, Vector2 lineDir)
+    {
+        if (lineDir.IsZeroApprox()) return p.DistanceTo(linePoint);
+
+        // The projection of vector `ap` (from linePoint to p) onto `lineDir` gives the
+        // closest point on the line. The parameter 't' is the scale factor for `lineDir`.
+        var ap = p - linePoint;
+        var t = ap.Dot(lineDir.Normalized());
+        var closestPoint = linePoint + lineDir * t;
+
+        return p.DistanceTo(closestPoint);
+    }
 }
