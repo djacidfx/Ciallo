@@ -70,11 +70,12 @@ public class PolylineInteractiveGenerator
     // Thresholds about when to process and save sampled points.
     private readonly float _underForwardThreshold = 5f; // in screen pixel
     private readonly float _overForwardThreshold = 15f;
-    private readonly float _windingAngleThreshold = Mathf.DegToRad(12); // one pixel tolerance at 5 pixels distance
+    private readonly float _windingAngleMin = Mathf.DegToRad(5);
+    private readonly float _windingAngleMax = Mathf.DegToRad(25); // one pixel tolerance at 5 pixels distance
     private readonly float _pressureDeltaThreshold = 0.08f;
     private readonly float _overTimeThreshold = 100f;
 
-    private readonly float _interpolationAngleTolerance = Mathf.DegToRad(12);
+    private readonly float _interpolationAngleTolerance = Mathf.DegToRad(10);
 
     public void Start(CursorButtonData data)
     {
@@ -142,7 +143,7 @@ public class PolylineInteractiveGenerator
 
         bool isLarger = _latestPoint.ScreenPosition.DistanceTo(data.ScreenPosition) > _overForwardThreshold;
         bool isPressureChanging = Mathf.Abs(data.Pressure - _latestPoint.Pressure) > _pressureDeltaThreshold;
-        bool isWinding = cosWindingAngle < Mathf.Cos(_windingAngleThreshold);
+        bool isWinding = cosWindingAngle < Mathf.Cos(_windingAngleMax);
         bool isOvertime = _processIntervalMs > _overTimeThreshold;
 
         bool toProcessPoints = isLarger || isWinding || isPressureChanging || isOvertime;
