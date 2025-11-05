@@ -59,7 +59,7 @@ public class PolylineInteractiveGenerator
     private readonly List<Vector2> _tilts = new(2048);
     public IReadOnlyList<Vector2> Tilts => _tilts;
 
-    private List<CursorMotionData> _previewPointDatas = new() { Capacity = 32 };
+    private List<CursorMotionData> _previewPointDatas = new() { Capacity = 32 }; // Reverse data for analyzing a better interpolation in the future.
 
     // This is not regular cursor motion, but motion from previous to last saved point
     private CursorMotionData _latestPoint;
@@ -69,7 +69,7 @@ public class PolylineInteractiveGenerator
 
     // Thresholds about when to process and save sampled points.
     private readonly float _underForwardThreshold = 3f; // in screen pixel
-    private readonly float _overForwardThreshold = 15f;
+    private readonly float _overForwardThreshold = 25f;
     private readonly float _windingOffsetThreshold = 2.5f; // pixel threshold on the offset consider pen is not moving straight.
     private readonly float _pressureDeltaThreshold = 0.08f;
     private readonly float _overTimeThreshold = 100f;
@@ -161,6 +161,15 @@ public class PolylineInteractiveGenerator
 
     public void End(CursorButtonData data)
     {
+        if (_previewPointDatas.Count > 0)
+        {
+            RemoveLatestPoints(_previewPointDatas.Count);
+            var d = _previewPointDatas[^1];
+            _positions.Add(d.WorldPosition);
+            _radii.Add(CalculateRadius(d));
+            _pressures.Add(d.Pressure);
+            _tilts.Add(d.Tilt);
+        }
         _previewPointDatas.Clear();
         _latestPointIsTurningPoint = false;
         _latestSegmentNeedInterpolation = false;
