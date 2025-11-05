@@ -47,8 +47,8 @@ We also plan to build a sharing platform while protecting your artworks from une
 In the invisible-far future, Ciallo may offer AI-powered features --- but always designed for professional artists.
 
 ### Optimized pen feel
-Ciallo aims to provide drawing/pen feel better than _Clip Studio Paint_ and _Procreate_, which takes serval technical advancement in the future updates.
-For the current version, the feel is not worse than _Krita_ and certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report as a bug if it's not).
+Ciallo aims to provide drawing/pen feel significantly better than _Clip Studio Paint_ and _Procreate_, which takes serval technical advancement in the future updates.
+For the current version, the feel is not worse than _Clip Studio Paint_ and certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report as a bug if it's not).
 
 ### Infinite canvas
 (@Shen: "I never see a professional artist needs an infinite canvas when drawing illustrators, mangas or animes.
@@ -89,11 +89,10 @@ The developer basically knows the most needed features during the EA stage. Thes
 If you eagerly need a feature to be deployed within a week/month, consider contacting the developer and sponsoring this project.
 
 ## Sponsor my research and your future
-It's Ciallo's mission to bring your dream 2D art techniques to life.
-I researched those techniques driven by the passion to Anime, and need your support to keep them free and accessible to everyone.
+It's Ciallo's mission to bring your dream hard-drawn art techniques to life, and need your support to keep them free and accessible to everyone.
 
 Moreover, in this age of AI, we all face challenges by the surging AI techniques.
-Hope Ciallo will be the tool helping you shine in this era --- the tool liberating your creativity, not replacing it with AI.
+Hope Ciallo will be the tool helping you shine in this era --- the tool liberating your creativity, not replacing it with AI nor steal it to feed AI.
 Sponsor Ciallo to shape the future of your painting, and keep the creativity alive in the future AI-driven world.
 
 ## Credits
