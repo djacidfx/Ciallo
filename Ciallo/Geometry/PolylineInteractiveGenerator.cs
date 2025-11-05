@@ -157,6 +157,25 @@ public class PolylineInteractiveGenerator
         UpdateLastestPoint(data);
         _latestSegmentNeedInterpolation = isWinding && !_latestPointIsTurningPoint;
         _latestPointIsTurningPoint = false;
+        if (!isWinding) Smooth();
+    }
+    private void Smooth()
+    {
+        const float smoothingFactor = 0.1f;
+        for (int i = 0; i < 4; i++)
+        {
+            int idx = _positions.Count - 1 - i;
+            if (idx < 2) break;
+
+            // Don't smooth if two segments have large angle
+            var dir1 = (_positions[idx] - _positions[idx - 1]).Normalized();
+            var dir2 = (_positions[idx - 1] - _positions[idx - 2]).Normalized();
+            if (dir1.Dot(dir2) < Mathf.Cos(Mathf.DegToRad(30f)))
+                break;
+
+            _radii[idx] = Mathf.Lerp(_radii[idx], _radii[idx - 1], smoothingFactor);
+            _positions[idx] = _positions[idx].Lerp(_positions[idx - 1], smoothingFactor);
+        }
     }
 
     public void End(CursorButtonData data)
