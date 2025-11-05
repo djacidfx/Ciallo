@@ -26,7 +26,7 @@ We can manipulate the positions, colors, or any other filling properties by edit
 
 ### Export to game engines
 
-Export your artwork into the Godot game engine (as a .scn/.tscn file), and it keeps resolution independent.
+Export your artwork into the Godot game engine (as a .scn/.tscn file), and it keeps resolution independent and rendered in real time.
 Like those old days when Adobe Flash was alive.
 
 Ciallo also exports the original layers as nodes to facilitate creating CG variations.
@@ -39,21 +39,22 @@ The following features may be in your favor:
 ### No generative AI
 <img align="left" width="192" height="192" src="https://upload.wikimedia.org/wikipedia/commons/f/f1/No_AI_art.svg">
 
-Ciallo uses a custom vector format that is hard to generate by AI.
+Ciallo uses a custom vector format that is hard to generate by current AI technique.
 
 Unlike [the big company](https://www.youtube.com/watch?v=DoM3nUD-1Ro), Ciallo will never change the terms of service silently to steal your artwork stocks for training AI.
 We also plan to build a sharing platform while protecting your artworks from unethical AI training.
 
 In the invisible-far future, Ciallo may offer AI-powered features --- but always designed for professional artists.
 
-### Line binding
-
-### Lasso tool on vector stroke (like CSP)
+### Optimized pen feel
+Ciallo aims to provide drawing/pen feel better than _Clip Studio Paint_ and _Procreate_, which takes serval technical advancement in the future updates.
+For the current version, the feel is better than _Photoshop_, _GIMP_, or _MyPaint_. (Report as a bug if it's not).
 
 ### Infinite canvas
-
 (@Shen: "I never see a professional artist needs an infinite canvas when drawing illustrators, mangas or animes.
 Do you really need this feature? Tell me how to add more support to this.")
+
+### (WIP) Line binding
 
 ## Download (Free on all platforms)
 
@@ -61,6 +62,7 @@ Steam | Itch.io
 
 System requirements:
 Require a system can run small to middle size 3D games.
+Close any other software heavily use your GPU before opening Ciallo. (Except for OBS if it's necessary.)
 
 - OS: Windows 10 or higher
 - Memory: 6GB or more
@@ -68,7 +70,7 @@ Require a system can run small to middle size 3D games.
 - Monitor: Recommend refresh rate greater than 100fps to get the best drawing experience.
 - Tablet: Use your tablet with maximum polling/reporting rate (maybe Wacom dtc 141 if you buy a new one).
 
-> Ciallo is highly sensitive to your tablet polling rate. It can respond up to 1000Hz tablet/mouse input with dedicate code optimization. But tablets in 2025 can only achieve 360Hz in maximum (dtc 141). Contact the developer if there comes a tablet with 500-1000Hz polling rate, Ciallo will try adding more supports to it.
+> Ciallo is highly sensitive to your tablet polling rate. It can potentially respond up to 1000Hz tablet/mouse input. But tablets in 2025 can only achieve 360Hz in maximum (dtc 141). Contact the developer if there comes a tablet with 500-1000Hz polling rate, Ciallo will try adding more supports to it.
 
 > About macOS: I literally wish but cannot afford to buy a MacBook Pro (which cost me half a year’s living budget). Consider patreon me, really lacking of money currently.
 
@@ -76,7 +78,7 @@ Require a system can run small to middle size 3D games.
 
 Ciallo is in an early stage of development; its version number will be labeled as EA (early access).
 
-During the EA stage, we mainly R&D traditional paint software features with modern shaders and GPU APIs. After finishing major paint features, we will open Steam Workshop, marking the end of the EA stage.
+During the EA stage, Ciallo mainly R&D traditional paint software features with modern shaders and GPU APIs. After finishing major paint features, will try opening Steam Workshop, marking the end of the EA stage.
 
 Overall, Ciallo will be a DCC program focusing on creating 2D game assets, including illustrations, 2D animations and hand-drawn textures in 3D.
 
