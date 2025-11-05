@@ -70,7 +70,7 @@ Close any other software heavily use your GPU before opening Ciallo. (Except for
 - Monitor: Recommend refresh rate greater than 100fps to get the best drawing experience.
 - Tablet: Use your tablet with maximum polling/reporting rate (maybe Wacom dtc 141 if you buy a new one).
 
-> Ciallo is highly sensitive to your tablet polling rate. It can potentially respond up to 1000Hz tablet/mouse input. But tablets in 2025 can only achieve 360Hz in maximum (dtc 141). Contact the developer if there comes a tablet with 500-1000Hz polling rate, Ciallo will try adding more supports to it.
+> Ciallo is highly sensitive to your tablet polling rate. It can potentially respond up to 1000Hz tablet/mouse input. But tablets in 2025 can only achieve 360Hz in maximum (dtc 141), and 150-200Hz on average, which is highly insufficient for capturing small turning points and handwritten texts. Contact the developer if there comes a tablet with 500-1000Hz polling rate, Ciallo will try adding more supports to it.
 
 > About macOS: I literally wish but cannot afford to buy a MacBook Pro (which cost me half a year’s living budget). Consider patreon me, really lacking of money currently.
 
