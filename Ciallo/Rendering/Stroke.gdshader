@@ -4,6 +4,14 @@ render_mode unshaded;
 render_mode skip_vertex_transform;
 
 const int Vanilla = 0, Stamp = 1, Airbrush = 2;
+
+struct StampFlag {
+    int StampTexture;
+    int MaskTexture;
+    int RotationNoise;
+};
+const StampFlag StampFlags = StampFlag(1 << 0, 1 << 1, 1 << 2);
+
 uniform int StrokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
 uniform vec4 MaterialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
@@ -229,7 +237,7 @@ void fragment() {
     	}
 	}
 	/*----------------------------------------------------------*/
- 	if(StrokeType == Stamp){
+  	if(StrokeType == Stamp){
  		float x1 = pLocal.x - r;
  		float x2 = pLocal.x + r;
  		float x1Idx = x2n(x1) + n0;
@@ -252,15 +260,16 @@ void fragment() {
 			// Transform
 			pToCurrStamp *= CoordinateTransform;
 			// Rotation noise
-			float rotationNoise = noise1D(currIdx);
+			float rotationNoise = (ActiveStampFlags & StampFlags.RotationNoise) != 0 ? noise1D(currIdx) : 0.0;
 			float cosRot = cos(rotationNoise);
 			float sinRot = sin(rotationNoise);
 			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
 
  			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
-			float noise = texture(MultiplyTexture, uv).r;
+			float mask = ((ActiveStampFlags & StampFlags.MaskTexture) != 0) ? texture(MultiplyTexture, uv).r : 1.0;
 			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || length(pToCurrStamp/r) > 1.0;
-			float sampledA = isOutDisk ? 1e-7 : noise * flow * texture(StampTexture, uv).r;
+			float stampSample = ((ActiveStampFlags & StampFlags.StampTexture) != 0) ? texture(StampTexture, uv).r : 1.0;
+			float sampledA = isOutDisk ? 1e-7 : mask * flow * stampSample;
 
  			currA = sampledA + currA * (1.0 - sampledA);
 			i++;
@@ -286,8 +295,8 @@ void fragment() {
         }
         if(p_r.x > 0.0 && p_r.x < segmentLength){
 			float r_p = r0 - cosTheta * p_r.x;
-            float lambda = abs(pLocal.y) / sinTheta / r_p;
-            transparency = (1.0 - flow*sampleCurve(FalloffCurve, lambda))/transparency0/transparency1;
+			float lambda = abs(pLocal.y) / sinTheta / r_p;
+			transparency = (1.0 - flow*sampleCurve(FalloffCurve, lambda))/transparency0/transparency1;
         }
         if(p_r.x >= segmentLength){
             transparency = transparency1/transparency0;
