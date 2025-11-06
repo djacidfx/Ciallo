@@ -27,20 +27,25 @@ public partial class PropertyContainer : VBoxContainer
 
     public static Container CreatePropertyControl(string name, [NotNull] Control control)
     {
-        var box = new VBoxContainer()
+        // Note: If a control's CustomMinimumSize is zero, it will never be wrapped in FlowContainer.
+        var box = new HFlowContainer()
         {
             Name = name,
         };
-        box.AddThemeConstantOverride("v_separation", 5);
+        box.AddThemeConstantOverride("h_separation", 15);
         box.AddChild(new Label
         {
             Text = name,
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Left,
             SizeFlagsVertical = SizeFlags.ShrinkBegin,
+            CustomMinimumSize = new(150, 0),
         });
         control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         box.AddChild(control);
+
+        var controlMinSize = control.CustomMinimumSize.Max(new Vector2(150, 0));
+        control.CustomMinimumSize = controlMinSize;
         return box;
     }
 }
