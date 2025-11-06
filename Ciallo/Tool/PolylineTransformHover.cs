@@ -29,7 +29,7 @@ public class PolylineTransformHover : HoverBase
             var worldOverlay = Document.Get<WorldOverlay>();
             // Support single selection currently
             _polylineE = SelectionManager.SelectedPolylines[0];
-            if (_polylineE.IsRemoved())
+            if (_polylineE.IsDeletedOrNull())
             {
                 SelectionManager.SelectedPolylines.Clear();
             }
@@ -65,7 +65,7 @@ public class PolylineTransformHover : HoverBase
         // hover hinter
         _hoverSub = Document.Get<WorldCursorDetectionArea>().HoveringArea.Skip(1).Subscribe(area =>
         {
-            if (!HoveredPolyline.IsNull) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
+            if (!HoveredPolyline.IsDeletedOrNull()) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
             if (area == null)
             {
                 HoveredPolyline = Entity.Null;
@@ -88,7 +88,7 @@ public class PolylineTransformHover : HoverBase
         _layerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
 
         // overlays
-        if (!HoveredPolyline.IsNull) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
+        if (!HoveredPolyline.IsDeletedOrNull()) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
         _midAxis?.QueueFree();
         _midAxis = null;
         _transformBox?.QueueFree();

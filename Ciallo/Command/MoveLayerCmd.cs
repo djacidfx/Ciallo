@@ -6,7 +6,7 @@ using Godot;
 
 namespace Ciallo.Command;
 
-// ReSharper disable once Godot.MissingParameterlessConstructor
+// Note: not implementing hierarchy on layer panel, only flat list move.
 public class MoveLayerCmd : CommandBase
 {
     private readonly ImmutableArray<int> _src;
@@ -20,7 +20,7 @@ public class MoveLayerCmd : CommandBase
 
     public override void Do()
     {
-        // Layer tree data
+        // Data
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.MoveDescendant(_src, _dst);
 
@@ -45,7 +45,7 @@ public class MoveLayerCmd : CommandBase
         var layerTreeControl = Document.Get<LayerContainer>();
         layerTreeControl.Move(_dst, _src);
 
-        // layer tree data
+        // Data
         var tree = Document.Get<LayerTreeManager>();
         tree.Root.MoveDescendant(_dst, _src);
     }

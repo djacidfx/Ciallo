@@ -77,18 +77,19 @@ So if you have solid experience in VS Code or Visual Studio to script Godot C#. 
 Designing professional-grade software architectures often takes decades of experience, so my implementations may seem noob trying hard.
 Please contact me if you have recommendations for improvement.
 
+After getting a basic idea on how to we those 3rd party libraries, you can check AI generated code wiki [deepwiki](https://deepwiki.com/ShenCiao/Ciallo) to get in depth ideas on how each system is implemented.
+
 ### Godot 2D
 
 Ciallo uses the vast majority of Godot features for developing a 2D game, and heavily uses nearly all types of GUI control nodes.
 So every piece of experience you have in 2D game development is helpful, and skills you learn from Ciallo can also be applied your future game development.
 
-You can find all the ui scenes and custom gui nodes in the `NodeControl` or `Widget` folders. (I should have named "NodeControl" as "GuiControl" or something else better).
+You can find all the ui scenes and custom gui nodes in the `NodeControl` or `Widget` folders. (I should have renamed "NodeControl" as "GuiControl" or something else better).
 
-### Component pattern and Frent ECS library
+### Component pattern and Frent library
 Ciallo heavily uses the [frent](https://github.com/itsBuggingMe/Frent) library for realizing component pattern in almost every piece of code.
 Make sure you understand the component pattern theory [(tutorial)](https://gameprogrammingpatterns.com/component.html),
 and the first page of the frent library [documentation](https://itsbuggingme.github.io/Frent/docs/ecf.html).
-
 
 See the `AppWorldManager` class. Each user document is stored and managed by a `World` object.
 Each `World` object creates an entity that stores "document-level singletons" data.
@@ -97,7 +98,7 @@ e.g. `DocumentSetting` for canvas settings, `LayerTreeManager` for layer data, `
 These data should be one per document, so I call them "document-level singletons" and name the entity as `Document`.
 You can find self-explanatory code like `Document.Get<LayerTreeManager>()` to visit the document's layer tree.
 
-For those editable object like strokes, layers, we will create entities and add components such as `PolylineGeometry`, `StrokeBrush`, `LayerSetting` object to the entities.
+For those editable object like strokes, layers, we will create entities and add components such as `PolylineGeometry`, `StrokeBrush`, `PolylineLayerSetting` object to the entities.
 
 <details>
 <summary>Why using an ECS library?</summary>

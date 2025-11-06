@@ -16,7 +16,7 @@ public class SelectionManager
     {
         get
         {
-            if (WorkingLayer.Value.IsNull) return [];
+            if (WorkingLayer.Value.IsDeletedOrNull()) return [];
             var world = WorkingLayer.Value.World;
             ImmutableArray<int> path = [..world.Document().Get<LayerTreeManager>().Root.FindPathTo(WorkingLayer.Value)];
             return path;

@@ -337,19 +337,18 @@ public class BezierCurve
         OnChanged();
     }
 
-    private static float l = 0.25f;
+    private const float L = 0.25f;
     public static BezierCurve Constant(float y = 0.0f) =>
         new([
-            new(new(0f, y), new(-l, 0f), new(l, 0f)),
-            new(new(1f, y), new(-l, 0f), new(l, 0f))
+            new(new(0f, y), new(-L, 0f), new(L, 0f)),
+            new(new(1f, y), new(-L, 0f), new(L, 0f))
         ]);
 
     public static BezierCurve Linear(float y0 = 0.0f, float y1 = 1.0f)
     {
         var v = new Vector2(1f, y1 - y0);
-        var dir = v.Normalized();
         var len = v.Length();
-        var dl = v / len * l;
+        var dl = v / len * L;
         return new([
             new(new(0f, y0), -dl, dl),
             new(new(1f, y1), -dl, dl)
@@ -360,8 +359,8 @@ public class BezierCurve
     {
         // horizontal handles produce zero slope at start/end → S‐curve in between
         return new BezierCurve([
-            new(new(0f, y0), new(-l, 0f), new(l, 0f)),
-            new(new(1f, y1), new(-l, 0f), new(l, 0f))
+            new(new(0f, y0), new(-L, 0f), new(L, 0f)),
+            new(new(1f, y1), new(-L, 0f), new(L, 0f))
         ]);
     }
 

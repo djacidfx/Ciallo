@@ -14,7 +14,7 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
         get
         {
             var l = SelectionManager.WorkingLayer.Value;
-            return !l.IsNull && l.Has<PolylineLayerSetting>();
+            return !l.IsDeletedOrNull() && l.Has<PolylineLayerSetting>();
         }
     }
 

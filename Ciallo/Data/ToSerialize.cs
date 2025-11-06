@@ -22,12 +22,12 @@ public struct ToSerializeTag;
 public static class EntityExtension
 {
     /// <summary>
-    /// Entity has been remove/deleted by user.
+    /// Entity has been remove/deleted by user or null.
     /// </summary>
     /// <remarks>
     /// It may be deleted by undo stack or not.
     /// </remarks>
-    public static bool IsRemoved(this Entity self)
+    public static bool IsDeletedOrNull(this Entity self)
     {
         return !self.IsAlive || !self.Tagged<ToSerializeTag>();
     }

@@ -188,24 +188,24 @@ public static class PolyCubicBezierExtension
     }
 
     // Sample curve segment at index, t in [0,1]
-    [Pure] public static Vector2 Sample(this IReadOnlyList<BezierCurve.Point> _points, int index, float t)
+    [Pure] public static Vector2 Sample(this IReadOnlyList<BezierCurve.Point> points, int index, float t)
     {
-        var p0 = _points[index].P;
-        var p1 = p0 + _points[index].Out;
-        var p3 = _points[index + 1].P;
-        var p2 = p3 + _points[index + 1].In;
+        var p0 = points[index].P;
+        var p1 = p0 + points[index].Out;
+        var p3 = points[index + 1].P;
+        var p2 = p3 + points[index + 1].In;
 
         return p0.BezierInterpolate(p1, p2, p3, t);
     }
 
     // Sample the whole curve at a fractional t (e.g. 2.5 means between segment 2 and 3 at t=0.5)
-    [Pure] public static Vector2 Sample(this IReadOnlyList<BezierCurve.Point> _points, float polyT)
+    [Pure] public static Vector2 Sample(this IReadOnlyList<BezierCurve.Point> points, float polyT)
     {
-        if (_points.Count < 2)
+        if (points.Count < 2)
             throw new InvalidOperationException("Cannot sample from a non curve.");
 
         var (idx, t) = ResolvePolyT(polyT);
-        return _points.Sample(idx, t);
+        return points.Sample(idx, t);
     }
 
     [Pure] public static (List<Vector2>, List<float>) Tessellate(this IReadOnlyList<BezierCurve.Point> points, int subdivisionsPerSegment)
