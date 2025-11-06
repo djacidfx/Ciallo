@@ -34,7 +34,7 @@ public static class BindToggleButton
     /// <param name="mask">The bits to toggle on and off</param>
     /// <param name="subs"></param>
     /// <typeparam name="T">Enum with FlagsAttribute</typeparam>
-    public static void BindBitFlags<T>(this CheckBox checkBox, ReactiveProperty<T> property, T mask, out CompositeDisposable subs) where T : Enum
+    public static void BindFlag<T>(this CheckBox checkBox, ReactiveProperty<T> property, T mask, out CompositeDisposable subs) where T : Enum
     {
         subs = new CompositeDisposable();
 
@@ -53,9 +53,9 @@ public static class BindToggleButton
             .AddTo(subs);
     }
 
-    public static void BindBitFlags<T>(this CheckBox checkBox, ReactiveProperty<T> property, T mask) where T : Enum
+    public static void BindFlag<T>(this CheckBox checkBox, ReactiveProperty<T> property, T mask) where T : Enum
     {
-        BindBitFlags(checkBox, property, mask, out var sub);
+        BindFlag(checkBox, property, mask, out var sub);
         sub.AddTo(checkBox);
     }
 }
