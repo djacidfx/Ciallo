@@ -82,7 +82,7 @@ public partial class PaintTool : CommonToolBase
         // ---------------------------------------------
         var brushList = new DocumentBrushList()
         {
-            CustomMinimumSize = new(0, 200),
+            CustomMinimumSize = new(0, 150),
         };
         brushList.ItemSelected += idx => { new ChangeWorkingBrushCmd((int)idx).Commit(); };
         var brushM = Document.Get<BrushManager>();

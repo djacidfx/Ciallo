@@ -7,39 +7,37 @@ using R3;
 
 namespace Ciallo.NodeControl;
 
-public partial class ToolPropertyPanel : PanelContainer
+public partial class ToolPropertyPanel : Container
 {
-    public VBoxContainer HubBox;
+    public VBoxContainer PropertyHolder;
 
-    partial class DocumentToolPropertyContainer : MarginContainer;
-
-    public static readonly PackedScene ToolPropertyHubScene = GD.Load<PackedScene>("res://NodeControl/ToolPropertyHub.tscn");
+    partial class DocumentToolPropertyContainer : VBoxContainer;
 
     public override void _Ready()
     {
-        HubBox = GetNode<VBoxContainer>("%HubBox");
-        HubBox.QueueFreeChildren();
+        PropertyHolder = GetNode<VBoxContainer>("%PropertiesHolder");
+        PropertyHolder.QueueFreeChildren();
 
         AppWorldManager.LoadedWorlds.ObserveAdd().Select(et => et.Value.Document()).Subscribe(document =>
         {
-            var holder = new DocumentToolPropertyContainer();
+            var holder = new DocumentToolPropertyContainer()
+            {
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
             holder.VisibleIf(AppWorldManager.WorkingDocument, document);
             document.Add(holder);
-            HubBox.AddChild(holder);
+            PropertyHolder.AddChild(holder);
 
             var toolManager = document.Get<ToolButtonPanel>();
             foreach (var tool in toolManager.GetAllTools<ToolButtonBase>())
             {
-                var hub = ToolPropertyHubScene.Instantiate<Control>();
-                hub.VisibleIf(toolManager.ActiveTool, tool);
+                var container = new PropertyContainer();
+                container.VisibleIf(toolManager.ActiveTool, tool);
 
-                var container = hub.GetNode<PropertyContainer>("%PropertyContainer");
                 container.QueueFreeChildren();
                 tool.DrawProperty(container);
 
-                hub.GetNode<Label>("%ToolNameLabel").Text = tool.ToolName;
-
-                holder.AddChild(hub);
+                PropertyHolder.AddChild(container);
             }
         }).AddTo(this);
 
