@@ -27,10 +27,12 @@ public class BrushSetting
     [DataMember] public ReactiveProperty<float> DashForwardSpeed = new(0.0f);
 
     // Stamp
+    [DataMember] public ReactiveProperty<StampFlags> ActiveStampFlags = new();
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
     [DataMember] public ImageTexture StampTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
-    [DataMember] public ImageTexture MultiplyTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
+
+    [DataMember] public ImageTexture MaskTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
 
     [DataMember] public ReactiveProperty<int> RotationNoiseOctave = new(1);
     [DataMember] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
@@ -102,7 +104,7 @@ public class BrushSetting
         container.AddProperty("Stamp texture", stampTextureEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
 
-        var multiplyTextureEdit = ImageTextureEdit.Instantiate(MultiplyTexture, ConvertStampImage);
+        var multiplyTextureEdit = ImageTextureEdit.Instantiate(MaskTexture, ConvertStampImage);
         container.AddProperty("Mask texture", multiplyTextureEdit)
             .VisibleIf(RenderingType, BrushRenderingType.Stamp);
 
@@ -194,6 +196,14 @@ public class BrushSetting
         var baseRadius = BaseRadius.Value;
         var curve = Pressure2RadiusRatioCurve;
         return data => baseRadius * curve.SampleX(data.Pressure);
+    }
+
+    [Flags]
+    public enum StampFlags
+    {
+        StampTexture = 1 << 0,
+        MaskTexture = 1 << 1,
+        RotationNoise = 1 << 2,
     }
 }
 

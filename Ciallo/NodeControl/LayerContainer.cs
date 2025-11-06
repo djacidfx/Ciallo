@@ -66,7 +66,8 @@ public partial class LayerContainer : Container
         _subscriptions[layer] = subs;
 
         layer.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
-        layer.VisibleButton.BindBool(node.IsVisible).AddTo(subs);
+        layer.VisibleButton.BindBool(node.IsVisible, out var sub);
+        sub.AddTo(subs);
 
         var lineEdit = layer.GetNode<LabelLineEdit>("%LabelLineEdit");
         lineEdit.BindString(node.Name);

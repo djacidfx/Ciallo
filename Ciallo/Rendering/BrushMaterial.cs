@@ -18,10 +18,10 @@ public partial class BrushMaterial : ShaderMaterial
         {
             if (_missingBrushMaterial != null) return _missingBrushMaterial;
             var m = _missingBrushMaterial = new();
-            m.SetShaderParameter("strokeType", 0);
-            m.SetShaderParameter("materialColor", Colors.Crimson);
-            m.SetShaderParameter("dashLength", 5f);
-            m.SetShaderParameter("dashForwardSpeed", 7f);
+            m.SetShaderParameter("StrokeType", 0);
+            m.SetShaderParameter("MaterialColor", Colors.Crimson);
+            m.SetShaderParameter("DashLength", 5f);
+            m.SetShaderParameter("DashForwardSpeed", 7f);
             return m;
         }
     }
@@ -36,36 +36,38 @@ public partial class BrushMaterial : ShaderMaterial
     {
         Subs?.Dispose();
         Subs = new();
-        setting.RenderingType.Subscribe(type => SetShaderParameter("strokeType", (int)type)).AddTo(Subs);
-        setting.Color.Subscribe(color => SetShaderParameter("materialColor", color)).AddTo(Subs);
-        setting.DashLength.Subscribe(length => SetShaderParameter("dashLength", length)).AddTo(Subs);
-        setting.GapLength.Subscribe(length => SetShaderParameter("gapLength", length)).AddTo(Subs);
-        setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("dashForwardSpeed", speed)).AddTo(Subs);
+        setting.RenderingType.Subscribe(type => SetShaderParameter("StrokeType", (int)type)).AddTo(Subs);
+        setting.Color.Subscribe(color => SetShaderParameter("MaterialColor", color)).AddTo(Subs);
+        setting.DashLength.Subscribe(length => SetShaderParameter("DashLength", length)).AddTo(Subs);
+        setting.GapLength.Subscribe(length => SetShaderParameter("GapLength", length)).AddTo(Subs);
+        setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("DashForwardSpeed", speed)).AddTo(Subs);
         var pp2FlowTex = ImageTexture.CreateFromImage(BakeCurve(setting.Pressure2FlowCurve));
         setting.Pressure2FlowCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
         {
             pp2FlowTex.Update(BakeCurve(setting.Pressure2FlowCurve));
-            SetShaderParameter("pressure2FlowCurve", pp2FlowTex);
+            SetShaderParameter("Pressure2FlowCurve", pp2FlowTex);
         }).AddTo(Subs);
 
         // Stamp
-        setting.StampInterval.Subscribe(interval => SetShaderParameter("stampInterval", interval)).AddTo(Subs);
-        SetShaderParameter("stampTexture", setting.StampTexture);
-        SetShaderParameter("multiplyTexture", setting.MultiplyTexture);
+        setting.ActiveStampFlags.Subscribe(value => SetShaderParameter("ActiveStampFlags", (int)value)).AddTo(Subs);
+        setting.StampInterval.Subscribe(interval => SetShaderParameter("StampInterval", interval)).AddTo(Subs);
+        SetShaderParameter("StampTexture", setting.StampTexture);
+        SetShaderParameter("MultiplyTexture", setting.MaskTexture);
         setting.StampRotation.Subscribe(rotation =>
         {
             var transform = new Transform2D(rotation, Vector2.Zero);
-            SetShaderParameter("coordinateTransform", transform);
+            SetShaderParameter("CoordinateTransform", transform);
         }).AddTo(Subs);
-        setting.RotationNoiseOctave.Subscribe(value => SetShaderParameter("rotationNoiseOctave", value)).AddTo(Subs);
-        setting.RotationNoiseAmplitude.Subscribe(amp => SetShaderParameter("rotationNoiseAmplitude", amp)).AddTo(Subs);
-        setting.RotationNoiseFrequency.Subscribe(freq => SetShaderParameter("rotationNoiseFrequency", freq)).AddTo(Subs);
+
+        setting.RotationNoiseOctave.Subscribe(value => SetShaderParameter("RotationNoiseOctave", value)).AddTo(Subs);
+        setting.RotationNoiseAmplitude.Subscribe(value => SetShaderParameter("RotationNoiseAmplitude", value)).AddTo(Subs);
+        setting.RotationNoiseFrequency.Subscribe(value => SetShaderParameter("RotationNoiseFrequency", value)).AddTo(Subs);
 
         var falloffTex = ImageTexture.CreateFromImage(BakeCurve(setting.FalloffCurve));
         setting.FalloffCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
         {
             falloffTex.Update(BakeCurve(setting.FalloffCurve));
-            SetShaderParameter("falloffCurve", falloffTex);
+            SetShaderParameter("FalloffCurve", falloffTex);
         }).AddTo(Subs);
     }
 

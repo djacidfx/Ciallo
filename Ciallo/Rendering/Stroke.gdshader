@@ -4,34 +4,37 @@ render_mode unshaded;
 render_mode skip_vertex_transform;
 
 const int Vanilla = 0, Stamp = 1, Airbrush = 2;
-uniform int strokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
-uniform vec4 materialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
+uniform int StrokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
+uniform vec4 MaterialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
 // Canvas mode is used for drawing wireframe
-uniform int radiusMode : hint_enum("World", "Canvas") = 0;
-uniform float canvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
+uniform int RadiusMode : hint_enum("World", "Canvas") = 0;
+uniform float CanvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
 // Dash
-uniform float dashLength = -1.0; // length with unit "L/r"
-uniform float gapLength = -1.0;
-uniform float dashForwardSpeed = 0.0;
+uniform float DashLength = -1.0; // length with unit "L/r"
+uniform float GapLength = -1.0;
+uniform float DashForwardSpeed = 0.0;
 // Pen pressure map curve
-uniform sampler2D pressure2FlowCurve;
+uniform sampler2D Pressure2FlowCurve;
 
 // ------stamp parameters-----------
 //// Fail to compile:
 // hint_range(intervalMin, 10.0, intervalStep) .
 // const float intervalMin = 1.0/64.0;
 // const float intervalStep = 1.0/128.0;
-uniform float stampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
-uniform sampler2D stampTexture;
-uniform sampler2D multiplyTexture;
-uniform mat2 coordinateTransform;
-uniform int rotationNoiseOctave;
-uniform float rotationNoiseAmplitude = 0; // `= PI` don't compile
-uniform float rotationNoiseFrequency;
+uniform int ActiveStampFlags;
+uniform float StampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
+uniform sampler2D StampTexture;
+uniform mat2 CoordinateTransform;
+
+uniform sampler2D MultiplyTexture;
+
+uniform int RotationNoiseOctave;
+uniform float RotationNoiseAmplitude = 0; // `= PI` don't compile
+uniform float RotationNoiseFrequency;
 // ---------------------------------
 
-uniform sampler2D falloffCurve;
+uniform sampler2D FalloffCurve;
 
 varying flat vec2 p0;
 varying flat vec2 p1;
@@ -74,7 +77,7 @@ void vertex() {
 	pp0 = pps.x;
 	pp1 = pps.y;
 
-	if(radiusMode == 1){
+	if(RadiusMode == 1){
 		r0 /= scale;
 		r1 /= scale;
 		n0 *= scale;
@@ -154,11 +157,11 @@ float noise1D(float x) {
 	x = abs(x - 512.0);
     float sum = 0.0;
     float amp = 1.0;      // start at 1.0, halve each octave (persistence = 0.5)
-    float freq = rotationNoiseFrequency; // start at base frequency, double each octave (lacunarity = 2.0)
+    float freq = RotationNoiseFrequency; // start at base frequency, double each octave (lacunarity = 2.0)
     float ampSum = 0.0;
 
     for (int i = 0; i < MAX_OCTAVES; ++i) {
-        if (i >= rotationNoiseOctave) break;
+        if (i >= RotationNoiseOctave) break;
         sum += perlinNoise1D(x * freq) * amp;
         ampSum += amp;
 
@@ -171,7 +174,7 @@ float noise1D(float x) {
         sum /= ampSum;
     }
 
-    return sum * rotationNoiseAmplitude;
+    return sum * RotationNoiseAmplitude;
 }
 
 void fragment() {
@@ -185,14 +188,14 @@ void fragment() {
 
 	float t = mix(pp0, pp1, p_r.x/segmentLength);
 	t = clamp(t, 0.0, 1.0);
-	float flowRatio = sampleCurve(pressure2FlowCurve, t);
+	float flowRatio = sampleCurve(Pressure2FlowCurve, t);
 
 	/*----------------------------------------------------------*/
-	if(strokeType == Vanilla){
+	if(StrokeType == Vanilla){
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
 
-		COLOR = overridingColor.a >= 0.0 ? overridingColor : materialColor;
+		COLOR = overridingColor.a >= 0.0 ? overridingColor : MaterialColor;
     	float targetFlow = COLOR.a * flowRatio;
 		COLOR.a = COLOR.a * flowRatio;
 		if(targetFlow < 0.999){ // Can avoid little white dot
@@ -226,28 +229,28 @@ void fragment() {
     	}
 	}
 	/*----------------------------------------------------------*/
- 	if(strokeType == Stamp){
+ 	if(StrokeType == Stamp){
  		float x1 = pLocal.x - r;
  		float x2 = pLocal.x + r;
  		float x1Idx = x2n(x1) + n0;
  		float x2Idx = x2n(x2) + n1;
  		float startIdx = x1 < 0.0 ? n0 : x1Idx;
-		startIdx /= stampInterval;
+		startIdx /= StampInterval;
  		float endIdx = x2 > segmentLength ? n1 : x2Idx;
-		endIdx /= stampInterval;
+		endIdx /= StampInterval;
 
  		int i = 0;
  		int MAX_i = 128;
  		float currIdx = ceil(startIdx);
  		float currA = 1e-7;
-		float flow = materialColor.a * flowRatio;
+		float flow = MaterialColor.a * flowRatio;
 		// Main loop
  		while(i < MAX_i && currIdx < endIdx){
-			float currN = currIdx * stampInterval;
+			float currN = currIdx * StampInterval;
  			float currStampLocalX = n2x(currN - n0);
  			vec2 pToCurrStamp = pLocal - vec2(currStampLocalX, 0.0);
 			// Transform
-			pToCurrStamp *= coordinateTransform;
+			pToCurrStamp *= CoordinateTransform;
 			// Rotation noise
 			float rotationNoise = noise1D(currIdx);
 			float cosRot = cos(rotationNoise);
@@ -255,25 +258,25 @@ void fragment() {
 			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
 
  			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
-			float noise = texture(multiplyTexture, uv).r;
+			float noise = texture(MultiplyTexture, uv).r;
 			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || length(pToCurrStamp/r) > 1.0;
-			float sampledA = isOutDisk ? 1e-7 : noise * flow * texture(stampTexture, uv).r;
+			float sampledA = isOutDisk ? 1e-7 : noise * flow * texture(StampTexture, uv).r;
 
  			currA = sampledA + currA * (1.0 - sampledA);
 			i++;
 			currIdx += 1.0;
  		}
- 		COLOR = vec4(materialColor.rgb, currA);
+ 		COLOR = vec4(MaterialColor.rgb, currA);
  	}
 	/*----------------------------------------------------------*/
-	if(strokeType == Airbrush){
+	if(StrokeType == Airbrush){
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
 
 		// The Whispers Of the olD Ones
-		float flow = materialColor.a * flowRatio;
-		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleCurve(falloffCurve, d0/r0));
-        float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleCurve(falloffCurve, d1/r1));
+		float flow = MaterialColor.a * flowRatio;
+		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleCurve(FalloffCurve, d0/r0));
+        float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleCurve(FalloffCurve, d1/r1));
 		float transparency;
 
 		// Shen already forget about every details here, and he is too lazy to remind of.
@@ -284,19 +287,19 @@ void fragment() {
         if(p_r.x > 0.0 && p_r.x < segmentLength){
 			float r_p = r0 - cosTheta * p_r.x;
             float lambda = abs(pLocal.y) / sinTheta / r_p;
-            transparency = (1.0 - flow*sampleCurve(falloffCurve, lambda))/transparency0/transparency1;
+            transparency = (1.0 - flow*sampleCurve(FalloffCurve, lambda))/transparency0/transparency1;
         }
         if(p_r.x >= segmentLength){
             transparency = transparency1/transparency0;
         }
-		COLOR = vec4(materialColor.rgb, 1.0 - transparency);
+		COLOR = vec4(MaterialColor.rgb, 1.0 - transparency);
 	}
 
 	// Dash
-	if(dashLength > 0.0){
-		float unitLength = dashLength + (gapLength > 0.0 ? gapLength : dashLength);
+	if(DashLength > 0.0){
+		float unitLength = DashLength + (GapLength > 0.0 ? GapLength : DashLength);
 		float pixelN = x2n(pLocal.x) + n0;
-		if(mod(pixelN + TIME * dashForwardSpeed, unitLength) > dashLength) discard;
+		if(mod(pixelN + TIME * DashForwardSpeed, unitLength) > DashLength) discard;
 	}
 
 	// Be mindful with premultiply alpha

@@ -76,7 +76,8 @@ public static class AppBrushLibrary
             Color = { Value = new(0, 0, 0, 0.5f) },
             StampTexture = ImageTexture.CreateFromImage(images[0]),
             StampInterval = { Value = 0.2f },
-            MultiplyTexture = ImageTexture.CreateFromImage(images[2]),
+            ActiveStampFlags = { Value = BrushSetting.StampFlags.MaskTexture | BrushSetting.StampFlags.RotationNoise },
+            MaskTexture = ImageTexture.CreateFromImage(images[2]),
             RotationNoiseAmplitude = { Value = 8 * Mathf.Pi },
             RotationNoiseFrequency = { Value = 0.343234f },
         });
@@ -87,6 +88,7 @@ public static class AppBrushLibrary
             RenderingType = { Value = BrushRenderingType.Stamp },
             Labels = { BrushLabel.BuiltIn },
             StampTexture = ImageTexture.CreateFromImage(images[1]),
+            ActiveStampFlags = { Value = BrushSetting.StampFlags.RotationNoise },
             RotationNoiseAmplitude = { Value = Mathf.Pi },
             RotationNoiseFrequency = { Value = 0.5f },
         });
