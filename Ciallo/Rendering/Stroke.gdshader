@@ -238,8 +238,21 @@ void fragment() {
 	}
 	/*----------------------------------------------------------*/
   	if(StrokeType == Stamp){
- 		float x1 = pLocal.x - r;
- 		float x2 = pLocal.x + r;
+ 		// The quadratic equation
+	    float a, b, c, delta;
+	    a = 1.0 - cosTheta * cosTheta;
+	    b = 2.0 * (r0 * cosTheta - pLocal.x);
+	    c = pLocal.x * pLocal.x + pLocal.y * pLocal.y - r0 * r0;
+	    delta = b * b - 4.0*a*c;
+	    if(delta <= 0.0) discard;
+
+		float tempMathBlock = b + sign(b) * sqrt(delta);
+	    float x1 = -2.0 * c / tempMathBlock;
+	    float x2 = -tempMathBlock / (2.0*a);
+	    vec2 temp = vec2(min(x1, x2), max(x1, x2));
+	    x1 = temp.x;
+	    x2 = temp.y;
+
  		float x1Idx = x2n(x1) + n0;
  		float x2Idx = x2n(x2) + n1;
  		float startIdx = x1 < 0.0 ? n0 : x1Idx;
@@ -296,7 +309,8 @@ void fragment() {
         if(p_r.x > 0.0 && p_r.x < segmentLength){
 			float r_p = r0 - cosTheta * p_r.x;
 			float lambda = abs(pLocal.y) / sinTheta / r_p;
-			transparency = (1.0 - flow*sampleCurve(FalloffCurve, lambda))/transparency0/transparency1;
+			transparency = (1.0 - flow*sampleCurve(FalloffCurve, lambda));
+			transparency = transparency/transparency0/transparency1;
         }
         if(p_r.x >= segmentLength){
             transparency = transparency1/transparency0;
