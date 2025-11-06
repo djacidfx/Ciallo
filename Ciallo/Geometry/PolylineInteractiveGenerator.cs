@@ -109,7 +109,7 @@ public class PolylineInteractiveGenerator
         // Since we can only detect pixel coordinate in grid, less than 3 or 4 pixels gives invalid forward moving direction and speed.
         // One pixel distance is enough for determine if cursor is turning back, but not for forward direction/speed.
         // So we use `_underForwardThreshold` for the minimum distance computing forward movement detection.
-        bool isTurningBack = data.WorldDelta.Normalized().Dot(_latestPoint.WorldDirection) < -1e-5;
+        bool isTurningBack = data.WorldDelta.Normalized().Dot(_latestPoint.WorldDirection) < -1e-5; // When direction is zero vector, Normalized gives zero too.
         if (isTurningBack && !_latestPointIsTurningPoint)
         {
             // Directly process turning back case.
@@ -159,6 +159,7 @@ public class PolylineInteractiveGenerator
         _latestPointIsTurningPoint = false;
         if (!isWinding) Smooth();
     }
+
     private void Smooth()
     {
         const float smoothingFactor = 0.1f;
@@ -254,7 +255,7 @@ public class PolylineInteractiveGenerator
 
     private void InterpolateSegment()
     {
-        if (_positions.Count <= 3) return;
+        if (_positions.Count < 4) return;
         var p0 = _positions[^4];
         var p1 = _positions[^3];
         var p2 = _positions[^2];
