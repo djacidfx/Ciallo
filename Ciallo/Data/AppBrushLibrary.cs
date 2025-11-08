@@ -36,8 +36,11 @@ public static class AppBrushLibrary
         {
             Name = { Value = "High performance".Tr() + " " + "Soft airbrush".Tr() },
             RenderingType = { Value = BrushRenderingType.Airbrush },
+            BaseRadius = { Value = 12f },
             Labels = { BrushLabel.BuiltIn },
-            Color = { Value = new(0, 0, 0, 0.2f) },
+            Color = { Value = new(0, 0, 0, 0.4f) },
+            ActiveBrushFlags = { Value = BrushSetting.BrushFlags.Pressure2Flow },
+            Pressure2FlowCurve = BezierCurve.EaseInOut(),
             FalloffCurve = new([
                 new(new(0, 1), new(-0.25f, 0), new(0.5f, 0)),
                 new(new(1, 0), new(-0.25f, 0), new(0.25f, 0))
@@ -48,8 +51,11 @@ public static class AppBrushLibrary
         {
             Name = { Value = "High performance".Tr() + " " + "Hard airbrush".Tr() },
             RenderingType = { Value = BrushRenderingType.Airbrush },
+            BaseRadius = { Value = 12f },
             Labels = { BrushLabel.BuiltIn },
-            Color = { Value = new(0, 0, 0, 0.3f) },
+            Color = { Value = new(0, 0, 0, 0.9f) },
+            ActiveBrushFlags = { Value = BrushSetting.BrushFlags.Pressure2Flow },
+            Pressure2FlowCurve = BezierCurve.EaseInOut(),
             FalloffCurve = new([
                 new(new(0, 1), new(-0.25f, 0), new(0.65f, 0)),
                 new(new(1, 0), new(0, 0.25f), new(0.25f, 0))
