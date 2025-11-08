@@ -16,7 +16,8 @@ public static class FloatRemap
         return Mathf.Lerp(toMin, toMax, t);
     }
 
-    // Map input to [toMin, toMax] with arbitrary value range, the sensitive range has wider change rate.
+    // Map input to [toMin, toMax], the sensitive range has wider change rate.
+    // Different from SmoothRemap, this can map toMin/toMax even if value is out of sensitive range.
     // Take 95% value domine [-3.6635, 3.6635] as sensitive value range.
     public static float SigmoidRemap(this float value, float sensitiveMin, float sensitiveMax, float toMin, float toMax)
     {
