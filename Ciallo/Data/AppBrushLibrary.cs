@@ -220,8 +220,8 @@ public static class AppBrushLibrary
                 material = new();
                 material.ObserveBrushSetting(setting);
                 materialCache[setting] = material;
-                setting.Pressure2RadiusCurve.Changed.Prepend(new Unit())
-                    .Subscribe(_ => UpdateStrokePreview(preview, setting.Pressure2RadiusCurve)).AddTo(curveChangeSubs);
+                setting.BaseRadius.CombineLatest(setting.Pressure2RadiusCurve.Changed.Prepend(new Unit()), (r, _) => r)
+                    .Subscribe(r => UpdateStrokePreview(preview, setting.Pressure2RadiusCurve, r)).AddTo(curveChangeSubs);
             }
             preview.Material = material;
         }).AddTo(panel);
@@ -309,7 +309,7 @@ public static class AppBrushLibrary
         };
     }
 
-    private static void UpdateStrokePreview(StrokeView view, BezierCurve pressureCurve)
+    private static void UpdateStrokePreview(StrokeView view, BezierCurve pressureCurve, float baseRadius = 0)
     {
         int n = 64;
         float gr = (1 + Mathf.Sqrt(5)) / 2; // golden ratio
@@ -333,9 +333,10 @@ public static class AppBrushLibrary
             .Select(l => (l - midL) / midL * float.Pi * 0.5f)
             .Select(Mathf.Cos)
             .ToImmutableArray();
+        float targetRadius = baseRadius.SigmoidRemap(2.0f, 16f, 0.25f / gr, 0.75f / gr);
         var radii = pressures
             .Select(pressureCurve.SampleX)
-            .Select(radiusRatio => radiusRatio * 0.5f / gr)
+            .Select(radiusRatio => radiusRatio * targetRadius)
             .ToImmutableArray();
         view.SetGeometry(positions, radii, pressures);
     }
