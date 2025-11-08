@@ -63,7 +63,7 @@ public class PaintInteractor : InteractorBase
     public override void Interacting(CursorMotionData data)
     {
         _generator.Update(data);
-        _strokePreview.SetGeometry(_generator.Positions, _generator.Radii);
+        _strokePreview.SetGeometry(_generator.Positions, _generator.Radii, _generator.Pressures);
     }
 
     public override void End(CursorButtonData data)
@@ -77,6 +77,8 @@ public class PaintInteractor : InteractorBase
         {
             Positions = [.._generator.Positions],
             Radii = [.._generator.Radii],
+            Pressures = [.._generator.Pressures],
+            Tilts = [.._generator.Tilts],
         };
         cmd.Combine(new ChangeStrokeBrushCmd(strokeE, _brushE))
             .Combine(new SetPolylineGeometryCmd(strokeE, geom))
