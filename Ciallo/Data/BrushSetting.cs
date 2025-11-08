@@ -16,8 +16,9 @@ public class BrushSetting
     [DataMember] public ReactiveProperty<string> Name = new("");
     [DataMember] public ObservableList<BrushLabel> Labels = [];
     [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
+    [DataMember] public ReactiveProperty<BrushFlags> ActiveBrushFlags = new();
     [DataMember] public ReactiveProperty<float> BaseRadius = new(5.0f);
-    [DataMember] public BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(0.2f, 1.0f); // radius = baseRadius * curve(pressure)
+    [DataMember] public BezierCurve Pressure2RadiusCurve = BezierCurve.Linear(0.2f, 1.0f); // radius = baseRadius * curve(pressure)
     [DataMember] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
     [DataMember] public BezierCurve Pressure2FlowCurve = BezierCurve.Constant(1.0f); // finalFlow = curve(pressure) * Color.a
 
@@ -37,7 +38,6 @@ public class BrushSetting
     [DataMember] public ReactiveProperty<int> RotationNoiseOctave = new(1);
     [DataMember] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
     [DataMember] public ReactiveProperty<float> RotationNoiseFrequency = new(0.01f);
-
 
     // Airbrush
     [DataMember] public BezierCurve FalloffCurve = BezierCurve.Linear(1.0f, 0.0f);
@@ -73,14 +73,16 @@ public class BrushSetting
         container.AddProperty("RGB+Flow", colorPickerButton);
 
         var pp2RadiusCurveEdit = new MappingCurveEdit { MinValue = 0.01f }; // MinValue avoid potential zero radius issue.
-        pp2RadiusCurveEdit.Curve = Pressure2RadiusRatioCurve;
+        pp2RadiusCurveEdit.Curve = Pressure2RadiusCurve;
         var aspectBox = new AspectRatioContainer();
         aspectBox.AddChild(pp2RadiusCurveEdit);
         container.AddProperty("Pressure to radius", aspectBox);
 
         var pp2FlowCurveEdit = new MappingCurveEdit();
         pp2FlowCurveEdit.Curve = Pressure2FlowCurve;
-        container.AddProperty("Pressure to flow", pp2FlowCurveEdit);
+        var flowCurveFlagCheck = new CheckBox();
+        flowCurveFlagCheck.BindFlag(ActiveBrushFlags, BrushFlags.Pressure2FlowCurve);
+        PropertyContainer.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit).AddToChildOf(container);
 
         var typeButton = new OptionButton();
         typeButton.BindEnum(RenderingType);
@@ -200,7 +202,7 @@ public class BrushSetting
     public Func<CursorMotionData, float> ToRadiusSampler()
     {
         var baseRadius = BaseRadius.Value;
-        var curve = Pressure2RadiusRatioCurve;
+        var curve = Pressure2RadiusCurve;
         return data => baseRadius * curve.SampleX(data.Pressure);
     }
 
@@ -210,6 +212,13 @@ public class BrushSetting
         StampTexture = 1 << 0,
         MaskTexture = 1 << 1,
         RotationNoise = 1 << 2,
+    }
+
+    [Flags]
+    public enum BrushFlags
+    {
+        Pressure2FlowCurve = 1 << 0,
+        Dash = 1 << 1,
     }
 }
 

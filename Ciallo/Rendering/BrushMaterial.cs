@@ -41,6 +41,8 @@ public partial class BrushMaterial : ShaderMaterial
         setting.DashLength.Subscribe(length => SetShaderParameter("DashLength", length)).AddTo(Subs);
         setting.GapLength.Subscribe(length => SetShaderParameter("GapLength", length)).AddTo(Subs);
         setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("DashForwardSpeed", speed)).AddTo(Subs);
+        // Brush-level flags
+        setting.ActiveBrushFlags.Subscribe(value => SetShaderParameter("ActiveBrushFlags", (int)value)).AddTo(Subs);
         var pp2FlowTex = ImageTexture.CreateFromImage(BakeCurve(setting.Pressure2FlowCurve));
         setting.Pressure2FlowCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
         {

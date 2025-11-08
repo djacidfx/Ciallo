@@ -12,6 +12,12 @@ struct StampFlag {
 };
 const StampFlag StampFlags = StampFlag(1 << 0, 1 << 1, 1 << 2);
 
+struct BrushFlag {
+    int Pressure2FlowCurve;
+    int Dash;
+};
+const BrushFlag BrushFlags = BrushFlag(1 << 0, 1 << 1);
+
 uniform int StrokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
 uniform vec4 MaterialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
@@ -24,6 +30,8 @@ uniform float GapLength = -1.0;
 uniform float DashForwardSpeed = 0.0;
 // Pen pressure map curve
 uniform sampler2D Pressure2FlowCurve;
+// Brush-level flags
+uniform int ActiveBrushFlags = 0;
 
 // ------stamp parameters-----------
 //// Fail to compile:
@@ -196,7 +204,7 @@ void fragment() {
 
 	float t = mix(pp0, pp1, p_r.x/segmentLength);
 	t = clamp(t, 0.0, 1.0);
-	float flowRatio = sampleCurve(Pressure2FlowCurve, t);
+	float flowRatio = ((ActiveBrushFlags & BrushFlags.Pressure2FlowCurve) != 0) ? sampleCurve(Pressure2FlowCurve, t) : 1.0;
 
 	/*----------------------------------------------------------*/
 	if(StrokeType == Vanilla){

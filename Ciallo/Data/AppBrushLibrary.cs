@@ -220,8 +220,8 @@ public static class AppBrushLibrary
                 material = new();
                 material.ObserveBrushSetting(setting);
                 materialCache[setting] = material;
-                setting.Pressure2RadiusRatioCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
-                    UpdateStrokePreview(preview, setting.Pressure2RadiusRatioCurve)).AddTo(curveChangeSubs);
+                setting.Pressure2RadiusCurve.Changed.Prepend(new Unit())
+                    .Subscribe(_ => UpdateStrokePreview(preview, setting.Pressure2RadiusCurve)).AddTo(curveChangeSubs);
             }
             preview.Material = material;
         }).AddTo(panel);
