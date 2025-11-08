@@ -23,8 +23,8 @@ public class BrushSetting
     [DataMember] public BezierCurve Pressure2FlowCurve = BezierCurve.Constant(1.0f); // finalFlow = curve(pressure) * Color.a
 
     // Vanilla
-    [DataMember] public ReactiveProperty<float> DashLength = new(-1.0f);
-    [DataMember] public ReactiveProperty<float> GapLength = new(-1.0f);
+    [DataMember] public ReactiveProperty<float> DashLength = new(2.0f);
+    [DataMember] public ReactiveProperty<float> GapLength = new(2.0f);
     [DataMember] public ReactiveProperty<float> DashForwardSpeed = new(0.0f);
 
     // Stamp
@@ -81,7 +81,7 @@ public class BrushSetting
         var pp2FlowCurveEdit = new MappingCurveEdit();
         pp2FlowCurveEdit.Curve = Pressure2FlowCurve;
         var flowCurveFlagCheck = new CheckBox();
-        flowCurveFlagCheck.BindFlag(ActiveBrushFlags, BrushFlags.Pressure2FlowCurve);
+        flowCurveFlagCheck.BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
         PropertyContainer.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit).AddToChildOf(container);
 
         var typeButton = new OptionButton();
@@ -217,7 +217,7 @@ public class BrushSetting
     [Flags]
     public enum BrushFlags
     {
-        Pressure2FlowCurve = 1 << 0,
+        Pressure2Flow = 1 << 0,
         Dash = 1 << 1,
     }
 }

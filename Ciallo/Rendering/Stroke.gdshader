@@ -19,6 +19,7 @@ struct BrushFlag {
 const BrushFlag BrushFlags = BrushFlag(1 << 0, 1 << 1);
 
 uniform int StrokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
+uniform int ActiveBrushFlags = 0;
 uniform vec4 MaterialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
 // Canvas mode is used for drawing wireframe
@@ -30,8 +31,6 @@ uniform float GapLength = -1.0;
 uniform float DashForwardSpeed = 0.0;
 // Pen pressure map curve
 uniform sampler2D Pressure2FlowCurve;
-// Brush-level flags
-uniform int ActiveBrushFlags = 0;
 
 // ------stamp parameters-----------
 //// Fail to compile:
@@ -327,7 +326,7 @@ void fragment() {
 	}
 
 	// Dash
-	if(DashLength > 0.0){
+	if((ActiveBrushFlags & BrushFlags.Dash) != 0){
 		float unitLength = DashLength + (GapLength > 0.0 ? GapLength : DashLength);
 		float pixelN = x2n(pLocal.x) + n0;
 		if(mod(pixelN + TIME * DashForwardSpeed, unitLength) > DashLength) discard;

@@ -11,21 +11,6 @@ public partial class BrushMaterial : ShaderMaterial
 {
     public CompositeDisposable Subs;
 
-    private static BrushMaterial _missingBrushMaterial;
-    public static BrushMaterial MissingBrushMaterial
-    {
-        get
-        {
-            if (_missingBrushMaterial != null) return _missingBrushMaterial;
-            var m = _missingBrushMaterial = new();
-            m.SetShaderParameter("StrokeType", 0);
-            m.SetShaderParameter("MaterialColor", Colors.Crimson);
-            m.SetShaderParameter("DashLength", 5f);
-            m.SetShaderParameter("DashForwardSpeed", 7f);
-            return m;
-        }
-    }
-
     public BrushMaterial()
     {
         Shader = AutoloadRendering.StrokeShader;

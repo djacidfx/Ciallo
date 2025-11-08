@@ -30,7 +30,7 @@ public class NewStrokeCmd : CommandBase
         // View
         var strokeView = new StrokeView()
         {
-            Material = BrushMaterial.MissingBrushMaterial,
+            Material = AutoloadRendering.MissingBrushMaterial,
         };
         var layerView = _layerE.Get<PolylineLayerView>();
         layerView.AddChild(strokeView);
