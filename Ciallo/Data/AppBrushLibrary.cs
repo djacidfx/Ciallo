@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -142,6 +143,7 @@ public static class AppBrushLibrary
 
         HashSet<string> seenNames = new();
         // Save
+        List<string> fileNames = [];
         foreach (var brush in BrushSettings)
         {
             var name = SanitizeFileName(brush.Name.Value);
@@ -158,7 +160,10 @@ public static class AppBrushLibrary
             var content = MessagePackSerializer.Serialize(brush);
             using var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
             file.StoreBuffer(content);
+            fileNames.Add(name);
         }
+        using var manifest = FileAccess.Open(BrushFolder + "manifest", FileAccess.ModeFlags.Write);
+        manifest.StoreBuffer(MessagePackSerializer.Serialize(fileNames));
     }
 
     public static bool TryLoad()
@@ -167,26 +172,49 @@ public static class AppBrushLibrary
         using var baseDir = DirAccess.Open("user://");
         if (!baseDir.DirExists("Brush")) return false;
 
+        // Get manifest
+        List<string> manifestFileNames = [];
+        if (FileAccess.FileExists(BrushFolder + "manifest"))
+        {
+            using var file = FileAccess.Open(BrushFolder + "manifest", FileAccess.ModeFlags.Read);
+            var manifestByte = file.GetBuffer((long)file.GetLength());
+            manifestFileNames = MessagePackSerializer.Deserialize<List<string>>(manifestByte);
+        }
+        
         // List files
         using var brushDir = DirAccess.Open(BrushFolder);
-        var files = new List<string>();
+        var fileNames = new List<string>();
         brushDir.ListDirBegin();
         string fileEntry;
         while ((fileEntry = brushDir.GetNext()) != "")
             if (fileEntry.EndsWith(".bin"))
-                files.Add(fileEntry);
+                fileNames.Add(fileEntry.GetBaseName());
         brushDir.ListDirEnd();
 
-        if (files.Count == 0) return false;
+        if (fileNames.Count == 0) return false;
 
         // Load
         BrushSettings.Clear();
-        foreach (var fn in files)
+        BrushSettings.AddRange(Enumerable.Repeat<BrushSetting>(null, manifestFileNames.Count));
+        
+        foreach (var fn in fileNames)
         {
-            using var file = FileAccess.Open(BrushFolder + fn, FileAccess.ModeFlags.Read);
+            using var file = FileAccess.Open(BrushFolder + fn + ".bin", FileAccess.ModeFlags.Read);
             var content = file.GetBuffer((long)file.GetLength());
-            var brush = MessagePackSerializer.Deserialize<BrushSetting>(content);
-            BrushSettings.Add(brush);
+            BrushSetting brush;
+            try
+            {
+                brush = MessagePackSerializer.Deserialize<BrushSetting>(content);
+            }
+            catch (Exception _)
+            {
+                continue;
+            }
+            var index = manifestFileNames.IndexOf(fn);
+            if(index >= 0)
+                BrushSettings[index] = brush;
+            else
+                BrushSettings.Add(brush);
         }
         return true;
     }
@@ -226,6 +254,7 @@ public static class AppBrushLibrary
                 material = new();
                 material.ObserveBrushSetting(setting);
                 materialCache[setting] = material;
+
                 setting.BaseRadius.CombineLatest(setting.Pressure2RadiusCurve.Changed.Prepend(new Unit()), (r, _) => r)
                     .Subscribe(r => UpdateStrokePreview(preview, setting.Pressure2RadiusCurve, r)).AddTo(curveChangeSubs);
             }

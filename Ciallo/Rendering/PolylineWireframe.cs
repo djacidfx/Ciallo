@@ -30,7 +30,7 @@ public partial class PolylineWireframe : Node2D
 
     public void SetColor(Color color)
     {
-        Wireframe.SetInstanceShaderParameter("overridingColor", color);
+        Wireframe.SetInstanceShaderParameter("OverridingColor", color);
         for (int i = 0; i < Dots.Multimesh.InstanceCount; i++)
         {
             Dots.Multimesh.SetInstanceColor(i, color);
