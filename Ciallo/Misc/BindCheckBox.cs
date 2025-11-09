@@ -4,7 +4,7 @@ using R3;
 
 namespace Ciallo.Misc;
 
-public static class BindToggleButton
+public static class BindCheckBox
 {
     private static void BindBool(this BaseButton button, ReactiveProperty<bool> property, out CompositeDisposable subs)
     {
@@ -40,8 +40,6 @@ public static class BindToggleButton
 
         // reflect enum bits to checkbox pressed state
         property.Subscribe(value => checkBox.ButtonPressed = value.HasFlag(mask)).AddTo(subs);
-
-        // update enum bits when checkbox toggled (use dynamic to keep it generic and avoid integer conversions)
         checkBox
             .OnToggledAsObservable()
             .Subscribe(pressed =>

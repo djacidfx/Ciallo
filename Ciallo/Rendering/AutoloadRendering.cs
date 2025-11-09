@@ -37,7 +37,7 @@ public partial class AutoloadRendering : Node
         MissingBrushMaterial.SetShaderParameter("MaterialColor", Colors.Crimson);
         MissingBrushMaterial.SetShaderParameter("ActiveBrushFlags", (int)BrushSetting.BrushFlags.Dash);
         MissingBrushMaterial.SetShaderParameter("DashLength", 5f);
-        DashWireframeMaterial.SetShaderParameter("GapLength", 5f);
+        MissingBrushMaterial.SetShaderParameter("GapLength", 5f);
         MissingBrushMaterial.SetShaderParameter("DashForwardSpeed", 7f);
     }
 
