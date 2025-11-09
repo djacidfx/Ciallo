@@ -16,26 +16,28 @@ public class BrushSetting
     [DataMember] public ReactiveProperty<string> Name = new("");
     [DataMember] public ObservableList<BrushLabel> Labels = [];
     [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
+    [DataMember] public ReactiveProperty<BrushFlags> ActiveBrushFlags = new();
     [DataMember] public ReactiveProperty<float> BaseRadius = new(5.0f);
-    [DataMember] public BezierCurve Pressure2RadiusRatioCurve = BezierCurve.Linear(0.2f, 1.0f); // radius = baseRadius * curve(pressure)
+    [DataMember] public BezierCurve Pressure2RadiusCurve = BezierCurve.Linear(0.2f, 1.0f); // radius = baseRadius * curve(pressure)
     [DataMember] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
     [DataMember] public BezierCurve Pressure2FlowCurve = BezierCurve.Constant(1.0f); // finalFlow = curve(pressure) * Color.a
 
     // Vanilla
-    [DataMember] public ReactiveProperty<float> DashLength = new(-1.0f);
-    [DataMember] public ReactiveProperty<float> GapLength = new(-1.0f);
+    [DataMember] public ReactiveProperty<float> DashLength = new(2.0f);
+    [DataMember] public ReactiveProperty<float> GapLength = new(2.0f);
     [DataMember] public ReactiveProperty<float> DashForwardSpeed = new(0.0f);
 
     // Stamp
+    [DataMember] public ReactiveProperty<StampFlags> ActiveStampFlags = new();
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
     [DataMember] public ImageTexture StampTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
-    [DataMember] public ImageTexture MultiplyTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
+
+    [DataMember] public ImageTexture MaskTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
 
     [DataMember] public ReactiveProperty<int> RotationNoiseOctave = new(1);
     [DataMember] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
     [DataMember] public ReactiveProperty<float> RotationNoiseFrequency = new(0.01f);
-
 
     // Airbrush
     [DataMember] public BezierCurve FalloffCurve = BezierCurve.Linear(1.0f, 0.0f);
@@ -71,20 +73,26 @@ public class BrushSetting
         container.AddProperty("RGB+Flow", colorPickerButton);
 
         var pp2RadiusCurveEdit = new MappingCurveEdit { MinValue = 0.01f }; // MinValue avoid potential zero radius issue.
-        pp2RadiusCurveEdit.Curve = Pressure2RadiusRatioCurve;
+        pp2RadiusCurveEdit.Curve = Pressure2RadiusCurve;
         var aspectBox = new AspectRatioContainer();
         aspectBox.AddChild(pp2RadiusCurveEdit);
         container.AddProperty("Pressure to radius", aspectBox);
 
         var pp2FlowCurveEdit = new MappingCurveEdit();
         pp2FlowCurveEdit.Curve = Pressure2FlowCurve;
-        container.AddProperty("Pressure to flow", pp2FlowCurveEdit);
+        var flowCurveFlagCheck = new CheckBox();
+        flowCurveFlagCheck.BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
+        PropertyContainer.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit).AddToChildOf(container);
 
         var typeButton = new OptionButton();
         typeButton.BindEnum(RenderingType);
         container.AddProperty("Rendering type", typeButton);
 
-        // Stamp
+        // ---------Stamp------------ 
+        var stampBox = new VBoxContainer();
+        stampBox.VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        container.AddChild(stampBox);
+
         var stampIntervalControl = new SpinSlider
         {
             MinValue = 1f / 64,
@@ -95,16 +103,17 @@ public class BrushSetting
             AllowGreater = true,
         };
         stampIntervalControl.BindNumber(StampInterval);
-        container.AddProperty("Interval", stampIntervalControl)
-            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        PropertyContainer.CreatePropertyControl("Interval", stampIntervalControl).AddToChildOf(stampBox);
 
+        var stampTextureFlagCheck = new CheckBox();
+        stampTextureFlagCheck.BindFlag(ActiveStampFlags, StampFlags.StampTexture);
         var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage);
-        container.AddProperty("Stamp texture", stampTextureEdit)
-            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        PropertyContainer.CreateCheckBoxCombo("Stamp texture", stampTextureFlagCheck, stampTextureEdit).AddToChildOf(stampBox);
 
-        var multiplyTextureEdit = ImageTextureEdit.Instantiate(MultiplyTexture, ConvertStampImage);
-        container.AddProperty("Mask texture", multiplyTextureEdit)
-            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        var maskTextureFlagCheck = new CheckBox();
+        maskTextureFlagCheck.BindFlag(ActiveStampFlags, StampFlags.MaskTexture);
+        var maskTextureEdit = ImageTextureEdit.Instantiate(MaskTexture, ConvertStampImage);
+        PropertyContainer.CreateCheckBoxCombo("Mask texture", maskTextureFlagCheck, maskTextureEdit).AddToChildOf(stampBox);
 
         var stampRotationControl = new SpinSlider
         {
@@ -115,8 +124,12 @@ public class BrushSetting
         var degreeView = StampRotation.Project(Mathf.RadToDeg, Mathf.DegToRad, out var subs);
         subs.AddTo(stampRotationControl);
         stampRotationControl.BindNumber(degreeView);
-        container.AddProperty("Rotation", stampRotationControl)
-            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        PropertyContainer.CreatePropertyControl("Stamp rotation", stampRotationControl).AddToChildOf(stampBox);
+
+        var rotationNoiseFlagCheck = new CheckBox();
+        rotationNoiseFlagCheck.BindFlag(ActiveStampFlags, StampFlags.RotationNoise);
+        var rotationNoiseBox = new VBoxContainer();
+        PropertyContainer.CreateCheckBoxCombo("Rotation noise", rotationNoiseFlagCheck, rotationNoiseBox).AddToChildOf(stampBox);
 
         var noiseOctaveControl = new SpinSlider()
         {
@@ -127,8 +140,7 @@ public class BrushSetting
             Rounded = true,
         };
         noiseOctaveControl.BindNumber(RotationNoiseOctave);
-        container.AddProperty("Rotation noise octave", noiseOctaveControl)
-            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        PropertyContainer.CreatePropertyControl("Rotation noise octave", noiseOctaveControl).AddToChildOf(rotationNoiseBox);
 
         var rotationNoiseAmplitudeControl = new SpinSlider
         {
@@ -137,8 +149,7 @@ public class BrushSetting
             Step = 0.01,
         };
         rotationNoiseAmplitudeControl.BindNumber(RotationNoiseAmplitude);
-        container.AddProperty("Rotation noise amplitude", rotationNoiseAmplitudeControl)
-            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        PropertyContainer.CreatePropertyControl("Rotation noise amplitude", rotationNoiseAmplitudeControl).AddToChildOf(rotationNoiseBox);
 
         var rotationNoiseFrequencyControl = new SpinSlider
         {
@@ -149,10 +160,9 @@ public class BrushSetting
             ExpEdit = true,
         };
         rotationNoiseFrequencyControl.BindNumber(RotationNoiseFrequency);
-        container.AddProperty("Rotation noise frequency", rotationNoiseFrequencyControl)
-            .VisibleIf(RenderingType, BrushRenderingType.Stamp);
+        PropertyContainer.CreatePropertyControl("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
 
-        // Airbrush
+        // ---------Airbrush----------
         var falloffCurveEdit = new MappingCurveEdit();
         falloffCurveEdit.Curve = FalloffCurve;
         container.AddProperty("Opacity falloff", falloffCurveEdit)
@@ -192,8 +202,23 @@ public class BrushSetting
     public Func<CursorMotionData, float> ToRadiusSampler()
     {
         var baseRadius = BaseRadius.Value;
-        var curve = Pressure2RadiusRatioCurve;
+        var curve = Pressure2RadiusCurve;
         return data => baseRadius * curve.SampleX(data.Pressure);
+    }
+
+    [Flags]
+    public enum StampFlags
+    {
+        StampTexture = 1 << 0,
+        MaskTexture = 1 << 1,
+        RotationNoise = 1 << 2,
+    }
+
+    [Flags]
+    public enum BrushFlags
+    {
+        Pressure2Flow = 1 << 0,
+        Dash = 1 << 1,
     }
 }
 

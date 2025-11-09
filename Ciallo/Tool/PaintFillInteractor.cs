@@ -32,13 +32,13 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
 
     public override void Start(CursorButtonData data)
     {
+        _generator.Start(data);
+
         _dashPreview = new StrokeView();
         _dashPreview.Material = AutoloadRendering.DashWireframeMaterial;
         var layerE = SelectionManager.WorkingLayer.Value;
         var layerView = layerE.Get<PolylineLayerView>();
         layerView.AddChild(_dashPreview);
-
-        _generator.Start(data);
     }
 
     public override void Interacting(CursorMotionData data)
@@ -50,6 +50,7 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
 
     public override void End(CursorButtonData data)
     {
+        _generator.End(data);
         var layerE = SelectionManager.WorkingLayer.Value;
         var setting = new FilledPolygonSetting() { Color = { Value = tool.Color.Value } };
         var cmd = new NewFilledPolygonCmd(layerE, setting);

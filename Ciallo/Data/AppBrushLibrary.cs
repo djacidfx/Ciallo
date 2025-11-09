@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
@@ -36,8 +37,11 @@ public static class AppBrushLibrary
         {
             Name = { Value = "High performance".Tr() + " " + "Soft airbrush".Tr() },
             RenderingType = { Value = BrushRenderingType.Airbrush },
+            BaseRadius = { Value = 12f },
             Labels = { BrushLabel.BuiltIn },
-            Color = { Value = new(0, 0, 0, 0.2f) },
+            Color = { Value = new(0, 0, 0, 0.4f) },
+            ActiveBrushFlags = { Value = BrushSetting.BrushFlags.Pressure2Flow },
+            Pressure2FlowCurve = BezierCurve.EaseInOut(),
             FalloffCurve = new([
                 new(new(0, 1), new(-0.25f, 0), new(0.5f, 0)),
                 new(new(1, 0), new(-0.25f, 0), new(0.25f, 0))
@@ -48,8 +52,11 @@ public static class AppBrushLibrary
         {
             Name = { Value = "High performance".Tr() + " " + "Hard airbrush".Tr() },
             RenderingType = { Value = BrushRenderingType.Airbrush },
+            BaseRadius = { Value = 12f },
             Labels = { BrushLabel.BuiltIn },
-            Color = { Value = new(0, 0, 0, 0.3f) },
+            Color = { Value = new(0, 0, 0, 0.9f) },
+            ActiveBrushFlags = { Value = BrushSetting.BrushFlags.Pressure2Flow },
+            Pressure2FlowCurve = BezierCurve.EaseInOut(),
             FalloffCurve = new([
                 new(new(0, 1), new(-0.25f, 0), new(0.65f, 0)),
                 new(new(1, 0), new(0, 0.25f), new(0.25f, 0))
@@ -74,9 +81,10 @@ public static class AppBrushLibrary
             RenderingType = { Value = BrushRenderingType.Stamp },
             Labels = { BrushLabel.BuiltIn },
             Color = { Value = new(0, 0, 0, 0.5f) },
+            ActiveStampFlags = { Value = BrushSetting.StampFlags.StampTexture | BrushSetting.StampFlags.MaskTexture | BrushSetting.StampFlags.RotationNoise },
             StampTexture = ImageTexture.CreateFromImage(images[0]),
             StampInterval = { Value = 0.2f },
-            MultiplyTexture = ImageTexture.CreateFromImage(images[2]),
+            MaskTexture = ImageTexture.CreateFromImage(images[2]),
             RotationNoiseAmplitude = { Value = 8 * Mathf.Pi },
             RotationNoiseFrequency = { Value = 0.343234f },
         });
@@ -86,6 +94,7 @@ public static class AppBrushLibrary
             Name = { Value = "Splatter".Tr() },
             RenderingType = { Value = BrushRenderingType.Stamp },
             Labels = { BrushLabel.BuiltIn },
+            ActiveStampFlags = { Value = BrushSetting.StampFlags.StampTexture | BrushSetting.StampFlags.RotationNoise },
             StampTexture = ImageTexture.CreateFromImage(images[1]),
             RotationNoiseAmplitude = { Value = Mathf.Pi },
             RotationNoiseFrequency = { Value = 0.5f },
@@ -134,6 +143,7 @@ public static class AppBrushLibrary
 
         HashSet<string> seenNames = new();
         // Save
+        List<string> fileNames = [];
         foreach (var brush in BrushSettings)
         {
             var name = SanitizeFileName(brush.Name.Value);
@@ -150,7 +160,10 @@ public static class AppBrushLibrary
             var content = MessagePackSerializer.Serialize(brush);
             using var file = FileAccess.Open(path, FileAccess.ModeFlags.Write);
             file.StoreBuffer(content);
+            fileNames.Add(name);
         }
+        using var manifest = FileAccess.Open(BrushFolder + "manifest", FileAccess.ModeFlags.Write);
+        manifest.StoreBuffer(MessagePackSerializer.Serialize(fileNames));
     }
 
     public static bool TryLoad()
@@ -159,26 +172,49 @@ public static class AppBrushLibrary
         using var baseDir = DirAccess.Open("user://");
         if (!baseDir.DirExists("Brush")) return false;
 
+        // Get manifest
+        List<string> manifestFileNames = [];
+        if (FileAccess.FileExists(BrushFolder + "manifest"))
+        {
+            using var file = FileAccess.Open(BrushFolder + "manifest", FileAccess.ModeFlags.Read);
+            var manifestByte = file.GetBuffer((long)file.GetLength());
+            manifestFileNames = MessagePackSerializer.Deserialize<List<string>>(manifestByte);
+        }
+        
         // List files
         using var brushDir = DirAccess.Open(BrushFolder);
-        var files = new List<string>();
+        var fileNames = new List<string>();
         brushDir.ListDirBegin();
         string fileEntry;
         while ((fileEntry = brushDir.GetNext()) != "")
             if (fileEntry.EndsWith(".bin"))
-                files.Add(fileEntry);
+                fileNames.Add(fileEntry.GetBaseName());
         brushDir.ListDirEnd();
 
-        if (files.Count == 0) return false;
+        if (fileNames.Count == 0) return false;
 
         // Load
         BrushSettings.Clear();
-        foreach (var fn in files)
+        BrushSettings.AddRange(Enumerable.Repeat<BrushSetting>(null, manifestFileNames.Count));
+        
+        foreach (var fn in fileNames)
         {
-            using var file = FileAccess.Open(BrushFolder + fn, FileAccess.ModeFlags.Read);
+            using var file = FileAccess.Open(BrushFolder + fn + ".bin", FileAccess.ModeFlags.Read);
             var content = file.GetBuffer((long)file.GetLength());
-            var brush = MessagePackSerializer.Deserialize<BrushSetting>(content);
-            BrushSettings.Add(brush);
+            BrushSetting brush;
+            try
+            {
+                brush = MessagePackSerializer.Deserialize<BrushSetting>(content);
+            }
+            catch (Exception _)
+            {
+                continue;
+            }
+            var index = manifestFileNames.IndexOf(fn);
+            if(index >= 0)
+                BrushSettings[index] = brush;
+            else
+                BrushSettings.Add(brush);
         }
         return true;
     }
@@ -218,8 +254,9 @@ public static class AppBrushLibrary
                 material = new();
                 material.ObserveBrushSetting(setting);
                 materialCache[setting] = material;
-                setting.Pressure2RadiusRatioCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
-                    UpdateStrokePreview(preview, setting.Pressure2RadiusRatioCurve)).AddTo(curveChangeSubs);
+
+                setting.BaseRadius.CombineLatest(setting.Pressure2RadiusCurve.Changed.Prepend(new Unit()), (r, _) => r)
+                    .Subscribe(r => UpdateStrokePreview(preview, setting.Pressure2RadiusCurve, r)).AddTo(curveChangeSubs);
             }
             preview.Material = material;
         }).AddTo(panel);
@@ -307,7 +344,7 @@ public static class AppBrushLibrary
         };
     }
 
-    private static void UpdateStrokePreview(StrokeView view, BezierCurve pressureCurve)
+    private static void UpdateStrokePreview(StrokeView view, BezierCurve pressureCurve, float baseRadius = 0)
     {
         int n = 64;
         float gr = (1 + Mathf.Sqrt(5)) / 2; // golden ratio
@@ -331,9 +368,10 @@ public static class AppBrushLibrary
             .Select(l => (l - midL) / midL * float.Pi * 0.5f)
             .Select(Mathf.Cos)
             .ToImmutableArray();
+        float targetRadius = baseRadius.SigmoidRemap(2.0f, 16f, 0.25f / gr, 0.75f / gr);
         var radii = pressures
             .Select(pressureCurve.SampleX)
-            .Select(radiusRatio => radiusRatio * 0.5f / gr)
+            .Select(radiusRatio => radiusRatio * targetRadius)
             .ToImmutableArray();
         view.SetGeometry(positions, radii, pressures);
     }

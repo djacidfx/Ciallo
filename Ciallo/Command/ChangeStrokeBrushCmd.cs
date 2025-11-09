@@ -16,13 +16,13 @@ public class ChangeStrokeBrushCmd(Entity strokeE, Entity newBrushE) : CommandBas
         wrapper.Value = newBrushE;
 
         // View
-        strokeE.Get<StrokeView>().Material = !newBrushE.IsNull ? newBrushE.Get<BrushMaterial>() : BrushMaterial.MissingBrushMaterial;
+        strokeE.Get<StrokeView>().Material = !newBrushE.IsNull ? newBrushE.Get<BrushMaterial>() : AutoloadRendering.MissingBrushMaterial;
     }
 
     public override void Undo()
     {
         // View
-        strokeE.Get<StrokeView>().Material = !_oldBrushE.IsNull ? _oldBrushE.Get<BrushMaterial>() : BrushMaterial.MissingBrushMaterial;
+        strokeE.Get<StrokeView>().Material = !_oldBrushE.IsNull ? _oldBrushE.Get<BrushMaterial>() : AutoloadRendering.MissingBrushMaterial;
 
         // Data
         var wrapper = strokeE.Get<StrokeBrush>();

@@ -119,4 +119,10 @@ public static class GodotNodeExtension
         }
         return descendants;
     }
+
+    public static TNode AddToChildOf<TNode>(this TNode child, Node parent) where TNode : Node
+    {
+        parent.AddChild(child);
+        return child;
+    }
 }

@@ -27,20 +27,52 @@ public partial class PropertyContainer : VBoxContainer
 
     public static Container CreatePropertyControl(string name, [NotNull] Control control)
     {
-        var box = new VBoxContainer()
-        {
-            Name = name,
-        };
-        box.AddThemeConstantOverride("v_separation", 5);
+        // Note: If a control's CustomMinimumSize is zero, it will never be wrapped in FlowContainer.
+        var box = CreateItemContainer();
         box.AddChild(new Label
         {
             Text = name,
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Left,
             SizeFlagsVertical = SizeFlags.ShrinkBegin,
+            CustomMinimumSize = new(150, 0),
         });
         control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         box.AddChild(control);
+
+        if (control is not CheckBox)
+        {
+            var controlMinSize = control.CustomMinimumSize.Max(new Vector2(150, 30));
+            control.CustomMinimumSize = controlMinSize;
+        }
         return box;
+    }
+
+    private static Container CreateItemContainer()
+    {
+        var box = new HFlowContainer()
+        {
+        };
+        box.AddThemeConstantOverride("h_separation", 15);
+        return box;
+    }
+
+    /// <summary>
+    /// Control is visible if checkBox is pressed.
+    /// </summary>
+    public static Container CreateCheckBoxCombo(string name, CheckBox checkBox, Control control)
+    {
+        control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        control.Visible = checkBox.IsPressed();
+
+        checkBox.Pressed += () => control.Visible = checkBox.IsPressed();
+        checkBox.Text = name;
+        // checkBox.IconAlignment = HorizontalAlignment.Right; // This not work. Bug? 
+        checkBox.SizeFlagsVertical = SizeFlags.ShrinkBegin;
+
+        var container = CreateItemContainer();
+        container.AddChild(checkBox);
+        container.AddChild(control);
+        return container;
     }
 }
