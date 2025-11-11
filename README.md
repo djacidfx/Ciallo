@@ -14,7 +14,11 @@ It aims to compete with traditional raster painting software like Photoshop and 
 ## Unique features
 ### Vectorized Photoshop-like brushes
 
-Resolution-independent, Photoshop-like brushes: The brushes are entirely drawn (rendered) on your graphics card GPU. This technique is researched by the developer ([Shen Ciao]).
+Resolution-independent, Photoshop-like brushes:
+
+![Airbrush](https://github.com/user-attachments/assets/24016337-9c38-4b0d-a421-e6dbd2caccff)
+
+The brushes are entirely drawn (rendered) on your graphics card GPU. This technique is researched by the developer ([Shen Ciao]).
 
 ### Vector fill
 
@@ -58,7 +62,7 @@ Do you really need this feature? Tell me how to add more support to this.")
 
 ## Download (Free on all platforms)
 
-Steam | Itch.io
+[Steam](https://store.steampowered.com/app/3973810) | [Itch.io](https://shenciao.itch.io/ciallo)
 
 System requirements:
 Require a system can run small to middle size 3D games.
