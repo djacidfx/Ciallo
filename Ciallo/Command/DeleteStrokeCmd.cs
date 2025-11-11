@@ -10,13 +10,13 @@ public class DeleteStrokeCmd : CommandBase
 {
     private Entity _strokeE;
 
-    private StrokeView _strokeView;
-    private PolylineWireframe _strokeOverlay;
-    private CursorDetectionArea _strokeArea;
-    private StrokeBrush _strokeBrush;
+    private readonly StrokeView _strokeView;
+    private readonly PolylineWireframe _strokeOverlay;
+    private readonly CursorDetectionArea _strokeArea;
+    private readonly StrokeBrush _strokeBrush;
 
-    private Entity _parentE; // layer entity
-    private int _index;
+    private readonly Entity _parentE; // layer entity
+    private readonly int _index;
 
     public DeleteStrokeCmd(Entity strokeE)
     {
