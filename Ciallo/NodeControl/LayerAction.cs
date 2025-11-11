@@ -25,7 +25,7 @@ public partial class LayerAction : Control
         var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
         var nextLayerPath = document.Get<LayerTreeNode>().GetNextFocusPathAfterDeletion(workingLayerPath);
 
-        SetWorkingLayerCmd cmd = nextLayerPath.IsEmpty ? new(new Entity()) : new(nextLayerPath.Single());
+        SetWorkingLayerCmd cmd = nextLayerPath.IsEmpty ? new(Entity.Null) : new(nextLayerPath.Single());
         cmd.Combine(new DeletePolylineLayerCmd(workingLayerE)).Commit();
     }
 

@@ -9,64 +9,66 @@ namespace Ciallo.Command;
 
 public class DeletePolylineLayerCmd : CommandBase
 {
-    private Entity _targetE;
-    private int _targetIndex;
-    private readonly List<Node> _refNodes = [];
+    private Entity _layerE;
+    private Entity _parentE;
+    private int _originalIndex;
 
-    public DeletePolylineLayerCmd(Entity targetE)
+    private PolylineLayerView _layerView;
+    private PolylineAreaHolder _areaHolder;
+
+    public DeletePolylineLayerCmd(Entity layerE)
     {
         // Hierarchy not implemented, always remove from root.
-        _targetE = targetE;
-        _targetIndex = Document.Get<LayerTreeNode>().FindPathTo(_targetE).Single();
+        _layerE = layerE;
+        _originalIndex = Document.Get<LayerTreeNode>().FindPathTo(_layerE).Single();
+
+        _layerView = _layerE.Get<PolylineLayerView>();
+        _areaHolder = _layerE.Get<PolylineAreaHolder>();
     }
 
-    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_targetE);
-    public override IEnumerable<GodotObject> UndoRefObjects => _refNodes;
+    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_layerE);
+    public override IEnumerable<GodotObject> UndoRefObjects => new List<GodotObject> { _layerView, _areaHolder };
 
     public override void Do()
     {
         // Data
         // TODO: Remove children's ToSerializeTag.
-        var root = Document.Get<LayerTreeNode>();
-        root.RemoveChild(_targetIndex);
-        _targetE.Detach<ToSerializeTag>();
+        _parentE = _layerE.Get<LayerTreeNode>().Parent;
+        _parentE.Get<LayerTreeNode>().RemoveChild(_originalIndex);
+        _layerE.Detach<ToSerializeTag>();
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.RemoveFree(_targetE);
+        layerTreeControl.RemoveFree(_layerE);
 
         // View
-        var worldView = Document.Get<WorldView>();
-        var node = worldView.GetChild(_targetIndex);
-        worldView.RemoveChild(node);
-        if (_refNodes.Count == 0) _refNodes.Add(node);
+        _layerView.RemoveFromParent();
+        _layerE.Remove<PolylineLayerView>();
 
-        // Overlay
-        var worldOverlay = Document.Get<WorldOverlay>();
-        var overlayNode = worldOverlay.GetChild(_targetIndex);
-        worldOverlay.RemoveChild(overlayNode);
-        if (_refNodes.Count == 1) _refNodes.Add(overlayNode);
+        // Cursor detection
+        _areaHolder.RemoveFromParent();
+        _layerE.Remove<PolylineAreaHolder>();
     }
 
     public override void Undo()
     {
-        // Overlay
-        var worldOverlay = Document.Get<WorldOverlay>();
-        var overlayNode = _refNodes[1];
-        worldOverlay.InsertNodeAt(overlayNode, _targetIndex);
+        // Cursor detection
+        var worldArea = Document.Get<WorldCursorDetectionArea>();
+        worldArea.AddChild(_areaHolder);
+        _layerE.Add(_areaHolder);
 
         // View
         var worldView = Document.Get<WorldView>();
-        var node = _refNodes[0];
-        worldView.InsertNodeAt(node, _targetIndex);
+        worldView.InsertNodeAt(_layerView, _originalIndex); // order matters
+        _layerE.Add(_layerView);
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.CreateInsert(_targetE, _targetIndex);
+        layerTreeControl.CreateInsert(_layerE, _originalIndex);
 
         // Data
-        _targetE.Tag<ToSerializeTag>();
-        var root = Document.Get<LayerTreeNode>();
-        root.InsertChild(_targetIndex, _targetE);
+        _layerE.Tag<ToSerializeTag>();
+        var parentNode = _parentE.Get<LayerTreeNode>();
+        parentNode.InsertChild(_originalIndex, _layerE);
     }
 }

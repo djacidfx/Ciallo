@@ -97,7 +97,7 @@ public partial class PolylineAreaHolder : Node2D
 {
     public void SetAreaCursor(Control.CursorShape shape)
     {
-        foreach (var child in this.GetChildren())
+        foreach (var child in GetChildren())
         {
             var area = (CursorDetectionArea)child;
             area.MouseDefaultCursorShape = shape;

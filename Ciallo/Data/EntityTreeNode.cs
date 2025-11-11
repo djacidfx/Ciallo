@@ -157,6 +157,12 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 
     #region Visit
 
+    public T GetParentNode()
+    {
+        if (Parent.IsNull) return null;
+        return Parent.Get<T>();
+    }
+
     public Entity GetDescendant([NotNull] IReadOnlyList<int> path)
     {
         if (path.Count == 0) throw new ArgumentException("Path cannot be empty.", nameof(path));
