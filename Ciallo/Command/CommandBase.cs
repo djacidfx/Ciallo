@@ -8,15 +8,6 @@ using Humanizer;
 
 namespace Ciallo.Command;
 
-/// <remarks>
-/// Shen: Several attempts have been made to allow `using var cmd = new Cmd()`, but all failed.
-/// This class cannot be `RefCounted` otherwise cannot get notification of Predelete.
-/// Override the Dispose method get unknown/undefined behavior.
-/// Already solved by making CommandBase not inherent GodotObject. 
-/// </remarks>>
-/// <summary>
-/// `using var cmd = new Cmd()` cause memory leak. Must manually call `cmd.Free()`.
-/// </summary>
 public abstract class CommandBase
 {
     /// <summary>
@@ -42,7 +33,6 @@ public abstract class CommandBase
 
     public abstract void Do();
     public abstract void Undo();
-
 
     public void Commit(bool execute = true)
     {
