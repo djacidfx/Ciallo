@@ -125,4 +125,11 @@ public static class GodotNodeExtension
         parent.AddChild(child);
         return child;
     }
+
+    // Leave tree but not be freed
+    public static Node RemoveFromParent(this Node node)
+    {
+        node.GetParent().RemoveChild(node);
+        return node;
+    }
 }

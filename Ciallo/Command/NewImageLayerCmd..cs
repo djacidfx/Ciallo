@@ -22,6 +22,7 @@ public class NewImageLayerCmd : CommandBase
         {
             Texture = ImageTexture.CreateFromImage(image)
         };
+        InitEntity();
     }
 
     public NewImageLayerCmd(ImageLayerSetting setting)
@@ -32,9 +33,9 @@ public class NewImageLayerCmd : CommandBase
     public override void Do()
     {
         // Data
-        InitEntity();
         LayerE.Tag<ToSerializeTag>();
-        Document.Get<LayerTreeManager>().Root.AddChild(LayerE);
+        Document.Get<LayerTreeNode>().AddChild(LayerE);
+        LayerE.Add(Setting);
 
         // View
         var worldView = Document.Get<WorldView>();
@@ -78,7 +79,8 @@ public class NewImageLayerCmd : CommandBase
         Sprite.QueueFree();
 
         // Data
-        Document.Get<LayerTreeManager>().Root.RemoveChild(LayerE);
+        LayerE.Remove<ImageLayerSetting>();
+        Document.Get<LayerTreeNode>().RemoveChild(LayerE);
         LayerE.Detach<ToSerializeTag>();
     }
 
@@ -89,7 +91,6 @@ public class NewImageLayerCmd : CommandBase
             LayerE = WorkingWorld.Create();
             var node = new LayerTreeNode { Name = { Value = "Image".Tr() } };
             LayerE.Add(node);
-            LayerE.Add(Setting);
         }
 
         return LayerE;

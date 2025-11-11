@@ -16,6 +16,7 @@ public class NewPolylineLayerCmd : CommandBase
     public NewPolylineLayerCmd(PolylineLayerSetting setting = null)
     {
         _setting = setting?.Clone() ?? new PolylineLayerSetting();
+        InitEntity();
     }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(LayerE);
@@ -23,14 +24,14 @@ public class NewPolylineLayerCmd : CommandBase
 
     public override void Do()
     {
-        InitEntity();
         _subs = new();
         _subs.AddTo(LayerE);
 
         // Data
-        var tree = Document.Get<LayerTreeManager>();
+        var root = Document.Get<LayerTreeNode>();
         LayerE.Tag<ToSerializeTag>();
-        tree.Root.AddChild(LayerE);
+        root.AddChild(LayerE);
+        LayerE.Add(_setting);
 
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
@@ -67,8 +68,8 @@ public class NewPolylineLayerCmd : CommandBase
         layerTreeControl.RemoveFree(LayerE);
 
         // Data
-        var tree = Document.Get<LayerTreeManager>();
-        tree.Root.RemoveChild(^1);
+        LayerE.Remove<PolylineLayerSetting>();
+        Document.Get<LayerTreeNode>().RemoveChild(^1);
         LayerE.Detach<ToSerializeTag>();
 
         _subs.Dispose();
@@ -76,16 +77,15 @@ public class NewPolylineLayerCmd : CommandBase
 
     public Entity InitEntity()
     {
-        var tree = Document.Get<LayerTreeManager>();
+        var root = Document.Get<LayerTreeNode>();
 
         if (LayerE.IsNull)
         {
             LayerE = WorkingWorld.Create();
             var node = new LayerTreeNode()
             {
-                Name = { Value = $"{"Line layer".Tr()} {tree.Root.ChildCount + 1}" },
+                Name = { Value = $"{"Line layer".Tr()} {root.ChildCount + 1}" },
             };
-            LayerE.Add(_setting);
             LayerE.Add(node);
         }
 
@@ -97,7 +97,7 @@ public partial class PolylineAreaHolder : Node2D
 {
     public void SetAreaCursor(Control.CursorShape shape)
     {
-        foreach (var child in this.GetChildren())
+        foreach (var child in GetChildren())
         {
             var area = (CursorDetectionArea)child;
             area.MouseDefaultCursorShape = shape;

@@ -34,7 +34,7 @@ public static partial class AppWorldManager
         // Add managers
         document.Add(settings);
         document.Add(new SelectionManager());
-        document.Add(new LayerTreeManager());
+        document.Add(new LayerTreeNode());
         document.Add(new CommandManager());
         document.Add(new BrushManager());
 
@@ -51,7 +51,7 @@ public static partial class AppWorldManager
         AppBrushLibrary.SelectedIndex.Value = 0;
 
         new NewPolylineLayerCmd { WorkingWorld = world }
-            .Combine(new ChangeWorkingLayerCmd(0))
+            .Combine(new SetWorkingLayerCmd(0))
             .DoAllCombination();
     }
 

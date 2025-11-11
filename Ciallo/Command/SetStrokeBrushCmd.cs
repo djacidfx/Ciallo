@@ -4,7 +4,7 @@ using Frent;
 
 namespace Ciallo.Command;
 
-public class ChangeStrokeBrushCmd(Entity strokeE, Entity newBrushE) : CommandBase
+public class SetStrokeBrushCmd(Entity strokeE, Entity newBrushE) : CommandBase
 {
     private Entity _oldBrushE;
 

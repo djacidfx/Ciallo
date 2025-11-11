@@ -47,7 +47,7 @@ public static partial class AppWorldManager
         }
 
         // Load layers and strokes
-        var dataTreeRoot = dataDocument.Get<LayerTreeManager>().Root;
+        var dataTreeRoot = dataDocument.Get<LayerTreeNode>();
         Dictionary<Entity, Entity> layerMap = [];
         foreach (var layerDataE in dataTreeRoot.Children)
         {
@@ -76,7 +76,7 @@ public static partial class AppWorldManager
                         var strokeE = newStrokeCmd.StrokeE;
                         new SetPolylineGeometryCmd(strokeE, geometry).Do();
                         var strokeBrush = polylineDataE.Get<StrokeBrush>();
-                        new ChangeStrokeBrushCmd(strokeE, brushMap[strokeBrush.Value]).Do();
+                        new SetStrokeBrushCmd(strokeE, brushMap[strokeBrush.Value]).Do();
                     }
                     else if (polylineDataE.Has<FilledPolygonSetting>())
                     {
@@ -92,9 +92,9 @@ public static partial class AppWorldManager
 
         // Load selection
         var dataSm = dataDocument.Get<SelectionManager>();
-        new ChangeWorkingLayerCmd(layerMap[dataSm.WorkingLayer.CurrentValue]).Do();
+        new SetWorkingLayerCmd(layerMap[dataSm.WorkingLayer.CurrentValue]).Do();
         var idx = dataDocument.Get<BrushManager>().Brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
-        if (idx != -1) new ChangeWorkingBrushCmd(idx).Do();
+        if (idx != -1) new SetWorkingBrushCmd(idx).Do();
     }
 
     public static void SaveWorkingWorld()

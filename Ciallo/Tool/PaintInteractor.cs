@@ -43,7 +43,7 @@ public class PaintInteractor : InteractorBase
         if (AppBrushLibrary.HasSelection)
         {
             var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
-            new NewBrushCmd(setting).Combine(new ChangeWorkingBrushCmd(^1)).Commit();
+            new NewBrushCmd(setting).Combine(new SetWorkingBrushCmd(^1)).Commit();
         }
         _brushE = SelectionManager.WorkingBrush.Value;
         var brushMaterial = _brushE.Get<BrushMaterial>();
@@ -80,7 +80,7 @@ public class PaintInteractor : InteractorBase
             Pressures = [.._generator.Pressures],
             Tilts = [.._generator.Tilts],
         };
-        cmd.Combine(new ChangeStrokeBrushCmd(strokeE, _brushE))
+        cmd.Combine(new SetStrokeBrushCmd(strokeE, _brushE))
             .Combine(new SetPolylineGeometryCmd(strokeE, geom))
             .Commit();
         Clear();

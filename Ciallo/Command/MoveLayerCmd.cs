@@ -21,8 +21,8 @@ public class MoveLayerCmd : CommandBase
     public override void Do()
     {
         // Data
-        var tree = Document.Get<LayerTreeManager>();
-        tree.Root.MoveDescendant(_src, _dst);
+        var root = Document.Get<LayerTreeNode>();
+        root.MoveDescendant(_src, _dst);
 
         // layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
@@ -46,7 +46,7 @@ public class MoveLayerCmd : CommandBase
         layerTreeControl.Move(_dst, _src);
 
         // Data
-        var tree = Document.Get<LayerTreeManager>();
-        tree.Root.MoveDescendant(_dst, _src);
+        var root = Document.Get<LayerTreeNode>();
+        root.MoveDescendant(_dst, _src);
     }
 }

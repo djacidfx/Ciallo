@@ -13,19 +13,18 @@ public class NewStrokeCmd : CommandBase
     public NewStrokeCmd(Entity layerE)
     {
         _layerE = layerE;
+        InitEntity();
     }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(StrokeE);
 
     public override void Do()
     {
-        // Creation
-        InitEntity();
-
         // Data
         StrokeE.Tag<ToSerializeTag>();
         _layerE.Get<LayerTreeNode>().AddChild(StrokeE);
         StrokeE.Add<StrokeBrush>(Entity.Null);
+        StrokeE.Add(new PolylineGeometry());
 
         // View
         var strokeView = new StrokeView()
@@ -66,6 +65,7 @@ public class NewStrokeCmd : CommandBase
         strokeView.QueueFree();
 
         // Data
+        StrokeE.Remove<PolylineGeometry>();
         StrokeE.Remove<StrokeBrush>();
         _layerE.Get<LayerTreeNode>().RemoveChild(^1);
         StrokeE.Detach<ToSerializeTag>();
@@ -76,7 +76,6 @@ public class NewStrokeCmd : CommandBase
         if (!StrokeE.IsNull) return StrokeE;
         StrokeE = WorkingWorld.Create();
         var node = new LayerTreeNode();
-        StrokeE.Add(new PolylineGeometry());
         StrokeE.Add(node);
         return StrokeE;
     }
