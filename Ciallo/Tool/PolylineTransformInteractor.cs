@@ -8,18 +8,18 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class PolylineTransformInteractor(PolylineTransformHover transformHover) : InteractorBase
+public class PolylineTransformInteractor(PolylineTransformHover hover) : InteractorBase
 {
     public override bool CanInteract
     {
         get
         {
             bool hasSelection = SelectionManager.SelectedPolylines.Count > 0;
-            bool translationHovered = !transformHover.HoveredPolyline.IsNull;
-            bool rotationHovered = transformHover.RotationArea?.IsHovered == true;
-            bool cornerHovered = transformHover.CornerAreas.Any(a => a.IsHovered);
+            bool polylineHovered = !hover.HoveredPolyline.IsNull;
+            bool rotationDotHovered = hover.RotationArea?.IsHovered == true;
+            bool cornerDotsHovered = hover.CornerAreas.Any(a => a.IsHovered);
 
-            return hasSelection || translationHovered || rotationHovered || cornerHovered;
+            return hasSelection || polylineHovered || rotationDotHovered || cornerDotsHovered;
         }
     }
     private int _transformType = -1; // -1: Deselect, 0: Move, 1: Rotate, 2~5: Scale corners
@@ -35,21 +35,21 @@ public class PolylineTransformInteractor(PolylineTransformHover transformHover) 
     public override void Prepare(CursorButtonData data)
     {
         bool hasSelection = SelectionManager.SelectedPolylines.Count > 0;
-        bool translationHovered = !transformHover.HoveredPolyline.IsNull;
-        bool rotationHovered = transformHover.RotationArea?.IsHovered == true;
-        bool cornerHovered = transformHover.CornerAreas.Any(a => a.IsHovered);
+        bool polylineHovered = !hover.HoveredPolyline.IsNull;
+        bool rotationDotHovered = hover.RotationArea?.IsHovered == true;
+        bool cornerDotsHovered = hover.CornerAreas.Any(a => a.IsHovered);
 
-        if (translationHovered)
+        if (polylineHovered)
         {
             _transformType = 0;
         }
-        else if (rotationHovered)
+        else if (rotationDotHovered)
         {
             _transformType = 1;
         }
-        else if (cornerHovered)
+        else if (cornerDotsHovered)
         {
-            _transformType = Array.FindIndex(transformHover.CornerAreas, a => a.IsHovered) + 2;
+            _transformType = Array.FindIndex(hover.CornerAreas, a => a.IsHovered) + 2;
         }
         else if (hasSelection) _transformType = -1;
     }
@@ -64,7 +64,7 @@ public class PolylineTransformInteractor(PolylineTransformHover transformHover) 
 
         if (_transformType == 0)
         {
-            _polylineE = transformHover.HoveredPolyline;
+            _polylineE = hover.HoveredPolyline;
         }
         else if (_transformType >= 1)
         {

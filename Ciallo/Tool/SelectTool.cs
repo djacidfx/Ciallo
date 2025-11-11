@@ -15,6 +15,7 @@ public partial class SelectTool : CommonToolBase
 {
     public readonly PolylineTransformHover PolylineTransformHover = new();
     public readonly PolylineTransformInteractor PolylineTransformInteractor;
+    public readonly PolylineDeleteInteractor PolylineDeleteInteractor;
     public readonly ImageTransformHover ImageTransformHover = new();
     public readonly ImageTransformInteractor ImageTransformInteractor;
 
@@ -41,6 +42,7 @@ public partial class SelectTool : CommonToolBase
     public SelectTool()
     {
         PolylineTransformInteractor = new(PolylineTransformHover);
+        PolylineDeleteInteractor = new(PolylineTransformHover);
         ImageTransformInteractor = new(ImageTransformHover);
 
         ToolStateMachine.OnUnhandledTrigger((_, _) => { });
@@ -77,11 +79,13 @@ public partial class SelectTool : CommonToolBase
             {
                 LeftInteractor = PolylineTransformInteractor;
                 HoverInteractor = PolylineTransformHover;
+                RightInteractor = PolylineDeleteInteractor;
             })
             .OnExit(() =>
             {
                 HoverInteractor = null;
                 LeftInteractor = null;
+                RightInteractor = null;
                 Document.Get<SelectionManager>().SelectedPolylines.Clear();
             });
     }
