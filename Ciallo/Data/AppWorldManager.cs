@@ -34,7 +34,7 @@ public static partial class AppWorldManager
         // Add managers
         document.Add(settings);
         document.Add(new SelectionManager());
-        document.Add(new LayerTreeManager());
+        document.Add(new LayerTreeNode());
         document.Add(new CommandManager());
         document.Add(new BrushManager());
 

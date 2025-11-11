@@ -34,7 +34,7 @@ public class NewImageLayerCmd : CommandBase
         // Data
         InitEntity();
         LayerE.Tag<ToSerializeTag>();
-        Document.Get<LayerTreeManager>().Root.AddChild(LayerE);
+        Document.Get<LayerTreeNode>().AddChild(LayerE);
 
         // View
         var worldView = Document.Get<WorldView>();
@@ -78,7 +78,7 @@ public class NewImageLayerCmd : CommandBase
         Sprite.QueueFree();
 
         // Data
-        Document.Get<LayerTreeManager>().Root.RemoveChild(LayerE);
+        Document.Get<LayerTreeNode>().RemoveChild(LayerE);
         LayerE.Detach<ToSerializeTag>();
     }
 

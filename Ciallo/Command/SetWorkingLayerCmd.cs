@@ -23,7 +23,7 @@ public class SetWorkingLayerCmd : CommandBase
     public override void Do()
     {
         if (NewE.IsNull && NewIndex.Value != int.MaxValue)
-            NewE = Document.Get<LayerTreeManager>().Root.GetChild(NewIndex);
+            NewE = Document.Get<LayerTreeNode>().GetChild(NewIndex);
         // Selection manager
         var sm = Document.Get<SelectionManager>();
         OldE = sm.WorkingLayer.Value;

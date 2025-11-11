@@ -47,7 +47,7 @@ public static partial class AppWorldManager
         }
 
         // Load layers and strokes
-        var dataTreeRoot = dataDocument.Get<LayerTreeManager>().Root;
+        var dataTreeRoot = dataDocument.Get<LayerTreeNode>();
         Dictionary<Entity, Entity> layerMap = [];
         foreach (var layerDataE in dataTreeRoot.Children)
         {

@@ -28,9 +28,9 @@ public class NewPolylineLayerCmd : CommandBase
         _subs.AddTo(LayerE);
 
         // Data
-        var tree = Document.Get<LayerTreeManager>();
+        var root = Document.Get<LayerTreeNode>();
         LayerE.Tag<ToSerializeTag>();
-        tree.Root.AddChild(LayerE);
+        root.AddChild(LayerE);
 
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
@@ -67,8 +67,8 @@ public class NewPolylineLayerCmd : CommandBase
         layerTreeControl.RemoveFree(LayerE);
 
         // Data
-        var tree = Document.Get<LayerTreeManager>();
-        tree.Root.RemoveChild(^1);
+        var root = Document.Get<LayerTreeNode>();
+        root.RemoveChild(^1);
         LayerE.Detach<ToSerializeTag>();
 
         _subs.Dispose();
@@ -76,14 +76,14 @@ public class NewPolylineLayerCmd : CommandBase
 
     public Entity InitEntity()
     {
-        var tree = Document.Get<LayerTreeManager>();
+        var root = Document.Get<LayerTreeNode>();
 
         if (LayerE.IsNull)
         {
             LayerE = WorkingWorld.Create();
             var node = new LayerTreeNode()
             {
-                Name = { Value = $"{"Line layer".Tr()} {tree.Root.ChildCount + 1}" },
+                Name = { Value = $"{"Line layer".Tr()} {root.ChildCount + 1}" },
             };
             LayerE.Add(_setting);
             LayerE.Add(node);

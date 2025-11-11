@@ -17,7 +17,7 @@ public class DeletePolylineLayerCmd : CommandBase
     {
         // Hierarchy not implemented, always remove from root.
         _targetE = targetE;
-        _targetIndex = Document.Get<LayerTreeManager>().Root.FindPathTo(_targetE).Single();
+        _targetIndex = Document.Get<LayerTreeNode>().FindPathTo(_targetE).Single();
     }
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_targetE);
@@ -27,8 +27,8 @@ public class DeletePolylineLayerCmd : CommandBase
     {
         // Data
         // TODO: Remove children's ToSerializeTag.
-        var tree = Document.Get<LayerTreeManager>();
-        tree.Root.RemoveChild(_targetIndex);
+        var root = Document.Get<LayerTreeNode>();
+        root.RemoveChild(_targetIndex);
         _targetE.Detach<ToSerializeTag>();
 
         // Layer panel
@@ -66,7 +66,7 @@ public class DeletePolylineLayerCmd : CommandBase
 
         // Data
         _targetE.Tag<ToSerializeTag>();
-        var tree = Document.Get<LayerTreeManager>();
-        tree.Root.InsertChild(_targetIndex, _targetE);
+        var root = Document.Get<LayerTreeNode>();
+        root.InsertChild(_targetIndex, _targetE);
     }
 }
