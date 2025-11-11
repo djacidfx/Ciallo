@@ -13,7 +13,7 @@ public partial class LayerAction : Control
         if (AppWorldManager.WorkingWorld.Value == null) return;
         var cmd = new NewPolylineLayerCmd();
         var e = cmd.InitEntity();
-        cmd.Combine(new ChangeWorkingLayerCmd(e)).Commit();
+        cmd.Combine(new SetWorkingLayerCmd(e)).Commit();
     }
 
     public void OnRemoveLayer()
@@ -25,7 +25,7 @@ public partial class LayerAction : Control
         var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
         var nextLayerPath = document.Get<LayerTreeManager>().GetNextFocusPathAfterDeletion(workingLayerPath);
 
-        ChangeWorkingLayerCmd cmd = nextLayerPath.IsEmpty ? new(new Entity()) : new(nextLayerPath.Single());
+        SetWorkingLayerCmd cmd = nextLayerPath.IsEmpty ? new(new Entity()) : new(nextLayerPath.Single());
         cmd.Combine(new DeletePolylineLayerCmd(workingLayerE)).Commit();
     }
 

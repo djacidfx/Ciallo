@@ -51,7 +51,7 @@ public static partial class AppWorldManager
         AppBrushLibrary.SelectedIndex.Value = 0;
 
         new NewPolylineLayerCmd { WorkingWorld = world }
-            .Combine(new ChangeWorkingLayerCmd(0))
+            .Combine(new SetWorkingLayerCmd(0))
             .DoAllCombination();
     }
 

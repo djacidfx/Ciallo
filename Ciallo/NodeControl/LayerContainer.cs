@@ -40,7 +40,7 @@ public partial class LayerContainer : Container
         _workingLayerButtonGroup.Pressed += button =>
         {
             var layerControl = (Control)button.GetOwner();
-            new ChangeWorkingLayerCmd(layerControl.GetIndex()).Commit();
+            new SetWorkingLayerCmd(layerControl.GetIndex()).Commit();
         };
     }
 

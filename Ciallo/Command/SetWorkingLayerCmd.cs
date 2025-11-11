@@ -4,19 +4,18 @@ using Frent;
 
 namespace Ciallo.Command;
 
-// ReSharper disable once Godot.MissingParameterlessConstructor
-public class ChangeWorkingLayerCmd : CommandBase
+public class SetWorkingLayerCmd : CommandBase
 {
     public Index NewIndex = int.MaxValue;
     public Entity NewE;
     public Entity OldE;
 
-    public ChangeWorkingLayerCmd(Index index)
+    public SetWorkingLayerCmd(Index index)
     {
         NewIndex = index;
     }
 
-    public ChangeWorkingLayerCmd(Entity layerE)
+    public SetWorkingLayerCmd(Entity layerE)
     {
         NewE = layerE;
     }

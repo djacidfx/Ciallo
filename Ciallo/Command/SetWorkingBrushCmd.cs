@@ -4,7 +4,7 @@ using Frent;
 
 namespace Ciallo.Command;
 
-public class ChangeWorkingBrushCmd(Index idx) : CommandBase
+public class SetWorkingBrushCmd(Index idx) : CommandBase
 {
     public Entity OldBrushE;
     public Entity NewBrushE;
