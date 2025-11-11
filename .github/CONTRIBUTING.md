@@ -17,8 +17,9 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
 - [x] Paint fill tool
 - [ ] Vector fill tool
   - [x] CGAL C++ code
-- [x] Selection/move tool
+- [x] Selection/transform tool
   - [x] Rect transform
+  - [ ] Multi select and transform
   - [ ] Line binding system (Bézier curve only)
     - [x] Bézier curve geometry
   - [x] Polyline overlay rendering
