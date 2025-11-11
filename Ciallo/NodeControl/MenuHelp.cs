@@ -34,8 +34,12 @@ public partial class MenuHelp : PopupMenu
     {
         switch (id)
         {
+            case 0:
+                break;
             case 1:
                 GetTree().GetNodesInGroup("Dialog").OfType<AcceptDialog>().First(n => n.Name == "AboutCiallo").Popup();
+                break;
+            case 2:
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(id), $"Unhandled menu item index: {id}");
