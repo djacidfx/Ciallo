@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
 using Frent;
+using Frent.Components;
 
 namespace Ciallo.Data;
 
@@ -12,13 +13,32 @@ namespace Ciallo.Data;
 /// </summary>
 /// <typeparam name="T">The derived type of the tree node.</typeparam>
 [DataContract]
-public class EntityTreeNode<T> where T : EntityTreeNode<T>
+public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : EntityTreeNode<T>
 {
+    public Entity Self; // When this component is added to entity, assigned automatically.
+    [DataMember] public Entity Parent;
     [DataMember] public List<Entity> Children = [];
 
     public int ChildCount => Children.Count;
     public int DescendantCount => CountSubtreeNodes((T)this) - 1;
     public bool IsLeaf => Children.Count == 0;
+
+    public void Init(Entity self)
+    {
+        Self = self;
+    }
+
+    public void Destroy()
+    {
+        // Detach all children
+        foreach (var child in Children)
+        {
+            if (child.IsDeletedOrNull()) continue;
+            child.Remove<T>();
+        }
+        Children.Clear();
+        Self = Entity.Null;
+    }
 
     #region Modify
 
