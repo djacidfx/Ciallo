@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Ciallo.Command;
 using Ciallo.Geometry;
+using Ciallo.Rendering;
 using Frent;
 
 namespace Ciallo.Tool;
@@ -40,7 +41,8 @@ public class PolylineDeleteInteractor(PolylineTransformHover hover) : Interactor
         var cmd = new EmptyCommand();
         foreach (var e in _polylineEs)
         {
-            cmd.Combine(new DeleteStrokeCmd(e));
+            if (e.Has<StrokeView>()) cmd.Combine(new DeleteStrokeCmd(e));
+            else cmd.Combine(new DeleteFilledPolygonCmd(e));
         }
         cmd.Commit();
     }

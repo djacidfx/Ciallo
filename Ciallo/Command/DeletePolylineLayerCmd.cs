@@ -11,10 +11,10 @@ public class DeletePolylineLayerCmd : CommandBase
 {
     private Entity _layerE;
     private Entity _parentE;
-    private int _originalIndex;
+    private readonly int _originalIndex;
 
-    private PolylineLayerView _layerView;
-    private PolylineAreaHolder _areaHolder;
+    private readonly PolylineLayerView _layerView;
+    private readonly PolylineAreaHolder _areaHolder;
 
     public DeletePolylineLayerCmd(Entity layerE)
     {
