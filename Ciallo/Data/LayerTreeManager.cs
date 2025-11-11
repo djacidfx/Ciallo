@@ -2,6 +2,8 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.Serialization;
+using Frent;
+using Frent.Components;
 
 namespace Ciallo.Data;
 
@@ -9,12 +11,18 @@ namespace Ciallo.Data;
 /// Manages the layer tree in the document. Considered as root of the tree.
 /// </summary>
 [DataContract, ToSerialize]
-public class LayerTreeManager
+public class LayerTreeManager : IInitable
 {
     [DataMember] public LayerTreeNode Root = new()
     {
         Name = { Value = "Root" },
     };
+    
+    public void Init(Entity self)
+    {
+        // Initialize root node
+        Root.Init(self);
+    }
 
     /// <summary>
     /// Assume the given node is focused and going to be deleted, return the path to the next node that should have focus.

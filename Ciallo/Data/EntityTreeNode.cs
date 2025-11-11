@@ -26,17 +26,25 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public void Init(Entity self)
     {
         Self = self;
+        Parent = Entity.Null;
     }
 
     public void Destroy()
     {
+        // Remove from parent
+        if (!Parent.IsDeletedOrNull())
+            Parent.Get<T>().RemoveChild(Self);
+
         // Detach all children
         foreach (var child in Children)
         {
             if (child.IsDeletedOrNull()) continue;
+            // Clear parent reference before removing component
+            child.Get<T>().Parent = Entity.Null;
             child.Remove<T>();
         }
         Children.Clear();
+        Parent = Entity.Null;
         Self = Entity.Null;
     }
 
@@ -46,6 +54,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     {
         if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
         Children.Add(child);
+        child.Get<T>().Parent = Self;
     }
 
     public Entity GetChild(Index index) => Children[index];
@@ -54,6 +63,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     {
         if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
         Children.Insert(idx, child);
+        child.Get<T>().Parent = Self;
     }
 
     public void MoveChild(int srcIdx, int dstIdx)
@@ -61,11 +71,15 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         var moving = Children[srcIdx];
         Children.RemoveAt(srcIdx);
         Children.Insert(dstIdx, moving);
+        // Parent unchanged (same parent)
     }
 
     public void RemoveChild(Index idx)
     {
-        Children.RemoveAt(idx.GetOffset(Children.Count));
+        int i = idx.GetOffset(Children.Count);
+        var removed = Children[i];
+        Children.RemoveAt(i);
+        removed.Get<T>().Parent = Entity.Null;
     }
 
     public void RemoveChild(Entity child)
@@ -73,6 +87,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         int idx = Children.IndexOf(child);
         if (idx < 0) throw new ArgumentException("The specified entity is not a child of this node.");
         Children.RemoveAt(idx);
+        child.Get<T>().Parent = Entity.Null;
     }
 
     public void AddDescendant(IReadOnlyList<int> parentPath, Entity child)
@@ -91,6 +106,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         var parentNode = GetDescendantNode(targetPath.SkipLast(1).ToArray());
         var removed = parentNode.Children[targetPath[^1]];
         parentNode.Children.RemoveAt(targetPath[^1]);
+        removed.Get<T>().Parent = Entity.Null;
         return removed;
     }
 
