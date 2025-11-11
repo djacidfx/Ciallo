@@ -19,6 +19,7 @@ public class NewFilledPolygonCmd : CommandBase
     {
         _layerE = layerE;
         _setting = setting ?? new FilledPolygonSetting();
+        InitEntity();
     }
 
     private CompositeDisposable _subs;
@@ -27,7 +28,6 @@ public class NewFilledPolygonCmd : CommandBase
     {
         _subs = new();
         // Data
-        InitEntity();
         PolygonE.Tag<ToSerializeTag>();
         _layerE.Get<LayerTreeNode>().AddChild(PolygonE);
         PolygonE.Add(_setting);
@@ -52,6 +52,7 @@ public class NewFilledPolygonCmd : CommandBase
         _layerE.Get<PolylineAreaHolder>().AddChild(polygonArea);
         PolygonE.Add(polygonArea);
     }
+
     public override void Undo()
     {
         // Cursor detection

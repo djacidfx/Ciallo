@@ -16,6 +16,7 @@ public class NewPolylineLayerCmd : CommandBase
     public NewPolylineLayerCmd(PolylineLayerSetting setting = null)
     {
         _setting = setting?.Clone() ?? new PolylineLayerSetting();
+        InitEntity();
     }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(LayerE);
@@ -23,7 +24,6 @@ public class NewPolylineLayerCmd : CommandBase
 
     public override void Do()
     {
-        InitEntity();
         _subs = new();
         _subs.AddTo(LayerE);
 
@@ -31,6 +31,7 @@ public class NewPolylineLayerCmd : CommandBase
         var root = Document.Get<LayerTreeNode>();
         LayerE.Tag<ToSerializeTag>();
         root.AddChild(LayerE);
+        LayerE.Add(_setting);
 
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
@@ -67,8 +68,8 @@ public class NewPolylineLayerCmd : CommandBase
         layerTreeControl.RemoveFree(LayerE);
 
         // Data
-        var root = Document.Get<LayerTreeNode>();
-        root.RemoveChild(^1);
+        LayerE.Remove<PolylineLayerSetting>();
+        Document.Get<LayerTreeNode>().RemoveChild(^1);
         LayerE.Detach<ToSerializeTag>();
 
         _subs.Dispose();
@@ -85,7 +86,6 @@ public class NewPolylineLayerCmd : CommandBase
             {
                 Name = { Value = $"{"Line layer".Tr()} {root.ChildCount + 1}" },
             };
-            LayerE.Add(_setting);
             LayerE.Add(node);
         }
 
