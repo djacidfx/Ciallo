@@ -57,11 +57,11 @@ We also plan to build a sharing platform while protecting your artworks from une
 In the invisible-far future, Ciallo may offer AI-powered features --- but always designed for professional artists.
 
 ### Optimized pen feel
-Ciallo aims to provide a drawing/pen feel significantly better than _Clip Studio Paint_ and _Procreate_; this will require several technical advances in future updates.
+Ciallo aims to provide a drawing/pen feel significantly better than _Clip Studio Paint_ and _Procreate_; this will require several technical advancements in future updates.
 For the current version, the feel is not worse than _Clip Studio Paint_ and is certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.)
 
 ### Infinite canvas
-@Developer: "I never see a professional artist needs an infinite canvas when drawing illustrators, mangas or animes.
+@Developer: "I have never seen a professional artist who needs an infinite canvas when drawing illustrators, mangas, or animes.
 Do you really need this feature? Tell me how I can add better support.
 
 ## Download (Free on all platforms)
@@ -78,9 +78,9 @@ Close any other software that heavily uses your GPU before opening Ciallo (excep
 - Monitor: A refresh rate greater than 100 Hz is recommended for the best drawing experience
 - Tablet: Use your tablet at its maximum polling/reporting rate (e.g., Wacom DTC-141 if available)
 
-> Ciallo is highly sensitive to your tablet polling rate. It can potentially respond to tablet/mouse input at up to 1000 Hz. However, tablets in 2025 can reach at most 360 Hz (DTC-141), and 150–200 Hz on average, which is highly insufficient for capturing small turning points and handwriting text. If a tablet with a 500–1000 Hz polling rate becomes available on the market, contact me — Ciallo will try to add support.
+> Ciallo is highly sensitive to your tablet polling rate. It can potentially respond to tablet/mouse input at up to 1000 Hz. However, tablets in 2025 can reach at most 360 Hz (DTC-141), and 150–200 Hz on average, which is highly insufficient for capturing small turning points and handwritten text. If a tablet with a 500–1000 Hz polling rate becomes available on the market, contact me — Ciallo will try to add support.
 
-> About macOS: I literally wish to support MacOS, but I cannot afford a MacBook Pro (it would cost me roughly half a year's living expenses). Consider sponsoring me on Patreon; really lacking of money.
+> About macOS: I literally wish to support macOS, but I cannot afford a MacBook Pro (it would cost me roughly half a year's living expenses). Consider sponsoring me on Patreon; really lacking of money.
 
 ## Development philosophy
 
@@ -169,7 +169,7 @@ If we have to give up using Godot for whatever reason someday, we may consider u
 ### Why not GDScript?
 Dynamically-typed languages cannot support our project (or, IMHO, any projects that need more than 5 custom types). C# is a better choice, also for its larger community.
 Developing a mature programming language is as hard as developing the game engine itself.
-Gdscript is doubling the efforts as Godot grows.
+GDscript is doubling the efforts as Godot grows.
 
 But I do like the GDScript language itself. In my wet dream, Godot will treat C# as the first citizen and add shader programming support to "GDScript" for graphics.
 
