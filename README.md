@@ -9,33 +9,38 @@ Leave a star to this project and check my [research project], [paper](https://dl
 # Ciallo ～(∠・ω< )⌒★!
 
 Ciallo is an open-source graphics program for professional digital painting.
-It aims to compete with traditional raster painting software like Photoshop and Clip Studio Paint, while offering the following unique features:
+It aims to compete with traditional raster painting software like Photoshop and Clip Studio Paint, while offering the following unique features researched by the developer:
 
 ## Unique features
 ### Vectorized Photoshop-like brushes
 
-Resolution-independent, Photoshop-like brushes:
+Resolution-independent stamp brushes, entirely drawn (rendered) on your graphics card (GPU).
 
-![Airbrush](https://github.com/user-attachments/assets/24016337-9c38-4b0d-a421-e6dbd2caccff)
+![](/.github/Stamp.gif)
 
-The brushes are entirely drawn (rendered) on your graphics card GPU. This technique is researched by the developer ([Shen Ciao]).
+Vectorized airbrush, you can change opacity gradient directly.
 
-### Vector fill
-
-Bucket fill in vector form: The positions to fill are tracked with "fill markers", the shape $\odot$ in the image.
-
-We can manipulate the positions, colors, or any other filling properties by editing these markers.
-
-(Under development) We will be able to copy and paste these markers between animation frames, greatly reducing manual work.”
+![](/.github/Airbrush.gif)
 
 ### Export to game engines
 
-Export your artwork into the Godot game engine (as a .scn/.tscn file), and it keeps resolution-independent and rendered in real time.
-Like those old days when Adobe Flash was alive.
+Export your artwork into the Godot game engine (as a .scn/.tscn file), and keep it resolution-independent.
+Like those old days when Flash was alive.
 
-Ciallo also exports the original layers as nodes to facilitate creating CG variations.
+![](/.github/Dango.png)
 
-Other game engines will be supported in the future.
+![](/.github/DangoExportation.gif)
+
+Will support other game engines in the future.
+
+### (WIP) Vector fill
+Bucket fill in vector form: The positions to fill are editable and tracked with "fill markers", the shape $\odot$ in the image:
+
+![](/.github/VectorFill.gif)
+
+Copy and paste these markers between animation frames:
+
+![](/.github/VectorFillFrames.gif)
 
 ## Other features
 The following features may be in your favor:
@@ -44,60 +49,71 @@ The following features may be in your favor:
 <img align="left" width="192" height="192" src="https://upload.wikimedia.org/wikipedia/commons/f/f1/No_AI_art.svg">
 
 Ciallo uses a custom vector format that is hard to generate by current AI technique.
+Unless being explicitly declared by the copyright owners, artworks from Ciallo are [forbidden to be trained](#user-created-content-copyright-and-ai-notice).
 
-Unlike [the big company](https://www.youtube.com/watch?v=DoM3nUD-1Ro), Ciallo will never change the terms of service silently to steal your artwork stocks for training AI.
+Unlike [the big company](https://www.youtube.com/watch?v=DoM3nUD-1Ro), Ciallo will never steal your artwork stocks for training AI.
 We also plan to build a sharing platform while protecting your artworks from unethical AI training.
 
 In the invisible-far future, Ciallo may offer AI-powered features --- but always designed for professional artists.
 
 ### Optimized pen feel
-Ciallo aims to provide drawing/pen feel significantly better than _Clip Studio Paint_ and _Procreate_, which takes serval technical advancement in the future updates.
-For the current version, the feel is not worse than _Clip Studio Paint_ and certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report as a bug if it's not).
+Ciallo aims to provide a drawing/pen feel significantly better than _Clip Studio Paint_ and _Procreate_; this will require several technical advancements in future updates.
+For the current version, the feel is not worse than _Clip Studio Paint_ and is certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.)
 
 ### Infinite canvas
-(@Shen: "I never see a professional artist needs an infinite canvas when drawing illustrators, mangas or animes.
-Do you really need this feature? Tell me how to add more support to this.")
-
-### (WIP) Line binding
+@Developer: "I have never seen a professional artist who needs an infinite canvas when drawing illustrators, mangas, or animes.
+Do you really need this feature? Tell me how I can add better support.
 
 ## Download (Free on all platforms)
 
 [Steam](https://store.steampowered.com/app/3973810) | [Itch.io](https://shenciao.itch.io/ciallo)
 
 System requirements:
-Require a system can run small to middle size 3D games.
-Close any other software heavily use your GPU before opening Ciallo. (Except for OBS if it's necessary.)
+Requires a system capable of running small to mid-sized 3D games.
+Close any other software that heavily uses your GPU before opening Ciallo (except OBS, if necessary).
 
 - OS: Windows 10 or higher
-- Memory: 6GB or more
-- GPU: Minimum NV GTX 1650 or AMD Radeon RX 6500 XT.
-- Monitor: Recommend refresh rate greater than 100fps to get the best drawing experience.
-- Tablet: Use your tablet with maximum polling/reporting rate (maybe Wacom dtc 141 if you buy a new one).
+- Memory: 6 GB or more
+- GPU: Minimum NV GTX 1650 or AMD Radeon RX 6500 XT
+- Monitor: A refresh rate greater than 100 Hz is recommended for the best drawing experience
+- Tablet: Use your tablet at its maximum polling/reporting rate (e.g., Wacom DTC-141 if available)
 
-> Ciallo is highly sensitive to your tablet polling rate. It can potentially respond up to 1000Hz tablet/mouse input. But tablets in 2025 can only achieve 360Hz in maximum (dtc 141), and 150-200Hz on average, which is highly insufficient for capturing small turning points and handwritten texts. Contact the developer if there comes a tablet with 500-1000Hz polling rate, Ciallo will try adding more supports to it.
+> Ciallo is highly sensitive to your tablet polling rate. It can potentially respond to tablet/mouse input at up to 1000 Hz. However, tablets in 2025 can reach at most 360 Hz (DTC-141), and 150–200 Hz on average, which is highly insufficient for capturing small turning points and handwritten text. If a tablet with a 500–1000 Hz polling rate becomes available on the market, contact me — Ciallo will try to add support.
 
-> About macOS: I literally wish but cannot afford to buy a MacBook Pro (which cost me half a year’s living budget). Consider patreon me, really lacking of money currently.
+> About macOS: I literally wish to support macOS, but I cannot afford a MacBook Pro (it would cost me roughly half a year's living expenses). Consider sponsoring me on Patreon; really lacking of money.
 
 ## Development philosophy
 
 Ciallo is in an early stage of development; its version number will be labeled as EA (early access).
 
-During the EA stage, Ciallo mainly R&D traditional paint software features with modern shaders and GPU APIs. After finishing major paint features, will try opening Steam Workshop, marking the end of the EA stage.
+During the EA stage, Ciallo mainly focuses on R&D of traditional painting features using modern shaders and GPU APIs. After finishing major painting features, we'll try opening Steam Workshop, marking the end of the EA stage.
 
-Overall, Ciallo will be a DCC program focusing on creating 2D game assets, including illustrations, 2D animations and hand-drawn textures in 3D.
+Overall, Ciallo will be developed as a DCC program focusing on creating 2D game assets, including illustrations, 2D animations and hand-drawn textures in 3D.
 
-#### Feature requests
+## Feature requests
+
+Hope Ciallo's tools already address something important to you. (To be frank, the large company should have provided these tools a decade ago.) There's always more to add as Ciallo grows.
 
 The developer basically knows the most needed features during the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2).
 
-If you eagerly need a feature to be deployed within a week/month, consider contacting the developer and sponsoring this project.
+If you urgently need a feature deployed within a week or month, consider contacting the developer or sponsoring the project.
 
 ## Sponsor my research and your future
-It's Ciallo's mission to bring your dream hard-drawn art techniques to life, and need your support to keep them free and accessible to everyone.
+Ciallo's mission is to bring your hard-drawn art techniques to life, and it needs your support to keep them free and accessible to everyone.
 
-Moreover, in this age of AI, we all face challenges by the surging AI techniques.
-Hope Ciallo will be the tool helping you shine in this era --- the tool liberating your creativity, not replacing it with AI nor steal it to feed AI.
-Sponsor Ciallo to shape the future of your painting, and keep the creativity alive in the future AI-driven world.
+Moreover, in this age of AI we all face challenges from rapidly advancing AI techniques.
+Hope Ciallo will be the tool that helps you shine in this era — a tool that liberates your creativity, not one that replaces it with AI or steals it to feed AI.
+Sponsor Ciallo to shape the future of your digital painting and help keep creativity alive in an AI-driven world.
+
+## User-created content copyright and AI notice
+For the purposes of this Project, "Artwork" means any brushes and drawings saved, exported, or represented in Ciallo's native format, other game engine vector formats, or raster images. The copyright owner of an Artwork (the "Owner") retains all rights in and to that Artwork. We do not claim any rights over user-generated content.
+
+Unless the Owner has given explicit express, written permission, any use of Artwork to train, fine‑tune, validate, evaluate, or otherwise improve machine learning, generative AI, or other automated models or datasets is strictly prohibited. Prohibited acts include, without limitation, collection, copying, ingestion, extraction, annotation, transformation, or inclusion of such Artwork in any training, testing, or benchmarking dataset.
+
+Explicit prohibition on "no‑copyright" labels and opt‑out schemes: 
+Artwork labeled or claimed as "no copyright", "public domain", or similar does not authorize AI training under this project's terms. Likewise, any purported "opt‑out" or "unless the Owner opts out" declarations (i.e., statements that artworks may be used for AI purposes unless an Owner affirmatively opts out) do not and shall not be treated as authorization to use this project Artwork for AI training. Such uses are violations of this project's terms and may result in injunctive relief, damages, and recovery of costs and attorneys' fees under applicable law.
+
+All rights not expressly granted are reserved.
 
 ## Credits
 ### Project name
@@ -152,6 +168,8 @@ If we have to give up using Godot for whatever reason someday, we may consider u
 
 ### Why not GDScript?
 Dynamically-typed languages cannot support our project (or, IMHO, any projects that need more than 5 custom types). C# is a better choice, also for its larger community.
+Developing a mature programming language is as hard as developing the game engine itself.
+GDscript is doubling the efforts as Godot grows.
 
 But I do like the GDScript language itself. In my wet dream, Godot will treat C# as the first citizen and add shader programming support to "GDScript" for graphics.
 
