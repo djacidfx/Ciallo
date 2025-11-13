@@ -20,13 +20,16 @@ public partial class LayerAction : Control
     {
         if (AppWorldManager.WorkingWorld.Value == null) return;
         var document = AppWorldManager.WorkingDocument.CurrentValue;
-        var workingLayerE = document.Get<SelectionManager>().WorkingLayer.Value;
-        if (workingLayerE.IsNull) return;
+        var currentLayerE = document.Get<SelectionManager>().WorkingLayer.Value;
+        if (currentLayerE.IsNull) return;
+
         var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
         var nextLayerPath = document.Get<LayerTreeNode>().GetNextFocusPathAfterDeletion(workingLayerPath);
 
         SetWorkingLayerCmd cmd = nextLayerPath.IsEmpty ? new(Entity.Null) : new(nextLayerPath.Single());
-        cmd.Combine(new DeletePolylineLayerCmd(workingLayerE)).Commit();
+
+        if (currentLayerE.Has<PolylineLayerSetting>()) cmd.Combine(new DeletePolylineLayerCmd(currentLayerE)).Commit();
+        else if (currentLayerE.Has<ImageLayerSetting>()) cmd.Combine(new DeleteImageLayerCmd(currentLayerE)).Commit();
     }
 
     public void OnAddImage()

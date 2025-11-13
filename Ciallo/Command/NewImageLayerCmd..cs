@@ -28,6 +28,7 @@ public class NewImageLayerCmd : CommandBase
     public NewImageLayerCmd(ImageLayerSetting setting)
     {
         Setting = setting;
+        InitEntity();
     }
 
     public override void Do()
