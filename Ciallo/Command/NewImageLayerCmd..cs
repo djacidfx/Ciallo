@@ -56,7 +56,7 @@ public class NewImageLayerCmd : CommandBase
             var color = Sprite.SelfModulate;
             color.A = v;
             Sprite.SelfModulate = color;
-        });
+        }).AddTo(Sprite);
 
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
