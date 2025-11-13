@@ -92,14 +92,15 @@ Ciallo heavily uses the [frent](https://github.com/itsBuggingMe/Frent) library f
 Make sure you understand the component pattern theory [(tutorial)](https://gameprogrammingpatterns.com/component.html),
 and the first page of the frent library [documentation](https://itsbuggingme.github.io/Frent/docs/ecf.html).
 
-See the `AppWorldManager` class. Each user document is stored and managed by a `World` object.
+I assume you already know what is Entity and Component. In Ciallo, for those editable objects like strokes, layers, we create an entity for each object and add necessary components to the entity.
+e.g. add `PolylineGeometry` compoent and `StrokeBrush` compoent to a stroke entity, `PolylineLayerSetting` component to a Polyline layer entity. You can find examples in `Ciallo/Command/New*Cmd.cs` files.
+
+Also see the `AppWorldManager` class. Each user document is stored and managed by a `World` object.
 Each `World` object creates an entity that stores "document-level singletons" data.
 e.g. `DocumentSetting` for canvas settings, `LayerTreeManager` for layer data, `CommandManager` for undo redo stack, etc.
 
 These data should be one per document, so I call them "document-level singletons" and name the entity as `Document`.
 You can find self-explanatory code like `Document.Get<LayerTreeManager>()` to visit the document's layer tree.
-
-For those editable object like strokes, layers, we will create entities and add components such as `PolylineGeometry`, `StrokeBrush`, `PolylineLayerSetting` object to the entities.
 
 <details>
 <summary>Why using an ECS library?</summary>
@@ -111,10 +112,13 @@ So to imitate them, I tried to find a 3rd party library can do the two things:
 - Manage objects lifecycle with these id values.
 
 An ECS library is a very nice fit after ignoring the "s" part (cache-friendly system coding).
-In fact, if you search for a 3rd party library for component pattern, an ECS library is the only choice. There are no dedicate libraries for component pattern.
+In fact, if you search C# libraries supporting component pattern, those ECS libraries value too much in cache-friendly performance, which is unnecessary to Ciallo.
+Frent is the only C# ECS library that values more about code architecture design rather than performance. 
 
-I used EnTT for my C++ project (undoubtedly overdesigned in that project).
-And when I started C#, I searched for a C# ECS library similar to EnTT, tried Arch and Massive then switch to Frent.
+I started using EnTT for my C++ project (undoubtedly overdesigned in that project).
+Later I have learned more about software architecture and realised probably I happened to make a nice choice.
+Check [this](https://youtu.be/wo84LFzx5nI?si=YPJa9tF5mult5ulA&t=3987) lecture OOP programming history which mentions Sketchpad. 
+Ciallo as a descendant of Sketchpad may has the same sense of good code design.
 
 </details>
 
