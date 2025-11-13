@@ -34,46 +34,46 @@ public class DeleteStrokeCmd : CommandBase
 
     public override void Do()
     {
-        // Data
-        _parentE.Get<LayerTreeNode>().RemoveChild(_strokeE);
-        _strokeE.Remove<StrokeBrush>();
-        _strokeE.Detach<ToSerializeTag>();
-        // geometry objects to be deleted with entity itself.
-
-        // View
-        _strokeView.RemoveFromParent();
-        _strokeE.Remove<StrokeView>();
+        // Cursor detection
+        _strokeArea.RemoveFromParent();
+        _strokeE.Remove<CursorDetectionArea>();
 
         // Overlay
         _strokeOverlay.RemoveFromParent();
         _strokeE.Remove<PolylineWireframe>();
 
-        // Cursor detection
-        _strokeArea.RemoveFromParent();
-        _strokeE.Remove<CursorDetectionArea>();
+        // View
+        _strokeView.RemoveFromParent();
+        _strokeE.Remove<StrokeView>();
+
+        // Data
+        _parentE.Get<LayerTreeNode>().RemoveChild(_strokeE);
+        _strokeE.Remove<StrokeBrush>();
+        _strokeE.Detach<ToSerializeTag>();
+        // geometry objects to be deleted with entity itself.
     }
 
     public override void Undo()
     {
-        // Cursor detection
-        var areaHolder = _parentE.Get<PolylineAreaHolder>();
-        areaHolder.InsertNodeAt(_strokeArea, _index);
-        _strokeE.Add(_strokeArea);
-
-        // Overlay
-        var worldOverlay = Document.Get<WorldOverlay>();
-        worldOverlay.AddChild(_strokeOverlay);
-        _strokeE.Add(_strokeOverlay);
+        // Data
+        var parentNode = _parentE.Get<LayerTreeNode>();
+        parentNode.InsertChild(_index, _strokeE);
+        _strokeE.Add(_strokeBrush);
+        _strokeE.Tag<ToSerializeTag>();
 
         // View
         var layerView = _parentE.Get<PolylineLayerView>();
         layerView.InsertNodeAt(_strokeView, _index);
         _strokeE.Add(_strokeView);
 
-        // Data
-        var parentNode = _parentE.Get<LayerTreeNode>();
-        parentNode.InsertChild(_index, _strokeE);
-        _strokeE.Add(_strokeBrush);
-        _strokeE.Tag<ToSerializeTag>();
+        // Overlay
+        var worldOverlay = Document.Get<WorldOverlay>();
+        worldOverlay.AddChild(_strokeOverlay);
+        _strokeE.Add(_strokeOverlay);
+
+        // Cursor detection
+        var areaHolder = _parentE.Get<PolylineAreaHolder>();
+        areaHolder.InsertNodeAt(_strokeArea, _index);
+        _strokeE.Add(_strokeArea);
     }
 }

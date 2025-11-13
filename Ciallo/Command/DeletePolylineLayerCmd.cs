@@ -31,44 +31,43 @@ public class DeletePolylineLayerCmd : CommandBase
 
     public override void Do()
     {
-        // Data
-        // TODO: Remove children's ToSerializeTag.
-        _parentE = _layerE.Get<LayerTreeNode>().Parent;
-        _parentE.Get<LayerTreeNode>().RemoveChild(_originalIndex);
-        _layerE.Detach<ToSerializeTag>();
-
-        // Layer panel
-        var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.RemoveFree(_layerE);
+        // Cursor detection
+        _areaHolder.RemoveFromParent();
+        _layerE.Remove<PolylineAreaHolder>();
 
         // View
         _layerView.RemoveFromParent();
         _layerE.Remove<PolylineLayerView>();
 
-        // Cursor detection
-        _areaHolder.RemoveFromParent();
-        _layerE.Remove<PolylineAreaHolder>();
+        // Layer panel
+        var layerTreeControl = Document.Get<LayerContainer>();
+        layerTreeControl.RemoveFree(_layerE);
+
+        // Data
+        _parentE = _layerE.Get<LayerTreeNode>().Parent;
+        _parentE.Get<LayerTreeNode>().RemoveChild(_originalIndex);
+        _layerE.Detach<ToSerializeTag>();
     }
 
     public override void Undo()
     {
-        // Cursor detection
-        var worldArea = Document.Get<WorldCursorDetectionArea>();
-        worldArea.AddChild(_areaHolder);
-        _layerE.Add(_areaHolder);
+        // Data
+        var parentNode = _parentE.Get<LayerTreeNode>();
+        parentNode.InsertChild(_originalIndex, _layerE);
+        _layerE.Tag<ToSerializeTag>();
+
+        // Layer panel
+        var layerTreeControl = Document.Get<LayerContainer>();
+        layerTreeControl.CreateInsert(_layerE, _originalIndex);
 
         // View
         var worldView = Document.Get<WorldView>();
         worldView.InsertNodeAt(_layerView, _originalIndex); // order matters
         _layerE.Add(_layerView);
 
-        // Layer panel
-        var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.CreateInsert(_layerE, _originalIndex);
-
-        // Data
-        _layerE.Tag<ToSerializeTag>();
-        var parentNode = _parentE.Get<LayerTreeNode>();
-        parentNode.InsertChild(_originalIndex, _layerE);
+        // Cursor detection
+        var worldArea = Document.Get<WorldCursorDetectionArea>();
+        worldArea.AddChild(_areaHolder);
+        _layerE.Add(_areaHolder);
     }
 }
