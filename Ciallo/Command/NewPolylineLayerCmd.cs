@@ -44,7 +44,14 @@ public class NewPolylineLayerCmd : CommandBase
         LayerE.Add(layerView);
         layerView.SetOwner(worldView);
 
-        LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(layerView.SetVisible).AddTo(_subs);
+        var node = LayerE.Get<LayerTreeNode>();
+        node.IsVisible.Subscribe(layerView.SetVisible).AddTo(_subs);
+        node.Opacity.Subscribe(v =>
+        {
+            var color = layerView.SelfModulate;
+            color.A = v;
+            layerView.SelfModulate = color;
+        }).AddTo(_subs);
 
         // Cursor detection
         var worldArea = Document.Get<WorldCursorDetectionArea>();

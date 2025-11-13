@@ -47,7 +47,15 @@ public class NewImageLayerCmd : CommandBase
         Setting.ImageTransform.Subscribe(Sprite.SetTransform).AddTo(Sprite);
         LayerE.Add(Sprite);
         Sprite.SetOwner(worldView);
-        LayerE.Get<LayerTreeNode>().IsVisible.Subscribe(Sprite.SetVisible).AddTo(Sprite);
+
+        var node = LayerE.Get<LayerTreeNode>();
+        node.IsVisible.Subscribe(Sprite.SetVisible).AddTo(Sprite);
+        node.Opacity.Subscribe(v =>
+        {
+            var color = Sprite.SelfModulate;
+            color.A = v;
+            Sprite.SelfModulate = color;
+        });
 
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();

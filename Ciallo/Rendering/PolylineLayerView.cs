@@ -9,5 +9,5 @@ public partial class PolylineLayerView : CanvasGroup
     }
 
     // if true, this node can be replaced by a regular node2D
-    public bool IsDefault => true;
+    public bool IsDefault => SelfModulate.IsEqualApprox(Colors.White);
 }

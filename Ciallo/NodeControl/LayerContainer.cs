@@ -15,14 +15,16 @@ using R3;
 /// </summary>
 public partial class LayerContainer : Container
 {
-    private VBoxContainer _rootControl; // all layers controls are direct children of this container, in preorder.
+    private VBoxContainer _rootContainer; // all layers controls are direct children of this container.
+    private Container _layerPropertyContainer;
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 
     private bool _isDragging = false;
     private Control _visibleDropHintLine;
     private Control _mouseHoveringLayer;
 
-    private readonly Dictionary<LayerBlock, CompositeDisposable> _subscriptions = [];
+    // Manually manage subscriptions since layer blocks need to leave tree, which disposes subscriptions with AddTo.
+    private readonly Dictionary<Entity, CompositeDisposable> _subscriptions = [];
 
     [OnInstantiate]
     private void Initialise()
@@ -31,12 +33,11 @@ public partial class LayerContainer : Container
 
     public override void _Ready()
     {
-        _rootControl = GetNode<VBoxContainer>("%TreeRoot");
+        _rootContainer = GetNode<VBoxContainer>("%TreeRoot");
+        _layerPropertyContainer = GetNode<Container>("%LayerPropertyContainer");
         // Free previews in the Godot editor.
-        foreach (var child in _rootControl.GetChildren())
-        {
-            child.QueueFree();
-        }
+        _rootContainer.QueueFreeChildren();
+        _layerPropertyContainer.QueueFreeChildren();
         _workingLayerButtonGroup.Pressed += button =>
         {
             var layerControl = (Control)button.GetOwner();
@@ -46,34 +47,57 @@ public partial class LayerContainer : Container
 
     public void CreateInsert(Entity layerE, int index)
     {
-        var control = CreateAdd(layerE);
-        _rootControl.MoveChild(control, index);
+        _subscriptions[layerE] = new CompositeDisposable();
+        CreateInsertBlock(layerE, index);
+        CreateAddProperty(layerE);
     }
 
-    public Control CreateAdd(Entity layerE)
+    public void CreateAdd(Entity layerE)
     {
-        var layerControl = Create(layerE);
-        _rootControl.AddChild(layerControl);
-        layerE.Add(layerControl);
+        _subscriptions[layerE] = new CompositeDisposable();
+        CreateAddBlock(layerE);
+        CreateAddProperty(layerE);
+    }
+
+    public void CreateAddProperty(Entity e)
+    {
+        var property = LayerProperty.Instantiate();
+        _layerPropertyContainer.AddChild(property);
+        property.VisibleIf(AppWorldManager.WorkingDocument.CurrentValue.Get<SelectionManager>().WorkingLayer, e);
+        e.Add(property);
+
+        property.Opacity.BindNumber(e.Get<LayerTreeNode>().Opacity);
+    }
+
+    public void CreateInsertBlock(Entity e, int index)
+    {
+        var control = CreateAddBlock(e);
+        _rootContainer.MoveChild(control, index);
+    }
+
+    public Control CreateAddBlock(Entity e)
+    {
+        var layerControl = CreateBlock(e);
+        _rootContainer.AddChild(layerControl);
+        e.Add(layerControl);
         return layerControl;
     }
 
-    private LayerBlock Create(Entity e)
+    private LayerBlock CreateBlock(Entity e)
     {
         var node = e.Get<LayerTreeNode>();
-        var layer = LayerBlock.Instantiate();
-        var subs = new CompositeDisposable();
-        _subscriptions[layer] = subs;
+        var subs = _subscriptions[e];
 
-        layer.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
-        layer.VisibleButton.BindBool(node.IsVisible, out var sub);
+        var block = LayerBlock.Instantiate();
+        block.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
+        block.VisibleButton.BindBool(node.IsVisible, out var sub);
         sub.AddTo(subs);
 
-        var lineEdit = layer.GetNode<LabelLineEdit>("%LabelLineEdit");
+        var lineEdit = block.GetNode<LabelLineEdit>("%LabelLineEdit");
         lineEdit.BindString(node.Name);
 
-        layer.MouseEntered += () => _mouseHoveringLayer = layer;
-        layer.MouseExited += () => _mouseHoveringLayer = null;
+        block.MouseEntered += () => _mouseHoveringLayer = block;
+        block.MouseExited += () => _mouseHoveringLayer = null;
 
         var guiInput = lineEdit
             .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
@@ -88,7 +112,7 @@ public partial class LayerContainer : Container
             .Chunk(TimeSpan.FromMilliseconds(200))
             .Where(xs => xs.Length == 2 && xs.First().IsPressed() && xs.Last().IsReleased())
             .Select(xs => xs.First());
-        singleClickObs.Subscribe(_ => layer.WorkingButton.SetPressed(true)).AddTo(subs);
+        singleClickObs.Subscribe(_ => block.WorkingButton.SetPressed(true)).AddTo(subs);
 
         // Drag
         var mouseState = leftMouse.ToReadOnlyReactiveProperty();
@@ -103,51 +127,45 @@ public partial class LayerContainer : Container
         dragStart.Subscribe(motion =>
         {
             _isDragging = true;
-            OnDragStart(layer, motion);
+            OnDragStart(block, motion);
         }).AddTo(subs);
 
         var dragging = guiInput
             .Where(_ => _isDragging)
             .OfType<InputEvent, InputEventMouseMotion>()
             .Where(motion => motion.ButtonMask == MouseButtonMask.Left);
-        dragging.Subscribe(motion => OnDragging(layer, motion)).AddTo(subs);
+        dragging.Subscribe(motion => OnDragging(block, motion)).AddTo(subs);
 
         var dragEnd = leftMouse
             .Where(button => _isDragging && button.IsReleased());
         dragEnd.Subscribe(button =>
         {
             _isDragging = false;
-            OnDragEnd(layer, button);
+            OnDragEnd(block, button);
         }).AddTo(subs);
 
-        return layer;
-    }
-
-    private void Insert(int index, LayerBlock layerControl)
-    {
-        if (!_subscriptions.ContainsKey(layerControl))
-            throw new ArgumentException("The given layer control is not created by this LayerTreeControl.");
-
-        _rootControl.AddChild(layerControl);
-        _rootControl.MoveChild(layerControl, index);
+        return block;
     }
 
     public void Move(IReadOnlyList<int> src, IReadOnlyList<int> dst)
     {
         int srcIdx = src[0];
         int dstIdx = dst[0];
-        _rootControl.MoveChild(_rootControl.GetChild(srcIdx), dstIdx);
+        _rootContainer.MoveChild(_rootContainer.GetChild(srcIdx), dstIdx);
     }
 
     public void RemoveFree(Entity layerE)
     {
-        // TODO: Warning: I'm being lazy to create a dedicated class for the layer control here.
-        var layerControl = layerE.Get<LayerBlock>();
+        // Layer block
+        layerE.Get<LayerBlock>().QueueFree();
         layerE.Remove<LayerBlock>();
-        var subscription = _subscriptions[layerControl];
-        subscription.Dispose();
-        _subscriptions.Remove(layerControl);
-        layerControl.QueueFree();
+
+        // Layer property
+        layerE.Get<LayerProperty>().QueueFree();
+        layerE.Remove<LayerProperty>();
+
+        _subscriptions[layerE].Dispose();
+        _subscriptions.Remove(layerE);
     }
 
     private void OnDragStart(LayerBlock srcLayer, InputEventMouseMotion motion)
