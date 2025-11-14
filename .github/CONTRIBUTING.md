@@ -1,14 +1,14 @@
 # Roadmap
 ## v0.1 EA plan 
-To get a little bit more than a minimum viable product, below are the features for finishing the Demo version.
-Will make a release on steam and start version "v0.1 EA" after finish these features.
+V0.1EA focus on showing off Ciallo techniques and developing MVP (minimum viable product) to support flat color drawings. Below are the features to develop, should be as feature-rich as MS paint.
 
 - [x] Document/world manager
 - [x] Export to Godot
 - [x] Export to raster image
 - [x] .Ciallo project file
 - [x] Command undo/redo system
-- [ ] Property undo/redo
+- [x] Property undo/redo
+  - [ ] Document brushes properties undo/redo 
 - [x] Tool system infrastructure
 - [x] Brush tool
   - [ ] More brushes
@@ -23,7 +23,6 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
   - [ ] Line binding system (Bézier curve only)
     - [x] Bézier curve geometry
   - [x] Polyline overlay rendering
-- [ ] Basic lasso tool
 - [x] Layer system
   - [x] Add, delete
   - [x] Rename
@@ -34,6 +33,24 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
 - [ ] Localization
   - [x] Infrastructure (ai translation)
 
+## v0.2EA plan
+V0.2EA focus on supporting semi-painterly style for producing galgame illustrations (Tachie first, CG if possible).
+Will follow [pikat](https://www.youtube.com/@pikat)'s feature list:
+
+![](/.github/PikatFeatureList.png)
+
+- [ ] Lasso tool like CSP
+- [ ] Sculpt(liquify) tool like GP
+- Layer
+  - [ ] Layer modifiers
+  - [ ] Folder
+  - [ ] Blend modes
+  - [ ] Lock & rasterize
+- [ ] Technical stuffs
+
+Aim to be able to produce business-level galgame tachie in vector. Notify me if there are missing features.
+
+![](/.github/Ririko.png)
 
 ## v1.0 plan
 Ciallo is largely inspired by Blender Grease Pencil (GP) 3D stroke.
