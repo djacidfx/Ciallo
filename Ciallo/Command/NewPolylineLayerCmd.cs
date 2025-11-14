@@ -12,6 +12,7 @@ public class NewPolylineLayerCmd : CommandBase
 {
     public Entity LayerE;
     private readonly PolylineLayerSetting _setting;
+    private CompositeDisposable _subs;
 
     public NewPolylineLayerCmd(PolylineLayerSetting setting = null)
     {
@@ -20,7 +21,6 @@ public class NewPolylineLayerCmd : CommandBase
     }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(LayerE);
-    private CompositeDisposable _subs;
 
     public override void Do()
     {
@@ -84,18 +84,16 @@ public class NewPolylineLayerCmd : CommandBase
 
     public Entity InitEntity()
     {
+        if (!LayerE.IsNull) return LayerE;
+
         var root = Document.Get<LayerTreeNode>();
-
-        if (LayerE.IsNull)
+        LayerE = WorkingWorld.Create();
+        var node = new LayerTreeNode()
         {
-            LayerE = WorkingWorld.Create();
-            var node = new LayerTreeNode()
-            {
-                Name = { Value = $"{"Line layer".Tr()} {root.ChildCount + 1}" },
-            };
-            LayerE.Add(node);
-        }
-
+            Name = { Value = $"{"Line layer".Tr()} {root.ChildCount + 1}" },
+        };
+        LayerE.Add(node);
+        node.RegisterToCommandManager(Document.Get<CommandManager>()).AddTo(LayerE);
         return LayerE;
     }
 }
