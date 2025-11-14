@@ -36,7 +36,7 @@ public partial class CommandManager : UndoRedo
     /// Make a ReactiveProperty redo undoable
     /// </summary>
     /// <returns> Subscriptions to unregister </returns>
-    public CompositeDisposable RegisterProperty<T>(ReactiveProperty<T> property) where T : struct
+    public CompositeDisposable RegisterProperty<T>(ReactiveProperty<T> property)
     {
         ReactiveProperty<T> old = new(property.Value);
         ReactiveProperty<bool> skipCommit = new(false);
@@ -44,6 +44,7 @@ public partial class CommandManager : UndoRedo
 
         property.Skip(1).Where(_ => !skipCommit.Value).Debounce(TimeSpan.FromMilliseconds(350)).Subscribe(newValue =>
         {
+            if (EqualityComparer<T>.Default.Equals(old.Value, newValue)) return;
             var obj = new PropertyWrapperObject<T>(property, skipCommit, old);
             CreateAction("Property Change");
             AddDoMethod(new(obj, PropertyWrapperObject<T>.MethodName.Do));
@@ -58,7 +59,7 @@ public partial class CommandManager : UndoRedo
     }
 }
 
-public partial class PropertyWrapperObject<T>(ReactiveProperty<T> property, ReactiveProperty<bool> skip, ReactiveProperty<T> old) : GodotObject where T : struct
+public partial class PropertyWrapperObject<T>(ReactiveProperty<T> property, ReactiveProperty<bool> skip, ReactiveProperty<T> old) : GodotObject
 {
     public T NewValue = property.Value;
     public T OldValue = old.Value;
