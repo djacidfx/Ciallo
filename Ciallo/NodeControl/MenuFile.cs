@@ -48,23 +48,23 @@ public partial class MenuFile : PopupMenu
                 AppGuiCommand.PopupOpenDocumentDialog();
                 break;
             case 2: // Close Document
-                if (AppWorldManager.WorkingWorld.Value == null) return;
+                if (AppWorldManager.WorkingWorld.Value == null) break;
                 AppWorldManager.Remove(AppWorldManager.WorkingWorld.Value);
                 break;
             case 4: // Save
-                if (AppWorldManager.WorkingWorld.Value == null) return;
+                if (AppWorldManager.WorkingWorld.Value == null) break;
                 AppWorldManager.SaveWorkingWorld();
                 break;
 
             case 7: // Export as image
-                if (AppWorldManager.WorkingWorld.Value == null) return;
+                if (AppWorldManager.WorkingWorld.Value == null) break;
                 var dialogExportImage = GetTree().GetNodesInGroup("Dialog").OfType<ExportImage>().Single();
                 dialogExportImage.Init();
                 dialogExportImage.Popup();
                 break;
 
             case 8: // Export as Godot scene
-                if (AppWorldManager.WorkingWorld.Value == null) return;
+                if (AppWorldManager.WorkingWorld.Value == null) break;
                 var dialogExportGodot = GetTree().GetNodesInGroup("Dialog").OfType<ExportGodotScene>().Single();
                 var documentSetting = AppWorldManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
                 dialogExportGodot.CurrentFile = documentSetting.Name.Value;

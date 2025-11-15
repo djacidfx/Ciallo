@@ -11,6 +11,8 @@ namespace Ciallo.Command;
 /// </summary>
 public partial class CommandManager : UndoRedo
 {
+    public ReactiveProperty<bool> DocumentModified { get; } = new(false);
+
     public CommandManager()
     {
         SetMaxSteps(3); // fast invoke bugs
@@ -42,6 +44,7 @@ public partial class CommandManager : UndoRedo
         ReactiveProperty<bool> skipCommit = new(false);
         var subs = new CompositeDisposable();
 
+        // If time within TimeSpan has no more changes, commit the final value.
         property.Skip(1).Where(_ => !skipCommit.Value).Debounce(TimeSpan.FromMilliseconds(350)).Subscribe(newValue =>
         {
             if (EqualityComparer<T>.Default.Equals(old.Value, newValue)) return;
@@ -56,6 +59,24 @@ public partial class CommandManager : UndoRedo
         }).AddTo(subs);
 
         return subs;
+    }
+
+    public new void CommitAction(bool execute = true)
+    {
+        base.CommitAction(execute);
+        DocumentModified.Value = true;
+    }
+
+    public new void Undo()
+    {
+        base.Undo();
+        DocumentModified.Value = true;
+    }
+
+    public new void Redo()
+    {
+        base.Redo();
+        DocumentModified.Value = true;
     }
 }
 

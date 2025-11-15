@@ -3,6 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Ciallo.Command;
 using Frent;
+using Godot;
 using ObservableCollections;
 using R3;
 
@@ -43,6 +44,13 @@ public static partial class AppWorldManager
         // Always init first, then add to list
         LoadedWorlds.Add(world);
 
+        DisplayServer.WindowSetTitle(settings.Name.Value + " - Ciallo");
+        document.Get<CommandManager>().DocumentModified.Subscribe(b =>
+        {
+            string name = b ? "(*)" : "";
+            DisplayServer.WindowSetTitle($"{name + settings.Name.Value} - Ciallo");
+        }).AddTo(document);
+
         return world;
     }
 
@@ -58,6 +66,8 @@ public static partial class AppWorldManager
     public static void Remove([NotNull] World world)
     {
         if (!LoadedWorlds.Contains(world)) throw new KeyNotFoundException("The specified world does not exist.");
+
+        DisplayServer.WindowSetTitle("Ciallo");
 
         // Remove working world
         LoadedWorlds.Remove(world);

@@ -16,6 +16,7 @@ public partial class AutoloadData : Node
     {
         Input.UseAccumulatedInput = false;
         GetTree().AutoAcceptQuit = false;
+
         // Message pack serializer setup
         var defaultResolver = CompositeResolver.Create(
             [EntityToIndexFormatter.Instance, TypeFormatter.Instance, ImageTextureFormatter.Instance, ImageFormatter.Instance],
@@ -53,7 +54,7 @@ public partial class AutoloadData : Node
         {
             var window = GetWindow();
             AppPreference.WindowMode = window.GetMode();
-            
+
             if (window.GetMode() == Window.ModeEnum.Windowed)
             {
                 AppPreference.WindowPosition = GetWindow().Position;
