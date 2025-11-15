@@ -33,22 +33,23 @@ V0.1EA focus on showing off Ciallo techniques and developing MVP (minimum viable
 - [ ] Localization
   - [x] Infrastructure (ai translation)
 
-## v0.2EA plan
+## v0.2 EA plan
 V0.2EA focus on supporting semi-painterly style for producing galgame illustrations (Tachie first, CG if possible).
-Will follow [pikat](https://www.youtube.com/@pikat)'s feature list:
+Plan to follow [pikat](https://www.youtube.com/@pikat)'s feature list:
 
 ![](/.github/PikatFeatureList.png)
 
-- [ ] Lasso tool like CSP
+- [ ] Lasso tool like lasso on CSP vector layer
 - [ ] Sculpt(liquify) tool like GP
 - Layer
-  - [ ] Layer modifiers
+  - [ ] Basic modifiers
   - [ ] Folder
   - [ ] Blend modes
   - [ ] Lock & rasterize
+  - [ ] Mask
 - [ ] Technical stuffs
 
-Aim to be able to produce business-level galgame tachie in vector. Notify me if there are missing features.
+Aim to be able to produce business-level galgame tachies. Notify me if there are missing features to produce following tachie.
 
 ![](/.github/Ririko.png)
 
@@ -71,6 +72,8 @@ Beside GP, here is a rough unique feature list:
 This guide is not yet complete.
 The current version seems like Shen's personal book note, but it aims to be a comprehensive guide for developing Ciallo.
 
+After getting a basic idea on Ciallo's code architecture here, you can check AI wiki [deepwiki](https://deepwiki.com/ShenCiao/Ciallo) to get in-depth details on how each system is implemented.
+
 ## Basic setup
 ### How to build
 
@@ -89,13 +92,11 @@ In theory, you can use any IDE supporting C#. Follow the Godot [guide](https://d
 However, I suggest using JetBrains [Rider](https://www.jetbrains.com/rider/), which is free since 2024 and offers comprehensive productivity support for Godot scripting.
 
 I'm pretty satisfied with Rider, but also interested in learning if Rider is the best choice.
-So if you have solid experience in VS Code or Visual Studio to script Godot C#. Contact if you would rather use one of them.
+So if you also have solid experience in scripting Godot C# with VS Code or Visual Studio, tell me your comparsion. 
 
 ## Code architecture and third-party libraries
-Designing professional-grade software architectures often takes decades of experience, so my implementations may seem noob trying hard.
-Please contact me if you have recommendations for improvement.
-
-After getting a basic idea on how to we those 3rd party libraries, you can check AI generated code wiki [deepwiki](https://deepwiki.com/ShenCiao/Ciallo) to get in depth ideas on how each system is implemented.
+Designing professional-level software architectures often takes decades of experience, so my implementations may seem noob trying hard.
+Please contact me if you have suggestions for improvement.
 
 ### Godot 2D
 
@@ -109,7 +110,7 @@ Ciallo heavily uses the [frent](https://github.com/itsBuggingMe/Frent) library f
 Make sure you understand the component pattern theory [(tutorial)](https://gameprogrammingpatterns.com/component.html),
 and the first page of the frent library [documentation](https://itsbuggingme.github.io/Frent/docs/ecf.html).
 
-I assume you already know what is Entity and Component. In Ciallo, for those editable objects like strokes, layers, we create an entity for each object and add necessary components to the entity.
+I assume you already know about Entity and Component. In Ciallo, for those editable objects like strokes, layers, we create an entity for each object and add necessary components to the entity.
 e.g. add `PolylineGeometry` compoent and `StrokeBrush` compoent to a stroke entity, `PolylineLayerSetting` component to a Polyline layer entity. You can find examples in `Ciallo/Command/New*Cmd.cs` files.
 
 Also see the `AppWorldManager` class. Each user document is stored and managed by a `World` object.
