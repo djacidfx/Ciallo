@@ -13,6 +13,7 @@ public class DeletePolylineLayerCmd : CommandBase
     private Entity _parentE;
     private readonly int _originalIndex;
 
+    private readonly CommandBase _deleteChildrenCmd;
     private readonly PolylineLayerView _layerView;
     private readonly PolylineAreaHolder _areaHolder;
 
@@ -20,7 +21,18 @@ public class DeletePolylineLayerCmd : CommandBase
     {
         // Hierarchy not implemented, always remove from root.
         _layerE = layerE;
-        _originalIndex = Document.Get<LayerTreeNode>().FindPathTo(_layerE).Single();
+        var node = _layerE.Get<LayerTreeNode>();
+        _parentE = node.Parent;
+        _originalIndex = _parentE.Get<LayerTreeNode>().FindPathTo(_layerE).Single();
+
+        _deleteChildrenCmd = new EmptyCommand();
+        foreach (var polylineE in node.Children.AsEnumerable().Reverse())
+        {
+            if (polylineE.Has<StrokeBrush>())
+                _deleteChildrenCmd.Combine(new DeleteStrokeCmd(polylineE));
+            else
+                _deleteChildrenCmd.Combine(new DeleteFilledPolygonCmd(polylineE));
+        }
 
         _layerView = _layerE.Get<PolylineLayerView>();
         _areaHolder = _layerE.Get<PolylineAreaHolder>();
@@ -31,6 +43,9 @@ public class DeletePolylineLayerCmd : CommandBase
 
     public override void Do()
     {
+        // Delete children
+        _deleteChildrenCmd.DoAllCombination();
+
         // Cursor detection
         _areaHolder.RemoveFromParent();
         _layerE.Remove<PolylineAreaHolder>();
@@ -44,7 +59,6 @@ public class DeletePolylineLayerCmd : CommandBase
         layerTreeControl.RemoveFree(_layerE);
 
         // Data
-        _parentE = _layerE.Get<LayerTreeNode>().Parent;
         _parentE.Get<LayerTreeNode>().RemoveChild(_originalIndex);
         _layerE.Detach<ToSerializeTag>();
     }
@@ -69,5 +83,8 @@ public class DeletePolylineLayerCmd : CommandBase
         var worldArea = Document.Get<WorldCursorDetectionArea>();
         worldArea.AddChild(_areaHolder);
         _layerE.Add(_areaHolder);
+
+        // Restore Children
+        _deleteChildrenCmd.UndoAllCombination();
     }
 }

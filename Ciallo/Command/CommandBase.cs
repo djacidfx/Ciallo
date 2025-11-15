@@ -63,6 +63,15 @@ public abstract class CommandBase
         }
     }
 
+    public void UndoAllCombination(bool useRootWorld = true)
+    {
+        foreach (var cmd in GetDepthFirstCommands().Reverse())
+        {
+            if (useRootWorld) cmd.WorkingWorld = WorkingWorld;
+            cmd.Undo();
+        }
+    }
+
     private readonly List<CommandBase> _combinations = [];
     public CommandBase Combine(CommandBase other)
     {

@@ -20,7 +20,8 @@ public class DeleteImageLayerCmd : CommandBase
     public DeleteImageLayerCmd(Entity layerE)
     {
         _layerE = layerE;
-        _originalIndex = Document.Get<LayerTreeNode>().FindPathTo(_layerE).Single();
+        _parentE = _layerE.Get<LayerTreeNode>().Parent;
+        _originalIndex = _parentE.Get<LayerTreeNode>().FindPathTo(_layerE).Single();
 
         _sprite = _layerE.Get<Sprite2D>();
         _overlay = _layerE.Get<TransformOverlayBox>();
