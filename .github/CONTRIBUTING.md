@@ -1,14 +1,14 @@
 # Roadmap
 ## v0.1 EA plan 
-To get a little bit more than a minimum viable product, below are the features for finishing the Demo version.
-Will make a release on steam and start version "v0.1 EA" after finish these features.
+V0.1EA focus on showing off Ciallo techniques and developing MVP (minimum viable product) to support flat color drawings. Below are the features to develop, should be as feature-rich as MS paint.
 
 - [x] Document/world manager
 - [x] Export to Godot
 - [x] Export to raster image
 - [x] .Ciallo project file
 - [x] Command undo/redo system
-- [ ] Property undo/redo
+- [x] Property undo/redo
+  - [ ] Document brushes properties undo/redo 
 - [x] Tool system infrastructure
 - [x] Brush tool
   - [ ] More brushes
@@ -23,7 +23,6 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
   - [ ] Line binding system (Bézier curve only)
     - [x] Bézier curve geometry
   - [x] Polyline overlay rendering
-- [ ] Basic lasso tool
 - [x] Layer system
   - [x] Add, delete
   - [x] Rename
@@ -34,6 +33,25 @@ Will make a release on steam and start version "v0.1 EA" after finish these feat
 - [ ] Localization
   - [x] Infrastructure (ai translation)
 
+## v0.2 EA plan
+V0.2EA focus on supporting semi-painterly style for producing galgame illustrations (Tachie first, CG if possible).
+Plan to follow [pikat](https://www.youtube.com/@pikat)'s feature list:
+
+![](/.github/PikatFeatureList.png)
+
+- [ ] Lasso tool like lasso on CSP vector layer
+- [ ] Sculpt(liquify) tool like GP
+- Layer
+  - [ ] Basic modifiers
+  - [ ] Folder
+  - [ ] Blend modes
+  - [ ] Lock & rasterize
+  - [ ] Mask
+- [ ] Technical stuffs
+
+Aim to be able to produce business-level galgame tachies. Notify me if there are missing features to produce following tachie.
+
+![](/.github/Ririko.png)
 
 ## v1.0 plan
 Ciallo is largely inspired by Blender Grease Pencil (GP) 3D stroke.
@@ -54,6 +72,8 @@ Beside GP, here is a rough unique feature list:
 This guide is not yet complete.
 The current version seems like Shen's personal book note, but it aims to be a comprehensive guide for developing Ciallo.
 
+After getting a basic idea on Ciallo's code architecture here, you can check AI wiki [deepwiki](https://deepwiki.com/ShenCiao/Ciallo) to get in-depth details on how each system is implemented.
+
 ## Basic setup
 ### How to build
 
@@ -72,13 +92,11 @@ In theory, you can use any IDE supporting C#. Follow the Godot [guide](https://d
 However, I suggest using JetBrains [Rider](https://www.jetbrains.com/rider/), which is free since 2024 and offers comprehensive productivity support for Godot scripting.
 
 I'm pretty satisfied with Rider, but also interested in learning if Rider is the best choice.
-So if you have solid experience in VS Code or Visual Studio to script Godot C#. Contact if you would rather use one of them.
+So if you also have solid experience in scripting Godot C# with VS Code or Visual Studio, tell me your comparsion. 
 
 ## Code architecture and third-party libraries
-Designing professional-grade software architectures often takes decades of experience, so my implementations may seem noob trying hard.
-Please contact me if you have recommendations for improvement.
-
-After getting a basic idea on how to we those 3rd party libraries, you can check AI generated code wiki [deepwiki](https://deepwiki.com/ShenCiao/Ciallo) to get in depth ideas on how each system is implemented.
+Designing professional-level software architectures often takes decades of experience, so my implementations may seem noob trying hard.
+Please contact me if you have suggestions for improvement.
 
 ### Godot 2D
 
@@ -92,14 +110,15 @@ Ciallo heavily uses the [frent](https://github.com/itsBuggingMe/Frent) library f
 Make sure you understand the component pattern theory [(tutorial)](https://gameprogrammingpatterns.com/component.html),
 and the first page of the frent library [documentation](https://itsbuggingme.github.io/Frent/docs/ecf.html).
 
-See the `AppWorldManager` class. Each user document is stored and managed by a `World` object.
+I assume you already know about Entity and Component. In Ciallo, for those editable objects like strokes, layers, we create an entity for each object and add necessary components to the entity.
+e.g. add `PolylineGeometry` compoent and `StrokeBrush` compoent to a stroke entity, `PolylineLayerSetting` component to a Polyline layer entity. You can find examples in `Ciallo/Command/New*Cmd.cs` files.
+
+Also see the `AppWorldManager` class. Each user document is stored and managed by a `World` object.
 Each `World` object creates an entity that stores "document-level singletons" data.
 e.g. `DocumentSetting` for canvas settings, `LayerTreeManager` for layer data, `CommandManager` for undo redo stack, etc.
 
 These data should be one per document, so I call them "document-level singletons" and name the entity as `Document`.
 You can find self-explanatory code like `Document.Get<LayerTreeManager>()` to visit the document's layer tree.
-
-For those editable object like strokes, layers, we will create entities and add components such as `PolylineGeometry`, `StrokeBrush`, `PolylineLayerSetting` object to the entities.
 
 <details>
 <summary>Why using an ECS library?</summary>
@@ -111,10 +130,13 @@ So to imitate them, I tried to find a 3rd party library can do the two things:
 - Manage objects lifecycle with these id values.
 
 An ECS library is a very nice fit after ignoring the "s" part (cache-friendly system coding).
-In fact, if you search for a 3rd party library for component pattern, an ECS library is the only choice. There are no dedicate libraries for component pattern.
+In fact, if you search C# libraries supporting component pattern, those ECS libraries value too much in cache-friendly performance, which is unnecessary to Ciallo.
+Frent is the only C# ECS library that values more about code architecture design rather than performance. 
 
-I used EnTT for my C++ project (undoubtedly overdesigned in that project).
-And when I started C#, I searched for a C# ECS library similar to EnTT, tried Arch and Massive then switch to Frent.
+I started using EnTT for my C++ project (undoubtedly overdesigned in that project).
+Later I have learned more about software architecture and realised probably I happened to make a nice choice.
+Check [this](https://youtu.be/wo84LFzx5nI?si=YPJa9tF5mult5ulA&t=3987) lecture OOP programming history which mentions Sketchpad. 
+Ciallo as a descendant of Sketchpad may has the same sense of good code design.
 
 </details>
 

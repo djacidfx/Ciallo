@@ -16,7 +16,7 @@ public class NewBrushCmd : CommandBase
     {
         _setting = setting?.Clone() ?? new BrushSetting();
         _setting.Labels.Remove(BrushLabel.BuiltIn);
-
+        InitEntity();
         // Dirty hack
         AppBrushLibrary.SelectedIndex.Value = -1;
     }
@@ -25,7 +25,6 @@ public class NewBrushCmd : CommandBase
 
     public override void Do()
     {
-        InitEntity();
         // Data
         BrushE.Tag<ToSerializeTag>();
         var bm = Document.Get<BrushManager>();
@@ -72,11 +71,9 @@ public class NewBrushCmd : CommandBase
 
     public Entity InitEntity()
     {
-        if (BrushE.IsNull)
-        {
-            BrushE = WorkingWorld.Create();
-            BrushE.Add(_setting);
-        }
+        if (!BrushE.IsNull) return BrushE;
+        BrushE = WorkingWorld.Create();
+        BrushE.Add(_setting);
 
         return BrushE;
     }

@@ -40,6 +40,7 @@ public class NewFilledPolygonCmd : CommandBase
         polygonView.SetOwner(layerView.Owner);
 
         _setting.Color.Subscribe(polygonView.SetColor).AddTo(PolygonE).AddTo(_subs);
+        CommandManager.RegisterProperty(_setting.Color).AddTo(PolygonE).AddTo(_subs);
 
         // Overlay
         var overlay = new PolylineWireframe() { Visible = false };

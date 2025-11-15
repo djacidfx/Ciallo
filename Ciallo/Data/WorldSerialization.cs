@@ -55,7 +55,7 @@ public static partial class AppWorldManager
             {
                 var newImageLayerCmd = new NewImageLayerCmd(layerDataE.Get<ImageLayerSetting>());
                 newImageLayerCmd.Do();
-                var layerE = newImageLayerCmd.LayerE;
+                var layerE = newImageLayerCmd.InitEntity();
                 layerMap.Add(layerDataE, layerE);
             }
             else if (layerDataE.Has<PolylineLayerSetting>())

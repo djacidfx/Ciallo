@@ -17,6 +17,7 @@ public abstract class CommandBase
     public Entity Document => WorkingWorld.Document();
     public virtual string Name => GetType().Name.Humanize();
     public SceneTree SceneTree => (SceneTree)Engine.GetMainLoop();
+    public CommandManager CommandManager => Document.Get<CommandManager>();
 
     public Array<Node> GetNodesInGroup(StringName group) => SceneTree.GetNodesInGroup(group);
 
@@ -43,7 +44,7 @@ public abstract class CommandBase
         }
         var cm = WorkingWorld.Document().Get<CommandManager>();
 
-        // Add Do/Undo Reference method order matters:
+        // Add Do/Undo Reference methods, order matters:
         var commands = GetDepthFirstCommands().ToArray();
         var objects = commands.Select(c => new CommandWrapperObject(c)).ToArray();
 
@@ -59,6 +60,15 @@ public abstract class CommandBase
         {
             if (useRootWorld) cmd.WorkingWorld = WorkingWorld;
             cmd.Do();
+        }
+    }
+
+    public void UndoAllCombination(bool useRootWorld = true)
+    {
+        foreach (var cmd in GetDepthFirstCommands().Reverse())
+        {
+            if (useRootWorld) cmd.WorkingWorld = WorkingWorld;
+            cmd.Undo();
         }
     }
 

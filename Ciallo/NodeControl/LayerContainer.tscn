@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://dv2pfu81kwfn4"]
 
 [ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://NodeControl/LayerContainer.cs" id="1_aydl8"]
-[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_icvmy"]
+[ext_resource type="PackedScene" uid="uid://cdki2k8di20tg" path="res://NodeControl/LayerProperty.tscn" id="2_icvmy"]
 [ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://NodeControl/LayerBlock.tscn" id="3_3l7of"]
 [ext_resource type="Script" uid="uid://bchpb7ywhw4ck" path="res://Widget/ReversedVBoxContainer.cs" id="3_icvmy"]
 
@@ -12,20 +12,12 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("1_aydl8")
 
-[node name="Setting" type="HBoxContainer" parent="."]
-layout_mode = 2
-
-[node name="Label" type="Label" parent="Setting"]
-layout_mode = 2
-text = "Opacity"
-
-[node name="Opacity" type="HBoxContainer" parent="Setting"]
+[node name="LayerPropertyContainer" type="MarginContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 2
-script = ExtResource("2_icvmy")
-MaxValue = 1.0
-Value = 1.0
-metadata/_custom_type_script = "uid://b1dclx7d0dgng"
+
+[node name="LayerProperty" parent="LayerPropertyContainer" instance=ExtResource("2_icvmy")]
+layout_mode = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="."]
 layout_mode = 2
@@ -40,11 +32,11 @@ theme_override_constants/separation = 0
 script = ExtResource("3_icvmy")
 metadata/_custom_type_script = "uid://bchpb7ywhw4ck"
 
-[node name="LayerControl" parent="ScrollContainer/TreeRoot" instance=ExtResource("3_3l7of")]
+[node name="LayerBlock" parent="ScrollContainer/TreeRoot" instance=ExtResource("3_3l7of")]
 layout_mode = 2
 
-[node name="LayerControl2" parent="ScrollContainer/TreeRoot" instance=ExtResource("3_3l7of")]
+[node name="LayerBlock2" parent="ScrollContainer/TreeRoot" instance=ExtResource("3_3l7of")]
 layout_mode = 2
 
-[node name="LayerControl3" parent="ScrollContainer/TreeRoot" instance=ExtResource("3_3l7of")]
+[node name="LayerBlock3" parent="ScrollContainer/TreeRoot" instance=ExtResource("3_3l7of")]
 layout_mode = 2

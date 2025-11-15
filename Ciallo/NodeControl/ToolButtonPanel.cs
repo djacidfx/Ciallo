@@ -13,7 +13,7 @@ public partial class ToolButtonPanel : Container
     public List<T> GetAllTools<T>() => ToolButtonGroup.GetButtons().Where(b => b.IsVisible()).Cast<T>().ToList();
 
     [OnInstantiate]
-    public void Initialise(Entity document)
+    private void Initialise(Entity document)
     {
         ToolButtonGroup.Pressed += button =>
         {

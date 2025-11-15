@@ -180,7 +180,7 @@ public static class AppBrushLibrary
             var manifestByte = file.GetBuffer((long)file.GetLength());
             manifestFileNames = MessagePackSerializer.Deserialize<List<string>>(manifestByte);
         }
-        
+
         // List files
         using var brushDir = DirAccess.Open(BrushFolder);
         var fileNames = new List<string>();
@@ -196,7 +196,7 @@ public static class AppBrushLibrary
         // Load
         BrushSettings.Clear();
         BrushSettings.AddRange(Enumerable.Repeat<BrushSetting>(null, manifestFileNames.Count));
-        
+
         foreach (var fn in fileNames)
         {
             using var file = FileAccess.Open(BrushFolder + fn + ".bin", FileAccess.ModeFlags.Read);
@@ -206,12 +206,12 @@ public static class AppBrushLibrary
             {
                 brush = MessagePackSerializer.Deserialize<BrushSetting>(content);
             }
-            catch (Exception _)
+            catch (Exception)
             {
                 continue;
             }
             var index = manifestFileNames.IndexOf(fn);
-            if(index >= 0)
+            if (index >= 0)
                 BrushSettings[index] = brush;
             else
                 BrushSettings.Add(brush);

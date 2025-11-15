@@ -2,6 +2,7 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.Serialization;
+using Ciallo.Command;
 using R3;
 
 namespace Ciallo.Data;
@@ -13,7 +14,16 @@ public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
     [DataMember] public ReactiveProperty<bool> IsVisible = new(true);
     [DataMember] public ReactiveProperty<float> Opacity = new(1.0f);
     [DataMember] public ReactiveProperty<bool> IsLocked = new(false); // Need to implement
-    
+
+    public CompositeDisposable RegisterToCommandManager(CommandManager manager)
+    {
+        CompositeDisposable subs = new();
+        manager.RegisterProperty(Name).AddTo(subs);
+        manager.RegisterProperty(IsVisible).AddTo(subs);
+        manager.RegisterProperty(Opacity).AddTo(subs);
+        return subs;
+    }
+
     /// <summary>
     /// Assume the given node is focused and going to be deleted, return the path to the next node that should have focus.
     /// e.g. Used at deletion of working layer to determine the new working layer.

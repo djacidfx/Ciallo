@@ -13,6 +13,7 @@ public class DeletePolylineLayerCmd : CommandBase
     private Entity _parentE;
     private readonly int _originalIndex;
 
+    private readonly CommandBase _deleteChildrenCmd;
     private readonly PolylineLayerView _layerView;
     private readonly PolylineAreaHolder _areaHolder;
 
@@ -20,7 +21,18 @@ public class DeletePolylineLayerCmd : CommandBase
     {
         // Hierarchy not implemented, always remove from root.
         _layerE = layerE;
-        _originalIndex = Document.Get<LayerTreeNode>().FindPathTo(_layerE).Single();
+        var node = _layerE.Get<LayerTreeNode>();
+        _parentE = node.Parent;
+        _originalIndex = _parentE.Get<LayerTreeNode>().FindPathTo(_layerE).Single();
+
+        _deleteChildrenCmd = new EmptyCommand();
+        foreach (var polylineE in node.Children.AsEnumerable().Reverse())
+        {
+            if (polylineE.Has<StrokeBrush>())
+                _deleteChildrenCmd.Combine(new DeleteStrokeCmd(polylineE));
+            else
+                _deleteChildrenCmd.Combine(new DeleteFilledPolygonCmd(polylineE));
+        }
 
         _layerView = _layerE.Get<PolylineLayerView>();
         _areaHolder = _layerE.Get<PolylineAreaHolder>();
@@ -31,44 +43,48 @@ public class DeletePolylineLayerCmd : CommandBase
 
     public override void Do()
     {
-        // Data
-        // TODO: Remove children's ToSerializeTag.
-        _parentE = _layerE.Get<LayerTreeNode>().Parent;
-        _parentE.Get<LayerTreeNode>().RemoveChild(_originalIndex);
-        _layerE.Detach<ToSerializeTag>();
+        // Delete children
+        _deleteChildrenCmd.DoAllCombination();
 
-        // Layer panel
-        var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.RemoveFree(_layerE);
+        // Cursor detection
+        _areaHolder.RemoveFromParent();
+        _layerE.Remove<PolylineAreaHolder>();
 
         // View
         _layerView.RemoveFromParent();
         _layerE.Remove<PolylineLayerView>();
 
-        // Cursor detection
-        _areaHolder.RemoveFromParent();
-        _layerE.Remove<PolylineAreaHolder>();
+        // Layer panel
+        var layerTreeControl = Document.Get<LayerContainer>();
+        layerTreeControl.RemoveFree(_layerE);
+
+        // Data
+        _parentE.Get<LayerTreeNode>().RemoveChild(_originalIndex);
+        _layerE.Detach<ToSerializeTag>();
     }
 
     public override void Undo()
     {
-        // Cursor detection
-        var worldArea = Document.Get<WorldCursorDetectionArea>();
-        worldArea.AddChild(_areaHolder);
-        _layerE.Add(_areaHolder);
+        // Data
+        var parentNode = _parentE.Get<LayerTreeNode>();
+        parentNode.InsertChild(_originalIndex, _layerE);
+        _layerE.Tag<ToSerializeTag>();
+
+        // Layer panel
+        var layerTreeControl = Document.Get<LayerContainer>();
+        layerTreeControl.CreateInsert(_layerE, _originalIndex);
 
         // View
         var worldView = Document.Get<WorldView>();
         worldView.InsertNodeAt(_layerView, _originalIndex); // order matters
         _layerE.Add(_layerView);
 
-        // Layer panel
-        var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.CreateInsert(_layerE, _originalIndex);
+        // Cursor detection
+        var worldArea = Document.Get<WorldCursorDetectionArea>();
+        worldArea.AddChild(_areaHolder);
+        _layerE.Add(_areaHolder);
 
-        // Data
-        _layerE.Tag<ToSerializeTag>();
-        var parentNode = _parentE.Get<LayerTreeNode>();
-        parentNode.InsertChild(_originalIndex, _layerE);
+        // Restore Children
+        _deleteChildrenCmd.UndoAllCombination();
     }
 }

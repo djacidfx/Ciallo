@@ -34,46 +34,46 @@ public class DeleteFilledPolygonCmd : CommandBase
 
     public override void Do()
     {
-        // Data
-        _parentE.Get<LayerTreeNode>().RemoveChild(_polygonE);
-        _polygonE.Remove<FilledPolygonSetting>();
-        _polygonE.Detach<ToSerializeTag>();
-        // geometry objects to be deleted with entity itself.
-
-        // View
-        _polygonView.RemoveFromParent();
-        _polygonE.Remove<Polygon2D>();
+        // Cursor detection
+        _polygonArea.RemoveFromParent();
+        _polygonE.Remove<CursorDetectionArea>();
 
         // Overlay
         _polygonOverlay.RemoveFromParent();
         _polygonE.Remove<PolylineWireframe>();
 
-        // Cursor detection
-        _polygonArea.RemoveFromParent();
-        _polygonE.Remove<CursorDetectionArea>();
+        // View
+        _polygonView.RemoveFromParent();
+        _polygonE.Remove<Polygon2D>();
+
+        // Data
+        _parentE.Get<LayerTreeNode>().RemoveChild(_polygonE);
+        _polygonE.Remove<FilledPolygonSetting>();
+        _polygonE.Detach<ToSerializeTag>();
+        // geometry objects to be deleted with entity itself.
     }
 
     public override void Undo()
     {
-        // Cursor detection
-        var areaHolder = _parentE.Get<PolylineAreaHolder>();
-        areaHolder.InsertNodeAt(_polygonArea, _index);
-        _polygonE.Add(_polygonArea);
-
-        // Overlay
-        var worldOverlay = Document.Get<WorldOverlay>();
-        worldOverlay.AddChild(_polygonOverlay);
-        _polygonE.Add(_polygonOverlay);
+        // Data
+        var parentNode = _parentE.Get<LayerTreeNode>();
+        parentNode.InsertChild(_index, _polygonE);
+        _polygonE.Add(_polygonSetting);
+        _polygonE.Tag<ToSerializeTag>();
 
         // View
         var layerView = _parentE.Get<PolylineLayerView>();
         layerView.InsertNodeAt(_polygonView, _index);
         _polygonE.Add(_polygonView);
 
-        // Data
-        var parentNode = _parentE.Get<LayerTreeNode>();
-        parentNode.InsertChild(_index, _polygonE);
-        _polygonE.Add(_polygonSetting);
-        _polygonE.Tag<ToSerializeTag>();
+        // Overlay
+        var worldOverlay = Document.Get<WorldOverlay>();
+        worldOverlay.AddChild(_polygonOverlay);
+        _polygonE.Add(_polygonOverlay);
+
+        // Cursor detection
+        var areaHolder = _parentE.Get<PolylineAreaHolder>();
+        areaHolder.InsertNodeAt(_polygonArea, _index);
+        _polygonE.Add(_polygonArea);
     }
 }
