@@ -64,7 +64,7 @@ In the invisible-far future, Ciallo may offer AI-powered features --- but always
 ### Optimized pen feel
 
 Ciallo aims to provide a drawing/pen feel significantly better than _Clip Studio Paint_ and _Procreate_; this will require several technical advancements in future updates.
-For the current version, the feel is not worse than _Clip Studio Paint_ and is certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.)
+For the current version, the feel is not worse than _Clip Studio Paint_ and certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.)
 
 ### Infinite canvas
 
@@ -91,21 +91,34 @@ Close any other software that heavily uses your GPU before opening Ciallo (excep
 
 ## Development philosophy
 
+**EA stage**
+
 Ciallo is in an early stage of development; its version number will be labeled as EA (early access).
+During the EA stage, Ciallo mainly focuses on R&D of traditional painting features using modern shaders and GPU APIs. After finishing those major painting features, we plan to open Steam Workshop, marking the end of the EA stage.
 
-During the EA stage, Ciallo mainly focuses on R&D of traditional painting features using modern shaders and GPU APIs. After finishing major painting features, we'll try opening Steam Workshop, marking the end of the EA stage.
+**Hand-drawn art**
 
-Overall, Ciallo will be developed as a DCC program focusing on creating 2D game assets, including illustrations, 2D animations and hand-drawn textures in 3D.
+Although Ciallo focuses on vector features, it is NOT intended to replace Inkscape or Illustrator for graphic design.
+Instead, it aims to provide Clip Studio Paint vector layers on super steroids.
+Features that were previously available only in raster workflows would eventually be supported in Ciallo's new vector workflow.
+
+**Game first**
+
+Except for the core painting, Ciallo prioritizes auxiliary features supporting video game development.
+It aims to be a DCC program providing vector hand-drawn assets, including illustrations, 2D animations and hand-drawn textures in 3D.
 
 ## Feature requests
 
-Hope Ciallo's tools already address something important to you. (To be frank, the large company should have provided these tools a decade ago.) There's always more to add as Ciallo grows.
+Hope Ciallo's tools already address something important to you. (To be frank, the large company should have provided these infrastructures a decade ago.) There's always more to add as Ciallo grows.
 
 The developer basically knows the most needed features during the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2).
 
-If you urgently need a feature deployed within a week or month, consider contacting the developer or sponsoring the project.
+Instead of asking features existing in other paint programs, you may put forward creative features unconstrained in style.
+The developer would love to hear new ideas on line art (especially anime-style art) and may be able to do technical research on your request.
 
-## Sponsor my research and your future
+If you urgently need a feature in other programs deployed in Ciallo within a week or month, consider contacting the developer or sponsoring the project.
+
+## Sponsor Ciallo's research and your future
 
 Ciallo's mission is to bring your hard-drawn art techniques to life, and it needs your support to keep them free and accessible to everyone.
 
@@ -115,12 +128,12 @@ Sponsor Ciallo to shape the future of your digital painting and help keep creati
 
 ## User-created content copyright and AI notice
 
-For the purposes of this Project, "Artwork" means any brushes and drawings saved, exported, or represented in Ciallo's native format, other game engine vector formats, or raster images. The copyright owner of an Artwork (the "Owner") retains all rights in and to that Artwork. We do not claim any rights over user-generated content.
+For the purposes of this Project, "Artwork" means any brushes and drawings saved, exported, or represented in Ciallo's native format, other game engine vector formats, or raster format. The copyright owner of an Artwork (the "Owner") retains all rights in and to that Artwork. We do not claim any rights over user-generated Artwork.
 
 Unless the Owner has given explicit express, written permission, any use of Artwork to train, fine‑tune, validate, evaluate, or otherwise improve machine learning, generative AI, or other automated models or datasets is strictly prohibited. Prohibited acts include, without limitation, collection, copying, ingestion, extraction, annotation, transformation, or inclusion of such Artwork in any training, testing, or benchmarking dataset.
 
 Explicit prohibition on "no‑copyright" labels and opt‑out schemes:
-Artwork labeled or claimed as "no copyright", "public domain", or similar does not authorize AI training under this project's terms. Likewise, any purported "opt‑out" or "unless the Owner opts out" declarations (i.e., statements that artworks may be used for AI purposes unless an Owner affirmatively opts out) do not and shall not be treated as authorization to use this project Artwork for AI training. Such uses are violations of this project's terms and may result in injunctive relief, damages, and recovery of costs and attorneys' fees under applicable law.
+Artwork labeled or claimed as "no copyright", "public domain", or similar does not authorize AI training under this project's terms. Likewise, any purported "opt‑out" or "unless the Owner opts out" declarations (i.e., statements that artworks may be used for AI purposes unless an Owner affirmatively opts out) do not and shall not be treated as authorization to use Artwork for AI training. Such uses are violations of this project's terms and may result in injunctive relief, damages, and recovery of costs and attorneys' fees under applicable law.
 
 All rights not expressly granted are reserved.
 
