@@ -7,9 +7,9 @@ namespace Ciallo.Data;
 
 public class SetPolylineGeometryCmd : CommandBase
 {
+    private readonly Entity _polylineE;
     private readonly PolylineGeometry _newGeometry;
     private PolylineGeometry _oldGeometry;
-    private readonly Entity _polylineE;
 
     public SetPolylineGeometryCmd(Entity polylineE, PolylineGeometry newGeometry)
     {
@@ -65,7 +65,7 @@ public class SetPolylineGeometryCmd : CommandBase
             _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);
 
             // View
-            _polylineE.Get<StrokeView>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii, _newGeometry.Pressures);
+            _polylineE.Get<StrokeView>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii, _oldGeometry.Pressures);
         }
 
         // Overlay

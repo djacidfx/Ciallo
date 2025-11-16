@@ -6,12 +6,14 @@ Want to know how these features are (or will be) implemented?
 Leave a star to this project and check my [research project], [paper](https://dl.acm.org/doi/10.1145/3641519.3657418) or [tutorial](https://shenciao.github.io/brush-rendering-tutorial/Introduction/).
 
 ---
+
 # Ciallo ～(∠・ω< )⌒★!
 
 Ciallo is an open-source graphics program for professional digital painting.
 It aims to compete with traditional raster painting software like Photoshop and Clip Studio Paint, while offering the following unique features researched by the developer:
 
 ## Unique features
+
 ### Vectorized Photoshop-like brushes
 
 Resolution-independent stamp brushes, entirely drawn (rendered) on your graphics card (GPU).
@@ -34,6 +36,7 @@ Like those old days when Flash was alive.
 Will support other game engines in the future.
 
 ### (WIP) Vector fill
+
 Bucket fill in vector form: The positions to fill are editable and tracked with "fill markers", the shape $\odot$ in the image:
 
 ![](/.github/VectorFill.gif)
@@ -43,9 +46,11 @@ Copy and paste these markers between animation frames:
 ![](/.github/VectorFillFrames.gif)
 
 ## Other features
+
 The following features may be in your favor:
 
 ### No generative AI
+
 <img align="left" width="192" height="192" src="https://upload.wikimedia.org/wikipedia/commons/f/f1/No_AI_art.svg">
 
 Ciallo uses a custom vector format that is hard to generate by current AI technique.
@@ -57,10 +62,12 @@ We also plan to build a sharing platform while protecting your artworks from une
 In the invisible-far future, Ciallo may offer AI-powered features --- but always designed for professional artists.
 
 ### Optimized pen feel
+
 Ciallo aims to provide a drawing/pen feel significantly better than _Clip Studio Paint_ and _Procreate_; this will require several technical advancements in future updates.
-For the current version, the feel is not worse than _Clip Studio Paint_ and is certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.)
+For the current version, the feel is not worse than _Clip Studio Paint_ and certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.)
 
 ### Infinite canvas
+
 @Developer: "I have never seen a professional artist who needs an infinite canvas when drawing illustrators, mangas, or animes.
 Do you really need this feature? Tell me how I can add better support.
 
@@ -84,21 +91,35 @@ Close any other software that heavily uses your GPU before opening Ciallo (excep
 
 ## Development philosophy
 
+**EA stage**
+
 Ciallo is in an early stage of development; its version number will be labeled as EA (early access).
+During the EA stage, Ciallo mainly focuses on R&D of traditional painting features using modern shaders and GPU APIs. After finishing those major painting features, we plan to open Steam Workshop, marking the end of the EA stage.
 
-During the EA stage, Ciallo mainly focuses on R&D of traditional painting features using modern shaders and GPU APIs. After finishing major painting features, we'll try opening Steam Workshop, marking the end of the EA stage.
+**Hand-drawn art**
 
-Overall, Ciallo will be developed as a DCC program focusing on creating 2D game assets, including illustrations, 2D animations and hand-drawn textures in 3D.
+Although Ciallo focuses on vector features, it is NOT intended to replace Inkscape or Illustrator for graphic design.
+Instead, it aims to provide Clip Studio Paint vector layers on super steroids.
+Features that were previously available only in raster workflows would eventually be supported in Ciallo's new vector workflow.
+
+**Game first**
+
+Except for the core painting, Ciallo prioritizes auxiliary features supporting video game development.
+It aims to be a DCC program providing vector hand-drawn assets, including illustrations, 2D animations and hand-drawn textures in 3D.
 
 ## Feature requests
 
-Hope Ciallo's tools already address something important to you. (To be frank, the large company should have provided these tools a decade ago.) There's always more to add as Ciallo grows.
+Hope Ciallo's tools already address something important to you. (To be frank, the large company should have provided these infrastructures a decade ago.) There's always more to add as Ciallo grows.
 
 The developer basically knows the most needed features during the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2).
 
-If you urgently need a feature deployed within a week or month, consider contacting the developer or sponsoring the project.
+Instead of asking for features existing in other paint programs, you may propose creative features unconstrained in style.
+The developer would love to hear new ideas on line art (especially anime-style art) and may be able to do technical research on your request.
 
-## Sponsor my research and your future
+If you urgently need a feature from other programs implemented in Ciallo within a week or month, consider contacting the developer or sponsoring the project.
+
+## Sponsor Ciallo's research and your future
+
 Ciallo's mission is to bring your hard-drawn art techniques to life, and it needs your support to keep them free and accessible to everyone.
 
 Moreover, in this age of AI we all face challenges from rapidly advancing AI techniques.
@@ -106,17 +127,20 @@ Hope Ciallo will be the tool that helps you shine in this era — a tool that li
 Sponsor Ciallo to shape the future of your digital painting and help keep creativity alive in an AI-driven world.
 
 ## User-created content copyright and AI notice
-For the purposes of this Project, "Artwork" means any brushes and drawings saved, exported, or represented in Ciallo's native format, other game engine vector formats, or raster images. The copyright owner of an Artwork (the "Owner") retains all rights in and to that Artwork. We do not claim any rights over user-generated content.
+
+For the purposes of this Project, "Artwork" means any brushes and drawings saved, exported, or represented in Ciallo's native format, other game engine vector formats, or raster format. The copyright owner of an Artwork (the "Owner") retains all rights in and to that Artwork. We do not claim any rights over user-generated Artwork.
 
 Unless the Owner has given explicit express, written permission, any use of Artwork to train, fine‑tune, validate, evaluate, or otherwise improve machine learning, generative AI, or other automated models or datasets is strictly prohibited. Prohibited acts include, without limitation, collection, copying, ingestion, extraction, annotation, transformation, or inclusion of such Artwork in any training, testing, or benchmarking dataset.
 
-Explicit prohibition on "no‑copyright" labels and opt‑out schemes: 
-Artwork labeled or claimed as "no copyright", "public domain", or similar does not authorize AI training under this project's terms. Likewise, any purported "opt‑out" or "unless the Owner opts out" declarations (i.e., statements that artworks may be used for AI purposes unless an Owner affirmatively opts out) do not and shall not be treated as authorization to use this project Artwork for AI training. Such uses are violations of this project's terms and may result in injunctive relief, damages, and recovery of costs and attorneys' fees under applicable law.
+Explicit prohibition on "no‑copyright" labels and opt‑out schemes:
+Artwork labeled or claimed as "no copyright", "public domain", or similar does not authorize AI training under this project's terms. Likewise, any purported "opt‑out" or "unless the Owner opts out" declarations (i.e., statements that artworks may be used for AI purposes unless an Owner affirmatively opts out) do not and shall not be treated as authorization to use Artwork for AI training. Such uses are violations of this project's terms and may result in injunctive relief, damages, and recovery of costs and attorneys' fees under applicable law.
 
 All rights not expressly granted are reserved.
 
 ## Credits
+
 ### Project name
+
 The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", and comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). We won't shame this name.
 
 ### Coding frameworks/libraries
@@ -132,6 +156,7 @@ The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", an
 - [Stateless](https://github.com/dotnet-state-machine/stateless): Managing complex interactive states (tool system).
 
 ## Build Guide
+
 Ciallo is built on Godot. Building the core part of Ciallo is the same as building a standard Godot C# project:
 
 - Set up Godot 4.5.1 with .Net9. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
@@ -167,6 +192,7 @@ I'm far away from being familiar with the low-level [`RenderingDevice`](https://
 If we have to give up using Godot for whatever reason someday, we may consider using [defold](https://defold.com/) or [flax](https://flaxengine.com/).
 
 ### Why not GDScript?
+
 Dynamically-typed languages cannot support our project (or, IMHO, any projects that need more than 5 custom types). C# is a better choice, also for its larger community.
 Developing a mature programming language is as hard as developing the game engine itself.
 GDscript is doubling the efforts as Godot grows.
@@ -176,5 +202,7 @@ But I do like the GDScript language itself. In my wet dream, Godot will treat C#
 > The graphics community lacks an advanced programming language for shading. Compared to C#, GDScript lacks many features, but compared to GLSL/HLSL, GDScript is already very feature-rich.
 
 [Contributing Tab]:https://github.com/ShenCiao/Ciallo?tab=contributing-ov-file
+
 [research project]:https://github.com/ShenCiao/CialloResearch
+
 [Shen Ciao]:https://github.com/ShenCiao

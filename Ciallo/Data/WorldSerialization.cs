@@ -103,6 +103,7 @@ public static partial class AppWorldManager
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (CanSaveFile(settings.FilePath.Value))
             Save(WorkingWorld.Value, settings.FilePath.Value);
+        WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified.Value = false;
     }
 
     public static void ReloadWorkingWorld() // for debug

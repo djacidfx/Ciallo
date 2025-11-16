@@ -11,6 +11,8 @@ namespace Ciallo.Command;
 /// </summary>
 public partial class CommandManager : UndoRedo
 {
+    public ReactiveProperty<bool> DocumentModified { get; } = new(false);
+
     public CommandManager()
     {
         SetMaxSteps(3); // fast invoke bugs
@@ -32,6 +34,7 @@ public partial class CommandManager : UndoRedo
         AddUndoReference(cmdWrapper);
     }
 
+    public static bool SkipPropertyCommit = false; // not thread safe
     /// <summary>
     /// Make a ReactiveProperty redo undoable
     /// </summary>
@@ -39,13 +42,13 @@ public partial class CommandManager : UndoRedo
     public CompositeDisposable RegisterProperty<T>(ReactiveProperty<T> property)
     {
         ReactiveProperty<T> old = new(property.Value);
-        ReactiveProperty<bool> skipCommit = new(false);
         var subs = new CompositeDisposable();
 
-        property.Skip(1).Where(_ => !skipCommit.Value).Debounce(TimeSpan.FromMilliseconds(350)).Subscribe(newValue =>
+        // If time within TimeSpan has no more changes, commit the final value.
+        property.Skip(1).Where(_ => !SkipPropertyCommit).Debounce(TimeSpan.FromMilliseconds(350)).Subscribe(newValue =>
         {
             if (EqualityComparer<T>.Default.Equals(old.Value, newValue)) return;
-            var obj = new PropertyWrapperObject<T>(property, skipCommit, old);
+            var obj = new PropertyWrapperObject<T>(property, old);
             CreateAction("Property Change");
             AddDoMethod(new(obj, PropertyWrapperObject<T>.MethodName.Do));
             AddDoReference(obj);
@@ -57,25 +60,43 @@ public partial class CommandManager : UndoRedo
 
         return subs;
     }
+
+    public new void CommitAction(bool execute = true)
+    {
+        base.CommitAction(execute);
+        DocumentModified.Value = true;
+    }
+
+    public new void Undo()
+    {
+        base.Undo();
+        DocumentModified.Value = true;
+    }
+
+    public new void Redo()
+    {
+        base.Redo();
+        DocumentModified.Value = true;
+    }
 }
 
-public partial class PropertyWrapperObject<T>(ReactiveProperty<T> property, ReactiveProperty<bool> skip, ReactiveProperty<T> old) : GodotObject
+public partial class PropertyWrapperObject<T>(ReactiveProperty<T> property, ReactiveProperty<T> old) : GodotObject
 {
-    public T NewValue = property.Value;
-    public T OldValue = old.Value;
+    public readonly T NewValue = property.Value;
+    public readonly T OldValue = old.Value;
 
     public void Do()
     {
-        skip.Value = true;
+        CommandManager.SkipPropertyCommit = true;
         property.Value = NewValue;
-        skip.Value = false;
+        CommandManager.SkipPropertyCommit = false;
         old.Value = NewValue;
     }
     public void Undo()
     {
-        skip.Value = true;
+        CommandManager.SkipPropertyCommit = true;
         property.Value = OldValue;
-        skip.Value = false;
+        CommandManager.SkipPropertyCommit = false;
         old.Value = OldValue;
     }
 }
