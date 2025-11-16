@@ -9,18 +9,18 @@ public class SetPolylineGeometryCmd : CommandBase
 {
     private readonly Entity _polylineE;
     private readonly PolylineGeometry _newGeometry;
-    private readonly PolylineGeometry _oldGeometry;
+    private PolylineGeometry _oldGeometry;
 
     public SetPolylineGeometryCmd(Entity polylineE, PolylineGeometry newGeometry)
     {
         _polylineE = polylineE;
         _newGeometry = newGeometry;
-        _oldGeometry = _polylineE.Get<PolylineGeometry>();
     }
 
     public override void Do()
     {
         // Data
+        _oldGeometry ??= _polylineE.Get<PolylineGeometry>();
         _polylineE.Get<PolylineGeometry>() = _newGeometry;
 
         // Overlay
