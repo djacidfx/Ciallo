@@ -1,16 +1,15 @@
 using System.Threading.Tasks;
-using Ciallo.Misc;
 using Godot;
 
 public partial class SaveChangeDialog : ConfirmationDialog
 {
-    public TaskCompletionSource<int> DialogResultSource;
+    private TaskCompletionSource<int> _dialogResultSource;
     public readonly Button YesButton;
     public readonly Button NoButton;
 
     public SaveChangeDialog()
     {
-        DialogText = "Save changes?".Tr();
+        DialogText = "Save changes?";
         NoButton = AddButton("No");
         YesButton = AddButton("Yes");
         GetOkButton().Visible = false;
@@ -22,30 +21,30 @@ public partial class SaveChangeDialog : ConfirmationDialog
 
     public Task<int> PopupCollectInput()
     {
-        DialogResultSource = new TaskCompletionSource<int>();
+        _dialogResultSource = new TaskCompletionSource<int>();
         PopupCentered();
 
-        return DialogResultSource.Task;
+        return _dialogResultSource.Task;
     }
 
     private void OnNo()
     {
-        DialogResultSource?.SetResult(0);
-        DialogResultSource = null;
+        _dialogResultSource?.SetResult(0);
+        _dialogResultSource = null;
         Hide();
     }
 
     public void OnYes()
     {
-        DialogResultSource?.SetResult(1);
-        DialogResultSource = null;
+        _dialogResultSource?.SetResult(1);
+        _dialogResultSource = null;
         Hide();
     }
 
     public void OnCancel()
     {
-        DialogResultSource?.SetResult(-1);
-        DialogResultSource = null;
+        _dialogResultSource?.SetResult(-1);
+        _dialogResultSource = null;
         Hide();
     }
 }

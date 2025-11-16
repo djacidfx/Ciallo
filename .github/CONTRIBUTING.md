@@ -99,7 +99,7 @@ In theory, you can use any IDE supporting C#. Follow the Godot [guide](https://d
 However, I suggest using JetBrains [Rider](https://www.jetbrains.com/rider/), which is free since 2024 and offers comprehensive productivity support for Godot scripting.
 
 I'm pretty satisfied with Rider, but also interested in learning if Rider is the best choice.
-So if you also have solid experience in scripting Godot C# with VS Code or Visual Studio, tell me your comparsion.
+So if you also have solid experience in scripting Godot C# with VS Code or Visual Studio, tell me your comparison.
 
 ## Code architecture and third-party libraries
 

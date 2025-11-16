@@ -34,7 +34,7 @@ public partial class CommandManager : UndoRedo
         AddUndoReference(cmdWrapper);
     }
 
-    public static bool SkipPropertyCommit = false;
+    public static bool SkipPropertyCommit = false; // not thread safe
     /// <summary>
     /// Make a ReactiveProperty redo undoable
     /// </summary>

@@ -84,7 +84,8 @@ public partial class WorldEventDispatcher : SubViewportContainer
     // Need further test on some wacom devices.
     public void OnGuiInput(InputEvent e)
     {
-        if (!Document.IsAlive) return; // This could happen at the end frame of closing the document. This container is queue freed but the Document is directly freed.
+        if (!Document.IsAlive) return; // This check prevents errors when the document is closed.
+        // The container is queued for deletion but the Document entity is freed immediately, which can cause this method to be called on a disposed entity.
         if (e is InputEventKey key) DispatchKey(key);
         if (e is not InputEventMouse mouseEvent) return;
 

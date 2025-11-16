@@ -75,7 +75,6 @@ always_on_top = true
 
 [node name="SaveChangeDialog" type="ConfirmationDialog" parent="." groups=["Dialog"]]
 ok_button_text = "Save"
-dialog_text = "Save changes?"
 script = ExtResource("8_5tuhn")
 
 [node name="MainGui" type="VBoxContainer" parent="."]

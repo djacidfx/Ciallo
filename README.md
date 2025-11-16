@@ -113,10 +113,10 @@ Hope Ciallo's tools already address something important to you. (To be frank, th
 
 The developer basically knows the most needed features during the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2).
 
-Instead of asking features existing in other paint programs, you may put forward creative features unconstrained in style.
+Instead of asking for features existing in other paint programs, you may propose creative features unconstrained in style.
 The developer would love to hear new ideas on line art (especially anime-style art) and may be able to do technical research on your request.
 
-If you urgently need a feature in other programs deployed in Ciallo within a week or month, consider contacting the developer or sponsoring the project.
+If you urgently need a feature from other programs implemented in Ciallo within a week or month, consider contacting the developer or sponsoring the project.
 
 ## Sponsor Ciallo's research and your future
 
