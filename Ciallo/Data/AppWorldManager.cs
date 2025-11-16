@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Threading.Tasks;
 using Ciallo.Command;
 using Frent;
 using Godot;
@@ -22,6 +23,10 @@ public static partial class AppWorldManager
     public static readonly ReactiveProperty<World> WorkingWorld = new(null);
     public static readonly ReadOnlyReactiveProperty<Entity> WorkingDocument =
         WorkingWorld.Select(w => w?.Document() ?? default).ToReadOnlyReactiveProperty();
+    public static bool WorkingWorldModified => WorkingWorld.Value != null && WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified.Value;
+
+    private static readonly Dictionary<World, Entity> WorldToDocument = [];
+    public static Entity Document([NotNull] this World world) => WorldToDocument[world];
 
     public static World Create([NotNull] DocumentSetting settings)
     {
@@ -89,6 +94,30 @@ public static partial class AppWorldManager
         }
     }
 
-    private static Dictionary<World, Entity> WorldToDocument = [];
-    public static Entity Document([NotNull] this World world) => WorldToDocument[world];
+    // If false, user cancels the close operation.
+    public static async Task<bool> UserCloseWorkingWorld()
+    {
+        if (WorkingWorld.Value == null) return true;
+
+        if (WorkingWorldModified)
+        {
+            var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<SaveChangeDialog>().Single();
+            var result = await dialog.PopupCollectInput();
+            if (result == 1) // Yes
+            {
+                SaveWorkingWorld();
+                Remove(WorkingWorld.Value);
+                return true;
+            }
+            if (result == 0) // No
+            {
+                Remove(WorkingWorld.Value);
+                return true;
+            }
+            // Cancel
+            return false;
+        }
+        Remove(WorkingWorld.Value);
+        return true;
+    }
 }

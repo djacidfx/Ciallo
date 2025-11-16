@@ -49,7 +49,7 @@ public partial class MenuFile : PopupMenu
                 break;
             case 2: // Close Document
                 if (AppWorldManager.WorkingWorld.Value == null) break;
-                AppWorldManager.Remove(AppWorldManager.WorkingWorld.Value);
+                _ = AppWorldManager.UserCloseWorkingWorld();
                 break;
             case 4: // Save
                 if (AppWorldManager.WorkingWorld.Value == null) break;

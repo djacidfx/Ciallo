@@ -71,10 +71,14 @@ public partial class AutoloadData : Node
         AppBrushLibrary.BindToGui();
     }
 
-    public override void _Notification(int what)
+    // ReSharper disable once AsyncVoidMethod
+    public override async void _Notification(int what)
     {
         if (what == NotificationWMCloseRequest)
         {
+            var result = await AppWorldManager.UserCloseWorkingWorld();
+            if (!result) return;
+
             AppBrushLibrary.Save();
             AppPreference.Save();
             AppWorldManager.Clear();
