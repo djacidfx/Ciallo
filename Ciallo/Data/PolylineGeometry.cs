@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -29,16 +30,30 @@ public class PolylineGeometry
 
     public string Describe(int sampleCount = 4)
     {
-        var sample = Positions.Count == 0
-            ? "Ø"
-            : string.Join(", ", Positions.Take(sampleCount).Select(FormatVector));
-        var suffix = Positions.Count > sampleCount ? ", …" : string.Empty;
-        return $"PolylineGeometry(Pos={Positions.Count}, Radii={Radii.Count}, Pressures={Pressures.Count}, Tilts={Tilts.Count}, Sample=[{sample}{suffix}])";
+        if (Positions.Count == 0)
+        {
+            return $"PolylineGeometry(Pos={Positions.Count}, Radii={Radii.Count}, Pressures={Pressures.Count}, Tilts={Tilts.Count}, Sample=[Ø])";
+        }
+
+        var count = Math.Min(sampleCount, Positions.Count);
+        var samples = Enumerable.Range(0, count).Select(FormatSample);
+        var sample = string.Join("\n", samples);
+        var suffix = Positions.Count > sampleCount ? $"\n  ... ({Positions.Count - sampleCount} more)" : string.Empty;
+        return $"PolylineGeometry(Pos={Positions.Count}, Radii={Radii.Count}, Pressures={Pressures.Count}, Tilts={Tilts.Count})\nSamples:\n{sample}{suffix}";
     }
 
     public override string ToString() => Describe();
 
     private string DebuggerDisplay => Describe(2);
 
-    private static string FormatVector(Vector2 v) => $"({v.X:F1}, {v.Y:F1})";
+    private string FormatSample(int index)
+    {
+        var pos = FormatVector(Positions[index]);
+        var radius = index < Radii.Count ? $"{Radii[index],6:F1}" : "     ?";
+        var pressure = index < Pressures.Count ? $"{Pressures[index],5:F2}" : "    ?";
+        var tilt = index < Tilts.Count ? FormatVector(Tilts[index]) : "          ?";
+        return $"  [{index,3}] Pos={pos,16} R={radius} P={pressure} Tilt={tilt}";
+    }
+
+    private static string FormatVector(Vector2 v) => $"({v.X,6:F1},{v.Y,6:F1})";
 }
