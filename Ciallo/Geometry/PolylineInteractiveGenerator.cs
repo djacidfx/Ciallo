@@ -65,7 +65,7 @@ public class PolylineInteractiveGenerator
     private CursorMotionData _latestPoint;
     private bool _latestPointIsTurningPoint = false;
     private bool _latestSegmentNeedInterpolation = false;
-    private float _processIntervalMs = 0f; // time interval since last saved point, in ms
+    private TimeSpan _processInterval = TimeSpan.Zero;
 
     // Thresholds about when to process and save sampled points.
     private readonly float _underForwardThreshold = 3f; // in screen pixel
@@ -78,7 +78,7 @@ public class PolylineInteractiveGenerator
 
     public void Start(CursorButtonData data)
     {
-        _processIntervalMs = 0f;
+        _processInterval = TimeSpan.Zero;
 
         // Add initial point
         _positions.Add(data.WorldPosition);
@@ -95,7 +95,7 @@ public class PolylineInteractiveGenerator
     // For introducing zero lag.
     public void Update(CursorMotionData data)
     {
-        _processIntervalMs += data.TimeDeltaMs;
+        _processInterval += data.TimeDelta;
 
         if (!AllowIntersection && CheckSelfIntersection(data.WorldPosition)) return;
 
@@ -141,7 +141,7 @@ public class PolylineInteractiveGenerator
         bool isLarger = _latestPoint.ScreenPosition.DistanceTo(data.ScreenPosition) > _overForwardThreshold;
         bool isPressureChanging = Mathf.Abs(data.Pressure - _latestPoint.Pressure) > _pressureDeltaThreshold;
         bool isWinding = data.ScreenPosition.DistanceToLine(_latestPoint.ScreenPosition, _latestPoint.ScreenDirection) > _windingOffsetThreshold;
-        bool isOvertime = _processIntervalMs > _overTimeThreshold;
+        bool isOvertime = _processInterval.TotalMilliseconds > _overTimeThreshold;
 
         bool toProcessPoints = isLarger || isWinding || isPressureChanging || isOvertime;
         if (!toProcessPoints) return;
@@ -203,7 +203,7 @@ public class PolylineInteractiveGenerator
         _radii.Clear();
         _pressures.Clear();
         _tilts.Clear();
-        _processIntervalMs = 0;
+        _processInterval = TimeSpan.Zero;
         _previewPointDatas.Clear();
     }
 
@@ -246,11 +246,11 @@ public class PolylineInteractiveGenerator
             WorldDelta = data.WorldPosition - _latestPoint.WorldPosition,
             PressureDelta = data.Pressure - _latestPoint.Pressure,
             TiltDelta = data.Tilt - _latestPoint.Tilt,
-            TimeDeltaMs = _processIntervalMs,
+            TimeDelta = _processInterval,
         };
 
         _previewPointDatas.Clear();
-        _processIntervalMs = 0;
+        _processInterval = TimeSpan.Zero;
     }
 
     private void InterpolateSegment()

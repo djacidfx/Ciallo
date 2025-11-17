@@ -143,6 +143,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
         {
             _prevPressure = motion.Pressure;
             _prevTilt = motion.Tilt;
+            var elapsed = _timer.Elapsed;
 
             DispatchMotion(new CursorMotionData()
             {
@@ -154,7 +155,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 PressureDelta = motion.Pressure - _prevPressure,
                 Tilt = motion.Tilt,
                 TiltDelta = motion.Tilt - _prevTilt,
-                TimeDeltaMs = (float)_timer.Elapsed.TotalMilliseconds,
+                TimeDelta = elapsed,
             });
             _timer.Restart();
         }
