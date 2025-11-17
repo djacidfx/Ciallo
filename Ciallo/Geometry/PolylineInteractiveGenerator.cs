@@ -14,9 +14,10 @@ namespace Ciallo.Geometry;
 /// <remarks>
 /// Challenges to solve:
 /// - Input events:
-///     - both undersampling and oversampling of input events.
-///     - only get pixel coordinate in grid (optimal we can get 1/4 subpixel accuracy, but no)
-///     - world coordinate is derived from pixel coordinate, so it's grid too.
+///     - Both undersampling and oversampling of input events.
+///     - Only get pixel coordinate in grid (optimal we can get 1/4 subpixel accuracy, but no)
+///     - World coordinate is derived from pixel coordinate, so it's grid too.
+///     - First button event always has zero pressure. Must use the latest pressure user start to move his pen. 
 /// - Self intersection detection.
 /// - Smoothness
 /// 
@@ -59,10 +60,11 @@ public class PolylineInteractiveGenerator
     private readonly List<Vector2> _tilts = new(2048);
     public IReadOnlyList<Vector2> Tilts => _tilts;
 
-    private List<CursorMotionData> _previewPointDatas = new() { Capacity = 32 }; // Reverse data for analyzing a better interpolation in the future.
+    private List<CursorMotionData> _previewPointDatas = new() { Capacity = 128 }; // Preserve data for analyzing a better interpolation in the future.
 
     // This is not regular cursor motion, but motion from previous to last saved point
     private CursorMotionData _latestPoint;
+    private bool _latestPointIsFirstPoint = false;
     private bool _latestPointIsTurningPoint = false;
     private bool _latestSegmentNeedInterpolation = false;
     private TimeSpan _processInterval = TimeSpan.Zero;
@@ -82,11 +84,12 @@ public class PolylineInteractiveGenerator
 
         // Add initial point
         _positions.Add(data.WorldPosition);
-        _pressures.Add(data.Pressure);
+        _pressures.Add(data.Pressure); // This always gives 0, since logically, pen is not pressing before a down event. Deal with this in the Update function.
         _tilts.Add(data.Tilt);
         _radii.Add(CalculateRadius(data));
 
         _latestPoint = data;
+        _latestPointIsFirstPoint = true;
         _latestPointIsTurningPoint = true;
         _latestSegmentNeedInterpolation = false;
     }
@@ -107,7 +110,7 @@ public class PolylineInteractiveGenerator
         _previewPointDatas.Add(data);
 
         // Since we can only detect pixel coordinate in grid, less than 3 or 4 pixels gives invalid forward moving direction and speed.
-        // One pixel distance is enough for determine if cursor is turning back, but not for forward direction/speed.
+        // However, one pixel distance is enough for determine if cursor is turning back.
         // So we use `_underForwardThreshold` for the minimum distance computing forward movement detection.
         bool isTurningBack = data.WorldDelta.Normalized().Dot(_latestPoint.WorldDirection) < -1e-5; // When direction is zero vector, Normalized gives zero too.
         if (isTurningBack && !_latestPointIsTurningPoint)
@@ -135,7 +138,7 @@ public class PolylineInteractiveGenerator
             return;
         }
 
-        // return if not reach distance threshold to determine direction.
+        // Return if not reach distance threshold to determine direction.
         if (_latestPoint.ScreenPosition.DistanceTo(data.ScreenPosition) < _underForwardThreshold) return;
 
         bool isLarger = _latestPoint.ScreenPosition.DistanceTo(data.ScreenPosition) > _overForwardThreshold;
@@ -152,6 +155,13 @@ public class PolylineInteractiveGenerator
         _radii.Add(CalculateRadius(data));
         _pressures.Add(data.Pressure);
         _tilts.Add(data.Tilt);
+
+        if (_latestPointIsFirstPoint)
+        {
+            _radii[0] = CalculateRadius(data);
+            _pressures[0] = data.Pressure;
+            _latestPointIsFirstPoint = false;
+        }
 
         if (_latestSegmentNeedInterpolation) InterpolateSegment();
         UpdateLastestPoint(data);
