@@ -80,6 +80,7 @@ public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
             var r1 = radii[i + 1];
             var p0 = points[i];
             var p1 = points[i + 1];
+            if (p0.IsEqualApprox(p1)) continue;
             var tangent = (p1 - p0).Normalized();
             var normal = tangent.Rotated(Mathf.Pi / 2);
             var vertices = new Vector2[4];
@@ -106,12 +107,6 @@ public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
 
     // Note: If there is a button overlay on world, _MouseEntered won't work.
 
-    public void Init(Entity self)
-    {
-        SelfEntity = self;
-    }
-    public void Destroy()
-    {
-        SelfEntity = Entity.Null;
-    }
+    public void Init(Entity self) => SelfEntity = self;
+    public void Destroy() => SelfEntity = Entity.Null;
 }
