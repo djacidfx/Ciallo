@@ -9,6 +9,8 @@ Leave a star to this project and check my [research project], [paper](https://dl
 
 # Ciallo ～(∠・ω< )⌒★!
 
+Steam store page is online https://store.steampowered.com/app/3973810. Polishing and bug fixing before release.
+
 Ciallo is an open-source graphics program for professional digital painting.
 It aims to compete with traditional raster painting software like Photoshop and Clip Studio Paint, while offering the following unique features researched by the developer:
 
@@ -53,7 +55,7 @@ The following features may be in your favor:
 
 <img align="left" width="192" height="192" src="https://upload.wikimedia.org/wikipedia/commons/f/f1/No_AI_art.svg">
 
-Ciallo uses a custom vector format that is hard to generate by current AI technique.
+Ciallo uses a custom vector format that is aiming to be the game industrial standard and hard to generate by current AI technique.
 Unless being explicitly declared by the copyright owners, artworks from Ciallo are [forbidden to be trained](#user-created-content-copyright-and-ai-notice).
 
 Unlike [the big company](https://www.youtube.com/watch?v=DoM3nUD-1Ro), Ciallo will never steal your artwork stocks for training AI.
@@ -69,7 +71,7 @@ For the current version, the feel is not worse than _Clip Studio Paint_ and cert
 ### Infinite canvas
 
 @Developer: "I have never seen a professional artist who needs an infinite canvas when drawing illustrators, mangas, or animes.
-Do you really need this feature? Tell me how I can add better support.
+Do you really need this? Tell me how I can add better support.
 
 ## Download (Free on all platforms)
 
@@ -120,7 +122,12 @@ If you urgently need a feature from other programs implemented in Ciallo within 
 
 ## Sponsor Ciallo's research and your future
 
-Ciallo's mission is to bring your hard-drawn art techniques to life, and it needs your support to keep them free and accessible to everyone.
+Ciallo's mission is to bring advanced hard-drawn art techniques from dream to life.
+It needs your support to keep them free and accessible to everyone.
+
+[![Become a Patron!](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/cw/ShenCiao)
+
+Consider patreon on Ciallo development, the developer will post feature plans and teasers about Ciallo well before release, which acts as a pre-manual to understand how to use Ciallo. Check the post [About Vector Fill](https://www.patreon.com/posts/about-vector-143858627) as an example.
 
 Moreover, in this age of AI we all face challenges from rapidly advancing AI techniques.
 Hope Ciallo will be the tool that helps you shine in this era — a tool that liberates your creativity, not one that replaces it with AI or steals it to feed AI.
@@ -128,20 +135,61 @@ Sponsor Ciallo to shape the future of your digital painting and help keep creati
 
 ## User-created content copyright and AI notice
 
-For the purposes of this Project, "Artwork" means any brushes and drawings saved, exported, or represented in Ciallo's native format, other game engine vector formats, or raster format. The copyright owner of an Artwork (the "Owner") retains all rights in and to that Artwork. We do not claim any rights over user-generated Artwork.
+For the purposes of this Project, "Artwork" means any brushes and drawings saved, exported, or represented in Ciallo's native format, other game engine vector formats, or raster format. The copyright owner of an Artwork (the "Owner") retains all rights in and to that Artwork. We do not claim any rights over user-created Artwork.
 
 Unless the Owner has given explicit express, written permission, any use of Artwork to train, fine‑tune, validate, evaluate, or otherwise improve machine learning, generative AI, or other automated models or datasets is strictly prohibited. Prohibited acts include, without limitation, collection, copying, ingestion, extraction, annotation, transformation, or inclusion of such Artwork in any training, testing, or benchmarking dataset.
 
 Explicit prohibition on "no‑copyright" labels and opt‑out schemes:
-Artwork labeled or claimed as "no copyright", "public domain", or similar does not authorize AI training under this project's terms. Likewise, any purported "opt‑out" or "unless the Owner opts out" declarations (i.e., statements that artworks may be used for AI purposes unless an Owner affirmatively opts out) do not and shall not be treated as authorization to use Artwork for AI training. Such uses are violations of this project's terms and may result in injunctive relief, damages, and recovery of costs and attorneys' fees under applicable law.
-
-All rights not expressly granted are reserved.
+Artwork labeled or claimed as "no copyright", "public domain", or similar does not authorize AI training under this project's terms. Likewise, any purported "opt‑out" or "unless the Owner opts out" declarations (i.e., statements that artworks may be used for AI purposes unless an Owner affirmatively opts out) do not and shall not be treated as authorization to use Artwork and this project for AI training. Such uses are violations of this project's terms and may result in injunctive relief, damages, and recovery of costs and attorneys' fees under applicable law.
 
 ## Credits
 
 ### Project name
 
 The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", and comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). We won't shame this name.
+
+### Technique
+Check Ciallo's [research project] if you are interested in how Ciallo's unique features are implemented.
+
+
+SIGGRAPH 2024 Technical Paper (Conference Track)
+
+    @inproceedings{10.1145/3641519.3657418,
+       author = {Ciao, Shen and Guan, Zhongyue and Liu, Qianxi and Wei, Li-Yi and Wang, Zeyu},
+       title = {Ciallo: GPU-Accelerated Rendering of Vector Brush Strokes},
+       year = {2024},
+       isbn = {9798400705250},
+       publisher = {Association for Computing Machinery},
+       address = {New York, NY, USA},
+       url = {https://doi.org/10.1145/3641519.3657418},
+       doi = {10.1145/3641519.3657418},
+       booktitle = {ACM SIGGRAPH 2024 Conference Papers},
+       articleno = {3},
+       numpages = {11},
+       keywords = {brush stroke rendering, digital painting, vector graphics},
+       location = {Denver, CO, USA},
+       series = {SIGGRAPH '24}
+    }
+
+SIGGRAPH 2023 Talk
+
+    @inproceedings{Ciallo,
+       author = {Ciao, Shen and Wei, Li-Yi},
+       title = {Ciallo: The next-Generation Vector Paint Program},
+       year = {2023},
+       isbn = {9798400701436},
+       publisher = {Association for Computing Machinery},
+       address = {New York, NY, USA},
+       url = {https://doi.org/10.1145/3587421.3595418},
+       doi = {10.1145/3587421.3595418},
+       booktitle = {ACM SIGGRAPH 2023 Talks},
+       articleno = {67},
+       numpages = {2},
+       keywords = {Digital painting, stylized stroke, arrangement, vector graphics. coloring, graphics processing unit (GPU)},
+       location = {Los Angeles, CA, USA},
+       series = {SIGGRAPH '23}
+    }
+
 
 ### Coding frameworks/libraries
 
