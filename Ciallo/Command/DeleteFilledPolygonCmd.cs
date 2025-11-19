@@ -26,7 +26,6 @@ public class DeleteFilledPolygonCmd : CommandBase
         _polygonArea = polygonE.Get<CursorDetectionArea>();
         _polygonSetting = polygonE.Get<FilledPolygonSetting>();
         _parentE = _polygonE.Get<LayerTreeNode>().Parent;
-        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(_polygonE);
     }
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_polygonE);
@@ -47,6 +46,7 @@ public class DeleteFilledPolygonCmd : CommandBase
         _polygonE.Remove<Polygon2D>();
 
         // Data
+        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(_polygonE);
         _parentE.Get<LayerTreeNode>().RemoveChild(_polygonE);
         _polygonE.Remove<FilledPolygonSetting>();
         _polygonE.Detach<ToSerializeTag>();

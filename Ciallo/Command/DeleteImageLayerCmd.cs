@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
@@ -11,7 +10,7 @@ public class DeleteImageLayerCmd : CommandBase
 {
     private Entity _layerE;
     private Entity _parentE;
-    private readonly int _originalIndex;
+    private int _index;
 
     private readonly Sprite2D _sprite;
     private readonly TransformOverlayBox _overlay;
@@ -21,7 +20,6 @@ public class DeleteImageLayerCmd : CommandBase
     {
         _layerE = layerE;
         _parentE = _layerE.Get<LayerTreeNode>().Parent;
-        _originalIndex = _parentE.Get<LayerTreeNode>().FindPathTo(_layerE).Single();
 
         _sprite = _layerE.Get<Sprite2D>();
         _overlay = _layerE.Get<TransformOverlayBox>();
@@ -46,8 +44,9 @@ public class DeleteImageLayerCmd : CommandBase
         layerContainer.RemoveFree(_layerE);
 
         // Data
+        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(_layerE);
         _parentE = _layerE.Get<LayerTreeNode>().Parent;
-        _parentE.Get<LayerTreeNode>().RemoveChild(_originalIndex);
+        _parentE.Get<LayerTreeNode>().RemoveChild(_index);
         _layerE.Remove<ImageLayerSetting>();
         _layerE.Detach<ToSerializeTag>();
     }
@@ -56,17 +55,17 @@ public class DeleteImageLayerCmd : CommandBase
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();
-        parentNode.InsertChild(_originalIndex, _layerE);
+        parentNode.InsertChild(_index, _layerE);
         _layerE.Add(_setting);
         _layerE.Tag<ToSerializeTag>();
 
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.CreateInsert(_layerE, _originalIndex);
+        layerContainer.CreateInsert(_layerE, _index);
 
         // View
         var worldView = Document.Get<WorldView>();
-        worldView.InsertNodeAt(_sprite, _originalIndex);
+        worldView.InsertNodeAt(_sprite, _index);
         _layerE.Add(_sprite);
 
         // Overlay
