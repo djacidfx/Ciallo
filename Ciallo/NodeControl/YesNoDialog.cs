@@ -3,40 +3,34 @@ using Godot;
 
 public partial class YesNoDialog : ConfirmationDialog
 {
-    private TaskCompletionSource<int> _dialogResultSource;
-    public readonly Button YesButton;
-    public readonly Button NoButton;
+    private TaskCompletionSource<bool> _dialogResultSource;
 
     public YesNoDialog()
     {
-        NoButton = AddButton("No");
-        YesButton = AddButton("Yes");
-        GetOkButton().Visible = false;
+        GetOkButton().Text = "Yes";
+        GetCancelButton().Text = "No";
 
-        YesButton.Pressed += OnYes;
-        NoButton.Pressed += OnNo;
+        GetOkButton().Pressed += OnYes;
         Canceled += OnNo;
     }
 
-    public Task<int> PopupCollectInput()
+    public Task<bool> PopupCollectInput()
     {
-        _dialogResultSource = new TaskCompletionSource<int>();
+        _dialogResultSource = new TaskCompletionSource<bool>();
         PopupCentered();
 
         return _dialogResultSource.Task;
     }
 
-    private void OnNo()
-    {
-        _dialogResultSource?.SetResult(0);
-        _dialogResultSource = null;
-        Hide();
-    }
-
     public void OnYes()
     {
-        _dialogResultSource?.SetResult(1);
+        _dialogResultSource?.SetResult(true);
         _dialogResultSource = null;
-        Hide();
+    }
+
+    private void OnNo()
+    {
+        _dialogResultSource?.SetResult(false);
+        _dialogResultSource = null;
     }
 }

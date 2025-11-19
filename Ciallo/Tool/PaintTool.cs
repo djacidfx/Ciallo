@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
@@ -85,20 +86,35 @@ public partial class PaintTool : CommonToolBase
             CustomMinimumSize = new(0, 150),
         };
         brushList.ItemSelected += idx => { new SetWorkingBrushCmd((int)idx).Commit(); };
-        brushList.ItemClicked += (idx, _, buttonIndex) =>
+        brushList.ItemClicked += async (idx, _, buttonIndex) =>
         {
-            if ((MouseButton)buttonIndex == MouseButton.Right)
+            if ((MouseButton)buttonIndex != MouseButton.Right) return;
+            var brushE = Document.Get<BrushManager>().Brushes[(int)idx];
+            var query = brushE.World.CreateQuery().With<StrokeSetting>().Build();
+            List<Entity> toDeleteStrokes = [];
+            foreach (var strokeE in query.EnumerateWithEntities())
             {
-                var brushE = Document.Get<BrushManager>().Brushes[(int)idx];
-                var selectionManager = Document.Get<SelectionManager>();
-                CommandBase cmd = new EmptyCommand();
-                if (selectionManager.WorkingBrush.Value == brushE)
-                {
-                    cmd.Combine(new SetWorkingBrushCmd(Entity.Null));
-                }
-                cmd.Combine(new DeleteBrushCmd(brushE));
-                cmd.Commit();
+                if (strokeE.Get<StrokeSetting>().BrushE == brushE)
+                    toDeleteStrokes.Add(strokeE);
             }
+
+            CommandBase cmd = new EmptyCommand();
+            if (toDeleteStrokes.Count > 0)
+            {
+                var dialog = GetTree().GetNodesInGroup("Dialog").OfType<YesNoDialog>().First();
+                dialog.DialogText = "[Delete Brush Hint]".Tr();
+                if (!await dialog.PopupCollectInput()) return;
+                foreach (var strokeE in toDeleteStrokes)
+                {
+                    cmd.Combine(new DeleteStrokeCmd(strokeE));
+                }
+            }
+
+            var selectionManager = Document.Get<SelectionManager>();
+            if (selectionManager.WorkingBrush.Value == brushE)
+                cmd.Combine(new SetWorkingBrushCmd(Entity.Null));
+            cmd.Combine(new DeleteBrushCmd(brushE));
+            cmd.Commit();
         };
         var brushM = Document.Get<BrushManager>();
         var selectionM = Document.Get<SelectionManager>();

@@ -1,4 +1,5 @@
 ﻿using Ciallo.Data;
+using Ciallo.Misc;
 using Frent;
 using Frent.Components;
 using Godot;
@@ -10,6 +11,11 @@ public partial class DocumentBrushList : ItemList, IInitable
 {
     private Entity _document;
     public BrushManager Manager => _document.Get<BrushManager>();
+
+    public DocumentBrushList()
+    {
+        TooltipText = "[Document Brush List Tooltip]".Tr();
+    }
 
     public void Init(Entity document)
     {
