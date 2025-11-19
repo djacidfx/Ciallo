@@ -16,8 +16,9 @@ V0.1EA focus on showing off Ciallo techniques and developing MVP (minimum viable
   - [ ] More brushes
   - [x] More brush parameters
   - [x] Paint stabilizer
+  - [x] Delete brush
 - [x] Paint fill tool
-- [ ] Vector fill tool
+- [ ] [Vector fill](https://www.patreon.com/posts/about-vector-143858627)
   - [x] CGAL C++ code
 - [x] Selection/transform tool
   - [x] Rect transform
