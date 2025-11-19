@@ -128,5 +128,3 @@ public partial class PaintTool : CommonToolBase
         return !newLayerE.IsDeletedOrNull() && newLayerE.Has<PolylineLayerSetting>();
     }
 }
-
-public partial class DocumentBrushList : ItemList;

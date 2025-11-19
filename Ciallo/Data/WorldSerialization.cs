@@ -43,7 +43,7 @@ public static partial class AppWorldManager
             var setting = brushDataE.Get<BrushSetting>();
             var cmd = new NewBrushCmd(setting);
             cmd.Do();
-            brushMap.Add(brushDataE, cmd.BrushE);
+            brushMap.Add(brushDataE, cmd.InitEntity());
         }
 
         // Load layers and strokes
