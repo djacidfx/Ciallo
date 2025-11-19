@@ -8,20 +8,31 @@ public class DeleteBrushCmd : CommandBase
 {
     private Entity _brushE;
     private readonly BrushSetting _setting;
+    private readonly CommandBase _deleteStrokeCmd;
 
     public DeleteBrushCmd(Entity brushE)
     {
         _brushE = brushE;
         _setting = brushE.Get<BrushSetting>();
+        _deleteStrokeCmd = new EmptyCommand();
+
+        var query = brushE.World.CreateQuery().With<StrokeSetting>().Build();
+        foreach (var strokeE in query.EnumerateWithEntities())
+        {
+            if (strokeE.Get<StrokeSetting>().BrushE == brushE)
+                _deleteStrokeCmd.Combine(new DeleteStrokeCmd(strokeE));
+        }
     }
 
     public override void Do()
     {
+        _deleteStrokeCmd.DoAllCombination();
+
         // UI
         var list = Document.Get<DocumentBrushList>();
         list.Remove(_brushE);
 
-        // Material free on its own
+        // Material removed on its own
 
         // Data
         var bm = Document.Get<BrushManager>();
@@ -39,5 +50,7 @@ public class DeleteBrushCmd : CommandBase
         // UI
         var list = Document.Get<DocumentBrushList>();
         list.Add(_brushE);
+
+        _deleteStrokeCmd.UndoAllCombination();
     }
 }

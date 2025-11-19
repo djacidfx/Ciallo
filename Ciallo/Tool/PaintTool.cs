@@ -85,6 +85,21 @@ public partial class PaintTool : CommonToolBase
             CustomMinimumSize = new(0, 150),
         };
         brushList.ItemSelected += idx => { new SetWorkingBrushCmd((int)idx).Commit(); };
+        brushList.ItemClicked += (idx, _, buttonIndex) =>
+        {
+            if ((MouseButton)buttonIndex == MouseButton.Right)
+            {
+                var brushE = Document.Get<BrushManager>().Brushes[(int)idx];
+                var selectionManager = Document.Get<SelectionManager>();
+                CommandBase cmd = new EmptyCommand();
+                if (selectionManager.WorkingBrush.Value == brushE)
+                {
+                    cmd.Combine(new SetWorkingBrushCmd(Entity.Null));
+                }
+                cmd.Combine(new DeleteBrushCmd(brushE));
+                cmd.Commit();
+            }
+        };
         var brushM = Document.Get<BrushManager>();
         var selectionM = Document.Get<SelectionManager>();
         foreach (var brushE in brushM.Brushes)

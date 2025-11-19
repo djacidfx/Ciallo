@@ -5,42 +5,49 @@ using Frent;
 
 namespace Ciallo.Command;
 
-public class SetWorkingBrushCmd(Index idx) : CommandBase
+public class SetWorkingBrushCmd : CommandBase
 {
-    public Entity OldBrushE;
-    public Entity NewBrushE;
+    private readonly Entity _oldBrushE;
+    private readonly Entity _newBrushE;
+
+    public SetWorkingBrushCmd(Index idx)
+    {
+        _oldBrushE = Document.Get<SelectionManager>().WorkingBrush.Value;
+        var bm = Document.Get<BrushManager>();
+        _newBrushE = bm.Brushes[idx];
+    }
+
+    public SetWorkingBrushCmd(Entity newBrushE)
+    {
+        _oldBrushE = Document.Get<SelectionManager>().WorkingBrush.Value;
+        _newBrushE = newBrushE;
+    }
 
     public override void Do()
     {
-        var bm = Document.Get<BrushManager>();
-        var sm = Document.Get<SelectionManager>();
-
-        // data
-        OldBrushE = sm.WorkingBrush.Value;
-        NewBrushE = bm.Brushes[idx];
-        sm.WorkingBrush.Value = NewBrushE;
+        // Data
+        var newIndex = Document.Get<BrushManager>().Brushes.IndexOf(_newBrushE);
+        Document.Get<SelectionManager>().WorkingBrush.Value = _newBrushE;
 
         // UI
         var brushList = Document.Get<DocumentBrushList>();
-        brushList.Select(idx.GetOffset(bm.Brushes.Count));
+        if (newIndex != -1)
+            brushList.Select(newIndex);
+        else
+            brushList.DeselectAll();
     }
 
     public override void Undo()
     {
-        var bm = Document.Get<BrushManager>();
-        var sm = Document.Get<SelectionManager>();
-
         // UI
         var brushList = Document.Get<DocumentBrushList>();
-        if (OldBrushE.IsNull) brushList.DeselectAll();
+        var oldIdx = Document.Get<BrushManager>().Brushes.IndexOf(_oldBrushE);
+        if (oldIdx == -1)
+            brushList.DeselectAll();
         else
-        {
-            var oldIdx = bm.Brushes.IndexOf(OldBrushE);
-            if (oldIdx == -1) throw new InvalidOperationException("Old brush not found in brush manager.");
             brushList.Select(oldIdx);
-        }
 
-        // data
-        sm.WorkingBrush.Value = OldBrushE;
+        // Data
+        Document.Get<SelectionManager>().WorkingBrush.Value = _oldBrushE;
     }
 }
