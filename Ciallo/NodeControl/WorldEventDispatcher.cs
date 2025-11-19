@@ -143,6 +143,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
         {
             _prevPressure = motion.Pressure;
             _prevTilt = motion.Tilt;
+            var elapsed = _timer.Elapsed;
 
             DispatchMotion(new CursorMotionData()
             {
@@ -154,7 +155,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 PressureDelta = motion.Pressure - _prevPressure,
                 Tilt = motion.Tilt,
                 TiltDelta = motion.Tilt - _prevTilt,
-                TimeDeltaMs = (float)_timer.Elapsed.TotalMilliseconds,
+                TimeDelta = elapsed,
             });
             _timer.Restart();
         }
@@ -177,10 +178,16 @@ public partial class WorldEventDispatcher : SubViewportContainer
         if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp } && _isHovering)
         {
             panel.Zoom.Value *= 1.0f + zoomFactor;
+            // Dirty patch to fix when mouse scroll zooming, the hover area is not updated correctly.
+            var newWorldPos = _camera.GetViewportTransform().AffineInverse() * mouseEvent.Position;
+            _worldCursorDetectionArea.UpdateHovering(newWorldPos);
         }
         else if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelDown } && _isHovering)
         {
             panel.Zoom.Value *= 1.0f - zoomFactor;
+
+            var newWorldPos = _camera.GetViewportTransform().AffineInverse() * mouseEvent.Position;
+            _worldCursorDetectionArea.UpdateHovering(newWorldPos);
         }
     }
 
@@ -205,7 +212,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
     public void DispatchMotion(CursorMotionData data)
     {
         ToolManager.ActiveTool.Value?.OnMoving(data);
-        _worldCursorDetectionArea.OnCursorMove(data);
+        _worldCursorDetectionArea.UpdateHovering(data.WorldPosition);
     }
 
     public void DispatchRightClick(CursorButtonData data)

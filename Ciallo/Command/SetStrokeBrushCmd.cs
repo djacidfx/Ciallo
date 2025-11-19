@@ -11,9 +11,9 @@ public class SetStrokeBrushCmd(Entity strokeE, Entity newBrushE) : CommandBase
     public override void Do()
     {
         // Data
-        var wrapper = strokeE.Get<StrokeBrush>();
-        _oldBrushE = wrapper.Value;
-        wrapper.Value = newBrushE;
+        var setting = strokeE.Get<StrokeSetting>();
+        _oldBrushE = setting.BrushE;
+        setting.BrushE = newBrushE;
 
         // View
         strokeE.Get<StrokeView>().Material = !newBrushE.IsNull ? newBrushE.Get<BrushMaterial>() : AutoloadRendering.MissingBrushMaterial;
@@ -25,7 +25,7 @@ public class SetStrokeBrushCmd(Entity strokeE, Entity newBrushE) : CommandBase
         strokeE.Get<StrokeView>().Material = !_oldBrushE.IsNull ? _oldBrushE.Get<BrushMaterial>() : AutoloadRendering.MissingBrushMaterial;
 
         // Data
-        var wrapper = strokeE.Get<StrokeBrush>();
-        wrapper.Value = _oldBrushE;
+        var setting = strokeE.Get<StrokeSetting>();
+        setting.BrushE = _oldBrushE;
     }
 }

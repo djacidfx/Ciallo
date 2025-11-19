@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using Godot;
 
 namespace Ciallo.Geometry;
@@ -40,8 +41,9 @@ public struct CursorMotionData
     public Vector2 Tilt;
     public Vector2 TiltDelta;
 
-    public float TimeDeltaMs;
-    public float TimeDeltaSec => TimeDeltaMs / 1000f;
+    public TimeSpan TimeDelta;
+    public float TimeDeltaMs => (float)TimeDelta.TotalMilliseconds;
+    public float TimeDeltaSec => (float)TimeDelta.TotalSeconds;
 
     public Vector2 PrevWorldPosition => WorldPosition - WorldDelta;
     public Vector2 PrevScreenPosition => ScreenPosition - ScreenDelta;

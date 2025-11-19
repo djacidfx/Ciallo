@@ -30,6 +30,11 @@ public static partial class Geometry
         var b2 = ((t3 - tt) / (t3 - t1)) * a2 + ((tt - t1) / (t3 - t1)) * a3;
 
         var c = ((t2 - tt) / (t2 - t1)) * b1 + ((tt - t1) / (t2 - t1)) * b2;
+        if (float.IsNaN(c.X) || float.IsNaN(c.Y))
+        {
+            GD.PrintErr($"CatmullRomInterpolation produced NaN result. Inputs: p0={p0}, p1={p1}, p2={p2}, p3={p3}, t={t}");
+            c = p1;
+        }
         return c;
     }
 
@@ -58,6 +63,12 @@ public static partial class Geometry
         var b2 = ((t3 - tt) / (t3 - t1)) * a2 + ((tt - t1) / (t3 - t1)) * a3;
 
         var c = ((t2 - tt) / (t2 - t1)) * b1 + ((tt - t1) / (t2 - t1)) * b2;
+        if (float.IsNaN(c))
+        {
+            // Note: hope this is the only source where nan possible in our program, so no guard in other systems.
+            GD.PrintErr($"CatmullRomInterpolation produced NaN result. Inputs: p0={p0}, p1={p1}, p2={p2}, p3={p3}, t={t}");
+            c = p1;
+        }
         return c;
     }
 

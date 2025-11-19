@@ -11,7 +11,7 @@ public class DeletePolylineLayerCmd : CommandBase
 {
     private Entity _layerE;
     private Entity _parentE;
-    private readonly int _originalIndex;
+    private int _index;
 
     private readonly CommandBase _deleteChildrenCmd;
     private readonly PolylineLayerView _layerView;
@@ -23,12 +23,11 @@ public class DeletePolylineLayerCmd : CommandBase
         _layerE = layerE;
         var node = _layerE.Get<LayerTreeNode>();
         _parentE = node.Parent;
-        _originalIndex = _parentE.Get<LayerTreeNode>().FindPathTo(_layerE).Single();
 
         _deleteChildrenCmd = new EmptyCommand();
         foreach (var polylineE in node.Children.AsEnumerable().Reverse())
         {
-            if (polylineE.Has<StrokeBrush>())
+            if (polylineE.Has<StrokeSetting>())
                 _deleteChildrenCmd.Combine(new DeleteStrokeCmd(polylineE));
             else
                 _deleteChildrenCmd.Combine(new DeleteFilledPolygonCmd(polylineE));
@@ -59,7 +58,8 @@ public class DeletePolylineLayerCmd : CommandBase
         layerTreeControl.RemoveFree(_layerE);
 
         // Data
-        _parentE.Get<LayerTreeNode>().RemoveChild(_originalIndex);
+        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(_layerE);
+        _parentE.Get<LayerTreeNode>().RemoveChild(_index);
         _layerE.Detach<ToSerializeTag>();
     }
 
@@ -67,16 +67,16 @@ public class DeletePolylineLayerCmd : CommandBase
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();
-        parentNode.InsertChild(_originalIndex, _layerE);
+        parentNode.InsertChild(_index, _layerE);
         _layerE.Tag<ToSerializeTag>();
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.CreateInsert(_layerE, _originalIndex);
+        layerTreeControl.CreateInsert(_layerE, _index);
 
         // View
         var worldView = Document.Get<WorldView>();
-        worldView.InsertNodeAt(_layerView, _originalIndex); // order matters
+        worldView.InsertNodeAt(_layerView, _index); // order matters
         _layerE.Add(_layerView);
 
         // Cursor detection

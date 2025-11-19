@@ -2,7 +2,6 @@ using System;
 using System.Collections.Immutable;
 using System.Linq;
 using Ciallo.Data;
-using Ciallo.Geometry;
 using Ciallo.Misc;
 using Godot;
 using Godot.Collections;
@@ -100,6 +99,7 @@ public partial class WorldCursorDetectionArea : Node2D
     {
         return hits
             .Select(d => (CursorDetectionArea)d["collider"])
+            .Distinct()
             .OrderByDescending(GetCanvasLayer)
             .ThenByDescending(n => n.ZIndex)
             .ThenByDescending(GetIndexPath, NodeIndexPathComparer.Instance) // child parent hierarchy
@@ -107,7 +107,7 @@ public partial class WorldCursorDetectionArea : Node2D
             .First();
     }
 
-    public void OnCursorMove(CursorMotionData data)
+    public void UpdateHovering(Vector2 worldPosition)
     {
         // See following pages for the point query method:
         // https://docs.godotengine.org/en/stable/tutorials/physics/ray-casting.html
@@ -116,12 +116,15 @@ public partial class WorldCursorDetectionArea : Node2D
         var pointQuery = new PhysicsPointQueryParameters2D()
         {
             CollideWithBodies = true,
-            Position = data.WorldPosition,
+            Position = worldPosition,
             CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke,
         };
-        var points = GetWorld2D().DirectSpaceState.IntersectPoint(pointQuery, 32);
-        SetHoveringArea(points.Count > 0 ? TopMostFromHits(points) : null);
+        var hits = GetWorld2D().DirectSpaceState.IntersectPoint(pointQuery, 32);
+        var area = hits.Count > 0 ? TopMostFromHits(hits) : null;
+
+        SetHoveringArea(area);
     }
+
     public CursorDetectionArea[] CreateAddTransformAreas(Vector2 size, Transform2D transform)
     {
         var half = size * 0.5f;

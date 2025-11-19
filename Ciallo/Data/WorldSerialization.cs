@@ -43,7 +43,7 @@ public static partial class AppWorldManager
             var setting = brushDataE.Get<BrushSetting>();
             var cmd = new NewBrushCmd(setting);
             cmd.Do();
-            brushMap.Add(brushDataE, cmd.BrushE);
+            brushMap.Add(brushDataE, cmd.InitEntity());
         }
 
         // Load layers and strokes
@@ -69,14 +69,14 @@ public static partial class AppWorldManager
                 {
                     var geometry = polylineDataE.Get<PolylineGeometry>();
 
-                    if (polylineDataE.Has<StrokeBrush>())
+                    if (polylineDataE.Has<StrokeSetting>())
                     {
                         var newStrokeCmd = new NewStrokeCmd(layerE);
                         newStrokeCmd.Do();
                         var strokeE = newStrokeCmd.StrokeE;
                         new SetPolylineGeometryCmd(strokeE, geometry).Do();
-                        var strokeBrush = polylineDataE.Get<StrokeBrush>();
-                        new SetStrokeBrushCmd(strokeE, brushMap[strokeBrush.Value]).Do();
+                        var strokeSetting = polylineDataE.Get<StrokeSetting>();
+                        new SetStrokeBrushCmd(strokeE, brushMap[strokeSetting.BrushE]).Do();
                     }
                     else if (polylineDataE.Has<FilledPolygonSetting>())
                     {

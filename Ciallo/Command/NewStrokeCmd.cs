@@ -23,7 +23,7 @@ public class NewStrokeCmd : CommandBase
         // Data
         StrokeE.Tag<ToSerializeTag>();
         _layerE.Get<LayerTreeNode>().AddChild(StrokeE);
-        StrokeE.Add<StrokeBrush>(Entity.Null);
+        StrokeE.Add(new StrokeSetting());
         StrokeE.Add(new PolylineGeometry());
 
         // View
@@ -66,7 +66,7 @@ public class NewStrokeCmd : CommandBase
 
         // Data
         StrokeE.Remove<PolylineGeometry>();
-        StrokeE.Remove<StrokeBrush>();
+        StrokeE.Remove<StrokeSetting>();
         _layerE.Get<LayerTreeNode>().RemoveChild(^1);
         StrokeE.Detach<ToSerializeTag>();
     }

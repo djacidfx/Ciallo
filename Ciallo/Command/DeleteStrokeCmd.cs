@@ -13,10 +13,10 @@ public class DeleteStrokeCmd : CommandBase
     private readonly StrokeView _strokeView;
     private readonly PolylineWireframe _strokeOverlay;
     private readonly CursorDetectionArea _strokeArea;
-    private readonly StrokeBrush _strokeBrush;
+    private readonly StrokeSetting _strokeSetting;
 
     private readonly Entity _parentE; // layer entity
-    private readonly int _index;
+    private int _index;
 
     public DeleteStrokeCmd(Entity strokeE)
     {
@@ -24,9 +24,8 @@ public class DeleteStrokeCmd : CommandBase
         _strokeView = strokeE.Get<StrokeView>();
         _strokeOverlay = strokeE.Get<PolylineWireframe>();
         _strokeArea = strokeE.Get<CursorDetectionArea>();
-        _strokeBrush = strokeE.Get<StrokeBrush>();
+        _strokeSetting = strokeE.Get<StrokeSetting>();
         _parentE = _strokeE.Get<LayerTreeNode>().Parent;
-        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(_strokeE);
     }
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_strokeE);
@@ -47,8 +46,9 @@ public class DeleteStrokeCmd : CommandBase
         _strokeE.Remove<StrokeView>();
 
         // Data
+        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(_strokeE);
         _parentE.Get<LayerTreeNode>().RemoveChild(_strokeE);
-        _strokeE.Remove<StrokeBrush>();
+        _strokeE.Remove<StrokeSetting>();
         _strokeE.Detach<ToSerializeTag>();
         // geometry objects to be deleted with entity itself.
     }
@@ -58,7 +58,7 @@ public class DeleteStrokeCmd : CommandBase
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();
         parentNode.InsertChild(_index, _strokeE);
-        _strokeE.Add(_strokeBrush);
+        _strokeE.Add(_strokeSetting);
         _strokeE.Tag<ToSerializeTag>();
 
         // View

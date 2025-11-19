@@ -14,9 +14,10 @@ namespace Ciallo.Geometry;
 /// <remarks>
 /// Challenges to solve:
 /// - Input events:
-///     - both undersampling and oversampling of input events.
-///     - only get pixel coordinate in grid (optimal we can get 1/4 subpixel accuracy, but no)
-///     - world coordinate is derived from pixel coordinate, so it's grid too.
+///     - Both undersampling and oversampling of input events.
+///     - Only get pixel coordinate in grid (optimal we can get 1/4 subpixel accuracy, but no)
+///     - World coordinate is derived from pixel coordinate, so it's grid too.
+///     - First button event always has zero pressure. Must use the latest pressure user start to move his pen. 
 /// - Self intersection detection.
 /// - Smoothness
 /// 
@@ -59,13 +60,15 @@ public class PolylineInteractiveGenerator
     private readonly List<Vector2> _tilts = new(2048);
     public IReadOnlyList<Vector2> Tilts => _tilts;
 
-    private List<CursorMotionData> _previewPointDatas = new() { Capacity = 32 }; // Reverse data for analyzing a better interpolation in the future.
+    private List<CursorMotionData> _previewPointCache = new() { Capacity = 128 }; // Preserve data for analyzing a better interpolation in the future.
+    private List<CursorButtonData> _processedPointCache = [];
+    private List<float> _processedRadiusCache = [];
+    private CursorMotionData _processedPointMotion; // This is motion from previous to last processed point
 
-    // This is not regular cursor motion, but motion from previous to last saved point
-    private CursorMotionData _latestPoint;
+    private bool _latestPointIsFirstPoint = false;
     private bool _latestPointIsTurningPoint = false;
-    private bool _latestSegmentNeedInterpolation = false;
-    private float _processIntervalMs = 0f; // time interval since last saved point, in ms
+    private bool _segmentNeedInterpolation = false;
+    private TimeSpan _processInterval = TimeSpan.Zero;
 
     // Thresholds about when to process and save sampled points.
     private readonly float _underForwardThreshold = 3f; // in screen pixel
@@ -78,24 +81,25 @@ public class PolylineInteractiveGenerator
 
     public void Start(CursorButtonData data)
     {
-        _processIntervalMs = 0f;
+        _processInterval = TimeSpan.Zero;
 
         // Add initial point
         _positions.Add(data.WorldPosition);
-        _pressures.Add(data.Pressure);
+        _pressures.Add(data.Pressure); // This always gives 0, since logically, pen is not pressing before a down event. Deal with this in the Update function.
         _tilts.Add(data.Tilt);
         _radii.Add(CalculateRadius(data));
 
-        _latestPoint = data;
+        _processedPointMotion = data;
+        _latestPointIsFirstPoint = true;
         _latestPointIsTurningPoint = true;
-        _latestSegmentNeedInterpolation = false;
+        _segmentNeedInterpolation = false;
     }
 
     // Always add current motion point as a preview point, then check whether to process and save preview points according to serval thresholds.
     // For introducing zero lag.
     public void Update(CursorMotionData data)
     {
-        _processIntervalMs += data.TimeDeltaMs;
+        _processInterval += data.TimeDelta;
 
         if (!AllowIntersection && CheckSelfIntersection(data.WorldPosition)) return;
 
@@ -104,16 +108,16 @@ public class PolylineInteractiveGenerator
         _pressures.Add(data.Pressure);
         _tilts.Add(data.Tilt);
 
-        _previewPointDatas.Add(data);
+        _previewPointCache.Add(data);
 
-        // Since we can only detect pixel coordinate in grid, less than 3 or 4 pixels gives invalid forward moving direction and speed.
-        // One pixel distance is enough for determine if cursor is turning back, but not for forward direction/speed.
-        // So we use `_underForwardThreshold` for the minimum distance computing forward movement detection.
-        bool isTurningBack = data.WorldDelta.Normalized().Dot(_latestPoint.WorldDirection) < -1e-5; // When direction is zero vector, Normalized gives zero too.
+        // Since we can only detect pixel coordinate in grid, forward distance less than 3 or 4 pixels gives invalid moving direction and speed.
+        // However, one pixel distance is enough to determine if cursor is turning back.
+        // So we use `_underForwardThreshold` for the minimum distance to detect forward movement. and use one pixel distance to detect turning back.
+        bool isTurningBack = data.WorldDelta.Normalized().Dot(_processedPointMotion.WorldDirection) < -1e-5; // When direction is zero vector, Normalized gives zero too.
         if (isTurningBack && !_latestPointIsTurningPoint)
         {
             // Directly process turning back case.
-            RemoveLatestPoints(_previewPointDatas.Count);
+            RemoveLatestPoints(_previewPointCache.Count);
             // Save the previous event point as the last point.
             float r = CalculateRadius(data);
             _positions.Add(data.PrevWorldPosition);
@@ -121,43 +125,54 @@ public class PolylineInteractiveGenerator
             _pressures.Add(data.PrevPressure);
             _tilts.Add(data.PrevTilt);
 
-            if (_latestSegmentNeedInterpolation) InterpolateSegment();
-            UpdateLastestPoint(new CursorButtonData()
+            // if (_segmentNeedInterpolation) InterpolateLatestSegment();
+            UpdateProcessedPointCache(new CursorButtonData()
             {
                 WorldPosition = data.PrevWorldPosition,
                 ScreenPosition = data.PrevScreenPosition,
                 Pressure = data.PrevPressure,
                 Tilt = data.PrevTilt,
-            });
+            }, r);
             _latestPointIsTurningPoint = true;
-            _latestSegmentNeedInterpolation = false;
+            _segmentNeedInterpolation = false;
 
             return;
         }
 
-        // return if not reach distance threshold to determine direction.
-        if (_latestPoint.ScreenPosition.DistanceTo(data.ScreenPosition) < _underForwardThreshold) return;
+        // Return if not reach distance threshold to determine direction.
+        if (_processedPointMotion.ScreenPosition.DistanceTo(data.ScreenPosition) < _underForwardThreshold) return;
 
-        bool isLarger = _latestPoint.ScreenPosition.DistanceTo(data.ScreenPosition) > _overForwardThreshold;
-        bool isPressureChanging = Mathf.Abs(data.Pressure - _latestPoint.Pressure) > _pressureDeltaThreshold;
-        bool isWinding = data.ScreenPosition.DistanceToLine(_latestPoint.ScreenPosition, _latestPoint.ScreenDirection) > _windingOffsetThreshold;
-        bool isOvertime = _processIntervalMs > _overTimeThreshold;
+        bool isLarger = _processedPointMotion.ScreenPosition.DistanceTo(data.ScreenPosition) > _overForwardThreshold;
+        bool isPressureChanging = Mathf.Abs(data.Pressure - _processedPointMotion.Pressure) > _pressureDeltaThreshold;
+        bool isWinding = data.ScreenPosition.DistanceToLine(_processedPointMotion.ScreenPosition, _processedPointMotion.ScreenDirection) > _windingOffsetThreshold;
+        bool isOvertime = _processInterval.TotalMilliseconds > _overTimeThreshold;
 
         bool toProcessPoints = isLarger || isWinding || isPressureChanging || isOvertime;
         if (!toProcessPoints) return;
-        RemoveLatestPoints(_previewPointDatas.Count);
+        RemoveLatestPoints(_previewPointCache.Count);
 
         // Place the point
         _positions.Add(data.WorldPosition);
-        _radii.Add(CalculateRadius(data));
+        float radius = CalculateRadius(data);
+        _radii.Add(radius);
         _pressures.Add(data.Pressure);
         _tilts.Add(data.Tilt);
 
-        if (_latestSegmentNeedInterpolation) InterpolateSegment();
-        UpdateLastestPoint(data);
-        _latestSegmentNeedInterpolation = isWinding && !_latestPointIsTurningPoint;
-        _latestPointIsTurningPoint = false;
+        if (_latestPointIsFirstPoint)
+        {
+            _radii[0] = radius;
+            _pressures[0] = data.Pressure;
+            _latestPointIsFirstPoint = false;
+        }
+
+        UpdateProcessedPointCache(data, radius);
+
+        // Post-processing
+        if (_segmentNeedInterpolation) InterpolateLatestSegment();
+        _segmentNeedInterpolation = isWinding && !_latestPointIsTurningPoint;
         if (!isWinding) Smooth();
+
+        _latestPointIsTurningPoint = false;
     }
 
     private void Smooth()
@@ -181,30 +196,34 @@ public class PolylineInteractiveGenerator
 
     public void End(CursorButtonData data)
     {
-        if (_previewPointDatas.Count > 0)
+        if (_previewPointCache.Count > 0)
         {
-            RemoveLatestPoints(_previewPointDatas.Count);
-            var d = _previewPointDatas[^1];
+            RemoveLatestPoints(_previewPointCache.Count);
+            var d = _previewPointCache[^1];
             _positions.Add(d.WorldPosition);
             _radii.Add(CalculateRadius(d));
             _pressures.Add(d.Pressure);
             _tilts.Add(d.Tilt);
         }
-        _previewPointDatas.Clear();
+        _previewPointCache.Clear();
+        _processedPointCache.Clear();
+        _processedRadiusCache.Clear();
         _latestPointIsTurningPoint = false;
-        _latestSegmentNeedInterpolation = false;
+        _segmentNeedInterpolation = false;
     }
 
     public void Clear()
     {
         _latestPointIsTurningPoint = false;
-        _latestSegmentNeedInterpolation = false;
+        _segmentNeedInterpolation = false;
         _positions.Clear();
         _radii.Clear();
         _pressures.Clear();
         _tilts.Clear();
-        _processIntervalMs = 0;
-        _previewPointDatas.Clear();
+        _processInterval = TimeSpan.Zero;
+        _previewPointCache.Clear();
+        _processedPointCache.Clear();
+        _processedRadiusCache.Clear();
     }
 
     private float CalculateRadius(CursorMotionData data)
@@ -232,34 +251,42 @@ public class PolylineInteractiveGenerator
         }
     }
 
-    private void UpdateLastestPoint(CursorButtonData data)
+    private void UpdateProcessedPointCache(CursorButtonData data, float r)
     {
-        // Update last point data
-        _latestPoint = new()
+        // Motion data
+        _processedPointMotion = new()
         {
             ScreenPosition = data.ScreenPosition,
             WorldPosition = data.WorldPosition,
             Pressure = data.Pressure,
             Tilt = data.Tilt,
 
-            ScreenDelta = data.ScreenPosition - _latestPoint.ScreenPosition,
-            WorldDelta = data.WorldPosition - _latestPoint.WorldPosition,
-            PressureDelta = data.Pressure - _latestPoint.Pressure,
-            TiltDelta = data.Tilt - _latestPoint.Tilt,
-            TimeDeltaMs = _processIntervalMs,
+            ScreenDelta = data.ScreenPosition - _processedPointMotion.ScreenPosition,
+            WorldDelta = data.WorldPosition - _processedPointMotion.WorldPosition,
+            PressureDelta = data.Pressure - _processedPointMotion.Pressure,
+            TiltDelta = data.Tilt - _processedPointMotion.Tilt,
+            TimeDelta = _processInterval,
         };
 
-        _previewPointDatas.Clear();
-        _processIntervalMs = 0;
+        // Processed point cache
+        _processedPointCache.Add(data);
+        _processedRadiusCache.Add(r);
+        if (_processedPointCache.Count > 4) _processedPointCache.RemoveAt(0);
+        if (_processedRadiusCache.Count > 4) _processedRadiusCache.RemoveAt(0);
+
+        // Preview cache and reset interval
+        _previewPointCache.Clear();
+        _processInterval = TimeSpan.Zero;
     }
 
-    private void InterpolateSegment()
+    private void InterpolateLatestSegment()
     {
-        if (_positions.Count < 4) return;
-        var p0 = _positions[^4];
-        var p1 = _positions[^3];
-        var p2 = _positions[^2];
-        var p3 = _positions[^1];
+        if (_processedPointCache.Count < 4) return;
+
+        var p0 = _processedPointCache[^4].WorldPosition;
+        var p1 = _processedPointCache[^3].WorldPosition;
+        var p2 = _processedPointCache[^2].WorldPosition;
+        var p3 = _processedPointCache[^1].WorldPosition;
 
         // Estimate how many points are needed for smoothness
         var dir01 = p0.DirectionTo(p1);
@@ -272,13 +299,25 @@ public class PolylineInteractiveGenerator
             .ToList();
 
         var newPositions = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(_positions[^4], _positions[^3], _positions[^2], _positions[^1], t));
+            Geometry.CatmullRomInterpolation(p0, p1, p2, p3, t));
         var newRadii = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(_radii[^4], _radii[^3], _radii[^2], _radii[^1], t));
+            Geometry.CatmullRomInterpolation(
+                _processedRadiusCache[^4],
+                _processedRadiusCache[^3],
+                _processedRadiusCache[^2],
+                _processedRadiusCache[^1], t));
         var newPressures = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(_pressures[^4], _pressures[^3], _pressures[^2], _pressures[^1], t));
+            Geometry.CatmullRomInterpolation(
+                _processedPointCache[^4].Pressure,
+                _processedPointCache[^3].Pressure,
+                _processedPointCache[^2].Pressure,
+                _processedPointCache[^1].Pressure, t));
         var newTilts = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(_tilts[^4], _tilts[^3], _tilts[^2], _tilts[^1], t));
+            Geometry.CatmullRomInterpolation(
+                _processedPointCache[^4].Tilt,
+                _processedPointCache[^3].Tilt,
+                _processedPointCache[^2].Tilt,
+                _processedPointCache[^1].Tilt, t));
 
         _positions.InsertRange(_positions.Count - 2, newPositions);
         _radii.InsertRange(_radii.Count - 2, newRadii);
