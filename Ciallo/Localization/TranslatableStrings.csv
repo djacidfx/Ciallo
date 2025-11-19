@@ -8,7 +8,7 @@ Create,Create,创建,建立,作成,만들기,Erstellen,Créer
 Cut,Cut,剪切,剪下,切り取り,잘라내기,Ausschneiden,Couper
 Delete,Delete,删除,刪除,削除,삭제,Löschen,Supprimer
 Document name,Document name,文档名称,文檔名稱,ドキュメント名,문서 이름,Dokumentname,Nom du document
-Document name cannot be empty.,Document name cannot be empty.,文档名称不能为空。,文檔名稱不能為空。,ドキュメント名を空にすることはできません。,문서 이름은 비워둘 수 없습니다.,Der Dokumentname darf nicht leer sein.,Le nom de document ne peut pas être vide.
+Document name cannot be empty.,Document name cannot be empty.,文档名称不能为空。,文檔名稱不能為空。,ドキュメント名を空にすることはできません。,문서 이름은 비워둘 수 없습니다.,Der Dokumentname darf nicht leer sein.,Le nom du document ne peut pas être vide.
 Double click to rename,Double click to rename,双击重命名,雙擊重新命名,ダブルクリックで名前を変更,더블클릭으로 이름 변경,Doppelklick zum Umbenennen,Double-clic pour renommer
 Error,Error,错误,錯誤,エラー,오류,Fehler,Erreur
 Export as Godot scene,Export as Godot scene,导出为Godot场景,匯出為Godot場景,Godotシーンとしてエクスポート,Godot 씬으로 내보내기,Als Godot-Szene exportieren,Exporter comme scène Godot
@@ -40,7 +40,7 @@ Zoom,Zoom,缩放,縮放,ズーム,확대/축소,Zoom,Zoom
 Sponsor,Sponsor,赞助者,贊助者,スポンサー,스폰서,Sponsor,Sponsor
 Recent document,Recent document,最近的文档,最近的文檔,最近のドキュメント,최근 문서,Letzte Dokumente,Documents récents
 File,File,文件,檔案,ファイル,파일,Datei,Fichier
-Edit,Edit,编辑,編輯,編集,편輯,Bearbeiten,Édition
+Edit,Edit,编辑,編輯,編集,편집,Bearbeiten,Édition
 Help,Help,帮助,說明,ヘルプ,도움말,Hilfe,Aide
 Window,Window,窗口,視窗,ウィンドウ,창,Fenster,Fenêtre
 [Vector Fill Tooltip],Vector fill\n- Fill enclose areas with editable fill markers.,矢量填充\n- 用可编辑的填充标记填充封闭区域。,矢量填充\n- 用可編輯的填充標記填充封閉區域。,ベクターフィル\n- 編集可能なフィルマーカーで閉じた領域を塗りつぶします。,벡터 채우기\n- 편집 가능한 채우기 마커로 닫힌 영역을 채웁니다.,Vektor-Füllung\n- Geschlossene Bereiche mit bearbeitbaren Füllmarkern füllen.,Remplissage vectoriel\n- Remplit les zones fermées avec des repères de remplissage modifiables.
