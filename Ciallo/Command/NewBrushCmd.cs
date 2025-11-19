@@ -38,7 +38,7 @@ public class NewBrushCmd : CommandBase
         // UI
         // Note: Should have a dedicate custom widget to handle this.
         var list = Document.Get<DocumentBrushList>();
-        list.Add(_brushE, bm);
+        list.Add(_brushE);
     }
 
     public override void Undo()
@@ -46,7 +46,7 @@ public class NewBrushCmd : CommandBase
         // UI
         var bm = Document.Get<BrushManager>();
         var list = Document.Get<DocumentBrushList>();
-        list.Remove(_brushE, bm);
+        list.Remove(_brushE);
 
         // Material
         // Note: Material is RefCounted, cannot be manually freed

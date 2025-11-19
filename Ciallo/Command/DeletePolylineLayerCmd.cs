@@ -28,7 +28,7 @@ public class DeletePolylineLayerCmd : CommandBase
         _deleteChildrenCmd = new EmptyCommand();
         foreach (var polylineE in node.Children.AsEnumerable().Reverse())
         {
-            if (polylineE.Has<StrokeBrush>())
+            if (polylineE.Has<StrokeSetting>())
                 _deleteChildrenCmd.Combine(new DeleteStrokeCmd(polylineE));
             else
                 _deleteChildrenCmd.Combine(new DeleteFilledPolygonCmd(polylineE));

@@ -1,27 +1,36 @@
 ﻿using Ciallo.Data;
 using Frent;
+using Frent.Components;
 using Godot;
 using R3;
 
 namespace Ciallo.NodeControl;
 
-public partial class DocumentBrushList : ItemList
+public partial class DocumentBrushList : ItemList, IInitable
 {
-    public void Add(Entity brushE, BrushManager bm)
+    private Entity _document;
+    public BrushManager Manager => _document.Get<BrushManager>();
+
+    public void Init(Entity document)
+    {
+        _document = document;
+    }
+
+    public void Add(Entity brushE)
     {
         var setting = brushE.Get<BrushSetting>();
         AddItem(setting.Name.Value);
         var sub = setting.Name.Subscribe(s =>
         {
-            var idx = bm.Brushes.IndexOf(brushE);
+            var idx = Manager.Brushes.IndexOf(brushE);
             SetItemText(idx, s);
         });
         SetItemMetadata(ItemCount - 1, Callable.From(() => sub.Dispose()));
     }
 
-    public void Remove(Entity brushE, BrushManager bm)
+    public void Remove(Entity brushE)
     {
-        var idx = bm.Brushes.IndexOf(brushE);
+        var idx = Manager.Brushes.IndexOf(brushE);
         var subDispose = (Callable)GetItemMetadata(idx);
         subDispose.Call();
         RemoveItem(idx);

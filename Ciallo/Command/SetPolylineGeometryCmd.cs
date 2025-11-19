@@ -27,7 +27,7 @@ public class SetPolylineGeometryCmd : CommandBase
         _polylineE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii);
 
         // Polyline has stroke
-        if (_polylineE.Has<StrokeBrush>())
+        if (_polylineE.Has<StrokeSetting>())
         {
             // View
             _polylineE.Get<StrokeView>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii, _newGeometry.Pressures);
@@ -59,7 +59,7 @@ public class SetPolylineGeometryCmd : CommandBase
             var polygonView = _polylineE.Get<Polygon2D>();
             polygonView.Polygon = [.._oldGeometry.Positions];
         }
-        else if (_polylineE.Has<StrokeBrush>())
+        else if (_polylineE.Has<StrokeSetting>())
         {
             // Cursor detection
             _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);

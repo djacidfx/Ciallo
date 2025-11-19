@@ -18,13 +18,13 @@ public class DeleteBrushCmd : CommandBase
     public override void Do()
     {
         // UI
-        var bm = Document.Get<BrushManager>();
         var list = Document.Get<DocumentBrushList>();
-        list.Remove(_brushE, bm);
+        list.Remove(_brushE);
 
         // Material free on its own
 
         // Data
+        var bm = Document.Get<BrushManager>();
         bm.Remove(_brushE);
         _brushE.Detach<ToSerializeTag>();
     }
@@ -38,6 +38,6 @@ public class DeleteBrushCmd : CommandBase
 
         // UI
         var list = Document.Get<DocumentBrushList>();
-        list.Add(_brushE, bm);
+        list.Add(_brushE);
     }
 }

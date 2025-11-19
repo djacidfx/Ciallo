@@ -3,10 +3,6 @@ using Frent;
 
 namespace Ciallo.Data;
 
-[DataContract, ToSerialize] public class StrokeBrush : EntityWrapper;
-
-[DataContract, ToSerialize] public class PolygonFill : EntityWrapper;
-
 [DataContract]
 public class EntityWrapper
 {
