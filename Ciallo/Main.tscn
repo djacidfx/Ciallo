@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=21 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://co17yxacb7838" path="res://NodeControl/OpenDocumentDialog.cs" id="3_j4qnp"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" uid="uid://bsu2387oxsudi" path="res://NodeControl/SaveChangeDialog.cs" id="8_5tuhn"]
 [ext_resource type="Script" uid="uid://cwjtb7r01fcf7" path="res://NodeControl/MenuWindow.cs" id="8_c2ibq"]
 [ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://NodeControl/MenuHelp.cs" id="8_sc1dx"]
+[ext_resource type="Script" uid="uid://dt8ylkob7fe5w" path="res://NodeControl/YesNoDialog.cs" id="9_2gh4u"]
 [ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://NodeControl/ToolButtonPanel.tscn" id="9_5vvyt"]
 [ext_resource type="PackedScene" uid="uid://cbe5uqtdiejke" path="res://NodeControl/ToolPropertyPanel.tscn" id="10_c6i3y"]
 [ext_resource type="Script" uid="uid://dqewxa0t2mptr" path="res://NodeControl/ToolButtonPanelContainer.cs" id="13_kjvhd"]
@@ -76,6 +77,9 @@ always_on_top = true
 [node name="SaveChangeDialog" type="ConfirmationDialog" parent="." groups=["Dialog"]]
 ok_button_text = "Save"
 script = ExtResource("8_5tuhn")
+
+[node name="YesNoDialog" type="ConfirmationDialog" parent="." groups=["Dialog"]]
+script = ExtResource("9_2gh4u")
 
 [node name="MainGui" type="VBoxContainer" parent="."]
 layout_mode = 1
