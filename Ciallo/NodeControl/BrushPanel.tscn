@@ -42,6 +42,7 @@ grow_vertical = 2
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="VBoxContainer"]
 layout_mode = 2
+size_flags_horizontal = 3
 stretch = true
 
 [node name="BrushPreviewViewport" type="SubViewport" parent="VBoxContainer/SubViewportContainer"]

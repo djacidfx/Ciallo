@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
+using Ciallo.Geometry;
 using Ciallo.Misc;
 using Godot;
 using Newtonsoft.Json;
@@ -41,6 +42,9 @@ public class Preference
     public float StrokeWireframeRadius = 2f;
     [DataMember]
     public float StrokeDotRadius = 12f;
+
+    [DataMember]
+    public BezierCurve PenPressureRemapCurve = BezierCurve.Linear();
 
     #region Save Load Json
 

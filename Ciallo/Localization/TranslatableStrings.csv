@@ -94,3 +94,4 @@ Rotation noise frequency,Rotation noise frequency,旋转噪音频率,旋轉噪�
 Save changes?,Save changes?,保存更改？,儲存變更？,変更を保存しますか？,변경 사항을 저장하시겠습니까?,Änderungen speichern?,Enregistrer les modifications ?
 [Document Brush List Tooltip],Right click to delete a brush,右键点击以删除笔刷,右鍵點擊以刪除筆刷,右クリックでブラシを削除,브러시를 삭제하려면 오른쪽 클릭,Rechtsklick zum Löschen eines Pinsels,Clic droit pour supprimer un pinceau
 [Delete Brush Hint],Deleting this brush will also delete all strokes using this brush. Are you sure you want to proceed?,删除此笔刷将同时删除所有使用该笔刷的线条。确定要继续吗？,刪除此筆刷也會刪除所有使用該筆刷的綫條。確定要繼續嗎？,このブラシを削除すると、このブラシを使用しているすべてのストロークも削除されます。続行しますか？,이 브러시를 삭제하면 이 브러시를 사용하는 모든 스트로크도 삭제됩니다. 계속하시겠습니까?,Beim Löschen dieses Pinsels werden auch alle Striche gelöscht die diesen Pinsel verwenden. Möchten Sie fortfahren?,La suppression de ce pinceau supprimera également tous les tracés utilisant ce pinceau. Voulez-vous continuer ?
+Global pen pressure remap,,,,,,,

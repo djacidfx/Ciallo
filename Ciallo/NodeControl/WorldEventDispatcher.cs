@@ -141,8 +141,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
         if (mouseEvent is InputEventMouseMotion motion)
         {
-            _prevPressure = motion.Pressure;
-            _prevTilt = motion.Tilt;
+            var currentPressure = AppPreference.PenPressureRemapCurve.SampleX(motion.Pressure);
             var elapsed = _timer.Elapsed;
 
             DispatchMotion(new CursorMotionData()
@@ -151,12 +150,16 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 ScreenDelta = screenDelta,
                 WorldPosition = worldPos,
                 WorldDelta = worldDelta,
-                Pressure = motion.Pressure,
-                PressureDelta = motion.Pressure - _prevPressure,
+                Pressure = currentPressure,
+                PressureDelta = currentPressure - _prevPressure,
                 Tilt = motion.Tilt,
                 TiltDelta = motion.Tilt - _prevTilt,
                 TimeDelta = elapsed,
             });
+
+            _prevPressure = currentPressure;
+            _prevTilt = motion.Tilt;
+
             _timer.Restart();
         }
 
