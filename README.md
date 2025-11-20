@@ -1,6 +1,6 @@
 <h1 align = "center">Ciallo ～(∠・ω< )⌒★!</h1>
 <h3 align="center">The next-generation vector paint program in your dreams.</h3>
-
+</br>
 <div align="center">
 
 [![Steam](https://img.shields.io/badge/steam-%23000000.svg?style=for-the-badge&logo=steam&logoColor=white)](https://store.steampowered.com/app/3973810)
