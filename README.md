@@ -1,8 +1,7 @@
-<p align="center"><h1 align = "center">Ciallo ～(∠・ω< )⌒★!</h1></p>
+<h1 align = "center">Ciallo ～(∠・ω< )⌒★!</h1>
+<h3 align="center">The next-generation vector paint program in your dreams.</h3>
 
-<p align="left">
-    The next-generation vector paint program in your dreams.
-</p>
+<div align="center">
 
 [![Steam](https://img.shields.io/badge/steam-%23000000.svg?style=for-the-badge&logo=steam&logoColor=white)](https://store.steampowered.com/app/3973810)
 [![Itch.io](https://img.shields.io/badge/Itch-%23FF0B34.svg?style=for-the-badge&logo=Itch.io&logoColor=white)](https://shenciao.itch.io/ciallo)
@@ -13,6 +12,9 @@
 [![godot-ci export](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml/badge.svg?branch=main)](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml)
 ![.Net](https://img.shields.io/badge/.NET-512BD4.svg?style=for-the-badge&logo=dotnet&logoColor=white)
 
+</div>
+
+---
 
 ⚠️Working on the final polishing and bug testing before a demo release.
 
