@@ -66,6 +66,9 @@ public static partial class AppWorldManager
         new NewPolylineLayerCmd { WorkingWorld = world }
             .Combine(new SetWorkingLayerCmd(0))
             .DoAllCombination();
+        if (AppBrushLibrary.BrushSettings.Count > 0)
+            AppBrushLibrary.SelectedIndex.Value = 0;
+        world.Document().Get<ToolButtonPanel>().ActivatePaintTool();
     }
 
     public static void Remove([NotNull] World world)
