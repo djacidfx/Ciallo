@@ -9,11 +9,11 @@ It aims to compete with traditional raster painting software like Photoshop and 
 
 ### Vectorized Photoshop-like brushes
 
-Resolution-independent stamp brushes, entirely drawn (rendered) on your graphics card (GPU).
+Vectorized stamp brushes, entirely drawn (rendered) on your graphics card (GPU).
 
 ![](/.github/Stamp.gif)
 
-Vectorized airbrush, you can change opacity gradient directly.
+Resolution-independent airbrush, you can change opacity gradient directly.
 
 ![](/.github/Airbrush.gif)
 
@@ -137,7 +137,7 @@ Artwork labeled or claimed as "no copyright", "public domain", or similar does n
 
 ### Project name
 
-The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", means "Hello". It comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). We won't shame this name.
+The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", and means "Hello". It comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). We won't shame this name.
 
 ### Citation
 Check Ciallo's [research project] if you are interested in how Ciallo's unique features are implemented.
