@@ -7,8 +7,12 @@
 [![Steam](https://img.shields.io/badge/steam-%23000000.svg?style=for-the-badge&logo=steam&logoColor=white)](https://store.steampowered.com/app/3973810)
 [![Itch.io](https://img.shields.io/badge/Itch-%23FF0B34.svg?style=for-the-badge&logo=Itch.io&logoColor=white)](https://shenciao.itch.io/ciallo)
 [![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/cw/ShenCiao)
+[![Pixiv](https://img.shields.io/badge/pixiv-0096FA.svg?style=for-the-badge&logo=pixiv&logoColor=white)](https://www.pixiv.net/artworks/137703808)
 
+[![License](https://img.shields.io/github/license/ShenCiao/Ciallo.svg)](https://github.com/ShenCiao/Ciallo/blob/main/LICENSE)
 [![godot-ci export](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml/badge.svg?branch=main)](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml)
+![.Net](https://img.shields.io/badge/.NET-512BD4.svg?style=for-the-badge&logo=dotnet&logoColor=white)
+
 
 ⚠️Working on the final polishing and bug testing before a demo release.
 
@@ -29,7 +33,7 @@ Resolution-independent airbrush, you can change opacity gradient directly.
 
 ### Export to game engines
 
-Export your artwork into the Godot game engine (as a .scn/.tscn file), and keep it resolution-independent.
+Export your artwork into the Godot game engine (as a .scn/.tscn file without dependency), and keep it resolution-independent.
 Like those old days when Flash was alive.
 
 ![](/.github/Dango.png)
