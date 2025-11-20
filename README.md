@@ -1,6 +1,6 @@
 # Ciallo ～(∠・ω< )⌒★!
 
-Steam store page is online https://store.steampowered.com/app/3973810. Polishing and bug fixing before release.
+Steam store page is online https://store.steampowered.com/app/3973810. Working on the final polishing and bug testing before a demo release.
 
 Ciallo is an open-source graphics program for professional digital painting.
 It aims to compete with traditional raster painting software like Photoshop and Clip Studio Paint, while offering the following unique features researched by the developer:
@@ -46,7 +46,7 @@ The following features may be in your favor:
 
 <img align="left" width="192" height="192" src="https://upload.wikimedia.org/wikipedia/commons/f/f1/No_AI_art.svg">
 
-Ciallo uses a custom vector format that is aiming to be the game industry standard and hard to generate by current AI technique.
+Ciallo uses a custom vector format that is aiming to be the game industry standard and hard to generate by the current AI techniques.
 Unless being explicitly declared by the copyright owners, artworks from Ciallo are [forbidden to be trained](#user-created-content-copyright-and-ai-notice).
 
 Unlike [the big company](https://www.youtube.com/watch?v=DoM3nUD-1Ro), Ciallo will never steal your artwork stocks for training AI.
@@ -93,7 +93,7 @@ During the EA stage, Ciallo mainly focuses on R&D of traditional painting featur
 
 Although Ciallo focuses on vector features, it is NOT intended to replace Inkscape or Illustrator for graphic design.
 Instead, it aims to provide Clip Studio Paint or Krita vector layers on super steroids.
-All features that were previously available only in raster workflows would eventually be supported in Ciallo's new vector workflow.
+All features that were previously available only in raster workflows would be supported in Ciallo's new vector workflow.
 
 **Game first**
 
@@ -102,7 +102,7 @@ It aims to be a DCC program providing vector hand-drawn assets, including illust
 
 ## Feature requests
 
-Hope Ciallo's tools already address something important to you. (To be frank, the large company should have provided these infrastructures a decade ago.) There's always more to add as Ciallo grows.
+Hope Ciallo's tools already address something important to you. (To be frank, the large company should have provided these infrastructures a decade ago.) There's always more to add as Ciallo grows. Check the [Contributing Tab] for the development plan.
 
 The developer basically knows the most needed features during the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2).
 
@@ -118,7 +118,7 @@ It needs your support to keep them free and accessible to everyone.
 
 [![Become a Patron!](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/cw/ShenCiao)
 
-Consider patreon on Ciallo development, the developer will post feature plans and teasers about Ciallo well before release, which acts as a pre-manual to understand how to use Ciallo. Check the post [About Vector Fill](https://www.patreon.com/posts/about-vector-143858627) as an example.
+Consider patreon on Ciallo development, the developer will post feature designs and teasers about Ciallo well before release, which acts as a pre-manual to understand how to use Ciallo. Check the post [About Vector Fill](https://www.patreon.com/posts/about-vector-143858627) as an example.
 
 Moreover, in this age of AI we all face challenges from rapidly advancing AI techniques.
 Hope Ciallo will be the tool that helps you shine in this era — a tool that liberates your creativity, not one that replaces it with AI or steals it to feed AI.
@@ -137,9 +137,9 @@ Artwork labeled or claimed as "no copyright", "public domain", or similar does n
 
 ### Project name
 
-The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", and comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). We won't shame this name.
+The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", means "Hello". It comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). We won't shame this name.
 
-### Technique
+### Citation
 Check Ciallo's [research project] if you are interested in how Ciallo's unique features are implemented.
 
 
