@@ -8,6 +8,11 @@ using Godot;
 
 namespace Ciallo.Rendering;
 
+/// <summary>
+/// On a special architected system (shen's laptop with touch screen), calling UpdateBuffer lags CPU?? Seems like system's GPU driver bug.
+/// Shen didn't find the issue in his another laptop, and failed to fix it.
+/// A pray to Alan Turing has been made to avoid this issue on users' computer.
+/// </summary>
 [Tool, GlobalClass]
 public partial class StrokeView : MultiMeshInstance2D
 {
@@ -43,16 +48,12 @@ public partial class StrokeView : MultiMeshInstance2D
         [NotNull] IReadOnlyList<float> radii,
         [NotNull] IReadOnlyList<float> pressures)
     {
-        if (pressures.Count == 0)
-        {
-            pressures = Enumerable.Repeat(1.0f, positions.Count).ToImmutableArray();
-        }
-
         if (positions.Count != radii.Count || positions.Count != pressures.Count)
         {
             GD.PushError("List element number mismatch.");
             return;
         }
+
         if (positions.Count == 0 || radii.Count == 0)
         {
             Multimesh.InstanceCount = 0;
@@ -96,6 +97,10 @@ public partial class StrokeView : MultiMeshInstance2D
             }
 
             var n = l / (r0 - r1) * Mathf.Log(r0 / r1);
+            if (float.IsNaN(n))
+            {
+                GD.PushError("NaN encountered in stroke parameterization.");
+            }
             ns.Add(ns.Last() + n);
         }
 

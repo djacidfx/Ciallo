@@ -96,7 +96,7 @@ public partial class MappingCurveEdit : Control
 
     public override Vector2 _GetMinimumSize()
     {
-        return new Vector2(256 + 128, 256 + 128);
+        return new Vector2(256, 256);
     }
 
     // public void UsePreset(PresetId presetId)

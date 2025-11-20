@@ -25,6 +25,12 @@ public partial class PaintTool : CommonToolBase
 
     public override void DrawProperty(PropertyContainer container)
     {
+        var ppCurveEdit = new MappingCurveEdit();
+        ppCurveEdit.Curve = AppPreference.PenPressureRemapCurve;
+        var aspectBox = new AspectRatioContainer();
+        aspectBox.AddChild(ppCurveEdit);
+        container.AddProperty("Global pen pressure remap", aspectBox);
+
         var brushSelector = new OptionButton();
         brushSelector.ObserveObservableList(AppBrushLibrary.BrushSettings, s => s.Name);
         brushSelector.BindSelectionIndex(AppBrushLibrary.SelectedIndex);

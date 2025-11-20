@@ -35,15 +35,16 @@ public class PaintInteractor : InteractorBase
 
     public override void Start(CursorButtonData data)
     {
-        // Shen: Tested, This make delta time between GUI input event and process smaller when using high polling rate device, reducing input lag.
-        OS.LowProcessorUsageMode = false;
+        OS.LowProcessorUsageMode = false; // Reduce input lag if user has device in high reporting rate.
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
         // Selection in brush library has higher priority
         if (AppBrushLibrary.HasSelection)
         {
             var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
-            new NewBrushCmd(setting).Combine(new SetWorkingBrushCmd(^1)).Commit();
+            var cmd = new NewBrushCmd(setting);
+            var brushE = cmd.InitEntity();
+            cmd.Combine(new SetWorkingBrushCmd(brushE)).Commit();
         }
         _brushE = SelectionManager.WorkingBrush.Value;
         var brushMaterial = _brushE.Get<BrushMaterial>();

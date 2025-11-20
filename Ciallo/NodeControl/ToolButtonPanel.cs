@@ -5,6 +5,10 @@ using Frent;
 using Godot;
 using R3;
 
+/// <remarks>
+/// This is a broken abstraction mixing tool button GUI and tool logic data.
+/// But for current version, it's acceptable for being lazy.
+/// </remarks>
 public partial class ToolButtonPanel : Container
 {
     // Current design mix tool button GUI and tool logic data, for being lazy
@@ -36,6 +40,11 @@ public partial class ToolButtonPanel : Container
             if (child is not ToolButtonBase button) continue;
             button.Document = document;
         }
+    }
+
+    public void ActivatePaintTool()
+    {
+        GetNode<Button>("Paint").SetPressed(true);
     }
 
     public void DeactivateTool()

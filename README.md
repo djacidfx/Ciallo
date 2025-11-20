@@ -1,15 +1,6 @@
-⚠️ This page and features are under construction. Navigate to the [Contributing Tab] for the development plan.
-
-[![godot-ci export](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml/badge.svg?branch=main)](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml)
-
-Want to know how these features are (or will be) implemented?
-Leave a star to this project and check my [research project], [paper](https://dl.acm.org/doi/10.1145/3641519.3657418) or [tutorial](https://shenciao.github.io/brush-rendering-tutorial/Introduction/).
-
----
-
 # Ciallo ～(∠・ω< )⌒★!
 
-Steam store page is online https://store.steampowered.com/app/3973810. Polishing and bug fixing before release.
+Steam store page is online https://store.steampowered.com/app/3973810. Working on the final polishing and bug testing before a demo release.
 
 Ciallo is an open-source graphics program for professional digital painting.
 It aims to compete with traditional raster painting software like Photoshop and Clip Studio Paint, while offering the following unique features researched by the developer:
@@ -18,11 +9,11 @@ It aims to compete with traditional raster painting software like Photoshop and 
 
 ### Vectorized Photoshop-like brushes
 
-Resolution-independent stamp brushes, entirely drawn (rendered) on your graphics card (GPU).
+Vectorized stamp brushes, entirely drawn (rendered) on your graphics card (GPU).
 
 ![](/.github/Stamp.gif)
 
-Vectorized airbrush, you can change opacity gradient directly.
+Resolution-independent airbrush, you can change opacity gradient directly.
 
 ![](/.github/Airbrush.gif)
 
@@ -55,7 +46,7 @@ The following features may be in your favor:
 
 <img align="left" width="192" height="192" src="https://upload.wikimedia.org/wikipedia/commons/f/f1/No_AI_art.svg">
 
-Ciallo uses a custom vector format that is aiming to be the game industrial standard and hard to generate by current AI technique.
+Ciallo uses a custom vector format that is aiming to be the game industry standard and hard to generate by the current AI techniques.
 Unless being explicitly declared by the copyright owners, artworks from Ciallo are [forbidden to be trained](#user-created-content-copyright-and-ai-notice).
 
 Unlike [the big company](https://www.youtube.com/watch?v=DoM3nUD-1Ro), Ciallo will never steal your artwork stocks for training AI.
@@ -85,7 +76,7 @@ Close any other software that heavily uses your GPU before opening Ciallo (excep
 - Memory: 6 GB or more
 - GPU: Minimum NV GTX 1650 or AMD Radeon RX 6500 XT
 - Monitor: A refresh rate greater than 100 Hz is recommended for the best drawing experience
-- Tablet: Use your tablet at its maximum polling/reporting rate (e.g., Wacom DTC-141 if available)
+- Tablet: Use your tablet at its maximum polling/reporting rate. (If you need to buy a new one, the fastest is Wacom DTC-141.)
 
 > Ciallo is highly sensitive to your tablet polling rate. It can potentially respond to tablet/mouse input at up to 1000 Hz. However, tablets in 2025 can reach at most 360 Hz (DTC-141), and 150–200 Hz on average, which is highly insufficient for capturing small turning points and handwritten text. If a tablet with a 500–1000 Hz polling rate becomes available on the market, contact me — Ciallo will try to add support.
 
@@ -101,8 +92,8 @@ During the EA stage, Ciallo mainly focuses on R&D of traditional painting featur
 **Hand-drawn art**
 
 Although Ciallo focuses on vector features, it is NOT intended to replace Inkscape or Illustrator for graphic design.
-Instead, it aims to provide Clip Studio Paint vector layers on super steroids.
-Features that were previously available only in raster workflows would eventually be supported in Ciallo's new vector workflow.
+Instead, it aims to provide Clip Studio Paint or Krita vector layers on super steroids.
+All features that were previously available only in raster workflows would be supported in Ciallo's new vector workflow.
 
 **Game first**
 
@@ -111,12 +102,12 @@ It aims to be a DCC program providing vector hand-drawn assets, including illust
 
 ## Feature requests
 
-Hope Ciallo's tools already address something important to you. (To be frank, the large company should have provided these infrastructures a decade ago.) There's always more to add as Ciallo grows.
+Hope Ciallo's tools already address something important to you. (To be frank, the large company should have provided these infrastructures a decade ago.) There's always more to add as Ciallo grows. Check the [Contributing Tab] for the development plan.
 
 The developer basically knows the most needed features during the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2).
 
 Instead of asking for features existing in other paint programs, you may propose creative features unconstrained in style.
-The developer would love to hear new ideas on line art (especially anime-style art) and may be able to do technical research on your request.
+The developer would love to hear new ideas about line art (especially anime-style art) and may be able to do technical research on your request.
 
 If you urgently need a feature from other programs implemented in Ciallo within a week or month, consider contacting the developer or sponsoring the project.
 
@@ -127,7 +118,7 @@ It needs your support to keep them free and accessible to everyone.
 
 [![Become a Patron!](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/cw/ShenCiao)
 
-Consider patreon on Ciallo development, the developer will post feature plans and teasers about Ciallo well before release, which acts as a pre-manual to understand how to use Ciallo. Check the post [About Vector Fill](https://www.patreon.com/posts/about-vector-143858627) as an example.
+Consider patreon on Ciallo development, the developer will post feature designs and teasers about Ciallo well before release, which acts as a pre-manual to understand how to use Ciallo. Check the post [About Vector Fill](https://www.patreon.com/posts/about-vector-143858627) as an example.
 
 Moreover, in this age of AI we all face challenges from rapidly advancing AI techniques.
 Hope Ciallo will be the tool that helps you shine in this era — a tool that liberates your creativity, not one that replaces it with AI or steals it to feed AI.
@@ -146,9 +137,9 @@ Artwork labeled or claimed as "no copyright", "public domain", or similar does n
 
 ### Project name
 
-The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", and comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). We won't shame this name.
+The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", and means "Hello". It comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). We won't shame this name.
 
-### Technique
+### Citation
 Check Ciallo's [research project] if you are interested in how Ciallo's unique features are implemented.
 
 
