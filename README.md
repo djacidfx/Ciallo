@@ -1,12 +1,3 @@
-⚠️ This page and features are under construction. Navigate to the [Contributing Tab] for the development plan.
-
-[![godot-ci export](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml/badge.svg?branch=main)](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml)
-
-Want to know how these features are (or will be) implemented?
-Leave a star to this project and check my [research project], [paper](https://dl.acm.org/doi/10.1145/3641519.3657418) or [tutorial](https://shenciao.github.io/brush-rendering-tutorial/Introduction/).
-
----
-
 # Ciallo ～(∠・ω< )⌒★!
 
 Steam store page is online https://store.steampowered.com/app/3973810. Polishing and bug fixing before release.
@@ -55,7 +46,7 @@ The following features may be in your favor:
 
 <img align="left" width="192" height="192" src="https://upload.wikimedia.org/wikipedia/commons/f/f1/No_AI_art.svg">
 
-Ciallo uses a custom vector format that is aiming to be the game industrial standard and hard to generate by current AI technique.
+Ciallo uses a custom vector format that is aiming to be the game industry standard and hard to generate by current AI technique.
 Unless being explicitly declared by the copyright owners, artworks from Ciallo are [forbidden to be trained](#user-created-content-copyright-and-ai-notice).
 
 Unlike [the big company](https://www.youtube.com/watch?v=DoM3nUD-1Ro), Ciallo will never steal your artwork stocks for training AI.
@@ -101,8 +92,8 @@ During the EA stage, Ciallo mainly focuses on R&D of traditional painting featur
 **Hand-drawn art**
 
 Although Ciallo focuses on vector features, it is NOT intended to replace Inkscape or Illustrator for graphic design.
-Instead, it aims to provide Clip Studio Paint vector layers on super steroids.
-Features that were previously available only in raster workflows would eventually be supported in Ciallo's new vector workflow.
+Instead, it aims to provide Clip Studio Paint or Krita vector layers on super steroids.
+All features that were previously available only in raster workflows would eventually be supported in Ciallo's new vector workflow.
 
 **Game first**
 
