@@ -43,7 +43,9 @@ public class PaintInteractor : InteractorBase
         if (AppBrushLibrary.HasSelection)
         {
             var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
-            new NewBrushCmd(setting).Combine(new SetWorkingBrushCmd(^1)).Commit();
+            var cmd = new NewBrushCmd(setting);
+            var brushE = cmd.InitEntity();
+            cmd.Combine(new SetWorkingBrushCmd(brushE)).Commit();
         }
         _brushE = SelectionManager.WorkingBrush.Value;
         var brushMaterial = _brushE.Get<BrushMaterial>();
