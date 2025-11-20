@@ -76,7 +76,7 @@ Close any other software that heavily uses your GPU before opening Ciallo (excep
 - Memory: 6 GB or more
 - GPU: Minimum NV GTX 1650 or AMD Radeon RX 6500 XT
 - Monitor: A refresh rate greater than 100 Hz is recommended for the best drawing experience
-- Tablet: Use your tablet at its maximum polling/reporting rate (e.g., Wacom DTC-141 if available)
+- Tablet: Use your tablet at its maximum polling/reporting rate. (If you need to buy a new one, the fastest is Wacom DTC-141.)
 
 > Ciallo is highly sensitive to your tablet polling rate. It can potentially respond to tablet/mouse input at up to 1000 Hz. However, tablets in 2025 can reach at most 360 Hz (DTC-141), and 150–200 Hz on average, which is highly insufficient for capturing small turning points and handwritten text. If a tablet with a 500–1000 Hz polling rate becomes available on the market, contact me — Ciallo will try to add support.
 
@@ -107,7 +107,7 @@ Hope Ciallo's tools already address something important to you. (To be frank, th
 The developer basically knows the most needed features during the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2).
 
 Instead of asking for features existing in other paint programs, you may propose creative features unconstrained in style.
-The developer would love to hear new ideas on line art (especially anime-style art) and may be able to do technical research on your request.
+The developer would love to hear new ideas about line art (especially anime-style art) and may be able to do technical research on your request.
 
 If you urgently need a feature from other programs implemented in Ciallo within a week or month, consider contacting the developer or sponsoring the project.
 
