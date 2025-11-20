@@ -156,7 +156,7 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
         var points = geom.Positions.Select(p => _currTransform * p).ToArray();
         if (_objectType == 0)
         {
-            _polylineE.Get<StrokeView>().SetGeometry(points, geom.Radii);
+            _polylineE.Get<StrokeView>().SetGeometry(points, geom.Radii, geom.Pressures);
         }
         else if (_objectType == 1)
         {
