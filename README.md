@@ -1,6 +1,20 @@
-# Ciallo ～(∠・ω< )⌒★!
+<p align="center"><h1 align = "center">Ciallo ～(∠・ω< )⌒★!</h1></p>
 
-Steam store page is online https://store.steampowered.com/app/3973810. Working on the final polishing and bug testing before a demo release.
+<p align="left">
+    The next-generation vector paint program in your dreams.
+</p>
+
+[![Steam](https://img.shields.io/badge/steam-%23000000.svg?style=for-the-badge&logo=steam&logoColor=white)](https://store.steampowered.com/app/3973810)
+[![Itch.io](https://img.shields.io/badge/Itch-%23FF0B34.svg?style=for-the-badge&logo=Itch.io&logoColor=white)](https://shenciao.itch.io/ciallo)
+[![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/cw/ShenCiao)
+[![Pixiv](https://img.shields.io/badge/pixiv-0096FA.svg?style=for-the-badge&logo=pixiv&logoColor=white)](https://www.pixiv.net/artworks/137703808)
+
+[![License](https://img.shields.io/github/license/ShenCiao/Ciallo.svg)](https://github.com/ShenCiao/Ciallo/blob/main/LICENSE)
+[![godot-ci export](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml/badge.svg?branch=main)](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml)
+![.Net](https://img.shields.io/badge/.NET-512BD4.svg?style=for-the-badge&logo=dotnet&logoColor=white)
+
+
+⚠️Working on the final polishing and bug testing before a demo release.
 
 Ciallo is an open-source graphics program for professional digital painting.
 It aims to compete with traditional raster painting software like Photoshop and Clip Studio Paint, while offering the following unique features researched by the developer:
@@ -19,7 +33,7 @@ Resolution-independent airbrush, you can change opacity gradient directly.
 
 ### Export to game engines
 
-Export your artwork into the Godot game engine (as a .scn/.tscn file), and keep it resolution-independent.
+Export your artwork into the Godot game engine (as a .scn/.tscn file without dependency), and keep it resolution-independent.
 Like those old days when Flash was alive.
 
 ![](/.github/Dango.png)
@@ -118,7 +132,8 @@ It needs your support to keep them free and accessible to everyone.
 
 [![Become a Patron!](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/cw/ShenCiao)
 
-Consider patreon on Ciallo development, the developer will post feature designs and teasers about Ciallo well before release, which acts as a pre-manual to understand how to use Ciallo. Check the post [About Vector Fill](https://www.patreon.com/posts/about-vector-143858627) as an example.
+Consider patreon on Ciallo development, the developer will post plans, designs and teasers about innovative features well before release, which acts as a pre-manual to understand how to use Ciallo.
+Check the post [About Vector Fill](https://www.patreon.com/posts/about-vector-143858627) as an example.
 
 Moreover, in this age of AI we all face challenges from rapidly advancing AI techniques.
 Hope Ciallo will be the tool that helps you shine in this era — a tool that liberates your creativity, not one that replaces it with AI or steals it to feed AI.
@@ -140,8 +155,8 @@ Artwork labeled or claimed as "no copyright", "public domain", or similar does n
 The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", and means "Hello". It comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). We won't shame this name.
 
 ### Citation
-Check Ciallo's [research project] if you are interested in how Ciallo's unique features are implemented.
 
+Check Ciallo's [research project] if you are interested in how Ciallo's unique features are implemented.
 
 SIGGRAPH 2024 Technical Paper (Conference Track)
 
@@ -180,7 +195,6 @@ SIGGRAPH 2023 Talk
        location = {Los Angeles, CA, USA},
        series = {SIGGRAPH '23}
     }
-
 
 ### Coding frameworks/libraries
 
