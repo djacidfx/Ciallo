@@ -96,6 +96,21 @@ public partial class SelectTool : CommonToolBase
         {
             Document.Get<SelectionManager>().SelectedPolylines.Clear();
         }
+
+        if (AppActions.Delete.IsJustPressed)
+        {
+            var selectionManager = Document.Get<SelectionManager>();
+            if (selectionManager.SelectedPolylines.Count == 0) return;
+            var cmd = new EmptyCommand();
+            foreach (var polylineE in selectionManager.SelectedPolylines)
+            {
+                if (polylineE.Has<StrokeSetting>())
+                    cmd.Combine(new DeleteStrokeCmd(polylineE));
+                else
+                    cmd.Combine(new DeleteFilledPolygonCmd(polylineE));
+            }
+            cmd.Commit();
+        }
         base.OnKey(key);
     }
 
