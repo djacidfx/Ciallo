@@ -1,5 +1,4 @@
-﻿using System;
-using Ciallo.Data;
+﻿using Ciallo.Data;
 using Ciallo.NodeControl;
 using Frent;
 
@@ -9,13 +8,6 @@ public class SetWorkingBrushCmd : CommandBase
 {
     private readonly Entity _oldBrushE;
     private readonly Entity _newBrushE;
-
-    public SetWorkingBrushCmd(Index idx)
-    {
-        _oldBrushE = Document.Get<SelectionManager>().WorkingBrush.Value;
-        var bm = Document.Get<BrushManager>();
-        _newBrushE = bm.Brushes[idx];
-    }
 
     public SetWorkingBrushCmd(Entity newBrushE)
     {

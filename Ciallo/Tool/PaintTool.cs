@@ -91,7 +91,7 @@ public partial class PaintTool : CommonToolBase
         {
             CustomMinimumSize = new(0, 150),
         };
-        brushList.ItemSelected += idx => { new SetWorkingBrushCmd((int)idx).Commit(); };
+        brushList.ItemSelected += idx => { new SetWorkingBrushCmd(Document.Get<BrushManager>().Brushes[(int)idx]).Commit(); };
         brushList.ItemClicked += async (idx, _, buttonIndex) =>
         {
             if ((MouseButton)buttonIndex != MouseButton.Right) return;
@@ -157,7 +157,9 @@ public partial class PaintTool : CommonToolBase
     {
         if (!AppBrushLibrary.HasSelection) return;
         var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
-        new NewBrushCmd(setting).Combine(new SetWorkingBrushCmd(^1)).Commit();
+        var cmd = new NewBrushCmd(setting);
+        var brushE = cmd.InitEntity();
+        cmd.Combine(new SetWorkingBrushCmd(brushE)).Commit();
     }
 
     public override bool OnSwitchLayer(Entity newLayerE)

@@ -93,8 +93,9 @@ public static partial class AppWorldManager
         // Load selection
         var dataSm = dataDocument.Get<SelectionManager>();
         new SetWorkingLayerCmd(layerMap[dataSm.WorkingLayer.CurrentValue]).Do();
-        var idx = dataDocument.Get<BrushManager>().Brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
-        if (idx != -1) new SetWorkingBrushCmd(idx).Do();
+        var brushes = dataDocument.Get<BrushManager>().Brushes;
+        var idx = brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
+        if (idx != -1) new SetWorkingBrushCmd(brushes[idx]).Do();
     }
 
     public static void SaveWorkingWorld()
