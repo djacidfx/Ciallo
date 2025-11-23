@@ -193,12 +193,13 @@ public static class PolylineExtension
     /// ratio in [0,1] keeps that fraction of points (clamped). ratio >= 1 keeps all.
     /// </summary>
     /// <param name="polyline">The polyline to Simplify.</param>
-    /// <param name="ratio">The number of points to remain in ratio.</param>
+    /// <param name="simplificationRatio">#points to remove divided by total #points.</param>
     /// <param name="originalIndex">The output point indices in the original polyline.</param>
     /// <returns>Simplified polyline.</returns>
-    public static List<Vector2> SimplifyVm(this IReadOnlyList<Vector2> polyline, float ratio, out List<int> originalIndex)
+    public static List<Vector2> SimplifyVm(this IReadOnlyList<Vector2> polyline, float simplificationRatio, out List<int> originalIndex)
     {
         int count = polyline.Count;
+        float ratio = 1f - simplificationRatio;
         if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
         if (count <= 2 || ratio >= 1f)
         {

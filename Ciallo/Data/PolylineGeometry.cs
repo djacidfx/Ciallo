@@ -42,6 +42,19 @@ public class PolylineGeometry
         return $"PolylineGeometry(Pos={Positions.Count}, Radii={Radii.Count}, Pressures={Pressures.Count}, Tilts={Tilts.Count})\nSamples:\n{sample}{suffix}";
     }
 
+    public PolylineGeometry Index(List<int> indices)
+    {
+        var newGeometry = new PolylineGeometry();
+        foreach (var idx in indices)
+        {
+            newGeometry.Positions.Add(Positions[idx]);
+            newGeometry.Radii.Add(Radii[idx]);
+            newGeometry.Pressures.Add(Pressures[idx]);
+            newGeometry.Tilts.Add(Tilts[idx]);
+        }
+        return newGeometry;
+    }
+
     public override string ToString() => Describe();
 
     private string DebuggerDisplay => Describe(2);
