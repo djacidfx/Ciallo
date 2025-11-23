@@ -44,7 +44,7 @@ public class Preference
     public float StrokeDotRadius = 12f;
 
     [DataMember]
-    public BezierCurve PenPressureRemapCurve = BezierCurve.Linear();
+    public BezierCurve PenPressureRemapCurve = BezierCurve.EaseInOut();
 
     #region Save Load Json
 
