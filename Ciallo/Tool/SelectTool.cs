@@ -117,14 +117,14 @@ public partial class SelectTool : CommonToolBase
         base.OnKey(key);
     }
 
-    public ReactiveProperty<float> SimplificationRatio = new(0.5f);
+    public ReactiveProperty<float> SimplificationRatio = new(0.25f);
 
     public override void DrawProperty(PropertyContainer container)
     {
         var selectionManager = Document.Get<SelectionManager>();
         var polylineEditBox = PropertyContainer.CreateBox().AddToChildOf(container)
             .VisibleIf(selectionManager.SelectedPolylines.ObserveCountChanged().Prepend(0), count => count > 0);
-        
+
         var simplicationRatioEdit = new SpinSlider()
         {
             MinValue = 0.1,
@@ -140,7 +140,8 @@ public partial class SelectTool : CommonToolBase
             foreach (var polylineE in selectionManager.SelectedPolylines)
             {
                 var geom = polylineE.Get<PolylineGeometry>();
-                geom.Positions.SimplifyVm(SimplificationRatio.Value, out var indices);
+                if (geom.Positions.Count < 4) continue;
+                geom.Positions.SimplifyH(SimplificationRatio.Value, out var indices);
                 var newGeom = geom.Index(indices);
                 cmd.Combine(new SetPolylineGeometryCmd(polylineE, newGeom));
             }
