@@ -8,7 +8,7 @@ using Godot;
 namespace Ciallo.Geometry;
 
 /// <summary>
-/// This class is for Bézier curves geometry/math calculations. Without any curve modification and cache logic.
+/// This class is for Polyline geometry/math calculations. Without any curve modification and cache logic.
 /// </summary>
 public static class PolylineExtension
 {
@@ -185,5 +185,117 @@ public static class PolylineExtension
             ys.Add(SampleSegment(p0, p1, x));
         }
         return ys;
+    }
+
+    /// <summary>
+    /// The Visvalingam–Whyatt algorithm to simplify the polyline.
+    /// Remove the smallest effective area points until the remaining point count reaches (ratio * count).
+    /// ratio in [0,1] keeps that fraction of points (clamped). ratio >= 1 keeps all.
+    /// </summary>
+    /// <param name="polyline">The polyline to Simplify.</param>
+    /// <param name="ratio">The number of points to remain in ratio.</param>
+    /// <param name="originalIndex">The output point indices in the original polyline.</param>
+    /// <returns>Simplified polyline.</returns>
+    public static List<Vector2> SimplifyVm(this IReadOnlyList<Vector2> polyline, float ratio, out List<int> originalIndex)
+    {
+        int count = polyline.Count;
+        if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
+        if (count <= 2 || ratio >= 1f)
+        {
+            originalIndex = Enumerable.Range(0, count).ToList();
+            return polyline.ToList();
+        }
+        if (ratio <= 0f)
+            ratio = 0f; // keep minimum 2 points anyway
+
+        int targetCount = (int)MathF.Round(count * ratio);
+        if (targetCount < 2) targetCount = 2;
+        if (targetCount > count) targetCount = count;
+        if (targetCount == count)
+        {
+            originalIndex = Enumerable.Range(0, count).ToList();
+            return polyline.ToList();
+        }
+
+        // Node arrays (index-based linked list)
+        var prev = new int[count];
+        var next = new int[count];
+        var removed = new bool[count];
+        var area = new float[count];
+        for (int i = 0; i < count; i++)
+        {
+            prev[i] = i - 1;
+            next[i] = i + 1;
+        }
+        next[count - 1] = count; // sentinel > last index
+
+        float TriangleArea(int i)
+        {
+            int p = prev[i];
+            int n = next[i];
+            if (p < 0 || n >= count) return float.PositiveInfinity; // endpoints not removable
+            return Geometry.TriangleArea(polyline[p], polyline[i], polyline[n]);
+        }
+
+        var heap = new PriorityQueue<int, float>();
+        for (int i = 1; i < count - 1; i++)
+        {
+            area[i] = TriangleArea(i);
+            heap.Enqueue(i, area[i]);
+        }
+
+        int remaining = count;
+        // Remove until desired count
+        while (remaining > targetCount && heap.Count > 0)
+        {
+            var i = heap.Dequeue();
+            if (removed[i]) continue; // already gone by a newer entry
+            // stale entry check (priority queue lacks decrease-key)
+            float currentArea = TriangleArea(i);
+            if (MathF.Abs(currentArea - area[i]) > 1e-6f)
+            {
+                // area changed since enqueued; re-enqueue with updated value
+                area[i] = currentArea;
+                heap.Enqueue(i, area[i]);
+                continue;
+            }
+
+            // Remove this point
+            removed[i] = true;
+            remaining--;
+            int p = prev[i];
+            int n = next[i];
+            if (p >= 0) next[p] = n;
+            if (n < count) prev[n] = p;
+
+            // Update neighbor areas (if they are not endpoints and not removed)
+            if (p > 0 && p < count - 1 && !removed[p])
+            {
+                area[p] = TriangleArea(p);
+                heap.Enqueue(p, area[p]);
+            }
+            if (n > 0 && n < count - 1 && n < count && !removed[n])
+            {
+                area[n] = TriangleArea(n);
+                heap.Enqueue(n, area[n]);
+            }
+        }
+
+        // Collect remaining points in order
+        List<Vector2> result = [];
+        originalIndex = [];
+        int idx = 0;
+        while (idx < count && prev[idx] != -2) // simple traversal from start
+        {
+            if (!removed[idx])
+            {
+                result.Add(polyline[idx]);
+                originalIndex.Add(idx);
+            }
+            idx = next[idx];
+            if (idx >= count) break;
+        }
+
+        return result;
     }
 }

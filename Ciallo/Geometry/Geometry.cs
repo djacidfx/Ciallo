@@ -103,4 +103,13 @@ public static partial class Geometry
 
         return p.DistanceTo(closestPoint);
     }
+
+    public static float TriangleArea(Vector2 a, Vector2 b, Vector2 c)
+    {
+        // 2 * area of triangle via cross product magnitude
+        var ab = b - a;
+        var ac = c - a;
+        float cross = ab.X * ac.Y - ab.Y * ac.X;
+        return Mathf.Abs(cross) * 0.5f;
+    }
 }
