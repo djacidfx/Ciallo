@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Godot;
@@ -119,14 +118,13 @@ public static class PolylineExtension
     /// <param name="polyline"></param>
     /// <param name="x"></param>
     /// <returns>Y value at the given x</returns>
-    public static float SampleX([NotNull] this IReadOnlyList<Vector2> polyline, float x)
+    public static float SampleX([NotNull] this List<Vector2> polyline, float x)
     {
         if (polyline.Count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
         if (polyline.Count == 1) return polyline[0].Y;
         if (polyline.Count == 2) return SampleSegment(polyline[0], polyline[1], x);
 
-        // Memory allocation here and Rider warns quite a lot, but it's ok. 
-        var searchResult = polyline.Select(v => v.X).ToImmutableArray().BinarySearch(x);
+        var searchResult = polyline.BinarySearch(new Vector2(x, 0), Comparer<Vector2>.Create((a, b) => a.X.CompareTo(b.X)));
         if (searchResult >= 0) return polyline[searchResult].Y;
         // Get the index of the closest point after x
         // see https://learn.microsoft.com/en-us/dotnet/api/system.array.binarysearch for the return value.
