@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.Serialization;
+using Ciallo.Geometry;
 using Godot;
 
 namespace Ciallo.Data;
@@ -17,6 +18,18 @@ public class PolylineGeometry
     [DataMember(Order = 2)] public List<float> Pressures = [];
     [DataMember(Order = 3)] public List<Vector2> Tilts = [];
 
+    public int Capacity
+    {
+        get => Positions.Capacity;
+        set
+        {
+            Positions.Capacity = value;
+            Radii.Capacity = value;
+            Pressures.Capacity = value;
+            Tilts.Capacity = value;
+        }
+    }
+
     public PolylineGeometry Clone()
     {
         return new PolylineGeometry()
@@ -27,6 +40,43 @@ public class PolylineGeometry
             Tilts = [..Tilts],
         };
     }
+
+    /// <summary>
+    /// Linearly resample the polyline by parametric t values in [0, 1] + integer index.
+    /// </summary>
+    /// <param name="polyTs">Poly t values</param>
+    /// <returns>Resampled geometry</returns>
+    public PolylineGeometry Sample(List<float> polyTs)
+    {
+        var g = new PolylineGeometry() { Capacity = polyTs.Count };
+
+        foreach (var polyT in polyTs)
+        {
+            var (idx, t) = polyT.ResolvePolyT();
+
+            g.Positions.Add(Positions[idx].Lerp(Positions[idx + 1], t));
+            g.Radii.Add(float.Lerp(Radii[idx], Radii[idx + 1], t));
+            g.Pressures.Add(float.Lerp(Pressures[idx], Pressures[idx + 1], t));
+            g.Tilts.Add(Tilts[idx].Lerp(Tilts[idx + 1], t));
+        }
+
+        return g;
+    }
+    
+    public PolylineGeometry Index(List<int> indices)
+    {
+        var g = new PolylineGeometry();
+        foreach (var idx in indices)
+        {
+            g.Positions.Add(Positions[idx]);
+            g.Radii.Add(Radii[idx]);
+            g.Pressures.Add(Pressures[idx]);
+            g.Tilts.Add(Tilts[idx]);
+        }
+        return g;
+    }
+
+    #region Debug utilities
 
     public string Describe(int sampleCount = 4)
     {
@@ -40,19 +90,6 @@ public class PolylineGeometry
         var sample = string.Join("\n", samples);
         var suffix = Positions.Count > sampleCount ? $"\n  ... ({Positions.Count - sampleCount} more)" : string.Empty;
         return $"PolylineGeometry(Pos={Positions.Count}, Radii={Radii.Count}, Pressures={Pressures.Count}, Tilts={Tilts.Count})\nSamples:\n{sample}{suffix}";
-    }
-
-    public PolylineGeometry Index(List<int> indices)
-    {
-        var newGeometry = new PolylineGeometry();
-        foreach (var idx in indices)
-        {
-            newGeometry.Positions.Add(Positions[idx]);
-            newGeometry.Radii.Add(Radii[idx]);
-            newGeometry.Pressures.Add(Pressures[idx]);
-            newGeometry.Tilts.Add(Tilts[idx]);
-        }
-        return newGeometry;
     }
 
     public override string ToString() => Describe();
@@ -69,4 +106,6 @@ public class PolylineGeometry
     }
 
     private static string FormatVector(Vector2 v) => $"({v.X,6:F1},{v.Y,6:F1})";
+
+    #endregion
 }
