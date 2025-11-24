@@ -294,7 +294,8 @@ public class PolylineInteractiveGenerator
         var angle = Mathf.Acos(dir01.Dot(dir23));
         int nPoints = Mathf.CeilToInt(angle / _interpolationAngleTolerance);
         if (nPoints <= 0) return; // no need to interpolate
-        var ts = Enumerable.Range(1, nPoints + 1)
+        nPoints = int.Min(nPoints, 3);
+        var ts = Enumerable.Range(1, nPoints)
             .Select(i => i / (float)(nPoints + 1))
             .ToList();
 
