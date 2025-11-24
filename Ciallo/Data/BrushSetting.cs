@@ -89,7 +89,7 @@ public class BrushSetting
         container.AddProperty("Rendering type", typeButton);
 
         // ---------Stamp------------ 
-        var stampBox = new VBoxContainer();
+        var stampBox = PropertyContainer.CreateBox();
         stampBox.VisibleIf(RenderingType, BrushRenderingType.Stamp);
         container.AddChild(stampBox);
 

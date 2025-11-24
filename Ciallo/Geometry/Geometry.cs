@@ -11,8 +11,26 @@ public static partial class Geometry
         bool isLinear = p1.IsEqualApprox(p2) || (p0.IsEqualApprox(p1) && p2.IsEqualApprox(p3));
         if (isLinear) return p1.Lerp(p2, t);
 
-        if (p0.IsEqualApprox(p1)) p0 = p1 - (p2 - p1) * 0.01f;
-        if (p2.IsEqualApprox(p3)) p3 = p2 + (p2 - p1) * 0.01f;
+        // Ensure p0, p1, p2, p3 form an isosceles trapezoid when one endpoint coincides with its neighbor.
+        // Bases: p12 and p03; legs: p01 and p23.
+        var tangent = (p2 - p1).Normalized();
+        var normal = new Vector2(-tangent.Y, tangent.X);
+
+        if (p0.IsEqualApprox(p1) && !p2.IsEqualApprox(p3))
+        {
+            // Compute p0 so that p03 is parallel to p12 and |p01| == |p23|
+            var d = p3 - p2;
+            var s = -d.Dot(tangent);
+            var h = d.Dot(normal);
+            p0 = p1 + h * normal + s * tangent;
+        }
+        else if (p2.IsEqualApprox(p3) && !p0.IsEqualApprox(p1))
+        {
+            var d = p0 - p1;
+            var s = d.Dot(tangent);
+            var h = d.Dot(normal);
+            p3 = p2 + h * normal - s * tangent;
+        }
 
         const float alpha = 0.5f;
         var t0 = 0f;
@@ -33,7 +51,7 @@ public static partial class Geometry
         if (float.IsNaN(c.X) || float.IsNaN(c.Y))
         {
             GD.PrintErr($"CatmullRomInterpolation produced NaN result. Inputs: p0={p0}, p1={p1}, p2={p2}, p3={p3}, t={t}");
-            c = p1;
+            c = p1.Lerp(p2, t);
         }
         return c;
     }
@@ -44,8 +62,9 @@ public static partial class Geometry
         bool isLinear = Mathf.IsEqualApprox(p1, p2) || (Mathf.IsEqualApprox(p0, p1) && Mathf.IsEqualApprox(p2, p3));
         if (isLinear) return Mathf.Lerp(p1, p2, t);
 
-        if (Mathf.IsEqualApprox(p0, p1)) p0 = p1 - (p2 - p1) * 0.01f;
-        if (Mathf.IsEqualApprox(p2, p3)) p3 = p2 + (p2 - p1) * 0.01f;
+        // Assume acceleration is constant
+        if (Mathf.IsEqualApprox(p0, p1)) p0 = p1 - (p3 - p2);
+        if (Mathf.IsEqualApprox(p2, p3)) p3 = p2 + (p1 - p0);
 
         const float alpha = 0.5f;
         var t0 = 0f;
@@ -67,7 +86,7 @@ public static partial class Geometry
         {
             // Note: hope this is the only source where nan possible in our program, so no guard in other systems.
             GD.PrintErr($"CatmullRomInterpolation produced NaN result. Inputs: p0={p0}, p1={p1}, p2={p2}, p3={p3}, t={t}");
-            c = p1;
+            c = float.Lerp(p1, p2, t);
         }
         return c;
     }
@@ -83,5 +102,14 @@ public static partial class Geometry
         var closestPoint = linePoint + lineDir * t;
 
         return p.DistanceTo(closestPoint);
+    }
+
+    public static float TriangleArea(Vector2 a, Vector2 b, Vector2 c)
+    {
+        // 2 * area of triangle via cross product magnitude
+        var ab = b - a;
+        var ac = c - a;
+        float cross = ab.X * ac.Y - ab.Y * ac.X;
+        return Mathf.Abs(cross) * 0.5f;
     }
 }

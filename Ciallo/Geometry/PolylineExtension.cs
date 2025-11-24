@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Godot;
@@ -8,7 +7,7 @@ using Godot;
 namespace Ciallo.Geometry;
 
 /// <summary>
-/// This class is for Bézier curves geometry/math calculations. Without any curve modification and cache logic.
+/// This class is for Polyline geometry/math calculations. Without any curve modification and cache logic.
 /// </summary>
 public static class PolylineExtension
 {
@@ -119,14 +118,13 @@ public static class PolylineExtension
     /// <param name="polyline"></param>
     /// <param name="x"></param>
     /// <returns>Y value at the given x</returns>
-    public static float SampleX([NotNull] this IReadOnlyList<Vector2> polyline, float x)
+    public static float SampleX([NotNull] this List<Vector2> polyline, float x)
     {
         if (polyline.Count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
         if (polyline.Count == 1) return polyline[0].Y;
         if (polyline.Count == 2) return SampleSegment(polyline[0], polyline[1], x);
 
-        // Memory allocation here and Rider warns quite a lot, but it's ok. 
-        var searchResult = polyline.Select(v => v.X).ToImmutableArray().BinarySearch(x);
+        var searchResult = polyline.BinarySearch(new Vector2(x, 0), Comparer<Vector2>.Create((a, b) => a.X.CompareTo(b.X)));
         if (searchResult >= 0) return polyline[searchResult].Y;
         // Get the index of the closest point after x
         // see https://learn.microsoft.com/en-us/dotnet/api/system.array.binarysearch for the return value.
@@ -185,5 +183,222 @@ public static class PolylineExtension
             ys.Add(SampleSegment(p0, p1, x));
         }
         return ys;
+    }
+
+    /// <summary>
+    /// The Visvalingam–Whyatt algorithm to simplify the polyline.
+    /// Remove the smallest effective area points until the remaining point count reaches (ratio * count).
+    /// ratio in [0,1] keeps that fraction of points (clamped). ratio >= 1 keeps all.
+    /// </summary>
+    /// <param name="polyline">The polyline to Simplify.</param>
+    /// <param name="simplificationRatio">Fraction of points to remove, in [0,1]</param>
+    /// <param name="originalIndex">The output point indices in the original polyline.</param>
+    /// <returns>Simplified polyline.</returns>
+    public static List<Vector2> SimplifyVm(this IReadOnlyList<Vector2> polyline, float simplificationRatio, out List<int> originalIndex)
+    {
+        int count = polyline.Count;
+        float ratio = 1f - simplificationRatio;
+        if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
+        if (count <= 2 || ratio >= 1f)
+        {
+            originalIndex = Enumerable.Range(0, count).ToList();
+            return polyline.ToList();
+        }
+        if (ratio <= 0f)
+            ratio = 0f; // keep minimum 2 points anyway
+
+        int targetCount = (int)MathF.Round(count * ratio);
+        if (targetCount < 2) targetCount = 2;
+        if (targetCount > count) targetCount = count;
+        if (targetCount == count)
+        {
+            originalIndex = Enumerable.Range(0, count).ToList();
+            return polyline.ToList();
+        }
+
+        // Node arrays (index-based linked list)
+        var prev = new int[count];
+        var next = new int[count];
+        var removed = new bool[count];
+        var area = new float[count];
+        for (int i = 0; i < count; i++)
+        {
+            prev[i] = i - 1;
+            next[i] = i + 1;
+        }
+        next[count - 1] = count; // sentinel > last index
+
+        float TriangleArea(int i)
+        {
+            int p = prev[i];
+            int n = next[i];
+            if (p < 0 || n >= count) return float.PositiveInfinity; // endpoints not removable
+            return Geometry.TriangleArea(polyline[p], polyline[i], polyline[n]);
+        }
+
+        var heap = new PriorityQueue<int, float>();
+        for (int i = 1; i < count - 1; i++)
+        {
+            area[i] = TriangleArea(i);
+            heap.Enqueue(i, area[i]);
+        }
+
+        int remaining = count;
+        // Remove until desired count
+        while (remaining > targetCount && heap.Count > 0)
+        {
+            var i = heap.Dequeue();
+            if (removed[i]) continue; // already gone by a newer entry
+            // stale entry check (priority queue lacks decrease-key)
+            float currentArea = TriangleArea(i);
+            if (MathF.Abs(currentArea - area[i]) > 1e-6f)
+            {
+                // area changed since enqueued; re-enqueue with updated value
+                area[i] = currentArea;
+                heap.Enqueue(i, area[i]);
+                continue;
+            }
+
+            // Remove this point
+            removed[i] = true;
+            remaining--;
+            int p = prev[i];
+            int n = next[i];
+            if (p >= 0) next[p] = n;
+            if (n < count) prev[n] = p;
+
+            // Update neighbor areas (if they are not endpoints and not removed)
+            if (p > 0 && p < count - 1 && !removed[p])
+            {
+                area[p] = TriangleArea(p);
+                heap.Enqueue(p, area[p]);
+            }
+            if (n > 0 && n < count - 1 && !removed[n])
+            {
+                area[n] = TriangleArea(n);
+                heap.Enqueue(n, area[n]);
+            }
+        }
+
+        // Collect remaining points in order
+        List<Vector2> result = [];
+        originalIndex = [];
+        int idx = 0;
+        while (idx < count) // simple traversal from start
+        {
+            if (!removed[idx])
+            {
+                result.Add(polyline[idx]);
+                originalIndex.Add(idx);
+            }
+            idx = next[idx];
+            if (idx >= count) break;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Distance metric variant of the Visvalingam–Whyatt algorithm. Use perpendicular distance instead of triangle area to evaluate importance.
+    /// Remove the smallest effective perpendicular distance points until the remaining point count reaches (ratio * count).
+    /// </summary>
+    /// <inheritdoc cref="SimplifyVm"/>
+    public static List<Vector2> SimplifyH(this IReadOnlyList<Vector2> polyline, float simplificationRatio, out List<int> originalIndex)
+    {
+        int count = polyline.Count;
+        float ratio = 1f - simplificationRatio;
+        if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
+        if (count <= 2 || ratio >= 1f)
+        {
+            originalIndex = Enumerable.Range(0, count).ToList();
+            return polyline.ToList();
+        }
+        if (ratio <= 0f)
+            ratio = 0f;
+
+        int targetCount = (int)MathF.Round(count * ratio);
+        if (targetCount < 2) targetCount = 2;
+        if (targetCount > count) targetCount = count;
+        if (targetCount == count)
+        {
+            originalIndex = Enumerable.Range(0, count).ToList();
+            return polyline.ToList();
+        }
+
+        var prev = new int[count];
+        var next = new int[count];
+        var removed = new bool[count];
+        var distance = new float[count];
+        for (int i = 0; i < count; i++)
+        {
+            prev[i] = i - 1;
+            next[i] = i + 1;
+        }
+        next[count - 1] = count;
+
+        float PerpendicularDistance(int i)
+        {
+            int p = prev[i];
+            int n = next[i];
+            if (p < 0 || n >= count) return float.PositiveInfinity;
+            var dir = polyline[n] - polyline[p];
+            if (dir.IsZeroApprox()) return float.PositiveInfinity;
+            return polyline[i].DistanceToLine(polyline[p], dir.Normalized());
+        }
+
+        var heap = new PriorityQueue<int, float>();
+        for (int i = 1; i < count - 1; i++)
+        {
+            distance[i] = PerpendicularDistance(i);
+            heap.Enqueue(i, distance[i]);
+        }
+
+        int remaining = count;
+        while (remaining > targetCount && heap.Count > 0)
+        {
+            var i = heap.Dequeue();
+            if (removed[i]) continue;
+            float currentDistance = PerpendicularDistance(i);
+            if (MathF.Abs(currentDistance - distance[i]) > 1e-6f)
+            {
+                distance[i] = currentDistance;
+                heap.Enqueue(i, distance[i]);
+                continue;
+            }
+
+            removed[i] = true;
+            remaining--;
+            int p = prev[i];
+            int n = next[i];
+            if (p >= 0) next[p] = n;
+            if (n < count) prev[n] = p;
+
+            if (p > 0 && p < count - 1 && !removed[p])
+            {
+                distance[p] = PerpendicularDistance(p);
+                heap.Enqueue(p, distance[p]);
+            }
+            if (n > 0 && n < count - 1 && !removed[n])
+            {
+                distance[n] = PerpendicularDistance(n);
+                heap.Enqueue(n, distance[n]);
+            }
+        }
+
+        List<Vector2> result = [];
+        originalIndex = [];
+        int idx = 0;
+        while (idx < count)
+        {
+            if (!removed[idx])
+            {
+                result.Add(polyline[idx]);
+                originalIndex.Add(idx);
+            }
+            idx = next[idx];
+            if (idx >= count) break;
+        }
+
+        return result;
     }
 }

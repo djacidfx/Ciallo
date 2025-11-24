@@ -98,3 +98,9 @@ Global pen pressure remap,Global pen pressure remap,全局笔压重映射,全域
 Base radius,Base radius,基础半径,基礎半徑,基本半径,기본 반지름,Grundradius,Rayon de base
 Pressure to radius,Pressure to radius,压力到半径,壓力到半徑,圧力から半径へ,압력→반지름,Druck zu Radius,Pression vers rayon
 Pressure to flow,Pressure to flow,压力到流量,壓力到流量,圧力から流量へ,압력→흐름,Druck zu Fluss,Pression vers flux
+Radius,Radius,半径,半徑,半径,반지름,Radius,Rayon
+Simplify,Simplify,简化,簡化,単純化,단순화,Vereinfachen,Simplifier
+Simplification ratio,Simplification ratio,简化比率,簡化比率,単純化率,단순화 비율,Vereinfachungsrate,Taux de simplification
+Subdivide,Subdivide,细分,細分,細分化,세분화,Unterteilen,Subdiviser
+Smooth subdivide,Smooth subdivide,平滑细分,平滑細分,スムーズ細分化,부드러운 세분화,Glatte Unterteilung,Subdivision lissée
+Smooth,Smooth,平滑,平滑,スムーズ,부드럽게,Glätten,Lisser

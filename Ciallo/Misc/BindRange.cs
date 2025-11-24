@@ -57,7 +57,6 @@ public static class BindRange
         subs.AddTo(spinSlider);
     }
 
-
     public static void ReactiveBindNumber<T>(this SpinSlider spinSlider,
         ReadOnlyReactiveProperty<ReactiveProperty<T>> view,
         out CompositeDisposable subs) where T : INumber<T>

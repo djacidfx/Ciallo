@@ -337,7 +337,7 @@ public class BezierCurve
         OnChanged();
     }
 
-    private const float L = 0.25f;
+    private const float L = 0.4f;
     public static BezierCurve Constant(float y = 0.0f) =>
         new([
             new(new(0f, y), new(-L, 0f), new(L, 0f)),

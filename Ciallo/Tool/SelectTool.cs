@@ -1,9 +1,12 @@
 using System;
 using Ciallo.Command;
 using Ciallo.Data;
+using Ciallo.Geometry;
+using Ciallo.Misc;
 using Ciallo.Widget;
 using Frent;
 using Godot;
+using ObservableCollections;
 using R3;
 using Stateless;
 
@@ -96,11 +99,54 @@ public partial class SelectTool : CommonToolBase
         {
             Document.Get<SelectionManager>().SelectedPolylines.Clear();
         }
+
+        if (AppActions.Delete.IsJustPressed)
+        {
+            var selectionManager = Document.Get<SelectionManager>();
+            if (selectionManager.SelectedPolylines.Count == 0) return;
+            var cmd = new EmptyCommand();
+            foreach (var polylineE in selectionManager.SelectedPolylines)
+            {
+                if (polylineE.Has<StrokeSetting>())
+                    cmd.Combine(new DeleteStrokeCmd(polylineE));
+                else
+                    cmd.Combine(new DeleteFilledPolygonCmd(polylineE));
+            }
+            cmd.Commit();
+        }
         base.OnKey(key);
     }
 
+    public ReactiveProperty<float> SimplificationRatio = new(0.25f);
+
     public override void DrawProperty(PropertyContainer container)
     {
+        var selectionManager = Document.Get<SelectionManager>();
+        var polylineEditBox = PropertyContainer.CreateBox().AddToChildOf(container)
+            .VisibleIf(selectionManager.SelectedPolylines.ObserveCountChanged().Prepend(0), count => count > 0);
+
+        var simplificationRatioEdit = new SpinSlider()
+        {
+            MinValue = 0.1,
+            MaxValue = 0.5,
+        };
+        simplificationRatioEdit.BindNumber(SimplificationRatio);
+        PropertyContainer.CreatePropertyControl("Simplification ratio", simplificationRatioEdit).AddToChildOf(polylineEditBox);
+
+        var simplifyButton = PropertyContainer.CreateButton("Simplify").AddToChildOf(polylineEditBox);
+        simplifyButton.Pressed += () =>
+        {
+            var cmd = new EmptyCommand();
+            foreach (var polylineE in selectionManager.SelectedPolylines)
+            {
+                var geom = polylineE.Get<PolylineGeometry>();
+                if (geom.Positions.Count < 4) continue;
+                geom.Positions.SimplifyH(SimplificationRatio.Value, out var indices);
+                var newGeom = geom.Index(indices);
+                cmd.Combine(new SetPolylineGeometryCmd(polylineE, newGeom));
+            }
+            cmd.Commit();
+        };
     }
 
     private IDisposable _subToWorkingLayer;

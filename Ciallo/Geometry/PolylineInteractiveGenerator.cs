@@ -77,7 +77,7 @@ public class PolylineInteractiveGenerator
     private readonly float _pressureDeltaThreshold = 0.08f;
     private readonly float _overTimeThreshold = 100f;
 
-    private readonly float _interpolationAngleTolerance = Mathf.DegToRad(10);
+    private readonly float _interpolationAngleTolerance = Mathf.DegToRad(20f);
 
     public void Start(CursorButtonData data)
     {
@@ -292,10 +292,11 @@ public class PolylineInteractiveGenerator
         var dir01 = p0.DirectionTo(p1);
         var dir23 = p2.DirectionTo(p3);
         var angle = Mathf.Acos(dir01.Dot(dir23));
-        int nSegment = Mathf.CeilToInt(angle / _interpolationAngleTolerance);
-        if (nSegment < 2) return; // no need to interpolate
-        var ts = Enumerable.Range(1, nSegment - 1)
-            .Select(i => i / (float)nSegment)
+        int nPoints = Mathf.CeilToInt(angle / _interpolationAngleTolerance);
+        if (nPoints <= 0) return; // no need to interpolate
+        nPoints = int.Min(nPoints, 3);
+        var ts = Enumerable.Range(1, nPoints)
+            .Select(i => i / (float)(nPoints + 1))
             .ToList();
 
         var newPositions = ts.Select(t =>

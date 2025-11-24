@@ -25,6 +25,15 @@ public partial class PropertyContainer : VBoxContainer
         return child;
     }
 
+    public static BoxContainer CreateBox()
+    {
+        var box = new VBoxContainer()
+        {
+        };
+        box.AddThemeConstantOverride("separation", 20);
+        return box;
+    }
+
     public static Container CreatePropertyControl(string name, [NotNull] Control control)
     {
         // Note: If a control's CustomMinimumSize is zero, it will never be wrapped in FlowContainer.
@@ -74,5 +83,18 @@ public partial class PropertyContainer : VBoxContainer
         container.AddChild(checkBox);
         container.AddChild(control);
         return container;
+    }
+
+    public static Button CreateButton(string text)
+    {
+        var button = new Button()
+        {
+            Name = text,
+            Text = text,
+            Alignment = HorizontalAlignment.Left,
+            CustomMinimumSize = new(0, 30),
+            SizeFlagsHorizontal = SizeFlags.Fill,
+        };
+        return button;
     }
 }
