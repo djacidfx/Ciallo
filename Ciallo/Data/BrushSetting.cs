@@ -41,6 +41,7 @@ public class BrushSetting
 
     // Airbrush
     [DataMember] public BezierCurve FalloffCurve = BezierCurve.Linear(1.0f, 0.0f);
+    [DataMember] public ReactiveProperty<float> AlphaDensity = new(1.0f);
 
     public void DrawProperty(PropertyContainer container)
     {
@@ -169,10 +170,19 @@ public class BrushSetting
         PropertyContainer.CreatePropertyControl("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
 
         // ---------Airbrush----------
-        var falloffCurveEdit = new MappingCurveEdit();
+        var falloffCurveEdit = new MappingCurveEdit().VisibleIf(RenderingType, BrushRenderingType.Airbrush);
         falloffCurveEdit.Curve = FalloffCurve;
-        container.AddProperty("Opacity falloff", falloffCurveEdit)
-            .VisibleIf(RenderingType, BrushRenderingType.Airbrush);
+        container.AddProperty("Opacity falloff", falloffCurveEdit);
+
+        var alphaDensityControl = new SpinSlider
+        {
+            MinValue = 0.1,
+            MaxValue = 6,
+            Step = 0.01,
+            ExpEdit = true,
+        }.VisibleIf(RenderingType, BrushRenderingType.Airbrush);
+        alphaDensityControl.BindNumber(AlphaDensity);
+        container.AddProperty("Opacity density", alphaDensityControl);
     }
 
     /// <summary>

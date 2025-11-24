@@ -62,6 +62,7 @@ public partial class BrushMaterial : ShaderMaterial
             falloffTex.Update(BakeCurve(setting.FalloffCurve));
             SetShaderParameter("FalloffCurve", falloffTex);
         }).AddTo(Subs);
+        setting.AlphaDensity.Subscribe(v => SetShaderParameter("AlphaDensity", v)).AddTo(Subs);
     }
 
     public override void _Notification(int what)

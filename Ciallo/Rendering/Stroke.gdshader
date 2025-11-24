@@ -49,6 +49,7 @@ uniform float RotationNoiseAmplitude = 0; // `= PI` don't compile
 uniform float RotationNoiseFrequency;
 // ---------------------------------
 uniform sampler2D FalloffCurve;
+uniform float AlphaDensity;
 
 varying flat vec2 p0;
 varying flat vec2 p1;
@@ -313,7 +314,7 @@ void fragment() {
 		float lambda = clamp(abs(pLocal.y) / r_p * sinTheta, 0.0, 1.0);
 		
 		float value = sampleCurve(FalloffCurve, lambda);
-		float A = 1.0 - exp(-deltaN * flow * value);
+		float A = 1.0 - exp(-deltaN * flow * value * AlphaDensity);
 		COLOR = vec4(MaterialColor.rgb, A);
 	}
 	
