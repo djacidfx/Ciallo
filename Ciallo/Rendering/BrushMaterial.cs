@@ -40,6 +40,12 @@ public partial class BrushMaterial : ShaderMaterial
         setting.StampInterval.Subscribe(interval => SetShaderParameter("StampInterval", interval)).AddTo(Subs);
         SetShaderParameter("StampTexture", setting.StampTexture);
         SetShaderParameter("MultiplyTexture", setting.MaskTexture);
+        var dotOpacityTex = ImageTexture.CreateFromImage(BakeCurve(setting.DotOpacityCurve));
+        setting.DotOpacityCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
+        {
+            dotOpacityTex.Update(BakeCurve(setting.DotOpacityCurve));
+            SetShaderParameter("DotOpacityCurve", dotOpacityTex);
+        }).AddTo(Subs);
         setting.StampRotation.Subscribe(rotation =>
         {
             var transform = new Transform2D(rotation, Vector2.Zero);
@@ -50,12 +56,14 @@ public partial class BrushMaterial : ShaderMaterial
         setting.RotationNoiseAmplitude.Subscribe(value => SetShaderParameter("RotationNoiseAmplitude", value)).AddTo(Subs);
         setting.RotationNoiseFrequency.Subscribe(value => SetShaderParameter("RotationNoiseFrequency", value)).AddTo(Subs);
 
+        // Airbrush
         var falloffTex = ImageTexture.CreateFromImage(BakeCurve(setting.FalloffCurve));
         setting.FalloffCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
         {
             falloffTex.Update(BakeCurve(setting.FalloffCurve));
             SetShaderParameter("FalloffCurve", falloffTex);
         }).AddTo(Subs);
+        setting.AlphaDensity.Subscribe(v => SetShaderParameter("AlphaDensity", v)).AddTo(Subs);
     }
 
     public override void _Notification(int what)

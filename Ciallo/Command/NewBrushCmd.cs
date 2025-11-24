@@ -17,8 +17,6 @@ public class NewBrushCmd : CommandBase
         _setting.Labels.Remove(BrushLabel.BuiltIn);
         InitEntity();
         _brushE.Add(_setting);
-        // Dirty hack
-        AppBrushLibrary.SelectedIndex.Value = -1;
     }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(_brushE);

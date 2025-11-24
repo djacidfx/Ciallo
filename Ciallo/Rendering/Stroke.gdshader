@@ -9,8 +9,9 @@ struct StampFlag {
     int StampTexture;
     int MaskTexture;
     int RotationNoise;
+	int MaskDot;
 };
-const StampFlag StampFlags = StampFlag(1 << 0, 1 << 1, 1 << 2);
+const StampFlag StampFlags = StampFlag(1 << 0, 1 << 1, 1 << 2, 1 << 3);
 
 struct BrushFlag {
     int Pressure2FlowCurve;
@@ -24,7 +25,6 @@ uniform vec4 MaterialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
 // Canvas mode is used for drawing wireframe
 uniform int RadiusMode : hint_enum("World", "Canvas") = 0;
-uniform float CanvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
 // Dash
 uniform float DashLength = -1.0; // length with unit "L/r"
 uniform float GapLength = -1.0;
@@ -41,15 +41,15 @@ uniform int ActiveStampFlags;
 uniform float StampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
 uniform sampler2D StampTexture;
 uniform mat2 CoordinateTransform;
-
+uniform sampler2D DotOpacityCurve;
 uniform sampler2D MultiplyTexture;
 
 uniform int RotationNoiseOctave;
 uniform float RotationNoiseAmplitude = 0; // `= PI` don't compile
 uniform float RotationNoiseFrequency;
 // ---------------------------------
-
 uniform sampler2D FalloffCurve;
+uniform float AlphaDensity;
 
 varying flat vec2 p0;
 varying flat vec2 p1;
@@ -192,6 +192,21 @@ float noise1D(float x) {
     return sum * RotationNoiseAmplitude;
 }
 
+vec2 solveTheQuadraticEq(vec2 pLocal){
+	float a, b, c, delta;
+    a = 1.0 - cosTheta * cosTheta;
+    b = 2.0 * (r0 * cosTheta - pLocal.x);
+    c = pLocal.x * pLocal.x + pLocal.y * pLocal.y - r0 * r0;
+    delta = b * b - 4.0*a*c;
+    if(delta <= 0.0) discard;
+
+	float tempMathBlock = b + sign(b) * sqrt(delta);
+    float x1 = -2.0 * c / tempMathBlock;
+    float x2 = -tempMathBlock / (2.0*a);
+    vec2 result = vec2(min(x1, x2), max(x1, x2));
+	return result;
+}
+
 void fragment() {
 	vec2 pLocal = vec2(dot(p-p0, tangent), dot(p-p0, normal));
 	float d0 = distance(p, p0);
@@ -224,13 +239,11 @@ void fragment() {
 			float aaEdge = 3.0 / scale;
 			float aaStart = 1.0 - aaEdge/r_p;
 			aaStart = clamp(aaStart, 0.0, 1.0);
-			float lambda = abs(pLocal.y) / r_p * sinTheta;
+			float lambda;
 
 			if (cosPhi0 < cosTheta) lambda = d0/r0;
 			else if (cosPhi1 > cosTheta) lambda = d1/r1;
 			else {
-				vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
-				float r_p = r0 - cosTheta * p_r.x;
 				lambda = abs(pLocal.y) / r_p * sinTheta;
 			}
 
@@ -246,54 +259,44 @@ void fragment() {
 	/*----------------------------------------------------------*/
   	if(StrokeType == Stamp){
  		// The quadratic equation
-	    float a, b, c, delta;
-	    a = 1.0 - cosTheta * cosTheta;
-	    b = 2.0 * (r0 * cosTheta - pLocal.x);
-	    c = pLocal.x * pLocal.x + pLocal.y * pLocal.y - r0 * r0;
-	    delta = b * b - 4.0*a*c;
-	    if(delta <= 0.0) discard;
+	    vec2 result = solveTheQuadraticEq(pLocal);
+		float x1 = result.x;
+		float x2 = result.y;
 
-		float tempMathBlock = b + sign(b) * sqrt(delta);
-	    float x1 = -2.0 * c / tempMathBlock;
-	    float x2 = -tempMathBlock / (2.0*a);
-	    vec2 temp = vec2(min(x1, x2), max(x1, x2));
-	    x1 = temp.x;
-	    x2 = temp.y;
-
- 		float x1Idx = x2n(x1) + n0;
- 		float x2Idx = x2n(x2) + n1;
- 		float startIdx = x1 < 0.0 ? n0 : x1Idx;
-		startIdx /= StampInterval;
- 		float endIdx = x2 > segmentLength ? n1 : x2Idx;
-		endIdx /= StampInterval;
+ 		float startN = x1 < 0.0 ? n0 : x2n(x1) + n0;
+		float startStampIdx = startN / StampInterval;
+ 		float endN = x2 > segmentLength ? n1 : x2n(x2) + n0;
+		float endStampIdx = endN / StampInterval;
 
  		int i = 0;
  		int MAX_i = 128;
- 		float currIdx = ceil(startIdx);
+ 		float currStampIdx = ceil(startStampIdx);
  		float currA = 1e-7;
 		float flow = MaterialColor.a * flowRatio;
 		// Main loop
- 		while(i < MAX_i && currIdx < endIdx){
-			float currN = currIdx * StampInterval;
+ 		while(i < MAX_i && currStampIdx < endStampIdx){
+			float currN = currStampIdx * StampInterval;
  			float currStampLocalX = n2x(currN - n0);
  			vec2 pToCurrStamp = pLocal - vec2(currStampLocalX, 0.0);
 			// Transform
 			pToCurrStamp *= CoordinateTransform;
 			// Rotation noise
-			float rotationNoise = (ActiveStampFlags & StampFlags.RotationNoise) != 0 ? noise1D(currIdx) : 0.0;
+			float rotationNoise = (ActiveStampFlags & StampFlags.RotationNoise) != 0 ? noise1D(currStampIdx) : 0.0;
 			float cosRot = cos(rotationNoise);
 			float sinRot = sin(rotationNoise);
 			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
 
  			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
-			float mask = ((ActiveStampFlags & StampFlags.MaskTexture) != 0) ? texture(MultiplyTexture, uv).r : 1.0;
-			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || length(pToCurrStamp/r) > 1.0;
+			float textureMask = ((ActiveStampFlags & StampFlags.MaskTexture) != 0) ? texture(MultiplyTexture, uv).r : 1.0;
+			float nr = length(pToCurrStamp/r); // normalized r
+			float dotMask = ((ActiveStampFlags & StampFlags.MaskDot) != 0) ? sampleCurve(DotOpacityCurve, nr) : 1.0;
 			float stampSample = ((ActiveStampFlags & StampFlags.StampTexture) != 0) ? texture(StampTexture, uv).r : 1.0;
-			float sampledA = isOutDisk ? 1e-7 : mask * flow * stampSample;
+			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || nr > 1.0;
+			float sampledA = isOutDisk ? 1e-7 : textureMask * dotMask * flow * stampSample;
 
  			currA = sampledA + currA * (1.0 - sampledA);
 			i++;
-			currIdx += 1.0;
+			currStampIdx += 1.0;
  		}
  		COLOR = vec4(MaterialColor.rgb, currA);
  	}
@@ -301,37 +304,27 @@ void fragment() {
 	if(StrokeType == Airbrush){
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
-
-		// The Whispers Of the olD Ones
 		float flow = MaterialColor.a * flowRatio;
-		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleCurve(FalloffCurve, d0/r0));
-        float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleCurve(FalloffCurve, d1/r1));
-		float transparency;
-
-		// Shen already forget about every details here, and he is too lazy to remind of.
-		// A bunch of math derived with the continuous form of airbrush here.
-        if(p_r.x <= 0.0){
-            transparency = transparency0/transparency1;
-        }
-        if(p_r.x > 0.0 && p_r.x < segmentLength){
-			float r_p = r0 - cosTheta * p_r.x;
-			float lambda = abs(pLocal.y) / sinTheta / r_p;
-			transparency = (1.0 - flow*sampleCurve(FalloffCurve, lambda));
-			transparency = transparency/transparency0/transparency1;
-        }
-        if(p_r.x >= segmentLength){
-            transparency = transparency1/transparency0;
-        }
-		COLOR = vec4(MaterialColor.rgb, 1.0 - transparency);
+		vec2 result = solveTheQuadraticEq(pLocal);
+		float x1 = result.x;
+		float x2 = result.y;
+		float startN = x1 < 0.0 ? 0.0 : x2n(x1);
+		float endN = x2 > segmentLength ? (n1 - n0) : x2n(x2);
+		float deltaN = endN - startN;
+		float lambda = clamp(abs(pLocal.y) / r_p * sinTheta, 0.0, 1.0);
+		
+		float value = sampleCurve(FalloffCurve, lambda);
+		float A = 1.0 - exp(-deltaN * flow * value * AlphaDensity);
+		COLOR = vec4(MaterialColor.rgb, A);
 	}
-
+	
 	// Dash
 	if((ActiveBrushFlags & BrushFlags.Dash) != 0){
 		float unitLength = DashLength + (GapLength > 0.0 ? GapLength : DashLength);
 		float pixelN = x2n(pLocal.x) + n0;
 		if(mod(pixelN + TIME * DashForwardSpeed, unitLength) > DashLength) discard;
 	}
-
+	
 	// Be mindful with premultiply alpha
 	// See: https://github.com/godotengine/godot/issues/99715
 }

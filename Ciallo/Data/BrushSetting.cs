@@ -31,8 +31,8 @@ public class BrushSetting
     [DataMember] public ReactiveProperty<StampFlags> ActiveStampFlags = new();
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
     [DataMember] public ImageTexture StampTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
+    [DataMember] public BezierCurve DotOpacityCurve = BezierCurve.EaseInOut(1.0f, 0.0f);
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
-
     [DataMember] public ImageTexture MaskTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
 
     [DataMember] public ReactiveProperty<int> RotationNoiseOctave = new(1);
@@ -41,6 +41,7 @@ public class BrushSetting
 
     // Airbrush
     [DataMember] public BezierCurve FalloffCurve = BezierCurve.Linear(1.0f, 0.0f);
+    [DataMember] public ReactiveProperty<float> AlphaDensity = new(1.0f);
 
     public void DrawProperty(PropertyContainer container)
     {
@@ -107,8 +108,14 @@ public class BrushSetting
 
         var stampTextureFlagCheck = new CheckBox();
         stampTextureFlagCheck.BindFlag(ActiveStampFlags, StampFlags.StampTexture);
-        var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage);
+        var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage).VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.StampTexture));
         PropertyContainer.CreateCheckBoxCombo("Stamp texture", stampTextureFlagCheck, stampTextureEdit).AddToChildOf(stampBox);
+
+        var maskDotFlagCheck = new CheckBox();
+        maskDotFlagCheck.BindFlag(ActiveStampFlags, StampFlags.MaskDot);
+        var dotOpacityCurveEdit = new MappingCurveEdit();
+        dotOpacityCurveEdit.Curve = DotOpacityCurve;
+        PropertyContainer.CreateCheckBoxCombo("Mask dot", maskDotFlagCheck, dotOpacityCurveEdit).AddToChildOf(stampBox);
 
         var maskTextureFlagCheck = new CheckBox();
         maskTextureFlagCheck.BindFlag(ActiveStampFlags, StampFlags.MaskTexture);
@@ -163,10 +170,19 @@ public class BrushSetting
         PropertyContainer.CreatePropertyControl("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
 
         // ---------Airbrush----------
-        var falloffCurveEdit = new MappingCurveEdit();
+        var falloffCurveEdit = new MappingCurveEdit().VisibleIf(RenderingType, BrushRenderingType.Airbrush);
         falloffCurveEdit.Curve = FalloffCurve;
-        container.AddProperty("Opacity falloff", falloffCurveEdit)
-            .VisibleIf(RenderingType, BrushRenderingType.Airbrush);
+        container.AddProperty("Opacity falloff", falloffCurveEdit);
+
+        var alphaDensityControl = new SpinSlider
+        {
+            MinValue = 0.1,
+            MaxValue = 6,
+            Step = 0.01,
+            ExpEdit = true,
+        }.VisibleIf(RenderingType, BrushRenderingType.Airbrush);
+        alphaDensityControl.BindNumber(AlphaDensity);
+        container.AddProperty("Opacity density", alphaDensityControl);
     }
 
     /// <summary>
@@ -212,6 +228,7 @@ public class BrushSetting
         StampTexture = 1 << 0,
         MaskTexture = 1 << 1,
         RotationNoise = 1 << 2,
+        MaskDot = 1 << 3,
     }
 
     [Flags]
