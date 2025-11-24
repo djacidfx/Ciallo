@@ -260,11 +260,11 @@ void fragment() {
 	    x1 = temp.x;
 	    x2 = temp.y;
 
- 		float x1Idx = x2n(x1) + n0;
- 		float x2Idx = x2n(x2) + n1;
- 		float startIdx = x1 < 0.0 ? n0 : x1Idx;
+ 		float x1nl = x2n(x1) + n0;
+ 		float x2nl = x2n(x2) + n0;
+ 		float startIdx = x1 < 0.0 ? n0 : x1nl;
 		startIdx /= StampInterval;
- 		float endIdx = x2 > segmentLength ? n1 : x2Idx;
+ 		float endIdx = x2 > segmentLength ? n1 : x2nl;
 		endIdx /= StampInterval;
 
  		int i = 0;
