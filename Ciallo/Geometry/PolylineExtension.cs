@@ -191,7 +191,7 @@ public static class PolylineExtension
     /// ratio in [0,1] keeps that fraction of points (clamped). ratio >= 1 keeps all.
     /// </summary>
     /// <param name="polyline">The polyline to Simplify.</param>
-    /// <param name="simplificationRatio">Fraction of points to remove, in [0,1 </param>
+    /// <param name="simplificationRatio">Fraction of points to remove, in [0,1]</param>
     /// <param name="originalIndex">The output point indices in the original polyline.</param>
     /// <returns>Simplified polyline.</returns>
     public static List<Vector2> SimplifyVm(this IReadOnlyList<Vector2> polyline, float simplificationRatio, out List<int> originalIndex)
