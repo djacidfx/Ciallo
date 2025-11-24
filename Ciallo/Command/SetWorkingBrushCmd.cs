@@ -13,6 +13,9 @@ public class SetWorkingBrushCmd : CommandBase
     {
         _oldBrushE = Document.Get<SelectionManager>().WorkingBrush.Value;
         _newBrushE = newBrushE;
+
+        // Dirty hack
+        AppBrushLibrary.SelectedIndex.Value = -1;
     }
 
     public override void Do()
