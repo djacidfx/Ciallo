@@ -192,6 +192,21 @@ float noise1D(float x) {
     return sum * RotationNoiseAmplitude;
 }
 
+vec2 solveTheQuadraticEq(vec2 pLocal){
+	float a, b, c, delta;
+    a = 1.0 - cosTheta * cosTheta;
+    b = 2.0 * (r0 * cosTheta - pLocal.x);
+    c = pLocal.x * pLocal.x + pLocal.y * pLocal.y - r0 * r0;
+    delta = b * b - 4.0*a*c;
+    if(delta <= 0.0) discard;
+
+	float tempMathBlock = b + sign(b) * sqrt(delta);
+    float x1 = -2.0 * c / tempMathBlock;
+    float x2 = -tempMathBlock / (2.0*a);
+    vec2 result = vec2(min(x1, x2), max(x1, x2));
+	return result;
+}
+
 void fragment() {
 	vec2 pLocal = vec2(dot(p-p0, tangent), dot(p-p0, normal));
 	float d0 = distance(p, p0);
@@ -224,13 +239,11 @@ void fragment() {
 			float aaEdge = 3.0 / scale;
 			float aaStart = 1.0 - aaEdge/r_p;
 			aaStart = clamp(aaStart, 0.0, 1.0);
-			float lambda = abs(pLocal.y) / r_p * sinTheta;
+			float lambda;
 
 			if (cosPhi0 < cosTheta) lambda = d0/r0;
 			else if (cosPhi1 > cosTheta) lambda = d1/r1;
 			else {
-				vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
-				float r_p = r0 - cosTheta * p_r.x;
 				lambda = abs(pLocal.y) / r_p * sinTheta;
 			}
 
@@ -246,41 +259,29 @@ void fragment() {
 	/*----------------------------------------------------------*/
   	if(StrokeType == Stamp){
  		// The quadratic equation
-	    float a, b, c, delta;
-	    a = 1.0 - cosTheta * cosTheta;
-	    b = 2.0 * (r0 * cosTheta - pLocal.x);
-	    c = pLocal.x * pLocal.x + pLocal.y * pLocal.y - r0 * r0;
-	    delta = b * b - 4.0*a*c;
-	    if(delta <= 0.0) discard;
+	    vec2 result = solveTheQuadraticEq(pLocal);
+		float x1 = result.x;
+		float x2 = result.y;
 
-		float tempMathBlock = b + sign(b) * sqrt(delta);
-	    float x1 = -2.0 * c / tempMathBlock;
-	    float x2 = -tempMathBlock / (2.0*a);
-	    vec2 temp = vec2(min(x1, x2), max(x1, x2));
-	    x1 = temp.x;
-	    x2 = temp.y;
-
- 		float x1nl = x2n(x1) + n0;
- 		float x2nl = x2n(x2) + n0;
- 		float startIdx = x1 < 0.0 ? n0 : x1nl;
-		startIdx /= StampInterval;
- 		float endIdx = x2 > segmentLength ? n1 : x2nl;
-		endIdx /= StampInterval;
+ 		float startN = x1 < 0.0 ? n0 : x2n(x1) + n0;
+		float startStampIdx = startN / StampInterval;
+ 		float endN = x2 > segmentLength ? n1 : x2n(x2) + n0;
+		float endStampIdx = endN / StampInterval;
 
  		int i = 0;
  		int MAX_i = 128;
- 		float currIdx = ceil(startIdx);
+ 		float currStampIdx = ceil(startStampIdx);
  		float currA = 1e-7;
 		float flow = MaterialColor.a * flowRatio;
 		// Main loop
- 		while(i < MAX_i && currIdx < endIdx){
-			float currN = currIdx * StampInterval;
+ 		while(i < MAX_i && currStampIdx < endStampIdx){
+			float currN = currStampIdx * StampInterval;
  			float currStampLocalX = n2x(currN - n0);
  			vec2 pToCurrStamp = pLocal - vec2(currStampLocalX, 0.0);
 			// Transform
 			pToCurrStamp *= CoordinateTransform;
 			// Rotation noise
-			float rotationNoise = (ActiveStampFlags & StampFlags.RotationNoise) != 0 ? noise1D(currIdx) : 0.0;
+			float rotationNoise = (ActiveStampFlags & StampFlags.RotationNoise) != 0 ? noise1D(currStampIdx) : 0.0;
 			float cosRot = cos(rotationNoise);
 			float sinRot = sin(rotationNoise);
 			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
@@ -295,7 +296,7 @@ void fragment() {
 
  			currA = sampledA + currA * (1.0 - sampledA);
 			i++;
-			currIdx += 1.0;
+			currStampIdx += 1.0;
  		}
  		COLOR = vec4(MaterialColor.rgb, currA);
  	}
