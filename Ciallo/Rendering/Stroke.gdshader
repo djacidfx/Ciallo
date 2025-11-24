@@ -48,7 +48,6 @@ uniform int RotationNoiseOctave;
 uniform float RotationNoiseAmplitude = 0; // `= PI` don't compile
 uniform float RotationNoiseFrequency;
 // ---------------------------------
-
 uniform sampler2D FalloffCurve;
 
 varying flat vec2 p0;
@@ -304,37 +303,27 @@ void fragment() {
 	if(StrokeType == Airbrush){
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
-
-		// The Whispers Of the olD Ones
 		float flow = MaterialColor.a * flowRatio;
-		float transparency0 = d0 > r0 ? 1.0:sqrt(1.0 - flow*sampleCurve(FalloffCurve, d0/r0));
-        float transparency1 = d1 > r1 ? 1.0:sqrt(1.0 - flow*sampleCurve(FalloffCurve, d1/r1));
-		float transparency;
-
-		// Shen already forget about every details here, and he is too lazy to remind of.
-		// A bunch of math derived with the continuous form of airbrush here.
-        if(p_r.x <= 0.0){
-            transparency = transparency0/transparency1;
-        }
-        if(p_r.x > 0.0 && p_r.x < segmentLength){
-			float r_p = r0 - cosTheta * p_r.x;
-			float lambda = abs(pLocal.y) / sinTheta / r_p;
-			transparency = (1.0 - flow*sampleCurve(FalloffCurve, lambda));
-			transparency = transparency/transparency0/transparency1;
-        }
-        if(p_r.x >= segmentLength){
-            transparency = transparency1/transparency0;
-        }
-		COLOR = vec4(MaterialColor.rgb, 1.0 - transparency);
+		vec2 result = solveTheQuadraticEq(pLocal);
+		float x1 = result.x;
+		float x2 = result.y;
+		float startN = x1 < 0.0 ? 0.0 : x2n(x1);
+		float endN = x2 > segmentLength ? (n1 - n0) : x2n(x2);
+		float deltaN = endN - startN;
+		float lambda = clamp(abs(pLocal.y) / r_p * sinTheta, 0.0, 1.0);
+		
+		float value = sampleCurve(FalloffCurve, lambda);
+		float A = 1.0 - exp(-deltaN * flow * value);
+		COLOR = vec4(MaterialColor.rgb, A);
 	}
-
+	
 	// Dash
 	if((ActiveBrushFlags & BrushFlags.Dash) != 0){
 		float unitLength = DashLength + (GapLength > 0.0 ? GapLength : DashLength);
 		float pixelN = x2n(pLocal.x) + n0;
 		if(mod(pixelN + TIME * DashForwardSpeed, unitLength) > DashLength) discard;
 	}
-
+	
 	// Be mindful with premultiply alpha
 	// See: https://github.com/godotengine/godot/issues/99715
 }
