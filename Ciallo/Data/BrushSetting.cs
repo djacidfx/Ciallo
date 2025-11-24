@@ -31,8 +31,8 @@ public class BrushSetting
     [DataMember] public ReactiveProperty<StampFlags> ActiveStampFlags = new();
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
     [DataMember] public ImageTexture StampTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
+    [DataMember] public BezierCurve DotOpacityCurve = BezierCurve.EaseInOut(); // active when stamp texture disabled
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
-
     [DataMember] public ImageTexture MaskTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
 
     [DataMember] public ReactiveProperty<int> RotationNoiseOctave = new(1);
@@ -107,8 +107,13 @@ public class BrushSetting
 
         var stampTextureFlagCheck = new CheckBox();
         stampTextureFlagCheck.BindFlag(ActiveStampFlags, StampFlags.StampTexture);
-        var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage);
+        var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage).VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.StampTexture));
         PropertyContainer.CreateCheckBoxCombo("Stamp texture", stampTextureFlagCheck, stampTextureEdit).AddToChildOf(stampBox);
+
+        var dotOpacityCurveEdit = new MappingCurveEdit();
+        dotOpacityCurveEdit.Curve = DotOpacityCurve;
+        dotOpacityCurveEdit.VisibleIf(ActiveStampFlags, v => !v.HasFlag(StampFlags.StampTexture));
+        PropertyContainer.CreatePropertyControl("Dot opacity", dotOpacityCurveEdit).AddToChildOf(stampBox);
 
         var maskTextureFlagCheck = new CheckBox();
         maskTextureFlagCheck.BindFlag(ActiveStampFlags, StampFlags.MaskTexture);

@@ -41,7 +41,7 @@ uniform int ActiveStampFlags;
 uniform float StampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
 uniform sampler2D StampTexture;
 uniform mat2 CoordinateTransform;
-
+uniform sampler2D DotOpacityCurve;
 uniform sampler2D MultiplyTexture;
 
 uniform int RotationNoiseOctave;
@@ -287,8 +287,10 @@ void fragment() {
 
  			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
 			float mask = ((ActiveStampFlags & StampFlags.MaskTexture) != 0) ? texture(MultiplyTexture, uv).r : 1.0;
-			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || length(pToCurrStamp/r) > 1.0;
-			float stampSample = ((ActiveStampFlags & StampFlags.StampTexture) != 0) ? texture(StampTexture, uv).r : 1.0;
+			float nr = length(pToCurrStamp/r); // normalized r
+			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || nr > 1.0;
+			float stampSample = ((ActiveStampFlags & StampFlags.StampTexture) != 0) ? 
+				texture(StampTexture, uv).r : sampleCurve(DotOpacityCurve, nr);
 			float sampledA = isOutDisk ? 1e-7 : mask * flow * stampSample;
 
  			currA = sampledA + currA * (1.0 - sampledA);
