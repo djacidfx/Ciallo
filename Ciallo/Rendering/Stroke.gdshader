@@ -9,8 +9,9 @@ struct StampFlag {
     int StampTexture;
     int MaskTexture;
     int RotationNoise;
+	int MaskDot;
 };
-const StampFlag StampFlags = StampFlag(1 << 0, 1 << 1, 1 << 2);
+const StampFlag StampFlags = StampFlag(1 << 0, 1 << 1, 1 << 2, 1 << 3);
 
 struct BrushFlag {
     int Pressure2FlowCurve;
@@ -24,7 +25,6 @@ uniform vec4 MaterialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
 instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
 // Canvas mode is used for drawing wireframe
 uniform int RadiusMode : hint_enum("World", "Canvas") = 0;
-uniform float CanvasZoomThreshold : hint_range(0.0, 10.0, 0.1) = 0;
 // Dash
 uniform float DashLength = -1.0; // length with unit "L/r"
 uniform float GapLength = -1.0;
@@ -286,12 +286,12 @@ void fragment() {
 			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
 
  			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
-			float mask = ((ActiveStampFlags & StampFlags.MaskTexture) != 0) ? texture(MultiplyTexture, uv).r : 1.0;
+			float textureMask = ((ActiveStampFlags & StampFlags.MaskTexture) != 0) ? texture(MultiplyTexture, uv).r : 1.0;
 			float nr = length(pToCurrStamp/r); // normalized r
+			float dotMask = ((ActiveStampFlags & StampFlags.MaskDot) != 0) ? sampleCurve(DotOpacityCurve, nr) : 1.0;
+			float stampSample = ((ActiveStampFlags & StampFlags.StampTexture) != 0) ? texture(StampTexture, uv).r : 1.0;
 			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || nr > 1.0;
-			float stampSample = ((ActiveStampFlags & StampFlags.StampTexture) != 0) ? 
-				texture(StampTexture, uv).r : sampleCurve(DotOpacityCurve, nr);
-			float sampledA = isOutDisk ? 1e-7 : mask * flow * stampSample;
+			float sampledA = isOutDisk ? 1e-7 : textureMask * dotMask * flow * stampSample;
 
  			currA = sampledA + currA * (1.0 - sampledA);
 			i++;
