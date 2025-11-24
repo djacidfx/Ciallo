@@ -125,13 +125,13 @@ public partial class SelectTool : CommonToolBase
         var polylineEditBox = PropertyContainer.CreateBox().AddToChildOf(container)
             .VisibleIf(selectionManager.SelectedPolylines.ObserveCountChanged().Prepend(0), count => count > 0);
 
-        var simplicationRatioEdit = new SpinSlider()
+        var simplificationRatioEdit = new SpinSlider()
         {
             MinValue = 0.1,
-            MaxValue = 0.9,
+            MaxValue = 0.5,
         };
-        simplicationRatioEdit.BindNumber(SimplificationRatio);
-        PropertyContainer.CreatePropertyControl("Simplification ratio", simplicationRatioEdit).AddToChildOf(polylineEditBox);
+        simplificationRatioEdit.BindNumber(SimplificationRatio);
+        PropertyContainer.CreatePropertyControl("Simplification ratio", simplificationRatioEdit).AddToChildOf(polylineEditBox);
 
         var simplifyButton = PropertyContainer.CreateButton("Simplify").AddToChildOf(polylineEditBox);
         simplifyButton.Pressed += () =>

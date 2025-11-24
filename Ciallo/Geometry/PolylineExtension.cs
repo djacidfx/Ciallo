@@ -191,7 +191,7 @@ public static class PolylineExtension
     /// ratio in [0,1] keeps that fraction of points (clamped). ratio >= 1 keeps all.
     /// </summary>
     /// <param name="polyline">The polyline to Simplify.</param>
-    /// <param name="simplificationRatio">#points to remove divided by total #points.</param>
+    /// <param name="simplificationRatio">Fraction of points to remove, in [0,1 </param>
     /// <param name="originalIndex">The output point indices in the original polyline.</param>
     /// <returns>Simplified polyline.</returns>
     public static List<Vector2> SimplifyVm(this IReadOnlyList<Vector2> polyline, float simplificationRatio, out List<int> originalIndex)
@@ -273,7 +273,7 @@ public static class PolylineExtension
                 area[p] = TriangleArea(p);
                 heap.Enqueue(p, area[p]);
             }
-            if (n > 0 && n < count - 1 && n < count && !removed[n])
+            if (n > 0 && n < count - 1 && !removed[n])
             {
                 area[n] = TriangleArea(n);
                 heap.Enqueue(n, area[n]);
