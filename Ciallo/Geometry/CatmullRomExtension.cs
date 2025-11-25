@@ -7,6 +7,9 @@ public static class CatmullRomExtension
     // Centripetal Catmull–Rom spline interpolation
     public static Vector2 CatmullRomInterpolation(this Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
     {
+        if (Mathf.IsZeroApprox(t)) return p1;
+        if (Mathf.IsEqualApprox(t, 1.0f)) return p2;
+
         bool isLinear = p1.IsEqualApprox(p2) || (p0.IsEqualApprox(p1) && p2.IsEqualApprox(p3));
         if (isLinear) return p1.Lerp(p2, t);
 
@@ -58,6 +61,9 @@ public static class CatmullRomExtension
     // Centripetal Catmull–Rom spline interpolation (scalar overload)
     public static float CatmullRomInterpolation(this float p0, float p1, float p2, float p3, float t)
     {
+        if (Mathf.IsZeroApprox(t)) return p1;
+        if (Mathf.IsEqualApprox(t, 1.0f)) return p2;
+
         bool isLinear = Mathf.IsEqualApprox(p1, p2) || (Mathf.IsEqualApprox(p0, p1) && Mathf.IsEqualApprox(p2, p3));
         if (isLinear) return Mathf.Lerp(p1, p2, t);
 
