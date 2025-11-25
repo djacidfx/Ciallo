@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -143,6 +144,27 @@ public partial class SelectTool : CommonToolBase
                 if (geom.Positions.Count < 4) continue;
                 geom.Positions.SimplifyH(SimplificationRatio.Value, out var indices);
                 var newGeom = geom.Index(indices);
+                cmd.Combine(new SetPolylineGeometryCmd(polylineE, newGeom));
+            }
+            cmd.Commit();
+        };
+
+        var subdivideButton = PropertyContainer.CreateButton("Linear subdivide").AddToChildOf(polylineEditBox);
+        subdivideButton.Pressed += () =>
+        {
+            var cmd = new EmptyCommand();
+            foreach (var polylineE in selectionManager.SelectedPolylines)
+            {
+                var geom = polylineE.Get<PolylineGeometry>();
+                if (geom.Positions.Count < 2) continue;
+                List<float> polyTs = new() { Capacity = geom.Positions.Count * 2 - 1 };
+                for (int i = 0; i < geom.Positions.Count - 1; i++)
+                {
+                    polyTs.Add(i);
+                    polyTs.Add(i + 0.5f);
+                }
+                polyTs.Add(geom.Positions.Count - 1);
+                var newGeom = geom.Sample(polyTs);
                 cmd.Combine(new SetPolylineGeometryCmd(polylineE, newGeom));
             }
             cmd.Commit();

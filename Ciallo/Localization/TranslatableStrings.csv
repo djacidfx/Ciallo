@@ -102,5 +102,6 @@ Radius,Radius,半径,半徑,半径,반지름,Radius,Rayon
 Simplify,Simplify,简化,簡化,単純化,단순화,Vereinfachen,Simplifier
 Simplification ratio,Simplification ratio,简化比率,簡化比率,単純化率,단순화 비율,Vereinfachungsrate,Taux de simplification
 Subdivide,Subdivide,细分,細分,細分化,세분화,Unterteilen,Subdiviser
+Linear subdivide,Linear subdivide,线性细分,線性細分,リニア細分化,선형 세분화,Lineare Unterteilung,Subdivision linéaire
 Smooth subdivide,Smooth subdivide,平滑细分,平滑細分,スムーズ細分化,부드러운 세분화,Glatte Unterteilung,Subdivision lissée
 Smooth,Smooth,平滑,平滑,スムーズ,부드럽게,Glätten,Lisser

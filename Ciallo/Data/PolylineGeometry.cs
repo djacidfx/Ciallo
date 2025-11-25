@@ -30,6 +30,8 @@ public class PolylineGeometry
         }
     }
 
+    public int Count => Positions.Count;
+
     public PolylineGeometry Clone()
     {
         return new PolylineGeometry()
@@ -53,16 +55,19 @@ public class PolylineGeometry
         foreach (var polyT in polyTs)
         {
             var (idx, t) = polyT.ResolvePolyT();
-
-            g.Positions.Add(Positions[idx].Lerp(Positions[idx + 1], t));
-            g.Radii.Add(float.Lerp(Radii[idx], Radii[idx + 1], t));
-            g.Pressures.Add(float.Lerp(Pressures[idx], Pressures[idx + 1], t));
-            g.Tilts.Add(Tilts[idx].Lerp(Tilts[idx + 1], t));
+            int nidx = int.Min(idx + 1, Count - 1);
+            if (idx + 1 < Count)
+            {
+                g.Positions.Add(Positions[idx].Lerp(Positions[nidx], t));
+                g.Radii.Add(float.Lerp(Radii[idx], Radii[nidx], t));
+                g.Pressures.Add(float.Lerp(Pressures[idx], Pressures[nidx], t));
+                g.Tilts.Add(Tilts[idx].Lerp(Tilts[nidx], t));
+            }
         }
 
         return g;
     }
-    
+
     public PolylineGeometry Index(List<int> indices)
     {
         var g = new PolylineGeometry();
