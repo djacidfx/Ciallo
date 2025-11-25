@@ -72,7 +72,7 @@ public class PolylineInteractiveGenerator
 
     // Thresholds about when to process and save sampled points.
     private readonly float _underForwardThreshold = 3f; // in screen pixel
-    private readonly float _overForwardThreshold = 25f;
+    private readonly float _overForwardThreshold = 100f;
     private readonly float _windingOffsetThreshold = 2.5f; // pixel threshold on the offset consider pen is not moving straight.
     private readonly float _pressureDeltaThreshold = 0.08f;
     private readonly float _overTimeThreshold = 100f;
