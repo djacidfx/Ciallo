@@ -458,29 +458,47 @@ public static class PolylineExtension
         return result;
     }
 
-    public static int FindFirstSelfIntersection(this IReadOnlyList<Vector2> polyline, out Vector2 intersectionPoint)
+    // Treat input as a polygon without requiring polygon[^1] == polygon[0].
+    public static int FindFirstSelfIntersection(this IReadOnlyList<Vector2> polygon, out Vector2 intersectionPoint)
     {
         intersectionPoint = Vector2.Zero;
-        int count = polyline.Count;
+        int count = polygon.Count;
         if (count < 4) return -1;
 
-        for (int i = 0; i < count - 3; i++)
+        for (int i = 0; i < count; i++)
         {
-            Vector2 p1 = polyline[i];
-            Vector2 p2 = polyline[i + 1];
+            int iNext = (i + 1) % count;
+            Vector2 p1 = polygon[i];
+            Vector2 p2 = polygon[iNext];
 
-            for (int j = i + 2; j < count - 1; j++)
+            // Start j two edges ahead to avoid adjacent edges and shared vertices.
+            int jStart = (i + 2) % count;
+            int j = jStart;
+            while (true)
             {
-                // Skip adjacent segments
-                if (j == i + 1) continue;
+                int jNext = (j + 1) % count;
 
-                Vector2 p3 = polyline[j];
-                Vector2 p4 = polyline[j + 1];
+                // Skip if edges are the same or neighbors (share a vertex)
+                if (j == i || j == iNext || jNext == i || jNext == iNext)
+                {
+                    j = (j + 1) % count;
+                    if (j == jStart) break;
+                    continue;
+                }
+
+                Vector2 p3 = polygon[j];
+                Vector2 p4 = polygon[jNext];
 
                 var intersection = Geometry.SegmentIntersect(p1, p2, p3, p4);
-                if (!intersection.HasValue) continue;
-                intersectionPoint = intersection.Value;
-                return i;
+                if (intersection.HasValue)
+                {
+                    intersectionPoint = intersection.Value;
+                    // Return the index of the first edge's start point that intersects.
+                    return i;
+                }
+
+                j = (j + 1) % count;
+                if (j == jStart) break;
             }
         }
 
