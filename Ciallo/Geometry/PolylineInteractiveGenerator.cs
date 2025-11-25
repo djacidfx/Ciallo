@@ -300,23 +300,17 @@ public class PolylineInteractiveGenerator
             .ToList();
 
         var newPositions = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(p0, p1, p2, p3, t));
+            p0.CatmullRomInterpolation(p1, p2, p3, t));
         var newRadii = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(
-                _processedRadiusCache[^4],
-                _processedRadiusCache[^3],
+            _processedRadiusCache[^4].CatmullRomInterpolation(_processedRadiusCache[^3],
                 _processedRadiusCache[^2],
                 _processedRadiusCache[^1], t));
         var newPressures = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(
-                _processedPointCache[^4].Pressure,
-                _processedPointCache[^3].Pressure,
+            _processedPointCache[^4].Pressure.CatmullRomInterpolation(_processedPointCache[^3].Pressure,
                 _processedPointCache[^2].Pressure,
                 _processedPointCache[^1].Pressure, t));
         var newTilts = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(
-                _processedPointCache[^4].Tilt,
-                _processedPointCache[^3].Tilt,
+            _processedPointCache[^4].Tilt.CatmullRomInterpolation(_processedPointCache[^3].Tilt,
                 _processedPointCache[^2].Tilt,
                 _processedPointCache[^1].Tilt, t));
 
