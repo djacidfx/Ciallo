@@ -303,20 +303,27 @@ public static class PolylineExtension
     }
 
     /// <summary>
-    /// Distance metric variant of the Visvalingam–Whyatt algorithm. Use perpendicular distance instead of triangle area to evaluate importance.
-    /// Remove the smallest effective perpendicular distance points until the remaining point count reaches (ratio * count).
+    /// A variant of Visvalingam–Whyatt with Curvature-weighted distance metric.
+    /// Prefer removing points on straight segments, keep dense points in corners.
     /// </summary>
-    /// <inheritdoc cref="SimplifyVm"/>
-    public static List<Vector2> SimplifyH(this IReadOnlyList<Vector2> polyline, float simplificationRatio, out List<int> originalIndex)
+    /// <param name="polyline">Input polyline points.</param>
+    /// <param name="simplificationRatio">
+    /// Fraction of points to remove, in \[0,1\].
+    /// 0 keeps original, 1 leaves the minimum (2) points.
+    /// </param>
+    /// <param name="originalIndex">Indices of kept points in the original polyline.</param>
+    /// <returns>Simplified polyline.</returns>
+    public static List<Vector2> SimplifyCurvatureDistance(this IReadOnlyList<Vector2> polyline, float simplificationRatio, out List<int> originalIndex)
     {
         int count = polyline.Count;
         float ratio = 1f - simplificationRatio;
-        if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
+
         if (count <= 2 || ratio >= 1f)
         {
             originalIndex = Enumerable.Range(0, count).ToList();
             return polyline.ToList();
         }
+
         if (ratio <= 0f)
             ratio = 0f;
 
@@ -332,66 +339,87 @@ public static class PolylineExtension
         var prev = new int[count];
         var next = new int[count];
         var removed = new bool[count];
-        var distance = new float[count];
+        var importance = new float[count];
+
         for (int i = 0; i < count; i++)
         {
             prev[i] = i - 1;
             next[i] = i + 1;
         }
+
         next[count - 1] = count;
 
-        float PerpendicularDistance(int i)
+        float PointImportance(int i)
         {
             int p = prev[i];
             int n = next[i];
             if (p < 0 || n >= count) return float.PositiveInfinity;
-            var dir = polyline[n] - polyline[p];
-            if (dir.IsZeroApprox()) return float.PositiveInfinity;
-            return polyline[i].DistanceToLine(polyline[p], dir.Normalized());
+
+            var a = polyline[p];
+            var b = polyline[i];
+            var c = polyline[n];
+
+            var ab = b - a;
+            var bc = c - b;
+            var ac = c - a;
+
+            if (ab.IsZeroApprox() || bc.IsZeroApprox() || ac.IsZeroApprox())
+                return float.PositiveInfinity;
+
+            // perpendicular distance from b to line a-c
+            float dist = b.DistanceToLine(a, ac.Normalized());
+            
+            return dist / Mathf.Log(ab.Length() + bc.Length());
         }
 
         var heap = new PriorityQueue<int, float>();
         for (int i = 1; i < count - 1; i++)
         {
-            distance[i] = PerpendicularDistance(i);
-            heap.Enqueue(i, distance[i]);
+            importance[i] = PointImportance(i);
+            heap.Enqueue(i, importance[i]);
         }
 
         int remaining = count;
+
         while (remaining > targetCount && heap.Count > 0)
         {
-            var i = heap.Dequeue();
+            int i = heap.Dequeue();
             if (removed[i]) continue;
-            float currentDistance = PerpendicularDistance(i);
-            if (MathF.Abs(currentDistance - distance[i]) > 1e-6f)
+
+            float currentImportance = PointImportance(i);
+            if (MathF.Abs(currentImportance - importance[i]) > 1e-6f)
             {
-                distance[i] = currentDistance;
-                heap.Enqueue(i, distance[i]);
+                importance[i] = currentImportance;
+                heap.Enqueue(i, importance[i]);
                 continue;
             }
 
             removed[i] = true;
             remaining--;
+
             int p = prev[i];
             int n = next[i];
+
             if (p >= 0) next[p] = n;
             if (n < count) prev[n] = p;
 
             if (p > 0 && p < count - 1 && !removed[p])
             {
-                distance[p] = PerpendicularDistance(p);
-                heap.Enqueue(p, distance[p]);
+                importance[p] = PointImportance(p);
+                heap.Enqueue(p, importance[p]);
             }
+
             if (n > 0 && n < count - 1 && !removed[n])
             {
-                distance[n] = PerpendicularDistance(n);
-                heap.Enqueue(n, distance[n]);
+                importance[n] = PointImportance(n);
+                heap.Enqueue(n, importance[n]);
             }
         }
 
-        List<Vector2> result = [];
-        originalIndex = [];
+        var result = new List<Vector2>();
+        originalIndex = new List<int>();
         int idx = 0;
+
         while (idx < count)
         {
             if (!removed[idx])
@@ -399,6 +427,7 @@ public static class PolylineExtension
                 result.Add(polyline[idx]);
                 originalIndex.Add(idx);
             }
+
             idx = next[idx];
             if (idx >= count) break;
         }

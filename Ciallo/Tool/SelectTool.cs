@@ -142,13 +142,13 @@ public partial class SelectTool : CommonToolBase
             {
                 var geom = polylineE.Get<PolylineGeometry>();
                 if (geom.Positions.Count < 4) continue;
-                geom.Positions.SimplifyH(SimplificationRatio.Value, out var indices);
+                geom.Positions.SimplifyCurvatureDistance(SimplificationRatio.Value, out var indices);
                 var newGeom = geom.Index(indices);
                 cmd.Combine(new SetPolylineGeometryCmd(polylineE, newGeom));
             }
             cmd.Commit();
         };
-        
+
         var smoothSubdivideButton = PropertyContainer.CreateButton("Smooth subdivide").AddToChildOf(polylineEditBox);
         smoothSubdivideButton.Pressed += () =>
         {
