@@ -190,6 +190,10 @@ public static class PolylineExtension
     /// Remove the smallest effective area points until the remaining point count reaches (ratio * count).
     /// ratio in [0,1] keeps that fraction of points (clamped). ratio >= 1 keeps all.
     /// </summary>
+    /// <remarks>
+    /// This algorithm does not fit well for our polylines, whose points are dense in turnings/corners and sparse in straight segments.
+    /// It tends to remove less points in straight segments and more in corners, which is opposite to our need.
+    /// </remarks>
     /// <param name="polyline">The polyline to Simplify.</param>
     /// <param name="simplificationRatio">Fraction of points to remove, in [0,1]</param>
     /// <param name="originalIndex">The output point indices in the original polyline.</param>
