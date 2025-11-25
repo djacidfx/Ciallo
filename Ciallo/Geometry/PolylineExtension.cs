@@ -368,7 +368,7 @@ public static class PolylineExtension
 
             // perpendicular distance from b to line a-c
             float dist = b.DistanceToLine(a, ac.Normalized());
-            
+
             return dist / Mathf.Log(ab.Length() + bc.Length());
         }
 
@@ -433,5 +433,57 @@ public static class PolylineExtension
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Turn a polyline into a simple polygon.
+    /// A simple polygon is a closed polygon that does not intersect itself (so no overlapping points).
+    /// </summary>
+    public static List<Vector2> ToSimplePolygon(this List<Vector2> polyline)
+    {
+        int i = FindFirstSelfIntersection(polyline, out _);
+        if (i == -1) return RemoveDuplicatePoints(polyline);
+        return RemoveDuplicatePoints(polyline[..(i + 1)]);
+    }
+
+    public static List<Vector2> RemoveDuplicatePoints(this IReadOnlyList<Vector2> polyline)
+    {
+        if (polyline.Count == 0) return new List<Vector2>();
+        List<Vector2> result = [polyline[0]];
+        for (int i = 1; i < polyline.Count; i++)
+        {
+            if (!polyline[i].IsEqualApprox(polyline[i - 1]))
+                result.Add(polyline[i]);
+        }
+        return result;
+    }
+
+    public static int FindFirstSelfIntersection(this IReadOnlyList<Vector2> polyline, out Vector2 intersectionPoint)
+    {
+        intersectionPoint = Vector2.Zero;
+        int count = polyline.Count;
+        if (count < 4) return -1;
+
+        for (int i = 0; i < count - 3; i++)
+        {
+            Vector2 p1 = polyline[i];
+            Vector2 p2 = polyline[i + 1];
+
+            for (int j = i + 2; j < count - 1; j++)
+            {
+                // Skip adjacent segments
+                if (j == i + 1) continue;
+
+                Vector2 p3 = polyline[j];
+                Vector2 p4 = polyline[j + 1];
+
+                var intersection = Geometry.SegmentIntersect(p1, p2, p3, p4);
+                if (!intersection.HasValue) continue;
+                intersectionPoint = intersection.Value;
+                return i;
+            }
+        }
+
+        return -1;
     }
 }

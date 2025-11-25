@@ -1,4 +1,5 @@
 ﻿using Ciallo.Command;
+using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -39,12 +40,13 @@ public class SetPolylineGeometryCmd : CommandBase
         // Polyline has fill
         else if (_polylineE.Has<FilledPolygonSetting>())
         {
+            var polygon = _newGeometry.Positions.ToSimplePolygon();
             // View
             var polygonView = _polylineE.Get<Polygon2D>();
-            polygonView.Polygon = [.._newGeometry.Positions];
+            polygonView.Polygon = [..polygon];
 
             // Cursor detection
-            _polylineE.Get<CursorDetectionArea>().SetPolygonShape(_newGeometry.Positions);
+            _polylineE.Get<CursorDetectionArea>().SetSimplePolygon(polygon);
         }
     }
 
@@ -52,12 +54,13 @@ public class SetPolylineGeometryCmd : CommandBase
     {
         if (_polylineE.Has<FilledPolygonSetting>())
         {
+            var polygon = _oldGeometry.Positions.ToSimplePolygon();
             // Cursor detection
-            _polylineE.Get<CursorDetectionArea>().SetPolygonShape(_oldGeometry.Positions);
+            _polylineE.Get<CursorDetectionArea>().SetSimplePolygon(polygon);
 
             // View
             var polygonView = _polylineE.Get<Polygon2D>();
-            polygonView.Polygon = [.._oldGeometry.Positions];
+            polygonView.Polygon = [..polygon];
         }
         else if (_polylineE.Has<StrokeSetting>())
         {
