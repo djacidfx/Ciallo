@@ -72,10 +72,11 @@ public class PolylineInteractiveGenerator
 
     // Thresholds about when to process and save sampled points.
     private readonly float _underForwardThreshold = 3f; // in screen pixel
-    private readonly float _overForwardThreshold = 100f;
-    private readonly float _windingOffsetThreshold = 2.5f; // pixel threshold on the offset consider pen is not moving straight.
+    private readonly float _windingOffsetThreshold = 5f; // pixel threshold on the offset consider pen is not moving straight.
+    private readonly float _overForwardThreshold = 25f;
     private readonly float _pressureDeltaThreshold = 0.08f;
     private readonly float _overTimeThreshold = 100f;
+    private readonly int _maxInterpolatedPointNumber = 1;
 
     private readonly float _interpolationAngleTolerance = Mathf.DegToRad(20f);
 
@@ -293,8 +294,8 @@ public class PolylineInteractiveGenerator
         var dir23 = p2.DirectionTo(p3);
         var angle = Mathf.Acos(dir01.Dot(dir23));
         int nPoints = Mathf.CeilToInt(angle / _interpolationAngleTolerance);
-        if (nPoints <= 0) return; // no need to interpolate
-        nPoints = int.Min(nPoints, 3);
+        if (nPoints <= 0) return;
+        nPoints = int.Min(nPoints, _maxInterpolatedPointNumber);
         var ts = Enumerable.Range(1, nPoints)
             .Select(i => i / (float)(nPoints + 1))
             .ToList();
