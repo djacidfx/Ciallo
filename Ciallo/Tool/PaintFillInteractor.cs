@@ -9,15 +9,6 @@ namespace Ciallo.Tool;
 
 public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
 {
-    public override bool CanInteract
-    {
-        get
-        {
-            var l = SelectionManager.WorkingLayer.Value;
-            return !l.IsDeletedOrNull() && l.Has<PolylineLayerSetting>();
-        }
-    }
-
     private readonly PolylineInteractiveGenerator _generator = new()
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Fixed,
@@ -26,8 +17,10 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
     };
     private StrokeView _dashPreview;
 
-    public override void Prepare(CursorButtonData data)
+    public override bool Prepare(CursorButtonData data)
     {
+        var l = SelectionManager.WorkingLayer.Value;
+        return !l.IsDeletedOrNull() && l.Has<PolylineLayerSetting>();
     }
 
     public override void Start(CursorButtonData data)

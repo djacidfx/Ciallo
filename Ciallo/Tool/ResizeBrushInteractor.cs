@@ -5,8 +5,7 @@ namespace Ciallo.Tool;
 
 public class ResizeBrushInteractor : InteractorBase
 {
-    public override bool CanInteract { get; }
-    public override void Prepare(CursorButtonData data)
+    public override bool Prepare(CursorButtonData data)
     {
         throw new NotImplementedException();
     }

@@ -8,19 +8,9 @@ namespace Ciallo.Tool;
 
 public class PolylineDeleteInteractor(PolylineTransformHover hover) : InteractorBase
 {
-    public override bool CanInteract
-    {
-        get
-        {
-            bool hasSelection = SelectionManager.SelectedPolylines.Count > 0;
-            bool polylineHovered = !hover.HoveredPolyline.IsNull;
-            return hasSelection || polylineHovered;
-        }
-    }
-
     private List<Entity> _polylineEs;
 
-    public override void Prepare(CursorButtonData data)
+    public override bool Prepare(CursorButtonData data)
     {
         bool hasSelection = SelectionManager.SelectedPolylines.Count > 0;
         bool polylineHovered = !hover.HoveredPolyline.IsNull;
@@ -28,12 +18,16 @@ public class PolylineDeleteInteractor(PolylineTransformHover hover) : Interactor
         if (polylineHovered)
         {
             _polylineEs = [hover.HoveredPolyline];
+            return true;
         }
         else if (hasSelection)
         {
             _polylineEs = [..SelectionManager.SelectedPolylines];
             SelectionManager.SelectedPolylines.Clear();
+            return true;
         }
+
+        return false;
     }
 
     public override void Start(CursorButtonData data)

@@ -9,18 +9,6 @@ namespace Ciallo.Tool;
 
 public class PaintInteractor : InteractorBase
 {
-    public override bool CanInteract
-    {
-        get
-        {
-            var l = SelectionManager.WorkingLayer.Value;
-            bool layerAvailable = !l.IsNull && l.Has<PolylineLayerSetting>();
-            bool brushAvailable = !SelectionManager.WorkingBrush.Value.IsNull || AppBrushLibrary.HasSelection;
-
-            return layerAvailable && brushAvailable;
-        }
-    }
-
     private Entity _brushE;
     private StrokeView _strokePreview;
 
@@ -29,8 +17,13 @@ public class PaintInteractor : InteractorBase
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
     };
 
-    public override void Prepare(CursorButtonData data)
+    public override bool Prepare(CursorButtonData data)
     {
+        var l = SelectionManager.WorkingLayer.Value;
+        bool layerAvailable = !l.IsNull && l.Has<PolylineLayerSetting>();
+        bool brushAvailable = !SelectionManager.WorkingBrush.Value.IsNull || AppBrushLibrary.HasSelection;
+
+        return layerAvailable && brushAvailable;
     }
 
     public override void Start(CursorButtonData data)
