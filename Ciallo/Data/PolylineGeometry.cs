@@ -30,6 +30,8 @@ public class PolylineGeometry
         }
     }
 
+    public int Count => Positions.Count;
+
     public PolylineGeometry Clone()
     {
         return new PolylineGeometry()
@@ -49,20 +51,45 @@ public class PolylineGeometry
     public PolylineGeometry Sample(List<float> polyTs)
     {
         var g = new PolylineGeometry() { Capacity = polyTs.Count };
-
+        if (Count == 0) return g;
         foreach (var polyT in polyTs)
         {
             var (idx, t) = polyT.ResolvePolyT();
-
-            g.Positions.Add(Positions[idx].Lerp(Positions[idx + 1], t));
-            g.Radii.Add(float.Lerp(Radii[idx], Radii[idx + 1], t));
-            g.Pressures.Add(float.Lerp(Pressures[idx], Pressures[idx + 1], t));
-            g.Tilts.Add(Tilts[idx].Lerp(Tilts[idx + 1], t));
+            int nIdx = int.Min(idx + 1, Count - 1);
+            g.Positions.Add(Positions[idx].Lerp(Positions[nIdx], t));
+            g.Radii.Add(float.Lerp(Radii[idx], Radii[nIdx], t));
+            g.Pressures.Add(float.Lerp(Pressures[idx], Pressures[nIdx], t));
+            g.Tilts.Add(Tilts[idx].Lerp(Tilts[nIdx], t));
         }
 
         return g;
     }
-    
+
+    public PolylineGeometry CatmullRomSample(List<float> polyTs)
+    {
+        var g = new PolylineGeometry() { Capacity = polyTs.Count };
+        if (Count == 0) return g;
+        if (Count < 3) return Sample(polyTs);
+
+        foreach (var polyT in polyTs)
+        {
+            var (idx1, t) = polyT.ResolvePolyT();
+            int idx0 = idx1 <= 0 ? idx1 : idx1 - 1;
+            int idx2 = idx1 >= Count - 1 ? idx1 : idx1 + 1;
+            int idx3 = idx2 >= Count - 1 ? idx2 : idx2 + 1;
+            var p = Positions[idx0].CatmullRomInterpolation(Positions[idx1], Positions[idx2], Positions[idx3], t);
+            var r = Radii[idx0].CatmullRomInterpolation(Radii[idx1], Radii[idx2], Radii[idx3], t);
+            var pp = Pressures[idx0].CatmullRomInterpolation(Pressures[idx1], Pressures[idx2], Pressures[idx3], t);
+            var tilt = Tilts[idx0].CatmullRomInterpolation(Tilts[idx1], Tilts[idx2], Tilts[idx3], t);
+            g.Positions.Add(p);
+            g.Radii.Add(r);
+            g.Pressures.Add(pp);
+            g.Tilts.Add(tilt);
+        }
+
+        return g;
+    }
+
     public PolylineGeometry Index(List<int> indices)
     {
         var g = new PolylineGeometry();

@@ -95,7 +95,7 @@ public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
         }
     }
 
-    public void SetPolygonShape(IReadOnlyList<Vector2> points)
+    public void SetSimplePolygon(IReadOnlyList<Vector2> points)
     {
         ClearShapes();
 

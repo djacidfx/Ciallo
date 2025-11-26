@@ -311,10 +311,10 @@ void fragment() {
 		float startN = x1 < 0.0 ? 0.0 : x2n(x1);
 		float endN = x2 > segmentLength ? (n1 - n0) : x2n(x2);
 		float deltaN = endN - startN;
-		float lambda = clamp(abs(pLocal.y) / r_p * sinTheta, 0.0, 1.0);
 		
-		float value = sampleCurve(FalloffCurve, lambda);
-		float A = 1.0 - exp(-deltaN * flow * value * AlphaDensity);
+		float lambda = clamp(abs(pLocal.y) / r_p * sinTheta, 0.0, 1.0);
+		float curveFall = sampleCurve(FalloffCurve, lambda);
+		float A = 1.0 - exp(-deltaN * flow * curveFall * AlphaDensity);
 		COLOR = vec4(MaterialColor.rgb, A);
 	}
 	

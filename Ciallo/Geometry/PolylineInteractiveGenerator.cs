@@ -13,12 +13,13 @@ namespace Ciallo.Geometry;
 /// </summary>
 /// <remarks>
 /// Challenges to solve:
+/// - Zero lag
 /// - Input events:
 ///     - Both undersampling and oversampling of input events.
 ///     - Only get pixel coordinate in grid (optimal we can get 1/4 subpixel accuracy, but no)
 ///     - World coordinate is derived from pixel coordinate, so it's grid too.
 ///     - First button event always has zero pressure. Must use the latest pressure user start to move his pen. 
-/// - Self intersection detection.
+/// - Self intersection detection
 /// - Smoothness
 /// 
 /// Different devices report input events at different rates.
@@ -72,10 +73,11 @@ public class PolylineInteractiveGenerator
 
     // Thresholds about when to process and save sampled points.
     private readonly float _underForwardThreshold = 3f; // in screen pixel
+    private readonly float _windingOffsetThreshold = 5f; // pixel threshold on the offset consider pen is not moving straight.
     private readonly float _overForwardThreshold = 25f;
-    private readonly float _windingOffsetThreshold = 2.5f; // pixel threshold on the offset consider pen is not moving straight.
     private readonly float _pressureDeltaThreshold = 0.08f;
     private readonly float _overTimeThreshold = 100f;
+    private readonly int _maxInterpolatedPointNumber = 1;
 
     private readonly float _interpolationAngleTolerance = Mathf.DegToRad(20f);
 
@@ -175,6 +177,7 @@ public class PolylineInteractiveGenerator
         _latestPointIsTurningPoint = false;
     }
 
+    // In place Laplacian
     private void Smooth()
     {
         const float smoothingFactor = 0.1f;
@@ -293,30 +296,24 @@ public class PolylineInteractiveGenerator
         var dir23 = p2.DirectionTo(p3);
         var angle = Mathf.Acos(dir01.Dot(dir23));
         int nPoints = Mathf.CeilToInt(angle / _interpolationAngleTolerance);
-        if (nPoints <= 0) return; // no need to interpolate
-        nPoints = int.Min(nPoints, 3);
+        if (nPoints <= 0) return;
+        nPoints = int.Min(nPoints, _maxInterpolatedPointNumber);
         var ts = Enumerable.Range(1, nPoints)
             .Select(i => i / (float)(nPoints + 1))
             .ToList();
 
         var newPositions = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(p0, p1, p2, p3, t));
+            p0.CatmullRomInterpolation(p1, p2, p3, t));
         var newRadii = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(
-                _processedRadiusCache[^4],
-                _processedRadiusCache[^3],
+            _processedRadiusCache[^4].CatmullRomInterpolation(_processedRadiusCache[^3],
                 _processedRadiusCache[^2],
                 _processedRadiusCache[^1], t));
         var newPressures = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(
-                _processedPointCache[^4].Pressure,
-                _processedPointCache[^3].Pressure,
+            _processedPointCache[^4].Pressure.CatmullRomInterpolation(_processedPointCache[^3].Pressure,
                 _processedPointCache[^2].Pressure,
                 _processedPointCache[^1].Pressure, t));
         var newTilts = ts.Select(t =>
-            Geometry.CatmullRomInterpolation(
-                _processedPointCache[^4].Tilt,
-                _processedPointCache[^3].Tilt,
+            _processedPointCache[^4].Tilt.CatmullRomInterpolation(_processedPointCache[^3].Tilt,
                 _processedPointCache[^2].Tilt,
                 _processedPointCache[^1].Tilt, t));
 
@@ -338,23 +335,9 @@ public class PolylineInteractiveGenerator
         {
             var p0 = _positions[i];
             var p1 = _positions[i + 1];
-            if (SegmentIntersection(p0, p1, p2, p3))
-            {
-                return true;
-            }
+            if (Geometry.SegmentIntersect(p0, p1, p2, p3).HasValue) return true;
         }
 
         return false;
-    }
-
-    private static bool SegmentIntersection(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3)
-    {
-        var s1 = p1 - p0;
-        var s2 = p3 - p2;
-
-        var s = (-s1.Y * (p0.X - p2.X) + s1.X * (p0.Y - p2.Y)) / (-s2.X * s1.Y + s1.X * s2.Y);
-        var t = (s2.X * (p0.Y - p2.Y) - s2.Y * (p0.X - p2.X)) / (-s2.X * s1.Y + s1.X * s2.Y);
-
-        return s is >= 0 and <= 1 && t is >= 0 and <= 1;
     }
 }

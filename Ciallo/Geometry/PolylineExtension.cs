@@ -190,6 +190,10 @@ public static class PolylineExtension
     /// Remove the smallest effective area points until the remaining point count reaches (ratio * count).
     /// ratio in [0,1] keeps that fraction of points (clamped). ratio >= 1 keeps all.
     /// </summary>
+    /// <remarks>
+    /// This algorithm does not fit well for our polylines, whose points are dense in turnings/corners and sparse in straight segments.
+    /// It tends to remove less points in straight segments and more in corners, which is opposite to our need.
+    /// </remarks>
     /// <param name="polyline">The polyline to Simplify.</param>
     /// <param name="simplificationRatio">Fraction of points to remove, in [0,1]</param>
     /// <param name="originalIndex">The output point indices in the original polyline.</param>
@@ -299,20 +303,27 @@ public static class PolylineExtension
     }
 
     /// <summary>
-    /// Distance metric variant of the Visvalingam–Whyatt algorithm. Use perpendicular distance instead of triangle area to evaluate importance.
-    /// Remove the smallest effective perpendicular distance points until the remaining point count reaches (ratio * count).
+    /// A variant of Visvalingam–Whyatt with Curvature-weighted distance metric.
+    /// Prefer removing points on straight segments, keep dense points in corners.
     /// </summary>
-    /// <inheritdoc cref="SimplifyVm"/>
-    public static List<Vector2> SimplifyH(this IReadOnlyList<Vector2> polyline, float simplificationRatio, out List<int> originalIndex)
+    /// <param name="polyline">Input polyline points.</param>
+    /// <param name="simplificationRatio">
+    /// Fraction of points to remove, in [0,1].
+    /// 0 keeps original, 1 leaves the minimum (2) points.
+    /// </param>
+    /// <param name="originalIndex">Indices of kept points in the original polyline.</param>
+    /// <returns>Simplified polyline.</returns>
+    public static List<Vector2> SimplifyCurvatureDistance(this IReadOnlyList<Vector2> polyline, float simplificationRatio, out List<int> originalIndex)
     {
         int count = polyline.Count;
         float ratio = 1f - simplificationRatio;
-        if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
+
         if (count <= 2 || ratio >= 1f)
         {
             originalIndex = Enumerable.Range(0, count).ToList();
             return polyline.ToList();
         }
+
         if (ratio <= 0f)
             ratio = 0f;
 
@@ -328,66 +339,87 @@ public static class PolylineExtension
         var prev = new int[count];
         var next = new int[count];
         var removed = new bool[count];
-        var distance = new float[count];
+        var importance = new float[count];
+
         for (int i = 0; i < count; i++)
         {
             prev[i] = i - 1;
             next[i] = i + 1;
         }
+
         next[count - 1] = count;
 
-        float PerpendicularDistance(int i)
+        float PointImportance(int i)
         {
             int p = prev[i];
             int n = next[i];
             if (p < 0 || n >= count) return float.PositiveInfinity;
-            var dir = polyline[n] - polyline[p];
-            if (dir.IsZeroApprox()) return float.PositiveInfinity;
-            return polyline[i].DistanceToLine(polyline[p], dir.Normalized());
+
+            var a = polyline[p];
+            var b = polyline[i];
+            var c = polyline[n];
+
+            var ab = b - a;
+            var bc = c - b;
+            var ac = c - a;
+
+            if (ab.IsZeroApprox() || bc.IsZeroApprox() || ac.IsZeroApprox())
+                return float.PositiveInfinity;
+
+            // perpendicular distance from b to line a-c
+            float dist = b.DistanceToLine(a, ac.Normalized());
+
+            return dist / Mathf.Log(Mathf.Max(1e-5f, ab.Length() + bc.Length()));
         }
 
         var heap = new PriorityQueue<int, float>();
         for (int i = 1; i < count - 1; i++)
         {
-            distance[i] = PerpendicularDistance(i);
-            heap.Enqueue(i, distance[i]);
+            importance[i] = PointImportance(i);
+            heap.Enqueue(i, importance[i]);
         }
 
         int remaining = count;
+
         while (remaining > targetCount && heap.Count > 0)
         {
-            var i = heap.Dequeue();
+            int i = heap.Dequeue();
             if (removed[i]) continue;
-            float currentDistance = PerpendicularDistance(i);
-            if (MathF.Abs(currentDistance - distance[i]) > 1e-6f)
+
+            float currentImportance = PointImportance(i);
+            if (MathF.Abs(currentImportance - importance[i]) > 1e-6f)
             {
-                distance[i] = currentDistance;
-                heap.Enqueue(i, distance[i]);
+                importance[i] = currentImportance;
+                heap.Enqueue(i, importance[i]);
                 continue;
             }
 
             removed[i] = true;
             remaining--;
+
             int p = prev[i];
             int n = next[i];
+
             if (p >= 0) next[p] = n;
             if (n < count) prev[n] = p;
 
             if (p > 0 && p < count - 1 && !removed[p])
             {
-                distance[p] = PerpendicularDistance(p);
-                heap.Enqueue(p, distance[p]);
+                importance[p] = PointImportance(p);
+                heap.Enqueue(p, importance[p]);
             }
+
             if (n > 0 && n < count - 1 && !removed[n])
             {
-                distance[n] = PerpendicularDistance(n);
-                heap.Enqueue(n, distance[n]);
+                importance[n] = PointImportance(n);
+                heap.Enqueue(n, importance[n]);
             }
         }
 
-        List<Vector2> result = [];
-        originalIndex = [];
+        var result = new List<Vector2>();
+        originalIndex = new List<int>();
         int idx = 0;
+
         while (idx < count)
         {
             if (!removed[idx])
@@ -395,10 +427,108 @@ public static class PolylineExtension
                 result.Add(polyline[idx]);
                 originalIndex.Add(idx);
             }
+
             idx = next[idx];
             if (idx >= count) break;
         }
 
         return result;
+    }
+
+    /// <summary>
+    /// Turn a polyline into a simple polygon.
+    /// A simple polygon is a closed polygon that does not intersect itself (so no overlapping points).
+    /// </summary>
+    public static List<Vector2> ToSimplePolygon(this List<Vector2> polyline)
+    {
+        int i = FindFirstSelfIntersection(polyline, out _);
+        if (i == -1) return RemoveDuplicatePoints(polyline);
+        return RemoveDuplicatePoints(polyline[..(i + 1)]);
+    }
+
+    public static List<Vector2> RemoveDuplicatePoints(this IReadOnlyList<Vector2> polyline)
+    {
+        if (polyline.Count == 0) return new List<Vector2>();
+        List<Vector2> result = [polyline[0]];
+        for (int i = 1; i < polyline.Count; i++)
+        {
+            if (!polyline[i].IsEqualApprox(polyline[i - 1]))
+                result.Add(polyline[i]);
+        }
+        return result;
+    }
+
+    // Treat input as a polygon without requiring polygon[^1] == polygon[0].
+    public static int FindFirstSelfIntersection(this IReadOnlyList<Vector2> polygon, out Vector2 intersectionPoint)
+    {
+        intersectionPoint = Vector2.Zero;
+        int count = polygon.Count;
+        if (count < 4) return -1;
+
+        for (int i = 0; i < count; i++)
+        {
+            int iNext = (i + 1) % count;
+            Vector2 p1 = polygon[i];
+            Vector2 p2 = polygon[iNext];
+
+            // Start j two edges ahead to avoid adjacent edges and shared vertices.
+            int jStart = (i + 2) % count;
+            int j = jStart;
+            while (true)
+            {
+                int jNext = (j + 1) % count;
+
+                // Skip if edges are the same or neighbors (share a vertex)
+                if (j == i || j == iNext || jNext == i || jNext == iNext)
+                {
+                    j = (j + 1) % count;
+                    if (j == jStart) break;
+                    continue;
+                }
+
+                Vector2 p3 = polygon[j];
+                Vector2 p4 = polygon[jNext];
+
+                var intersection = Geometry.SegmentIntersect(p1, p2, p3, p4);
+                if (intersection.HasValue)
+                {
+                    intersectionPoint = intersection.Value;
+                    // Return the index of the first edge's start point that intersects.
+                    return i;
+                }
+
+                j = (j + 1) % count;
+                if (j == jStart) break;
+            }
+        }
+
+        return -1;
+    }
+
+    public static List<Vector2> SmoothLaplacian(this IReadOnlyList<Vector2> polyline, int iterations, float lambda)
+    {
+        int count = polyline.Count;
+        if (count < 3 || iterations <= 0) return polyline.ToList();
+
+        var smoothed = polyline.ToList();
+
+        for (int iter = 0; iter < iterations; iter++)
+        {
+            var newPositions = new List<Vector2>(smoothed);
+
+            for (int i = 1; i < count - 1; i++)
+            {
+                Vector2 prev = smoothed[i - 1];
+                Vector2 curr = smoothed[i];
+                Vector2 next = smoothed[i + 1];
+
+                Vector2 laplacian = (prev + next) / 2 - curr;
+                newPositions[i] = curr + lambda * laplacian;
+            }
+
+            smoothed = newPositions;
+        }
+
+        return smoothed;
     }
 }
