@@ -190,6 +190,33 @@ public partial class SelectTool : CommonToolBase
             }
             cmd.Commit();
         };
+
+        var smoothButton = PropertyContainer.CreateButton("Smooth").AddToChildOf(polylineEditBox);
+        smoothButton.Pressed += () =>
+        {
+            var cmd = new EmptyCommand();
+            foreach (var polylineE in selectionManager.SelectedPolylines)
+            {
+                var geom = polylineE.Get<PolylineGeometry>();
+                if (geom.Positions.Count < 3) continue;
+
+                // Apply Laplacian smoothing only to positions.
+                const int iterations = 1;
+                const float lambda = 0.5f;
+                var smoothedPositions = geom.Positions.SmoothLaplacian(iterations, lambda);
+
+                var newGeom = new PolylineGeometry
+                {
+                    Positions = smoothedPositions,
+                    Radii = geom.Radii,
+                    Pressures = geom.Pressures,
+                    Tilts = geom.Tilts,
+                };
+
+                cmd.Combine(new SetPolylineGeometryCmd(polylineE, newGeom));
+            }
+            cmd.Commit();
+        };
     }
 
     private IDisposable _subToWorkingLayer;

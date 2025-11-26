@@ -504,4 +504,31 @@ public static class PolylineExtension
 
         return -1;
     }
+
+    public static List<Vector2> SmoothLaplacian(this IReadOnlyList<Vector2> polyline, int iterations, float lambda)
+    {
+        int count = polyline.Count;
+        if (count < 3 || iterations <= 0) return polyline.ToList();
+
+        var smoothed = polyline.ToList();
+
+        for (int iter = 0; iter < iterations; iter++)
+        {
+            var newPositions = new List<Vector2>(smoothed);
+
+            for (int i = 1; i < count - 1; i++)
+            {
+                Vector2 prev = smoothed[i - 1];
+                Vector2 curr = smoothed[i];
+                Vector2 next = smoothed[i + 1];
+
+                Vector2 laplacian = (prev + next) / 2 - curr;
+                newPositions[i] = curr + lambda * laplacian;
+            }
+
+            smoothed = newPositions;
+        }
+
+        return smoothed;
+    }
 }

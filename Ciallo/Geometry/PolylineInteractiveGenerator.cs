@@ -13,12 +13,13 @@ namespace Ciallo.Geometry;
 /// </summary>
 /// <remarks>
 /// Challenges to solve:
+/// - Zero lag
 /// - Input events:
 ///     - Both undersampling and oversampling of input events.
 ///     - Only get pixel coordinate in grid (optimal we can get 1/4 subpixel accuracy, but no)
 ///     - World coordinate is derived from pixel coordinate, so it's grid too.
 ///     - First button event always has zero pressure. Must use the latest pressure user start to move his pen. 
-/// - Self intersection detection.
+/// - Self intersection detection
 /// - Smoothness
 /// 
 /// Different devices report input events at different rates.
@@ -176,6 +177,7 @@ public class PolylineInteractiveGenerator
         _latestPointIsTurningPoint = false;
     }
 
+    // In place Laplacian
     private void Smooth()
     {
         const float smoothingFactor = 0.1f;
