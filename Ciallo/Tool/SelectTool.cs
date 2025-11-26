@@ -164,7 +164,7 @@ public partial class SelectTool : CommonToolBase
                     polyTs.Add(i + 0.5f);
                 }
                 polyTs.Add(geom.Positions.Count - 1);
-                var newGeom = geom.CatmullRoomSample(polyTs);
+                var newGeom = geom.CatmullRomSample(polyTs);
                 cmd.Combine(new SetPolylineGeometryCmd(polylineE, newGeom));
             }
             cmd.Commit();

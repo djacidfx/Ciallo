@@ -65,7 +65,7 @@ public class PolylineGeometry
         return g;
     }
 
-    public PolylineGeometry CatmullRoomSample(List<float> polyTs)
+    public PolylineGeometry CatmullRomSample(List<float> polyTs)
     {
         var g = new PolylineGeometry() { Capacity = polyTs.Count };
         if (Count == 0) return g;
@@ -77,7 +77,7 @@ public class PolylineGeometry
             int idx0 = idx1 <= 0 ? idx1 : idx1 - 1;
             int idx2 = idx1 >= Count - 1 ? idx1 : idx1 + 1;
             int idx3 = idx2 >= Count - 1 ? idx2 : idx2 + 1;
-            var p = Positions[idx0].CatmullRomInterpolation(Positions[idx1],Positions[idx2], Positions[idx3], t);
+            var p = Positions[idx0].CatmullRomInterpolation(Positions[idx1], Positions[idx2], Positions[idx3], t);
             var r = Radii[idx0].CatmullRomInterpolation(Radii[idx1], Radii[idx2], Radii[idx3], t);
             var pp = Pressures[idx0].CatmullRomInterpolation(Pressures[idx1], Pressures[idx2], Pressures[idx3], t);
             var tilt = Tilts[idx0].CatmullRomInterpolation(Tilts[idx1], Tilts[idx2], Tilts[idx3], t);

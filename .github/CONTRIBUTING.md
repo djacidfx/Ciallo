@@ -23,7 +23,7 @@ V0.1EA focus on showing off Ciallo techniques and developing MVP (minimum viable
 - [x] Selection/transform tool
   - [x] Rect transform
   - [ ] Multi select and transform
-  - [x] Subdivide, simpify and smooth
+  - [x] Subdivide, simplify and smooth
   - [ ] Line binding system (Bézier curve only)
     - [x] Bézier curve geometry
   - [x] Polyline overlay rendering

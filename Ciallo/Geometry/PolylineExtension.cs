@@ -308,7 +308,7 @@ public static class PolylineExtension
     /// </summary>
     /// <param name="polyline">Input polyline points.</param>
     /// <param name="simplificationRatio">
-    /// Fraction of points to remove, in \[0,1\].
+    /// Fraction of points to remove, in [0,1].
     /// 0 keeps original, 1 leaves the minimum (2) points.
     /// </param>
     /// <param name="originalIndex">Indices of kept points in the original polyline.</param>
@@ -369,7 +369,7 @@ public static class PolylineExtension
             // perpendicular distance from b to line a-c
             float dist = b.DistanceToLine(a, ac.Normalized());
 
-            return dist / Mathf.Log(ab.Length() + bc.Length());
+            return dist / Mathf.Log(Mathf.Max(1e-5f, ab.Length() + bc.Length()));
         }
 
         var heap = new PriorityQueue<int, float>();
