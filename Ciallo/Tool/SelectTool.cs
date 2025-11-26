@@ -123,6 +123,24 @@ public partial class SelectTool : CommonToolBase
     public override void DrawProperty(PropertyContainer container)
     {
         var selectionManager = Document.Get<SelectionManager>();
+        var selectionButtonGroup = PropertyContainer.CreateHContainer().AddToChildOf(container)
+            .VisibleIf(selectionManager.WorkingLayer, e => !e.IsNull && e.Has<PolylineLayerSetting>());
+        var selectAllButton = PropertyContainer.CreateButton("Select all").AddToChildOf(selectionButtonGroup);
+        selectAllButton.Pressed += () =>
+        {
+            var layerE = selectionManager.WorkingLayer.Value;
+            if (layerE.IsDeletedOrNull()) return;
+            selectionManager.SelectedPolylines.Clear();
+            selectionManager.SelectedPolylines.AddRange(layerE.Get<LayerTreeNode>().Children);
+            FireRefreshHover();
+        };
+        var deselectAllButton = PropertyContainer.CreateButton("Deselect").AddToChildOf(selectionButtonGroup);
+        deselectAllButton.Pressed += () =>
+        {
+            selectionManager.SelectedPolylines.Clear();
+            FireRefreshHover();
+        };
+
         var polylineEditBox = PropertyContainer.CreateBox().AddToChildOf(container)
             .VisibleIf(selectionManager.SelectedPolylines.ObserveCountChanged().Prepend(0), count => count > 0);
 

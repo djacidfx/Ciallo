@@ -32,35 +32,32 @@ public class PolylineTransformHover : HoverBase
 
             _polylineEs = [..SelectionManager.SelectedPolylines];
 
-            if (_polylineEs.Select(e => e.IsDeletedOrNull()).Any(b => b))
+            // transform box
+            Rect2 rect = default;
+            foreach (var (i, e) in _polylineEs.Index())
             {
-                SelectionManager.SelectedPolylines.Clear();
-            }
-            else
-            {
-                Rect2 rect = default;
-                foreach (var (i, e) in _polylineEs.Index())
-                {
-                    var wire = (Node2D)e.Get<PolylineWireframe>().Duplicate(0); // 0 means avoid duplicating script. Script duplication call constructor.
-                    worldOverlay.AddChild(wire);
-                    wire.Visible = true;
-                    _wireframes.Add(wire);
+                var wire = (Node2D)e.Get<PolylineWireframe>().Duplicate(0); // 0 means avoid duplicating script. Script duplication call constructor.
+                worldOverlay.AddChild(wire);
+                wire.Visible = true;
+                _wireframes.Add(wire);
 
-                    // transform box overlay
-                    var geom = e.Get<PolylineGeometry>();
-                    var bound = geom.Positions.GetBoundingBox();
-                    rect = i == 0 ? bound : rect.Merge(bound);
-                }
+                // transform box overlay
+                var geom = e.Get<PolylineGeometry>();
+                var bound = geom.Positions.GetBoundingBox();
+                rect = i == 0 ? bound : rect.Merge(bound);
+            }
+            if (!rect.IsEqualApprox(default))
+            {
                 _transformBox = new TransformOverlayBox(rect.Size, rect.GetCenter());
                 worldOverlay.AddChild(_transformBox);
-
-                // transform cursor area
-                var worldArea = Document.Get<WorldCursorDetectionArea>();
-                CursorDetectionArea[] areas = worldArea.CreateAddTransformAreas(rect.Size, rect.GetCenter());
-                RotationArea = areas[0];
-                areas[1].QueueFree();
-                CornerAreas = areas[2..6];
             }
+
+            // transform cursor area
+            var worldArea = Document.Get<WorldCursorDetectionArea>();
+            CursorDetectionArea[] areas = worldArea.CreateAddTransformAreas(rect.Size, rect.GetCenter());
+            RotationArea = areas[0];
+            areas[1].QueueFree();
+            CornerAreas = areas[2..6];
         }
 
         // Enable cursor detections on polylines of working layer

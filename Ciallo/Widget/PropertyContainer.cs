@@ -37,7 +37,7 @@ public partial class PropertyContainer : VBoxContainer
     public static Container CreatePropertyControl(string name, [NotNull] Control control)
     {
         // Note: If a control's CustomMinimumSize is zero, it will never be wrapped in FlowContainer.
-        var box = CreateItemContainer();
+        var box = CreateHContainer();
         box.AddChild(new Label
         {
             Text = name,
@@ -57,7 +57,7 @@ public partial class PropertyContainer : VBoxContainer
         return box;
     }
 
-    private static Container CreateItemContainer()
+    public static Container CreateHContainer()
     {
         var box = new HFlowContainer()
         {
@@ -79,7 +79,7 @@ public partial class PropertyContainer : VBoxContainer
         // checkBox.IconAlignment = HorizontalAlignment.Right; // This not work. Bug? 
         checkBox.SizeFlagsVertical = SizeFlags.ShrinkBegin;
 
-        var container = CreateItemContainer();
+        var container = CreateHContainer();
         container.AddChild(checkBox);
         container.AddChild(control);
         return container;

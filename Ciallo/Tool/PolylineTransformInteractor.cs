@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
@@ -174,12 +175,14 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
 
         if (!resultT.IsEqualApprox(Transform2D.Identity))
         {
+            var cmd = new EmptyCommand();
             foreach (var e in _processingEs)
             {
                 var newGeom = e.Get<PolylineGeometry>().Clone();
                 newGeom.Positions = newGeom.Positions.Select(p => resultT * p).ToList();
-                new SetPolylineGeometryCmd(e, newGeom).Commit();
+                cmd.Combine(new SetPolylineGeometryCmd(e, newGeom));
             }
+            cmd.Commit();
         }
 
         Clear();
