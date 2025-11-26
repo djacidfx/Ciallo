@@ -170,9 +170,9 @@ public class BrushSetting
         PropertyContainer.CreatePropertyControl("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
 
         // ---------Airbrush----------
-        var falloffCurveEdit = new MappingCurveEdit().VisibleIf(RenderingType, BrushRenderingType.Airbrush);
+        var falloffCurveEdit = new MappingCurveEdit();
         falloffCurveEdit.Curve = FalloffCurve;
-        container.AddProperty("Opacity falloff", falloffCurveEdit);
+        container.AddProperty("Opacity falloff", falloffCurveEdit).VisibleIf(RenderingType, BrushRenderingType.Airbrush);
 
         var alphaDensityControl = new SpinSlider
         {
@@ -180,9 +180,9 @@ public class BrushSetting
             MaxValue = 6,
             Step = 0.01,
             ExpEdit = true,
-        }.VisibleIf(RenderingType, BrushRenderingType.Airbrush);
+        };
         alphaDensityControl.BindNumber(AlphaDensity);
-        container.AddProperty("Opacity density", alphaDensityControl);
+        container.AddProperty("Opacity density", alphaDensityControl).VisibleIf(RenderingType, BrushRenderingType.Airbrush);
     }
 
     /// <summary>
