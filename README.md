@@ -165,7 +165,7 @@ For the purposes of this Project, "Shader Code" means any GPU shader program, sh
 
 2. Use in other software
 
-    Parts of the Shader Code implement original rendering algorithms and techniques that are the result of Shen Ciao's (Official Chinese: 乔燊) own research.
+    Parts of the Shader Code implement original rendering algorithms and techniques that are the result of Shen Ciao's own research.
     Unless you obtain the researcher Shen's explicit permission, if you integrate the Shader Code (or modified versions of it) into any other program, that program and all parts using the Shader Code must be released under the same AGPL‑3.0 license and made publicly available in source form.
 
     This includes, without limitation:
