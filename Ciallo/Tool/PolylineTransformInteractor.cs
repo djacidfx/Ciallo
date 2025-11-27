@@ -118,7 +118,7 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
             _boxSelectionDash.SetGeometry([..points, points[0]], AppPreference.StrokeWireframeRadius);
             return;
         }
-        ;
+
         // Compute transform
         if (_transformType == 0)
             _currTransform = _currTransform.Translated(data.WorldDelta);

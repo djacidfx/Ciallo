@@ -21,7 +21,7 @@ public class PolylineTransformHover : HoverBase
     private Entity _layerE;
     private TransformOverlayBox _transformBox;
     private List<Entity> _polylineEs;
-    private List<Node2D> _wireframes = [];
+    private readonly List<Node2D> _wireframes = [];
 
     public override void Start()
     {
