@@ -27,13 +27,14 @@ public partial class OpenDocumentDialog : FileDialog
         {
             GD.PrintErr(exception);
             var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<AcceptDialog>().Single(n => n.Name == "WarnUser");
-            dialog.DialogText = "Cannot open document: the file is corrupted".Tr();
+            dialog.DialogText = "Cannot open document.".Tr() + exception.Message;
             dialog.Popup();
             return false;
         }
         AppWorldManager.CopyWorldByData(dataDocument);
         dataWorld.Dispose();
-        if (!AppPreference.RecentFiles.Contains(path)) AppPreference.RecentFiles.Add(path);
+        if (!AppPreference.RecentFiles.Contains(path))
+            AppPreference.RecentFiles.Add(path);
         return true;
     }
 }
