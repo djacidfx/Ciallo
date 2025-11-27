@@ -22,7 +22,7 @@ V0.1EA focus on showing off Ciallo techniques and developing MVP (minimum viable
   - [x] CGAL C++ code
 - [x] Selection/transform tool
   - [x] Rect transform
-  - [ ] Multi select and transform
+  - [x] Multi select and transform
   - [x] Subdivide, simplify and smooth
   - [ ] Line binding system (Bézier curve only)
     - [x] Bézier curve geometry
