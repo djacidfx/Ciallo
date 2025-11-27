@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Ciallo.Data;
 using Ciallo.Misc;
+using Frent;
 using Godot;
 using Godot.Collections;
 using R3;
@@ -110,7 +112,7 @@ public partial class WorldCursorDetectionArea : Node2D
     public void UpdateHovering(Vector2 worldPosition)
     {
         // See following pages for the point query method:
-        // https://docs.godotengine.org/en/stable/tutorials/physics/ray-casting.html
+        // https://docs.godotengine.org/en/stable/tutorials/physics/ray-casting.html#space
         // https://godotforums.org/d/34175-collision-with-point
         // Note this is different to RayCast2D node, which is a ray on XY plane. We want a top-down cast here (a point on XY plane).
         var pointQuery = new PhysicsPointQueryParameters2D()
@@ -123,6 +125,30 @@ public partial class WorldCursorDetectionArea : Node2D
         var area = hits.Count > 0 ? TopMostFromHits(hits) : null;
 
         SetHoveringArea(area);
+    }
+
+    public List<Entity> RectQuery(Rect2 rect)
+    {
+        var rectQuery = new PhysicsShapeQueryParameters2D()
+        {
+            CollideWithBodies = true,
+            Shape = new RectangleShape2D() { Size = rect.Size.Abs() },
+            Transform = new Transform2D(0, rect.GetCenter()),
+            CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke,
+        };
+        List<Entity> result = [];
+        Array<Rid> exclude = [];
+        const int maxIteration = 256;
+        for (int i = 0; i < maxIteration; i++)
+        {
+            var hit = GetWorld2D().DirectSpaceState.IntersectShape(rectQuery, 1);
+            if (hit.Count == 0) break;
+            var body = (CursorDetectionArea)hit[0]["collider"];
+            result.Add(body.SelfEntity);
+            exclude.Add(body.GetRid());
+            rectQuery.Exclude = exclude;
+        }
+        return result;
     }
 
     public CursorDetectionArea[] CreateAddTransformAreas(Vector2 size, Transform2D transform)

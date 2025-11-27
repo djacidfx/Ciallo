@@ -15,6 +15,8 @@ namespace Ciallo.Tool;
 
 using EntityParameterEvent = StateMachine<SelectTool.State, SelectTool.Event>.TriggerWithParameters<Entity>;
 
+// This class is very messy because it handles multiple types of layers.
+// Need a better tool mechanics
 public partial class SelectTool : CommonToolBase
 {
     public readonly PolylineTransformHover PolylineTransformHover = new();
@@ -42,6 +44,7 @@ public partial class SelectTool : CommonToolBase
     }
 
     private readonly EntityParameterEvent _etSwitchWorkingLayer;
+    private Entity _currentLayerE;
 
     public SelectTool()
     {
@@ -68,6 +71,7 @@ public partial class SelectTool : CommonToolBase
         ToolStateMachine.Configure(State.EditingImageLayer).SubstateOf(State.Active)
             .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {
+                _currentLayerE = layerE;
                 HoverInteractor = ImageTransformHover;
                 LeftInteractor = ImageTransformInteractor;
             })
@@ -75,22 +79,27 @@ public partial class SelectTool : CommonToolBase
             {
                 LeftInteractor = null;
                 HoverInteractor = null;
+                _currentLayerE = Entity.Null;
             });
 
         // Polyline layer
         ToolStateMachine.Configure(State.EditingPolylineLayer).SubstateOf(State.Active)
-            .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
+            .OnEntryFrom(_etSwitchWorkingLayer, layerE =>
             {
+                _currentLayerE = layerE;
+                layerE.Get<PolylineAreaHolder>().ProcessMode = ProcessModeEnum.Inherit;
                 LeftInteractor = PolylineTransformInteractor;
                 HoverInteractor = PolylineTransformHover;
                 RightInteractor = PolylineDeleteInteractor;
             })
             .OnExit(() =>
             {
+                _currentLayerE.Get<PolylineAreaHolder>().ProcessMode = ProcessModeEnum.Disabled;
                 HoverInteractor = null;
                 LeftInteractor = null;
                 RightInteractor = null;
                 Document.Get<SelectionManager>().SelectedPolylines.Clear();
+                _currentLayerE = Entity.Null;
             });
     }
 

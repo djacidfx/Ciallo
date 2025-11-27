@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
+using Ciallo.Misc;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -21,6 +22,9 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
     private TransformOverlayBox _transformBox;
     private Vector2 _center;
     private List<Entity> _processingEs;
+
+    private StrokeView _boxSelectionDash;
+    private Rect2 _boxSelectionRect;
 
     public override bool Prepare(CursorButtonData data)
     {
@@ -63,7 +67,17 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
 
     public override void Start(CursorButtonData data)
     {
-        if (_transformType == -1) SelectionManager.SelectedPolylines.Clear();
+        if (_transformType == -1)
+        {
+            SelectionManager.SelectedPolylines.Clear();
+
+            _boxSelectionDash = new StrokeView();
+            _boxSelectionDash.Material = AutoloadRendering.DashWireframeMaterial;
+            Document.Get<WorldOverlay>().AddChild(_boxSelectionDash);
+            _boxSelectionRect.Position = data.WorldPosition;
+            _boxSelectionRect.Size = Vector2.Zero;
+            return;
+        }
 
         _processingEs = SelectionManager.SelectedPolylines.ToList();
 
@@ -99,7 +113,14 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
 
     public override void Interacting(CursorMotionData data)
     {
-        if (_transformType == -1) return;
+        if (_transformType == -1)
+        {
+            _boxSelectionRect.Size = data.WorldPosition - _boxSelectionRect.Position;
+            var points = _boxSelectionRect.GetCorners();
+            _boxSelectionDash.SetGeometry([..points, points[0]], AppPreference.StrokeWireframeRadius);
+            return;
+        }
+        ;
         // Compute transform
         if (_transformType == 0)
             _currTransform = _currTransform.Translated(data.WorldDelta);
@@ -171,9 +192,19 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
 
     public override void End(CursorButtonData data)
     {
-        if (_transformType == -1) return;
-        var resultT = _currTransform;
+        if (_transformType == -1)
+        {
+            var worldArea = Document.Get<WorldCursorDetectionArea>();
+            worldArea.RectQuery(_boxSelectionRect).ForEach(e =>
+            {
+                if (!SelectionManager.SelectedPolylines.Remove(e))
+                    SelectionManager.SelectedPolylines.Add(e);
+            });
+            Clear();
+            return;
+        }
 
+        var resultT = _currTransform;
         if (!resultT.IsEqualApprox(Transform2D.Identity))
         {
             var cmd = new EmptyCommand();
@@ -192,17 +223,20 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
     public override void Cancel()
     {
         // Clean up view change
-        foreach (var e in _processingEs)
+        if (_transformType >= 0)
         {
-            var geom = e.Get<PolylineGeometry>();
-            var points = geom.Positions.ToArray();
-            if (e.Has<StrokeSetting>())
+            foreach (var e in _processingEs)
             {
-                e.Get<StrokeView>().SetGeometry(points, geom.Radii, geom.Pressures);
-            }
-            if (e.Has<FilledPolygonSetting>())
-            {
-                e.Get<Polygon2D>().SetPolygon(points);
+                var geom = e.Get<PolylineGeometry>();
+                var points = geom.Positions.ToArray();
+                if (e.Has<StrokeSetting>())
+                {
+                    e.Get<StrokeView>().SetGeometry(points, geom.Radii, geom.Pressures);
+                }
+                if (e.Has<FilledPolygonSetting>())
+                {
+                    e.Get<Polygon2D>().SetPolygon(points);
+                }
             }
         }
         Clear();
@@ -210,9 +244,12 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
 
     public void Clear()
     {
-        if (_transformType > 1) _transformBox.QueueFree();
+        _transformBox?.QueueFree();
+        _transformBox = null;
         _currTransform = Transform2D.Identity;
         _transformType = -1;
         _processingEs = null;
+        _boxSelectionDash?.QueueFree();
+        _boxSelectionDash = null;
     }
 }

@@ -63,7 +63,6 @@ public class PolylineTransformHover : HoverBase
         // Enable cursor detections on polylines of working layer
         _layerE = SelectionManager.WorkingLayer.Value;
         var holder = _layerE.Get<PolylineAreaHolder>();
-        holder.ProcessMode = Node.ProcessModeEnum.Inherit;
         holder.SetAreaCursor(Control.CursorShape.Move);
 
         // hover hinter
@@ -89,7 +88,8 @@ public class PolylineTransformHover : HoverBase
         RotationArea = null;
         Array.ForEach(CornerAreas, b => b.QueueFree());
         CornerAreas = [];
-        _layerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
+
+        _layerE.Get<PolylineAreaHolder>().SetAreaCursor(Control.CursorShape.Arrow);
 
         // overlays
         if (!HoveredPolyline.IsDeletedOrNull()) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
