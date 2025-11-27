@@ -51,6 +51,9 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
         var geom = new PolylineGeometry()
         {
             Positions = [.._generator.Positions],
+            Radii = [.._generator.Radii],
+            Pressures = [.._generator.Pressures],
+            Tilts = [.._generator.Tilts],
         };
         cmd.Combine(new SetPolylineGeometryCmd(polygonE, geom)).Commit();
         Clear();

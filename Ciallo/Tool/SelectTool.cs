@@ -122,6 +122,7 @@ public partial class SelectTool : CommonToolBase
                 else
                     cmd.Combine(new DeleteFilledPolygonCmd(polylineE));
             }
+            selectionManager.SelectedPolylines.Clear();
             cmd.Commit();
         }
         base.OnKey(key);

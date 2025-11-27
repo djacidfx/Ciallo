@@ -35,8 +35,8 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
         if (polylineHovered && Input.IsKeyPressed(Key.Shift))
         {
             var hoverE = hover.HoveredPolyline;
-            if (SelectionManager.SelectedPolylines.Remove(hoverE)) return false;
-            SelectionManager.SelectedPolylines.Add(hoverE);
+            if (!SelectionManager.SelectedPolylines.Remove(hoverE))
+                SelectionManager.SelectedPolylines.Add(hoverE);
             _transformType = 0;
             return true;
         }
@@ -69,8 +69,6 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
     {
         if (_transformType == -1)
         {
-            SelectionManager.SelectedPolylines.Clear();
-
             _boxSelectionDash = new StrokeView();
             _boxSelectionDash.Material = AutoloadRendering.DashWireframeMaterial;
             Document.Get<WorldOverlay>().AddChild(_boxSelectionDash);
@@ -195,11 +193,21 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
         if (_transformType == -1)
         {
             var worldArea = Document.Get<WorldCursorDetectionArea>();
-            worldArea.RectQuery(_boxSelectionRect).ForEach(e =>
+            var es = worldArea.RectQuery(_boxSelectionRect);
+            if (Input.IsKeyPressed(Key.Shift))
             {
-                if (!SelectionManager.SelectedPolylines.Remove(e))
-                    SelectionManager.SelectedPolylines.Add(e);
-            });
+                foreach (var e in es)
+                {
+                    if (!SelectionManager.SelectedPolylines.Remove(e))
+                        SelectionManager.SelectedPolylines.Add(e);
+                }
+            }
+            else
+            {
+                SelectionManager.SelectedPolylines.Clear();
+                SelectionManager.SelectedPolylines.AddRange(es);
+            }
+
             Clear();
             return;
         }
