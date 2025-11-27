@@ -10,16 +10,6 @@ public class ImageTransformInteractor : InteractorBase
     private readonly ImageTransformHover _hover;
     private int _transformType = -1; // 0: Rotate, 1: Move, 2~5: Corner Resize
 
-    public override bool CanInteract
-    {
-        get
-        {
-            if (_hover.RotationArea == null || _hover.TranslationArea == null || _hover.CornerAreas.Length == 0)
-                return false;
-            return _hover.RotationArea.IsHovered || _hover.TranslationArea.IsHovered || _hover.CornerAreas.Any(a => a.IsHovered);
-        }
-    }
-
     private ImageLayerSetting _setting;
     private Vector2 _startPos;
     private Transform2D _startTransform;
@@ -30,8 +20,11 @@ public class ImageTransformInteractor : InteractorBase
         _hover = hover;
     }
 
-    public override void Prepare(CursorButtonData data)
+    public override bool Prepare(CursorButtonData data)
     {
+        if (_hover.RotationArea == null || _hover.TranslationArea == null || _hover.CornerAreas.Length == 0)
+            return false;
+
         if (_hover.RotationArea.IsHovered)
         {
             _transformType = 0;
@@ -48,6 +41,8 @@ public class ImageTransformInteractor : InteractorBase
                 break;
             }
         }
+
+        return _hover.RotationArea.IsHovered || _hover.TranslationArea.IsHovered || _hover.CornerAreas.Any(a => a.IsHovered);
     }
 
     public override void Start(CursorButtonData data)

@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -18,8 +20,8 @@ public class PolylineTransformHover : HoverBase
     private IDisposable _hoverSub;
     private Entity _layerE;
     private TransformOverlayBox _transformBox;
-    private Entity _polylineE;
-    private Node2D _midAxis;
+    private List<Entity> _polylineEs;
+    private readonly List<Node2D> _wireframes = [];
 
     public override void Start()
     {
@@ -27,39 +29,40 @@ public class PolylineTransformHover : HoverBase
         if (SelectionManager.SelectedPolylines.Count > 0)
         {
             var worldOverlay = Document.Get<WorldOverlay>();
-            // Support single selection currently
-            _polylineE = SelectionManager.SelectedPolylines[0];
-            if (_polylineE.IsDeletedOrNull())
+
+            _polylineEs = [..SelectionManager.SelectedPolylines];
+
+            // transform box
+            Rect2 rect = default;
+            foreach (var (i, e) in _polylineEs.Index())
             {
-                SelectionManager.SelectedPolylines.Clear();
-            }
-            else
-            {
-                // mid axis
-                var centerline = _polylineE.Get<PolylineWireframe>();
-                _midAxis = (Node2D)centerline.Duplicate(0); // Don't duplicate script, or constructor will be called.
-                worldOverlay.AddChild(_midAxis);
-                _midAxis.Visible = true;
+                var wire = (Node2D)e.Get<PolylineWireframe>().Duplicate(0); // 0 means avoid duplicating script. Script duplication call constructor.
+                worldOverlay.AddChild(wire);
+                wire.Visible = true;
+                _wireframes.Add(wire);
 
                 // transform box overlay
-                var geom = _polylineE.Get<PolylineGeometry>();
-                var rect = geom.Positions.GetBoundingBox();
+                var geom = e.Get<PolylineGeometry>();
+                var bound = geom.Positions.GetBoundingBox();
+                rect = i == 0 ? bound : rect.Merge(bound);
+            }
+            if (!rect.IsEqualApprox(default))
+            {
                 _transformBox = new TransformOverlayBox(rect.Size, rect.GetCenter());
                 worldOverlay.AddChild(_transformBox);
-
-                // transform cursor area
-                var worldArea = Document.Get<WorldCursorDetectionArea>();
-                CursorDetectionArea[] areas = worldArea.CreateAddTransformAreas(rect.Size, rect.GetCenter());
-                RotationArea = areas[0];
-                areas[1].QueueFree();
-                CornerAreas = areas[2..6];
             }
+
+            // transform cursor area
+            var worldArea = Document.Get<WorldCursorDetectionArea>();
+            CursorDetectionArea[] areas = worldArea.CreateAddTransformAreas(rect.Size, rect.GetCenter());
+            RotationArea = areas[0];
+            areas[1].QueueFree();
+            CornerAreas = areas[2..6];
         }
 
+        // Enable cursor detections on polylines of working layer
         _layerE = SelectionManager.WorkingLayer.Value;
-        // Enable cursor detections on polyline
         var holder = _layerE.Get<PolylineAreaHolder>();
-        holder.ProcessMode = Node.ProcessModeEnum.Inherit;
         holder.SetAreaCursor(Control.CursorShape.Move);
 
         // hover hinter
@@ -85,15 +88,16 @@ public class PolylineTransformHover : HoverBase
         RotationArea = null;
         Array.ForEach(CornerAreas, b => b.QueueFree());
         CornerAreas = [];
-        _layerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
+
+        _layerE.Get<PolylineAreaHolder>().SetAreaCursor(Control.CursorShape.Arrow);
 
         // overlays
         if (!HoveredPolyline.IsDeletedOrNull()) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
-        _midAxis?.QueueFree();
-        _midAxis = null;
+        _wireframes.ForEach(node => node.QueueFree());
+        _wireframes.Clear();
         _transformBox?.QueueFree();
         _transformBox = null;
 
-        // _layerE = Entity.Null; // Don't clear entity, transform interactor need this value.
+        HoveredPolyline = Entity.Null;
     }
 }

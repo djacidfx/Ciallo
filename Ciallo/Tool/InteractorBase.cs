@@ -16,10 +16,8 @@ public abstract class InteractorBase
     public Entity Document => WorkingWorld.Document();
     public SelectionManager SelectionManager => Document.Get<SelectionManager>();
 
-    public abstract bool CanInteract { get; }
-
-    // Instantly called after CanInteract, zero state switching
-    public abstract void Prepare(CursorButtonData data);
+    // Instantly called after CanInteract, no state switching, return whether to start interaction
+    public abstract bool Prepare(CursorButtonData data);
     // Called after some tool state switching
     public abstract void Start(CursorButtonData data);
 

@@ -15,7 +15,7 @@ public partial class CommandManager : UndoRedo
 
     public CommandManager()
     {
-        SetMaxSteps(3); // fast invoke bugs
+        SetMaxSteps(30);
     }
 
     public void AddDo(CommandWrapperObject cmdWrapper)

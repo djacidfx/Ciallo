@@ -22,7 +22,7 @@ public struct ToSerializeTag;
 public static class EntityExtension
 {
     /// <summary>
-    /// Entity has been remove/deleted by user or null.
+    /// Entity has been deleted by user or null.
     /// </summary>
     /// <remarks>
     /// It may be deleted by undo stack or not.

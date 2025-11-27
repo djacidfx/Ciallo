@@ -61,7 +61,6 @@ public partial class StrokeView : MultiMeshInstance2D
         }
 
         var multiMesh = Multimesh;
-        multiMesh.InstanceCount = 0; // Also clear buffer
 
         IReadOnlyList<Vector2> ps;
         IReadOnlyList<float> rs;

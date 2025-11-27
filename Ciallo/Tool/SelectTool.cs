@@ -15,6 +15,8 @@ namespace Ciallo.Tool;
 
 using EntityParameterEvent = StateMachine<SelectTool.State, SelectTool.Event>.TriggerWithParameters<Entity>;
 
+// This class is very messy because it handles multiple types of layers.
+// Need a better tool mechanics
 public partial class SelectTool : CommonToolBase
 {
     public readonly PolylineTransformHover PolylineTransformHover = new();
@@ -42,6 +44,7 @@ public partial class SelectTool : CommonToolBase
     }
 
     private readonly EntityParameterEvent _etSwitchWorkingLayer;
+    private Entity _currentLayerE;
 
     public SelectTool()
     {
@@ -68,6 +71,7 @@ public partial class SelectTool : CommonToolBase
         ToolStateMachine.Configure(State.EditingImageLayer).SubstateOf(State.Active)
             .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
             {
+                _currentLayerE = layerE;
                 HoverInteractor = ImageTransformHover;
                 LeftInteractor = ImageTransformInteractor;
             })
@@ -75,22 +79,27 @@ public partial class SelectTool : CommonToolBase
             {
                 LeftInteractor = null;
                 HoverInteractor = null;
+                _currentLayerE = Entity.Null;
             });
 
         // Polyline layer
         ToolStateMachine.Configure(State.EditingPolylineLayer).SubstateOf(State.Active)
-            .OnEntryFrom(_etSwitchWorkingLayer, (layerE, _) =>
+            .OnEntryFrom(_etSwitchWorkingLayer, layerE =>
             {
+                _currentLayerE = layerE;
+                layerE.Get<PolylineAreaHolder>().ProcessMode = ProcessModeEnum.Inherit;
                 LeftInteractor = PolylineTransformInteractor;
                 HoverInteractor = PolylineTransformHover;
                 RightInteractor = PolylineDeleteInteractor;
             })
             .OnExit(() =>
             {
+                _currentLayerE.Get<PolylineAreaHolder>().ProcessMode = ProcessModeEnum.Disabled;
                 HoverInteractor = null;
                 LeftInteractor = null;
                 RightInteractor = null;
                 Document.Get<SelectionManager>().SelectedPolylines.Clear();
+                _currentLayerE = Entity.Null;
             });
     }
 
@@ -113,6 +122,7 @@ public partial class SelectTool : CommonToolBase
                 else
                     cmd.Combine(new DeleteFilledPolygonCmd(polylineE));
             }
+            selectionManager.SelectedPolylines.Clear();
             cmd.Commit();
         }
         base.OnKey(key);
@@ -123,6 +133,24 @@ public partial class SelectTool : CommonToolBase
     public override void DrawProperty(PropertyContainer container)
     {
         var selectionManager = Document.Get<SelectionManager>();
+        var selectionButtonGroup = PropertyContainer.CreateHContainer().AddToChildOf(container)
+            .VisibleIf(selectionManager.WorkingLayer, e => !e.IsNull && e.Has<PolylineLayerSetting>());
+        var selectAllButton = PropertyContainer.CreateButton("Select all").AddToChildOf(selectionButtonGroup);
+        selectAllButton.Pressed += () =>
+        {
+            var layerE = selectionManager.WorkingLayer.Value;
+            if (layerE.IsDeletedOrNull()) return;
+            selectionManager.SelectedPolylines.Clear();
+            selectionManager.SelectedPolylines.AddRange(layerE.Get<LayerTreeNode>().Children);
+            FireRefreshHover();
+        };
+        var deselectAllButton = PropertyContainer.CreateButton("Deselect").AddToChildOf(selectionButtonGroup);
+        deselectAllButton.Pressed += () =>
+        {
+            selectionManager.SelectedPolylines.Clear();
+            FireRefreshHover();
+        };
+
         var polylineEditBox = PropertyContainer.CreateBox().AddToChildOf(container)
             .VisibleIf(selectionManager.SelectedPolylines.ObserveCountChanged().Prepend(0), count => count > 0);
 

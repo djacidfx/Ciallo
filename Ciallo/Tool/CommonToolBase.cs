@@ -101,8 +101,7 @@ public abstract partial class CommonToolBase : ToolButtonBase
 
         bool InteractorStartGuard(InteractorBase interactor, CursorButtonData data)
         {
-            if (interactor?.CanInteract != true) return false;
-            interactor.Prepare(data);
+            if (interactor?.Prepare(data) != true) return false;
             return true;
         }
 
