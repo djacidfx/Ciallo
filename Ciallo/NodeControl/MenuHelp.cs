@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management;
@@ -17,6 +16,7 @@ public partial class MenuHelp : PopupMenu
         { "User manual", null },
         { "About Ciallo", null },
         { "Copy system info", null },
+        { "Bug report", null },
     };
 
     public override void _Ready()
@@ -40,6 +40,7 @@ public partial class MenuHelp : PopupMenu
         switch (id)
         {
             case 0:
+                OS.ShellOpen("https://www.patreon.com/posts/143863276");
                 break;
             case 1:
                 GetTree().GetNodesInGroup("Dialog").OfType<AcceptDialog>().First(n => n.Name == "AboutCiallo").Popup();
@@ -47,8 +48,9 @@ public partial class MenuHelp : PopupMenu
             case 2:
                 DisplayServer.ClipboardSet(CollectSystemInfo());
                 break;
-            default:
-                throw new ArgumentOutOfRangeException(nameof(id), $"Unhandled menu item index: {id}");
+            case 3:
+                OS.ShellOpen("https://github.com/ShenCiao/Ciallo/issues/new");
+                break;
         }
     }
 
