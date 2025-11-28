@@ -55,6 +55,13 @@ public partial class MenuFile : PopupMenu
                 if (AppWorldManager.WorkingWorld.Value == null) break;
                 AppWorldManager.SaveWorkingWorld();
                 break;
+            case 5: // Save as
+                if (AppWorldManager.WorkingWorld.Value == null) break;
+                var dialog = GetTree().GetNodesInGroup("Dialog").OfType<SaveAsDialog>().Single();
+                var setting = AppWorldManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
+                dialog.CurrentDir = setting.FilePath.CurrentValue.GetBaseDir();
+                dialog.PopupCentered();
+                break;
 
             case 7: // Export as image
                 if (AppWorldManager.WorkingWorld.Value == null) break;

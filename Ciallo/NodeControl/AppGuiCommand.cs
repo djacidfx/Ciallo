@@ -9,13 +9,13 @@ public static class AppGuiCommand
 
     public static void PopupNewDocumentDialog()
     {
-        var dialogNew = Tree.GetNodesInGroup("Dialog").OfType<NewDocumentDialog>().Single(n => n.Name == "NewDocument");
+        var dialogNew = Tree.GetNodesInGroup("Dialog").OfType<NewDocumentDialog>().Single();
         dialogNew.Popup();
     }
 
     public static void PopupOpenDocumentDialog()
     {
-        var dialogOpen = Tree.GetNodesInGroup("Dialog").OfType<OpenDocumentDialog>().Single(n => n.Name == "OpenDocument");
+        var dialogOpen = Tree.GetNodesInGroup("Dialog").OfType<OpenDocumentDialog>().Single();
         dialogOpen.Popup();
     }
 }

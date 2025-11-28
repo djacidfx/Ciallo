@@ -107,6 +107,19 @@ public static partial class AppWorldManager
         WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified.Value = false;
     }
 
+    public static void SaveWorkingWorldAs(string filePath)
+    {
+        if (WorkingDocument.CurrentValue.IsNull) return;
+        var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
+        if (CanSaveFile(filePath))
+        {
+            Save(WorkingWorld.Value, filePath);
+            settings.FilePath.Value = filePath;
+            settings.Name.Value = filePath.GetFile().GetBaseName();
+            WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified.Value = false;
+        }
+    }
+
     public static void ReloadWorkingWorld() // for debug
     {
         if (WorkingDocument.CurrentValue.IsNull) return;

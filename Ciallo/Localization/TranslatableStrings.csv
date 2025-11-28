@@ -105,3 +105,9 @@ Subdivide,Subdivide,细分,細分,細分化,세분화,Unterteilen,Subdiviser
 Linear subdivide,Linear subdivide,线性细分,線性細分,リニア細分化,선형 세분화,Lineare Unterteilung,Subdivision linéaire
 Smooth subdivide,Smooth subdivide,平滑细分,平滑細分,スムーズ細分化,부드러운 세분화,Glatte Unterteilung,Subdivision lissée
 Smooth,Smooth,平滑,平滑,スムーズ,부드럽게,Glätten,Lisser
+Interval,Interval,间隔,間隔,間隔,간격,Intervall,Intervalle
+Alpha density,Alpha density,Alpha密度,Alpha密度,アルファ密度,알파 밀도,Alpha-Dichte,Densité alpha
+Stamp texture,Stamp texture,印章纹理,印章紋理,スタンプテクスチャ,스탬프 텍스처,Stempeltextur,Texture de tampon
+Mask texture,Mask texture,遮罩纹理,遮罩紋理,マスクテクスチャ,마스크 텍스처,Maskentextur,Texture de masque
+Mask disk,Mask disk,遮罩圆盘,遮罩圓盤,マスクディスク,마스크 디스크,Maskenscheibe,Disque de masque
+Opacity density,Opacity density,不透明度密度,不透明度密度,不透明度密度,불투명도 밀도,Deckkraftdichte,Densité d'opacité

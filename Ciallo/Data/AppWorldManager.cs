@@ -49,12 +49,12 @@ public static partial class AppWorldManager
         // Always init first, then add to list
         LoadedWorlds.Add(world);
 
-        DisplayServer.WindowSetTitle(settings.Name.Value + " - Ciallo");
-        document.Get<CommandManager>().DocumentModified.Subscribe(b =>
-        {
-            string name = b ? "(*)" : "";
-            DisplayServer.WindowSetTitle($"{name + settings.Name.Value} - Ciallo");
-        }).AddTo(document);
+        document.Get<CommandManager>().DocumentModified
+            .CombineLatest(settings.Name, (modified, name) => (modified, name)).Subscribe(v =>
+            {
+                string prepend = v.modified ? "(*)" : "";
+                DisplayServer.WindowSetTitle($"{prepend + v.name} - Ciallo");
+            }).AddTo(document);
 
         return world;
     }

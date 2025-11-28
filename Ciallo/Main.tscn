@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://bhueivskybp02"]
+[gd_scene load_steps=22 format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://co17yxacb7838" path="res://NodeControl/OpenDocumentDialog.cs" id="3_j4qnp"]
@@ -16,6 +16,7 @@
 [ext_resource type="Script" uid="uid://dt8ylkob7fe5w" path="res://NodeControl/YesNoDialog.cs" id="9_2gh4u"]
 [ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://NodeControl/ToolButtonPanel.tscn" id="9_5vvyt"]
 [ext_resource type="PackedScene" uid="uid://cbe5uqtdiejke" path="res://NodeControl/ToolPropertyPanel.tscn" id="10_c6i3y"]
+[ext_resource type="Script" uid="uid://dn4468qjyqneb" path="res://SaveAsDialog.cs" id="10_devvj"]
 [ext_resource type="Script" uid="uid://dqewxa0t2mptr" path="res://NodeControl/ToolButtonPanelContainer.cs" id="13_kjvhd"]
 [ext_resource type="Script" uid="uid://b7mwe7nmkxh5d" path="res://NodeControl/PaintPanelContainer.cs" id="16_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://NodeControl/WelcomePanel.tscn" id="16_fpfj3"]
@@ -32,10 +33,10 @@ size_flags_horizontal = 0
 size_flags_vertical = 0
 theme = ExtResource("1_j4qnp")
 
-[node name="NewDocument" parent="." groups=["Dialog"] instance=ExtResource("3_sc1dx")]
+[node name="NewDocumentDialog" parent="." groups=["Dialog"] instance=ExtResource("3_sc1dx")]
 visible = false
 
-[node name="OpenDocument" type="FileDialog" parent="." groups=["Dialog"]]
+[node name="OpenDocumentDialog" type="FileDialog" parent="." groups=["Dialog"]]
 use_hdr_2d = true
 title = "Open a File"
 initial_position = 1
@@ -80,6 +81,12 @@ script = ExtResource("8_5tuhn")
 
 [node name="YesNoDialog" type="ConfirmationDialog" parent="." groups=["Dialog"]]
 script = ExtResource("9_2gh4u")
+
+[node name="SaveAsDialog" type="FileDialog" parent="." groups=["Dialog"]]
+access = 2
+filters = PackedStringArray("*.ciallo;")
+use_native_dialog = true
+script = ExtResource("10_devvj")
 
 [node name="MainGui" type="VBoxContainer" parent="."]
 layout_mode = 1

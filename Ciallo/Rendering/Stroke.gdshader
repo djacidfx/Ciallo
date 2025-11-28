@@ -9,7 +9,7 @@ struct StampFlag {
     int StampTexture;
     int MaskTexture;
     int RotationNoise;
-	int MaskDot;
+	int MaskDisk;
 };
 const StampFlag StampFlags = StampFlag(1 << 0, 1 << 1, 1 << 2, 1 << 3);
 
@@ -41,7 +41,7 @@ uniform int ActiveStampFlags;
 uniform float StampInterval : hint_range(0.015625, 10.0, 0.0078125) = 0.2;
 uniform sampler2D StampTexture;
 uniform mat2 CoordinateTransform;
-uniform sampler2D DotOpacityCurve;
+uniform sampler2D DiskOpacityCurve;
 uniform sampler2D MultiplyTexture;
 
 uniform int RotationNoiseOctave;
@@ -233,25 +233,22 @@ void fragment() {
         		discard;
     		}
 		}
-		else{
-			//// Anti antialiasing
-			//// AA end point makes visible gaps with transparency.
-			float aaEdge = 3.0 / scale;
-			float aaStart = 1.0 - aaEdge/r_p;
-			aaStart = clamp(aaStart, 0.0, 1.0);
-			float lambda;
 
-			if (cosPhi0 < cosTheta) lambda = d0/r0;
-			else if (cosPhi1 > cosTheta) lambda = d1/r1;
-			else {
-				lambda = abs(pLocal.y) / r_p * sinTheta;
-			}
+		//// Anti antialiasing
+		//// AA end point makes visible gaps with transparency.
+		float aaEdge = 3.0 / scale;
+		float aaStart = 1.0 - aaEdge/r_p;
+		aaStart = clamp(aaStart, 0.0, 1.0);
+		float lambda;
 
-			if(lambda > aaStart){
-				float t = (lambda - aaStart)/(1.0 - aaStart);
-				COLOR.a = COLOR.a * smoothstep(1.0, 0.3, t);
-			}
+		lambda = abs(pLocal.y) / r_p * sinTheta;
+		lambda = clamp(lambda, 0.0, 1.0);
+
+		if(lambda > aaStart){
+			float t = (lambda - aaStart)/(1.0 - aaStart);
+			COLOR.a = COLOR.a * smoothstep(1.0, 0.3, t);
 		}
+
 		if(d0 < r0 || d1 < r1){
         	COLOR.a = 1.0 - sqrt(1.0 - COLOR.a);
     	}
@@ -289,7 +286,7 @@ void fragment() {
  			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
 			float textureMask = ((ActiveStampFlags & StampFlags.MaskTexture) != 0) ? texture(MultiplyTexture, uv).r : 1.0;
 			float nr = length(pToCurrStamp/r); // normalized r
-			float dotMask = ((ActiveStampFlags & StampFlags.MaskDot) != 0) ? sampleCurve(DotOpacityCurve, nr) : 1.0;
+			float dotMask = ((ActiveStampFlags & StampFlags.MaskDisk) != 0) ? sampleCurve(DiskOpacityCurve, nr) : 1.0;
 			float stampSample = ((ActiveStampFlags & StampFlags.StampTexture) != 0) ? texture(StampTexture, uv).r : 1.0;
 			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || nr > 1.0;
 			float sampledA = isOutDisk ? 1e-7 : textureMask * dotMask * flow * stampSample;
@@ -311,20 +308,20 @@ void fragment() {
 		float startN = x1 < 0.0 ? 0.0 : x2n(x1);
 		float endN = x2 > segmentLength ? (n1 - n0) : x2n(x2);
 		float deltaN = endN - startN;
-		
+
 		float lambda = clamp(abs(pLocal.y) / r_p * sinTheta, 0.0, 1.0);
 		float curveFall = sampleCurve(FalloffCurve, lambda);
 		float A = 1.0 - exp(-deltaN * flow * curveFall * AlphaDensity);
 		COLOR = vec4(MaterialColor.rgb, A);
 	}
-	
+
 	// Dash
 	if((ActiveBrushFlags & BrushFlags.Dash) != 0){
 		float unitLength = DashLength + (GapLength > 0.0 ? GapLength : DashLength);
 		float pixelN = x2n(pLocal.x) + n0;
 		if(mod(pixelN + TIME * DashForwardSpeed, unitLength) > DashLength) discard;
 	}
-	
+
 	// Be mindful with premultiply alpha
 	// See: https://github.com/godotengine/godot/issues/99715
 }
