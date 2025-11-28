@@ -27,7 +27,7 @@ public partial class OpenDocumentDialog : FileDialog
         {
             GD.PrintErr(exception);
             var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<AcceptDialog>().Single(n => n.Name == "WarnUser");
-            dialog.DialogText = "Cannot open document.".Tr() + exception.Message;
+            dialog.DialogText = "Cannot open document.".Tr() + " " + exception.Message;
             dialog.Popup();
             return false;
         }

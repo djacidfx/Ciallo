@@ -155,13 +155,13 @@ Unless otherwise specified, files in this repository are licensed under the AGPL
 
 ### Shader code special notice
 
-For the purposes of this Project, "Shader Code" means any GPU shader program, shader graph, material shader, or related code used to render strokes, fills, brushes, or other visual effects in this projects.
+For the purposes of this Project, "Shader Code" means any GPU shader program, shader graph, material shader, or related code used to render strokes, fills, brushes, or other visual effects in this project.
 
 1. Use in Artwork
 
     You are explicitly allowed to use the Shader Code render Artwork in closed‑source or commercial games, including shipping binaries and asset bundles containing compiled, optimized, or obfuscated versions of the Shader Code, without any obligation to publish your game source code or shader source code, as long as: 
     - You do not distribute the Shader Code as a general‑purpose graphics component.
-    - Owner does not authorize AI training on the Artwork.
+    - You do not use the rendered Artwork for AI training purposes or give training permission to others.
 
 2. Use in other software
 
@@ -174,7 +174,7 @@ For the purposes of this Project, "Shader Code" means any GPU shader program, sh
 
 3. No AI‑training opt‑out bypass
 
-   Labelling Shader‑rendered assets or shaders themselves as “no copyright”, “public domain”, or similar does not grant permission for AI training under these terms. Any “opt‑out” or “unless the Owner opts out” AI policies do not override this notice. Unauthorised AI use of the Shader Code or Shader‑rendered assets is a violation of this project’s terms.
+   Labeling Shader‑rendered assets or shaders themselves as “no copyright”, “public domain”, or similar does not grant permission for AI training under these terms. Any “opt‑out” or “unless the Owner opts out” AI policies do not override this notice. Unauthorised AI use of the Shader Code or Shader‑rendered assets is a violation of this project’s terms.
 
 These special Shader Code terms are an integral part of the Project’s licensing and must be read together with the AGPL‑3.0 license and the "User‑created content copyright and AI notice" above.
 
