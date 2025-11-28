@@ -40,11 +40,11 @@ public partial class BrushMaterial : ShaderMaterial
         setting.StampInterval.Subscribe(interval => SetShaderParameter("StampInterval", interval)).AddTo(Subs);
         SetShaderParameter("StampTexture", setting.StampTexture);
         SetShaderParameter("MultiplyTexture", setting.MaskTexture);
-        var dotOpacityTex = ImageTexture.CreateFromImage(BakeCurve(setting.DotOpacityCurve));
-        setting.DotOpacityCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
+        var diskOpacityTex = ImageTexture.CreateFromImage(BakeCurve(setting.DiskOpacityCurve));
+        setting.DiskOpacityCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
         {
-            dotOpacityTex.Update(BakeCurve(setting.DotOpacityCurve));
-            SetShaderParameter("DotOpacityCurve", dotOpacityTex);
+            diskOpacityTex.Update(BakeCurve(setting.DiskOpacityCurve));
+            SetShaderParameter("DiskOpacityCurve", diskOpacityTex);
         }).AddTo(Subs);
         setting.StampRotation.Subscribe(rotation =>
         {
