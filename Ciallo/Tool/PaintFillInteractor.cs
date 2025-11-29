@@ -44,6 +44,11 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
     public override void End(CursorButtonData data)
     {
         _generator.End(data);
+        if (_generator.Positions.Count < 3)
+        {
+            Clear();
+            return;
+        }
         var layerE = SelectionManager.WorkingLayer.Value;
         var setting = new FilledPolygonSetting() { Color = { Value = tool.Color.Value } };
         var cmd = new NewFilledPolygonCmd(layerE, setting);
