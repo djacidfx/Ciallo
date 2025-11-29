@@ -24,6 +24,14 @@ public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
         return subs;
     }
 
+    public void CopySettingFrom(LayerTreeNode other)
+    {
+        Name.Value = other.Name.Value;
+        IsVisible.Value = other.IsVisible.Value;
+        Opacity.Value = other.Opacity.Value;
+        IsLocked.Value = other.IsLocked.Value;
+    }
+
     /// <summary>
     /// Assume the given node is focused and going to be deleted, return the path to the next node that should have focus.
     /// e.g. Used at deletion of working layer to determine the new working layer.

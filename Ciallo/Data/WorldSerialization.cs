@@ -54,8 +54,9 @@ public static partial class AppWorldManager
             if (layerDataE.Has<ImageLayerSetting>())
             {
                 var newImageLayerCmd = new NewImageLayerCmd(layerDataE.Get<ImageLayerSetting>());
-                newImageLayerCmd.Do();
                 var layerE = newImageLayerCmd.InitEntity();
+                layerE.Get<LayerTreeNode>().CopySettingFrom(layerDataE.Get<LayerTreeNode>()); // hack patch
+                newImageLayerCmd.Do();
                 layerMap.Add(layerDataE, layerE);
             }
             else if (layerDataE.Has<PolylineLayerSetting>())
@@ -63,6 +64,7 @@ public static partial class AppWorldManager
                 var newPolylineLayerCmd = new NewPolylineLayerCmd(layerDataE.Get<PolylineLayerSetting>());
                 newPolylineLayerCmd.Do();
                 var layerE = newPolylineLayerCmd.LayerE;
+                layerE.Get<LayerTreeNode>().CopySettingFrom(layerDataE.Get<LayerTreeNode>()); // hack patch
                 layerMap.Add(layerDataE, layerE);
 
                 foreach (var polylineDataE in layerDataE.Get<LayerTreeNode>().Children)
