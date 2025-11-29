@@ -87,6 +87,7 @@ Output image resolution,Output image resolution,输出的图像分辨率,輸出�
 Scale,Scale,缩放,縮放,スケール,크기 조정,Skalierung,Échelle
 [Recent Document List Tooltip],- Double click to open\n- Right click to delete,- 双击以打开\n- 右键点击以删除,- 雙擊以開啟\n- 右鍵點擊以刪除,- ダブルクリックで開く\n- 右クリックで削除,- 더블 클릭으로 열기\n- 오른쪽 클릭으로 삭제,- Doppelklick zum Öffnen\n- Rechtsklick zum Löschen,- Double-clic pour ouvrir\n- Clic droit pour supprimer
 File name,File name,文件名,檔案名稱,ファイル名,파일 이름,Dateiname,Nom de fichier
+Stamp rotation,Stamp rotation,印章旋转,印章旋轉,スタンプ回転,스탬프 회전,Stempelrotation,Rotation du tampon
 Rotation noise,Rotation noise,旋转噪音,旋轉噪音,回転ノイズ,회전 노이즈,Rotationsrauschen,Bruit de rotation
 Rotation noise octave,Rotation noise octave,旋转噪音层数,旋轉噪音層數,回転ノイズオクターブ,회전 노이즈 옥타브,Rotationsrauschen-Oktave,Octave de bruit de rotation
 Rotation noise amplitude,Rotation noise amplitude,旋转噪音振幅,旋轉噪音振幅,回転ノイズ振幅,회전 노이즈 진폭,Rotationsrauschen-Amplitude,Amplitude du bruit de rotation
@@ -111,3 +112,6 @@ Stamp texture,Stamp texture,印章纹理,印章紋理,スタンプテクスチ�
 Mask texture,Mask texture,遮罩纹理,遮罩紋理,マスクテクスチャ,마스크 텍스처,Maskentextur,Texture de masque
 Mask disk,Mask disk,遮罩圆盘,遮罩圓盤,マスクディスク,마스크 디스크,Maskenscheibe,Disque de masque
 Opacity density,Opacity density,不透明度密度,不透明度密度,不透明度密度,불투명도 밀도,Deckkraftdichte,Densité d'opacité
+Select all,Select all,全选,全選,すべて選択,모두 선택,Alles auswählen,Sélectionner tout
+Deselect,Deselect,取消选择,取消選取,選択解除,선택 해제,Abwählen,Désélectionner
+Fill color,Fill color,填充色,填充色,塗りつぶし色,채우기 색상,Füllfarbe,Couleur de remplissage
