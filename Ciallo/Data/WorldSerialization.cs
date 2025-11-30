@@ -62,9 +62,9 @@ public static partial class AppWorldManager
             else if (layerDataE.Has<PolylineLayerSetting>())
             {
                 var newPolylineLayerCmd = new NewPolylineLayerCmd(layerDataE.Get<PolylineLayerSetting>());
-                newPolylineLayerCmd.Do();
-                var layerE = newPolylineLayerCmd.LayerE;
+                var layerE = newPolylineLayerCmd.InitEntity();
                 layerE.Get<LayerTreeNode>().CopySettingFrom(layerDataE.Get<LayerTreeNode>()); // hack patch
+                newPolylineLayerCmd.Do();
                 layerMap.Add(layerDataE, layerE);
 
                 foreach (var polylineDataE in layerDataE.Get<LayerTreeNode>().Children)

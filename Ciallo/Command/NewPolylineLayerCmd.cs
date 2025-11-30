@@ -45,6 +45,7 @@ public class NewPolylineLayerCmd : CommandBase
         layerView.SetOwner(worldView);
 
         var node = LayerE.Get<LayerTreeNode>();
+        node.RegisterToCommandManager(Document.Get<CommandManager>()).AddTo(_subs);
         node.IsVisible.Subscribe(layerView.SetVisible).AddTo(_subs);
         node.Opacity.Subscribe(v =>
         {
@@ -93,7 +94,7 @@ public class NewPolylineLayerCmd : CommandBase
             Name = { Value = $"{"Line layer".Tr()} {root.ChildCount + 1}" },
         };
         LayerE.Add(node);
-        node.RegisterToCommandManager(Document.Get<CommandManager>()).AddTo(LayerE);
+
         return LayerE;
     }
 }
