@@ -79,7 +79,7 @@ public class PolylineInteractiveGenerator
     private readonly float _overTimeThreshold = 100f;
     private readonly int _maxInterpolatedPointNumber = 1;
 
-    private readonly float _interpolationAngleTolerance = Mathf.DegToRad(20f);
+    private readonly float _interpolationAngleTolerance = Mathf.DegToRad(15f);
 
     public void Start(CursorButtonData data)
     {
@@ -202,11 +202,6 @@ public class PolylineInteractiveGenerator
         if (_previewPointCache.Count > 0)
         {
             RemoveLatestPoints(_previewPointCache.Count);
-            var d = _previewPointCache[^1];
-            _positions.Add(d.WorldPosition);
-            _radii.Add(CalculateRadius(d));
-            _pressures.Add(d.Pressure);
-            _tilts.Add(d.Tilt);
         }
         _previewPointCache.Clear();
         _processedPointCache.Clear();
