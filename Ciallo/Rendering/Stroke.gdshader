@@ -233,20 +233,25 @@ void fragment() {
         		discard;
     		}
 		}
+		else{
+			//// Anti antialiasing
+			//// No configuration of screen space AA is satifying enough to draw the strokes
+			//// Have to AA manually
+			//// AA end point makes visible gaps with transparency.
+			float aaEdge = 3.0 / scale;
+			float aaStart = 1.0 - aaEdge/r_p;
+			aaStart = clamp(aaStart, 0.0, 1.0);
+			
+			float lambda;
+			if (cosPhi0 < cosTheta) lambda = d0/r0;
+			else if (cosPhi1 > cosTheta) lambda = d1/r1;
+			else lambda = abs(pLocal.y) / r_p * sinTheta;
+			lambda = clamp(lambda, 0.0, 1.0);
 
-		//// Anti antialiasing
-		//// AA end point makes visible gaps with transparency.
-		float aaEdge = 3.0 / scale;
-		float aaStart = 1.0 - aaEdge/r_p;
-		aaStart = clamp(aaStart, 0.0, 1.0);
-		float lambda;
-
-		lambda = abs(pLocal.y) / r_p * sinTheta;
-		lambda = clamp(lambda, 0.0, 1.0);
-
-		if(lambda > aaStart){
-			float t = (lambda - aaStart)/(1.0 - aaStart);
-			COLOR.a = COLOR.a * smoothstep(1.0, 0.3, t);
+			if(lambda > aaStart){
+				float t = (lambda - aaStart)/(1.0 - aaStart);
+				COLOR.a = COLOR.a * smoothstep(1.0, 0.5, t);
+			}
 		}
 
 		if(d0 < r0 || d1 < r1){

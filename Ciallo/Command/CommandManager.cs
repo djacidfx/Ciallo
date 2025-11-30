@@ -45,7 +45,7 @@ public partial class CommandManager : UndoRedo
         var subs = new CompositeDisposable();
 
         // If time within TimeSpan has no more changes, commit the final value.
-        property.Skip(1).Where(_ => !SkipPropertyCommit).Debounce(TimeSpan.FromMilliseconds(350)).Subscribe(newValue =>
+        property.Skip(1).Where(_ => !SkipPropertyCommit).Debounce(TimeSpan.FromMilliseconds(250)).Subscribe(newValue =>
         {
             if (EqualityComparer<T>.Default.Equals(old.Value, newValue)) return;
             var obj = new PropertyWrapperObject<T>(property, old);
