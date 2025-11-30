@@ -16,8 +16,6 @@
 
 ---
 
-⚠️Working on the final polishing and bug testing before a demo release.
-
 Ciallo is an open-source graphics program for professional digital painting.
 It aims to compete with traditional raster painting software like Photoshop and Clip Studio Paint, while offering the following unique features researched by the developer:
 
@@ -29,13 +27,13 @@ Vectorized stamp brushes, entirely drawn (rendered) on your graphics card (GPU).
 
 ![](/.github/Stamp.gif)
 
-Resolution-independent airbrush, you can change opacity gradient directly.
+Resolution-independent airbrush, adjust the opacity falloff directly, with ultra‑fast rendering performance.
 
 ![](/.github/Airbrush.gif)
 
 ### Export to game engines
 
-Export your artwork into the Godot game engine (as a .scn/.tscn file without dependency), and keep it resolution-independent.
+Export your artwork into the Godot game engine (as a .scn/.tscn file), and keep it resolution-independent.
 Like those old days when Flash was alive.
 
 ![](/.github/Dango.png)
@@ -111,14 +109,14 @@ Although Ciallo focuses on vector features, it is NOT intended to replace Inksca
 Instead, it aims to provide Clip Studio Paint or Krita vector layers on super steroids.
 All features that were previously available only in raster workflows would be supported in Ciallo's new vector workflow.
 
-**Game first**
+**Game art first**
 
 Except for the core painting, Ciallo prioritizes auxiliary features supporting video game development.
 It aims to be a DCC program providing vector hand-drawn assets, including illustrations, 2D animations and hand-drawn textures in 3D.
 
 ## Feature requests
 
-Hope Ciallo's tools already address something important to you. (To be frank, the large company should have provided these infrastructures a decade ago.) There's always more to add as Ciallo grows. Check the [Contributing Tab] for the development plan.
+Hope Ciallo has already addressed something important to you. (To be frank, the large company should have provided these infrastructures a decade ago.) There's always more to add as Ciallo grows. Check the [Contributing Tab] for the development plan.
 
 The developer basically knows the most needed features during the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2).
 
