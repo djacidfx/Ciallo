@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using Ciallo.Data;
+using Ciallo.GuiBinding;
 using Ciallo.Misc;
 using Ciallo.Widget;
 using Godot;

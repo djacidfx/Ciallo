@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Ciallo.Data;
-using Ciallo.Misc;
+using Ciallo.GuiBinding;
 using Godot;
 
 namespace Ciallo.NodeControl;

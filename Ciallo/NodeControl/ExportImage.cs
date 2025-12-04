@@ -1,5 +1,5 @@
 using Ciallo.Data;
-using Ciallo.Misc;
+using Ciallo.GuiBinding;
 using Ciallo.Rendering;
 using Ciallo.Widget;
 using Godot;

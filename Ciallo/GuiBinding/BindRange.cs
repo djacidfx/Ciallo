@@ -4,7 +4,7 @@ using Ciallo.Widget;
 using Godot;
 using R3;
 
-namespace Ciallo.Misc;
+namespace Ciallo.GuiBinding;
 
 public static class BindRange
 {
