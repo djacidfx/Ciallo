@@ -45,7 +45,7 @@ public class NewPolylineLayerCmd : CommandBase
         layerView.SetOwner(worldView);
 
         var node = LayerE.Get<LayerTreeNode>();
-        node.RegisterToCommandManager(Document.Get<CommandManager>()).AddTo(_subs);
+        node.RegisterProperties(Document.Get<CommandManager>()).AddTo(_subs);
         node.IsVisible.Subscribe(layerView.SetVisible).AddTo(_subs);
         node.Opacity.Subscribe(v =>
         {

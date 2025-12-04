@@ -107,7 +107,7 @@ public class NewImageLayerCmd : CommandBase
         _layerE = WorkingWorld.Create();
         var node = new LayerTreeNode { Name = { Value = "Image".Tr() } };
         _layerE.Add(node);
-        node.RegisterToCommandManager(Document.Get<CommandManager>()).AddTo(_layerE);
+        node.RegisterProperties(Document.Get<CommandManager>()).AddTo(_layerE);
         return _layerE;
     }
 }
