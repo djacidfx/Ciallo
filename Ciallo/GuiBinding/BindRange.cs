@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Numerics;
+﻿using System.Numerics;
 using Ciallo.Widget;
 using Godot;
 using R3;
@@ -8,8 +7,8 @@ namespace Ciallo.GuiBinding;
 
 public static class BindRange
 {
-    private static void BindNumber<T>(Range rangeControl,
-        [NotNull] ReactiveProperty<T> property,
+    private static Range BindNumber<T>(Range rangeControl,
+        ReactiveProperty<T> property,
         out CompositeDisposable subs) where T : INumber<T>
     {
         // Note: After subscribing to a ReactiveProperty, the callback will be invoked immediately with the current value.
@@ -18,46 +17,56 @@ public static class BindRange
         property.Subscribe(value => rangeControl.SetValue(double.CreateChecked(value))).AddTo(subs);
         rangeControl.OnValueChangedAsObservable()
             .Subscribe(value => property.Value = T.CreateChecked(value)).AddTo(subs);
+        return rangeControl;
     }
 
-    public static void BindNumber<T>(this Range rangeControl, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
+    public static Range BindNumber<T>(this Range rangeControl, ReactiveProperty<T> property) where T : INumber<T>
     {
         BindNumber(rangeControl, property, out var subs);
         subs.AddTo(rangeControl);
+        return rangeControl;
     }
 
-    public static void BindNumber<T>(this HSlider slider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
+    public static HSlider BindNumber<T>(this HSlider slider, ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindNumber((Range)slider, property);
+        BindNumber((Range)slider, property, out var subs);
+        subs.AddTo(slider);
+        return slider;
     }
 
-    public static void BindNumber<T>(this VSlider slider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
+    public static VSlider BindNumber<T>(this VSlider slider, ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindNumber((Range)slider, property);
+        BindNumber((Range)slider, property, out var subs);
+        subs.AddTo(slider);
+        return slider;
     }
 
-    public static void BindNumber<T>(this SpinBox spinBox, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
+    public static SpinBox BindNumber<T>(this SpinBox spinBox, ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindNumber((Range)spinBox, property);
+        BindNumber((Range)spinBox, property, out var subs);
+        subs.AddTo(spinBox);
+        return spinBox;
     }
 
-    public static void BindNumber<T>(this SpinSlider spinSlider,
-        [NotNull] ReactiveProperty<T> property,
+    public static SpinSlider BindNumber<T>(this SpinSlider spinSlider,
+        ReactiveProperty<T> property,
         out CompositeDisposable subs) where T : INumber<T>
     {
         subs = new();
         property.Subscribe(value => spinSlider.Value = double.CreateChecked(value)).AddTo(subs);
         spinSlider.SignalAsObservable<float>(SpinSlider.SignalName.ValueChanged)
             .Subscribe(value => property.Value = T.CreateChecked(value)).AddTo(subs);
+        return spinSlider;
     }
 
-    public static void BindNumber<T>(this SpinSlider spinSlider, [NotNull] ReactiveProperty<T> property) where T : INumber<T>
+    public static SpinSlider BindNumber<T>(this SpinSlider spinSlider, ReactiveProperty<T> property) where T : INumber<T>
     {
         BindNumber(spinSlider, property, out var subs);
         subs.AddTo(spinSlider);
+        return spinSlider;
     }
 
-    public static void ReactiveBindNumber<T>(this SpinSlider spinSlider,
+    public static SpinSlider ReactiveBindNumber<T>(this SpinSlider spinSlider,
         ReadOnlyReactiveProperty<ReactiveProperty<T>> view,
         out CompositeDisposable subs) where T : INumber<T>
     {
@@ -74,15 +83,17 @@ public static class BindRange
                 curSub.AddTo(disposable);
             }
         }).AddTo(subs);
+        return spinSlider;
     }
 
     /// <summary>
     /// Binds a SpinSlider dynamically to a ReactiveProperty provided by the ReadOnlyReactiveProperty.
     /// </summary>
-    public static void ReactiveBindNumber<T>(this SpinSlider spinSlider,
+    public static SpinSlider ReactiveBindNumber<T>(this SpinSlider spinSlider,
         ReadOnlyReactiveProperty<ReactiveProperty<T>> view) where T : INumber<T>
     {
         ReactiveBindNumber(spinSlider, view, out var subs);
         subs.AddTo(spinSlider);
+        return spinSlider;
     }
 }

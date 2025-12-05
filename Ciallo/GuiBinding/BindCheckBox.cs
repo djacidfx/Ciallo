@@ -6,24 +6,27 @@ namespace Ciallo.GuiBinding;
 
 public static class BindCheckBox
 {
-    private static void BindBool(this BaseButton button, ReactiveProperty<bool> property, out CompositeDisposable subs)
+    private static BaseButton BindBool(this BaseButton button, ReactiveProperty<bool> property, out CompositeDisposable subs)
     {
         if (!button.ToggleMode) throw new ArgumentException("Button must be in toggle mode", nameof(button));
         subs = new CompositeDisposable();
         property.Subscribe(value => button.ButtonPressed = value).AddTo(subs);
         button.OnToggledAsObservable()
             .Subscribe(value => property.Value = value).AddTo(subs);
+        return button;
     }
 
-    public static void BindBool(this CheckBox checkBox, ReactiveProperty<bool> property, out CompositeDisposable subs)
+    public static CheckBox BindBool(this CheckBox checkBox, ReactiveProperty<bool> property, out CompositeDisposable subs)
     {
         BindBool((BaseButton)checkBox, property, out subs);
+        return checkBox;
     }
 
-    public static void BindBool(this CheckBox checkBox, ReactiveProperty<bool> property)
+    public static CheckBox BindBool(this CheckBox checkBox, ReactiveProperty<bool> property)
     {
         BindBool(checkBox, property, out var sub);
         sub.AddTo(checkBox);
+        return checkBox;
     }
 
     /// <summary>
@@ -34,7 +37,7 @@ public static class BindCheckBox
     /// <param name="mask">The bits to toggle on and off</param>
     /// <param name="subs"></param>
     /// <typeparam name="T">Enum with FlagsAttribute</typeparam>
-    public static void BindFlag<T>(this CheckBox checkBox, ReactiveProperty<T> property, T mask, out CompositeDisposable subs) where T : Enum
+    public static CheckBox BindFlag<T>(this CheckBox checkBox, ReactiveProperty<T> property, T mask, out CompositeDisposable subs) where T : Enum
     {
         subs = new CompositeDisposable();
 
@@ -49,11 +52,13 @@ public static class BindCheckBox
                     : (T)((dynamic)property.Value & ~(dynamic)mask);
             })
             .AddTo(subs);
+        return checkBox;
     }
 
-    public static void BindFlag<T>(this CheckBox checkBox, ReactiveProperty<T> property, T mask) where T : Enum
+    public static CheckBox BindFlag<T>(this CheckBox checkBox, ReactiveProperty<T> property, T mask) where T : Enum
     {
         BindFlag(checkBox, property, mask, out var sub);
         sub.AddTo(checkBox);
+        return checkBox;
     }
 }

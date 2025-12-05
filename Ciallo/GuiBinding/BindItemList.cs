@@ -16,7 +16,7 @@ namespace Ciallo.GuiBinding;
 public static class BindItemList
 {
     // Fix item list
-    public static void BindValue<T>(this ItemList control, [NotNull] IReadOnlyList<T> items,
+    public static ItemList BindValue<T>(this ItemList control, [NotNull] IReadOnlyList<T> items,
         [NotNull] ReactiveProperty<T> property, Func<T, string> toName = null)
     {
         if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
@@ -35,10 +35,11 @@ public static class BindItemList
             .Subscribe(idx => property.Value = items[(int)idx])
             .AddTo(subs);
         subs.AddTo(control);
+        return control;
     }
 
     // Binds dynamic list
-    public static void ObserveObservableList<T>(this ItemList control,
+    public static ItemList ObserveObservableList<T>(this ItemList control,
         ObservableList<T> list,
         Func<T, ReactiveProperty<string>> toName)
     {
@@ -110,9 +111,10 @@ public static class BindItemList
         }).AddTo(subs);
 
         subs.AddTo(control);
+        return control;
     }
 
-    public static void ObserveObservableList(this ItemList control, ObservableList<string> list)
+    public static ItemList ObserveObservableList(this ItemList control, ObservableList<string> list)
     {
         if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
         control.Clear();
@@ -150,10 +152,11 @@ public static class BindItemList
         }).AddTo(subs);
 
         subs.AddTo(control);
+        return control;
     }
 
     // Two-way binding of selection index
-    public static void BindSelectionIndex(this ItemList control,
+    public static ItemList BindSelectionIndex(this ItemList control,
         ReactiveProperty<int> index)
     {
         if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
@@ -173,5 +176,6 @@ public static class BindItemList
             .Subscribe(idx => index.Value = (int)idx).AddTo(subs);
 
         subs.AddTo(control);
+        return control;
     }
 }
