@@ -75,7 +75,7 @@ public static partial class AppWorldManager
                     {
                         var newStrokeCmd = new NewStrokeCmd(layerE);
                         newStrokeCmd.Do();
-                        var strokeE = newStrokeCmd.StrokeE;
+                        var strokeE = newStrokeCmd.InitEntity();
                         new SetPolylineGeometryCmd(strokeE, geometry).Do();
                         var strokeSetting = polylineDataE.Get<StrokeSetting>();
                         new SetStrokeBrushCmd(strokeE, brushMap[strokeSetting.BrushE]).Do();
@@ -85,7 +85,7 @@ public static partial class AppWorldManager
                         var setting = polylineDataE.Get<FilledPolygonSetting>();
                         var newFilledPolygonCmd = new NewFilledPolygonCmd(layerE, setting);
                         newFilledPolygonCmd.Do();
-                        var polygonE = newFilledPolygonCmd.PolygonE;
+                        var polygonE = newFilledPolygonCmd.InitEntity();
                         new SetPolylineGeometryCmd(polygonE, geometry).Do();
                     }
                 }

@@ -33,6 +33,9 @@ public class DeleteStrokeCmd : CommandBase
 
     public override void Do()
     {
+        // Selection manager
+        Document.Get<SelectionManager>().SelectedPolylines.Remove(_strokeE);
+
         // Cursor detection
         _strokeArea.RemoveFromParent();
         _strokeE.Remove<CursorDetectionArea>();

@@ -33,6 +33,9 @@ public class DeleteFilledPolygonCmd : CommandBase
 
     public override void Do()
     {
+        // Selection manager
+        Document.Get<SelectionManager>().SelectedPolylines.Remove(_polygonE);
+
         // Cursor detection
         _polygonArea.RemoveFromParent();
         _polygonE.Remove<CursorDetectionArea>();
