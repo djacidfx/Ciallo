@@ -32,34 +32,36 @@ public partial class PaintTool : CommonToolBase
         aspectBox.AddChild(ppCurveEdit);
         container.AddProperty("Global pen pressure remap", aspectBox);
 
-        var brushSelector = new OptionButton();
-        brushSelector.ObserveObservableList(AppBrushLibrary.BrushSettings, s => s.Name);
-        brushSelector.BindSelectionIndex(AppBrushLibrary.SelectedIndex);
+        var brushSelector = new OptionButton()
+            {
+                CustomMinimumSize = new(0, 30),
+            }
+            .ObserveObservableList(AppBrushLibrary.BrushSettings, s => s.Name)
+            .BindSelectionIndex(AppBrushLibrary.SelectedIndex);
         container.AddProperty("Library brush", brushSelector);
 
+        var radiusView = AppBrushLibrary.SelectedIndex
+            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.BaseRadius)
+            .ToReadOnlyReactiveProperty();
         var appBrushRadiusControl = new SpinSlider()
         {
             MinValue = 0.1f,
             MaxValue = 256f,
             Step = 0.03333333f,
             ExpEdit = true
-        };
+        }.ReactiveBindNumber(radiusView);
         var boxBrushRadius = container.AddProperty("Radius", appBrushRadiusControl);
         boxBrushRadius.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
-        var radiusView = AppBrushLibrary.SelectedIndex
-            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.BaseRadius)
-            .ToReadOnlyReactiveProperty();
-        appBrushRadiusControl.ReactiveBindNumber(radiusView);
 
+        var colorView = AppBrushLibrary.SelectedIndex
+            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color)
+            .ToReadOnlyReactiveProperty();
         var appBrushColorControl = new ColorPickerButton()
         {
             CustomMinimumSize = new(0, 30),
-        };
+        }.ReactiveBindColor(colorView);
         var boxBrushColor = container.AddProperty("Color", appBrushColorControl);
         boxBrushColor.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
-        var colorView = AppBrushLibrary.SelectedIndex
-            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color).ToReadOnlyReactiveProperty();
-        appBrushColorControl.ReactiveBindColor(colorView);
 
         var useBrushButton = new Button()
         {
@@ -130,18 +132,17 @@ public partial class PaintTool : CommonToolBase
         Document.Add(brushList);
         container.AddProperty("Brush in document", brushList);
 
+        var rView = selectionM.WorkingBrush
+            .Select(e => e.IsDeletedOrNull() ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
         var radiusControl = new SpinSlider
         {
             MinValue = 0.1f,
             MaxValue = 256f,
             Step = 0.03333333f,
             ExpEdit = true,
-        };
+        }.ReactiveBindNumber(rView);
         var radiusBox = container.AddProperty("Radius", radiusControl);
         radiusBox.VisibleIf(selectionM.WorkingBrush, e => !e.IsNull);
-        var rView = selectionM.WorkingBrush
-            .Select(e => e.IsDeletedOrNull() ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
-        radiusControl.ReactiveBindNumber(rView);
 
         var manageDocumentBrush = new Button()
         {

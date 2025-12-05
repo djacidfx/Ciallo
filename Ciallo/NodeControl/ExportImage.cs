@@ -27,17 +27,15 @@ public partial class ExportImage : ConfirmationDialog
     public override void _Ready()
     {
         ReferenceSizeNumber = GetNode<Label>("%ReferenceSizeNumber");
-        ScaleNumber = GetNode<SpinSlider>("%ScaleNumber");
+        ScaleNumber = GetNode<SpinSlider>("%ScaleNumber").BindNumber(Scale);
         FinalImageSizeNumber = GetNode<Label>("%FinalImageSizeNumber");
         ImageSubViewport = GetNode<SubViewport>("%ImageSubViewport");
         PathPicker = GetNode<FilePathPicker>("%FilePathPicker");
         FileNameEdit = GetNode<LineEdit>("%FileNameEdit");
         ImageTextureRect = GetNode<TextureRect>("%ImageTextureRect");
         Message = GetNode<Label>("%Message");
-        BackgroundColorButton = GetNode<ColorPickerButton>("%BackgroundColorButton");
+        BackgroundColorButton = GetNode<ColorPickerButton>("%BackgroundColorButton").BindColor(BackgroundColor);
 
-        ScaleNumber.BindNumber(Scale);
-        BackgroundColorButton.BindColor(BackgroundColor);
         Confirmed += OnExport;
     }
 

@@ -18,12 +18,10 @@ public partial class PaintFillTool : CommonToolBase
 
     public override void DrawProperty(PropertyContainer container)
     {
-        var colorButton = new ColorPickerButton()
+        container.AddProperty("Fill Color", new ColorPickerButton
         {
             CustomMinimumSize = new(0, 30),
-        };
-        colorButton.BindColor(Color);
-        container.AddProperty("Fill Color", colorButton);
+        }.BindColor(Color));
     }
 
     public override bool OnSwitchLayer(Entity newLayerE)

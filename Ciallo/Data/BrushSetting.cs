@@ -46,12 +46,11 @@ public class BrushSetting
 
     public void DrawProperty(PropertyContainer container)
     {
-        var nameEdit = new LineEdit()
+        var nameEdit = new LineEdit
         {
             FocusMode = Control.FocusModeEnum.Click,
             AutoTranslateMode = Node.AutoTranslateModeEnum.Disabled,
-        };
-        nameEdit.BindString(Name);
+        }.BindString(Name);
         container.AddProperty("Name", nameEdit);
 
         var baseRadiusControl = new SpinSlider
@@ -60,8 +59,7 @@ public class BrushSetting
             MaxValue = 128,
             Step = 0.03333333,
             ExpEdit = true,
-        };
-        baseRadiusControl.BindNumber(BaseRadius);
+        }.BindNumber(BaseRadius);
         container.AddProperty("Base radius", baseRadiusControl);
 
         var colorPickerButton = new ColorPickerButton()
@@ -71,8 +69,7 @@ public class BrushSetting
         var picker = colorPickerButton.GetPicker();
         picker.ColorModesVisible = false;
         picker.ColorMode = ColorPicker.ColorModeType.Rgb;
-        colorPickerButton.BindColor(Color);
-        container.AddProperty("RGB+Flow", colorPickerButton);
+        container.AddProperty("RGB+Flow", colorPickerButton.BindColor(Color));
 
         var pp2RadiusCurveEdit = new MappingCurveEdit { MinValue = 0.01f }; // MinValue avoid potential zero radius issue.
         pp2RadiusCurveEdit.Curve = Pressure2RadiusCurve;
@@ -82,12 +79,10 @@ public class BrushSetting
 
         var pp2FlowCurveEdit = new MappingCurveEdit();
         pp2FlowCurveEdit.Curve = Pressure2FlowCurve;
-        var flowCurveFlagCheck = new CheckBox();
-        flowCurveFlagCheck.BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
+        var flowCurveFlagCheck = new CheckBox().BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
         PropertyContainer.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit).AddToChildOf(container);
 
-        var typeButton = new OptionButton();
-        typeButton.BindEnum(RenderingType);
+        var typeButton = new OptionButton().BindEnum(RenderingType);
         container.AddProperty("Rendering type", typeButton);
 
         // ---------Stamp------------ 
@@ -103,23 +98,19 @@ public class BrushSetting
             ExpEdit = true,
             AllowLesser = true,
             AllowGreater = true,
-        };
-        stampIntervalControl.BindNumber(StampInterval);
+        }.BindNumber(StampInterval);
         PropertyContainer.CreatePropertyControl("Interval", stampIntervalControl).AddToChildOf(stampBox);
 
-        var stampTextureFlagCheck = new CheckBox();
-        stampTextureFlagCheck.BindFlag(ActiveStampFlags, StampFlags.StampTexture);
+        var stampTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.StampTexture);
         var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage).VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.StampTexture));
         PropertyContainer.CreateCheckBoxCombo("Stamp texture", stampTextureFlagCheck, stampTextureEdit).AddToChildOf(stampBox);
 
-        var maskDiskFlagCheck = new CheckBox();
-        maskDiskFlagCheck.BindFlag(ActiveStampFlags, StampFlags.MaskDisk);
+        var maskDiskFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskDisk);
         var diskOpacityCurveEdit = new MappingCurveEdit();
         diskOpacityCurveEdit.Curve = DiskOpacityCurve;
         PropertyContainer.CreateCheckBoxCombo("Mask disk", maskDiskFlagCheck, diskOpacityCurveEdit).AddToChildOf(stampBox);
 
-        var maskTextureFlagCheck = new CheckBox();
-        maskTextureFlagCheck.BindFlag(ActiveStampFlags, StampFlags.MaskTexture);
+        var maskTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskTexture);
         var maskTextureEdit = ImageTextureEdit.Instantiate(MaskTexture, ConvertStampImage);
         PropertyContainer.CreateCheckBoxCombo("Mask texture", maskTextureFlagCheck, maskTextureEdit).AddToChildOf(stampBox);
 
@@ -134,8 +125,7 @@ public class BrushSetting
         stampRotationControl.BindNumber(degreeView);
         PropertyContainer.CreatePropertyControl("Stamp rotation", stampRotationControl).AddToChildOf(stampBox);
 
-        var rotationNoiseFlagCheck = new CheckBox();
-        rotationNoiseFlagCheck.BindFlag(ActiveStampFlags, StampFlags.RotationNoise);
+        var rotationNoiseFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.RotationNoise);
         var rotationNoiseBox = new VBoxContainer();
         PropertyContainer.CreateCheckBoxCombo("Rotation noise", rotationNoiseFlagCheck, rotationNoiseBox).AddToChildOf(stampBox);
 
@@ -146,8 +136,7 @@ public class BrushSetting
             Step = 1,
             AllowGreater = true,
             Rounded = true,
-        };
-        noiseOctaveControl.BindNumber(RotationNoiseOctave);
+        }.BindNumber(RotationNoiseOctave);
         PropertyContainer.CreatePropertyControl("Rotation noise octave", noiseOctaveControl).AddToChildOf(rotationNoiseBox);
 
         var rotationNoiseAmplitudeControl = new SpinSlider
@@ -155,19 +144,17 @@ public class BrushSetting
             MinValue = 0.0,
             MaxValue = Mathf.Pi * 16,
             Step = 0.01,
-        };
-        rotationNoiseAmplitudeControl.BindNumber(RotationNoiseAmplitude);
+        }.BindNumber(RotationNoiseAmplitude);
         PropertyContainer.CreatePropertyControl("Rotation noise amplitude", rotationNoiseAmplitudeControl).AddToChildOf(rotationNoiseBox);
 
         var rotationNoiseFrequencyControl = new SpinSlider
         {
             MinValue = 0.001,
             MaxValue = 0.5,
-            Step = float.E / 10000, // May need an irrational numbers
+            Step = float.E / 10000,
             AllowGreater = true,
             ExpEdit = true,
-        };
-        rotationNoiseFrequencyControl.BindNumber(RotationNoiseFrequency);
+        }.BindNumber(RotationNoiseFrequency);
         PropertyContainer.CreatePropertyControl("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
 
         // ---------Airbrush----------
@@ -181,8 +168,7 @@ public class BrushSetting
             MaxValue = 6,
             Step = 0.01,
             ExpEdit = true,
-        };
-        alphaDensityControl.BindNumber(AlphaDensity);
+        }.BindNumber(AlphaDensity);
         container.AddProperty("Opacity density", alphaDensityControl).VisibleIf(RenderingType, BrushRenderingType.Airbrush);
     }
 

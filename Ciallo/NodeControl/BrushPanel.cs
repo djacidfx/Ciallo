@@ -124,8 +124,8 @@ public partial class BrushPanel : AcceptDialog
 
     public void BindBrushSetting<T>(ObservableList<T> list, Func<T, BrushSetting> toBrushSetting)
     {
-        BrushSelector.ObserveObservableList(list, e => toBrushSetting(e).Name);
-        BrushSelector.BindSelectionIndex(SelectedIndex);
+        BrushSelector.ObserveObservableList(list, e => toBrushSetting(e).Name)
+            .BindSelectionIndex(SelectedIndex);
 
         foreach (var item in list)
         {
