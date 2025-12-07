@@ -2,6 +2,7 @@
 using Ciallo.Widget;
 using Godot;
 using R3;
+using Range = Godot.Range;
 
 namespace Ciallo.GuiBinding;
 
