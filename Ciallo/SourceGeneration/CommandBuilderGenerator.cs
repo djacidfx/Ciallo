@@ -1,5 +1,7 @@
-﻿using System.Text;
+﻿using System.Collections.Immutable;
+using System.Text;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -15,61 +17,152 @@ public class CommandBuilderGenerator : IIncrementalGenerator
         context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
             "CommandBuilderAttribute.g.cs", AttributeSourceCode));
 
-        IncrementalValuesProvider<CommandToGenerate?> enumsToGenerate = context.SyntaxProvider
+        IncrementalValuesProvider<CommandToGenerate?> commandsToGenerate = context.SyntaxProvider
             .ForAttributeWithMetadataName(
-                "SourceGeneration.CommandBuilderAttribute",
-                predicate: static (s, _) => s is ClassDeclarationSyntax n && n.AttributeLists.Count > 0,
+                "Ciallo.Command.CommandBuilderAttribute",
+                predicate: static (s, _) => s is ClassDeclarationSyntax { AttributeLists.Count: > 0 },
                 transform: static (ctx, _) => GetSemanticTarget(ctx))
             .Where(static commandToGenerate => commandToGenerate is not null);
 
-        context.RegisterSourceOutput(enumsToGenerate, Execute);
+        context.RegisterSourceOutput(commandsToGenerate, Execute);
     }
 
     private static void Execute(SourceProductionContext context, CommandToGenerate? source)
     {
         if (source is { } value)
         {
-            // generate the source code and add it to the output
-            string result =
-                $$"""
-
-                  """;
-
-            context.AddSource($"CommandBuilderExtensions.{value.Name}.g.cs", SourceText.From(result, Encoding.UTF8));
+            string result = BuildSourceText(value);
+            context.AddSource($"CommandBuilder.{value.CommandName}.g.cs", SourceText.From(result, Encoding.UTF8));
         }
     }
 
     private static CommandToGenerate? GetSemanticTarget(GeneratorAttributeSyntaxContext ctx)
     {
-        // we know the node is a EnumDeclarationSyntax thanks to IsSyntaxTargetForGeneration
-        var node = (EnumDeclarationSyntax)ctx.TargetNode;
+        if (ctx.TargetSymbol is not INamedTypeSymbol typeSymbol)
+            return null;
 
-        // loop through all the attributes on the method
-        foreach (AttributeListSyntax attributeListSyntax in node.AttributeLists)
+        if (typeSymbol.TypeKind != TypeKind.Class)
+            return null;
+
+        var constructors = typeSymbol.InstanceConstructors
+            .Where(static ctor => ctor.DeclaredAccessibility == Accessibility.Public && !ctor.IsStatic)
+            .Select(CreateConstructor)
+            .ToImmutableArray();
+
+        if (constructors.IsDefaultOrEmpty)
+            return null;
+
+        string methodName = GetBuilderMethodName(typeSymbol.Name);
+        string commandTypeName = typeSymbol.ToDisplayString(CommandTypeFormat);
+
+        return new CommandToGenerate(typeSymbol.Name, methodName, commandTypeName, constructors);
+    }
+
+    private static CommandConstructor CreateConstructor(IMethodSymbol constructorSymbol)
+    {
+        var parameters = constructorSymbol.Parameters
+            .Select(CreateParameter)
+            .Where(static parameter => !string.IsNullOrEmpty(parameter.ArgumentExpression))
+            .ToImmutableArray();
+
+        return new CommandConstructor(parameters);
+    }
+
+    private static CommandParameter CreateParameter(IParameterSymbol parameterSymbol)
+    {
+        string declaration = parameterSymbol.ToDisplayString(ParameterFormat);
+        string identifier = EscapeIdentifier(parameterSymbol.Name);
+        string argumentPrefix = GetArgumentPrefix(parameterSymbol.RefKind);
+
+        return new CommandParameter(declaration, argumentPrefix + identifier);
+    }
+
+    private static string GetArgumentPrefix(RefKind refKind)
+    {
+        if (refKind == RefKind.Ref)
+            return "ref ";
+        if (refKind == RefKind.Out)
+            return "out ";
+        if (refKind == RefKind.In)
+            return "in ";
+        if (refKind == RefKind.RefReadOnly)
+            return "ref readonly ";
+        return string.Empty;
+    }
+
+    private static string EscapeIdentifier(string identifier)
+    {
+        return SyntaxFacts.GetKeywordKind(identifier) == SyntaxKind.None ? identifier : "@" + identifier;
+    }
+
+    private static string GetBuilderMethodName(string commandName)
+    {
+        const string suffix = "Cmd";
+        if (commandName.EndsWith(suffix, StringComparison.Ordinal))
         {
-            foreach (AttributeSyntax attributeSyntax in attributeListSyntax.Attributes)
-            {
-                if (ctx.SemanticModel.GetSymbolInfo(attributeSyntax).Symbol is not IMethodSymbol attributeSymbol)
-                {
-                    // weird, we couldn't get the symbol, ignore it
-                    continue;
-                }
-
-                INamedTypeSymbol attributeContainingTypeSymbol = attributeSymbol.ContainingType;
-                string fullName = attributeContainingTypeSymbol.ToDisplayString();
-
-                if (fullName == "Ciallo.Command.CommandBuilderAttribute")
-                    return GetCommandToGenerate(ctx.SemanticModel, node);
-            }
+            return commandName.Substring(0, commandName.Length - suffix.Length);
         }
 
-        return null;
+        return commandName;
     }
 
-    private static CommandToGenerate? GetCommandToGenerate(SemanticModel ctxSemanticModel, EnumDeclarationSyntax node)
+    private static string BuildSourceText(CommandToGenerate command)
     {
-        throw new NotImplementedException();
+        var builder = new StringBuilder();
+        builder.AppendLine("// <auto-generated />");
+        builder.AppendLine("#nullable enable");
+        builder.AppendLine("namespace Ciallo.Command;");
+        builder.AppendLine();
+        builder.AppendLine("public partial class CommandBuilder");
+        builder.AppendLine("{");
+
+        foreach (CommandConstructor ctor in command.Constructors)
+        {
+            string parameters = string.Join(", ", ctor.Parameters.Select(p => p.Declaration));
+            string arguments = string.Join(", ", ctor.Parameters.Select(p => p.ArgumentExpression));
+            bool hasParameters = ctor.Parameters.Length > 0;
+
+            builder.Append("    public CommandBuilder ");
+            builder.Append(command.BuilderMethodName);
+            builder.Append('(');
+            builder.Append(parameters);
+            builder.AppendLine(")");
+            builder.AppendLine("    {");
+            builder.Append("        var cmd = new ");
+            builder.Append(command.CommandTypeName);
+            builder.Append('(');
+            builder.Append(arguments);
+            builder.Append(')');
+            builder.AppendLine(" { TargetE = TargetE };");
+            builder.AppendLine("        Commands.Add(cmd);");
+            builder.AppendLine("        return this;");
+            builder.AppendLine("    }");
+            builder.AppendLine();
+        }
+
+        builder.AppendLine("}");
+        return builder.ToString();
     }
+
+    private static readonly SymbolDisplayFormat CommandTypeFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers |
+                              SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier |
+                              SymbolDisplayMiscellaneousOptions.UseSpecialTypes);
+
+    private static readonly SymbolDisplayFormat ParameterFormat = new(
+        globalNamespaceStyle: SymbolDisplayGlobalNamespaceStyle.Included,
+        typeQualificationStyle: SymbolDisplayTypeQualificationStyle.NameAndContainingTypesAndNamespaces,
+        genericsOptions: SymbolDisplayGenericsOptions.IncludeTypeParameters,
+        miscellaneousOptions: SymbolDisplayMiscellaneousOptions.EscapeKeywordIdentifiers |
+                              SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier |
+                              SymbolDisplayMiscellaneousOptions.UseSpecialTypes,
+        parameterOptions: SymbolDisplayParameterOptions.IncludeType |
+                          SymbolDisplayParameterOptions.IncludeName |
+                          SymbolDisplayParameterOptions.IncludeDefaultValue |
+                          SymbolDisplayParameterOptions.IncludeParamsRefOut);
 
     public static readonly string AttributeSourceCode =
         """
@@ -85,12 +178,44 @@ public class CommandBuilderGenerator : IIncrementalGenerator
         """;
 }
 
-public readonly record struct CommandToGenerate
+public readonly struct CommandToGenerate
 {
-    public readonly string Name;
-
-    public CommandToGenerate(string name)
+    public CommandToGenerate(
+        string commandName,
+        string builderMethodName,
+        string commandTypeName,
+        ImmutableArray<CommandConstructor> constructors)
     {
-        Name = name;
+        CommandName = commandName;
+        BuilderMethodName = builderMethodName;
+        CommandTypeName = commandTypeName;
+        Constructors = constructors;
     }
+
+    public string CommandName { get; }
+    public string BuilderMethodName { get; }
+    public string CommandTypeName { get; }
+    public ImmutableArray<CommandConstructor> Constructors { get; }
+}
+
+public readonly struct CommandConstructor
+{
+    public CommandConstructor(ImmutableArray<CommandParameter> parameters)
+    {
+        Parameters = parameters;
+    }
+
+    public ImmutableArray<CommandParameter> Parameters { get; }
+}
+
+public readonly struct CommandParameter
+{
+    public CommandParameter(string declaration, string argumentExpression)
+    {
+        Declaration = declaration;
+        ArgumentExpression = argumentExpression;
+    }
+
+    public string Declaration { get; }
+    public string ArgumentExpression { get; }
 }

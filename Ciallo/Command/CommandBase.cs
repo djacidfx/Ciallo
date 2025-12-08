@@ -10,10 +10,8 @@ namespace Ciallo.Command;
 
 public abstract class CommandBase
 {
-    /// <summary>
-    /// The world in which this command operates.
-    /// </summary>
-    public World WorkingWorld { get; set; } = AppWorldManager.WorkingWorld.Value;
+    public Entity TargetE { get; init; }
+    public World WorkingWorld => TargetE.World;
     public Entity Document => WorkingWorld.Document();
     public virtual string Name => GetType().Name.Humanize();
     public SceneTree SceneTree => (SceneTree)Engine.GetMainLoop();
@@ -42,6 +40,7 @@ public abstract class CommandBase
             GD.PushWarning("WorkingWorld is null");
             return;
         }
+
         var cm = WorkingWorld.Document().Get<CommandManager>();
 
         // Add Do/Undo Reference methods, order matters:
@@ -50,7 +49,7 @@ public abstract class CommandBase
 
         cm.CreateAction(Name);
         foreach (var obj in objects) cm.AddDo(obj);
-        foreach (var obj in objects.Reverse()) cm.AddUndo(obj);
+        foreach (var obj in objects.AsEnumerable().Reverse()) cm.AddUndo(obj);
         cm.CommitAction(execute);
     }
 
@@ -58,7 +57,6 @@ public abstract class CommandBase
     {
         foreach (var cmd in GetDepthFirstCommands())
         {
-            if (useRootWorld) cmd.WorkingWorld = WorkingWorld;
             cmd.Do();
         }
     }
@@ -67,15 +65,14 @@ public abstract class CommandBase
     {
         foreach (var cmd in GetDepthFirstCommands().Reverse())
         {
-            if (useRootWorld) cmd.WorkingWorld = WorkingWorld;
             cmd.Undo();
         }
     }
 
     private readonly List<CommandBase> _combinations = [];
+
     public CommandBase Combine(CommandBase other)
     {
-        other.WorkingWorld = WorkingWorld;
         _combinations.Add(other);
         return this;
     }

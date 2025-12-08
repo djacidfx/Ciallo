@@ -2,8 +2,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using Ciallo.NodeControl;
 using Ciallo.Command;
+using Ciallo.NodeControl;
 using Frent;
 using Godot;
 using ObservableCollections;
@@ -20,11 +20,16 @@ namespace Ciallo.Data;
 public static partial class AppWorldManager
 {
     public static readonly ObservableList<World> LoadedWorlds = [];
+
     // Current focused document.
     public static readonly ReactiveProperty<World> WorkingWorld = new(null);
+
     public static readonly ReadOnlyReactiveProperty<Entity> WorkingDocument =
         WorkingWorld.Select(w => w?.Document() ?? default).ToReadOnlyReactiveProperty();
-    public static bool WorkingWorldModified => WorkingWorld.Value != null && WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified.Value;
+
+    public static bool WorkingWorldModified => WorkingWorld.Value != null &&
+                                               WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified
+                                                   .Value;
 
     private static readonly Dictionary<World, Entity> WorldToDocument = [];
     public static Entity Document([NotNull] this World world) => WorldToDocument[world];
@@ -64,7 +69,7 @@ public static partial class AppWorldManager
     {
         AppBrushLibrary.SelectedIndex.Value = 0;
 
-        new NewPolylineLayerCmd { WorkingWorld = world }
+        new NewPolylineLayerCmd()
             .Combine(new SetWorkingLayerCmd(0))
             .DoAllCombination();
         if (AppBrushLibrary.BrushSettings.Count > 0)
@@ -105,7 +110,8 @@ public static partial class AppWorldManager
 
         if (WorkingWorldModified)
         {
-            var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<SaveChangeDialog>().Single();
+            var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<SaveChangeDialog>()
+                .Single();
             var result = await dialog.PopupCollectInput();
             if (result == 1) // Yes
             {
@@ -113,14 +119,17 @@ public static partial class AppWorldManager
                 Remove(WorkingWorld.Value);
                 return true;
             }
+
             if (result == 0) // No
             {
                 Remove(WorkingWorld.Value);
                 return true;
             }
+
             // Cancel
             return false;
         }
+
         Remove(WorkingWorld.Value);
         return true;
     }
