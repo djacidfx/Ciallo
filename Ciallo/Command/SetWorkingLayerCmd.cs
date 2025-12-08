@@ -5,6 +5,7 @@ using Frent;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class SetWorkingLayerCmd : CommandBase
 {
     public Index NewIndex = int.MaxValue;

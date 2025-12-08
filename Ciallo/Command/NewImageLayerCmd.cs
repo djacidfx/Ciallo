@@ -1,14 +1,15 @@
 ﻿using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.Misc;
-using Ciallo.Rendering;
 using Ciallo.NodeControl;
+using Ciallo.Rendering;
 using Frent;
 using Godot;
 using R3;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class NewImageLayerCmd : CommandBase
 {
     private Entity _layerE;

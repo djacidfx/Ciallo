@@ -1,13 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
+using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
-using Ciallo.NodeControl;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class DeletePolylineLayerCmd : CommandBase
 {
     private Entity _layerE;

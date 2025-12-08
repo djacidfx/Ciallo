@@ -6,6 +6,7 @@ using Godot;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class DeleteFilledPolygonCmd : CommandBase
 {
     private Entity _polygonE;
@@ -29,7 +30,8 @@ public class DeleteFilledPolygonCmd : CommandBase
     }
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_polygonE);
-    public override IEnumerable<GodotObject> UndoRefObjects => new List<GodotObject> { _polygonView, _polygonOverlay, _polygonArea };
+    public override IEnumerable<GodotObject> UndoRefObjects =>
+        new List<GodotObject> { _polygonView, _polygonOverlay, _polygonArea };
 
     public override void Do()
     {

@@ -6,6 +6,7 @@ using Frent;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class NewBrushCmd : CommandBase
 {
     private Entity _brushE;

@@ -6,6 +6,7 @@ using Godot;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class DeleteStrokeCmd : CommandBase
 {
     private Entity _strokeE;
@@ -29,7 +30,8 @@ public class DeleteStrokeCmd : CommandBase
     }
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_strokeE);
-    public override IEnumerable<GodotObject> UndoRefObjects => new List<GodotObject> { _strokeView, _strokeOverlay, _strokeArea };
+    public override IEnumerable<GodotObject> UndoRefObjects =>
+        new List<GodotObject> { _strokeView, _strokeOverlay, _strokeArea };
 
     public override void Do()
     {

@@ -5,6 +5,7 @@ using Frent;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class NewStrokeCmd : CommandBase
 {
     private Entity _layerE;

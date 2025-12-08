@@ -1,12 +1,13 @@
 ﻿using System.Collections.Generic;
 using Ciallo.Data;
-using Ciallo.Rendering;
 using Ciallo.NodeControl;
+using Ciallo.Rendering;
 using Frent;
 using Godot;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class DeleteImageLayerCmd : CommandBase
 {
     private Entity _layerE;

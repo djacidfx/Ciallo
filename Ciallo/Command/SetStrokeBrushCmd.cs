@@ -4,6 +4,7 @@ using Frent;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class SetStrokeBrushCmd(Entity strokeE, Entity newBrushE) : CommandBase
 {
     private Entity _oldBrushE;
@@ -16,13 +17,16 @@ public class SetStrokeBrushCmd(Entity strokeE, Entity newBrushE) : CommandBase
         setting.BrushE = newBrushE;
 
         // View
-        strokeE.Get<StrokeView>().Material = !newBrushE.IsNull ? newBrushE.Get<BrushMaterial>() : AutoloadRendering.MissingBrushMaterial;
+        strokeE.Get<StrokeView>().Material =
+            !newBrushE.IsNull ? newBrushE.Get<BrushMaterial>() : AutoloadRendering.MissingBrushMaterial;
     }
 
     public override void Undo()
     {
         // View
-        strokeE.Get<StrokeView>().Material = !_oldBrushE.IsNull ? _oldBrushE.Get<BrushMaterial>() : AutoloadRendering.MissingBrushMaterial;
+        strokeE.Get<StrokeView>().Material = !_oldBrushE.IsNull
+            ? _oldBrushE.Get<BrushMaterial>()
+            : AutoloadRendering.MissingBrushMaterial;
 
         // Data
         var setting = strokeE.Get<StrokeSetting>();

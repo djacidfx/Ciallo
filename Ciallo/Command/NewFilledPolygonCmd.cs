@@ -7,6 +7,7 @@ using R3;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class NewFilledPolygonCmd : CommandBase
 {
     private readonly Entity _layerE;

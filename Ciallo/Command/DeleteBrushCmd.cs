@@ -4,6 +4,7 @@ using Frent;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class DeleteBrushCmd : CommandBase
 {
     private Entity _brushE;

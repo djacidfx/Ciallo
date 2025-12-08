@@ -6,6 +6,7 @@ using Godot;
 
 namespace Ciallo.Data;
 
+[CommandBuilder]
 public class SetPolylineGeometryCmd : CommandBase
 {
     private readonly Entity _polylineE;
@@ -31,7 +32,8 @@ public class SetPolylineGeometryCmd : CommandBase
         if (_polylineE.Has<StrokeSetting>())
         {
             // View
-            _polylineE.Get<StrokeView>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii, _newGeometry.Pressures);
+            _polylineE.Get<StrokeView>()
+                .SetGeometry(_newGeometry.Positions, _newGeometry.Radii, _newGeometry.Pressures);
 
             // Cursor detection
             _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_newGeometry.Positions, _newGeometry.Radii);
@@ -68,7 +70,8 @@ public class SetPolylineGeometryCmd : CommandBase
             _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);
 
             // View
-            _polylineE.Get<StrokeView>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii, _oldGeometry.Pressures);
+            _polylineE.Get<StrokeView>()
+                .SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii, _oldGeometry.Pressures);
         }
 
         // Overlay

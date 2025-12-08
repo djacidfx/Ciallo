@@ -8,6 +8,7 @@ using Godot;
 namespace Ciallo.Command;
 
 // Note: not implementing hierarchy on layer panel, only flat list move.
+[CommandBuilder]
 public class MoveLayerCmd : CommandBase
 {
     private readonly ImmutableArray<int> _src;

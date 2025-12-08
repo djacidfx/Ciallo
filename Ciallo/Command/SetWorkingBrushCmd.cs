@@ -4,6 +4,7 @@ using Frent;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class SetWorkingBrushCmd : CommandBase
 {
     private readonly Entity _oldBrushE;
