@@ -5,6 +5,8 @@ using Frent;
 using Godot;
 using R3;
 
+namespace Ciallo.NodeControl;
+
 /// <remarks>
 /// This is a broken abstraction mixing tool button GUI and tool logic data.
 /// But for current version, it's acceptable for being lazy.

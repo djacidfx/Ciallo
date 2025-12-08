@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using Godot;
 
+namespace Ciallo.NodeControl;
+
 public partial class SaveChangeDialog : ConfirmationDialog
 {
     private TaskCompletionSource<int> _dialogResultSource;

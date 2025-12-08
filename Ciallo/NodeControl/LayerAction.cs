@@ -4,6 +4,8 @@ using Ciallo.Data;
 using Frent;
 using Godot;
 
+namespace Ciallo.NodeControl;
+
 public partial class LayerAction : Control
 {
     private FileDialog _fileDialog;

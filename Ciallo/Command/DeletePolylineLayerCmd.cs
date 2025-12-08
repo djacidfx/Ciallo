@@ -4,6 +4,7 @@ using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
+using Ciallo.NodeControl;
 
 namespace Ciallo.Command;
 

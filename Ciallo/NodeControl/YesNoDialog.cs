@@ -1,6 +1,8 @@
 using System.Threading.Tasks;
 using Godot;
 
+namespace Ciallo.NodeControl;
+
 public partial class YesNoDialog : ConfirmationDialog
 {
     private TaskCompletionSource<bool> _dialogResultSource;

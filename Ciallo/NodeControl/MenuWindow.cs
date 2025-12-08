@@ -2,8 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
-using Ciallo.NodeControl;
 using Godot;
+
+namespace Ciallo.NodeControl;
 
 public partial class MenuWindow : PopupMenu
 {

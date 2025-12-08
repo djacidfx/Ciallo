@@ -10,6 +10,8 @@ using Frent;
 using Godot;
 using R3;
 
+namespace Ciallo.NodeControl;
+
 /// <summary>
 /// Manage the layer UI controls. Also hold layer properties.
 /// One instance per document.

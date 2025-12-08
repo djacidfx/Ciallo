@@ -5,6 +5,8 @@ using Ciallo.Widget;
 using Godot;
 using R3;
 
+namespace Ciallo.NodeControl;
+
 public partial class ExportImage : ConfirmationDialog
 {
     public readonly ReactiveProperty<float> Scale = new(1f);
