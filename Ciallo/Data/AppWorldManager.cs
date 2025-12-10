@@ -69,9 +69,10 @@ public static partial class AppWorldManager
     {
         AppBrushLibrary.SelectedIndex.Value = 0;
 
-        new NewPolylineLayerCmd()
-            .Combine(new SetWorkingLayerCmd(0))
-            .DoAllCombination();
+        new CommandBuilder(world.Create())
+            .NewPolylineLayer()
+            .SetWorkingLayer()
+            .Do();
         if (AppBrushLibrary.BrushSettings.Count > 0)
             AppBrushLibrary.SelectedIndex.Value = 0;
         world.Document().Get<ToolButtonPanel>().ActivatePaintTool();

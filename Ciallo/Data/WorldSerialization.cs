@@ -47,28 +47,27 @@ public static partial class AppWorldManager
             loadBrushCmd.SetTarget(brushE).NewBrush(setting);
             brushMap.Add(brushDataE, brushE);
         }
-
         loadBrushCmd.Do();
 
         // Load layers and strokes
         var dataTreeRoot = dataDocument.Get<LayerTreeNode>();
         Dictionary<Entity, Entity> layerMap = [];
+
         foreach (var layerDataE in dataTreeRoot.Children)
         {
             if (layerDataE.Has<ImageLayerSetting>())
             {
-                var newImageLayerCmd = new NewImageLayerCmd(layerDataE.Get<ImageLayerSetting>());
-                var layerE = newImageLayerCmd.InitEntity();
+                var layerE = resultWorld.Create();
+                new CommandBuilder(layerE).NewImageLayer(layerDataE.Get<ImageLayerSetting>()).Do();
                 layerE.Get<LayerTreeNode>().CopySettingFrom(layerDataE.Get<LayerTreeNode>()); // hack patch
-                newImageLayerCmd.Do();
                 layerMap.Add(layerDataE, layerE);
             }
             else if (layerDataE.Has<PolylineLayerSetting>())
             {
-                var newPolylineLayerCmd = new NewPolylineLayerCmd(layerDataE.Get<PolylineLayerSetting>());
-                var layerE = newPolylineLayerCmd.InitEntity();
+                // var newPolylineLayerCmd = new NewPolylineLayerCmd(layerDataE.Get<PolylineLayerSetting>());
+                var layerE = resultWorld.Create();
+                new CommandBuilder(layerE).NewPolylineLayer(layerDataE.Get<PolylineLayerSetting>()).Do();
                 layerE.Get<LayerTreeNode>().CopySettingFrom(layerDataE.Get<LayerTreeNode>()); // hack patch
-                newPolylineLayerCmd.Do();
                 layerMap.Add(layerDataE, layerE);
 
                 foreach (var polylineDataE in layerDataE.Get<LayerTreeNode>().Children)
@@ -77,20 +76,18 @@ public static partial class AppWorldManager
 
                     if (polylineDataE.Has<StrokeSetting>())
                     {
-                        var newStrokeCmd = new NewStrokeCmd(layerE);
-                        newStrokeCmd.Do();
-                        var strokeE = newStrokeCmd.InitEntity();
-                        new SetPolylineGeometryCmd(strokeE, geometry).Do();
-                        var strokeSetting = polylineDataE.Get<StrokeSetting>();
-                        new SetStrokeBrushCmd(strokeE, brushMap[strokeSetting.BrushE]).Do();
+                        new CommandBuilder(resultWorld.Create())
+                            .NewStroke(layerE)
+                            .SetPolylineGeometry(geometry)
+                            .SetStrokeBrush(brushMap[polylineDataE.Get<StrokeSetting>().BrushE])
+                            .Do();
                     }
                     else if (polylineDataE.Has<FilledPolygonSetting>())
                     {
-                        var setting = polylineDataE.Get<FilledPolygonSetting>();
-                        var newFilledPolygonCmd = new NewFilledPolygonCmd(layerE, setting);
-                        newFilledPolygonCmd.Do();
-                        var polygonE = newFilledPolygonCmd.InitEntity();
-                        new SetPolylineGeometryCmd(polygonE, geometry).Do();
+                        new CommandBuilder(resultWorld.Create())
+                            .NewFilledPolygon(layerE, polylineDataE.Get<FilledPolygonSetting>())
+                            .SetPolylineGeometry(geometry)
+                            .Do();
                     }
                 }
             }
@@ -98,10 +95,11 @@ public static partial class AppWorldManager
 
         // Load selection
         var dataSm = dataDocument.Get<SelectionManager>();
-        new SetWorkingLayerCmd(layerMap[dataSm.WorkingLayer.CurrentValue]).Do();
+        // new SetWorkingLayerCmd(layerMap[dataSm.WorkingLayer.CurrentValue]).Do();
+        new CommandBuilder(layerMap[dataSm.WorkingLayer.CurrentValue]).SetWorkingLayer().Do();
         var brushes = dataDocument.Get<BrushManager>().Brushes;
         var idx = brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
-        if (idx != -1) new SetWorkingBrushCmd(brushMap[brushes[idx]]).Do();
+        new CommandBuilder(brushMap[brushes[idx]]).SetWorkingBrush().Do();
     }
 
     public static void SaveWorkingWorld()
