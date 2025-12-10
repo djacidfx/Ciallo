@@ -33,7 +33,7 @@ public abstract class CommandBase
     public abstract void Undo(Entity targetE);
 
     public void Do() => Do(TargetE);
-    public void Undo() => Do(TargetE);
+    public void Undo() => Undo(TargetE);
 
     public void Commit(bool execute = true)
     {

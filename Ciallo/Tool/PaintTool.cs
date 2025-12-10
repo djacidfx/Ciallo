@@ -94,7 +94,10 @@ public partial class PaintTool : CommonToolBase
         {
             CustomMinimumSize = new(0, 150),
         };
-        brushList.ItemSelected += idx => { new SetWorkingBrushCmd(Document.Get<BrushManager>().Brushes[(int)idx]).Commit(); };
+        brushList.ItemSelected += idx =>
+        {
+            new CommandBuilder(Document.Get<BrushManager>().Brushes[(int)idx]).SetWorkingBrush().Commit();
+        };
         brushList.ItemClicked += async (idx, _, buttonIndex) =>
         {
             if ((MouseButton)buttonIndex != MouseButton.Right) return;
@@ -107,23 +110,24 @@ public partial class PaintTool : CommonToolBase
                     toDeleteStrokes.Add(strokeE);
             }
 
-            CommandBase cmd = new EmptyCommand();
             if (toDeleteStrokes.Count > 0)
             {
                 var dialog = GetTree().GetNodesInGroup("Dialog").OfType<YesNoDialog>().First();
                 dialog.DialogText = "[Delete Brush Hint]".Tr();
                 if (!await dialog.PopupCollectInput()) return;
-                foreach (var strokeE in toDeleteStrokes)
-                {
-                    cmd.Combine(new DeleteStrokeCmd(strokeE));
-                }
+            }
+
+            var builder = new CommandBuilder(Entity.Null);
+            foreach (var strokeE in toDeleteStrokes)
+            {
+                builder.SetTarget(strokeE).DeleteStroke();
             }
 
             var selectionManager = Document.Get<SelectionManager>();
             if (selectionManager.WorkingBrush.Value == brushE)
-                cmd.Combine(new SetWorkingBrushCmd(Entity.Null));
-            cmd.Combine(new DeleteBrushCmd(brushE));
-            cmd.Commit();
+                builder.SetTarget(Entity.Null).SetWorkingBrush();
+            builder.SetTarget(brushE).DeleteBrush();
+            builder.Commit();
         };
         var brushM = Document.Get<BrushManager>();
         var selectionM = Document.Get<SelectionManager>();
@@ -159,9 +163,10 @@ public partial class PaintTool : CommonToolBase
     {
         if (!AppBrushLibrary.HasSelection) return;
         var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
-        var cmd = new NewBrushCmd(setting);
-        var brushE = cmd.InitEntity();
-        cmd.Combine(new SetWorkingBrushCmd(brushE)).Commit();
+        new CommandBuilder(AppWorldManager.WorkingWorld.Value.Create())
+            .NewBrush(setting)
+            .SetWorkingBrush()
+            .Commit();
     }
 
     public override bool OnSwitchLayer(Entity newLayerE)

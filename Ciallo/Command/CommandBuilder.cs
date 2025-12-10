@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
 using Frent;
@@ -37,6 +38,7 @@ public partial class CommandBuilder
     public CommandBuilder Commit(bool execute = true)
     {
         if (Commands.Count == 0) return this;
+        if (TargetE.IsNull) throw new InvalidOperationException("TargetE is not set in CommandBuilder.");
         var cm = TargetE.World.Document().Get<CommandManager>();
 
         // Add Do/Undo Reference methods, order matters:
@@ -46,6 +48,8 @@ public partial class CommandBuilder
         foreach (var obj in objects) cm.AddDo(obj);
         foreach (var obj in objects.AsEnumerable().Reverse()) cm.AddUndo(obj);
         cm.CommitAction(execute);
+
+        Commands.Clear();
         return this;
     }
 

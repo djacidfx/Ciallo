@@ -64,7 +64,6 @@ public static partial class AppWorldManager
             }
             else if (layerDataE.Has<PolylineLayerSetting>())
             {
-                // var newPolylineLayerCmd = new NewPolylineLayerCmd(layerDataE.Get<PolylineLayerSetting>());
                 var layerE = resultWorld.Create();
                 new CommandBuilder(layerE).NewPolylineLayer(layerDataE.Get<PolylineLayerSetting>()).Do();
                 layerE.Get<LayerTreeNode>().CopySettingFrom(layerDataE.Get<LayerTreeNode>()); // hack patch
@@ -95,7 +94,6 @@ public static partial class AppWorldManager
 
         // Load selection
         var dataSm = dataDocument.Get<SelectionManager>();
-        // new SetWorkingLayerCmd(layerMap[dataSm.WorkingLayer.CurrentValue]).Do();
         new CommandBuilder(layerMap[dataSm.WorkingLayer.CurrentValue]).SetWorkingLayer().Do();
         var brushes = dataDocument.Get<BrushManager>().Brushes;
         var idx = brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);

@@ -44,7 +44,9 @@ public partial class LayerContainer : Container
         _workingLayerButtonGroup.Pressed += button =>
         {
             var layerControl = (Control)button.GetOwner();
-            new SetWorkingLayerCmd(layerControl.GetIndex()).Commit();
+            var document = AppWorldManager.WorkingDocument.CurrentValue;
+            var layerE = document.Get<LayerTreeNode>().Children[layerControl.GetIndex()];
+            new CommandBuilder(layerE).SetWorkingLayer().Commit();
         };
     }
 
@@ -217,7 +219,8 @@ public partial class LayerContainer : Container
         var size = _mouseHoveringLayer.Size;
         if (locPos.Y <= size.Y / 2) dstIndex++; // insert after the hovering layer.
 
-        new MoveLayerCmd([srcIndex], [dstIndex]).Commit();
+        new CommandBuilder(AppWorldManager.WorkingDocument.CurrentValue)
+            .MoveLayer([srcIndex], [dstIndex]).Commit();
     }
 
     public void SetWorkingLayerNoSignal(Entity layerE)

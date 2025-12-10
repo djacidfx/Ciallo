@@ -51,8 +51,6 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
         }
         var layerE = SelectionManager.WorkingLayer.Value;
         var setting = new FilledPolygonSetting() { Color = { Value = tool.Color.Value } };
-        var cmd = new NewFilledPolygonCmd(layerE, setting);
-        var polygonE = cmd.InitEntity();
         var geom = new PolylineGeometry()
         {
             Positions = [.._generator.Positions],
@@ -60,7 +58,10 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
             Pressures = [.._generator.Pressures],
             Tilts = [.._generator.Tilts],
         };
-        cmd.Combine(new SetPolylineGeometryCmd(polygonE, geom)).Commit();
+        new CommandBuilder(layerE.World.Create())
+            .NewFilledPolygon(layerE, setting)
+            .SetPolylineGeometry(geom)
+            .Commit();
         Clear();
     }
 
