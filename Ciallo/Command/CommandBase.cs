@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 using Ciallo.Data;
 using Frent;
 using Godot;
@@ -38,55 +37,15 @@ public abstract class CommandBase
 
     public void Commit(bool execute = true)
     {
-        if (WorkingWorld == null)
-        {
-            GD.PushWarning("WorkingWorld is null");
-            return;
-        }
-
         var cm = WorkingWorld.Document().Get<CommandManager>();
 
         // Add Do/Undo Reference methods, order matters:
-        var commands = GetDepthFirstCommands().ToArray();
-        var objects = commands.Select(c => new CommandWrapperObject(c)).ToArray();
+        var obj = new CommandWrapperObject(this);
 
         cm.CreateAction(Name);
-        foreach (var obj in objects) cm.AddDo(obj);
-        foreach (var obj in objects.AsEnumerable().Reverse()) cm.AddUndo(obj);
+        cm.AddDo(obj);
+        cm.AddUndo(obj);
         cm.CommitAction(execute);
-    }
-
-    public void DoAllCombination(bool useRootWorld = true)
-    {
-        foreach (var cmd in GetDepthFirstCommands())
-        {
-            cmd.Do();
-        }
-    }
-
-    public void UndoAllCombination(bool useRootWorld = true)
-    {
-        foreach (var cmd in GetDepthFirstCommands().Reverse())
-        {
-            cmd.Undo();
-        }
-    }
-
-    private readonly List<CommandBase> _combinations = [];
-
-    public CommandBase Combine(CommandBase other)
-    {
-        _combinations.Add(other);
-        return this;
-    }
-
-    // Recursively yields this command and all combined commands in depth-first order
-    private IEnumerable<CommandBase> GetDepthFirstCommands()
-    {
-        yield return this;
-        foreach (var cmd in _combinations)
-        foreach (var subCmd in cmd.GetDepthFirstCommands())
-            yield return subCmd;
     }
 
     public override string ToString()
