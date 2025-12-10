@@ -28,14 +28,15 @@ public partial class CommandBuilder
         return this;
     }
 
-    public void AddCommand(CommandBase cmd)
+    public CommandBuilder AddCommand(CommandBase cmd)
     {
         Commands.Add(cmd);
+        return this;
     }
 
-    public void Commit(bool execute = true)
+    public CommandBuilder Commit(bool execute = true)
     {
-        if (Commands.Count == 0) return;
+        if (Commands.Count == 0) return this;
         var cm = TargetE.World.Document().Get<CommandManager>();
 
         // Add Do/Undo Reference methods, order matters:
@@ -45,21 +46,24 @@ public partial class CommandBuilder
         foreach (var obj in objects) cm.AddDo(obj);
         foreach (var obj in objects.AsEnumerable().Reverse()) cm.AddUndo(obj);
         cm.CommitAction(execute);
+        return this;
     }
 
-    public void Do()
+    public CommandBuilder Do()
     {
         foreach (var cmd in Commands)
         {
             cmd.Do();
         }
+        return this;
     }
 
-    public void Undo()
+    public CommandBuilder Undo()
     {
         foreach (var cmd in Commands.AsEnumerable().Reverse())
         {
             cmd.Undo();
         }
+        return this;
     }
 }
