@@ -31,14 +31,12 @@ public partial class LayerAction : Control
         var nextLayerE = nextLayerPath.IsEmpty ? document : root.GetDescendant(nextLayerPath);
 
         if (currentLayerE.Has<PolylineLayerSetting>())
-            new CommandBuilder(nextLayerE)
-                .SetWorkingLayer()
-                .DeletePolylineLayer()
+            new CommandBuilder(nextLayerE).SetWorkingLayer()
+                .SetTarget(currentLayerE).DeletePolylineLayer()
                 .Commit();
         else if (currentLayerE.Has<ImageLayerSetting>())
-            new CommandBuilder(nextLayerE)
-                .SetWorkingLayer()
-                .DeleteImageLayer()
+            new CommandBuilder(nextLayerE).SetWorkingLayer()
+                .SetTarget(currentLayerE).DeleteImageLayer()
                 .Commit();
     }
 
