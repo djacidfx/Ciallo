@@ -97,7 +97,7 @@ public static partial class AppWorldManager
         new CommandBuilder(layerMap[dataSm.WorkingLayer.CurrentValue]).SetWorkingLayer().Do();
         var brushes = dataDocument.Get<BrushManager>().Brushes;
         var idx = brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
-        new CommandBuilder(brushMap[brushes[idx]]).SetWorkingBrush().Do();
+        if (idx != -1) new CommandBuilder(brushMap[brushes[idx]]).SetWorkingBrush().Do();
     }
 
     public static void SaveWorkingWorld()

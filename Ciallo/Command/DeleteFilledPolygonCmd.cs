@@ -17,7 +17,7 @@ public class DeleteFilledPolygonCmd : CommandBase
 
     private Entity _parentE; // layer entity
     private int _index = -1;
-    
+
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
     public override IEnumerable<GodotObject> UndoRefObjects => [_polygonView, _polygonOverlay, _polygonArea];
 
@@ -43,8 +43,8 @@ public class DeleteFilledPolygonCmd : CommandBase
 
         // Data
         _polygonSetting ??= polygonE.Get<FilledPolygonSetting>();
-        if(_parentE.IsNull) _parentE = polygonE.Get<LayerTreeNode>().Parent;
-        if(_index == -1) _index = _parentE.Get<LayerTreeNode>().FindPathTo(polygonE).Single();
+        if (_parentE.IsNull) _parentE = polygonE.Get<LayerTreeNode>().Parent;
+        if (_index == -1) _index = _parentE.Get<LayerTreeNode>().FindPathTo(polygonE).Single();
         _parentE.Get<LayerTreeNode>().RemoveChild(polygonE);
         polygonE.Remove<FilledPolygonSetting>();
         polygonE.Detach<ToSerializeTag>();
