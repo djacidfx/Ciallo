@@ -8,42 +8,33 @@ namespace Ciallo.Command;
 public class SetWorkingBrushCmd : CommandBase
 {
     private Entity _oldBrushE;
-    private readonly Entity _newBrushE;
 
-    public SetWorkingBrushCmd(Entity newBrushE)
+    public override void Do(Entity newBrushE)
     {
-        _newBrushE = newBrushE;
-
-        // Dirty hack
-        AppBrushLibrary.SelectedIndex.Value = -1;
-    }
-
-    public override void Do(Entity document)
-    {
-        if (_oldBrushE.IsNull) _oldBrushE = document.Get<SelectionManager>().WorkingBrush.Value;
+        if (_oldBrushE.IsNull) _oldBrushE = Document.Get<SelectionManager>().WorkingBrush.Value;
         // Data
-        var newIndex = document.Get<BrushManager>().Brushes.IndexOf(_newBrushE);
-        document.Get<SelectionManager>().WorkingBrush.Value = _newBrushE;
+        var newIndex = Document.Get<BrushManager>().Brushes.IndexOf(newBrushE);
+        Document.Get<SelectionManager>().WorkingBrush.Value = newBrushE;
 
         // UI
-        var brushList = document.Get<DocumentBrushList>();
+        var brushList = Document.Get<DocumentBrushList>();
         if (newIndex != -1)
             brushList.Select(newIndex);
         else
             brushList.DeselectAll();
     }
 
-    public override void Undo(Entity document)
+    public override void Undo(Entity newBrushE)
     {
         // UI
-        var brushList = document.Get<DocumentBrushList>();
-        var oldIdx = document.Get<BrushManager>().Brushes.IndexOf(_oldBrushE);
+        var brushList = Document.Get<DocumentBrushList>();
+        var oldIdx = Document.Get<BrushManager>().Brushes.IndexOf(_oldBrushE);
         if (oldIdx == -1)
             brushList.DeselectAll();
         else
             brushList.Select(oldIdx);
 
         // Data
-        document.Get<SelectionManager>().WorkingBrush.Value = _oldBrushE;
+        Document.Get<SelectionManager>().WorkingBrush.Value = _oldBrushE;
     }
 }
