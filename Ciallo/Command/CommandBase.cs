@@ -10,7 +10,7 @@ namespace Ciallo.Command;
 
 public abstract class CommandBase
 {
-    public Entity TargetE { get; init; }
+    public Entity TargetE { protected get; init; }
     public World WorkingWorld => TargetE.World;
     public Entity Document => WorkingWorld.Document();
     public virtual string Name => GetType().Name.Humanize();
@@ -30,8 +30,11 @@ public abstract class CommandBase
     public virtual IEnumerable<GodotObject> DoRefObjects => null;
     public virtual IEnumerable<GodotObject> UndoRefObjects => null;
 
-    public abstract void Do();
-    public abstract void Undo();
+    public abstract void Do(Entity targetE);
+    public abstract void Undo(Entity targetE);
+
+    public void Do() => Do(TargetE);
+    public void Undo() => Do(TargetE);
 
     public void Commit(bool execute = true)
     {

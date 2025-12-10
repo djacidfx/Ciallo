@@ -19,21 +19,21 @@ public class DeleteStrokeCmd : CommandBase
     private readonly Entity _parentE; // layer entity
     private int _index;
 
-    public DeleteStrokeCmd(Entity strokeE)
-    {
-        _strokeE = strokeE;
-        _strokeView = strokeE.Get<StrokeView>();
-        _strokeOverlay = strokeE.Get<PolylineWireframe>();
-        _strokeArea = strokeE.Get<CursorDetectionArea>();
-        _strokeSetting = strokeE.Get<StrokeSetting>();
-        _parentE = _strokeE.Get<LayerTreeNode>().Parent;
-    }
+    // public DeleteStrokeCmd(Entity strokeE)
+    // {
+    //     _strokeE = strokeE;
+    //     _strokeView = strokeE.Get<StrokeView>();
+    //     _strokeOverlay = strokeE.Get<PolylineWireframe>();
+    //     _strokeArea = strokeE.Get<CursorDetectionArea>();
+    //     _strokeSetting = strokeE.Get<StrokeSetting>();
+    //     _parentE = _strokeE.Get<LayerTreeNode>().Parent;
+    // }
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_strokeE);
     public override IEnumerable<GodotObject> UndoRefObjects =>
         new List<GodotObject> { _strokeView, _strokeOverlay, _strokeArea };
 
-    public override void Do()
+    public override void Do(Entity _strokeE)
     {
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(_strokeE);
@@ -58,7 +58,7 @@ public class DeleteStrokeCmd : CommandBase
         // geometry objects to be deleted with entity itself.
     }
 
-    public override void Undo()
+    public override void Undo(Entity _strokeE)
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();

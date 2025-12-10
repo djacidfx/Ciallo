@@ -9,58 +9,49 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class NewBrushCmd : CommandBase
 {
-    private Entity _brushE;
     private readonly BrushSetting _setting;
 
     public NewBrushCmd(BrushSetting setting = null)
     {
         _setting = setting?.Clone() ?? new BrushSetting();
         _setting.Labels.Remove(BrushLabel.BuiltIn);
-        InitEntity();
-        _brushE.Add(_setting);
     }
 
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(_brushE);
+    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public override void Do()
+    public override void Do(Entity brushE)
     {
         // Data
-        _brushE.Tag<ToSerializeTag>();
+        brushE.Add(_setting);
+        brushE.Tag<ToSerializeTag>();
         var bm = Document.Get<BrushManager>();
-        bm.Add(_brushE);
+        bm.Add(brushE);
 
         // Material
         var material = new BrushMaterial();
         material.ObserveBrushSetting(_setting);
-        _brushE.Add(material);
+        brushE.Add(material);
 
         // UI
-        // Note: Should have a dedicate custom widget to handle this.
         var list = Document.Get<DocumentBrushList>();
-        list.Add(_brushE);
+        list.Add(brushE);
     }
 
-    public override void Undo()
+    public override void Undo(Entity brushE)
     {
-        // UI
         var bm = Document.Get<BrushManager>();
+
+        // UI
         var list = Document.Get<DocumentBrushList>();
-        list.Remove(_brushE);
+        list.Remove(brushE);
 
         // Material
         // Note: Material is RefCounted, cannot be manually freed
-        _brushE.Remove<BrushMaterial>();
+        brushE.Remove<BrushMaterial>();
 
         // Data
-        bm.Remove(_brushE);
-        _brushE.Detach<ToSerializeTag>();
-    }
-
-    public Entity InitEntity()
-    {
-        if (!_brushE.IsNull) return _brushE;
-        _brushE = WorkingWorld.Create();
-
-        return _brushE;
+        bm.Remove(brushE);
+        brushE.Detach<ToSerializeTag>();
+        brushE.Remove<BrushSetting>();
     }
 }

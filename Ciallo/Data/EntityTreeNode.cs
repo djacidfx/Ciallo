@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -43,6 +44,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
             child.Get<T>().Parent = Entity.Null;
             child.Remove<T>();
         }
+
         Children.Clear();
         Parent = Entity.Null;
         Self = Entity.Null;
@@ -137,7 +139,8 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
             return true;
         }
 
-        if (IsPrefix(srcPath, dstParentPath)) throw new InvalidOperationException("Cannot move a node into its own descendant.");
+        if (IsPrefix(srcPath, dstParentPath))
+            throw new InvalidOperationException("Cannot move a node into its own descendant.");
 
         var dstParent = GetDescendantNode(dstParentPath);
 
@@ -185,11 +188,11 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         return childNode.GetNodeOrNull(path.Skip(1).ToArray());
     }
 
-    public List<int> FindPathTo(Entity target)
+    public ImmutableArray<int> FindPathTo(Entity target)
     {
         var node = target.Get<T>();
         BreadthFirstSearch((T)this, node, out var path);
-        return path;
+        return [..path];
     }
 
     #endregion
@@ -219,6 +222,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
             path = [index];
             return [node.Children[index]];
         }
+
         // not found, searching in children branches
         foreach (var (i, childNode) in childNodes.Index())
         {
@@ -228,6 +232,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
             ePath.Insert(0, node.Children[i]);
             return ePath;
         }
+
         // neither found in children
         path = null;
         return null;
@@ -261,10 +266,14 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
                 // Backtrack and continue with next sibling.
                 path.RemoveAt(path.Count - 1);
             }
+
             return false;
         }
 
-        return Dfs((T)this) ? path : throw new ArgumentOutOfRangeException(nameof(preorderIdx), "Index exceeds the number of nodes in the tree.");
+        return Dfs((T)this)
+            ? path
+            : throw new ArgumentOutOfRangeException(nameof(preorderIdx),
+                "Index exceeds the number of nodes in the tree.");
     }
 
     /// <summary>

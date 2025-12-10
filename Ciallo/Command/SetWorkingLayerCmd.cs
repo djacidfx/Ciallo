@@ -1,5 +1,4 @@
-﻿using System;
-using Ciallo.Data;
+﻿using Ciallo.Data;
 using Ciallo.NodeControl;
 using Frent;
 
@@ -8,42 +7,28 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class SetWorkingLayerCmd : CommandBase
 {
-    public Index NewIndex = int.MaxValue;
-    public Entity NewE;
-    public Entity OldE;
+    public Entity OldLayerE;
 
-    public SetWorkingLayerCmd(Index index)
+    public override void Do(Entity newLayerE)
     {
-        NewIndex = index;
-    }
-
-    public SetWorkingLayerCmd(Entity layerE)
-    {
-        NewE = layerE;
-    }
-
-    public override void Do()
-    {
-        if (NewE.IsNull && NewIndex.Value != int.MaxValue)
-            NewE = Document.Get<LayerTreeNode>().GetChild(NewIndex);
         // Selection manager
         var sm = Document.Get<SelectionManager>();
-        OldE = sm.WorkingLayer.Value;
-        sm.WorkingLayer.Value = NewE;
+        if (OldLayerE.IsNull) OldLayerE = sm.WorkingLayer.Value;
+        sm.WorkingLayer.Value = newLayerE;
 
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.SetWorkingLayerNoSignal(NewE);
+        layerContainer.SetWorkingLayerNoSignal(newLayerE);
     }
 
-    public override void Undo()
+    public override void Undo(Entity newLayerE)
     {
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.SetWorkingLayerNoSignal(OldE);
+        layerContainer.SetWorkingLayerNoSignal(OldLayerE);
 
         // Selection manager
         var sm = Document.Get<SelectionManager>();
-        sm.WorkingLayer.Value = OldE;
+        sm.WorkingLayer.Value = OldLayerE;
     }
 }

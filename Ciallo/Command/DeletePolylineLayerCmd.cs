@@ -11,82 +11,77 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class DeletePolylineLayerCmd : CommandBase
 {
-    private Entity _layerE;
     private Entity _parentE;
     private int _index;
 
-    private readonly CommandBase _deleteChildrenCmd;
-    private readonly PolylineLayerView _layerView;
-    private readonly PolylineAreaHolder _areaHolder;
+    private CommandBuilder _deleteChildrenCmd;
+    private PolylineLayerView _layerView;
+    private PolylineAreaHolder _areaHolder;
 
-    public DeletePolylineLayerCmd(Entity layerE)
-    {
-        // Hierarchy not implemented, always remove from root.
-        _layerE = layerE;
-        var node = _layerE.Get<LayerTreeNode>();
-        _parentE = node.Parent;
+    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
+    public override IEnumerable<GodotObject> UndoRefObjects => [_layerView, _areaHolder];
 
-        _deleteChildrenCmd = new EmptyCommand();
-        foreach (var polylineE in node.Children.AsEnumerable().Reverse())
-        {
-            if (polylineE.Has<StrokeSetting>())
-                _deleteChildrenCmd.Combine(new DeleteStrokeCmd(polylineE));
-            else
-                _deleteChildrenCmd.Combine(new DeleteFilledPolygonCmd(polylineE));
-        }
-
-        _layerView = _layerE.Get<PolylineLayerView>();
-        _areaHolder = _layerE.Get<PolylineAreaHolder>();
-    }
-
-    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_layerE);
-    public override IEnumerable<GodotObject> UndoRefObjects => new List<GodotObject> { _layerView, _areaHolder };
-
-    public override void Do()
+    public override void Do(Entity layerE)
     {
         // Delete children
-        _deleteChildrenCmd.DoAllCombination();
+        if (_deleteChildrenCmd == null)
+        {
+            var node = layerE.Get<LayerTreeNode>();
+            _parentE = node.Parent;
+            _deleteChildrenCmd = new();
+            foreach (var polylineE in node.Children.AsEnumerable().Reverse())
+            {
+                if (polylineE.Has<StrokeSetting>())
+                    _deleteChildrenCmd.SetTarget(polylineE).DeleteStroke();
+                else
+                    _deleteChildrenCmd.SetTarget(polylineE).DeleteFilledPolygon();
+            }
+        }
+
+        _deleteChildrenCmd.Do();
 
         // Cursor detection
+        _areaHolder ??= layerE.Get<PolylineAreaHolder>();
         _areaHolder.RemoveFromParent();
-        _layerE.Remove<PolylineAreaHolder>();
+        layerE.Remove<PolylineAreaHolder>();
 
         // View
+        _layerView ??= layerE.Get<PolylineLayerView>();
         _layerView.RemoveFromParent();
-        _layerE.Remove<PolylineLayerView>();
+        layerE.Remove<PolylineLayerView>();
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.RemoveFree(_layerE);
+        layerTreeControl.RemoveFree(layerE);
 
         // Data
-        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(_layerE);
+        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(layerE);
         _parentE.Get<LayerTreeNode>().RemoveChild(_index);
-        _layerE.Detach<ToSerializeTag>();
+        layerE.Detach<ToSerializeTag>();
     }
 
-    public override void Undo()
+    public override void Undo(Entity layerE)
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();
-        parentNode.InsertChild(_index, _layerE);
-        _layerE.Tag<ToSerializeTag>();
+        parentNode.InsertChild(_index, layerE);
+        layerE.Tag<ToSerializeTag>();
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.CreateInsert(_layerE, _index);
+        layerTreeControl.CreateInsert(layerE, _index);
 
         // View
         var worldView = Document.Get<WorldView>();
         worldView.InsertNodeAt(_layerView, _index); // order matters
-        _layerE.Add(_layerView);
+        layerE.Add(_layerView);
 
         // Cursor detection
         var worldArea = Document.Get<WorldCursorDetectionArea>();
         worldArea.AddChild(_areaHolder);
-        _layerE.Add(_areaHolder);
+        layerE.Add(_areaHolder);
 
         // Restore Children
-        _deleteChildrenCmd.UndoAllCombination();
+        _deleteChildrenCmd.Undo();
     }
 }

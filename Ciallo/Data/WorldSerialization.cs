@@ -24,7 +24,8 @@ public static partial class AppWorldManager
 
     static AppWorldManager()
     {
-        var registerMethod = typeof(Component).GetMethod("RegisterComponent", BindingFlags.Public | BindingFlags.Static);
+        var registerMethod =
+            typeof(Component).GetMethod("RegisterComponent", BindingFlags.Public | BindingFlags.Static);
         foreach (var t in ToSerializeComponents)
         {
             var genericMethod = registerMethod!.MakeGenericMethod(t);
@@ -38,13 +39,16 @@ public static partial class AppWorldManager
         var resultWorld = Create(dataDocument.Get<DocumentSetting>());
         WorkingWorld.Value = resultWorld;
         Dictionary<Entity, Entity> brushMap = [];
+        var loadBrushCmd = new CommandBuilder();
         foreach (var brushDataE in dataDocument.Get<BrushManager>().Brushes)
         {
             var setting = brushDataE.Get<BrushSetting>();
-            var cmd = new NewBrushCmd(setting);
-            cmd.Do();
-            brushMap.Add(brushDataE, cmd.InitEntity());
+            var brushE = resultWorld.Create();
+            loadBrushCmd.SetTarget(brushE).NewBrush(setting);
+            brushMap.Add(brushDataE, brushE);
         }
+
+        loadBrushCmd.Do();
 
         // Load layers and strokes
         var dataTreeRoot = dataDocument.Get<LayerTreeNode>();
@@ -178,6 +182,7 @@ public static partial class AppWorldManager
             types.AddRange(e.ComponentTypes.Select(id => id.Type).Where(ToSerializeTypes.Contains));
             ecData.Add(types);
         }
+
         var ecBin = MessagePackSerializer.Serialize(ecData);
 
         EntityToIndexFormatter.Instance.EntityList = entities;
@@ -197,6 +202,7 @@ public static partial class AppWorldManager
                 componentData[t].Add(bytes);
             }
         }
+
         var componentBin = MessagePackSerializer.Serialize(componentData);
 
         return [ecBin, componentBin];
@@ -214,6 +220,7 @@ public static partial class AppWorldManager
             var e = world.Create();
             entities.Add(e);
         }
+
         document = entities[0];
 
         EntityToIndexFormatter.Instance.EntityList = entities;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Frent;
 using Godot;
 using R3;
 
@@ -20,17 +19,15 @@ public partial class CommandManager : UndoRedo
 
     public void AddDo(CommandWrapperObject cmdWrapper)
     {
-        cmdWrapper.DoWrapper = new ObjectWrapper(cmdWrapper.Command.DoRefEntities, cmdWrapper.Command.DoRefObjects);
         AddDoMethod(new(cmdWrapper, CommandWrapperObject.MethodName.Do));
-        AddDoReference(cmdWrapper.DoWrapper);
+        AddDoReference(cmdWrapper.DoDeleter);
         AddDoReference(cmdWrapper);
     }
 
     public void AddUndo(CommandWrapperObject cmdWrapper)
     {
-        cmdWrapper.UndoWrapper = new ObjectWrapper(cmdWrapper.Command.UndoRefEntities, cmdWrapper.Command.UndoRefObjects);
         AddUndoMethod(new(cmdWrapper, CommandWrapperObject.MethodName.Undo));
-        AddUndoReference(cmdWrapper.UndoWrapper);
+        AddUndoReference(cmdWrapper.UndoDeleter);
         AddUndoReference(cmdWrapper);
     }
 
@@ -104,17 +101,18 @@ public partial class PropertyWrapperObject<T>(ReactiveProperty<T> property, Reac
 public partial class CommandWrapperObject(CommandBase command) : GodotObject
 {
     public CommandBase Command { get; } = command;
-    public ObjectWrapper DoWrapper;
-    public ObjectWrapper UndoWrapper;
+    public ObjectDeleter DoDeleter = new(command, true);
+    public ObjectDeleter UndoDeleter = new(command, false);
 
     public override void _Notification(int what)
     {
         if (what == NotificationPredelete)
         {
-            if (IsInstanceValid(DoWrapper))
-                DoWrapper.FreeWithoutDestroying();
-            if (IsInstanceValid(UndoWrapper))
-                UndoWrapper.FreeWithoutDestroying();
+            // If instance is not freed by UndoRedo, free here.
+            if (IsInstanceValid(DoDeleter))
+                DoDeleter.FreeWithoutDeleting();
+            if (IsInstanceValid(UndoDeleter))
+                UndoDeleter.FreeWithoutDeleting();
         }
     }
 
@@ -123,33 +121,34 @@ public partial class CommandWrapperObject(CommandBase command) : GodotObject
 }
 
 /// <summary>
-/// Wrapper for the IEnumerable to be used in CommandBase.
 /// Automatically destroy entities and objects when the command is deleted, unless FreeWithoutDestroying is called.
 /// </summary>
-public partial class ObjectWrapper(IEnumerable<Entity> entities, IEnumerable<GodotObject> objects) : GodotObject
+public partial class ObjectDeleter(CommandBase cmd, bool isDo) : GodotObject
 {
-    private bool _destroy = true;
+    private bool _delete = true;
 
     public override void _Notification(int what)
     {
-        if (what != NotificationPredelete || !_destroy) return;
+        if (what != NotificationPredelete || !_delete) return;
 
+        var entities = isDo ? cmd.DoRefEntities : cmd.UndoRefEntities;
         if (entities != null)
         {
             foreach (var e in entities)
                 e.Delete();
         }
 
+        var objects = isDo ? cmd.DoRefObjects : cmd.UndoRefObjects;
         if (objects != null)
         {
             foreach (var obj in objects)
-                obj.Free();
+                obj?.Free();
         }
     }
 
-    public void FreeWithoutDestroying()
+    public void FreeWithoutDeleting()
     {
-        _destroy = false;
+        _delete = false;
         Free();
     }
 }

@@ -68,6 +68,7 @@ public partial class BrushMaterial : ShaderMaterial
 
     public override void _Notification(int what)
     {
+        // TODO: Godot not calling this function, change it.
         if (what == NotificationPredelete)
         {
             GD.Print("deleting brush material");

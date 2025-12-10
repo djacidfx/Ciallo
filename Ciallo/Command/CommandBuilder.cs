@@ -11,7 +11,7 @@ public partial class CommandBuilder
     public Entity TargetE;
     public readonly List<CommandBase> Commands = [];
 
-    public CommandBuilder(Entity targetE)
+    public CommandBuilder(Entity targetE = default)
     {
         TargetE = targetE;
     }
@@ -26,6 +26,11 @@ public partial class CommandBuilder
     {
         TargetE = e;
         return this;
+    }
+
+    public void AddCommand(CommandBase cmd)
+    {
+        Commands.Add(cmd);
     }
 
     public void Commit(bool execute = true)
@@ -50,7 +55,7 @@ public partial class CommandBuilder
         }
     }
 
-    public void UnDo()
+    public void Undo()
     {
         foreach (var cmd in Commands.AsEnumerable().Reverse())
         {
