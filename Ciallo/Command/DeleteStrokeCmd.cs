@@ -21,37 +21,42 @@ public class DeleteStrokeCmd : CommandBase
     public override IEnumerable<GodotObject> UndoRefObjects =>
         new List<GodotObject> { _strokeView, _strokeOverlay, _strokeArea };
 
-    public override void Do(Entity strokeE)
+    protected override void BeforeFirstDo(Entity strokeE)
+    {
+        _strokeArea = strokeE.Get<CursorDetectionArea>();
+        _strokeOverlay = strokeE.Get<PolylineWireframe>();
+        _strokeView = strokeE.Get<StrokeView>();
+        _strokeSetting = strokeE.Get<StrokeSetting>();
+
+        _parentE = strokeE.Get<LayerTreeNode>().Parent;
+        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(strokeE);
+    }
+
+    protected override void Do(Entity strokeE)
     {
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(strokeE);
 
         // Cursor detection
-        _strokeArea ??= strokeE.Get<CursorDetectionArea>();
         _strokeArea.RemoveFromParent();
         strokeE.Remove<CursorDetectionArea>();
 
         // Overlay
-        _strokeOverlay ??= strokeE.Get<PolylineWireframe>();
         _strokeOverlay.RemoveFromParent();
         strokeE.Remove<PolylineWireframe>();
 
         // View
-        _strokeView ??= strokeE.Get<StrokeView>();
         _strokeView.RemoveFromParent();
         strokeE.Remove<StrokeView>();
 
         // Data
-        _strokeSetting ??= strokeE.Get<StrokeSetting>();
-        if (_parentE.IsNull) _parentE = strokeE.Get<LayerTreeNode>().Parent;
-        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(strokeE);
         _parentE.Get<LayerTreeNode>().RemoveChild(strokeE);
         strokeE.Remove<StrokeSetting>();
         strokeE.Detach<ToSerializeTag>();
         // geometry objects to be deleted with entity itself.
     }
 
-    public override void Undo(Entity strokeE)
+    protected override void Undo(Entity strokeE)
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();

@@ -9,9 +9,13 @@ public class SetWorkingBrushCmd : CommandBase
 {
     private Entity _oldBrushE;
 
-    public override void Do(Entity newBrushE)
+    protected override void BeforeFirstDo(Entity newBrushE)
     {
-        if (_oldBrushE.IsNull) _oldBrushE = Document.Get<SelectionManager>().WorkingBrush.Value;
+        _oldBrushE = Document.Get<SelectionManager>().WorkingBrush.Value;
+    }
+
+    protected override void Do(Entity newBrushE)
+    {
         // Data
         var newIndex = Document.Get<BrushManager>().Brushes.IndexOf(newBrushE);
         Document.Get<SelectionManager>().WorkingBrush.Value = newBrushE;
@@ -24,7 +28,7 @@ public class SetWorkingBrushCmd : CommandBase
             brushList.DeselectAll();
     }
 
-    public override void Undo(Entity newBrushE)
+    protected override void Undo(Entity newBrushE)
     {
         // UI
         var brushList = Document.Get<DocumentBrushList>();

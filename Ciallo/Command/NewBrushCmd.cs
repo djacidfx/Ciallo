@@ -19,7 +19,7 @@ public class NewBrushCmd : CommandBase
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public override void Do(Entity brushE)
+    protected override void Do(Entity brushE)
     {
         // Data
         brushE.Add(_setting);
@@ -37,7 +37,7 @@ public class NewBrushCmd : CommandBase
         list.Add(brushE);
     }
 
-    public override void Undo(Entity brushE)
+    protected override void Undo(Entity brushE)
     {
         var bm = Document.Get<BrushManager>();
 

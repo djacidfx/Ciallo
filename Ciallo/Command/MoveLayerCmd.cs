@@ -26,11 +26,19 @@ public class MoveLayerCmd : CommandBase
         _dst = [..dst];
     }
 
-    public override void Do(Entity layerE)
+    protected override void BeforeFirstDo(Entity layerE)
+    {
+        if (_src.Length == 0)
+        {
+            var root = Document.Get<LayerTreeNode>();
+            _src = root.FindPathTo(layerE);
+        }
+    }
+
+    protected override void Do(Entity layerE)
     {
         // Data
         var root = Document.Get<LayerTreeNode>();
-        if (_src.Length == 0) _src = root.FindPathTo(layerE);
         root.MoveDescendant(_src, _dst);
 
         // layer panel
@@ -44,7 +52,7 @@ public class MoveLayerCmd : CommandBase
         // Overlay is order-free
     }
 
-    public override void Undo(Entity layerE)
+    protected override void Undo(Entity layerE)
     {
         // View
         var worldView = Document.Get<WorldView>();

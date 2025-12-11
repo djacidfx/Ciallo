@@ -31,7 +31,7 @@ public class NewImageLayerCmd : CommandBase
         _setting = setting;
     }
 
-    public override void Do(Entity layerE)
+    protected override void Do(Entity layerE)
     {
         _subs = new();
         _subs.AddTo(layerE);
@@ -85,7 +85,7 @@ public class NewImageLayerCmd : CommandBase
         layerContainer.CreateAdd(layerE);
     }
 
-    public override void Undo(Entity layerE)
+    protected override void Undo(Entity layerE)
     {
         // Panel
         var layerContainer = Document.Get<LayerContainer>();

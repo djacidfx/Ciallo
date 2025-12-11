@@ -20,15 +20,23 @@ public class DeleteImageLayerCmd : CommandBase
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
     public override IEnumerable<GodotObject> UndoRefObjects => [_sprite, _overlay];
 
-    public override void Do(Entity layerE)
+    protected override void BeforeFirstDo(Entity layerE)
+    {
+        _overlay = layerE.Get<TransformOverlayBox>();
+        _sprite = layerE.Get<Sprite2D>();
+        _setting = layerE.Get<ImageLayerSetting>();
+
+        _parentE = layerE.Get<LayerTreeNode>().Parent;
+        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(layerE);
+    }
+
+    protected override void Do(Entity layerE)
     {
         // Overlay
-        _overlay ??= layerE.Get<TransformOverlayBox>();
         _overlay.RemoveFromParent();
         layerE.Remove<TransformOverlayBox>();
 
         // View
-        _sprite ??= layerE.Get<Sprite2D>();
         _sprite.RemoveFromParent();
         layerE.Remove<Sprite2D>();
 
@@ -37,15 +45,12 @@ public class DeleteImageLayerCmd : CommandBase
         layerContainer.RemoveFree(layerE);
 
         // Data
-        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(layerE);
-        if (_parentE.IsNull) _parentE = layerE.Get<LayerTreeNode>().Parent;
         _parentE.Get<LayerTreeNode>().RemoveChild(_index);
-        _setting ??= layerE.Get<ImageLayerSetting>();
         layerE.Remove<ImageLayerSetting>();
         layerE.Detach<ToSerializeTag>();
     }
 
-    public override void Undo(Entity layerE)
+    protected override void Undo(Entity layerE)
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();

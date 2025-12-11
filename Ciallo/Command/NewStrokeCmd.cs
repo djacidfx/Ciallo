@@ -17,7 +17,7 @@ public class NewStrokeCmd : CommandBase
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public override void Do(Entity strokeE)
+    protected override void Do(Entity strokeE)
     {
         // Data
         if (!strokeE.Has<LayerTreeNode>()) strokeE.Add(new LayerTreeNode());
@@ -48,7 +48,7 @@ public class NewStrokeCmd : CommandBase
         strokeE.Add(strokeArea);
     }
 
-    public override void Undo(Entity strokeE)
+    protected override void Undo(Entity strokeE)
     {
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(strokeE);

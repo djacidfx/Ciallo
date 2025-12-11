@@ -9,6 +9,7 @@ namespace Ciallo.Command;
 
 public abstract class CommandBase
 {
+    public bool HasExecuted;
     public Entity TargetE { protected get; init; }
     public World WorkingWorld => TargetE.World;
     public Entity Document => WorkingWorld.Document();
@@ -29,10 +30,17 @@ public abstract class CommandBase
     public virtual IEnumerable<GodotObject> DoRefObjects => null;
     public virtual IEnumerable<GodotObject> UndoRefObjects => null;
 
-    public abstract void Do(Entity targetE);
-    public abstract void Undo(Entity targetE);
+    protected virtual void BeforeFirstDo(Entity targetE) { }
+    protected abstract void Do(Entity targetE);
+    protected abstract void Undo(Entity targetE);
 
-    public void Do() => Do(TargetE);
+    public void Do()
+    {
+        if (!HasExecuted) BeforeFirstDo(TargetE);
+        Do(TargetE);
+        HasExecuted = true;
+    }
+
     public void Undo() => Undo(TargetE);
 
     public void Commit(bool execute = true)

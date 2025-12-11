@@ -21,32 +21,35 @@ public class DeletePolylineLayerCmd : CommandBase
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
     public override IEnumerable<GodotObject> UndoRefObjects => [_layerView, _areaHolder];
 
-    public override void Do(Entity layerE)
+    protected override void BeforeFirstDo(Entity layerE)
     {
-        // Delete children
-        if (_deleteChildrenCmd == null)
+        var node = layerE.Get<LayerTreeNode>();
+        _parentE = node.Parent;
+        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(layerE);
+
+        _deleteChildrenCmd = new CommandBuilder();
+        foreach (var polylineE in node.Children.AsEnumerable().Reverse())
         {
-            var node = layerE.Get<LayerTreeNode>();
-            _parentE = node.Parent;
-            _deleteChildrenCmd = new();
-            foreach (var polylineE in node.Children.AsEnumerable().Reverse())
-            {
-                if (polylineE.Has<StrokeSetting>())
-                    _deleteChildrenCmd.SetTarget(polylineE).DeleteStroke();
-                else
-                    _deleteChildrenCmd.SetTarget(polylineE).DeleteFilledPolygon();
-            }
+            if (polylineE.Has<StrokeSetting>())
+                _deleteChildrenCmd.SetTarget(polylineE).DeleteStroke();
+            else
+                _deleteChildrenCmd.SetTarget(polylineE).DeleteFilledPolygon();
         }
 
+        _areaHolder = layerE.Get<PolylineAreaHolder>();
+        _layerView = layerE.Get<PolylineLayerView>();
+    }
+
+    protected override void Do(Entity layerE)
+    {
+        // Delete children
         _deleteChildrenCmd.Do();
 
         // Cursor detection
-        _areaHolder ??= layerE.Get<PolylineAreaHolder>();
         _areaHolder.RemoveFromParent();
         layerE.Remove<PolylineAreaHolder>();
 
         // View
-        _layerView ??= layerE.Get<PolylineLayerView>();
         _layerView.RemoveFromParent();
         layerE.Remove<PolylineLayerView>();
 
@@ -55,12 +58,11 @@ public class DeletePolylineLayerCmd : CommandBase
         layerTreeControl.RemoveFree(layerE);
 
         // Data
-        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(layerE);
         _parentE.Get<LayerTreeNode>().RemoveChild(_index);
         layerE.Detach<ToSerializeTag>();
     }
 
-    public override void Undo(Entity layerE)
+    protected override void Undo(Entity layerE)
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();

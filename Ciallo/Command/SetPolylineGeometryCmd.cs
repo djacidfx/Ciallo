@@ -17,10 +17,14 @@ public class SetPolylineGeometryCmd : CommandBase
         _newGeometry = newGeometry;
     }
 
-    public override void Do(Entity polylineE)
+    protected override void BeforeFirstDo(Entity polylineE)
+    {
+        _oldGeometry = polylineE.Get<PolylineGeometry>();
+    }
+
+    protected override void Do(Entity polylineE)
     {
         // Data
-        _oldGeometry ??= polylineE.Get<PolylineGeometry>();
         polylineE.Get<PolylineGeometry>() = _newGeometry;
 
         // Overlay
@@ -50,7 +54,7 @@ public class SetPolylineGeometryCmd : CommandBase
         }
     }
 
-    public override void Undo(Entity polylineE)
+    protected override void Undo(Entity polylineE)
     {
         if (polylineE.Has<FilledPolygonSetting>())
         {

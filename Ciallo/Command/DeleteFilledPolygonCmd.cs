@@ -21,37 +21,42 @@ public class DeleteFilledPolygonCmd : CommandBase
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
     public override IEnumerable<GodotObject> UndoRefObjects => [_polygonView, _polygonOverlay, _polygonArea];
 
-    public override void Do(Entity polygonE)
+    protected override void BeforeFirstDo(Entity polygonE)
+    {
+        _polygonArea = polygonE.Get<CursorDetectionArea>();
+        _polygonOverlay = polygonE.Get<PolylineWireframe>();
+        _polygonView = polygonE.Get<Polygon2D>();
+        _polygonSetting = polygonE.Get<FilledPolygonSetting>();
+
+        _parentE = polygonE.Get<LayerTreeNode>().Parent;
+        _index = _parentE.Get<LayerTreeNode>().FindPathTo(polygonE).Single();
+    }
+
+    protected override void Do(Entity polygonE)
     {
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(polygonE);
 
         // Cursor detection
-        _polygonArea ??= polygonE.Get<CursorDetectionArea>();
         _polygonArea.RemoveFromParent();
         polygonE.Remove<CursorDetectionArea>();
 
         // Overlay
-        _polygonOverlay ??= polygonE.Get<PolylineWireframe>();
         _polygonOverlay.RemoveFromParent();
         polygonE.Remove<PolylineWireframe>();
 
         // View
-        _polygonView ??= polygonE.Get<Polygon2D>();
         _polygonView.RemoveFromParent();
         polygonE.Remove<Polygon2D>();
 
         // Data
-        _polygonSetting ??= polygonE.Get<FilledPolygonSetting>();
-        if (_parentE.IsNull) _parentE = polygonE.Get<LayerTreeNode>().Parent;
-        if (_index == -1) _index = _parentE.Get<LayerTreeNode>().FindPathTo(polygonE).Single();
         _parentE.Get<LayerTreeNode>().RemoveChild(polygonE);
         polygonE.Remove<FilledPolygonSetting>();
         polygonE.Detach<ToSerializeTag>();
         // geometry objects to be deleted with entity itself.
     }
 
-    public override void Undo(Entity polygonE)
+    protected override void Undo(Entity polygonE)
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();

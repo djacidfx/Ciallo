@@ -22,7 +22,7 @@ public class NewPolylineLayerCmd : CommandBase
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public override void Do(Entity layerE)
+    protected override void Do(Entity layerE)
     {
         _subs = new();
         _subs.AddTo(layerE);
@@ -69,7 +69,7 @@ public class NewPolylineLayerCmd : CommandBase
         layerE.Add(holder);
     }
 
-    public override void Undo(Entity layerE)
+    protected override void Undo(Entity layerE)
     {
         // Cursor detection
         layerE.Get<PolylineAreaHolder>().QueueFree();

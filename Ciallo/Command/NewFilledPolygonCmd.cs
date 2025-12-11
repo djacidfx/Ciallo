@@ -23,7 +23,7 @@ public class NewFilledPolygonCmd : CommandBase
 
     private CompositeDisposable _subs;
 
-    public override void Do(Entity polygonE)
+    protected override void Do(Entity polygonE)
     {
         _subs = new();
         _subs.AddTo(polygonE);
@@ -60,7 +60,7 @@ public class NewFilledPolygonCmd : CommandBase
         polygonE.Add(polygonArea);
     }
 
-    public override void Undo(Entity polygonE)
+    protected override void Undo(Entity polygonE)
     {
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(polygonE);
