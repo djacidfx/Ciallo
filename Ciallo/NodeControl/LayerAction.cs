@@ -1,8 +1,8 @@
-using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
-using Frent;
 using Godot;
+
+namespace Ciallo.NodeControl;
 
 public partial class LayerAction : Control
 {
@@ -11,9 +11,10 @@ public partial class LayerAction : Control
     public void OnNewLayer()
     {
         if (AppWorldManager.WorkingWorld.Value == null) return;
-        var cmd = new NewPolylineLayerCmd();
-        var e = cmd.InitEntity();
-        cmd.Combine(new SetWorkingLayerCmd(e)).Commit();
+        new CommandBuilder(AppWorldManager.WorkingWorld.Value.Create())
+            .NewPolylineLayer()
+            .SetWorkingLayer()
+            .Commit();
     }
 
     public void OnRemoveLayer()
@@ -24,12 +25,19 @@ public partial class LayerAction : Control
         if (currentLayerE.IsNull) return;
 
         var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
-        var nextLayerPath = document.Get<LayerTreeNode>().GetNextFocusPathAfterDeletion(workingLayerPath);
+        var root = document.Get<LayerTreeNode>();
+        var nextLayerPath = root.GetNextFocusPathAfterDeletion(workingLayerPath);
 
-        SetWorkingLayerCmd cmd = nextLayerPath.IsEmpty ? new(Entity.Null) : new(nextLayerPath.Single());
+        var nextLayerE = nextLayerPath.IsEmpty ? document : root.GetDescendant(nextLayerPath);
 
-        if (currentLayerE.Has<PolylineLayerSetting>()) cmd.Combine(new DeletePolylineLayerCmd(currentLayerE)).Commit();
-        else if (currentLayerE.Has<ImageLayerSetting>()) cmd.Combine(new DeleteImageLayerCmd(currentLayerE)).Commit();
+        if (currentLayerE.Has<PolylineLayerSetting>())
+            new CommandBuilder(nextLayerE).SetWorkingLayer()
+                .SetTarget(currentLayerE).DeletePolylineLayer()
+                .Commit();
+        else if (currentLayerE.Has<ImageLayerSetting>())
+            new CommandBuilder(nextLayerE).SetWorkingLayer()
+                .SetTarget(currentLayerE).DeleteImageLayer()
+                .Commit();
     }
 
     public void OnAddImage()
@@ -51,6 +59,7 @@ public partial class LayerAction : Control
             return;
         }
         if (image == null) return;
-        new NewImageLayerCmd(image).Commit();
+        new CommandBuilder(AppWorldManager.WorkingWorld.Value.Create())
+            .NewImageLayer(image).Commit();
     }
 }

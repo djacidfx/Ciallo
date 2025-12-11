@@ -24,7 +24,8 @@ public static partial class AppWorldManager
 
     static AppWorldManager()
     {
-        var registerMethod = typeof(Component).GetMethod("RegisterComponent", BindingFlags.Public | BindingFlags.Static);
+        var registerMethod =
+            typeof(Component).GetMethod("RegisterComponent", BindingFlags.Public | BindingFlags.Static);
         foreach (var t in ToSerializeComponents)
         {
             var genericMethod = registerMethod!.MakeGenericMethod(t);
@@ -38,33 +39,34 @@ public static partial class AppWorldManager
         var resultWorld = Create(dataDocument.Get<DocumentSetting>());
         WorkingWorld.Value = resultWorld;
         Dictionary<Entity, Entity> brushMap = [];
+        var loadBrushCmd = new CommandBuilder();
         foreach (var brushDataE in dataDocument.Get<BrushManager>().Brushes)
         {
             var setting = brushDataE.Get<BrushSetting>();
-            var cmd = new NewBrushCmd(setting);
-            cmd.Do();
-            brushMap.Add(brushDataE, cmd.InitEntity());
+            var brushE = resultWorld.Create();
+            loadBrushCmd.SetTarget(brushE).NewBrush(setting);
+            brushMap.Add(brushDataE, brushE);
         }
+        loadBrushCmd.Do();
 
         // Load layers and strokes
         var dataTreeRoot = dataDocument.Get<LayerTreeNode>();
         Dictionary<Entity, Entity> layerMap = [];
+
         foreach (var layerDataE in dataTreeRoot.Children)
         {
             if (layerDataE.Has<ImageLayerSetting>())
             {
-                var newImageLayerCmd = new NewImageLayerCmd(layerDataE.Get<ImageLayerSetting>());
-                var layerE = newImageLayerCmd.InitEntity();
+                var layerE = resultWorld.Create();
+                new CommandBuilder(layerE).NewImageLayer(layerDataE.Get<ImageLayerSetting>()).Do();
                 layerE.Get<LayerTreeNode>().CopySettingFrom(layerDataE.Get<LayerTreeNode>()); // hack patch
-                newImageLayerCmd.Do();
                 layerMap.Add(layerDataE, layerE);
             }
             else if (layerDataE.Has<PolylineLayerSetting>())
             {
-                var newPolylineLayerCmd = new NewPolylineLayerCmd(layerDataE.Get<PolylineLayerSetting>());
-                var layerE = newPolylineLayerCmd.InitEntity();
+                var layerE = resultWorld.Create();
+                new CommandBuilder(layerE).NewPolylineLayer(layerDataE.Get<PolylineLayerSetting>()).Do();
                 layerE.Get<LayerTreeNode>().CopySettingFrom(layerDataE.Get<LayerTreeNode>()); // hack patch
-                newPolylineLayerCmd.Do();
                 layerMap.Add(layerDataE, layerE);
 
                 foreach (var polylineDataE in layerDataE.Get<LayerTreeNode>().Children)
@@ -73,20 +75,18 @@ public static partial class AppWorldManager
 
                     if (polylineDataE.Has<StrokeSetting>())
                     {
-                        var newStrokeCmd = new NewStrokeCmd(layerE);
-                        newStrokeCmd.Do();
-                        var strokeE = newStrokeCmd.StrokeE;
-                        new SetPolylineGeometryCmd(strokeE, geometry).Do();
-                        var strokeSetting = polylineDataE.Get<StrokeSetting>();
-                        new SetStrokeBrushCmd(strokeE, brushMap[strokeSetting.BrushE]).Do();
+                        new CommandBuilder(resultWorld.Create())
+                            .NewStroke(layerE)
+                            .SetPolylineGeometry(geometry)
+                            .SetStrokeBrush(brushMap[polylineDataE.Get<StrokeSetting>().BrushE])
+                            .Do();
                     }
                     else if (polylineDataE.Has<FilledPolygonSetting>())
                     {
-                        var setting = polylineDataE.Get<FilledPolygonSetting>();
-                        var newFilledPolygonCmd = new NewFilledPolygonCmd(layerE, setting);
-                        newFilledPolygonCmd.Do();
-                        var polygonE = newFilledPolygonCmd.PolygonE;
-                        new SetPolylineGeometryCmd(polygonE, geometry).Do();
+                        new CommandBuilder(resultWorld.Create())
+                            .NewFilledPolygon(layerE, polylineDataE.Get<FilledPolygonSetting>())
+                            .SetPolylineGeometry(geometry)
+                            .Do();
                     }
                 }
             }
@@ -94,10 +94,10 @@ public static partial class AppWorldManager
 
         // Load selection
         var dataSm = dataDocument.Get<SelectionManager>();
-        new SetWorkingLayerCmd(layerMap[dataSm.WorkingLayer.CurrentValue]).Do();
+        new CommandBuilder(layerMap[dataSm.WorkingLayer.CurrentValue]).SetWorkingLayer().Do();
         var brushes = dataDocument.Get<BrushManager>().Brushes;
         var idx = brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
-        if (idx != -1) new SetWorkingBrushCmd(brushMap[brushes[idx]]).Do();
+        if (idx != -1) new CommandBuilder(brushMap[brushes[idx]]).SetWorkingBrush().Do();
     }
 
     public static void SaveWorkingWorld()
@@ -178,6 +178,7 @@ public static partial class AppWorldManager
             types.AddRange(e.ComponentTypes.Select(id => id.Type).Where(ToSerializeTypes.Contains));
             ecData.Add(types);
         }
+
         var ecBin = MessagePackSerializer.Serialize(ecData);
 
         EntityToIndexFormatter.Instance.EntityList = entities;
@@ -197,6 +198,7 @@ public static partial class AppWorldManager
                 componentData[t].Add(bytes);
             }
         }
+
         var componentBin = MessagePackSerializer.Serialize(componentData);
 
         return [ecBin, componentBin];
@@ -214,6 +216,7 @@ public static partial class AppWorldManager
             var e = world.Create();
             entities.Add(e);
         }
+
         document = entities[0];
 
         EntityToIndexFormatter.Instance.EntityList = entities;

@@ -1,15 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Collections.Immutable;
 using Ciallo.Data;
+using Ciallo.NodeControl;
 using Ciallo.Rendering;
+using Frent;
 using Godot;
 
 namespace Ciallo.Command;
 
 // Note: not implementing hierarchy on layer panel, only flat list move.
+[CommandBuilder]
 public class MoveLayerCmd : CommandBase
 {
-    private readonly ImmutableArray<int> _src;
+    private ImmutableArray<int> _src;
     private readonly ImmutableArray<int> _dst;
 
     public MoveLayerCmd(IReadOnlyList<int> src, IReadOnlyList<int> dst)
@@ -18,7 +21,21 @@ public class MoveLayerCmd : CommandBase
         _dst = [..dst];
     }
 
-    public override void Do()
+    public MoveLayerCmd(IReadOnlyList<int> dst)
+    {
+        _dst = [..dst];
+    }
+
+    protected override void BeforeFirstDo(Entity layerE)
+    {
+        if (_src.Length == 0)
+        {
+            var root = Document.Get<LayerTreeNode>();
+            _src = root.FindPathTo(layerE);
+        }
+    }
+
+    protected override void Do(Entity layerE)
     {
         // Data
         var root = Document.Get<LayerTreeNode>();
@@ -35,7 +52,7 @@ public class MoveLayerCmd : CommandBase
         // Overlay is order-free
     }
 
-    public override void Undo()
+    protected override void Undo(Entity layerE)
     {
         // View
         var worldView = Document.Get<WorldView>();

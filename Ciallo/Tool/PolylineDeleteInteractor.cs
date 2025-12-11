@@ -29,11 +29,11 @@ public class PolylineDeleteInteractor(PolylineTransformHover hover) : Interactor
     public override void Start(CursorButtonData data)
     {
         SelectionManager.SelectedPolylines.Clear();
-        var cmd = new EmptyCommand();
+        var cmd = new CommandBuilder();
         foreach (var e in _processingEs)
         {
-            if (e.Has<StrokeView>()) cmd.Combine(new DeleteStrokeCmd(e));
-            else cmd.Combine(new DeleteFilledPolygonCmd(e));
+            if (e.Has<StrokeView>()) cmd.SetTarget(e).DeleteStroke();
+            else cmd.SetTarget(e).DeleteFilledPolygon();
         }
         cmd.Commit();
     }

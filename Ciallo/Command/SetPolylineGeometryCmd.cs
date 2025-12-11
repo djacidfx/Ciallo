@@ -1,80 +1,85 @@
-﻿using Ciallo.Command;
+﻿using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
 
-namespace Ciallo.Data;
+namespace Ciallo.Command;
 
+[CommandBuilder]
 public class SetPolylineGeometryCmd : CommandBase
 {
-    private readonly Entity _polylineE;
     private readonly PolylineGeometry _newGeometry;
     private PolylineGeometry _oldGeometry;
 
-    public SetPolylineGeometryCmd(Entity polylineE, PolylineGeometry newGeometry)
+    public SetPolylineGeometryCmd(PolylineGeometry newGeometry)
     {
-        _polylineE = polylineE;
         _newGeometry = newGeometry;
     }
 
-    public override void Do()
+    protected override void BeforeFirstDo(Entity polylineE)
+    {
+        _oldGeometry = polylineE.Get<PolylineGeometry>();
+    }
+
+    protected override void Do(Entity polylineE)
     {
         // Data
-        _oldGeometry ??= _polylineE.Get<PolylineGeometry>();
-        _polylineE.Get<PolylineGeometry>() = _newGeometry;
+        polylineE.Get<PolylineGeometry>() = _newGeometry;
 
         // Overlay
-        _polylineE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii);
+        polylineE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii);
 
         // Polyline has stroke
-        if (_polylineE.Has<StrokeSetting>())
+        if (polylineE.Has<StrokeSetting>())
         {
             // View
-            _polylineE.Get<StrokeView>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii, _newGeometry.Pressures);
+            polylineE.Get<StrokeView>()
+                .SetGeometry(_newGeometry.Positions, _newGeometry.Radii, _newGeometry.Pressures);
 
             // Cursor detection
-            _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_newGeometry.Positions, _newGeometry.Radii);
+            polylineE.Get<CursorDetectionArea>().SetStrokeShape(_newGeometry.Positions, _newGeometry.Radii);
         }
 
         // Polyline has fill
-        else if (_polylineE.Has<FilledPolygonSetting>())
+        else if (polylineE.Has<FilledPolygonSetting>())
         {
             var polygon = _newGeometry.Positions.ToSimplePolygon();
             // View
-            var polygonView = _polylineE.Get<Polygon2D>();
+            var polygonView = polylineE.Get<Polygon2D>();
             polygonView.Polygon = [..polygon];
 
             // Cursor detection
-            _polylineE.Get<CursorDetectionArea>().SetSimplePolygon(polygon);
+            polylineE.Get<CursorDetectionArea>().SetSimplePolygon(polygon);
         }
     }
 
-    public override void Undo()
+    protected override void Undo(Entity polylineE)
     {
-        if (_polylineE.Has<FilledPolygonSetting>())
+        if (polylineE.Has<FilledPolygonSetting>())
         {
             var polygon = _oldGeometry.Positions.ToSimplePolygon();
             // Cursor detection
-            _polylineE.Get<CursorDetectionArea>().SetSimplePolygon(polygon);
+            polylineE.Get<CursorDetectionArea>().SetSimplePolygon(polygon);
 
             // View
-            var polygonView = _polylineE.Get<Polygon2D>();
+            var polygonView = polylineE.Get<Polygon2D>();
             polygonView.Polygon = [..polygon];
         }
-        else if (_polylineE.Has<StrokeSetting>())
+        else if (polylineE.Has<StrokeSetting>())
         {
             // Cursor detection
-            _polylineE.Get<CursorDetectionArea>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);
+            polylineE.Get<CursorDetectionArea>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);
 
             // View
-            _polylineE.Get<StrokeView>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii, _oldGeometry.Pressures);
+            polylineE.Get<StrokeView>()
+                .SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii, _oldGeometry.Pressures);
         }
 
         // Overlay
-        _polylineE.Get<PolylineWireframe>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii);
+        polylineE.Get<PolylineWireframe>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii);
 
         // Data
-        _polylineE.Get<PolylineGeometry>() = _oldGeometry;
+        polylineE.Get<PolylineGeometry>() = _oldGeometry;
     }
 }

@@ -35,9 +35,8 @@ public class PaintInteractor : InteractorBase
         if (AppBrushLibrary.HasSelection)
         {
             var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
-            var cmd = new NewBrushCmd(setting);
-            var brushE = cmd.InitEntity();
-            cmd.Combine(new SetWorkingBrushCmd(brushE)).Commit();
+            new CommandBuilder(Document.World.Create())
+                .NewBrush(setting).SetWorkingBrush().Commit();
         }
         _brushE = SelectionManager.WorkingBrush.Value;
         var brushMaterial = _brushE.Get<BrushMaterial>();
@@ -65,8 +64,6 @@ public class PaintInteractor : InteractorBase
         _generator.End(data);
 
         var layerE = SelectionManager.WorkingLayer.Value;
-        var cmd = new NewStrokeCmd(layerE);
-        var strokeE = cmd.InitEntity();
         var geom = new PolylineGeometry()
         {
             Positions = [.._generator.Positions],
@@ -74,8 +71,10 @@ public class PaintInteractor : InteractorBase
             Pressures = [.._generator.Pressures],
             Tilts = [.._generator.Tilts],
         };
-        cmd.Combine(new SetStrokeBrushCmd(strokeE, _brushE))
-            .Combine(new SetPolylineGeometryCmd(strokeE, geom))
+        new CommandBuilder(layerE.World.Create())
+            .NewStroke(layerE)
+            .SetStrokeBrush(_brushE)
+            .SetPolylineGeometry(geom)
             .Commit();
         Clear();
     }

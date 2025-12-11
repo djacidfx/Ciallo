@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
+using Ciallo.GuiBinding;
 using Ciallo.Misc;
 using Ciallo.NodeControl;
 using Ciallo.Tool;
@@ -31,34 +32,36 @@ public partial class PaintTool : CommonToolBase
         aspectBox.AddChild(ppCurveEdit);
         container.AddProperty("Global pen pressure remap", aspectBox);
 
-        var brushSelector = new OptionButton();
-        brushSelector.ObserveObservableList(AppBrushLibrary.BrushSettings, s => s.Name);
-        brushSelector.BindSelectionIndex(AppBrushLibrary.SelectedIndex);
+        var brushSelector = new OptionButton()
+            {
+                CustomMinimumSize = new(0, 30),
+            }
+            .ObserveObservableList(AppBrushLibrary.BrushSettings, s => s.Name)
+            .BindSelectionIndex(AppBrushLibrary.SelectedIndex);
         container.AddProperty("Library brush", brushSelector);
 
+        var radiusView = AppBrushLibrary.SelectedIndex
+            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.BaseRadius)
+            .ToReadOnlyReactiveProperty();
         var appBrushRadiusControl = new SpinSlider()
         {
             MinValue = 0.1f,
             MaxValue = 256f,
             Step = 0.03333333f,
             ExpEdit = true
-        };
+        }.ReactiveBindNumber(radiusView);
         var boxBrushRadius = container.AddProperty("Radius", appBrushRadiusControl);
         boxBrushRadius.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
-        var radiusView = AppBrushLibrary.SelectedIndex
-            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.BaseRadius)
-            .ToReadOnlyReactiveProperty();
-        appBrushRadiusControl.ReactiveBindNumber(radiusView);
 
+        var colorView = AppBrushLibrary.SelectedIndex
+            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color)
+            .ToReadOnlyReactiveProperty();
         var appBrushColorControl = new ColorPickerButton()
         {
             CustomMinimumSize = new(0, 30),
-        };
+        }.ReactiveBindColor(colorView);
         var boxBrushColor = container.AddProperty("Color", appBrushColorControl);
         boxBrushColor.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
-        var colorView = AppBrushLibrary.SelectedIndex
-            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color).ToReadOnlyReactiveProperty();
-        appBrushColorControl.ReactiveBindColor(colorView);
 
         var useBrushButton = new Button()
         {
@@ -91,7 +94,10 @@ public partial class PaintTool : CommonToolBase
         {
             CustomMinimumSize = new(0, 150),
         };
-        brushList.ItemSelected += idx => { new SetWorkingBrushCmd(Document.Get<BrushManager>().Brushes[(int)idx]).Commit(); };
+        brushList.ItemSelected += idx =>
+        {
+            new CommandBuilder(Document.Get<BrushManager>().Brushes[(int)idx]).SetWorkingBrush().Commit();
+        };
         brushList.ItemClicked += async (idx, _, buttonIndex) =>
         {
             if ((MouseButton)buttonIndex != MouseButton.Right) return;
@@ -104,23 +110,24 @@ public partial class PaintTool : CommonToolBase
                     toDeleteStrokes.Add(strokeE);
             }
 
-            CommandBase cmd = new EmptyCommand();
             if (toDeleteStrokes.Count > 0)
             {
                 var dialog = GetTree().GetNodesInGroup("Dialog").OfType<YesNoDialog>().First();
                 dialog.DialogText = "[Delete Brush Hint]".Tr();
                 if (!await dialog.PopupCollectInput()) return;
-                foreach (var strokeE in toDeleteStrokes)
-                {
-                    cmd.Combine(new DeleteStrokeCmd(strokeE));
-                }
+            }
+
+            var builder = new CommandBuilder(Entity.Null);
+            foreach (var strokeE in toDeleteStrokes)
+            {
+                builder.SetTarget(strokeE).DeleteStroke();
             }
 
             var selectionManager = Document.Get<SelectionManager>();
             if (selectionManager.WorkingBrush.Value == brushE)
-                cmd.Combine(new SetWorkingBrushCmd(Entity.Null));
-            cmd.Combine(new DeleteBrushCmd(brushE));
-            cmd.Commit();
+                builder.SetTarget(Entity.Null).SetWorkingBrush();
+            builder.SetTarget(brushE).DeleteBrush();
+            builder.Commit();
         };
         var brushM = Document.Get<BrushManager>();
         var selectionM = Document.Get<SelectionManager>();
@@ -129,18 +136,17 @@ public partial class PaintTool : CommonToolBase
         Document.Add(brushList);
         container.AddProperty("Brush in document", brushList);
 
+        var rView = selectionM.WorkingBrush
+            .Select(e => e.IsDeletedOrNull() ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
         var radiusControl = new SpinSlider
         {
             MinValue = 0.1f,
             MaxValue = 256f,
             Step = 0.03333333f,
             ExpEdit = true,
-        };
+        }.ReactiveBindNumber(rView);
         var radiusBox = container.AddProperty("Radius", radiusControl);
         radiusBox.VisibleIf(selectionM.WorkingBrush, e => !e.IsNull);
-        var rView = selectionM.WorkingBrush
-            .Select(e => e.IsDeletedOrNull() ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
-        radiusControl.ReactiveBindNumber(rView);
 
         var manageDocumentBrush = new Button()
         {
@@ -157,9 +163,10 @@ public partial class PaintTool : CommonToolBase
     {
         if (!AppBrushLibrary.HasSelection) return;
         var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
-        var cmd = new NewBrushCmd(setting);
-        var brushE = cmd.InitEntity();
-        cmd.Combine(new SetWorkingBrushCmd(brushE)).Commit();
+        new CommandBuilder(AppWorldManager.WorkingWorld.Value.Create())
+            .NewBrush(setting)
+            .SetWorkingBrush()
+            .Commit();
     }
 
     public override bool OnSwitchLayer(Entity newLayerE)

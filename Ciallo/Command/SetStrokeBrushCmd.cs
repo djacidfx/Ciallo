@@ -4,25 +4,40 @@ using Frent;
 
 namespace Ciallo.Command;
 
-public class SetStrokeBrushCmd(Entity strokeE, Entity newBrushE) : CommandBase
+[CommandBuilder]
+public class SetStrokeBrushCmd : CommandBase
 {
     private Entity _oldBrushE;
+    private readonly Entity _newBrushE;
 
-    public override void Do()
+    public SetStrokeBrushCmd(Entity newBrushE)
+    {
+        _newBrushE = newBrushE;
+    }
+
+    protected override void BeforeFirstDo(Entity strokeE)
+    {
+        var setting = strokeE.Get<StrokeSetting>();
+        _oldBrushE = setting.BrushE;
+    }
+
+    protected override void Do(Entity strokeE)
     {
         // Data
         var setting = strokeE.Get<StrokeSetting>();
-        _oldBrushE = setting.BrushE;
-        setting.BrushE = newBrushE;
+        setting.BrushE = _newBrushE;
 
         // View
-        strokeE.Get<StrokeView>().Material = !newBrushE.IsNull ? newBrushE.Get<BrushMaterial>() : AutoloadRendering.MissingBrushMaterial;
+        strokeE.Get<StrokeView>().Material =
+            _newBrushE.IsNull ? AutoloadRendering.MissingBrushMaterial : _newBrushE.Get<BrushMaterial>();
     }
 
-    public override void Undo()
+    protected override void Undo(Entity strokeE)
     {
         // View
-        strokeE.Get<StrokeView>().Material = !_oldBrushE.IsNull ? _oldBrushE.Get<BrushMaterial>() : AutoloadRendering.MissingBrushMaterial;
+        strokeE.Get<StrokeView>().Material = !_oldBrushE.IsNull
+            ? _oldBrushE.Get<BrushMaterial>()
+            : AutoloadRendering.MissingBrushMaterial;
 
         // Data
         var setting = strokeE.Get<StrokeSetting>();

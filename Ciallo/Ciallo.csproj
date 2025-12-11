@@ -8,7 +8,7 @@
         <TargetFramework>net9.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Frent" Version="0.5.9-beta"/>
+        <PackageReference Include="Frent" Version="0.6.1-beta"/>
         <PackageReference Include="GodotSharp.SourceGenerators" Version="2.6.0"/>
         <PackageReference Include="Humanizer" Version="3.0.0-beta.96"/>
         <PackageReference Include="MessagePack" Version="3.1.4"/>
@@ -23,12 +23,21 @@
         <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
         <PackageReference Include="ObservableCollections.R3" Version="3.3.4"/>
         <PackageReference Include="R3" Version="1.3.0"/>
-        <PackageReference Include="Stateless" Version="5.19.0"/>
+        <PackageReference Include="Stateless" Version="5.20.0"/>
         <PackageReference Include="System.Management" Version="10.0.0"/>
     </ItemGroup>
     <ItemGroup>
         <Folder Include="Localization\*.csv"/>
         <None Include="**\*.gdshader"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Remove="SourceGeneration\**"/>
+    </ItemGroup>
+    <ItemGroup>
+        <EmbeddedResource Remove="SourceGeneration\**"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="SourceGeneration\SourceGeneration.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false"/>
     </ItemGroup>
 
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">

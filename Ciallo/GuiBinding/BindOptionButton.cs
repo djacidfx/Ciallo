@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Ciallo.Misc;
 using Godot;
 using ObservableCollections;
 using R3;
 
-namespace Ciallo.Misc;
+namespace Ciallo.GuiBinding;
 
 public static class BindOptionButton
 {
@@ -18,10 +18,11 @@ public static class BindOptionButton
     /// <param name="button"></param>
     /// <param name="property"></param>
     /// <typeparam name="T">Must be enum type.</typeparam>
-    public static void BindEnum<T>(this OptionButton button, [NotNull] ReactiveProperty<T> property) where T : Enum
+    public static OptionButton BindEnum<T>(this OptionButton button, ReactiveProperty<T> property) where T : Enum
     {
         var values = (T[])Enum.GetValues(typeof(T));
         button.BindValue(values, property);
+        return button;
     }
 
     /// <summary>
@@ -34,8 +35,8 @@ public static class BindOptionButton
     /// <param name="toString"></param>
     /// <param name="subs"></param>
     /// <typeparam name="T">Use `ToString()` as item string.</typeparam>
-    public static void BindValue<T>(this OptionButton button, IReadOnlyList<T> items,
-        [NotNull] ReactiveProperty<T> property, Func<T, string> toString, out CompositeDisposable subs)
+    public static OptionButton BindValue<T>(this OptionButton button, IReadOnlyList<T> items,
+        ReactiveProperty<T> property, Func<T, string> toString, out CompositeDisposable subs)
     {
         if (button.AllowReselect) throw new ArgumentException("AllowReselect must be false.");
         button.Clear();
@@ -50,19 +51,21 @@ public static class BindOptionButton
             if (index != -1) property.Value = items[(int)index];
             if (index == -1) property.Value = default;
         }).AddTo(subs);
+        return button;
     }
 
-    public static void BindValue<T>(this OptionButton button, IReadOnlyList<T> items,
-        [NotNull] ReactiveProperty<T> property, Func<T, string> toString = null)
+    public static OptionButton BindValue<T>(this OptionButton button, IReadOnlyList<T> items,
+        ReactiveProperty<T> property, Func<T, string> toString = null)
     {
         toString ??= v => v.ToString();
         BindValue(button, items, property, toString, out var subs);
         subs.AddTo(button);
+        return button;
     }
 
     //---------------------------------------------------------------
     // Pitfall: OptionButton lacks MoveItem, so we need to rebuild items on Move
-    public static void MoveItem(this OptionButton button, int from, int to)
+    public static OptionButton MoveItem(this OptionButton button, int from, int to)
     {
         var count = button.GetItemCount();
         var texts = new List<string>(count);
@@ -84,9 +87,10 @@ public static class BindOptionButton
             button.Selected = selected + 1;
         else
             button.Selected = selected;
+        return button;
     }
 
-    public static void ObserveObservableList<T>(this OptionButton button,
+    public static OptionButton ObserveObservableList<T>(this OptionButton button,
         ObservableList<T> list,
         Func<T, ReactiveProperty<string>> toName)
     {
@@ -158,10 +162,11 @@ public static class BindOptionButton
         }).AddTo(subs);
 
         subs.AddTo(button);
+        return button;
     }
 
-    public static void BindSelectionIndex(this OptionButton button,
-        [NotNull] ReactiveProperty<int> property)
+    public static OptionButton BindSelectionIndex(this OptionButton button,
+        ReactiveProperty<int> property)
     {
         var subs = new CompositeDisposable();
 
@@ -177,5 +182,6 @@ public static class BindOptionButton
             .AddTo(subs);
 
         subs.AddTo(button);
+        return button;
     }
 }

@@ -4,25 +4,21 @@ using Frent;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class SetWorkingBrushCmd : CommandBase
 {
-    private readonly Entity _oldBrushE;
-    private readonly Entity _newBrushE;
+    private Entity _oldBrushE;
 
-    public SetWorkingBrushCmd(Entity newBrushE)
+    protected override void BeforeFirstDo(Entity newBrushE)
     {
         _oldBrushE = Document.Get<SelectionManager>().WorkingBrush.Value;
-        _newBrushE = newBrushE;
-
-        // Dirty hack
-        AppBrushLibrary.SelectedIndex.Value = -1;
     }
 
-    public override void Do()
+    protected override void Do(Entity newBrushE)
     {
         // Data
-        var newIndex = Document.Get<BrushManager>().Brushes.IndexOf(_newBrushE);
-        Document.Get<SelectionManager>().WorkingBrush.Value = _newBrushE;
+        var newIndex = Document.Get<BrushManager>().Brushes.IndexOf(newBrushE);
+        Document.Get<SelectionManager>().WorkingBrush.Value = newBrushE;
 
         // UI
         var brushList = Document.Get<DocumentBrushList>();
@@ -32,7 +28,7 @@ public class SetWorkingBrushCmd : CommandBase
             brushList.DeselectAll();
     }
 
-    public override void Undo()
+    protected override void Undo(Entity newBrushE)
     {
         // UI
         var brushList = Document.Get<DocumentBrushList>();

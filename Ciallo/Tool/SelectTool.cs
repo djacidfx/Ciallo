@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
+using Ciallo.GuiBinding;
 using Ciallo.Misc;
 using Ciallo.Widget;
 using Frent;
@@ -114,13 +115,13 @@ public partial class SelectTool : CommonToolBase
         {
             var selectionManager = Document.Get<SelectionManager>();
             if (selectionManager.SelectedPolylines.Count == 0) return;
-            var cmd = new EmptyCommand();
+            var cmd = new CommandBuilder(Entity.Null);
             foreach (var polylineE in selectionManager.SelectedPolylines)
             {
                 if (polylineE.Has<StrokeSetting>())
-                    cmd.Combine(new DeleteStrokeCmd(polylineE));
+                    cmd.SetTarget(polylineE).DeleteStroke();
                 else
-                    cmd.Combine(new DeleteFilledPolygonCmd(polylineE));
+                    cmd.SetTarget(polylineE).DeleteFilledPolygon();
             }
             selectionManager.SelectedPolylines.Clear();
             cmd.Commit();
@@ -165,22 +166,22 @@ public partial class SelectTool : CommonToolBase
         var simplifyButton = PropertyContainer.CreateButton("Simplify").AddToChildOf(polylineEditBox);
         simplifyButton.Pressed += () =>
         {
-            var cmd = new EmptyCommand();
+            var builder = new CommandBuilder(Entity.Null);
             foreach (var polylineE in selectionManager.SelectedPolylines)
             {
                 var geom = polylineE.Get<PolylineGeometry>();
                 if (geom.Positions.Count < 4) continue;
                 geom.Positions.SimplifyCurvatureDistance(SimplificationRatio.Value, out var indices);
                 var newGeom = geom.Index(indices);
-                cmd.Combine(new SetPolylineGeometryCmd(polylineE, newGeom));
+                builder.SetTarget(polylineE).SetPolylineGeometry(newGeom);
             }
-            cmd.Commit();
+            builder.Commit();
         };
 
         var smoothSubdivideButton = PropertyContainer.CreateButton("Smooth subdivide").AddToChildOf(polylineEditBox);
         smoothSubdivideButton.Pressed += () =>
         {
-            var cmd = new EmptyCommand();
+            var builder = new CommandBuilder(Entity.Null);
             foreach (var polylineE in selectionManager.SelectedPolylines)
             {
                 var geom = polylineE.Get<PolylineGeometry>();
@@ -193,15 +194,15 @@ public partial class SelectTool : CommonToolBase
                 }
                 polyTs.Add(geom.Positions.Count - 1);
                 var newGeom = geom.CatmullRomSample(polyTs);
-                cmd.Combine(new SetPolylineGeometryCmd(polylineE, newGeom));
+                builder.SetTarget(polylineE).SetPolylineGeometry(newGeom);
             }
-            cmd.Commit();
+            builder.Commit();
         };
 
         var linearSubdivideButton = PropertyContainer.CreateButton("Linear subdivide").AddToChildOf(polylineEditBox);
         linearSubdivideButton.Pressed += () =>
         {
-            var cmd = new EmptyCommand();
+            var builder = new CommandBuilder(Entity.Null);
             foreach (var polylineE in selectionManager.SelectedPolylines)
             {
                 var geom = polylineE.Get<PolylineGeometry>();
@@ -214,15 +215,15 @@ public partial class SelectTool : CommonToolBase
                 }
                 polyTs.Add(geom.Positions.Count - 1);
                 var newGeom = geom.Sample(polyTs);
-                cmd.Combine(new SetPolylineGeometryCmd(polylineE, newGeom));
+                builder.SetTarget(polylineE).SetPolylineGeometry(newGeom);
             }
-            cmd.Commit();
+            builder.Commit();
         };
 
         var smoothButton = PropertyContainer.CreateButton("Smooth").AddToChildOf(polylineEditBox);
         smoothButton.Pressed += () =>
         {
-            var cmd = new EmptyCommand();
+            var builder = new CommandBuilder(Entity.Null);
             foreach (var polylineE in selectionManager.SelectedPolylines)
             {
                 var geom = polylineE.Get<PolylineGeometry>();
@@ -241,9 +242,9 @@ public partial class SelectTool : CommonToolBase
                     Tilts = geom.Tilts,
                 };
 
-                cmd.Combine(new SetPolylineGeometryCmd(polylineE, newGeom));
+                builder.SetTarget(polylineE).SetPolylineGeometry(newGeom);
             }
-            cmd.Commit();
+            builder.Commit();
         };
     }
 

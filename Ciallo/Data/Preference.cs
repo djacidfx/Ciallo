@@ -6,6 +6,7 @@ using Godot;
 using Newtonsoft.Json;
 using ObservableCollections;
 using R3;
+using FileAccess = Godot.FileAccess;
 
 namespace Ciallo.Data;
 

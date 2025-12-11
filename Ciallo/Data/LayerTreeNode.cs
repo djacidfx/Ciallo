@@ -15,7 +15,7 @@ public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
     [DataMember] public ReactiveProperty<float> Opacity = new(1.0f);
     [DataMember] public ReactiveProperty<bool> IsLocked = new(false); // Need to implement
 
-    public CompositeDisposable RegisterToCommandManager(CommandManager manager)
+    public CompositeDisposable RegisterProperties(CommandManager manager)
     {
         CompositeDisposable subs = new();
         manager.RegisterProperty(Name).AddTo(subs);

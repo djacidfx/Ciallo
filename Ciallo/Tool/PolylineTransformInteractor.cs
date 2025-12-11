@@ -215,12 +215,12 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
         var resultT = _currTransform;
         if (!resultT.IsEqualApprox(Transform2D.Identity))
         {
-            var cmd = new EmptyCommand();
+            var cmd = new CommandBuilder();
             foreach (var e in _processingEs)
             {
                 var newGeom = e.Get<PolylineGeometry>().Clone();
                 newGeom.Positions = newGeom.Positions.Select(p => resultT * p).ToList();
-                cmd.Combine(new SetPolylineGeometryCmd(e, newGeom));
+                cmd.SetTarget(e).SetPolylineGeometry(newGeom);
             }
             cmd.Commit();
         }

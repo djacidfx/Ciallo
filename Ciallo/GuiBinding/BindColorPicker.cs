@@ -1,21 +1,11 @@
 ﻿using Godot;
 using R3;
 
-namespace Ciallo.Misc;
+namespace Ciallo.GuiBinding;
 
 public static class BindColorPicker
 {
-    public static CompositeDisposable BindColor(this ColorPicker picker, ReactiveProperty<Color> property)
-    {
-        CompositeDisposable subs = new();
-        property.Subscribe(c => picker.Color = c).AddTo(subs);
-        picker.SignalAsObservable<Color>(ColorPicker.SignalName.ColorChanged)
-            .Subscribe(c => property.Value = c)
-            .AddTo(subs);
-        return subs;
-    }
-
-    public static void BindColor(this ColorPickerButton button, ReactiveProperty<Color> property, out CompositeDisposable subs)
+    public static ColorPickerButton BindColor(this ColorPickerButton button, ReactiveProperty<Color> property, out CompositeDisposable subs)
     {
         //// Direct get picker binding make the preview color of the button not update correctly
         // return BindColor(button.GetPicker(), property);
@@ -23,15 +13,17 @@ public static class BindColorPicker
         property.Subscribe(c => button.Color = c).AddTo(subs);
         button.SignalAsObservable<Color>(ColorPickerButton.SignalName.ColorChanged)
             .Subscribe(c => property.Value = c).AddTo(subs);
+        return button;
     }
 
-    public static void BindColor(this ColorPickerButton button, ReactiveProperty<Color> property)
+    public static ColorPickerButton BindColor(this ColorPickerButton button, ReactiveProperty<Color> property)
     {
         BindColor(button, property, out var subs);
         subs.AddTo(button);
+        return button;
     }
 
-    public static void ReactiveBindColor(this ColorPickerButton button, ReadOnlyReactiveProperty<ReactiveProperty<Color>> view)
+    public static ColorPickerButton ReactiveBindColor(this ColorPickerButton button, ReadOnlyReactiveProperty<ReactiveProperty<Color>> view)
     {
         var subs = new CompositeDisposable();
         CompositeDisposable curSub = null;
@@ -47,5 +39,6 @@ public static class BindColorPicker
         }).AddTo(subs);
 
         subs.AddTo(button);
+        return button;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.Misc;
+using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -8,14 +9,14 @@ using R3;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class NewImageLayerCmd : CommandBase
 {
-    private Entity _layerE;
     private readonly ImageLayerSetting _setting;
     private Sprite2D _sprite;
     private CompositeDisposable _subs;
 
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(_layerE);
+    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
     public NewImageLayerCmd(Image image)
     {
@@ -23,24 +24,29 @@ public class NewImageLayerCmd : CommandBase
         {
             Texture = ImageTexture.CreateFromImage(image)
         };
-        InitEntity();
     }
 
     public NewImageLayerCmd(ImageLayerSetting setting)
     {
         _setting = setting;
-        InitEntity();
     }
 
-    public override void Do()
+    protected override void Do(Entity layerE)
     {
         _subs = new();
-        _subs.AddTo(_layerE);
+        _subs.AddTo(layerE);
 
         // Data
-        _layerE.Tag<ToSerializeTag>();
-        Document.Get<LayerTreeNode>().AddChild(_layerE);
-        _layerE.Add(_setting);
+        if (!layerE.Has<LayerTreeNode>())
+        {
+            var n = new LayerTreeNode { Name = { Value = "Image".Tr() } };
+            layerE.Add(n);
+            n.RegisterProperties(CommandManager).AddTo(layerE);
+        }
+
+        layerE.Tag<ToSerializeTag>();
+        Document.Get<LayerTreeNode>().AddChild(layerE);
+        layerE.Add(_setting);
         CommandManager.RegisterProperty(_setting.ImageTransform).AddTo(_subs);
 
         // View
@@ -51,10 +57,10 @@ public class NewImageLayerCmd : CommandBase
         };
         worldView.AddChild(_sprite);
         _setting.ImageTransform.Subscribe(_sprite.SetTransform).AddTo(_subs);
-        _layerE.Add(_sprite);
+        layerE.Add(_sprite);
         _sprite.SetOwner(worldView);
 
-        var node = _layerE.Get<LayerTreeNode>();
+        var node = layerE.Get<LayerTreeNode>();
         node.IsVisible.Subscribe(_sprite.SetVisible).AddTo(_subs);
         node.Opacity.Subscribe(v =>
         {
@@ -66,7 +72,7 @@ public class NewImageLayerCmd : CommandBase
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
         var layerOverlay = new TransformOverlayBox(_setting.ImageSize) { Visible = false };
-        _layerE.Add(layerOverlay);
+        layerE.Add(layerOverlay);
         worldOverlay.AddChild(layerOverlay);
         _setting.ImageTransform.Subscribe(t =>
         {
@@ -76,38 +82,28 @@ public class NewImageLayerCmd : CommandBase
 
         // Panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.CreateAdd(_layerE);
+        layerContainer.CreateAdd(layerE);
     }
 
-    public override void Undo()
+    protected override void Undo(Entity layerE)
     {
         // Panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.RemoveFree(_layerE);
+        layerContainer.RemoveFree(layerE);
 
         // Overlay
-        _layerE.Get<TransformOverlayBox>().QueueFree();
-        _layerE.Remove<TransformOverlayBox>();
+        layerE.Get<TransformOverlayBox>().QueueFree();
+        layerE.Remove<TransformOverlayBox>();
 
         // View
         _sprite.QueueFree();
-        _layerE.Remove<Sprite2D>();
+        layerE.Remove<Sprite2D>();
 
         // Data
-        _layerE.Remove<ImageLayerSetting>();
-        Document.Get<LayerTreeNode>().RemoveChild(_layerE);
-        _layerE.Detach<ToSerializeTag>();
+        layerE.Remove<ImageLayerSetting>();
+        Document.Get<LayerTreeNode>().RemoveChild(layerE);
+        layerE.Detach<ToSerializeTag>();
 
         _subs.Dispose();
-    }
-
-    public Entity InitEntity()
-    {
-        if (!_layerE.IsNull) return _layerE;
-        _layerE = WorkingWorld.Create();
-        var node = new LayerTreeNode { Name = { Value = "Image".Tr() } };
-        _layerE.Add(node);
-        node.RegisterToCommandManager(Document.Get<CommandManager>()).AddTo(_layerE);
-        return _layerE;
     }
 }

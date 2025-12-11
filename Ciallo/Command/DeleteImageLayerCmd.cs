@@ -1,76 +1,75 @@
 ﻿using System.Collections.Generic;
 using Ciallo.Data;
+using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class DeleteImageLayerCmd : CommandBase
 {
-    private Entity _layerE;
     private Entity _parentE;
     private int _index;
 
-    private readonly Sprite2D _sprite;
-    private readonly TransformOverlayBox _overlay;
-    private readonly ImageLayerSetting _setting;
+    private ImageLayerSetting _setting;
+    private Sprite2D _sprite;
+    private TransformOverlayBox _overlay;
 
-    public DeleteImageLayerCmd(Entity layerE)
+    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
+    public override IEnumerable<GodotObject> UndoRefObjects => [_sprite, _overlay];
+
+    protected override void BeforeFirstDo(Entity layerE)
     {
-        _layerE = layerE;
-        _parentE = _layerE.Get<LayerTreeNode>().Parent;
+        _overlay = layerE.Get<TransformOverlayBox>();
+        _sprite = layerE.Get<Sprite2D>();
+        _setting = layerE.Get<ImageLayerSetting>();
 
-        _sprite = _layerE.Get<Sprite2D>();
-        _overlay = _layerE.Get<TransformOverlayBox>();
-        _setting = _layerE.Get<ImageLayerSetting>();
+        _parentE = layerE.Get<LayerTreeNode>().Parent;
+        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(layerE);
     }
 
-    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(_layerE);
-    public override IEnumerable<GodotObject> UndoRefObjects => new List<GodotObject> { _sprite, _overlay };
-
-    public override void Do()
+    protected override void Do(Entity layerE)
     {
         // Overlay
         _overlay.RemoveFromParent();
-        _layerE.Remove<TransformOverlayBox>();
+        layerE.Remove<TransformOverlayBox>();
 
         // View
         _sprite.RemoveFromParent();
-        _layerE.Remove<Sprite2D>();
+        layerE.Remove<Sprite2D>();
 
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.RemoveFree(_layerE);
+        layerContainer.RemoveFree(layerE);
 
         // Data
-        _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(_layerE);
-        _parentE = _layerE.Get<LayerTreeNode>().Parent;
         _parentE.Get<LayerTreeNode>().RemoveChild(_index);
-        _layerE.Remove<ImageLayerSetting>();
-        _layerE.Detach<ToSerializeTag>();
+        layerE.Remove<ImageLayerSetting>();
+        layerE.Detach<ToSerializeTag>();
     }
 
-    public override void Undo()
+    protected override void Undo(Entity layerE)
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();
-        parentNode.InsertChild(_index, _layerE);
-        _layerE.Add(_setting);
-        _layerE.Tag<ToSerializeTag>();
+        parentNode.InsertChild(_index, layerE);
+        layerE.Add(_setting);
+        layerE.Tag<ToSerializeTag>();
 
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.CreateInsert(_layerE, _index);
+        layerContainer.CreateInsert(layerE, _index);
 
         // View
         var worldView = Document.Get<WorldView>();
         worldView.InsertNodeAt(_sprite, _index);
-        _layerE.Add(_sprite);
+        layerE.Add(_sprite);
 
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
         worldOverlay.AddChild(_overlay);
-        _layerE.Add(_overlay);
+        layerE.Add(_overlay);
     }
 }

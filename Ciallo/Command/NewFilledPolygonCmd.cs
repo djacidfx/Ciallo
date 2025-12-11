@@ -7,83 +7,82 @@ using R3;
 
 namespace Ciallo.Command;
 
+[CommandBuilder]
 public class NewFilledPolygonCmd : CommandBase
 {
     private readonly Entity _layerE;
     private readonly FilledPolygonSetting _setting;
-    public Entity PolygonE { get; private set; }
 
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(PolygonE);
+    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
     public NewFilledPolygonCmd(Entity layerE, FilledPolygonSetting setting = null)
     {
         _layerE = layerE;
         _setting = setting ?? new FilledPolygonSetting();
-        InitEntity();
     }
 
     private CompositeDisposable _subs;
 
-    public override void Do()
+    protected override void Do(Entity polygonE)
     {
         _subs = new();
+        _subs.AddTo(polygonE);
         // Data
-        PolygonE.Tag<ToSerializeTag>();
-        _layerE.Get<LayerTreeNode>().AddChild(PolygonE);
-        PolygonE.Add(_setting);
+        if (!polygonE.Has<LayerTreeNode>())
+        {
+            polygonE.Add(new LayerTreeNode());
+            polygonE.Add(new PolylineGeometry());
+        }
+
+        polygonE.Tag<ToSerializeTag>();
+        _layerE.Get<LayerTreeNode>().AddChild(polygonE);
+        polygonE.Add(_setting);
 
         // View
         var polygonView = new Polygon2D() { Antialiased = true };
         var layerView = _layerE.Get<PolylineLayerView>();
         layerView.AddChild(polygonView);
-        PolygonE.Add(polygonView);
+        polygonE.Add(polygonView);
         polygonView.SetOwner(layerView.Owner);
 
-        _setting.Color.Subscribe(polygonView.SetColor).AddTo(PolygonE).AddTo(_subs);
-        CommandManager.RegisterProperty(_setting.Color).AddTo(PolygonE).AddTo(_subs);
+        _setting.Color.Subscribe(polygonView.SetColor).AddTo(polygonE).AddTo(_subs);
+        CommandManager.RegisterProperty(_setting.Color).AddTo(polygonE).AddTo(_subs);
 
         // Overlay
         var overlay = new PolylineWireframe() { Visible = false };
         var worldOverlay = Document.Get<WorldOverlay>();
         worldOverlay.AddChild(overlay);
-        PolygonE.Add(overlay);
+        polygonE.Add(overlay);
 
         // Cursor detection
         var polygonArea = new CursorDetectionArea();
         _layerE.Get<PolylineAreaHolder>().AddChild(polygonArea);
-        PolygonE.Add(polygonArea);
+        polygonE.Add(polygonArea);
     }
 
-    public override void Undo()
+    protected override void Undo(Entity polygonE)
     {
+        // Selection manager
+        Document.Get<SelectionManager>().SelectedPolylines.Remove(polygonE);
+
         // Cursor detection
-        PolygonE.Get<CursorDetectionArea>().QueueFree();
-        PolygonE.Remove<CursorDetectionArea>();
+        polygonE.Get<CursorDetectionArea>().QueueFree();
+        polygonE.Remove<CursorDetectionArea>();
 
         // Overlay
-        PolygonE.Get<PolylineWireframe>().QueueFree();
-        PolygonE.Remove<PolylineWireframe>();
+        polygonE.Get<PolylineWireframe>().QueueFree();
+        polygonE.Remove<PolylineWireframe>();
 
         // View
         // Pitfall: godot cannot deal with polygons shape as arabic numerals '8'.
-        PolygonE.Get<Polygon2D>().QueueFree();
-        PolygonE.Remove<Polygon2D>();
+        polygonE.Get<Polygon2D>().QueueFree();
+        polygonE.Remove<Polygon2D>();
 
         // Data
-        PolygonE.Remove<FilledPolygonSetting>();
+        polygonE.Remove<FilledPolygonSetting>();
         _layerE.Get<LayerTreeNode>().RemoveChild(^1);
-        PolygonE.Detach<ToSerializeTag>();
+        polygonE.Detach<ToSerializeTag>();
 
         _subs.Dispose();
-    }
-
-    public Entity InitEntity()
-    {
-        if (!PolygonE.IsNull) return PolygonE;
-        PolygonE = WorkingWorld.Create();
-        var node = new LayerTreeNode();
-        PolygonE.Add(new PolylineGeometry());
-        PolygonE.Add(node);
-        return PolygonE;
     }
 }

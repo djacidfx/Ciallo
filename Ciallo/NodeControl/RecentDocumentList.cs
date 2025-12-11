@@ -1,4 +1,4 @@
-using Ciallo.Misc;
+using Ciallo.GuiBinding;
 using Godot;
 
 namespace Ciallo.NodeControl;
