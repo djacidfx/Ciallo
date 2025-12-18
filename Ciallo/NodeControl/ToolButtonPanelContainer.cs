@@ -13,16 +13,16 @@ public partial class ToolButtonPanelContainer : Container
         this.QueueFreeChildren();
         AppWorldManager.LoadedWorlds.ObserveAdd().Select(et => et.Value.Document()).Subscribe(document =>
         {
-            var root = ToolButtonPanel.Instantiate(document);
-            root.VisibleIf(AppWorldManager.WorkingDocument, document);
-            document.Add(root);
-            AddChild(root);
+            var panel = ToolButtonPanel.Instantiate(document);
+            panel.VisibleIf(AppWorldManager.WorkingDocument, document);
+            document.Add(panel);
+            AddChild(panel);
         }).AddTo(this);
 
         AppWorldManager.LoadedWorlds.ObserveRemove().Select(et => et.Value.Document()).Subscribe(document =>
         {
             var panel = document.Get<ToolButtonPanel>();
-            panel.DeactivateTool();
+            panel.DeactivateToolButton();
             panel.QueueFree();
             document.Remove<ToolButtonPanel>();
         }).AddTo(this);

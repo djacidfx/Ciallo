@@ -1,14 +1,11 @@
-[gd_scene load_steps=16 format=3 uid="uid://bfwvwd77tb7tq"]
+[gd_scene load_steps=13 format=3 uid="uid://bfwvwd77tb7tq"]
 
 [ext_resource type="Script" uid="uid://bexkxr3qvv0qo" path="res://NodeControl/ToolButtonPanel.cs" id="1_vvphd"]
-[ext_resource type="Script" uid="uid://eg8b30dctg7p" path="res://Tool/SelectTool.cs" id="2_pfmit"]
 [ext_resource type="Texture2D" uid="uid://djmjwmlnccp86" path="res://Icon/cursor-default-outline.svg" id="2_vu0km"]
 [ext_resource type="Texture2D" uid="uid://bayscuh6s0yrc" path="res://Icon/lasso-dash.svg" id="3_ic33f"]
 [ext_resource type="Texture2D" uid="uid://cjf7u8mgog5mr" path="res://Icon/brush.svg" id="4_ijdye"]
 [ext_resource type="Texture2D" uid="uid://b4e0ypa7qifd3" path="res://Icon/lasso-fill.svg" id="5_p40eb"]
-[ext_resource type="Script" uid="uid://c3cw48t1rqox2" path="res://Tool/PaintTool.cs" id="5_w8m0o"]
 [ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icon/format-color-fill.svg" id="6_4b63a"]
-[ext_resource type="Script" uid="uid://cluvxc4vlaqdm" path="res://Tool/PaintFillTool.cs" id="7_vvphd"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
 action = &"ToolSelection"
@@ -45,7 +42,6 @@ toggle_mode = true
 shortcut = SubResource("Shortcut_wcmo1")
 icon = ExtResource("2_vu0km")
 expand_icon = true
-script = ExtResource("2_pfmit")
 
 [node name="Lasso" type="Button" parent="."]
 visible = false
@@ -70,7 +66,6 @@ action_mode = 0
 shortcut = SubResource("Shortcut_7agld")
 icon = ExtResource("4_ijdye")
 expand_icon = true
-script = ExtResource("5_w8m0o")
 
 [node name="PaintFill" type="Button" parent="."]
 custom_minimum_size = Vector2(48, 48)
@@ -82,7 +77,6 @@ toggle_mode = true
 shortcut = SubResource("Shortcut_nllhf")
 icon = ExtResource("5_p40eb")
 expand_icon = true
-script = ExtResource("7_vvphd")
 
 [node name="VectorFill" type="Button" parent="."]
 visible = false

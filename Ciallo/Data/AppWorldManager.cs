@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Ciallo.Command;
 using Ciallo.NodeControl;
+using Ciallo.Tool;
 using Frent;
 using Godot;
 using ObservableCollections;
@@ -43,12 +44,13 @@ public static partial class AppWorldManager
         // Init empty document
         var document = world.Create();
 
-        // Add managers
         document.Add(settings);
+        document.Add(new LayerTreeNode()); // Document entity is layer tree root
+        // Add managers
         document.Add(new SelectionManager());
-        document.Add(new LayerTreeNode());
         document.Add(new CommandManager());
         document.Add(new BrushManager());
+        document.Add(new ToolManager());
 
         WorldToDocument.Add(world, document);
 
@@ -75,7 +77,7 @@ public static partial class AppWorldManager
             .Do();
         if (AppBrushLibrary.BrushSettings.Count > 0)
             AppBrushLibrary.SelectedIndex.Value = 0;
-        world.Document().Get<ToolButtonPanel>().ActivatePaintTool();
+        world.Document().Get<ToolManager>().ActivatePaintTool();
     }
 
     public static void Remove([NotNull] World world)

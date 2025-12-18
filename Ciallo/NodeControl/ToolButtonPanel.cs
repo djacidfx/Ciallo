@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Linq;
-using Ciallo.Tool;
 using Frent;
 using Godot;
 using R3;
@@ -15,45 +12,26 @@ public partial class ToolButtonPanel : Container
 {
     // Current design mix tool button GUI and tool logic data, for being lazy
     public ButtonGroup ToolButtonGroup { get; } = new();
-    public readonly ReactiveProperty<ITool> ActiveTool = new(null);
-    public List<T> GetAllTools<T>() => ToolButtonGroup.GetButtons().Where(b => b.IsVisible()).Cast<T>().ToList();
+    public readonly ReactiveProperty<BaseButton> ActiveToolButton = new(null);
 
     [OnInstantiate]
     private void Initialise(Entity document)
     {
-        ToolButtonGroup.Pressed += button =>
-        {
-            var tool = (ITool)button;
-            ActiveTool.Value?.OnDeactivate();
-            ActiveTool.Value = tool;
-            tool.OnActivate();
-        };
-
-        // Button group
+        // Set button group
         foreach (var child in GetChildren())
         {
             var button = (Button)child;
             button.ButtonGroup = ToolButtonGroup;
         }
 
-        // Assign document
-        foreach (var child in GetChildren())
+        ToolButtonGroup.Pressed += button =>
         {
-            if (child is not ToolButtonBase button) continue;
-            button.Document = document;
-        }
+            ActiveToolButton.Value = button;
+        };
     }
 
-    public void ActivatePaintTool()
+    public void DeactivateToolButton()
     {
-        GetNode<Button>("Paint").SetPressed(true);
-    }
-
-    public void DeactivateTool()
-    {
-        var tool = (ITool)ToolButtonGroup.GetPressedButton();
-        tool?.OnDeactivate();
-        ToolButtonGroup.GetPressedButton()?.SetPressed(false);
-        ActiveTool.Value = null;
+        ToolButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
     }
 }

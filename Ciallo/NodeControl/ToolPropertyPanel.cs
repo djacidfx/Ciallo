@@ -1,5 +1,6 @@
 using Ciallo.Data;
 using Ciallo.Misc;
+using Ciallo.Tool;
 using Ciallo.Widget;
 using Godot;
 using ObservableCollections;
@@ -28,8 +29,8 @@ public partial class ToolPropertyPanel : Container
             document.Add(holder);
             PropertyHolder.AddChild(holder);
 
-            var toolManager = document.Get<ToolButtonPanel>();
-            foreach (var tool in toolManager.GetAllTools<ToolButtonBase>())
+            var toolManager = document.Get<ToolManager>();
+            foreach (var tool in toolManager.Tools)
             {
                 var container = new PropertyContainer();
                 container.VisibleIf(toolManager.ActiveTool, tool);

@@ -1,16 +1,20 @@
 using Ciallo.Data;
 using Ciallo.GuiBinding;
+using Frent;
+using Frent.Components;
 using Godot;
 using R3;
 
 namespace Ciallo.NodeControl;
 
 [SceneTree]
-public partial class PaintPanel : PanelContainer
+public partial class PaintPanel : PanelContainer, IInitable
 {
     public readonly ReactiveProperty<float> Zoom = new(1f);
     public readonly ReactiveProperty<float> CanvasRotation = new(0f); // in deg not rad
     public readonly ReactiveProperty<Vector2> Offset = new(Vector2.Zero);
+
+    public void Init(Entity self) => WorldEventDispatcher.Document = self;
 
     private Polygon2D _background;
     private DocumentSetting _documentSetting;
