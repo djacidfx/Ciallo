@@ -16,7 +16,7 @@ public interface ITool
     public void OnKey(InputEventKey key);
 
     public void DrawProperty(PropertyContainer container);
-    public bool CanHandleLayer(IEnumerable<Entity> layerEs);
+    public bool CanHandleLayer(ICollection<Entity> layerEs);
 
     public void OnActivate();
     public void OnDeactivate();

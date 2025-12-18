@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -88,14 +89,14 @@ public partial class SelectTool : CommonToolBase
             .OnEntryFrom(_etSwitchWorkingLayer, layerE =>
             {
                 _currentLayerE = layerE;
-                layerE.Get<PolylineAreaHolder>().ProcessMode = ProcessModeEnum.Inherit;
+                layerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
                 LeftInteractor = PolylineTransformInteractor;
                 HoverInteractor = PolylineTransformHover;
                 RightInteractor = PolylineDeleteInteractor;
             })
             .OnExit(() =>
             {
-                _currentLayerE.Get<PolylineAreaHolder>().ProcessMode = ProcessModeEnum.Disabled;
+                _currentLayerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
                 HoverInteractor = null;
                 LeftInteractor = null;
                 RightInteractor = null;
@@ -264,13 +265,14 @@ public partial class SelectTool : CommonToolBase
         ToolStateMachine.Fire(Event.Deactivate);
     }
 
-    public override bool OnSwitchLayer(Entity newLayerE)
+    public override bool CanHandleLayer(ICollection<Entity> layerEs)
     {
-        if (newLayerE.IsDeletedOrNull()) return false;
-        ToolStateMachine.Fire(_etSwitchWorkingLayer, newLayerE);
-        bool isPolyline = newLayerE.Has<PolylineLayerSetting>();
-        bool isImage = newLayerE.Has<ImageLayerSetting>();
+        if (layerEs.Count != 1) return false;
+        var e = layerEs.Single();
+        if (e.IsDeletedOrNull()) return false;
 
-        return isPolyline || isImage;
+        bool canHandle = e.Has<PolylineLayerSetting>() || e.Has<ImageLayerSetting>();
+        if (canHandle) ToolStateMachine.Fire(_etSwitchWorkingLayer, e);
+        return canHandle;
     }
 }

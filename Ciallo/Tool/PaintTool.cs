@@ -68,7 +68,7 @@ public partial class PaintTool : CommonToolBase
             Text = "Use brush",
             Alignment = HorizontalAlignment.Left,
             CustomMinimumSize = new(0, 30),
-            SizeFlagsHorizontal = SizeFlags.Fill
+            SizeFlagsHorizontal = Control.SizeFlags.Fill
         };
         useBrushButton.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
         useBrushButton.Pressed += OnUseBrushPressed;
@@ -77,12 +77,12 @@ public partial class PaintTool : CommonToolBase
             Text = "Manage brush library",
             Alignment = HorizontalAlignment.Left,
             CustomMinimumSize = new(0, 30),
-            SizeFlagsHorizontal = SizeFlags.Fill
+            SizeFlagsHorizontal = Control.SizeFlags.Fill
         };
         manageButton.Pressed += () => GetTree().GetNodesInGroup("Dialog").OfType<BrushPanel>().First().Popup();
         var box = new VBoxContainer()
         {
-            SizeFlagsHorizontal = SizeFlags.Fill
+            SizeFlagsHorizontal = Control.SizeFlags.Fill
         };
         box.AddChild(manageButton);
         box.AddChild(useBrushButton);
@@ -153,7 +153,7 @@ public partial class PaintTool : CommonToolBase
             Text = "Manage brush in document",
             Alignment = HorizontalAlignment.Left,
             CustomMinimumSize = new(0, 30),
-            SizeFlagsHorizontal = SizeFlags.Fill
+            SizeFlagsHorizontal = Control.SizeFlags.Fill
         };
         manageDocumentBrush.Pressed += () => Document.Get<BrushPanel>().Popup();
         container.AddChild(manageDocumentBrush);
@@ -169,8 +169,10 @@ public partial class PaintTool : CommonToolBase
             .Commit();
     }
 
-    public override bool OnSwitchLayer(Entity newLayerE)
+    public override bool CanHandleLayer(ICollection<Entity> layerEs)
     {
-        return !newLayerE.IsDeletedOrNull() && newLayerE.Has<PolylineLayerSetting>();
+        if (layerEs.Count != 1) return false;
+        var e = layerEs.Single();
+        return !e.IsDeletedOrNull() && e.Has<PolylineLayerSetting>();
     }
 }

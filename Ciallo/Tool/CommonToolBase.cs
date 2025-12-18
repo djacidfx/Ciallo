@@ -79,6 +79,8 @@ public abstract class CommonToolBase : ITool
         Deactivate,
     }
 
+    public Entity Document { get; init; }
+    public SceneTree GetTree() => (SceneTree)Engine.GetMainLoop();
     private readonly StateMachine<State, Event> _machine = new(State.ToolInactive);
     private readonly buttonParameterEvent _etLeftClick;
     private readonly buttonParameterEvent _etLeftRelease;
@@ -200,7 +202,7 @@ public abstract class CommonToolBase : ITool
     }
 
     public abstract void DrawProperty(PropertyContainer container);
-    public abstract bool CanHandleLayer(IEnumerable<Entity> layerEs);
+    public abstract bool CanHandleLayer(ICollection<Entity> layerEs);
 
     public virtual void OnActivate()
     {
@@ -211,9 +213,6 @@ public abstract class CommonToolBase : ITool
     {
         throw new NotImplementedException();
     }
-
-    // Called on working layer switch and activation. Return true if the tool can handle the new layer.
-    public abstract bool OnSwitchLayer(Entity newLayerE);
 
     public void FireRefreshHover() => _machine.Fire(Event.RefreshHover);
 }
