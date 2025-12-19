@@ -13,7 +13,7 @@ public partial class ToolButtonPanel : Container
 {
     // Current design mix tool button GUI and tool logic data, for being lazy
     public ButtonGroup ToolButtonGroup { get; } = new();
-    public readonly ReactiveProperty<BaseButton> ActiveToolButton = new(null);
+    public readonly ReactiveProperty<ToolButton?> ActiveToolButton = new(0);
 
     [OnInstantiate]
     private void Initialise(Entity document)
@@ -25,10 +25,18 @@ public partial class ToolButtonPanel : Container
             button.ButtonGroup = ToolButtonGroup;
         }
 
-        ToolButtonGroup.Pressed += button =>
-        {
-            ActiveToolButton.Value = button;
-        };
+        ToolButtonGroup.SignalAsObservable<BaseButton>(ButtonGroup.SignalName.Pressed)
+            .DistinctUntilChanged()
+            .Subscribe(button =>
+            {
+                var toolButton = GetButtonEnum(button);
+                document.Get<ToolManager>().OnSwitchToolButton(toolButton);
+            }).AddTo(this);
+    }
+
+    public void PressButton(ToolButton toolButton)
+    {
+        GetButton(toolButton).ButtonPressed = true;
     }
 
     public void DeactivateToolButton()
