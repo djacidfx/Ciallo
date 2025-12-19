@@ -5,12 +5,14 @@ using Ciallo.Data;
 using Ciallo.GuiBinding;
 using Ciallo.Misc;
 using Ciallo.NodeControl;
-using Ciallo.Tool;
 using Ciallo.Widget;
 using Frent;
 using Godot;
 using R3;
 
+namespace Ciallo.Tool;
+
+[RegisterTool(ToolButton.Paint)]
 public partial class PaintTool : CommonToolBase
 {
     public readonly ReactiveProperty<Entity> BrushE = new(new Entity());

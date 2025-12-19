@@ -2,12 +2,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
 using Ciallo.GuiBinding;
-using Ciallo.Tool;
 using Ciallo.Widget;
 using Frent;
 using Godot;
 using R3;
 
+namespace Ciallo.Tool;
+
+[RegisterTool(ToolButton.PaintFill)]
 public partial class PaintFillTool : CommonToolBase
 {
     public readonly ReactiveProperty<Color> Color = new(Colors.Black);

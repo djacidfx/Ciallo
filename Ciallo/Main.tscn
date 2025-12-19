@@ -14,7 +14,7 @@
 [ext_resource type="Script" uid="uid://cwjtb7r01fcf7" path="res://NodeControl/MenuWindow.cs" id="8_c2ibq"]
 [ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://NodeControl/MenuHelp.cs" id="8_sc1dx"]
 [ext_resource type="Script" uid="uid://dt8ylkob7fe5w" path="res://NodeControl/YesNoDialog.cs" id="9_2gh4u"]
-[ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://NodeControl/ToolButtonPanel.tscn" id="9_5vvyt"]
+[ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://Tool/ToolButtonPanel.tscn" id="9_5vvyt"]
 [ext_resource type="PackedScene" uid="uid://cbe5uqtdiejke" path="res://NodeControl/ToolPropertyPanel.tscn" id="10_c6i3y"]
 [ext_resource type="Script" uid="uid://dn4468qjyqneb" path="res://NodeControl/SaveAsDialog.cs" id="10_devvj"]
 [ext_resource type="Script" uid="uid://dqewxa0t2mptr" path="res://NodeControl/ToolButtonPanelContainer.cs" id="13_kjvhd"]

@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using Godot;
 using R3;
 
 namespace Ciallo.Tool;
 
-public class ToolManager
+public partial class ToolManager
 {
-    public List<ITool> Tools = [];
-    public ReactiveProperty<ITool> ActiveTool = new(null);
+    public readonly Dictionary<BaseButton, ITool> ToolButtonMap = new();
+    public ICollection<ITool> Tools => ToolButtonMap.Values;
+    public readonly ReactiveProperty<ITool> ActiveTool = new(null);
 
     public void ActivatePaintTool()
     {

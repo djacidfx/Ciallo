@@ -1,6 +1,6 @@
 [gd_scene load_steps=13 format=3 uid="uid://bfwvwd77tb7tq"]
 
-[ext_resource type="Script" uid="uid://bexkxr3qvv0qo" path="res://NodeControl/ToolButtonPanel.cs" id="1_vvphd"]
+[ext_resource type="Script" uid="uid://bexkxr3qvv0qo" path="res://Tool/ToolButtonPanel.cs" id="1_vvphd"]
 [ext_resource type="Texture2D" uid="uid://djmjwmlnccp86" path="res://Icon/cursor-default-outline.svg" id="2_vu0km"]
 [ext_resource type="Texture2D" uid="uid://bayscuh6s0yrc" path="res://Icon/lasso-dash.svg" id="3_ic33f"]
 [ext_resource type="Texture2D" uid="uid://cjf7u8mgog5mr" path="res://Icon/brush.svg" id="4_ijdye"]

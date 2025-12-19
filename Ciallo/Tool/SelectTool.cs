@@ -17,8 +17,7 @@ namespace Ciallo.Tool;
 
 using EntityParameterEvent = StateMachine<SelectTool.State, SelectTool.Event>.TriggerWithParameters<Entity>;
 
-// This class is very messy because it handles multiple types of layers.
-// Need a better tool mechanics
+[RegisterTool(ToolButton.Select)]
 public partial class SelectTool : CommonToolBase
 {
     public readonly PolylineTransformHover PolylineTransformHover = new();

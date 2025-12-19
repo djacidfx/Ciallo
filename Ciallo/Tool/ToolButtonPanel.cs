@@ -2,12 +2,13 @@ using Frent;
 using Godot;
 using R3;
 
-namespace Ciallo.NodeControl;
+namespace Ciallo.Tool;
 
 /// <remarks>
 /// This is a broken abstraction mixing tool button GUI and tool logic data.
 /// But for current version, it's acceptable for being lazy.
 /// </remarks>
+[ButtonEnum("ToolButton")]
 public partial class ToolButtonPanel : Container
 {
     // Current design mix tool button GUI and tool logic data, for being lazy

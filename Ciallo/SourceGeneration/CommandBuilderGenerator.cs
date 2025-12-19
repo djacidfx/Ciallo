@@ -8,10 +8,21 @@ using Microsoft.CodeAnalysis.Text;
 namespace SourceGeneration;
 
 [Generator]
-#pragma warning disable RS1036
 public class CommandBuilderGenerator : IIncrementalGenerator
-#pragma warning restore RS1036
 {
+    public static readonly string AttributeSourceCode =
+        """
+        // Generated code from Ciallo.SourceGeneration.CommandBuilderGenerator
+        using System;
+        namespace Ciallo.Command
+        {
+            [System.AttributeUsage(System.AttributeTargets.Class)]
+            public class CommandBuilderAttribute : Attribute
+            {
+            }
+        };
+        """;
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         context.RegisterPostInitializationOutput(ctx => ctx.AddSource(
@@ -158,19 +169,6 @@ public class CommandBuilderGenerator : IIncrementalGenerator
                           SymbolDisplayParameterOptions.IncludeName |
                           SymbolDisplayParameterOptions.IncludeDefaultValue |
                           SymbolDisplayParameterOptions.IncludeParamsRefOut);
-
-    public static readonly string AttributeSourceCode =
-        """
-        // Genereated code from Ciallo.SourceGeneration
-        using System;
-        namespace Ciallo.Command
-        {
-            [System.AttributeUsage(System.AttributeTargets.Class)]
-            public class CommandBuilderAttribute : Attribute
-            {
-            }
-        };
-        """;
 }
 
 public readonly struct CommandToGenerate
