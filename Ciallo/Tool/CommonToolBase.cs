@@ -78,6 +78,7 @@ public abstract class CommonToolBase : ITool
     }
 
     public Entity Document { get; init; }
+    public Entity WorkingLayerE;
     public SceneTree GetTree() => (SceneTree)Engine.GetMainLoop();
     private readonly StateMachine<State, Event> _machine = new(State.ToolInactive);
     private readonly buttonParameterEvent _etLeftClick;
@@ -202,9 +203,17 @@ public abstract class CommonToolBase : ITool
     public abstract void DrawProperty(PropertyContainer container);
     public abstract bool CanHandleLayer(params Entity[] layerEs);
 
-    public virtual void OnActivate(params Entity[] _) => _machine.Fire(Event.Activate);
+    public virtual void OnActivate(params Entity[] layerEs)
+    {
+        WorkingLayerE = layerEs.Length > 0 ? layerEs[0] : Entity.Null;
+        _machine.Fire(Event.Activate);
+    }
 
-    public virtual void OnDeactivate() => _machine.Fire(Event.Deactivate);
+    public virtual void OnDeactivate()
+    {
+        _machine.Fire(Event.Deactivate);
+        WorkingLayerE = Entity.Null;
+    }
 
     public void FireRefreshHover() => _machine.Fire(Event.RefreshHover);
 }

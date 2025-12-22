@@ -148,4 +148,16 @@ public class PolylineTransform : CommonToolBase
         var e = layerEs.Single();
         return !e.IsDeletedOrNull() && e.Has<PolylineLayerSetting>();
     }
+
+    public override void OnActivate(params Entity[] layerEs)
+    {
+        base.OnActivate(layerEs);
+        WorkingLayerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
+    }
+
+    public override void OnDeactivate()
+    {
+        WorkingLayerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
+        base.OnDeactivate();
+    }
 }
