@@ -56,18 +56,17 @@ public static partial class AppDocumentManager
 
         foreach (var layerDataE in dataTreeRoot.Children)
         {
+            var commonLayerSetting = layerDataE.Has<CommonLayerSetting>() ? layerDataE.Get<CommonLayerSetting>() : null;
             if (layerDataE.Has<ImageLayerSetting>())
             {
                 var layerE = resultWorld.Create();
-                new CommandBuilder(layerE).NewImageLayer(layerDataE.Get<ImageLayerSetting>()).Do();
-                layerE.Get<LayerTreeNode>().CopySettingFrom(layerDataE.Get<LayerTreeNode>()); // hack patch
+                new CommandBuilder(layerE).NewImageLayer(layerDataE.Get<ImageLayerSetting>(), commonLayerSetting).Do();
                 layerMap.Add(layerDataE, layerE);
             }
             else if (layerDataE.Has<PolylineLayerSetting>())
             {
                 var layerE = resultWorld.Create();
-                new CommandBuilder(layerE).NewPolylineLayer(layerDataE.Get<PolylineLayerSetting>()).Do();
-                layerE.Get<LayerTreeNode>().CopySettingFrom(layerDataE.Get<LayerTreeNode>()); // hack patch
+                new CommandBuilder(layerE).NewPolylineLayer(layerDataE.Get<PolylineLayerSetting>(), commonLayerSetting).Do();
                 layerMap.Add(layerDataE, layerE);
 
                 foreach (var polylineDataE in layerDataE.Get<LayerTreeNode>().Children)

@@ -13,14 +13,28 @@ namespace Ciallo.Command;
 public class NewPolylineLayerCmd : CommandBase
 {
     private readonly PolylineLayerSetting _setting;
+    private CommonLayerSetting _commonSetting;
     private CompositeDisposable _subs;
 
-    public NewPolylineLayerCmd(PolylineLayerSetting setting = null)
+    public NewPolylineLayerCmd(PolylineLayerSetting setting = null, CommonLayerSetting commonSetting = null)
     {
         _setting = setting?.Clone() ?? new PolylineLayerSetting();
+        _commonSetting = commonSetting;
     }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
+
+    protected override void BeforeFirstDo(Entity layerE)
+    {
+        layerE.Add(new LayerTreeNode());
+
+        _commonSetting ??= new CommonLayerSetting
+        {
+            Name = { Value = $"{"Line layer".Tr()} {Document.Get<LayerTreeNode>().ChildCount + 1}" }
+        };
+        layerE.Add(_commonSetting);
+        _commonSetting.RegisterProperties(Document.Get<CommandManager>()).AddTo(layerE);
+    }
 
     protected override void Do(Entity layerE)
     {
@@ -29,14 +43,6 @@ public class NewPolylineLayerCmd : CommandBase
 
         // Data
         var root = Document.Get<LayerTreeNode>();
-        if (!layerE.Has<LayerTreeNode>())
-        {
-            layerE.Add(new LayerTreeNode()
-            {
-                Name = { Value = $"{"Line layer".Tr()} {root.ChildCount + 1}" },
-            });
-        }
-
         layerE.Tag<ToSerializeTag>();
         root.AddChild(layerE);
         layerE.Add(_setting);
@@ -52,10 +58,8 @@ public class NewPolylineLayerCmd : CommandBase
         layerE.Add(layerView);
         layerView.SetOwner(worldView);
 
-        var node = layerE.Get<LayerTreeNode>();
-        node.RegisterProperties(Document.Get<CommandManager>()).AddTo(_subs);
-        node.IsVisible.Subscribe(layerView.SetVisible).AddTo(_subs);
-        node.Opacity.Subscribe(v =>
+        _commonSetting.IsVisible.Subscribe(layerView.SetVisible).AddTo(_subs);
+        _commonSetting.Opacity.Subscribe(v =>
         {
             var color = layerView.SelfModulate;
             color.A = v;
