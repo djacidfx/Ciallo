@@ -9,11 +9,11 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.PaintFill)]
-public partial class PaintFillTool : CommonToolBase
+public partial class PaintFill : CommonToolBase
 {
     public readonly ReactiveProperty<Color> Color = new(Colors.Black);
 
-    public PaintFillTool()
+    public PaintFill()
     {
         HoverInteractor = new PaintFillHover();
         LeftInteractor = new PaintFillInteractor(this);
