@@ -12,15 +12,15 @@ public partial class ToolButtonPanelContainer : Container
     public override void _Ready()
     {
         this.QueueFreeChildren();
-        AppWorldManager.LoadedWorlds.ObserveAdd().Select(et => et.Value.Document()).Subscribe(document =>
+        AppDocumentManager.LoadedDocuments.ObserveAdd().Select(et => et.Value).Subscribe(document =>
         {
             var panel = ToolButtonPanel.Instantiate(document);
-            panel.VisibleIf(AppWorldManager.WorkingDocument, document);
+            panel.VisibleIf(AppDocumentManager.WorkingDocument, document);
             document.Add(panel);
             AddChild(panel);
         }).AddTo(this);
 
-        AppWorldManager.LoadedWorlds.ObserveRemove().Select(et => et.Value.Document()).Subscribe(document =>
+        AppDocumentManager.LoadedDocuments.ObserveRemove().Select(et => et.Value).Subscribe(document =>
         {
             var panel = document.Get<ToolButtonPanel>();
             panel.DeactivateToolButton();

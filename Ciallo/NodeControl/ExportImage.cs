@@ -61,7 +61,7 @@ public partial class ExportImage : ConfirmationDialog
         ImageSubViewport.QueueFreeChildren();
         Message.Hide();
 
-        var document = AppWorldManager.WorkingDocument.CurrentValue;
+        var document = AppDocumentManager.WorkingDocument.CurrentValue;
         _setting = document.Get<DocumentSetting>();
         var view = document.Get<WorldView>();
 

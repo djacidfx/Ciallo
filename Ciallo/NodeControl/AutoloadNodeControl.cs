@@ -11,10 +11,8 @@ public partial class AutoloadNodeControl : Node
 {
     public override void _Ready()
     {
-        AppWorldManager.LoadedWorlds.ObserveAdd().Subscribe(et =>
+        AppDocumentManager.LoadedDocuments.ObserveAdd().Select(et => et.Value).Subscribe(document =>
         {
-            var document = et.Value.Document();
-
             // Layer tree control
             var layerPanel = GetTree().GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
             layerPanel.CreateAddLayerContainer(document);
@@ -51,9 +49,9 @@ public partial class AutoloadNodeControl : Node
             document.Add(worldButtonManager);
         }).AddTo(this);
 
-        AppWorldManager.LoadedWorlds.ObserveRemove().Subscribe(et =>
+
+        AppDocumentManager.LoadedDocuments.ObserveRemove().Select(et => et.Value).Subscribe(document =>
         {
-            var document = et.Value.Document();
             // Document brush editor
             document.Get<BrushPanel>().QueueFree();
             document.Remove<BrushPanel>();

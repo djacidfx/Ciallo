@@ -10,8 +10,7 @@ namespace Ciallo.Tool;
 /// </summary>
 public abstract class HoverBase
 {
-    public World WorkingWorld => AppWorldManager.WorkingWorld.Value;
-    public Entity Document => WorkingWorld.Document();
+    public Entity Document => AppDocumentManager.WorkingDocument.Value;
     public SelectionManager SelectionManager => Document.Get<SelectionManager>();
 
     public abstract void Start();

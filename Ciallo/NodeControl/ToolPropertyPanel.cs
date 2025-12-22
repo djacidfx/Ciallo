@@ -19,13 +19,13 @@ public partial class ToolPropertyPanel : Container
         PropertyHolder = GetNode<VBoxContainer>("%PropertiesHolder");
         PropertyHolder.QueueFreeChildren();
 
-        AppWorldManager.LoadedWorlds.ObserveAdd().Select(et => et.Value.Document()).Subscribe(document =>
+        AppDocumentManager.LoadedDocuments.ObserveAdd().Select(et => et.Value).Subscribe(document =>
         {
             var holder = new DocumentToolPropertyContainer()
             {
                 SizeFlagsHorizontal = SizeFlags.ExpandFill
             };
-            holder.VisibleIf(AppWorldManager.WorkingDocument, document);
+            holder.VisibleIf(AppDocumentManager.WorkingDocument, document);
             document.Add(holder);
             PropertyHolder.AddChild(holder);
 
@@ -42,7 +42,7 @@ public partial class ToolPropertyPanel : Container
             }
         }).AddTo(this);
 
-        AppWorldManager.LoadedWorlds.ObserveRemove().Select(et => et.Value.Document()).Subscribe(document =>
+        AppDocumentManager.LoadedDocuments.ObserveRemove().Select(et => et.Value).Subscribe(document =>
         {
             var box = document.Get<DocumentToolPropertyContainer>();
             document.Remove<DocumentToolPropertyContainer>();

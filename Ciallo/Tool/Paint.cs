@@ -165,7 +165,7 @@ public partial class PaintTool : CommonToolBase
     {
         if (!AppBrushLibrary.HasSelection) return;
         var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
-        new CommandBuilder(AppWorldManager.WorkingWorld.Value.Create())
+        new CommandBuilder(AppDocumentManager.WorkingDocument.Value.World.Create())
             .NewBrush(setting)
             .SetWorkingBrush()
             .Commit();

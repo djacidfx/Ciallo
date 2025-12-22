@@ -44,7 +44,7 @@ public partial class LayerContainer : Container
         _workingLayerButtonGroup.Pressed += button =>
         {
             var layerControl = (Control)button.GetOwner();
-            var document = AppWorldManager.WorkingDocument.CurrentValue;
+            var document = AppDocumentManager.WorkingDocument.CurrentValue;
             var layerE = document.Get<LayerTreeNode>().Children[layerControl.GetIndex()];
             new CommandBuilder(layerE).SetWorkingLayer().Commit();
         };
@@ -68,7 +68,7 @@ public partial class LayerContainer : Container
     {
         var property = LayerProperty.Instantiate();
         _layerPropertyContainer.AddChild(property);
-        property.VisibleIf(AppWorldManager.WorkingDocument.CurrentValue.Get<SelectionManager>().WorkingLayer, e);
+        property.VisibleIf(AppDocumentManager.WorkingDocument.CurrentValue.Get<SelectionManager>().WorkingLayer, e);
         e.Add(property);
 
         property.Opacity.BindNumber(e.Get<LayerTreeNode>().Opacity);
@@ -219,7 +219,7 @@ public partial class LayerContainer : Container
         var size = _mouseHoveringLayer.Size;
         if (locPos.Y <= size.Y / 2) dstIndex++; // insert after the hovering layer.
 
-        new CommandBuilder(AppWorldManager.WorkingDocument.CurrentValue)
+        new CommandBuilder(AppDocumentManager.WorkingDocument.CurrentValue)
             .MoveLayer([srcIndex], [dstIndex]).Commit();
     }
 

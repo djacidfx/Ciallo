@@ -10,8 +10,8 @@ public partial class LayerAction : Control
 
     public void OnNewLayer()
     {
-        if (AppWorldManager.WorkingWorld.Value == null) return;
-        new CommandBuilder(AppWorldManager.WorkingWorld.Value.Create())
+        if (AppDocumentManager.WorkingDocument.Value.IsNull) return;
+        new CommandBuilder(AppDocumentManager.WorkingDocument.Value.World.Create())
             .NewPolylineLayer()
             .SetWorkingLayer()
             .Commit();
@@ -19,8 +19,8 @@ public partial class LayerAction : Control
 
     public void OnRemoveLayer()
     {
-        if (AppWorldManager.WorkingWorld.Value == null) return;
-        var document = AppWorldManager.WorkingDocument.CurrentValue;
+        if (AppDocumentManager.WorkingDocument.Value.IsNull) return;
+        var document = AppDocumentManager.WorkingDocument.CurrentValue;
         var currentLayerE = document.Get<SelectionManager>().WorkingLayer.Value;
         if (currentLayerE.IsNull) return;
 
@@ -42,7 +42,7 @@ public partial class LayerAction : Control
 
     public void OnAddImage()
     {
-        if (AppWorldManager.WorkingWorld.Value == null) return;
+        if (AppDocumentManager.WorkingDocument.Value.IsNull) return;
         _fileDialog = GetNode<FileDialog>("%FileDialog");
         _fileDialog.Popup();
     }
@@ -59,7 +59,7 @@ public partial class LayerAction : Control
             return;
         }
         if (image == null) return;
-        new CommandBuilder(AppWorldManager.WorkingWorld.Value.Create())
+        new CommandBuilder(AppDocumentManager.WorkingDocument.Value.World.Create())
             .NewImageLayer(image).Commit();
     }
 }

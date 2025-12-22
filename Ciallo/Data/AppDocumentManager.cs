@@ -13,29 +13,23 @@ using R3;
 namespace Ciallo.Data;
 
 /// <summary>
-/// World and document has one-to-one relationship.
-/// In practice, a document is a special singleton entity of the world.
+/// A document entity is a special singleton entity of a world object.
 /// All the "document-level singleton data" should be stored in this "document" entity. (For the program-level singletons we commonly use static class).
-/// The "document-level singleton data" is the data one per document, such as the DocumentSetting, LayerTree, etc.
+/// The "document-level singleton data" is the data one per document, such as DocumentSetting, CommandManager, etc.
+/// The document entity also acts as the root of the layer tree.
 /// </summary>
-public static partial class AppWorldManager
+public static partial class AppDocumentManager
 {
-    public static readonly ObservableList<World> LoadedWorlds = [];
+    public static readonly ObservableList<Entity> LoadedDocuments = [];
 
-    // Current focused document.
-    public static readonly ReactiveProperty<World> WorkingWorld = new(null);
+    public static readonly ReactiveProperty<Entity> WorkingDocument = new(Entity.Null);
 
-    public static readonly ReadOnlyReactiveProperty<Entity> WorkingDocument =
-        WorkingWorld.Select(w => w?.Document() ?? default).ToReadOnlyReactiveProperty();
-
-    public static bool WorkingWorldModified => WorkingWorld.Value != null &&
-                                               WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified
-                                                   .Value;
+    public static bool WorkingDocumentModified => !WorkingDocument.Value.IsNull && WorkingDocument.Value.Get<CommandManager>().DocumentModified.Value;
 
     private static readonly Dictionary<World, Entity> WorldToDocument = [];
     public static Entity Document([NotNull] this World world) => WorldToDocument[world];
 
-    public static World Create([NotNull] DocumentSetting settings)
+    public static Entity Create([NotNull] DocumentSetting settings)
     {
         // Only one loaded world is supported for current version.
         Clear();
@@ -55,7 +49,7 @@ public static partial class AppWorldManager
         WorldToDocument.Add(world, document);
 
         // Always init first, then add to list
-        LoadedWorlds.Add(world);
+        LoadedDocuments.Add(document);
 
         document.Get<CommandManager>().DocumentModified
             .CombineLatest(settings.Name, (modified, name) => (modified, name)).Subscribe(v =>
@@ -64,54 +58,55 @@ public static partial class AppWorldManager
                 DisplayServer.WindowSetTitle($"{prepend + v.name} - Ciallo");
             }).AddTo(document);
 
-        return world;
+        return document;
     }
 
-    public static void InitialEmptyWorldForUser(World world)
+    public static void InitialEmptyWorldForUser(Entity document)
     {
         AppBrushLibrary.SelectedIndex.Value = 0;
 
-        new CommandBuilder(world.Create())
+        new CommandBuilder(document.World.Create())
             .NewPolylineLayer()
             .SetWorkingLayer()
             .Do();
         if (AppBrushLibrary.BrushSettings.Count > 0)
             AppBrushLibrary.SelectedIndex.Value = 0;
-        world.Document().Get<ToolManager>().ActivatePaintTool();
+        document.Get<ToolManager>().ActivatePaintTool();
     }
 
-    public static void Remove([NotNull] World world)
+    public static void Remove(Entity document)
     {
-        if (!LoadedWorlds.Contains(world)) throw new KeyNotFoundException("The specified world does not exist.");
+        if (!LoadedDocuments.Contains(document)) throw new KeyNotFoundException("The specified world does not exist.");
 
         DisplayServer.WindowSetTitle("Ciallo");
 
         // Remove working world
-        LoadedWorlds.Remove(world);
-        if (WorkingWorld.Value == world) WorkingWorld.Value = LoadedWorlds.Count > 0 ? LoadedWorlds[0] : null;
+        LoadedDocuments.Remove(document);
+        if (WorkingDocument.Value == document)
+            WorkingDocument.Value = LoadedDocuments.Count > 0 ? LoadedDocuments[0] : Entity.Null;
 
         // Dispose or free managers
-        world.Document().Get<CommandManager>().Free();
+        document.Get<CommandManager>().Free();
 
         // Dispose world
-        world.Dispose();
+        document.World.Dispose();
     }
 
     public static void Clear()
     {
         // Don't use `clear` on LoadedWorlds since it will trigger reset rather than remove event.
-        foreach (var world in LoadedWorlds.ToList())
+        foreach (var document in LoadedDocuments.ToList())
         {
-            Remove(world);
+            Remove(document);
         }
     }
 
     // If false, user cancels the close operation.
     public static async Task<bool> UserCloseWorkingWorld()
     {
-        if (WorkingWorld.Value == null) return true;
+        if (WorkingDocument.Value.IsNull) return true;
 
-        if (WorkingWorldModified)
+        if (WorkingDocumentModified)
         {
             var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<SaveChangeDialog>()
                 .Single();
@@ -119,13 +114,13 @@ public static partial class AppWorldManager
             if (result == 1) // Yes
             {
                 SaveWorkingWorld();
-                Remove(WorkingWorld.Value);
+                Remove(WorkingDocument.Value);
                 return true;
             }
 
             if (result == 0) // No
             {
-                Remove(WorkingWorld.Value);
+                Remove(WorkingDocument.Value);
                 return true;
             }
 
@@ -133,7 +128,7 @@ public static partial class AppWorldManager
             return false;
         }
 
-        Remove(WorkingWorld.Value);
+        Remove(WorkingDocument.Value);
         return true;
     }
 }

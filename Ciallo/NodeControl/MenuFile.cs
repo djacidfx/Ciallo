@@ -48,32 +48,32 @@ public partial class MenuFile : PopupMenu
                 AppGuiCommand.PopupOpenDocumentDialog();
                 break;
             case 2: // Close Document
-                if (AppWorldManager.WorkingWorld.Value == null) break;
-                _ = AppWorldManager.UserCloseWorkingWorld();
+                if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
+                _ = AppDocumentManager.UserCloseWorkingWorld();
                 break;
             case 4: // Save
-                if (AppWorldManager.WorkingWorld.Value == null) break;
-                AppWorldManager.SaveWorkingWorld();
+                if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
+                AppDocumentManager.SaveWorkingWorld();
                 break;
             case 5: // Save as
-                if (AppWorldManager.WorkingWorld.Value == null) break;
+                if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
                 var dialog = GetTree().GetNodesInGroup("Dialog").OfType<SaveAsDialog>().Single();
-                var setting = AppWorldManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
+                var setting = AppDocumentManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
                 dialog.CurrentDir = setting.FilePath.CurrentValue.GetBaseDir();
                 dialog.PopupCentered();
                 break;
 
             case 7: // Export as image
-                if (AppWorldManager.WorkingWorld.Value == null) break;
+                if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
                 var dialogExportImage = GetTree().GetNodesInGroup("Dialog").OfType<ExportImage>().Single();
                 dialogExportImage.Init();
                 dialogExportImage.Popup();
                 break;
 
             case 8: // Export as Godot scene
-                if (AppWorldManager.WorkingWorld.Value == null) break;
+                if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
                 var dialogExportGodot = GetTree().GetNodesInGroup("Dialog").OfType<ExportGodotScene>().Single();
-                var documentSetting = AppWorldManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
+                var documentSetting = AppDocumentManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
                 dialogExportGodot.CurrentFile = documentSetting.Name.Value;
                 dialogExportGodot.CurrentDir = documentSetting.FilePath.CurrentValue.GetBaseDir();
                 dialogExportGodot.Popup();
