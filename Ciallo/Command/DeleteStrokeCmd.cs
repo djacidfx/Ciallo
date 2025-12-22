@@ -18,8 +18,7 @@ public class DeleteStrokeCmd : CommandBase
     private int _index;
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
-    public override IEnumerable<GodotObject> UndoRefObjects =>
-        new List<GodotObject> { _strokeView, _strokeOverlay, _strokeArea };
+    public override IEnumerable<GodotObject> UndoRefObjects => new List<GodotObject> { _strokeView, _strokeOverlay, _strokeArea };
 
     protected override void BeforeFirstDo(Entity strokeE)
     {

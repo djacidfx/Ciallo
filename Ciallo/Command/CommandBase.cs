@@ -7,7 +7,7 @@ using Humanizer;
 
 namespace Ciallo.Command;
 
-public abstract class CommandBase
+public abstract class CommandBase : ICommand
 {
     public bool HasExecuted;
     public Entity TargetE { protected get; init; }
@@ -24,11 +24,11 @@ public abstract class CommandBase
     /// e.g. User undo the most recent command, then clear the whole history. So the most recent command satisfies the above statement.
     /// Entity version of `add_do_reference`.
     /// </summary>
-    public virtual IEnumerable<Entity> DoRefEntities => null;
-    public virtual IEnumerable<Entity> UndoRefEntities => null;
+    public virtual IEnumerable<Entity> DoRefEntities => [];
+    public virtual IEnumerable<Entity> UndoRefEntities => [];
 
-    public virtual IEnumerable<GodotObject> DoRefObjects => null;
-    public virtual IEnumerable<GodotObject> UndoRefObjects => null;
+    public virtual IEnumerable<GodotObject> DoRefObjects => [];
+    public virtual IEnumerable<GodotObject> UndoRefObjects => [];
 
     protected virtual void BeforeFirstDo(Entity targetE) { }
     protected abstract void Do(Entity targetE);
