@@ -45,10 +45,10 @@ public partial class ToolManager : IInitable
         var selectionManager = Document.Get<SelectionManager>();
         foreach (var tool in tools)
         {
-            if (tool.CanHandleLayer([selectionManager.WorkingLayer.Value]))
+            if (tool.CanHandleLayer(selectionManager.WorkingLayer.Value))
             {
                 ActiveTool.Value = tool;
-                ActiveTool.Value.OnActivate([selectionManager.WorkingLayer.Value]);
+                ActiveTool.Value.OnActivate(selectionManager.WorkingLayer.Value);
                 return;
             }
         }
