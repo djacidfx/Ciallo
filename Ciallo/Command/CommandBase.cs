@@ -45,7 +45,7 @@ public abstract class CommandBase
 
     public void Commit(bool execute = true)
     {
-        var cm = WorkingWorld.Document().Get<CommandManager>();
+        var cm = Document.Get<CommandManager>();
 
         // Add Do/Undo Reference methods, order matters:
         var obj = new CommandWrapperObject(this);
