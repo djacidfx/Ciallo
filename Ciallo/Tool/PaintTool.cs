@@ -171,9 +171,9 @@ public partial class PaintTool : CommonToolBase
             .Commit();
     }
 
-    public override bool CanHandleLayer(ICollection<Entity> layerEs)
+    public override bool CanHandleLayer(params Entity[] layerEs)
     {
-        if (layerEs.Count != 1) return false;
+        if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
         return !e.IsDeletedOrNull() && e.Has<PolylineLayerSetting>();
     }

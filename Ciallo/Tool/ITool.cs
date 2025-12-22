@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Ciallo.Geometry;
+﻿using Ciallo.Geometry;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -16,8 +15,7 @@ public interface ITool
     public void OnKey(InputEventKey key);
 
     public void DrawProperty(PropertyContainer container);
-    public bool CanHandleLayer(ICollection<Entity> layerEs);
-
-    public void OnActivate();
+    public bool CanHandleLayer(params Entity[] layerEs);
+    public void OnActivate(params Entity[] layerEs);
     public void OnDeactivate();
 }

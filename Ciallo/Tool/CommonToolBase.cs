@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Ciallo.Command;
+﻿using Ciallo.Command;
 using Ciallo.Geometry;
 using Ciallo.Widget;
 using Frent;
@@ -202,17 +200,11 @@ public abstract class CommonToolBase : ITool
     }
 
     public abstract void DrawProperty(PropertyContainer container);
-    public abstract bool CanHandleLayer(ICollection<Entity> layerEs);
+    public abstract bool CanHandleLayer(params Entity[] layerEs);
 
-    public virtual void OnActivate()
-    {
-        throw new NotImplementedException();
-    }
+    public virtual void OnActivate(params Entity[] _) => _machine.Fire(Event.Activate);
 
-    public virtual void OnDeactivate()
-    {
-        throw new NotImplementedException();
-    }
+    public virtual void OnDeactivate() => _machine.Fire(Event.Deactivate);
 
     public void FireRefreshHover() => _machine.Fire(Event.RefreshHover);
 }

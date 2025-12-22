@@ -48,13 +48,13 @@ public partial class ToolManager : IInitable
             if (tool.CanHandleLayer([selectionManager.WorkingLayer.Value]))
             {
                 ActiveTool.Value = tool;
-                ActiveTool.Value.OnActivate();
+                ActiveTool.Value.OnActivate([selectionManager.WorkingLayer.Value]);
                 return;
             }
         }
     }
 
-    public void OnSwitchLayer(ICollection<Entity> layerEs)
+    public void OnSwitchLayer(params Entity[] layerEs)
     {
         ActiveTool.Value?.OnDeactivate();
         ActiveTool.Value = null;
@@ -68,7 +68,7 @@ public partial class ToolManager : IInitable
             if (tool.CanHandleLayer(layerEs))
             {
                 ActiveTool.Value = tool;
-                ActiveTool.Value.OnActivate();
+                ActiveTool.Value.OnActivate(layerEs);
                 return;
             }
         }

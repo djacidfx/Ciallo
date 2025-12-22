@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
 using Ciallo.GuiBinding;
@@ -28,9 +27,9 @@ public partial class PaintFillTool : CommonToolBase
         }.BindColor(Color));
     }
 
-    public override bool CanHandleLayer(ICollection<Entity> layerEs)
+    public override bool CanHandleLayer(params Entity[] layerEs)
     {
-        if (layerEs.Count != 1) return false;
+        if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
         return !e.IsDeletedOrNull() && e.Has<PolylineLayerSetting>();
     }
