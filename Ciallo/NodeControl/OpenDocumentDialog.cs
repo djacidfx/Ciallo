@@ -21,7 +21,7 @@ public partial class OpenDocumentDialog : FileDialog
         Entity dataDocument;
         try
         {
-            dataWorld = AppWorldManager.Load(path, out dataDocument);
+            dataWorld = AppDocumentManager.Load(path, out dataDocument);
         }
         catch (Exception exception)
         {
@@ -31,7 +31,7 @@ public partial class OpenDocumentDialog : FileDialog
             dialog.Popup();
             return false;
         }
-        AppWorldManager.CopyWorldByData(dataDocument);
+        AppDocumentManager.CopyWorldByData(dataDocument);
         dataWorld.Dispose();
         if (!AppPreference.RecentFiles.Contains(path))
             AppPreference.RecentFiles.Add(path);

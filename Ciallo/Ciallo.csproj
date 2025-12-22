@@ -29,6 +29,7 @@
     <ItemGroup>
         <Folder Include="Localization\*.csv"/>
         <None Include="**\*.gdshader"/>
+        <AdditionalFiles Include="**\*.tscn"/>
     </ItemGroup>
     <ItemGroup>
         <Compile Remove="SourceGeneration\**"/>

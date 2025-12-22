@@ -16,6 +16,8 @@ namespace Ciallo.Rendering;
 [Tool, GlobalClass]
 public partial class StrokeView : MultiMeshInstance2D
 {
+    private readonly List<float> _ns = [];
+
     public StrokeView()
     {
         if (Multimesh != null) return;
@@ -64,7 +66,7 @@ public partial class StrokeView : MultiMeshInstance2D
 
         IReadOnlyList<Vector2> ps;
         IReadOnlyList<float> rs;
-        List<float> ns = new() { Capacity = positions.Count };
+        _ns.Clear();
 
         if (positions.Count > 1) // regular case
         {
@@ -81,7 +83,7 @@ public partial class StrokeView : MultiMeshInstance2D
         }
         else throw new("Unreachable");
 
-        ns.Add(0f);
+        _ns.Add(0f);
         for (int i = 0; i < ps.Count - 1; i++)
         {
             var l = (ps[i + 1] - ps[i]).Length();
@@ -91,7 +93,7 @@ public partial class StrokeView : MultiMeshInstance2D
             {
                 // Nearly equal radius, avoid division by zero
                 var r = (r0 + r1) * 0.5f;
-                ns.Add(ns.Last() + l / r);
+                _ns.Add(_ns.Last() + l / r);
                 continue;
             }
 
@@ -100,7 +102,7 @@ public partial class StrokeView : MultiMeshInstance2D
             {
                 GD.PushError("NaN encountered in stroke parameterization.");
             }
-            ns.Add(ns.Last() + n);
+            _ns.Add(_ns.Last() + n);
         }
 
         for (int i = 0; i < multiMesh.InstanceCount; i++)
@@ -117,7 +119,7 @@ public partial class StrokeView : MultiMeshInstance2D
             // Have to use instance color to store t.
             multiMesh.SetInstanceColor(i,
                 new(Float32Packer.Pack(rs[i], rs[i + 1]),
-                    Float32Packer.Pack(ns[i], ns[i + 1]),
+                    Float32Packer.Pack(_ns[i], _ns[i + 1]),
                     Float32Packer.Pack(pressures[i], pressures[i + 1]), 0)); // no enough empty spaces :(
             // Have to set transform or do not render, this transform values are not used in shaders
             // Cannot access this matrix from the CanvasItem shader, so cannot be used for passing data.

@@ -14,7 +14,7 @@ using MessagePack;
 
 namespace Ciallo.Data;
 
-public static partial class AppWorldManager
+public static partial class AppDocumentManager
 {
     // Pitfall: If serialize an empty class without any [DataMember], then add a new [DataMember] later version and deserialize it back.
     // MessagePack will throw error without any useful information.
@@ -22,7 +22,7 @@ public static partial class AppWorldManager
     public static readonly HashSet<Type> ToSerializeTags = ToSerializeTypes.Where(t => t.IsTag()).ToHashSet();
     public static readonly HashSet<Type> ToSerializeComponents = ToSerializeTypes.Except(ToSerializeTags).ToHashSet();
 
-    static AppWorldManager()
+    static AppDocumentManager()
     {
         var registerMethod =
             typeof(Component).GetMethod("RegisterComponent", BindingFlags.Public | BindingFlags.Static);
@@ -36,8 +36,9 @@ public static partial class AppWorldManager
     public static void CopyWorldByData(Entity dataDocument)
     {
         // Load brushes
-        var resultWorld = Create(dataDocument.Get<DocumentSetting>());
-        WorkingWorld.Value = resultWorld;
+        var resultDocument = Create(dataDocument.Get<DocumentSetting>());
+        var resultWorld = resultDocument.World;
+        WorkingDocument.Value = resultDocument;
         Dictionary<Entity, Entity> brushMap = [];
         var loadBrushCmd = new CommandBuilder();
         foreach (var brushDataE in dataDocument.Get<BrushManager>().Brushes)
@@ -105,7 +106,7 @@ public static partial class AppWorldManager
         if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (CanSaveFile(settings.FilePath.Value))
-            Save(WorkingWorld.Value, settings.FilePath.Value);
+            Save(WorkingDocument.Value, settings.FilePath.Value);
         WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified.Value = false;
     }
 
@@ -115,7 +116,7 @@ public static partial class AppWorldManager
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (CanSaveFile(filePath))
         {
-            Save(WorkingWorld.Value, filePath);
+            Save(WorkingDocument.Value, filePath);
             settings.FilePath.Value = filePath;
             settings.Name.Value = filePath.GetFile().GetBaseName();
             WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified.Value = false;
@@ -131,9 +132,9 @@ public static partial class AppWorldManager
         CopyWorldByData(document);
     }
 
-    public static void Save(World world, string filePath)
+    public static void Save(Entity document, string filePath)
     {
-        var bins = Serialize(world);
+        var bins = Serialize(document.World);
         var writer = new ZipPacker();
         var err = writer.Open(filePath);
         if (err != Error.Ok) throw new InvalidOperationException($"Cannot open file {filePath} for writing.");

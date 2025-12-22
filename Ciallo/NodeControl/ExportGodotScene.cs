@@ -10,8 +10,7 @@ public partial class ExportGodotScene : FileDialog
     {
         FileSelected += filePath =>
         {
-            var world = AppWorldManager.WorkingWorld.Value;
-            var document = world.Document();
+            var document = AppDocumentManager.WorkingDocument.Value;
             var worldView = document.Get<WorldView>();
             var rawScene = new PackedScene();
             // Duplicate

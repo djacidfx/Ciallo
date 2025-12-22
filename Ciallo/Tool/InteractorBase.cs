@@ -12,8 +12,7 @@ namespace Ciallo.Tool;
 /// </summary>
 public abstract class InteractorBase
 {
-    public World WorkingWorld => AppWorldManager.WorkingWorld.Value;
-    public Entity Document => WorkingWorld.Document();
+    public Entity Document => AppDocumentManager.WorkingDocument.Value;
     public SelectionManager SelectionManager => Document.Get<SelectionManager>();
 
     // Instantly called after CanInteract, no state switching, return whether to start interaction

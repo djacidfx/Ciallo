@@ -31,4 +31,9 @@ public static class EntityExtension
     {
         return !self.IsAlive || !self.Tagged<ToSerializeTag>();
     }
+
+    public static bool IsDocument(this Entity self)
+    {
+        return self.World.Document() == self;
+    }
 }

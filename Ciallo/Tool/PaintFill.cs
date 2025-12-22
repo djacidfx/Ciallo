@@ -1,16 +1,19 @@
+using System.Linq;
 using Ciallo.Data;
 using Ciallo.GuiBinding;
-using Ciallo.Tool;
 using Ciallo.Widget;
 using Frent;
 using Godot;
 using R3;
 
-public partial class PaintFillTool : CommonToolBase
+namespace Ciallo.Tool;
+
+[RegisterTool(ToolButton.PaintFill)]
+public partial class PaintFill : CommonToolBase
 {
     public readonly ReactiveProperty<Color> Color = new(Colors.Black);
 
-    public PaintFillTool()
+    public PaintFill()
     {
         HoverInteractor = new PaintFillHover();
         LeftInteractor = new PaintFillInteractor(this);
@@ -24,9 +27,10 @@ public partial class PaintFillTool : CommonToolBase
         }.BindColor(Color));
     }
 
-    public override bool OnSwitchLayer(Entity newLayerE)
+    public override bool CanHandleLayer(params Entity[] layerEs)
     {
-        if (newLayerE.IsDeletedOrNull()) return false;
-        return newLayerE.Has<PolylineLayerSetting>();
+        if (layerEs.Length != 1) return false;
+        var e = layerEs.Single();
+        return !e.IsDeletedOrNull() && e.Has<PolylineLayerSetting>();
     }
 }

@@ -76,12 +76,12 @@ public partial class AutoloadData : Node
     {
         if (what == NotificationWMCloseRequest)
         {
-            var result = await AppWorldManager.UserCloseWorkingWorld();
+            var result = await AppDocumentManager.UserCloseWorkingWorld();
             if (!result) return;
 
             AppBrushLibrary.Save();
             AppPreference.Save();
-            AppWorldManager.Clear();
+            AppDocumentManager.Clear();
             GetTree().Quit();
             // Prevent default handler
             return;

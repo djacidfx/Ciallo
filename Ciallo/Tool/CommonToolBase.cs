@@ -1,10 +1,8 @@
 ﻿using Ciallo.Command;
-using Ciallo.Data;
 using Ciallo.Geometry;
-using Ciallo.Rendering;
+using Ciallo.Widget;
 using Frent;
 using Godot;
-using R3;
 using Stateless;
 
 namespace Ciallo.Tool;
@@ -17,7 +15,7 @@ using motionParameterEvent = StateMachine<CommonToolBase.State, CommonToolBase.E
 /// (Middle mouse has dedicated usage for canvas navigation.)
 /// For more complex tools, we can write state machine code and implement ITool directly.
 /// </summary>
-public abstract partial class CommonToolBase : ToolButtonBase
+public abstract class CommonToolBase : ITool
 {
     public InteractorBase LeftInteractor
     {
@@ -79,6 +77,9 @@ public abstract partial class CommonToolBase : ToolButtonBase
         Deactivate,
     }
 
+    public Entity Document { get; init; }
+    public Entity WorkingLayerE;
+    public SceneTree GetTree() => (SceneTree)Engine.GetMainLoop();
     private readonly StateMachine<State, Event> _machine = new(State.ToolInactive);
     private readonly buttonParameterEvent _etLeftClick;
     private readonly buttonParameterEvent _etLeftRelease;
@@ -178,15 +179,15 @@ public abstract partial class CommonToolBase : ToolButtonBase
     {
     }
 
-    public override void OnLeftClick(CursorButtonData data) => _machine.Fire(_etLeftClick, data);
+    public void OnLeftClick(CursorButtonData data) => _machine.Fire(_etLeftClick, data);
 
-    public override void OnLeftRelease(CursorButtonData data) => _machine.Fire(_etLeftRelease, data);
+    public void OnLeftRelease(CursorButtonData data) => _machine.Fire(_etLeftRelease, data);
 
-    public override void OnRightClick(CursorButtonData data) => _machine.Fire(_etRightClick, data);
+    public void OnRightClick(CursorButtonData data) => _machine.Fire(_etRightClick, data);
 
-    public override void OnRightRelease(CursorButtonData data) => _machine.Fire(_etRightRelease, data);
+    public void OnRightRelease(CursorButtonData data) => _machine.Fire(_etRightRelease, data);
 
-    public override void OnMoving(CursorMotionData data)
+    public void OnMoving(CursorMotionData data)
     {
         _machine.Fire(_etMove, data);
         if (_machine.State == State.HoverInteracting) HoverInteractor.Interacting(data);
@@ -194,34 +195,25 @@ public abstract partial class CommonToolBase : ToolButtonBase
         if (_machine.State == State.RightInteracting) RightInteractor.Interacting(data);
     }
 
-    public override void OnKey(InputEventKey key)
+    public virtual void OnKey(InputEventKey key)
     {
         if (AppActions.CancelInteraction.IsJustPressed) _machine.Fire(Event.Cancel);
     }
 
-    private CompositeDisposable _subs;
-    public override void OnActivate()
+    public abstract void DrawProperty(PropertyContainer container);
+    public abstract bool CanHandleLayer(params Entity[] layerEs);
+
+    public virtual void OnActivate(params Entity[] layerEs)
     {
-        _subs = new();
-        Document.Get<SelectionManager>().WorkingLayer.Subscribe(newLayerE =>
-        {
-            _machine.Fire(Event.Deactivate);
-            bool canHandleLayer = OnSwitchLayer(newLayerE);
-            if (canHandleLayer) _machine.Fire(Event.Activate);
-            else Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = CursorShape.Forbidden;
-        }).AddTo(_subs);
-        Document.Get<CommandManager>().SignalAsObservable(UndoRedo.SignalName.VersionChanged)
-            .Subscribe(_ => FireRefreshHover()).AddTo(_subs);
-    }
-    public override void OnDeactivate()
-    {
-        Document.Get<WorldCursorDetectionArea>().MouseDefaultCursorShape = default;
-        _subs.Dispose();
-        _machine.Fire(Event.Deactivate);
+        WorkingLayerE = layerEs.Length > 0 ? layerEs[0] : Entity.Null;
+        _machine.Fire(Event.Activate);
     }
 
-    // Called on working layer switch and activation. Return true if the tool can handle the new layer.
-    public abstract bool OnSwitchLayer(Entity newLayerE);
+    public virtual void OnDeactivate()
+    {
+        _machine.Fire(Event.Deactivate);
+        WorkingLayerE = Entity.Null;
+    }
 
     public void FireRefreshHover() => _machine.Fire(Event.RefreshHover);
 }

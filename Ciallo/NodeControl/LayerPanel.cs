@@ -18,7 +18,7 @@ public partial class LayerPanel : VBoxContainer
     public void CreateAddLayerContainer(Entity document)
     {
         var layerContainer = LayerContainer.Instantiate();
-        layerContainer.VisibleIf(AppWorldManager.WorkingDocument, document);
+        layerContainer.VisibleIf(AppDocumentManager.WorkingDocument, document);
         AddChild(layerContainer);
         document.Add(layerContainer);
     }

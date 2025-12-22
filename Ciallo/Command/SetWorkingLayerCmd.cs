@@ -1,5 +1,6 @@
 ﻿using Ciallo.Data;
 using Ciallo.NodeControl;
+using Ciallo.Tool;
 using Frent;
 
 namespace Ciallo.Command;
@@ -21,6 +22,10 @@ public class SetWorkingLayerCmd : CommandBase
         var sm = Document.Get<SelectionManager>();
         sm.WorkingLayer.Value = newLayerE;
 
+        // Tool manager
+        var toolManager = Document.Get<ToolManager>();
+        toolManager.OnSwitchLayer(newLayerE);
+
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
         layerContainer.SetWorkingLayerNoSignal(newLayerE);
@@ -31,6 +36,10 @@ public class SetWorkingLayerCmd : CommandBase
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
         layerContainer.SetWorkingLayerNoSignal(OldLayerE);
+
+        // Tool manager
+        var toolManager = Document.Get<ToolManager>();
+        toolManager.OnSwitchLayer(OldLayerE);
 
         // Selection manager
         var sm = Document.Get<SelectionManager>();

@@ -1,5 +1,6 @@
 using Ciallo.Data;
 using Ciallo.Misc;
+using Ciallo.Tool;
 using Godot;
 using ObservableCollections;
 using R3;
@@ -11,18 +12,18 @@ public partial class ToolButtonPanelContainer : Container
     public override void _Ready()
     {
         this.QueueFreeChildren();
-        AppWorldManager.LoadedWorlds.ObserveAdd().Select(et => et.Value.Document()).Subscribe(document =>
+        AppDocumentManager.LoadedDocuments.ObserveAdd().Select(et => et.Value).Subscribe(document =>
         {
-            var root = ToolButtonPanel.Instantiate(document);
-            root.VisibleIf(AppWorldManager.WorkingDocument, document);
-            document.Add(root);
-            AddChild(root);
+            var panel = ToolButtonPanel.Instantiate(document);
+            panel.VisibleIf(AppDocumentManager.WorkingDocument, document);
+            document.Add(panel);
+            AddChild(panel);
         }).AddTo(this);
 
-        AppWorldManager.LoadedWorlds.ObserveRemove().Select(et => et.Value.Document()).Subscribe(document =>
+        AppDocumentManager.LoadedDocuments.ObserveRemove().Select(et => et.Value).Subscribe(document =>
         {
             var panel = document.Get<ToolButtonPanel>();
-            panel.DeactivateTool();
+            panel.DeactivateToolButton();
             panel.QueueFree();
             document.Remove<ToolButtonPanel>();
         }).AddTo(this);

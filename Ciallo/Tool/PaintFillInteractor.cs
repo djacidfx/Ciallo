@@ -7,7 +7,7 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class PaintFillInteractor(PaintFillTool tool) : InteractorBase
+public class PaintFillInteractor(PaintFill tool) : InteractorBase
 {
     private readonly PolylineInteractiveGenerator _generator = new()
     {

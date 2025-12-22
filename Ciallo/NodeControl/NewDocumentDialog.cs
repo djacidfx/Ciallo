@@ -62,10 +62,10 @@ public partial class NewDocumentDialog : ConfirmationDialog
             BackgroundColor = { Value = bgColor },
             FilePath = { Value = filePath },
         };
-        var world = AppWorldManager.Create(setting);
-        AppWorldManager.WorkingWorld.Value = world;
-        AppWorldManager.InitialEmptyWorldForUser(world);
-        AppWorldManager.SaveWorkingWorld();
+        var document = AppDocumentManager.Create(setting);
+        AppDocumentManager.WorkingDocument.Value = document;
+        AppDocumentManager.InitialEmptyWorldForUser(document);
+        AppDocumentManager.SaveWorkingWorld();
         Hide();
 
         AppPreference.RecentFiles.Add(filePath);
