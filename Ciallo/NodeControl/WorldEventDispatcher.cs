@@ -18,6 +18,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
     private bool _isHovering = false;
     private bool _isPanning = false;
+    private bool _isInteracting;
     private Vector2 _prevScreenPos;
     private Vector2 _prevWorldPos;
     private float _prevPressure;
@@ -41,7 +42,14 @@ public partial class WorldEventDispatcher : SubViewportContainer
     {
         if (!Document.IsAlive) return; // This check prevents errors when the document is closed.
         // The container is queued for deletion but the Document entity is freed immediately, which can cause this method to be called on a disposed entity.
-        if (e is InputEventKey key) DispatchKey(key);
+
+        // ------------ Tool events handling -------------
+        if (e is InputEventKey key)
+        {
+            DispatchKey(key);
+            if (_isInteracting) GetViewport().SetInputAsHandled();
+        }
+        // Only deal with cursor events
         if (e is not InputEventMouse mouseEvent) return;
 
         var screenPos = mouseEvent.Position;
@@ -99,7 +107,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
             var currentPressure = AppPreference.PenPressureRemapCurve.SampleX(motion.Pressure);
             var elapsed = _timer.Elapsed;
 
-            DispatchMotion(new CursorMotionData()
+            DispatchMotion(new()
             {
                 ScreenPosition = screenPos,
                 ScreenDelta = screenDelta,
@@ -123,13 +131,23 @@ public partial class WorldEventDispatcher : SubViewportContainer
         if (mouseEvent is InputEventMouseMotion && _isPanning) panel.Offset.Value -= worldDelta;
 
         // Drag middle mouse to pan
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: true } && _isHovering) _isPanning = true;
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: false }) _isPanning = false;
+        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: true } && _isHovering)
+        {
+            _isInteracting = true;
+            _isPanning = true;
+        }
+        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: false })
+        {
+            _isPanning = false;
+            _isInteracting = false;
+        }
 
-        // Double click to reset camera position.
+        // Double click to reset camera.
         if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, DoubleClick: true })
         {
             panel.Offset.Value = Vector2.Zero;
+            panel.Zoom.Value = 1.0f;
+            panel.CanvasRotation.Value = 0.0f;
         }
         // Scroll mouse wheel zooming.
         var zoomFactor = AppPreference.MouseWheelZoomFactor.Value;
@@ -147,6 +165,9 @@ public partial class WorldEventDispatcher : SubViewportContainer
             var newWorldPos = _camera.GetViewportTransform().AffineInverse() * mouseEvent.Position;
             _worldCursorDetectionArea.UpdateHovering(newWorldPos);
         }
+
+        // ------------ Other -------------
+        if (_isInteracting) GetViewport().SetInputAsHandled();
     }
 
     public Entity Document;
@@ -154,33 +175,35 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
     private void DispatchKey(InputEventKey key)
     {
-        ToolManager.ActiveTool.Value?.OnKey(key);
+        var toolAction = ToolManager.ActiveTool.Value?.OnKey(key);
+        if (toolAction.HasValue && toolAction.Value.HasFlag(ToolKeyActions.HandleInput))
+            _isInteracting = toolAction.Value.HasFlag(ToolKeyActions.Interact);
     }
 
     public void DispatchLeftClick(CursorButtonData data)
     {
-        ToolManager.ActiveTool.Value?.OnLeftClick(data);
+        _isInteracting = ToolManager.ActiveTool.Value?.OnLeftClick(data) == true;
     }
 
     public void DispatchLeftRelease(CursorButtonData data)
     {
-        ToolManager.ActiveTool.Value?.OnLeftRelease(data);
+        _isInteracting = ToolManager.ActiveTool.Value?.OnLeftRelease(data) == true;
+    }
+
+    public void DispatchRightClick(CursorButtonData data)
+    {
+        _isInteracting = ToolManager.ActiveTool.Value?.OnRightClick(data) == true;
+    }
+
+    public void DispatchRightRelease(CursorButtonData data)
+    {
+        _isInteracting = ToolManager.ActiveTool.Value?.OnRightRelease(data) == true;
     }
 
     public void DispatchMotion(CursorMotionData data)
     {
         ToolManager.ActiveTool.Value?.OnMoving(data);
         _worldCursorDetectionArea.UpdateHovering(data.WorldPosition);
-    }
-
-    public void DispatchRightClick(CursorButtonData data)
-    {
-        ToolManager.ActiveTool.Value?.OnRightClick(data);
-    }
-
-    public void DispatchRightRelease(CursorButtonData data)
-    {
-        ToolManager.ActiveTool.Value?.OnRightRelease(data);
     }
 
     public void OnMouseEnter()

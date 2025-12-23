@@ -59,7 +59,7 @@ public abstract class CommonToolBase : ITool
         ToolActive,
 
         Idle,
-        HoverInteracting,
+        Hovering,
         LeftInteracting,
         RightInteracting
     }
@@ -102,8 +102,7 @@ public abstract class CommonToolBase : ITool
 
         bool InteractorStartGuard(InteractorBase interactor, CursorButtonData data)
         {
-            if (interactor?.Prepare(data) != true) return false;
-            return true;
+            return interactor?.Prepare(data) == true;
         }
 
         _machine.Configure(State.ToolInactive)
@@ -119,10 +118,10 @@ public abstract class CommonToolBase : ITool
             })
             .PermitIf(_etLeftClick, State.LeftInteracting, data => InteractorStartGuard(LeftInteractor, data))
             .PermitIf(_etRightClick, State.RightInteracting, data => InteractorStartGuard(RightInteractor, data))
-            .PermitIf(_etMove, State.HoverInteracting)
-            .PermitIf(Event.RefreshHover, State.HoverInteracting);
+            .PermitIf(_etMove, State.Hovering)
+            .PermitIf(Event.RefreshHover, State.Hovering);
 
-        _machine.Configure(State.HoverInteracting).SubstateOf(State.ToolActive)
+        _machine.Configure(State.Hovering).SubstateOf(State.ToolActive)
             .OnEntry(() => HoverInteractor.Start())
             .PermitIf(_etLeftClick, State.LeftInteracting, data => InteractorStartGuard(LeftInteractor, data))
             .PermitIf(_etRightClick, State.RightInteracting, data => InteractorStartGuard(RightInteractor, data))
@@ -179,25 +178,49 @@ public abstract class CommonToolBase : ITool
     {
     }
 
-    public void OnLeftClick(CursorButtonData data) => _machine.Fire(_etLeftClick, data);
+    public bool OnLeftClick(CursorButtonData data)
+    {
+        _machine.Fire(_etLeftClick, data);
+        return true;
+    }
 
-    public void OnLeftRelease(CursorButtonData data) => _machine.Fire(_etLeftRelease, data);
+    public bool OnLeftRelease(CursorButtonData data)
+    {
+        _machine.Fire(_etLeftRelease, data);
+        return false;
+    }
 
-    public void OnRightClick(CursorButtonData data) => _machine.Fire(_etRightClick, data);
+    public bool OnRightClick(CursorButtonData data)
+    {
+        _machine.Fire(_etRightClick, data);
+        return true;
+    }
 
-    public void OnRightRelease(CursorButtonData data) => _machine.Fire(_etRightRelease, data);
+    public bool OnRightRelease(CursorButtonData data)
+    {
+        _machine.Fire(_etRightRelease, data);
+        return false;
+    }
 
     public void OnMoving(CursorMotionData data)
     {
         _machine.Fire(_etMove, data);
-        if (_machine.State == State.HoverInteracting) HoverInteractor.Interacting(data);
-        if (_machine.State == State.LeftInteracting) LeftInteractor.Interacting(data);
-        if (_machine.State == State.RightInteracting) RightInteractor.Interacting(data);
+        if (_machine.State == State.Hovering)
+            HoverInteractor.Interacting(data);
+        if (_machine.State == State.LeftInteracting)
+            LeftInteractor.Interacting(data);
+        if (_machine.State == State.RightInteracting)
+            RightInteractor.Interacting(data);
     }
 
-    public virtual void OnKey(InputEventKey key)
+    public virtual ToolKeyActions OnKey(InputEventKey key)
     {
-        if (AppActions.CancelInteraction.IsJustPressed) _machine.Fire(Event.Cancel);
+        if (AppActions.CancelInteraction.IsJustPressed)
+        {
+            _machine.Fire(Event.Cancel);
+            return ToolKeyActions.HandleInput;
+        }
+        return ToolKeyActions.None;
     }
 
     public abstract void DrawProperty(PropertyContainer container);
