@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using Ciallo.Command;
@@ -16,12 +15,14 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
 {
     private int _transformType = -1; // -1: Rect selection/Deselect, 0: Move, 1: Rotate, 2~5: Scale corners
 
+    private Entity[] _processingEs;
+    private Vector2[][] _currPositions;
     private Transform2D _currTransform = Transform2D.Identity;
+
     private Vector2[] _startCorners;
     private Rect2 _origRect;
     private TransformOverlayBox _transformBox;
     private Vector2 _center;
-    private List<Entity> _processingEs;
 
     private StrokeView _boxSelectionDash;
     private Rect2 _boxSelectionRect;
@@ -77,17 +78,24 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
             return;
         }
 
-        _processingEs = SelectionManager.SelectedPolylines.ToList();
+        _processingEs = SelectionManager.SelectedPolylines.ToArray();
 
-        if (_transformType >= 1)
+        if (_transformType >= 0)
         {
             _currTransform = Transform2D.Identity;
-
+            _currPositions = new Vector2[_processingEs.Length][];
             foreach (var (i, e) in _processingEs.Index())
             {
                 var geom = e.Get<PolylineGeometry>();
                 var bounding = geom.Positions.GetBoundingBox();
                 _origRect = i == 0 ? bounding : _origRect.Merge(bounding);
+                // allocate buffer once per interaction
+                var buffer = new Vector2[geom.Positions.Count];
+                for (int j = 0; j < buffer.Length; j++)
+                {
+                    buffer[j] = geom.Positions[j];
+                }
+                _currPositions[i] = buffer;
             }
 
             // Show transform box only when scaling
@@ -111,6 +119,9 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
 
     public override void Interacting(CursorMotionData data)
     {
+        // Note: Still stutter when moving multiple strokes
+        // No GC during interaction
+        // Godot profiler and Rider's monitor both show no spikes.
         if (_transformType == -1)
         {
             _boxSelectionRect.Size = data.WorldPosition - _boxSelectionRect.Position;
@@ -173,17 +184,19 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
         }
 
         // Update view
-        foreach (var e in _processingEs)
+        foreach (var (i, e) in _processingEs.Index())
         {
             var geom = e.Get<PolylineGeometry>();
-            var points = geom.Positions.Select(p => _currTransform * p).ToList();
+            for (int j = 0; j < _currPositions[i].Length; j++)
+                _currPositions[i][j] = _currTransform * geom.Positions[j];
+
             if (e.Has<StrokeSetting>())
             {
-                e.Get<StrokeView>().SetGeometry(points, geom.Radii, geom.Pressures);
+                e.Get<StrokeView>().SetGeometry(_currPositions[i], geom.Radii, geom.Pressures);
             }
             if (e.Has<FilledPolygonSetting>())
             {
-                e.Get<Polygon2D>().SetPolygon(CollectionsMarshal.AsSpan(points.ToSimplePolygon()));
+                e.Get<Polygon2D>().SetPolygon(CollectionsMarshal.AsSpan(_currPositions[i].ToSimplePolygon()));
             }
         }
     }

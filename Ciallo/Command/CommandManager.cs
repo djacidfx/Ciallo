@@ -98,9 +98,9 @@ public partial class PropertyWrapperObject<T>(ReactiveProperty<T> property, Reac
     }
 }
 
-public partial class CommandWrapperObject(CommandBase command) : GodotObject
+public partial class CommandWrapperObject(ICommand command) : GodotObject
 {
-    public CommandBase Command { get; } = command;
+    public ICommand Command { get; } = command;
     public ObjectDeleter DoDeleter = new(command, true);
     public ObjectDeleter UndoDeleter = new(command, false);
 
@@ -123,7 +123,7 @@ public partial class CommandWrapperObject(CommandBase command) : GodotObject
 /// <summary>
 /// Automatically destroy entities and objects when the command is deleted, unless FreeWithoutDestroying is called.
 /// </summary>
-public partial class ObjectDeleter(CommandBase cmd, bool isDo) : GodotObject
+public partial class ObjectDeleter(ICommand cmd, bool isDo) : GodotObject
 {
     private bool _delete = true;
 

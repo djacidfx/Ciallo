@@ -2,36 +2,12 @@
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.Serialization;
-using Ciallo.Command;
-using R3;
 
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
 public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
 {
-    [DataMember] public ReactiveProperty<string> Name = new("");
-    [DataMember] public ReactiveProperty<bool> IsVisible = new(true);
-    [DataMember] public ReactiveProperty<float> Opacity = new(1.0f);
-    [DataMember] public ReactiveProperty<bool> IsLocked = new(false); // Need to implement
-
-    public CompositeDisposable RegisterProperties(CommandManager manager)
-    {
-        CompositeDisposable subs = new();
-        manager.RegisterProperty(Name).AddTo(subs);
-        manager.RegisterProperty(IsVisible).AddTo(subs);
-        manager.RegisterProperty(Opacity).AddTo(subs);
-        return subs;
-    }
-
-    public void CopySettingFrom(LayerTreeNode other)
-    {
-        Name.Value = other.Name.Value;
-        IsVisible.Value = other.IsVisible.Value;
-        Opacity.Value = other.Opacity.Value;
-        IsLocked.Value = other.IsLocked.Value;
-    }
-
     /// <summary>
     /// Assume the given node is focused and going to be deleted, return the path to the next node that should have focus.
     /// e.g. Used at deletion of working layer to determine the new working layer.

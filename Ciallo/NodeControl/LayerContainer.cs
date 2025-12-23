@@ -71,7 +71,7 @@ public partial class LayerContainer : Container
         property.VisibleIf(AppDocumentManager.WorkingDocument.CurrentValue.Get<SelectionManager>().WorkingLayer, e);
         e.Add(property);
 
-        property.Opacity.BindNumber(e.Get<LayerTreeNode>().Opacity);
+        property.Opacity.BindNumber(e.Get<CommonLayerSetting>().Opacity);
     }
 
     public void CreateInsertBlock(Entity e, int index)
@@ -90,16 +90,16 @@ public partial class LayerContainer : Container
 
     private LayerBlock CreateBlock(Entity e)
     {
-        var node = e.Get<LayerTreeNode>();
+        var commonSetting = e.Get<CommonLayerSetting>();
         var subs = _subscriptions[e];
 
         var block = LayerBlock.Instantiate();
         block.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
-        block.VisibleButton.BindBool(node.IsVisible, out var sub);
+        block.VisibleButton.BindBool(commonSetting.IsVisible, out var sub);
         sub.AddTo(subs);
 
         var lineEdit = block.GetNode<LabelLineEdit>("%LabelLineEdit");
-        lineEdit.BindString(node.Name);
+        lineEdit.BindString(commonSetting.Name);
 
         block.MouseEntered += () => _mouseHoveringLayer = block;
         block.MouseExited += () => _mouseHoveringLayer = null;

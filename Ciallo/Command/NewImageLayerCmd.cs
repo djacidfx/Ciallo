@@ -13,36 +13,40 @@ namespace Ciallo.Command;
 public class NewImageLayerCmd : CommandBase
 {
     private readonly ImageLayerSetting _setting;
+    private CommonLayerSetting _commonSetting;
     private Sprite2D _sprite;
     private CompositeDisposable _subs;
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public NewImageLayerCmd(Image image)
+    public NewImageLayerCmd(Image image, CommonLayerSetting commonSetting = null)
     {
         _setting = new ImageLayerSetting
         {
             Texture = ImageTexture.CreateFromImage(image)
         };
+        _commonSetting = commonSetting;
     }
 
-    public NewImageLayerCmd(ImageLayerSetting setting)
+    public NewImageLayerCmd(ImageLayerSetting setting, CommonLayerSetting commonSetting = null)
     {
         _setting = setting;
+        _commonSetting = commonSetting;
+    }
+
+    protected override void BeforeFirstDo(Entity layerE)
+    {
+        layerE.Add(new LayerTreeNode());
+
+        _commonSetting ??= new CommonLayerSetting { Name = { Value = "Image".Tr() } };
+        layerE.Add(_commonSetting);
+        _commonSetting.RegisterProperties(CommandManager).AddTo(layerE);
     }
 
     protected override void Do(Entity layerE)
     {
         _subs = new();
         _subs.AddTo(layerE);
-
-        // Data
-        if (!layerE.Has<LayerTreeNode>())
-        {
-            var n = new LayerTreeNode { Name = { Value = "Image".Tr() } };
-            layerE.Add(n);
-            n.RegisterProperties(CommandManager).AddTo(layerE);
-        }
 
         layerE.Tag<ToSerializeTag>();
         Document.Get<LayerTreeNode>().AddChild(layerE);
@@ -60,9 +64,8 @@ public class NewImageLayerCmd : CommandBase
         layerE.Add(_sprite);
         _sprite.SetOwner(worldView);
 
-        var node = layerE.Get<LayerTreeNode>();
-        node.IsVisible.Subscribe(_sprite.SetVisible).AddTo(_subs);
-        node.Opacity.Subscribe(v =>
+        _commonSetting.IsVisible.Subscribe(_sprite.SetVisible).AddTo(_subs);
+        _commonSetting.Opacity.Subscribe(v =>
         {
             var color = _sprite.SelfModulate;
             color.A = v;

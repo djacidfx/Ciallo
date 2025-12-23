@@ -10,7 +10,7 @@ public partial class CommandBuilder
 {
     public readonly string Name = "Unnamed Action";
     public Entity TargetE;
-    public readonly List<CommandBase> Commands = [];
+    public readonly List<ICommand> Commands = [];
 
     public CommandBuilder(Entity targetE = default)
     {
@@ -29,7 +29,7 @@ public partial class CommandBuilder
         return this;
     }
 
-    public CommandBuilder AddCommand(CommandBase cmd)
+    public CommandBuilder AddCommand(ICommand cmd)
     {
         Commands.Add(cmd);
         return this;
