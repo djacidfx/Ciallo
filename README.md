@@ -249,6 +249,14 @@ Go to [Contributing Tab](https://github.com/ShenCiao/Ciallo?tab=contributing-ov-
 
 Shen answers the following questions:
 
+### Hand-drawn art vs. Graphics design?
+Ciallo is designed for hand-drawn art---illustrations and animations, rather than graphic design tasks such as logos, web layouts, or UI/UX assets.
+
+You may wonder about the difference: think of it like game development compared with front-end web development. Both involve creating visual elements, but they require different skills and tools. With unlimited resources Ciallo could support both, like the Affinity 3 does, but most programs focus on one area for a better user experience:
+Krita, Clip Studio Paint, and Procreate emphasize hand-drawn art, while Adobe Illustrator, Figma, and Inkscape specialize in graphic design.
+
+But Ciallo's stroke-rendering technology isn't limited to hand-drawn art. Everywhere needs stylized lines/strokes could use it. Feel free to ask me for support if you'd like to use Ciallo's brushes while developing graphic-design or other software.
+
 ### Why develop on a game engine?
 
 **TL;DR**: I cannot handle the complexity of Vulkan.
@@ -277,10 +285,6 @@ If we have to give up using Godot for whatever reason someday, we may consider u
 Dynamically-typed languages cannot support our project (or, IMHO, any projects that need more than 5 custom types). C# is a better choice, also for its larger community.
 Developing a mature programming language is as hard as developing the game engine itself.
 GDscript is doubling the efforts as Godot grows.
-
-But I do like the GDScript language itself. In my wet dream, Godot will treat C# as the first citizen and add shader programming support to "GDScript" for graphics.
-
-> The graphics community lacks an advanced programming language for shading. Compared to C#, GDScript lacks many features, but compared to GLSL/HLSL, GDScript is already very feature-rich.
 
 [Contributing Tab]:https://github.com/ShenCiao/Ciallo?tab=contributing-ov-file
 
