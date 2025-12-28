@@ -46,10 +46,15 @@ public partial class WorldEventDispatcher : SubViewportContainer
         // ------------ Tool events handling -------------
         if (e is InputEventKey key)
         {
-            DispatchKey(key);
-            if (_isInteracting) GetViewport().SetInputAsHandled();
+            DispatchKey(key, new()
+            {
+                ScreenPosition = _prevScreenPos,
+                WorldPosition = _prevWorldPos,
+                Tilt = _prevTilt,
+            });
         }
-        // Only deal with cursor events
+        // Following code only deal with cursor events.
+        // Note: Godot treats stylus pen input as mouse input.
         if (e is not InputEventMouse mouseEvent) return;
 
         var screenPos = mouseEvent.Position;
@@ -62,42 +67,12 @@ public partial class WorldEventDispatcher : SubViewportContainer
         _prevScreenPos = screenPos;
         _prevWorldPos = worldPos;
 
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: true } lClick && _isHovering && !_isPanning)
+        if (mouseEvent is InputEventMouseButton mouseButton && !_isPanning)
         {
-            DispatchLeftClick(new()
+            DispatchMouseButton(mouseButton, new()
             {
-                ScreenPosition = screenPos,
-                WorldPosition = worldPos,
-                Tilt = _prevTilt,
-            });
-        }
-
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Left, Pressed: false } lRelease)
-        {
-            DispatchLeftRelease(new()
-            {
-                ScreenPosition = screenPos,
-                WorldPosition = worldPos,
-                Tilt = _prevTilt,
-            });
-        }
-
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true } rClick && _isHovering && !_isPanning)
-        {
-            DispatchRightClick(new()
-            {
-                ScreenPosition = screenPos,
-                WorldPosition = worldPos,
-                Tilt = _prevTilt,
-            });
-        }
-
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: false } rRelease)
-        {
-            DispatchRightRelease(new()
-            {
-                ScreenPosition = screenPos,
-                WorldPosition = worldPos,
+                ScreenPosition = _prevScreenPos,
+                WorldPosition = _prevWorldPos,
                 Tilt = _prevTilt,
             });
         }
@@ -105,7 +80,6 @@ public partial class WorldEventDispatcher : SubViewportContainer
         if (mouseEvent is InputEventMouseMotion motion)
         {
             var currentPressure = AppPreference.PenPressureRemapCurve.SampleX(motion.Pressure);
-            var elapsed = _timer.Elapsed;
 
             DispatchMotion(new()
             {
@@ -117,7 +91,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 PressureDelta = currentPressure - _prevPressure,
                 Tilt = motion.Tilt,
                 TiltDelta = motion.Tilt - _prevTilt,
-                TimeDelta = elapsed,
+                TimeDelta = _timer.Elapsed,
             });
 
             _prevPressure = currentPressure;
@@ -149,21 +123,30 @@ public partial class WorldEventDispatcher : SubViewportContainer
             panel.Zoom.Value = 1.0f;
             panel.CanvasRotation.Value = 0.0f;
         }
-        // Scroll mouse wheel zooming.
-        var zoomFactor = AppPreference.MouseWheelZoomFactor.Value;
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp } && _isHovering)
+        // Scroll mouse wheel to zoom camera.
+        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp, AltPressed: false } && _isHovering)
         {
-            panel.Zoom.Value *= 1.0f + zoomFactor;
+            panel.Zoom.Value *= 1.0f + AppPreference.MouseWheelZoomFactor.Value;
             // Dirty patch to fix when mouse scroll zooming, the hover area is not updated correctly.
             var newWorldPos = _camera.GetViewportTransform().AffineInverse() * mouseEvent.Position;
             _worldCursorDetectionArea.UpdateHovering(newWorldPos);
         }
-        else if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelDown } && _isHovering)
+        else if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelDown, AltPressed: false } && _isHovering)
         {
-            panel.Zoom.Value *= 1.0f - zoomFactor;
+            panel.Zoom.Value *= 1.0f - AppPreference.MouseWheelZoomFactor.Value;
 
             var newWorldPos = _camera.GetViewportTransform().AffineInverse() * mouseEvent.Position;
             _worldCursorDetectionArea.UpdateHovering(newWorldPos);
+        }
+
+        // Alt + scroll mouse wheel to rotate camera.
+        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp, AltPressed: true } && _isHovering)
+        {
+            panel.CanvasRotation.Value += AppPreference.MouseWheelRotateFactor.Value;
+        }
+        else if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelDown, AltPressed: true } && _isHovering)
+        {
+            panel.CanvasRotation.Value -= AppPreference.MouseWheelRotateFactor.Value;
         }
 
         // ------------ Other -------------
@@ -173,31 +156,29 @@ public partial class WorldEventDispatcher : SubViewportContainer
     public Entity Document;
     private ToolManager ToolManager => Document.Get<ToolManager>();
 
-    private void DispatchKey(InputEventKey key)
+    private void DispatchKey(InputEventKey key, CursorButtonData data)
     {
-        var toolAction = ToolManager.ActiveTool.Value?.OnKey(key);
-        if (toolAction.HasValue && toolAction.Value.HasFlag(ToolKeyActions.HandleInput))
-            _isInteracting = toolAction.Value.HasFlag(ToolKeyActions.Interact);
+        if (ToolManager.ActiveTool == null) return;
+        var toolAction = ToolManager.ActiveTool.Value.OnKey(key, data);
+        ProcessToolActions(toolAction);
     }
 
-    public void DispatchLeftClick(CursorButtonData data)
+    private void DispatchMouseButton(InputEventMouseButton mouse, CursorButtonData data)
     {
-        _isInteracting = ToolManager.ActiveTool.Value?.OnLeftClick(data) == true;
+        if (ToolManager.ActiveTool == null) return;
+        var toolAction = ToolManager.ActiveTool.Value.OnMouseButton(mouse, data);
+        ProcessToolActions(toolAction);
     }
 
-    public void DispatchLeftRelease(CursorButtonData data)
+    private void ProcessToolActions(ToolButtonActions action)
     {
-        _isInteracting = ToolManager.ActiveTool.Value?.OnLeftRelease(data) == true;
-    }
+        if (_isInteracting || action.HasFlag(ToolButtonActions.HandleInput))
+            GetViewport().SetInputAsHandled();
 
-    public void DispatchRightClick(CursorButtonData data)
-    {
-        _isInteracting = ToolManager.ActiveTool.Value?.OnRightClick(data) == true;
-    }
-
-    public void DispatchRightRelease(CursorButtonData data)
-    {
-        _isInteracting = ToolManager.ActiveTool.Value?.OnRightRelease(data) == true;
+        if (action.HasFlag(ToolButtonActions.HandleInput | ToolButtonActions.StartInteraction))
+            _isInteracting = true;
+        else if (action.HasFlag(ToolButtonActions.HandleInput | ToolButtonActions.EndInteraction))
+            _isInteracting = false;
     }
 
     public void DispatchMotion(CursorMotionData data)

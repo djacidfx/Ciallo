@@ -213,14 +213,14 @@ public abstract class CommonToolBase : ITool
             RightInteractor.Interacting(data);
     }
 
-    public virtual ToolKeyActions OnKey(InputEventKey key)
+    public virtual ToolButtonActions OnKey(InputEventKey key)
     {
         if (AppActions.CancelInteraction.IsJustPressed)
         {
             _machine.Fire(Event.Cancel);
-            return ToolKeyActions.HandleInput;
+            return ToolButtonActions.HandleInput;
         }
-        return ToolKeyActions.None;
+        return ToolButtonActions.None;
     }
 
     public abstract void DrawProperty(PropertyContainer container);

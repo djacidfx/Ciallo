@@ -14,16 +14,8 @@ namespace Ciallo.Tool;
 /// </summary>
 public interface ITool
 {
-    // Return true if the event triggers interaction
-    // During interaction:
-    //  - mouse is captured by canvas
-    //  - all the key inputs are sent to the tool (other operations' shortcut like undo/redo won't be triggered)
-    // Return false to quit the interaction
-    public bool OnLeftClick(CursorButtonData data);
-    public bool OnLeftRelease(CursorButtonData data);
-    public bool OnRightClick(CursorButtonData data);
-    public bool OnRightRelease(CursorButtonData data);
-    public ToolKeyActions OnKey(InputEventKey key);
+    public ToolButtonActions OnMouseButton(InputEventMouseButton button, CursorButtonData data);
+    public ToolButtonActions OnKey(InputEventKey key, CursorButtonData data); // Note: By design, also deliver the cursor data when the key is pressed or released
 
     public void OnMoving(CursorMotionData data);
 
@@ -34,7 +26,7 @@ public interface ITool
 }
 
 [Flags]
-public enum ToolKeyActions
+public enum ToolButtonActions
 {
     None = 0,
     HandleInput = 1 << 0,
