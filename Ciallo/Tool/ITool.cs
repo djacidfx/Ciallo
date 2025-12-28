@@ -1,5 +1,4 @@
-﻿using System;
-using Ciallo.Geometry;
+﻿using Ciallo.Geometry;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -14,8 +13,9 @@ namespace Ciallo.Tool;
 /// </summary>
 public interface ITool
 {
-    public ToolButtonActions OnMouseButton(InputEventMouseButton button, CursorButtonData data);
-    public ToolButtonActions OnKey(InputEventKey key, CursorButtonData data); // Note: By design, also deliver the cursor data when the key is pressed or released
+    // Return true if the event is handled
+    public bool OnMouseButton(InputEventMouseButton button, CursorButtonData data);
+    public bool OnKey(InputEventKey key, CursorButtonData data); // Note: By design, deliver the cursor data when the key is pressed or released
 
     public void OnMoving(CursorMotionData data);
 
@@ -23,13 +23,4 @@ public interface ITool
     public bool CanHandleLayer(params Entity[] layerEs);
     public void OnActivate(params Entity[] layerEs);
     public void OnDeactivate();
-}
-
-[Flags]
-public enum ToolButtonActions
-{
-    None = 0,
-    HandleInput = 1 << 0,
-    StartInteraction = 1 << 1,
-    EndInteraction = 1 << 2,
 }

@@ -18,7 +18,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
     private bool _isHovering = false;
     private bool _isPanning = false;
-    private bool _isInteracting;
+
     private Vector2 _prevScreenPos;
     private Vector2 _prevWorldPos;
     private float _prevPressure;
@@ -107,13 +107,11 @@ public partial class WorldEventDispatcher : SubViewportContainer
         // Drag middle mouse to pan
         if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: true } && _isHovering)
         {
-            _isInteracting = true;
             _isPanning = true;
         }
         if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: false })
         {
             _isPanning = false;
-            _isInteracting = false;
         }
 
         // Double click to reset camera.
@@ -148,9 +146,6 @@ public partial class WorldEventDispatcher : SubViewportContainer
         {
             panel.CanvasRotation.Value -= AppPreference.MouseWheelRotateFactor.Value;
         }
-
-        // ------------ Other -------------
-        if (_isInteracting) GetViewport().SetInputAsHandled();
     }
 
     public Entity Document;
@@ -158,27 +153,14 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
     private void DispatchKey(InputEventKey key, CursorButtonData data)
     {
-        if (ToolManager.ActiveTool == null) return;
-        var toolAction = ToolManager.ActiveTool.Value.OnKey(key, data);
-        ProcessToolActions(toolAction);
+        if (ToolManager.ActiveTool.Value?.OnKey(key, data) == true)
+            GetViewport().SetInputAsHandled();
     }
 
     private void DispatchMouseButton(InputEventMouseButton mouse, CursorButtonData data)
     {
-        if (ToolManager.ActiveTool == null) return;
-        var toolAction = ToolManager.ActiveTool.Value.OnMouseButton(mouse, data);
-        ProcessToolActions(toolAction);
-    }
-
-    private void ProcessToolActions(ToolButtonActions action)
-    {
-        if (_isInteracting || action.HasFlag(ToolButtonActions.HandleInput))
+        if (ToolManager.ActiveTool?.Value.OnMouseButton(mouse, data) == true)
             GetViewport().SetInputAsHandled();
-
-        if (action.HasFlag(ToolButtonActions.HandleInput | ToolButtonActions.StartInteraction))
-            _isInteracting = true;
-        else if (action.HasFlag(ToolButtonActions.HandleInput | ToolButtonActions.EndInteraction))
-            _isInteracting = false;
     }
 
     public void DispatchMotion(CursorMotionData data)
