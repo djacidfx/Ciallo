@@ -6,6 +6,12 @@ using Godot;
 
 namespace Ciallo.Tool;
 
+/// <summary>
+/// "Tool" is a concept/object to handle user input and modify the canvas.
+/// `ITool` here defines those user inputs a tool should handle.
+/// Developer can directly implement this interface to create a tool processing raw input.
+/// Or derive from the `ToolBase` with "interactive session" abstraction to create common tools more easily.
+/// </summary>
 public interface ITool
 {
     // Return true if the event triggers interaction
@@ -32,5 +38,6 @@ public enum ToolKeyActions
 {
     None = 0,
     HandleInput = 1 << 0,
-    Interact = 1 << 1,
+    StartInteraction = 1 << 1,
+    EndInteraction = 1 << 2,
 }
