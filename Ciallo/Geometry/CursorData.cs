@@ -12,7 +12,7 @@ public struct CursorButtonData
     public float Pressure;
     public Vector2 Tilt;
 
-    public static implicit operator CursorMotionData(CursorButtonData b) =>
+    public static explicit operator CursorMotionData(CursorButtonData b) =>
         new()
         {
             ScreenPosition = b.ScreenPosition,

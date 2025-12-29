@@ -89,9 +89,9 @@ public class PolylineInteractiveGenerator
         _positions.Add(data.WorldPosition);
         _pressures.Add(data.Pressure); // This always gives 0, since logically, pen is not pressing before a down event. Deal with this in the Update function.
         _tilts.Add(data.Tilt);
-        _radii.Add(CalculateRadius(data));
+        _radii.Add(CalculateRadius((CursorMotionData)data));
 
-        _processedPointMotion = data;
+        _processedPointMotion = (CursorMotionData)data;
         _latestPointIsFirstPoint = true;
         _latestPointIsTurningPoint = true;
         _segmentNeedInterpolation = false;
