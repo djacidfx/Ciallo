@@ -46,12 +46,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
         // ------------ Tool events handling -------------
         if (e is InputEventKey key)
         {
-            DispatchKey(key, new()
-            {
-                ScreenPosition = _prevScreenPos,
-                WorldPosition = _prevWorldPos,
-                Tilt = _prevTilt,
-            });
+            DispatchKey(key);
         }
         // Following code only deal with cursor events.
         // Note: Godot treats stylus pen input as mouse input.
@@ -151,16 +146,15 @@ public partial class WorldEventDispatcher : SubViewportContainer
     public Entity Document;
     private ToolManager ToolManager => Document.Get<ToolManager>();
 
-    private void DispatchKey(InputEventKey key, CursorButtonData data)
+    private void DispatchKey(InputEventKey key)
     {
-        if (ToolManager.ActiveTool.Value?.OnKey(key, data) == true)
+        if (ToolManager.ActiveTool.Value?.OnKey(key) == true)
             GetViewport().SetInputAsHandled();
     }
 
     private void DispatchMouseButton(InputEventMouseButton mouse, CursorButtonData data)
     {
-        if (ToolManager.ActiveTool?.Value.OnMouseButton(mouse, data) == true)
-            GetViewport().SetInputAsHandled();
+        ToolManager.ActiveTool?.Value.OnMouseButton(mouse, data);
     }
 
     public void DispatchMotion(CursorMotionData data)
