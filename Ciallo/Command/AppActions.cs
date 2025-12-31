@@ -10,28 +10,27 @@ namespace Ciallo.Command;
 [InputMap(nameof(AppAction))]
 public static partial class AppActions;
 
-public class AppAction(StringName name)
+public record AppAction(StringName Name)
 {
-    public StringName Name => name;
     public readonly Shortcut Shortcut = new()
     {
         Events =
         [
             new InputEventAction
             {
-                Action = name,
+                Action = Name,
                 Pressed = true,
             }
         ],
     };
 
-    public bool IsPressed => Input.IsActionPressed(name);
-    public bool IsJustPressed => Input.IsActionJustPressed(name);
-    public bool IsJustReleased => Input.IsActionJustReleased(name);
-    public float Strength => Input.GetActionStrength(name);
+    public bool IsPressed => Input.IsActionPressed(Name);
+    public bool IsJustPressed => Input.IsActionJustPressed(Name);
+    public bool IsJustReleased => Input.IsActionJustReleased(Name);
+    public float Strength => Input.GetActionStrength(Name);
 
-    public void Press() => Input.ActionPress(name);
-    public void Release() => Input.ActionRelease(name);
+    public void Press() => Input.ActionPress(Name);
+    public void Release() => Input.ActionRelease(Name);
 
     public static implicit operator StringName(AppAction input) => input.Name;
 }
