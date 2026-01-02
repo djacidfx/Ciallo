@@ -6,7 +6,7 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class RectSelectPolylineSession : InteractiveSessionBase
+public class RectSelectPolylineInteractor : InteractiveSessionBase
 {
     private StrokeView _boxSelectionDash;
     private Rect2 _boxSelectionRect;

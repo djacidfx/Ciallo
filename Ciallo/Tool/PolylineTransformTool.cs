@@ -18,7 +18,7 @@ public class PolylineTransformTool : ToolBase
 {
     public readonly PolylineTransformHover Hover = new();
     public readonly PolylineTransformInteractor Transform = new();
-    public readonly RectSelectPolylineSession Select = new();
+    public readonly RectSelectPolylineInteractor Select = new();
 
     protected override void ConfigureStateMachine()
     {
