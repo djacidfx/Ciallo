@@ -1,23 +1,30 @@
 ﻿using System.Linq;
+using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Widget;
 using Frent;
+using Godot;
 
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Select)]
-public class ImageTransform : CommonToolBase
+public class ImageTransform : ToolBase
 {
-    public ImageTransform()
+    public readonly ImageTransformHover Hover = new();
+    public readonly ImageTransformInteractor Left = new();
+
+    protected override void ConfigureStateMachine()
     {
-        var hover = new ImageTransformHover();
-        HoverInteractor = hover;
-        LeftInteractor = new ImageTransformInteractor(hover);
+        ConfigureInitial(Hover)
+            .Permit(Press(MouseButton.Left), Left);
+
+        Configure(Left)
+            .Permit(Release(MouseButton.Left), Hover)
+            .Permit(Press(AppActions.CancelInteraction), Hover)
+            .Permit(Press(AppActions.ConfirmInteraction), Hover);
     }
 
-    public override void DrawProperty(PropertyContainer container)
-    {
-    }
+    public override void DrawProperty(PropertyContainer container) { }
 
     public override bool CanHandleLayer(params Entity[] layerEs)
     {

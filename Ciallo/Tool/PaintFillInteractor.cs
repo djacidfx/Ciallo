@@ -7,7 +7,7 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class PaintFillInteractor(PaintFill tool) : InteractorBase
+public class PaintFillInteractor(PaintFill tool) : InteractiveSessionBase
 {
     private readonly PolylineInteractiveGenerator _generator = new()
     {
@@ -17,20 +17,13 @@ public class PaintFillInteractor(PaintFill tool) : InteractorBase
     };
     private StrokeView _dashPreview;
 
-    public override bool Prepare(CursorButtonData data)
-    {
-        var l = SelectionManager.WorkingLayer.Value;
-        return !l.IsDeletedOrNull() && l.Has<PolylineLayerSetting>();
-    }
-
     public override void Start(CursorButtonData data)
     {
         _generator.Start(data);
 
         _dashPreview = new StrokeView();
         _dashPreview.Material = AutoloadRendering.DashWireframeMaterial;
-        var layerE = SelectionManager.WorkingLayer.Value;
-        var layerView = layerE.Get<PolylineLayerView>();
+        var layerView = WorkingLayer.Get<PolylineLayerView>();
         layerView.AddChild(_dashPreview);
     }
 
@@ -49,7 +42,6 @@ public class PaintFillInteractor(PaintFill tool) : InteractorBase
             Clear();
             return;
         }
-        var layerE = SelectionManager.WorkingLayer.Value;
         var setting = new FilledPolygonSetting() { Color = { Value = tool.Color.Value } };
         var geom = new PolylineGeometry()
         {
@@ -58,8 +50,8 @@ public class PaintFillInteractor(PaintFill tool) : InteractorBase
             Pressures = [.._generator.Pressures],
             Tilts = [.._generator.Tilts],
         };
-        new CommandBuilder(layerE.World.Create())
-            .NewFilledPolygon(layerE, setting)
+        new CommandBuilder(WorkingLayer.World.Create())
+            .NewFilledPolygon(WorkingLayer, setting)
             .SetPolylineGeometry(geom)
             .Commit();
         Clear();
@@ -69,6 +61,8 @@ public class PaintFillInteractor(PaintFill tool) : InteractorBase
     {
         Clear();
     }
+
+    public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
 
     public void Clear()
     {

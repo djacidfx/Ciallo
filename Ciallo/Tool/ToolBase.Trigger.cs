@@ -6,8 +6,13 @@ namespace Ciallo.Tool;
 
 public abstract partial class ToolBase
 {
-    public class Trigger(string Name)
+    public class Trigger
     {
+        public string Name { get; init; }
+        public Trigger(string name)
+        {
+            Name = name;
+        }
         public static readonly Trigger Activate = new("Activate");
         public static readonly Trigger Deactivate = new("Deactivate");
         public static readonly Trigger Refresh = new("Refresh");

@@ -1,13 +1,11 @@
-﻿using System.Linq;
-using Ciallo.Data;
+﻿using Ciallo.Data;
 using Ciallo.Geometry;
 using Godot;
 
 namespace Ciallo.Tool;
 
-public class ImageTransformInteractor : InteractorBase
+public class ImageTransformInteractor : InteractiveSessionBase
 {
-    private readonly ImageTransformHover _hover;
     private int _transformType = -1; // 0: Rotate, 1: Move, 2~5: Corner Resize
 
     private ImageLayerSetting _setting;
@@ -15,39 +13,30 @@ public class ImageTransformInteractor : InteractorBase
     private Transform2D _startTransform;
     private Vector2[] _startCorners = [];
 
-    public ImageTransformInteractor(ImageTransformHover hover)
+    public override void BeforeSrcEnd(InteractiveSessionBase session)
     {
-        _hover = hover;
-    }
-
-    public override bool Prepare(CursorButtonData data)
-    {
-        if (_hover.RotationArea == null || _hover.TranslationArea == null || _hover.CornerAreas.Length == 0)
-            return false;
-
-        if (_hover.RotationArea.IsHovered)
+        if (session is not ImageTransformHover hover) return;
+        if (hover.RotationArea.IsHovered)
         {
             _transformType = 0;
         }
-        if (_hover.TranslationArea.IsHovered)
+        if (hover.TranslationArea.IsHovered)
         {
             _transformType = 1;
         }
-        for (int i = 0; i < _hover.CornerAreas.Length; i++)
+        for (int i = 0; i < hover.CornerAreas.Length; i++)
         {
-            if (_hover.CornerAreas[i].IsHovered)
+            if (hover.CornerAreas[i].IsHovered)
             {
                 _transformType = 2 + i;
                 break;
             }
         }
-
-        return _hover.RotationArea.IsHovered || _hover.TranslationArea.IsHovered || _hover.CornerAreas.Any(a => a.IsHovered);
     }
 
     public override void Start(CursorButtonData data)
     {
-        _setting = SelectionManager.WorkingLayer.Value.Get<ImageLayerSetting>();
+        _setting = WorkingLayer.Get<ImageLayerSetting>();
         _startPos = data.WorldPosition;
         _startTransform = _setting.ImageTransform.Value;
         _startCorners = _setting.GetCorners();
@@ -185,5 +174,10 @@ public class ImageTransformInteractor : InteractorBase
     public void Clear()
     {
         _transformType = -1;
+    }
+
+    public override bool OnKey(InputEventKey key, CursorButtonData data)
+    {
+        return true;
     }
 }

@@ -7,7 +7,7 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class PaintInteractor : InteractorBase
+public class PaintInteractor : InteractiveSessionBase
 {
     private Entity _brushE;
     private StrokeView _strokePreview;
@@ -16,15 +16,6 @@ public class PaintInteractor : InteractorBase
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
     };
-
-    public override bool Prepare(CursorButtonData data)
-    {
-        var l = SelectionManager.WorkingLayer.Value;
-        bool layerAvailable = !l.IsNull && l.Has<PolylineLayerSetting>();
-        bool brushAvailable = !SelectionManager.WorkingBrush.Value.IsNull || AppBrushLibrary.HasSelection;
-
-        return layerAvailable && brushAvailable;
-    }
 
     public override void Start(CursorButtonData data)
     {
@@ -38,13 +29,13 @@ public class PaintInteractor : InteractorBase
             new CommandBuilder(Document.World.Create())
                 .NewBrush(setting).SetWorkingBrush().Commit();
         }
-        _brushE = SelectionManager.WorkingBrush.Value;
+        _brushE = Document.Get<SelectionManager>().WorkingBrush.Value;
+
         var brushMaterial = _brushE.Get<BrushMaterial>();
 
         _strokePreview = new StrokeView();
         _strokePreview.Material = brushMaterial;
-        var layerE = SelectionManager.WorkingLayer.Value;
-        var layerView = layerE.Get<PolylineLayerView>();
+        var layerView = WorkingLayer.Get<PolylineLayerView>();
         layerView.AddChild(_strokePreview);
 
         var brushSetting = _brushE.Get<BrushSetting>();
@@ -63,7 +54,6 @@ public class PaintInteractor : InteractorBase
     {
         _generator.End(data);
 
-        var layerE = SelectionManager.WorkingLayer.Value;
         var geom = new PolylineGeometry()
         {
             Positions = [.._generator.Positions],
@@ -71,8 +61,8 @@ public class PaintInteractor : InteractorBase
             Pressures = [.._generator.Pressures],
             Tilts = [.._generator.Tilts],
         };
-        new CommandBuilder(layerE.World.Create())
-            .NewStroke(layerE)
+        new CommandBuilder(WorkingLayer.World.Create())
+            .NewStroke(WorkingLayer)
             .SetStrokeBrush(_brushE)
             .SetPolylineGeometry(geom)
             .Commit();
@@ -83,6 +73,7 @@ public class PaintInteractor : InteractorBase
     {
         Clear();
     }
+    public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
 
     public void Clear()
     {

@@ -13,18 +13,27 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Paint)]
-public partial class PaintTool : CommonToolBase
+public partial class PaintTool : ToolBase
 {
-    public readonly ReactiveProperty<Entity> BrushE = new(new Entity());
+    public readonly ReactiveProperty<Entity> BrushE = new(Entity.Null);
 
-    public PaintTool()
+    public readonly PaintHover Hover = new();
+    public readonly PaintInteractor Left = new();
+
+    protected override void ConfigureStateMachine()
     {
-        LeftInteractor = new PaintInteractor();
-        HoverInteractor = new PaintHover();
-    }
+        ConfigureInitial(Hover)
+            .PermitIf(Press(MouseButton.Left), Left, () =>
+            {
+                var brushE = Document.Get<SelectionManager>().WorkingBrush.Value;
+                return !brushE.IsDeletedOrNull() || AppBrushLibrary.HasSelection;
+            });
 
-    // Will have dual interactors
-    // public readonly ResizeBrushInteractor ResizeInteractor = new();
+        Configure(Left)
+            .Permit(Release(MouseButton.Left), Hover)
+            .Permit(Press(AppActions.CancelInteraction), Hover)
+            .Permit(Press(AppActions.ConfirmInteraction), Hover);
+    }
 
     public override void DrawProperty(PropertyContainer container)
     {

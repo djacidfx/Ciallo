@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Ciallo.Command;
 using Ciallo.Geometry;
 using Ciallo.Widget;
@@ -8,18 +9,28 @@ using Stateless;
 
 namespace Ciallo.Tool;
 
-using StateMachine = StateMachine<IInteractiveSession, ToolBase.Trigger>;
-using StateConfiguration = StateMachine<IInteractiveSession, ToolBase.Trigger>.StateConfiguration;
+using StateMachine = StateMachine<InteractiveSessionBase, ToolBase.Trigger>;
+using StateConfiguration = StateMachine<InteractiveSessionBase, ToolBase.Trigger>.StateConfiguration;
 
 public abstract partial class ToolBase : ITool
 {
+    public Entity Document
+    {
+        get => _document;
+        init
+        {
+            _document = value;
+            ConfigureStateMachine();
+        }
+    }
+    public Entity[] WorkingLayers { get; set; }
+    public Entity WorkingLayer => WorkingLayers.First();
+    public SceneTree GetTree() => (SceneTree)Engine.GetMainLoop();
+
     private CursorButtonData _currentCursor;
     private readonly HashSet<AppAction> _triggerActions = new();
-
-    public virtual void OnActivated(params Entity[] layerEs) { }
-    public virtual void OnDeactivated() { }
-
     public readonly StateMachine Machine = new(ToolInactive.Instance);
+    private readonly Entity _document;
 
     protected ToolBase()
     {
@@ -30,8 +41,11 @@ public abstract partial class ToolBase : ITool
             .Permit(Trigger.Deactivate, ToolInactive.Instance);
     }
 
-    public StateConfiguration Configure(IInteractiveSession session)
+    protected abstract void ConfigureStateMachine();
+
+    public StateConfiguration Configure(InteractiveSessionBase session)
     {
+        session.Document = Document;
         return Machine.Configure(session).SubstateOf(ToolActive.Instance)
             .OnEntry(t =>
             {
@@ -51,7 +65,7 @@ public abstract partial class ToolBase : ITool
             });
     }
 
-    public StateConfiguration ConfigureInitial(IInteractiveSession session)
+    public StateConfiguration ConfigureInitial(InteractiveSessionBase session)
     {
         Machine.Configure(ToolActive.Instance)
             .InitialTransition(session);
@@ -60,13 +74,15 @@ public abstract partial class ToolBase : ITool
         return cfg;
     }
 
+    public virtual void OnActivated() { }
+    public virtual void OnDeactivated() { }
+
     #region ITool
 
     public void OnMouseButton(InputEventMouseButton button, CursorButtonData data)
     {
         _currentCursor = data;
         var trigger = Trigger.Get(button.ButtonIndex, button.Pressed);
-
         if (Machine.CanFire(trigger))
             Machine.Fire(trigger);
     }
@@ -117,7 +133,12 @@ public abstract partial class ToolBase : ITool
 
     public void OnActivate(params Entity[] layerEs)
     {
-        OnActivated(layerEs);
+        foreach (var session in Machine.GetInfo().States.Select(info => (InteractiveSessionBase)info.UnderlyingState))
+        {
+            session.WorkingLayers = layerEs;
+        }
+        WorkingLayers = layerEs;
+        OnActivated();
         Machine.Fire(Trigger.Activate);
     }
 
@@ -125,6 +146,11 @@ public abstract partial class ToolBase : ITool
     {
         Machine.Fire(Trigger.Deactivate);
         OnDeactivated();
+        WorkingLayers = null;
+        foreach (var session in Machine.GetInfo().States.Select(info => (InteractiveSessionBase)info.UnderlyingState))
+        {
+            session.WorkingLayers = null;
+        }
     }
 
     #endregion
@@ -151,13 +177,13 @@ public abstract partial class ToolBase : ITool
 
 #region Internal Tool States
 
-public abstract class InternalToolState : IInteractiveSession
+public abstract class InternalToolState : InteractiveSessionBase
 {
-    public void Start(CursorButtonData cursor) { }
-    public void End(CursorButtonData cursor) { }
-    public void Cancel() { }
-    public bool OnKey(InputEventKey key, CursorButtonData data) { return false; }
-    public void Interacting(CursorMotionData data) { }
+    public override void Start(CursorButtonData cursor) { }
+    public override void End(CursorButtonData cursor) { }
+    public override void Cancel() { }
+    public override bool OnKey(InputEventKey key, CursorButtonData data) { return false; }
+    public override void Interacting(CursorMotionData data) { }
 }
 
 public class ToolActive : InternalToolState
