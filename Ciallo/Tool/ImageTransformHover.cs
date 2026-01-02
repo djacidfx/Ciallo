@@ -8,19 +8,19 @@ namespace Ciallo.Tool;
 
 public class ImageTransformHover : InteractiveSessionBase
 {
-    public CursorDetectionArea RotationArea;
-    public CursorDetectionArea TranslationArea;
-    public CursorDetectionArea[] CornerAreas = [];
+    public Body RotationArea;
+    public Body TranslationArea;
+    public Body[] CornerAreas = [];
 
     public override void Start(CursorButtonData data)
     {
         var setting = WorkingLayer.Get<ImageLayerSetting>();
-        var manager = Document.Get<WorldCursorDetectionArea>();
+        var manager = Document.Get<WorldBody>();
 
         WorkingLayer.Get<TransformOverlayBox>().Visible = true;
 
         // Create areas
-        CursorDetectionArea[] areas = manager.CreateAddTransformAreas(setting.ImageSize, setting.ImageTransform.Value);
+        Body[] areas = manager.CreateAddTransformAreas(setting.ImageSize, setting.ImageTransform.Value);
         RotationArea = areas[0];
         TranslationArea = areas[1];
         CornerAreas = areas[2..6];

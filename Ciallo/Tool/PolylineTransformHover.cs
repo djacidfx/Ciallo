@@ -14,8 +14,8 @@ namespace Ciallo.Tool;
 public class PolylineTransformHover : InteractiveSessionBase
 {
     public Entity HoveredPolyline;
-    public CursorDetectionArea RotationArea;
-    public CursorDetectionArea[] CornerAreas = [];
+    public Body RotationArea;
+    public Body[] CornerAreas = [];
     public bool CanTransform
     {
         get
@@ -64,8 +64,8 @@ public class PolylineTransformHover : InteractiveSessionBase
             }
 
             // transform cursor area
-            var worldArea = Document.Get<WorldCursorDetectionArea>();
-            CursorDetectionArea[] areas = worldArea.CreateAddTransformAreas(rect.Size, rect.GetCenter());
+            var worldArea = Document.Get<WorldBody>();
+            Body[] areas = worldArea.CreateAddTransformAreas(rect.Size, rect.GetCenter());
             RotationArea = areas[0];
             areas[1].QueueFree();
             CornerAreas = areas[2..6];
@@ -73,11 +73,11 @@ public class PolylineTransformHover : InteractiveSessionBase
 
         // Enable cursor detections on polylines of working layer
         _layerE = selectionManager.WorkingLayer.Value;
-        var holder = _layerE.Get<PolylineAreaHolder>();
+        var holder = _layerE.Get<PolylineBodyHolder>();
         holder.SetAreaCursor(Control.CursorShape.Move);
 
         // hover hinter
-        _hoverSub = Document.Get<WorldCursorDetectionArea>().HoveringArea.Skip(1).Subscribe(area =>
+        _hoverSub = Document.Get<WorldBody>().HoveringArea.Skip(1).Subscribe(area =>
         {
             if (!HoveredPolyline.IsDeletedOrNull()) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
             if (area == null)
@@ -101,7 +101,7 @@ public class PolylineTransformHover : InteractiveSessionBase
         Array.ForEach(CornerAreas, b => b.QueueFree());
         CornerAreas = [];
 
-        _layerE.Get<PolylineAreaHolder>().SetAreaCursor(Control.CursorShape.Arrow);
+        _layerE.Get<PolylineBodyHolder>().SetAreaCursor(Control.CursorShape.Arrow);
 
         // overlays
         if (!HoveredPolyline.IsDeletedOrNull()) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);

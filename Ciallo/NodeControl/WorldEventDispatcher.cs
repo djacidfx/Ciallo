@@ -14,7 +14,7 @@ namespace Ciallo.NodeControl;
 public partial class WorldEventDispatcher : SubViewportContainer
 {
     private Camera2D _camera;
-    private WorldCursorDetectionArea _worldCursorDetectionArea;
+    private WorldBody _worldBody;
 
     private bool _isHovering = false;
     private bool _isPanning = false;
@@ -31,7 +31,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
         _timer = Stopwatch.StartNew();
 
         _camera = GetNode<Camera2D>("%MainCamera");
-        _worldCursorDetectionArea = GetNode<WorldCursorDetectionArea>("%WorldCursorDetectionArea");
+        _worldBody = GetNode<WorldBody>("%WorldBody");
 
         GuiInput += OnGuiInput;
         MouseEntered += OnMouseEnter;
@@ -122,14 +122,14 @@ public partial class WorldEventDispatcher : SubViewportContainer
             panel.Zoom.Value *= 1.0f + AppPreference.MouseWheelZoomFactor.Value;
             // Dirty patch to fix when mouse scroll zooming, the hover area is not updated correctly.
             var newWorldPos = _camera.GetViewportTransform().AffineInverse() * mouseEvent.Position;
-            _worldCursorDetectionArea.UpdateHovering(newWorldPos);
+            _worldBody.UpdateHovering(newWorldPos);
         }
         else if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelDown, AltPressed: false } && _isHovering)
         {
             panel.Zoom.Value *= 1.0f - AppPreference.MouseWheelZoomFactor.Value;
 
             var newWorldPos = _camera.GetViewportTransform().AffineInverse() * mouseEvent.Position;
-            _worldCursorDetectionArea.UpdateHovering(newWorldPos);
+            _worldBody.UpdateHovering(newWorldPos);
         }
 
         // Alt + scroll mouse wheel to rotate camera.
@@ -160,7 +160,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
     public void DispatchMotion(CursorMotionData data)
     {
         ToolManager.ActiveTool.Value?.OnMoving(data);
-        _worldCursorDetectionArea.UpdateHovering(data.WorldPosition);
+        _worldBody.UpdateHovering(data.WorldPosition);
     }
 
     public void OnMouseEnter()

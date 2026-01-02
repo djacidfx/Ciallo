@@ -45,7 +45,7 @@ public partial class AutoloadNodeControl : Node
             panel.BindBrushSetting(bm.Brushes, e => e.Get<BrushSetting>());
 
             // World button manager
-            var worldButtonManager = paintPanel.GetNode<WorldCursorDetectionArea>("%WorldCursorDetectionArea");
+            var worldButtonManager = paintPanel.GetNode<WorldBody>("%WorldBody");
             document.Add(worldButtonManager);
         }).AddTo(this);
 

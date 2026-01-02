@@ -12,7 +12,7 @@ public class DeleteFilledPolygonCmd : CommandBase
 {
     private Polygon2D _polygonView;
     private PolylineWireframe _polygonOverlay;
-    private CursorDetectionArea _polygonArea;
+    private Body _polygonArea;
     private FilledPolygonSetting _polygonSetting;
 
     private Entity _parentE; // layer entity
@@ -23,7 +23,7 @@ public class DeleteFilledPolygonCmd : CommandBase
 
     protected override void BeforeFirstDo(Entity polygonE)
     {
-        _polygonArea = polygonE.Get<CursorDetectionArea>();
+        _polygonArea = polygonE.Get<Body>();
         _polygonOverlay = polygonE.Get<PolylineWireframe>();
         _polygonView = polygonE.Get<Polygon2D>();
         _polygonSetting = polygonE.Get<FilledPolygonSetting>();
@@ -37,9 +37,9 @@ public class DeleteFilledPolygonCmd : CommandBase
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(polygonE);
 
-        // Cursor detection
+        // Body
         _polygonArea.RemoveFromParent();
-        polygonE.Remove<CursorDetectionArea>();
+        polygonE.Remove<Body>();
 
         // Overlay
         _polygonOverlay.RemoveFromParent();
@@ -74,8 +74,8 @@ public class DeleteFilledPolygonCmd : CommandBase
         worldOverlay.AddChild(_polygonOverlay);
         polygonE.Add(_polygonOverlay);
 
-        // Cursor detection
-        var areaHolder = _parentE.Get<PolylineAreaHolder>();
+        // Body
+        var areaHolder = _parentE.Get<PolylineBodyHolder>();
         areaHolder.InsertNodeAt(_polygonArea, _index);
         polygonE.Add(_polygonArea);
     }

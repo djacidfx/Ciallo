@@ -16,10 +16,10 @@ public class DeletePolylineLayerCmd : CommandBase
 
     private CommandBuilder _deleteChildrenCmd;
     private PolylineLayerView _layerView;
-    private PolylineAreaHolder _areaHolder;
+    private PolylineBodyHolder _bodyHolder;
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
-    public override IEnumerable<GodotObject> UndoRefObjects => [_layerView, _areaHolder];
+    public override IEnumerable<GodotObject> UndoRefObjects => [_layerView, _bodyHolder];
 
     protected override void BeforeFirstDo(Entity layerE)
     {
@@ -36,7 +36,7 @@ public class DeletePolylineLayerCmd : CommandBase
                 _deleteChildrenCmd.SetTarget(polylineE).DeleteFilledPolygon();
         }
 
-        _areaHolder = layerE.Get<PolylineAreaHolder>();
+        _bodyHolder = layerE.Get<PolylineBodyHolder>();
         _layerView = layerE.Get<PolylineLayerView>();
     }
 
@@ -46,8 +46,8 @@ public class DeletePolylineLayerCmd : CommandBase
         _deleteChildrenCmd.Do();
 
         // Cursor detection
-        _areaHolder.RemoveFromParent();
-        layerE.Remove<PolylineAreaHolder>();
+        _bodyHolder.RemoveFromParent();
+        layerE.Remove<PolylineBodyHolder>();
 
         // View
         _layerView.RemoveFromParent();
@@ -78,10 +78,10 @@ public class DeletePolylineLayerCmd : CommandBase
         worldView.InsertNodeAt(_layerView, _index); // order matters
         layerE.Add(_layerView);
 
-        // Cursor detection
-        var worldArea = Document.Get<WorldCursorDetectionArea>();
-        worldArea.AddChild(_areaHolder);
-        layerE.Add(_areaHolder);
+        // Body
+        var worldArea = Document.Get<WorldBody>();
+        worldArea.AddChild(_bodyHolder);
+        layerE.Add(_bodyHolder);
 
         // Restore Children
         _deleteChildrenCmd.Undo();

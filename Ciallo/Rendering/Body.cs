@@ -7,7 +7,7 @@ using Godot;
 
 namespace Ciallo.Rendering;
 
-public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
+public partial class Body : StaticBody2D, IInitable, IDestroyable
 {
     private Control.CursorShape _mouseDefaultCursorShape = Control.CursorShape.Arrow;
     private List<Rid> _shapes = [];
@@ -25,7 +25,7 @@ public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
         }
     }
 
-    public CursorDetectionArea()
+    public Body()
     {
         CollisionLayer = AppGodotLayers.Physics2D.Stroke;
         CollisionMask = AppGodotLayers.Physics2D.Empty; // Only detect mouse input, don't collide with anything else
@@ -53,8 +53,8 @@ public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
         {
             child.QueueFree();
         }
-        // Pitfall: call queue free on child shapes and BodyClearShapes at the same time will cause index error.
-        // It seems that don't have to remove shape first before calling FreeRid.
+        // Pitfall: calling QueueFree on child shapes and clearing the body's shapes at the same time will cause index error.
+        // It seems we don't have to remove shape first before calling FreeRid.
         _shapes.ForEach(PhysicsServer2D.FreeRid);
         _shapes.Clear();
     }
@@ -105,7 +105,7 @@ public partial class CursorDetectionArea : StaticBody2D, IInitable, IDestroyable
         });
     }
 
-    // Note: If there is a button overlay on world, _MouseEntered won't work.
+    // Note: If there is a button overlay on world, the Body's mouse entered/exited events won't work.
 
     public void Init(Entity self) => SelfEntity = self;
     public void Destroy() => SelfEntity = Entity.Null;

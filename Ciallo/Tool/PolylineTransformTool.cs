@@ -168,11 +168,11 @@ public class PolylineTransformTool : ToolBase
 
     public override void OnActivated()
     {
-        WorkingLayer.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
+        WorkingLayer.Get<PolylineBodyHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
     }
 
     public override void OnDeactivated()
     {
-        WorkingLayer.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
+        WorkingLayer.Get<PolylineBodyHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
     }
 }

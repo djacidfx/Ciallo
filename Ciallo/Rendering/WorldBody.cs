@@ -11,17 +11,29 @@ using R3;
 
 namespace Ciallo.Rendering;
 
-public partial class WorldCursorDetectionArea : Node2D
+/// <summary>
+/// Root node holding all the physical bodies on canvas.
+/// </summary>
+/// <remarks>
+/// Physical bodies (Body class) are used for click detection, and other selection operations on canvas.
+/// </remarks>
+public partial class WorldBody : Node2D
 {
     private CanvasLayer _canvasLayer;
     private Control _cursorSwitcher; // This is supposed to be the job of ViewportContainer, but it doesn't respond even if changing MouseDefaultCursorShape.
 
     public Control.CursorShape MouseDefaultCursorShape { get; set; }
 
-    private readonly ReactiveProperty<CursorDetectionArea> _hoveringArea = new();
-    public ReadOnlyReactiveProperty<CursorDetectionArea> HoveringArea => _hoveringArea;
+    private readonly ReactiveProperty<Body> _hoveringArea = new();
+    public ReadOnlyReactiveProperty<Body> HoveringArea => _hoveringArea;
 
-    private void SetHoveringArea(CursorDetectionArea value)
+    public override void _EnterTree()
+    {
+        _canvasLayer = GetChild<CanvasLayer>(0);
+        _cursorSwitcher = _canvasLayer.GetChild<Control>(0);
+    }
+
+    private void SetHoveringArea(Body value)
     {
         _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
         var area = _hoveringArea.Value;
@@ -32,14 +44,8 @@ public partial class WorldCursorDetectionArea : Node2D
         _hoveringArea.Value = value;
     }
 
-    public override void _EnterTree()
-    {
-        _canvasLayer = GetChild<CanvasLayer>(0);
-        _cursorSwitcher = _canvasLayer.GetChild<Control>(0);
-    }
-
     // Note: not implement screen position, world size
-    public CursorDetectionArea CreateAddRect(Vector2 size, Vector2 position, CursorRectFlags flags = default)
+    public Body CreateAddRect(Vector2 size, Vector2 position, CursorRectFlags flags = default)
     {
         var area = CreateAddRect(flags);
         area.AddChild(new CollisionShape2D()
@@ -51,7 +57,7 @@ public partial class WorldCursorDetectionArea : Node2D
         return area;
     }
 
-    public CursorDetectionArea CreateAddRect(Vector2 size, Transform2D transform)
+    public Body CreateAddRect(Vector2 size, Transform2D transform)
     {
         var area = CreateAddRect();
         area.AddChild(new CollisionShape2D()
@@ -62,9 +68,9 @@ public partial class WorldCursorDetectionArea : Node2D
         return area;
     }
 
-    public CursorDetectionArea CreateAddRect(CursorRectFlags flags = default)
+    public Body CreateAddRect(CursorRectFlags flags = default)
     {
-        var area = new CursorDetectionArea();
+        var area = new Body();
 
         if (flags.HasFlag(CursorRectFlags.ScreenPosition))
             _canvasLayer.AddChild(area);
@@ -74,9 +80,9 @@ public partial class WorldCursorDetectionArea : Node2D
         return area;
     }
 
-    public static CursorDetectionArea CreateRect(Vector2 size, Vector2 center)
+    public static Body CreateRect(Vector2 size, Vector2 center)
     {
-        var area = new CursorDetectionArea();
+        var area = new Body();
         area.AddChild(new CollisionShape2D()
         {
             Shape = new RectangleShape2D { Size = size },
@@ -97,10 +103,10 @@ public partial class WorldCursorDetectionArea : Node2D
         return n.GetIndexPathTo(this);
     }
 
-    private CursorDetectionArea TopMostFromHits(Array<Dictionary> hits)
+    private Body TopMostFromHits(Array<Dictionary> hits)
     {
         return hits
-            .Select(d => (CursorDetectionArea)d["collider"])
+            .Select(d => (Body)d["collider"])
             .Distinct()
             .OrderByDescending(GetCanvasLayer)
             .ThenByDescending(n => n.ZIndex)
@@ -143,7 +149,7 @@ public partial class WorldCursorDetectionArea : Node2D
         {
             var hit = GetWorld2D().DirectSpaceState.IntersectShape(rectQuery, 1);
             if (hit.Count == 0) break;
-            var body = (CursorDetectionArea)hit[0]["collider"];
+            var body = (Body)hit[0]["collider"];
             result.Add(body.SelfEntity);
             exclude.Add(body.GetRid());
             rectQuery.Exclude = exclude;
@@ -151,7 +157,7 @@ public partial class WorldCursorDetectionArea : Node2D
         return result;
     }
 
-    public CursorDetectionArea[] CreateAddTransformAreas(Vector2 size, Transform2D transform)
+    public Body[] CreateAddTransformAreas(Vector2 size, Transform2D transform)
     {
         var half = size * 0.5f;
         Vector2[] corners =
@@ -173,7 +179,7 @@ public partial class WorldCursorDetectionArea : Node2D
         var translation = CreateAddRect(size, transform);
         translation.MouseDefaultCursorShape = Control.CursorShape.Move;
 
-        var cornerAreas = new CursorDetectionArea[corners.Length];
+        var cornerAreas = new Body[corners.Length];
         foreach (var (idx, pos) in corners.Index())
         {
             var a = CreateAddRect(dotAreaSize, pos, CursorRectFlags.ScreenSize);
@@ -184,7 +190,7 @@ public partial class WorldCursorDetectionArea : Node2D
         return [rotation, translation, ..cornerAreas];
     }
 
-    public CursorDetectionArea[] CreateAddTransformAreas(Vector2 size, Vector2 position)
+    public Body[] CreateAddTransformAreas(Vector2 size, Vector2 position)
     {
         return CreateAddTransformAreas(size, new Transform2D(0, position));
     }

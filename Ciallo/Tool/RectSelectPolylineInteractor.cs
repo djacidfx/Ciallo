@@ -29,7 +29,7 @@ public class RectSelectPolylineInteractor : InteractiveSessionBase
 
     public override void End(CursorButtonData data)
     {
-        var worldArea = Document.Get<WorldCursorDetectionArea>();
+        var worldArea = Document.Get<WorldBody>();
         var es = worldArea.RectQuery(_boxSelectionRect);
         var selectionManager = Document.Get<SelectionManager>();
         if (Input.IsKeyPressed(Key.Shift))
