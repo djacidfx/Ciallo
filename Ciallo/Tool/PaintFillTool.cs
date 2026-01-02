@@ -10,14 +10,14 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.PaintFill)]
-public partial class PaintFill : ToolBase
+public partial class PaintFillTool : ToolBase
 {
     public readonly ReactiveProperty<Color> Color = new(Colors.Black);
 
     public readonly PaintFillHover Hover = new();
     public readonly PaintFillInteractor Left;
 
-    public PaintFill()
+    public PaintFillTool()
     {
         Left = new(this);
     }

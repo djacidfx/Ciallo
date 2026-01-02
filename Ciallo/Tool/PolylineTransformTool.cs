@@ -14,7 +14,7 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Select)]
-public class PolylineTransform : ToolBase
+public class PolylineTransformTool : ToolBase
 {
     public readonly PolylineTransformHover Hover = new();
     public readonly PolylineTransformInteractor Transform = new();
