@@ -1,5 +1,6 @@
 using Ciallo.Data;
 using Ciallo.GuiBinding;
+using Ciallo.Misc;
 using Frent;
 using Frent.Components;
 using Godot;
@@ -11,7 +12,7 @@ namespace Ciallo.NodeControl;
 public partial class PaintPanel : PanelContainer, IInitable
 {
     public readonly ReactiveProperty<float> Zoom = new(1f);
-    public readonly ReactiveProperty<float> CanvasRotation = new(0f); // in deg not rad
+    public readonly ReactiveProperty<float> CanvasRotation = new(0f);
     public readonly ReactiveProperty<Vector2> Offset = new(Vector2.Zero);
 
     public void Init(Entity self) => WorldEventDispatcher.Document = self;
@@ -32,12 +33,14 @@ public partial class PaintPanel : PanelContainer, IInitable
         _background.Polygon = [new(-w / 2, -h / 2), new(w / 2, -h / 2), new(w / 2, h / 2), new(-w / 2, h / 2)];
 
         Zoom.Subscribe(v => MainCamera.Zoom = Vector2.One * v);
-        CanvasRotation.Subscribe(v => MainCamera.Rotation = -Mathf.DegToRad(v));
+        CanvasRotation.Subscribe(v => MainCamera.Rotation = -v);
         Offset.Subscribe(v => MainCamera.Position = v);
         _documentSetting.BackgroundColor.Subscribe(_background.SetColor).AddTo(this);
 
         ZoomControl.BindNumber(Zoom);
-        RotationControl.BindNumber(CanvasRotation);
+        var degRotation = CanvasRotation.Project(Mathf.RadToDeg, Mathf.DegToRad, out var sub);
+        sub.AddTo(RotationControl);
+        RotationControl.BindNumber(degRotation);
         BackgroundColorControl.BindColor(_documentSetting.BackgroundColor);
     }
 }

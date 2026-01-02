@@ -1,24 +1,23 @@
 ﻿using System;
 using Ciallo.Data;
+using Ciallo.Geometry;
 using Ciallo.Rendering;
-using Frent;
+using Godot;
 
 namespace Ciallo.Tool;
 
-public class ImageTransformHover : HoverBase
+public class ImageTransformHover : InteractiveSessionBase
 {
     public CursorDetectionArea RotationArea;
     public CursorDetectionArea TranslationArea;
     public CursorDetectionArea[] CornerAreas = [];
-    private Entity _layerE;
 
-    public override void Start()
+    public override void Start(CursorButtonData data)
     {
-        _layerE = SelectionManager.WorkingLayer.Value;
-        var setting = _layerE.Get<ImageLayerSetting>();
+        var setting = WorkingLayer.Get<ImageLayerSetting>();
         var manager = Document.Get<WorldCursorDetectionArea>();
 
-        _layerE.Get<TransformOverlayBox>().Visible = true;
+        WorkingLayer.Get<TransformOverlayBox>().Visible = true;
 
         // Create areas
         CursorDetectionArea[] areas = manager.CreateAddTransformAreas(setting.ImageSize, setting.ImageTransform.Value);
@@ -27,7 +26,9 @@ public class ImageTransformHover : HoverBase
         CornerAreas = areas[2..6];
     }
 
-    public override void End()
+    public override void Interacting(CursorMotionData data) { }
+    public override void End(CursorButtonData data) => Cancel();
+    public override void Cancel()
     {
         RotationArea.QueueFree();
         TranslationArea.QueueFree();
@@ -36,7 +37,11 @@ public class ImageTransformHover : HoverBase
         RotationArea = null;
         TranslationArea = null;
         CornerAreas = [];
-        _layerE.Get<TransformOverlayBox>().Visible = false;
-        _layerE = Entity.Null;
+        WorkingLayer.Get<TransformOverlayBox>().Visible = false;
+    }
+
+    public override bool OnKey(InputEventKey key, CursorButtonData data)
+    {
+        return false;
     }
 }

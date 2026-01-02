@@ -11,11 +11,21 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public class PolylineTransformHover : HoverBase
+public class PolylineTransformHover : InteractiveSessionBase
 {
     public Entity HoveredPolyline;
     public CursorDetectionArea RotationArea;
     public CursorDetectionArea[] CornerAreas = [];
+    public bool CanTransform
+    {
+        get
+        {
+            bool polylineHovered = !HoveredPolyline.IsNull;
+            bool rotationDotHovered = RotationArea?.IsHovered == true;
+            bool cornerDotsHovered = CornerAreas.Any(a => a.IsHovered);
+            return polylineHovered || rotationDotHovered || cornerDotsHovered;
+        }
+    }
 
     private IDisposable _hoverSub;
     private Entity _layerE;
@@ -23,14 +33,15 @@ public class PolylineTransformHover : HoverBase
     private List<Entity> _polylineEs;
     private readonly List<Node2D> _wireframes = [];
 
-    public override void Start()
+    public override void Start(CursorButtonData data)
     {
+        var selectionManager = Document.Get<SelectionManager>();
         // Polyline transform
-        if (SelectionManager.SelectedPolylines.Count > 0)
+        if (selectionManager.SelectedPolylines.Count > 0)
         {
             var worldOverlay = Document.Get<WorldOverlay>();
 
-            _polylineEs = [..SelectionManager.SelectedPolylines];
+            _polylineEs = [..selectionManager.SelectedPolylines];
 
             // transform box
             Rect2 rect = default;
@@ -61,7 +72,7 @@ public class PolylineTransformHover : HoverBase
         }
 
         // Enable cursor detections on polylines of working layer
-        _layerE = SelectionManager.WorkingLayer.Value;
+        _layerE = selectionManager.WorkingLayer.Value;
         var holder = _layerE.Get<PolylineAreaHolder>();
         holder.SetAreaCursor(Control.CursorShape.Move);
 
@@ -78,8 +89,9 @@ public class PolylineTransformHover : HoverBase
             if (!HoveredPolyline.IsNull) HoveredPolyline.Get<PolylineWireframe>().SetVisible(true);
         });
     }
-
-    public override void End()
+    public override void Interacting(CursorMotionData data) { }
+    public override void End(CursorButtonData data) => Cancel();
+    public override void Cancel()
     {
         _hoverSub.Dispose();
 
@@ -100,4 +112,5 @@ public class PolylineTransformHover : HoverBase
 
         HoveredPolyline = Entity.Null;
     }
+    public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
 }

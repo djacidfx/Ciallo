@@ -1,4 +1,5 @@
 using System.Linq;
+using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.GuiBinding;
 using Ciallo.Widget;
@@ -9,14 +10,27 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.PaintFill)]
-public partial class PaintFill : CommonToolBase
+public partial class PaintFillTool : ToolBase
 {
     public readonly ReactiveProperty<Color> Color = new(Colors.Black);
 
-    public PaintFill()
+    public readonly PaintFillHover Hover = new();
+    public readonly PaintFillInteractor Left;
+
+    public PaintFillTool()
     {
-        HoverInteractor = new PaintFillHover();
-        LeftInteractor = new PaintFillInteractor(this);
+        Left = new(this);
+    }
+
+    protected override void ConfigureStateMachine()
+    {
+        ConfigureInitial(Hover)
+            .Permit(Press(MouseButton.Left), Left);
+
+        Configure(Left)
+            .Permit(Release(MouseButton.Left), Hover)
+            .Permit(Press(AppActions.CancelInteraction), Hover)
+            .Permit(Press(AppActions.ConfirmInteraction), Hover);
     }
 
     public override void DrawProperty(PropertyContainer container)

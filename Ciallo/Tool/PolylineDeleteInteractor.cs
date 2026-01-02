@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿/*
+using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
@@ -8,7 +9,7 @@ using Frent;
 
 namespace Ciallo.Tool;
 
-public class PolylineDeleteInteractor(PolylineTransformHover hover) : InteractorBase
+public class PolylineDeleteInteractor : InteractiveSessionBase
 {
     private List<Entity> _processingEs;
 
@@ -38,15 +39,11 @@ public class PolylineDeleteInteractor(PolylineTransformHover hover) : Interactor
         cmd.Commit();
     }
 
-    public override void Interacting(CursorMotionData data)
-    {
-    }
+    public override void Interacting(CursorMotionData data) { }
 
-    public override void End(CursorButtonData data)
-    {
-    }
+    public override void End(CursorButtonData data) { }
 
-    public override void Cancel()
-    {
-    }
+    public override void Cancel() { }
 }
+*/
+

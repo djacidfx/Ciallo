@@ -14,14 +14,31 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Select)]
-public class PolylineTransform : CommonToolBase
+public class PolylineTransformTool : ToolBase
 {
-    public PolylineTransform()
+    public readonly PolylineTransformHover Hover = new();
+    public readonly PolylineTransformInteractor Transform = new();
+    public readonly RectSelectPolylineInteractor Select = new();
+
+    protected override void ConfigureStateMachine()
     {
-        var hover = new PolylineTransformHover();
-        HoverInteractor = hover;
-        LeftInteractor = new PolylineTransformInteractor(hover);
-        RightInteractor = new PolylineDeleteInteractor(hover);
+        ConfigureInitial(Hover)
+            .PermitDynamic(Press(MouseButton.Left), () =>
+            {
+                if (Hover.CanTransform)
+                    return Transform;
+                return Select;
+            });
+
+        Configure(Transform)
+            .Permit(Release(MouseButton.Left), Hover)
+            .Permit(Press(AppActions.CancelInteraction), Hover)
+            .Permit(Press(AppActions.ConfirmInteraction), Hover);
+
+        Configure(Select)
+            .Permit(Release(MouseButton.Left), Hover)
+            .Permit(Press(AppActions.CancelInteraction), Hover)
+            .Permit(Press(AppActions.ConfirmInteraction), Hover);
     }
 
     public readonly ReactiveProperty<float> SimplificationRatio = new(0.25f);
@@ -37,13 +54,13 @@ public class PolylineTransform : CommonToolBase
             if (layerE.IsDeletedOrNull()) return;
             selectionManager.SelectedPolylines.Clear();
             selectionManager.SelectedPolylines.AddRange(layerE.Get<LayerTreeNode>().Children);
-            FireRefreshHover();
+            Machine.Fire(Trigger.Refresh);
         };
         var deselectAllButton = PropertyContainer.CreateButton("Deselect").AddToChildOf(selectionButtonGroup);
         deselectAllButton.Pressed += () =>
         {
             selectionManager.SelectedPolylines.Clear();
-            FireRefreshHover();
+            Machine.Fire(Trigger.Refresh);
         };
 
         var polylineEditBox = PropertyContainer.CreateBox().AddToChildOf(container)
@@ -149,15 +166,13 @@ public class PolylineTransform : CommonToolBase
         return !e.IsDeletedOrNull() && e.Has<PolylineLayerSetting>();
     }
 
-    public override void OnActivate(params Entity[] layerEs)
+    public override void OnActivated()
     {
-        base.OnActivate(layerEs);
-        WorkingLayerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
+        WorkingLayer.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
     }
 
-    public override void OnDeactivate()
+    public override void OnDeactivated()
     {
-        WorkingLayerE.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
-        base.OnDeactivate();
+        WorkingLayer.Get<PolylineAreaHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
     }
 }

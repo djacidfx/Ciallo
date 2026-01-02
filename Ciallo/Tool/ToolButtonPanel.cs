@@ -5,13 +5,11 @@ using R3;
 namespace Ciallo.Tool;
 
 /// <remarks>
-/// This is a broken abstraction mixing tool button GUI and tool logic data.
-/// But for current version, it's acceptable for being lazy.
+/// Button enum generate an enum containing all buttons' node name in the tool button panel.
 /// </remarks>
 [ButtonEnum("ToolButton")]
 public partial class ToolButtonPanel : Container
 {
-    // Current design mix tool button GUI and tool logic data, for being lazy
     public ButtonGroup ToolButtonGroup { get; } = new();
     public readonly ReactiveProperty<ToolButton?> ActiveToolButton = new(0);
 

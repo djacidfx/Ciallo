@@ -14,6 +14,7 @@ namespace Ciallo.Data;
 public class Preference
 {
     public readonly ReactiveProperty<float> MouseWheelZoomFactor = new(0.1f);
+    public readonly ReactiveProperty<float> MouseWheelRotateFactor = new(Mathf.Pi / 36);
 
     public static readonly List<string> SupportedLanguages =
     [

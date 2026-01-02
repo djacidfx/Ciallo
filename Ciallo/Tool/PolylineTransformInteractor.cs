@@ -4,16 +4,15 @@ using System.Runtime.InteropServices;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
-using Ciallo.Misc;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
 
 namespace Ciallo.Tool;
 
-public class PolylineTransformInteractor(PolylineTransformHover hover) : InteractorBase
+public class PolylineTransformInteractor : InteractiveSessionBase
 {
-    private int _transformType = -1; // -1: Rect selection/Deselect, 0: Move, 1: Rotate, 2~5: Scale corners
+    private int _transformType = -1; // 0: Move, 1: Rotate, 2~5: Scale corners
 
     private Entity[] _processingEs;
     private Vector2[][] _currPositions;
@@ -24,96 +23,76 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
     private TransformOverlayBox _transformBox;
     private Vector2 _center;
 
-    private StrokeView _boxSelectionDash;
-    private Rect2 _boxSelectionRect;
-
-    public override bool Prepare(CursorButtonData data)
+    public override void BeforeSrcEnd(InteractiveSessionBase session)
     {
+        if (session is not PolylineTransformHover hover) return;
+
         bool polylineHovered = !hover.HoveredPolyline.IsNull;
         bool rotationDotHovered = hover.RotationArea?.IsHovered == true;
         bool cornerDotsHovered = hover.CornerAreas.Any(a => a.IsHovered);
 
+        var selectionManager = Document.Get<SelectionManager>();
         if (polylineHovered && Input.IsKeyPressed(Key.Shift))
         {
             var hoverE = hover.HoveredPolyline;
-            if (!SelectionManager.SelectedPolylines.Remove(hoverE))
-                SelectionManager.SelectedPolylines.Add(hoverE);
+            if (!selectionManager.SelectedPolylines.Remove(hoverE))
+                selectionManager.SelectedPolylines.Add(hoverE);
             _transformType = 0;
-            return true;
         }
         if (polylineHovered)
         {
             var hoverE = hover.HoveredPolyline;
-            if (!SelectionManager.SelectedPolylines.Contains(hoverE))
+            if (!selectionManager.SelectedPolylines.Contains(hoverE))
             {
-                SelectionManager.SelectedPolylines.Clear();
-                SelectionManager.SelectedPolylines.Add(hoverE);
+                selectionManager.SelectedPolylines.Clear();
+                selectionManager.SelectedPolylines.Add(hoverE);
             }
             _transformType = 0;
-            return true;
         }
         if (rotationDotHovered)
         {
             _transformType = 1;
-            return true;
         }
         if (cornerDotsHovered)
         {
             _transformType = Array.FindIndex(hover.CornerAreas, a => a.IsHovered) + 2;
-            return true;
         }
-        _transformType = -1;
-        return true;
     }
 
     public override void Start(CursorButtonData data)
     {
-        if (_transformType == -1)
+        _processingEs = Document.Get<SelectionManager>().SelectedPolylines.ToArray();
+        _currTransform = Transform2D.Identity;
+        _currPositions = new Vector2[_processingEs.Length][];
+        foreach (var (i, e) in _processingEs.Index())
         {
-            _boxSelectionDash = new StrokeView();
-            _boxSelectionDash.Material = AutoloadRendering.DashWireframeMaterial;
-            Document.Get<WorldOverlay>().AddChild(_boxSelectionDash);
-            _boxSelectionRect.Position = data.WorldPosition;
-            _boxSelectionRect.Size = Vector2.Zero;
-            return;
+            var geom = e.Get<PolylineGeometry>();
+            var bounding = geom.Positions.GetBoundingBox();
+            _origRect = i == 0 ? bounding : _origRect.Merge(bounding);
+            // allocate buffer once per interaction
+            var buffer = new Vector2[geom.Positions.Count];
+            for (int j = 0; j < buffer.Length; j++)
+            {
+                buffer[j] = geom.Positions[j];
+            }
+            _currPositions[i] = buffer;
         }
 
-        _processingEs = SelectionManager.SelectedPolylines.ToArray();
-
-        if (_transformType >= 0)
+        // Show transform box only when scaling
+        if (_transformType > 1)
         {
-            _currTransform = Transform2D.Identity;
-            _currPositions = new Vector2[_processingEs.Length][];
-            foreach (var (i, e) in _processingEs.Index())
-            {
-                var geom = e.Get<PolylineGeometry>();
-                var bounding = geom.Positions.GetBoundingBox();
-                _origRect = i == 0 ? bounding : _origRect.Merge(bounding);
-                // allocate buffer once per interaction
-                var buffer = new Vector2[geom.Positions.Count];
-                for (int j = 0; j < buffer.Length; j++)
-                {
-                    buffer[j] = geom.Positions[j];
-                }
-                _currPositions[i] = buffer;
-            }
+            var center = _origRect.GetCenter();
+            var half = _origRect.Size * 0.5f;
+            _startCorners =
+            [
+                center - half, // -half
+                new(center.X - half.X, center.Y + half.Y),
+                center + half,
+                new(center.X + half.X, center.Y - half.Y),
+            ];
 
-            // Show transform box only when scaling
-            if (_transformType > 1)
-            {
-                var center = _origRect.GetCenter();
-                var half = _origRect.Size * 0.5f;
-                _startCorners =
-                [
-                    center - half, // -half
-                    new(center.X - half.X, center.Y + half.Y),
-                    center + half,
-                    new(center.X + half.X, center.Y - half.Y),
-                ];
-
-                _transformBox = new TransformOverlayBox(_origRect.Size, _origRect.GetCenter());
-                Document.Get<WorldOverlay>().AddChild(_transformBox);
-            }
+            _transformBox = new TransformOverlayBox(_origRect.Size, _origRect.GetCenter());
+            Document.Get<WorldOverlay>().AddChild(_transformBox);
         }
     }
 
@@ -122,13 +101,6 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
         // Note: Still stutter when moving multiple strokes
         // No GC during interaction
         // Godot profiler and Rider's monitor both show no spikes.
-        if (_transformType == -1)
-        {
-            _boxSelectionRect.Size = data.WorldPosition - _boxSelectionRect.Position;
-            var points = _boxSelectionRect.GetCorners();
-            _boxSelectionDash.SetGeometry([..points, points[0]], AppPreference.StrokeWireframeRadius);
-            return;
-        }
 
         // Compute transform
         if (_transformType == 0)
@@ -203,28 +175,6 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
 
     public override void End(CursorButtonData data)
     {
-        if (_transformType == -1)
-        {
-            var worldArea = Document.Get<WorldCursorDetectionArea>();
-            var es = worldArea.RectQuery(_boxSelectionRect);
-            if (Input.IsKeyPressed(Key.Shift))
-            {
-                foreach (var e in es)
-                {
-                    if (!SelectionManager.SelectedPolylines.Remove(e))
-                        SelectionManager.SelectedPolylines.Add(e);
-                }
-            }
-            else
-            {
-                SelectionManager.SelectedPolylines.Clear();
-                SelectionManager.SelectedPolylines.AddRange(es);
-            }
-
-            Clear();
-            return;
-        }
-
         var resultT = _currTransform;
         if (!resultT.IsEqualApprox(Transform2D.Identity))
         {
@@ -244,24 +194,23 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
     public override void Cancel()
     {
         // Clean up view change
-        if (_transformType >= 0)
+        foreach (var e in _processingEs)
         {
-            foreach (var e in _processingEs)
+            var geom = e.Get<PolylineGeometry>();
+            var points = geom.Positions.ToArray();
+            if (e.Has<StrokeSetting>())
             {
-                var geom = e.Get<PolylineGeometry>();
-                var points = geom.Positions.ToArray();
-                if (e.Has<StrokeSetting>())
-                {
-                    e.Get<StrokeView>().SetGeometry(points, geom.Radii, geom.Pressures);
-                }
-                if (e.Has<FilledPolygonSetting>())
-                {
-                    e.Get<Polygon2D>().SetPolygon(points);
-                }
+                e.Get<StrokeView>().SetGeometry(points, geom.Radii, geom.Pressures);
+            }
+            if (e.Has<FilledPolygonSetting>())
+            {
+                e.Get<Polygon2D>().SetPolygon(points);
             }
         }
         Clear();
     }
+
+    public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
 
     public void Clear()
     {
@@ -270,7 +219,5 @@ public class PolylineTransformInteractor(PolylineTransformHover hover) : Interac
         _currTransform = Transform2D.Identity;
         _transformType = -1;
         _processingEs = null;
-        _boxSelectionDash?.QueueFree();
-        _boxSelectionDash = null;
     }
 }
