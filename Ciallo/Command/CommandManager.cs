@@ -10,7 +10,8 @@ namespace Ciallo.Command;
 /// </summary>
 public partial class CommandManager : UndoRedo
 {
-    public ReactiveProperty<bool> DocumentModified { get; } = new(false);
+    public readonly ReactiveProperty<bool> DocumentModified = new(false);
+    public readonly Subject<bool> UndoRedoExecuted = new(); // true is undo, false is redo
 
     public CommandManager()
     {
@@ -68,12 +69,14 @@ public partial class CommandManager : UndoRedo
     {
         base.Undo();
         DocumentModified.Value = true;
+        UndoRedoExecuted.OnNext(true);
     }
 
     public new void Redo()
     {
         base.Redo();
         DocumentModified.Value = true;
+        UndoRedoExecuted.OnNext(false);
     }
 }
 
