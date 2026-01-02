@@ -194,20 +194,17 @@ public class PolylineTransformInteractor : InteractiveSessionBase
     public override void Cancel()
     {
         // Clean up view change
-        if (_transformType >= 0)
+        foreach (var e in _processingEs)
         {
-            foreach (var e in _processingEs)
+            var geom = e.Get<PolylineGeometry>();
+            var points = geom.Positions.ToArray();
+            if (e.Has<StrokeSetting>())
             {
-                var geom = e.Get<PolylineGeometry>();
-                var points = geom.Positions.ToArray();
-                if (e.Has<StrokeSetting>())
-                {
-                    e.Get<StrokeView>().SetGeometry(points, geom.Radii, geom.Pressures);
-                }
-                if (e.Has<FilledPolygonSetting>())
-                {
-                    e.Get<Polygon2D>().SetPolygon(points);
-                }
+                e.Get<StrokeView>().SetGeometry(points, geom.Radii, geom.Pressures);
+            }
+            if (e.Has<FilledPolygonSetting>())
+            {
+                e.Get<Polygon2D>().SetPolygon(points);
             }
         }
         Clear();

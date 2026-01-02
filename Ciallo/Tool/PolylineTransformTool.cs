@@ -25,7 +25,7 @@ public class PolylineTransformTool : ToolBase
         ConfigureInitial(Hover)
             .PermitDynamic(Press(MouseButton.Left), () =>
             {
-                if (!Hover.HoveredPolyline.IsNull)
+                if (Hover.CanTransform)
                     return Transform;
                 return Select;
             });

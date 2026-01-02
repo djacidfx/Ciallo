@@ -16,6 +16,16 @@ public class PolylineTransformHover : InteractiveSessionBase
     public Entity HoveredPolyline;
     public CursorDetectionArea RotationArea;
     public CursorDetectionArea[] CornerAreas = [];
+    public bool CanTransform
+    {
+        get
+        {
+            bool polylineHovered = !HoveredPolyline.IsNull;
+            bool rotationDotHovered = RotationArea?.IsHovered == true;
+            bool cornerDotsHovered = CornerAreas.Any(a => a.IsHovered);
+            return polylineHovered || rotationDotHovered || cornerDotsHovered;
+        }
+    }
 
     private IDisposable _hoverSub;
     private Entity _layerE;
@@ -34,7 +44,6 @@ public class PolylineTransformHover : InteractiveSessionBase
             _polylineEs = [..selectionManager.SelectedPolylines];
 
             // transform box
-
             Rect2 rect = default;
             foreach (var (i, e) in _polylineEs.Index())
             {
