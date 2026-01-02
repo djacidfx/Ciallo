@@ -154,7 +154,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
     private void DispatchMouseButton(InputEventMouseButton mouse, CursorButtonData data)
     {
-        ToolManager.ActiveTool?.Value.OnMouseButton(mouse, data);
+        ToolManager.ActiveTool.Value?.OnMouseButton(mouse, data);
     }
 
     public void DispatchMotion(CursorMotionData data)
