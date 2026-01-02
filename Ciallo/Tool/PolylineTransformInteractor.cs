@@ -175,8 +175,6 @@ public class PolylineTransformInteractor : InteractiveSessionBase
 
     public override void End(CursorButtonData data)
     {
-        if (_transformType == -1) { }
-
         var resultT = _currTransform;
         if (!resultT.IsEqualApprox(Transform2D.Identity))
         {

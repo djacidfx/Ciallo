@@ -21,12 +21,12 @@ public abstract class InteractiveSessionBase
     public Entity[] WorkingLayers;
     public Entity WorkingLayer => WorkingLayers.Single();
     public virtual void BeforeSrcEnd(InteractiveSessionBase session) { }
-    public void AfterSrcEnd(InteractiveSessionBase session) { }
+    public virtual void AfterSrcEnd(InteractiveSessionBase session) { }
     public abstract void Start(CursorButtonData data);
     public abstract void Interacting(CursorMotionData data);
     public abstract void End(CursorButtonData data);
-    public void BeforeDstStart(InteractiveSessionBase session) { }
-    public void AfterDstStart(InteractiveSessionBase session) { }
+    public virtual void BeforeDstStart(InteractiveSessionBase session) { }
+    public virtual void AfterDstStart(InteractiveSessionBase session) { }
     public abstract void Cancel();
     public abstract bool OnKey(InputEventKey key, CursorButtonData data);
 }

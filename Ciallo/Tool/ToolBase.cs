@@ -118,13 +118,10 @@ public abstract partial class ToolBase : ITool
     {
         // Check trigger action
         var actionTrigger = DetectTriggerAction();
-        if (actionTrigger != null)
+        if (actionTrigger != null && Machine.CanFire(actionTrigger))
         {
-            if (Machine.CanFire(actionTrigger))
-            {
-                Machine.Fire(actionTrigger);
-                return true;
-            }
+            Machine.Fire(actionTrigger);
+            return true;
         }
         // Check key
         var keyTrigger = Trigger.Get(key.Keycode, key.Pressed);
