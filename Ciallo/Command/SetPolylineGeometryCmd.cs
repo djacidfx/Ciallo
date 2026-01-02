@@ -38,7 +38,7 @@ public class SetPolylineGeometryCmd : CommandBase
                 .SetGeometry(_newGeometry.Positions, _newGeometry.Radii, _newGeometry.Pressures);
 
             // Cursor detection
-            polylineE.Get<CursorDetectionArea>().SetStrokeShape(_newGeometry.Positions, _newGeometry.Radii);
+            polylineE.Get<Body>().SetStrokeShape(_newGeometry.Positions, _newGeometry.Radii);
         }
 
         // Polyline has fill
@@ -50,7 +50,7 @@ public class SetPolylineGeometryCmd : CommandBase
             polygonView.Polygon = [..polygon];
 
             // Cursor detection
-            polylineE.Get<CursorDetectionArea>().SetSimplePolygon(polygon);
+            polylineE.Get<Body>().SetSimplePolygon(polygon);
         }
     }
 
@@ -60,7 +60,7 @@ public class SetPolylineGeometryCmd : CommandBase
         {
             var polygon = _oldGeometry.Positions.ToSimplePolygon();
             // Cursor detection
-            polylineE.Get<CursorDetectionArea>().SetSimplePolygon(polygon);
+            polylineE.Get<Body>().SetSimplePolygon(polygon);
 
             // View
             var polygonView = polylineE.Get<Polygon2D>();
@@ -68,8 +68,8 @@ public class SetPolylineGeometryCmd : CommandBase
         }
         else if (polylineE.Has<StrokeSetting>())
         {
-            // Cursor detection
-            polylineE.Get<CursorDetectionArea>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);
+            // Body
+            polylineE.Get<Body>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);
 
             // View
             polylineE.Get<StrokeView>()

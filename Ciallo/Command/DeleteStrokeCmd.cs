@@ -11,7 +11,7 @@ public class DeleteStrokeCmd : CommandBase
 {
     private StrokeView _strokeView;
     private PolylineWireframe _strokeOverlay;
-    private CursorDetectionArea _strokeArea;
+    private Body _strokeArea;
     private StrokeSetting _strokeSetting;
 
     private Entity _parentE; // layer entity
@@ -22,7 +22,7 @@ public class DeleteStrokeCmd : CommandBase
 
     protected override void BeforeFirstDo(Entity strokeE)
     {
-        _strokeArea = strokeE.Get<CursorDetectionArea>();
+        _strokeArea = strokeE.Get<Body>();
         _strokeOverlay = strokeE.Get<PolylineWireframe>();
         _strokeView = strokeE.Get<StrokeView>();
         _strokeSetting = strokeE.Get<StrokeSetting>();
@@ -36,9 +36,9 @@ public class DeleteStrokeCmd : CommandBase
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(strokeE);
 
-        // Cursor detection
+        // Body
         _strokeArea.RemoveFromParent();
-        strokeE.Remove<CursorDetectionArea>();
+        strokeE.Remove<Body>();
 
         // Overlay
         _strokeOverlay.RemoveFromParent();
@@ -73,8 +73,8 @@ public class DeleteStrokeCmd : CommandBase
         worldOverlay.AddChild(_strokeOverlay);
         strokeE.Add(_strokeOverlay);
 
-        // Cursor detection
-        var areaHolder = _parentE.Get<PolylineAreaHolder>();
+        // Body
+        var areaHolder = _parentE.Get<PolylineBodyHolder>();
         areaHolder.InsertNodeAt(_strokeArea, _index);
         strokeE.Add(_strokeArea);
     }

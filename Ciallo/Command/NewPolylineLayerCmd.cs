@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Ciallo.Data;
+using Ciallo.GuiControl;
 using Ciallo.Misc;
-using Ciallo.NodeControl;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -67,17 +67,17 @@ public class NewPolylineLayerCmd : CommandBase
         }).AddTo(_subs);
 
         // Cursor detection
-        var worldArea = Document.Get<WorldCursorDetectionArea>();
-        var holder = new PolylineAreaHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
+        var worldArea = Document.Get<WorldBody>();
+        var holder = new PolylineBodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
         worldArea.AddChild(holder);
         layerE.Add(holder);
     }
 
     protected override void Undo(Entity layerE)
     {
-        // Cursor detection
-        layerE.Get<PolylineAreaHolder>().QueueFree();
-        layerE.Remove<PolylineAreaHolder>();
+        // Body
+        layerE.Get<PolylineBodyHolder>().QueueFree();
+        layerE.Remove<PolylineBodyHolder>();
 
         // View
         layerE.Get<PolylineLayerView>().QueueFree();
@@ -96,13 +96,13 @@ public class NewPolylineLayerCmd : CommandBase
     }
 }
 
-public partial class PolylineAreaHolder : Node2D
+public partial class PolylineBodyHolder : Node2D
 {
     public void SetAreaCursor(Control.CursorShape shape)
     {
         foreach (var child in GetChildren())
         {
-            var area = (CursorDetectionArea)child;
+            var area = (Body)child;
             area.MouseDefaultCursorShape = shape;
         }
     }

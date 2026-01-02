@@ -43,8 +43,8 @@ public class NewStrokeCmd : CommandBase
         strokeE.Add(strokeOverlay);
 
         // Cursor detection
-        var strokeArea = new CursorDetectionArea();
-        _layerE.Get<PolylineAreaHolder>().AddChild(strokeArea);
+        var strokeArea = new Body();
+        _layerE.Get<PolylineBodyHolder>().AddChild(strokeArea);
         strokeE.Add(strokeArea);
     }
 
@@ -53,9 +53,9 @@ public class NewStrokeCmd : CommandBase
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(strokeE);
 
-        // Cursor detection
-        strokeE.Get<CursorDetectionArea>().QueueFree();
-        strokeE.Remove<CursorDetectionArea>();
+        // Body
+        strokeE.Get<Body>().QueueFree();
+        strokeE.Remove<Body>();
 
         // Overlay
         var strokeOverlay = strokeE.Get<PolylineWireframe>();

@@ -3,8 +3,8 @@ using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.GuiBinding;
+using Ciallo.GuiControl;
 using Ciallo.Misc;
-using Ciallo.NodeControl;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -13,7 +13,7 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Paint)]
-public partial class PaintTool : ToolBase
+public class PaintTool : ToolBase
 {
     public readonly ReactiveProperty<Entity> BrushE = new(Entity.Null);
 

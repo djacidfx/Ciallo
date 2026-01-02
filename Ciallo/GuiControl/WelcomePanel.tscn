@@ -1,0 +1,133 @@
+[gd_scene load_steps=9 format=3 uid="uid://duv6uwd686wfj"]
+
+[ext_resource type="Script" uid="uid://gt4adx4emf1t" path="res://GuiControl/LanguageItemList.cs" id="1_ad8c8"]
+[ext_resource type="Texture2D" uid="uid://43k5wfcj0bkj" path="res://Icon/ciallo.svg" id="1_xhgsw"]
+[ext_resource type="Script" uid="uid://6yiex6jbsgdt" path="res://GuiControl/RecentDocumentList.cs" id="3_8on0h"]
+[ext_resource type="Script" uid="uid://dldw0lk3es817" path="res://GuiControl/WelcomePanelStart.cs" id="3_w3byx"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xhgsw"]
+draw_center = false
+border_color = Color(0.124784, 0.124784, 0.124784, 1)
+
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_xhgsw"]
+color = Color(0.728829, 0.728829, 0.728829, 1)
+
+[sub_resource type="InputEventAction" id="InputEventAction_8on0h"]
+action = &"NewDocument"
+
+[sub_resource type="Shortcut" id="Shortcut_w3byx"]
+events = [SubResource("InputEventAction_8on0h")]
+
+[node name="WelcomePanel" type="PanelContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_xhgsw")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_top = 100
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 85)
+layout_mode = 2
+texture = ExtResource("1_xhgsw")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 65
+theme_override_styles/separator = SubResource("StyleBoxLine_xhgsw")
+
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_right = 40
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 140
+alignment = 1
+
+[node name="Sponsor" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Sponsor"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Sponsor"
+
+[node name="Language" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Language"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Language"
+
+[node name="LanguageList" type="ItemList" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Language"]
+auto_translate_mode = 2
+layout_mode = 2
+allow_search = false
+auto_width = true
+auto_height = true
+item_count = 7
+item_0/text = "English"
+item_1/text = "français"
+item_2/text = "Deutsch"
+item_3/text = "日本語"
+item_4/text = "한국어"
+item_5/text = "中文（简体）"
+item_6/text = "中文（繁體）"
+script = ExtResource("1_ad8c8")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 50
+
+[node name="Start" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+script = ExtResource("3_w3byx")
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Start"
+
+[node name="Button" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start"]
+layout_mode = 2
+shortcut = SubResource("Shortcut_w3byx")
+text = "New document"
+
+[node name="Button2" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start"]
+layout_mode = 2
+text = "Open document"
+
+[node name="Recent" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Recent"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Recent document"
+
+[node name="ItemList" type="ItemList" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Recent"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+tooltip_text = "[Recent Document List Tooltip]"
+allow_search = false
+auto_width = true
+auto_height = true
+script = ExtResource("3_8on0h")
+
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start/Button" to="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start" method="OnNewDocumentPressed"]
+[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start/Button2" to="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start" method="OnOpenDocumentPressed"]

@@ -55,8 +55,8 @@ public class NewFilledPolygonCmd : CommandBase
         polygonE.Add(overlay);
 
         // Cursor detection
-        var polygonArea = new CursorDetectionArea();
-        _layerE.Get<PolylineAreaHolder>().AddChild(polygonArea);
+        var polygonArea = new Body();
+        _layerE.Get<PolylineBodyHolder>().AddChild(polygonArea);
         polygonE.Add(polygonArea);
     }
 
@@ -65,9 +65,9 @@ public class NewFilledPolygonCmd : CommandBase
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(polygonE);
 
-        // Cursor detection
-        polygonE.Get<CursorDetectionArea>().QueueFree();
-        polygonE.Remove<CursorDetectionArea>();
+        // Body
+        polygonE.Get<Body>().QueueFree();
+        polygonE.Remove<Body>();
 
         // Overlay
         polygonE.Get<PolylineWireframe>().QueueFree();
