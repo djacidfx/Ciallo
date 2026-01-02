@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Geometry;
 using Ciallo.Widget;
 using Frent;
 using Godot;
+using R3;
 using Stateless;
 
 namespace Ciallo.Tool;
@@ -12,6 +14,21 @@ namespace Ciallo.Tool;
 using StateMachine = StateMachine<InteractiveSessionBase, ToolBase.Trigger>;
 using StateConfiguration = StateMachine<InteractiveSessionBase, ToolBase.Trigger>.StateConfiguration;
 
+/// <summary>
+/// Work with InteractiveSessionBase to provide tool functionality.
+/// </summary>
+/// <remarks>
+/// Provide state machine management and input routing to the current interactive session.
+/// See stateless library https://github.com/dotnet-state-machine/stateless for the state machine api.
+/// </remarks>
+/// <remarks>
+/// By product design, all the interactions that involve active user input (not hover) should set key input as handled.
+/// i.e. bool OnKey(...) return true;
+/// </remarks>
+/// <remarks>
+/// Initial states are configured to refresh (call End then Start) when user undo/redo.
+/// Key design idea: The only source of data change when hovering is undo/redo, so refreshing the session can reduce mind burden.
+/// </remarks>
 public abstract partial class ToolBase : ITool
 {
     public Entity Document
@@ -31,6 +48,7 @@ public abstract partial class ToolBase : ITool
     private readonly HashSet<AppAction> _triggerActions = new();
     public readonly StateMachine Machine = new(ToolInactive.Instance);
     private readonly Entity _document;
+    private IDisposable _commandManagerSub;
 
     protected ToolBase()
     {
@@ -72,6 +90,15 @@ public abstract partial class ToolBase : ITool
         var cfg = Configure(session);
         cfg.PermitReentry(Trigger.Refresh);
         return cfg;
+    }
+
+    private IDisposable ObserveCommandManager(Entity document)
+    {
+        return document.Get<CommandManager>().UndoRedoExecuted.Subscribe(_ =>
+        {
+            if (Machine.CanFire(Trigger.Refresh))
+                Machine.Fire(Trigger.Refresh);
+        });
     }
 
     public virtual void OnActivated() { }
@@ -140,10 +167,12 @@ public abstract partial class ToolBase : ITool
         WorkingLayers = layerEs;
         OnActivated();
         Machine.Fire(Trigger.Activate);
+        _commandManagerSub = ObserveCommandManager(Document);
     }
 
     public void OnDeactivate()
     {
+        _commandManagerSub.Dispose();
         Machine.Fire(Trigger.Deactivate);
         OnDeactivated();
         WorkingLayers = null;

@@ -6,8 +6,8 @@ using Godot;
 namespace Ciallo.Tool;
 
 /// <summary>
-/// Interface for the classes that handle canvas interactions. Tools hold one or more of these interactive session.
-/// Implement users' tools logics and behaviors.
+/// Base for the classes that handle canvas interactions. Tools hold one or more of these interactive session.
+/// The actual place implementing canvas interaction behaviors.
 /// </summary>
 /// <remarks>
 /// Key design idea:
