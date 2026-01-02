@@ -1,7 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://bpntrjged60df"]
 
 [ext_resource type="Script" uid="uid://dhn32ect5buj7" path="res://Widget/Vector2Edit.cs" id="1_kf6mc"]
-[ext_resource type="Script" uid="uid://eek50uvkfymb" path="res://NodeControl/NewDocumentDialog.cs" id="1_rukb6"]
+[ext_resource type="Script" uid="uid://eek50uvkfymb" path="res://GuiControl/NewDocumentDialog.cs" id="1_rukb6"]
 [ext_resource type="Script" uid="uid://ckillqfnqh8wc" path="res://Widget/FilePathPicker.cs" id="2_acvj3"]
 
 [sub_resource type="Theme" id="Theme_kf6mc"]
@@ -24,8 +24,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 offset_left = 8.0
 offset_top = 8.0
-offset_right = -8.0
-offset_bottom = -49.0
+offset_right = 560.0
+offset_bottom = 463.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 10

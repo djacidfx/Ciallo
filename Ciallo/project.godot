@@ -27,7 +27,7 @@ ObservableTrackerRuntimeHook="res://addons/R3.Godot/ObservableTrackerRuntimeHook
 AutoloadMisc="*res://Misc/AutoloadMisc.cs"
 AutoloadData="*res://Data/AutoloadData.cs"
 AutoloadRendering="*res://Rendering/AutoloadRendering.cs"
-AutoloadNodeControl="*res://NodeControl/AutoloadNodeControl.cs"
+AutoloadGuiControl="*res://GuiControl/AutoloadGuiControl.cs"
 AutoloadTool="*res://Tool/AutoloadTool.cs"
 
 [display]
