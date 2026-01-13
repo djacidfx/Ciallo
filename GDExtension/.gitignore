@@ -2,6 +2,9 @@
 *.gen.*
 .godot/
 
+# vcpkg
+vcpkg_installed
+
 # Ignore library files but not the gdextension file
 demo/bin/*
 !demo/bin/android

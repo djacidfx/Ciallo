@@ -24,6 +24,7 @@ if(NOT EXISTS "${CMAKE_CURRENT_LIST_DIR}/godot-cpp/src")
         COMMAND_ERROR_IS_FATAL ANY
     )
 endif()
+
 add_subdirectory(godot-cpp SYSTEM)
 
 # Add godot-cpp's module path and include the exported functions.
