@@ -50,3 +50,39 @@ def print_warning(*values: object) -> None:
 def print_error(*values: object) -> None:
     """Prints an error message with formatting."""
     print(f"{ANSI.RED}{ANSI.BOLD}ERROR:{ANSI.REGULAR}", *values, ANSI.RESET, file=sys.stderr)
+
+
+def redirect_build_objects(env, path, sources):
+    """
+    Redirect object files to a specific build directory.
+
+    This function uses SCons' VariantDir to place intermediate build files
+    (like .obj files) in a separate directory instead of alongside source files.
+
+    Args:
+        env: The SCons environment
+        path: The build directory path (e.g., 'bin/windows/obj')
+        sources: List of source file paths or Glob objects
+
+    Returns:
+        List of source files with paths redirected to the build directory
+    """
+    # Create the variant directory (build directory)
+    # duplicate=0 means don't copy source files, just redirect object files
+    env.VariantDir(path, ".", duplicate=0)
+
+    # Convert sources to a list if it's not already
+    if not isinstance(sources, list):
+        sources = [sources]
+
+    # Redirect each source file path to the build directory
+    redirected = []
+    for source in sources:
+        # Handle both File nodes and string paths
+        source_str = str(source)
+        # Replace the source directory with the build directory
+        redirected_path = os.path.join(path, source_str)
+        redirected.append(redirected_path)
+
+    return redirected
+

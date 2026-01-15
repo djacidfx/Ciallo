@@ -2,7 +2,7 @@
 import os
 import sys
 
-from methods import print_error
+from methods import print_error, redirect_build_objects
 
 
 libname = "CialloGDExtension"
@@ -36,8 +36,23 @@ Run the following command to download godot-cpp:
 
 env = SConscript("godot-cpp/SConstruct", {"env": env, "customs": customs})
 
+# Auto-install conan dependencies if not already installed
+if not os.path.exists("conan_installed/SConscript_conandeps"):
+    print("Conan dependencies not found, installing...")
+    import subprocess
+    result = subprocess.run(["conan", "install", ".", "--build=missing"], shell=True)
+    if result.returncode != 0:
+        print_error("Failed to install conan dependencies. Please run 'conan install . --build=missing' manually.")
+        sys.exit(1)
+
 env.Append(CPPPATH=["src/"])
+
+# Collect source files
 sources = Glob("src/*.cpp")
+
+# Configure build directory for intermediate files and redirect object files
+build_dir = "bin/{}/obj".format(env['platform'])
+sources = redirect_build_objects(env, build_dir, sources)
 
 if env["target"] in ["editor", "template_debug"]:
     try:
