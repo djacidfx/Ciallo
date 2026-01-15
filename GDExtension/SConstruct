@@ -6,7 +6,6 @@ from methods import print_error
 
 
 libname = "CialloGDExtension"
-projectdir = "demo"
 
 localEnv = Environment(tools=["default"], PLATFORM="")
 
@@ -62,7 +61,7 @@ conandeps = SConscript("conan_installed/SConscript_conandeps")
 conan_flags = conandeps["conandeps"]
 env.MergeFlags(conan_flags)
 
-copy = env.Install("{}/bin/{}/".format(projectdir, env["platform"]), library)
+copy = env.Install("../Ciallo/addons/Ciallo/Lib/{}/".format(env["platform"]), library)
 
 default_args = [library, copy]
 Default(*default_args)
