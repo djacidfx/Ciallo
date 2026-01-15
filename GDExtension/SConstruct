@@ -58,16 +58,9 @@ library = env.SharedLibrary(
     source=sources,
 )
 
-if sys.platform == "darwin":
-    vcpkg_lib_path = "vcpkg_installed/"
-    env.Append(CPPPATH=["vcpkg_installed/arm64-osx/include"])
-    env.Append(LIBPATH="vcpkg_installed/arm64-osx/lib/")
-elif sys.platform == "win32" or sys.platform == "msys":
-    env.Append(CPPPATH=["vcpkg_installed/x64-windows/include"])
-    env.Append(LIBPATH="vcpkg_installed/x64-windows/lib/")
-elif sys.platform == "linux":
-    env.Append(CPPPATH=["vcpkg_installed/x64-linux/include"])
-    env.Append(LIBPATH="vcpkg_installed/x64-linux/lib/")
+conandeps = SConscript("conan_installed/SConscript_conandeps")
+conan_flags = conandeps["conandeps"]
+env.MergeFlags(conan_flags)
 
 copy = env.Install("{}/bin/{}/".format(projectdir, env["platform"]), library)
 

@@ -4,6 +4,7 @@
 
 # vcpkg
 vcpkg_installed
+conan_installed
 
 # Ignore library files but not the gdextension file
 demo/bin/*
