@@ -35,7 +35,7 @@ Run the following command to download godot-cpp:
     sys.exit(1)
 
 env = SConscript("godot-cpp/SConstruct", {"env": env, "customs": customs})
-
+env.Append(CCFLAGS=['/EHsc'])
 # Auto-install conan dependencies if not already installed
 if not os.path.exists("conan_installed/SConscript_conandeps"):
     print("Conan dependencies not found, installing...")
