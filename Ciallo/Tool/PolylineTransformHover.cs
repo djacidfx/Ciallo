@@ -14,15 +14,15 @@ namespace Ciallo.Tool;
 public class PolylineTransformHover : InteractiveSessionBase
 {
     public Entity HoveredPolyline;
-    public Body RotationArea;
-    public Body[] CornerAreas = [];
+    public Body RotationBody;
+    public Body[] CornerBodies = [];
     public bool CanTransform
     {
         get
         {
             bool polylineHovered = !HoveredPolyline.IsNull;
-            bool rotationDotHovered = RotationArea?.IsHovered == true;
-            bool cornerDotsHovered = CornerAreas.Any(a => a.IsHovered);
+            bool rotationDotHovered = RotationBody?.IsHovered == true;
+            bool cornerDotsHovered = CornerBodies.Any(a => a.IsHovered);
             return polylineHovered || rotationDotHovered || cornerDotsHovered;
         }
     }
@@ -63,12 +63,12 @@ public class PolylineTransformHover : InteractiveSessionBase
                 worldOverlay.AddChild(_transformBox);
             }
 
-            // transform cursor area
-            var worldArea = Document.Get<WorldBody>();
-            Body[] areas = worldArea.CreateAddTransformAreas(rect.Size, rect.GetCenter());
-            RotationArea = areas[0];
-            areas[1].QueueFree();
-            CornerAreas = areas[2..6];
+            // transform cursor bodies
+            var worldBody = Document.Get<WorldBody>();
+            Body[] bodies = worldBody.CreateAddTransformAreas(rect.Size, rect.GetCenter());
+            RotationBody = bodies[0];
+            bodies[1].QueueFree();
+            CornerBodies = bodies[2..6];
         }
 
         // Enable cursor detections on polylines of working layer
@@ -77,15 +77,15 @@ public class PolylineTransformHover : InteractiveSessionBase
         holder.SetAreaCursor(Control.CursorShape.Move);
 
         // hover hinter
-        _hoverSub = Document.Get<WorldBody>().HoveringArea.Skip(1).Subscribe(area =>
+        _hoverSub = Document.Get<WorldBody>().HoveringBody.Skip(1).Subscribe(body =>
         {
             if (!HoveredPolyline.IsDeletedOrNull()) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
-            if (area == null)
+            if (body == null)
             {
                 HoveredPolyline = Entity.Null;
                 return;
             }
-            HoveredPolyline = area.SelfEntity;
+            HoveredPolyline = body.SelfEntity;
             if (!HoveredPolyline.IsNull) HoveredPolyline.Get<PolylineWireframe>().SetVisible(true);
         });
     }
@@ -95,11 +95,11 @@ public class PolylineTransformHover : InteractiveSessionBase
     {
         _hoverSub.Dispose();
 
-        // cursor areas
-        RotationArea?.QueueFree();
-        RotationArea = null;
-        Array.ForEach(CornerAreas, b => b.QueueFree());
-        CornerAreas = [];
+        // cursor bodies
+        RotationBody?.QueueFree();
+        RotationBody = null;
+        Array.ForEach(CornerBodies, b => b.QueueFree());
+        CornerBodies = [];
 
         _layerE.Get<PolylineBodyHolder>().SetAreaCursor(Control.CursorShape.Arrow);
 

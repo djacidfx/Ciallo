@@ -55,9 +55,9 @@ public class NewFilledPolygonCmd : CommandBase
         targetE.Add(overlay);
 
         // Body
-        var polygonArea = new Body();
-        _layerE.Get<PolylineBodyHolder>().AddChild(polygonArea);
-        targetE.Add(polygonArea);
+        var polygonBody = new Body();
+        _layerE.Get<PolylineBodyHolder>().AddChild(polygonBody);
+        targetE.Add(polygonBody);
     }
 
     protected override void Undo(Entity targetE)
