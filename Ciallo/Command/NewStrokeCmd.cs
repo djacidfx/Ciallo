@@ -17,14 +17,18 @@ public class NewStrokeCmd : CommandBase
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
+    protected override void BeforeFirstDo(Entity strokeE)
+    {
+        strokeE.Add(new LayerTreeNode());
+        strokeE.Add(new StrokeSetting());
+        strokeE.Add(new PolylineGeometry());
+    }
+
     protected override void Do(Entity strokeE)
     {
         // Data
-        if (!strokeE.Has<LayerTreeNode>()) strokeE.Add(new LayerTreeNode());
         strokeE.Tag<ToSerializeTag>();
         _layerE.Get<LayerTreeNode>().AddChild(strokeE);
-        strokeE.Add(new StrokeSetting());
-        strokeE.Add(new PolylineGeometry());
 
         // View
         var strokeView = new StrokeView()
@@ -42,10 +46,10 @@ public class NewStrokeCmd : CommandBase
         worldOverlay.AddChild(strokeOverlay);
         strokeE.Add(strokeOverlay);
 
-        // Cursor detection
-        var strokeArea = new Body();
-        _layerE.Get<PolylineBodyHolder>().AddChild(strokeArea);
-        strokeE.Add(strokeArea);
+        // Body
+        var strokeBody = new Body();
+        _layerE.Get<PolylineBodyHolder>().AddChild(strokeBody);
+        strokeE.Add(strokeBody);
     }
 
     protected override void Undo(Entity strokeE)
@@ -68,8 +72,6 @@ public class NewStrokeCmd : CommandBase
         strokeView.QueueFree();
 
         // Data
-        strokeE.Remove<PolylineGeometry>();
-        strokeE.Remove<StrokeSetting>();
         _layerE.Get<LayerTreeNode>().RemoveChild(^1);
         strokeE.Detach<ToSerializeTag>();
     }

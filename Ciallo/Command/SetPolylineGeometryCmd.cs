@@ -28,7 +28,7 @@ public class SetPolylineGeometryCmd : CommandBase
         polylineE.Get<PolylineGeometry>() = _newGeometry;
 
         // Overlay
-        polylineE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii);
+        polylineE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Positions);
 
         // Polyline has stroke
         if (polylineE.Has<StrokeSetting>())
@@ -77,7 +77,7 @@ public class SetPolylineGeometryCmd : CommandBase
         }
 
         // Overlay
-        polylineE.Get<PolylineWireframe>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii);
+        polylineE.Get<PolylineWireframe>().SetGeometry(_oldGeometry.Positions);
 
         // Data
         polylineE.Get<PolylineGeometry>() = _oldGeometry;

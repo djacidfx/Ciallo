@@ -8,6 +8,7 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
 {
+    public static int LayerCreationId = 0; 
     /// <summary>
     /// Assume the given node is focused and going to be deleted, return the path to the next node that should have focus.
     /// e.g. Used at deletion of working layer to determine the new working layer.

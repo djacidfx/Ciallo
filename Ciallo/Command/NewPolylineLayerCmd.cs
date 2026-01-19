@@ -30,10 +30,11 @@ public class NewPolylineLayerCmd : CommandBase
 
         _commonSetting ??= new CommonLayerSetting
         {
-            Name = { Value = $"{"Line layer".Tr()} {Document.Get<LayerTreeNode>().ChildCount + 1}" }
+            Name = { Value = $"{"Line layer".Tr()} {LayerTreeNode.LayerCreationId++}" }
         };
         layerE.Add(_commonSetting);
         _commonSetting.RegisterProperties(Document.Get<CommandManager>()).AddTo(layerE);
+        layerE.Add(_setting);
     }
 
     protected override void Do(Entity layerE)
@@ -45,7 +46,6 @@ public class NewPolylineLayerCmd : CommandBase
         var root = Document.Get<LayerTreeNode>();
         layerE.Tag<ToSerializeTag>();
         root.AddChild(layerE);
-        layerE.Add(_setting);
 
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
@@ -57,19 +57,11 @@ public class NewPolylineLayerCmd : CommandBase
         worldView.AddChild(layerView);
         layerE.Add(layerView);
         layerView.SetOwner(worldView);
+        layerView.ObserveLayerSetting(_commonSetting).AddTo(_subs);
 
-        _commonSetting.IsVisible.Subscribe(layerView.SetVisible).AddTo(_subs);
-        _commonSetting.Opacity.Subscribe(v =>
-        {
-            var color = layerView.SelfModulate;
-            color.A = v;
-            layerView.SelfModulate = color;
-        }).AddTo(_subs);
-
-        // Cursor detection
-        var worldArea = Document.Get<WorldBody>();
+        // Body
         var holder = new PolylineBodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
-        worldArea.AddChild(holder);
+        Document.Get<WorldBody>().AddChild(holder);
         layerE.Add(holder);
     }
 
@@ -88,7 +80,6 @@ public class NewPolylineLayerCmd : CommandBase
         layerTreeControl.RemoveFree(layerE);
 
         // Data
-        layerE.Remove<PolylineLayerSetting>();
         Document.Get<LayerTreeNode>().RemoveChild(^1);
         layerE.Detach<ToSerializeTag>();
 
