@@ -6,65 +6,126 @@
 
 void Arrangement2D::_bind_methods()
 {
-    ClassDB::bind_method(D_METHOD("add", "polyline"), &Arrangement2D::add);
-    ClassDB::bind_method(D_METHOD("free_rid", "id"), &Arrangement2D::free_rid);
+    ClassDB::bind_method(D_METHOD("create_polyline"), &Arrangement2D::create_polyline);
+    ClassDB::bind_method(D_METHOD("remove_polyline", "id"), &Arrangement2D::remove_polyline);
+    ClassDB::bind_method(D_METHOD("set_polyline", "id", "data"), &Arrangement2D::set_polyline);
+    ClassDB::bind_method(D_METHOD("query", "point"), &Arrangement2D::query);
     ClassDB::bind_method(D_METHOD("batch_query", "points"), &Arrangement2D::batch_query);
+    ClassDB::bind_method(D_METHOD("face_get_polygon", "id"), &Arrangement2D::face_get_polygon);
 }
 
 void Arrangement2D::_notification(int what)
 {
 	if (what == NOTIFICATION_PREDELETE) {
 		List<RID> rids;
-		CurveIDs.get_owned_list(&rids);
+		CurveHandleOwner.get_owned_list(&rids);
 		for (auto id : rids)
 		{
-			CurveIDs.free(id);
+			CurveHandleOwner.free(id);
 		}
 	}
 }
 
-RID Arrangement2D::add(PackedVector2Array polyline)
+Arrangement2D::Arrangement2D()
 {
-    polyline = RemoveConsecutiveOverlappingPoint(polyline);
-    CGAL::Curve curve = CurveConstructor(Vector2Point(polyline));
-    auto handle = CGAL::insert(Arrangement, curve);
-    return CurveIDs.make_rid(handle);
+	Observer.arr = this;
 }
 
-void Arrangement2D::free_rid(RID id)
+RID Arrangement2D::create_polyline()
 {
-    CGAL::Curve_handle* handle_ptr = CurveIDs.get_or_null(id);
+    return CurveHandleOwner.make_rid();
+}
+
+Array Arrangement2D::set_polyline(RID id, PackedVector2Array data)
+{
+	auto curve_handle_ptr = CurveHandleOwner.get_or_null(id);
+	auto curve_handle = *curve_handle_ptr;
+	if (curve_handle != Arrangement.curves_end())
+		CGAL::remove_curve(Arrangement, curve_handle);
+
+	if (data.size() == 0) return {};
+	data = RemoveConsecutiveOverlappingPoint(data);
+	CGAL::Curve curve = CurveConstructor(Vector2Point(data));
+	auto handle = CGAL::insert(Arrangement, curve);
+	*curve_handle_ptr = handle;
+
+	Array result = InvalidFaceIDs;
+	InvalidFaceIDs = Array();
+	return result;
+}
+
+Array Arrangement2D::remove_polyline(RID id)
+{
+    CGAL::Curve_handle* handle_ptr = CurveHandleOwner.get_or_null(id);
     if (handle_ptr == nullptr)
     {
         print_error("Invalid Curve ID {}", id);
-        return;
+        return {};
     }
     CGAL::remove_curve(Arrangement, *handle_ptr);
-	CurveIDs.free(id);
+	CurveHandleOwner.free(id);
+
+	Array result = InvalidFaceIDs;
+	InvalidFaceIDs = Array();
+	return result;
 }
 
-Array Arrangement2D::batch_query(PackedVector2Array points) const
+RID Arrangement2D::query(Vector2 p)
 {
-    Array polygons;
-    polygons.resize(points.size());
+	auto obj = PointLocation.locate(CGAL::Point(p.x, p.y));
+	auto faceHandlePtr = std::get_if<CGAL::Face_const_handle>(&obj);
+	if (faceHandlePtr != nullptr)
+	{
+		CGAL::Face_const_handle handle = *faceHandlePtr;
+		if (FaceHandleToID.find(handle) == FaceHandleToID.end())
+		{
+			RID id = FaceHandleOwner.make_rid(handle);
+			FaceHandleToID[handle] = id;
+			return id;
+		}
+		return FaceHandleToID[handle];
+	}
+	return {};
+}
 
-    using Query_result = std::pair<CGAL::Point, CGAL::PointLocation::Result_type>;
-    std::list<Query_result> queryResults;
+Array Arrangement2D::batch_query(PackedVector2Array points)
+{
+	Array rids;
+	rids.resize(points.size());
 
-    // CGAL::locate requires a linear container.
-    std::vector<CGAL::Point> ps = Vector2Point(points);
-    CGAL::locate(Arrangement, ps.begin(), ps.end(), std::back_inserter(queryResults));
+	using Query_result = std::pair<CGAL::Point, CGAL::PointLocation::Result_type>;
+	std::list<Query_result> queryResults;
 
-    // Get points
-    for (auto& [p, result] : queryResults) {
-        size_t index = std::distance(ps.begin(), std::find(ps.begin(), ps.end(), p));
-    	auto faceHandlePtr = std::get_if<CGAL::Face_const_handle>(&result);
-        if (faceHandlePtr != nullptr && !(*faceHandlePtr)->is_unbounded())
-	        polygons[index] = Face2Vector(*faceHandlePtr); // Face2Vector is ignoring holes
-        else
-        	polygons[index] = {};
-    }
-    return polygons;
+	// CGAL::locate requires a linear container.
+	std::vector<CGAL::Point> ps = Vector2Point(points);
+	CGAL::locate(Arrangement, ps.begin(), ps.end(), std::back_inserter(queryResults));
+
+	// Get points
+	for (auto& [p, obj] : queryResults) {
+		size_t index = std::distance(ps.begin(), std::find(ps.begin(), ps.end(), p));
+		auto faceHandlePtr = std::get_if<CGAL::Face_const_handle>(&obj);
+		if (faceHandlePtr != nullptr)
+		{
+			CGAL::Face_const_handle handle = *faceHandlePtr;
+			if (FaceHandleToID.find(handle) == FaceHandleToID.end())
+			{
+				RID id = FaceHandleOwner.make_rid(handle);
+				FaceHandleToID[handle] = id;
+				rids[index] = id;
+			}
+			rids[index] = FaceHandleToID[handle];
+		}
+	}
+	return rids;
+}
+
+
+PackedVector2Array Arrangement2D::face_get_polygon(RID id)
+{
+	if (!id.is_valid() || !FaceHandleOwner.owns(id)) return {};
+	auto handle = *FaceHandleOwner.get_or_null(id);
+	if (handle->is_unbounded()) return {};
+	return Face2Vector(handle);
 }
 
 PackedVector2Array Arrangement2D::RemoveConsecutiveOverlappingPoint(PackedVector2Array polyline)

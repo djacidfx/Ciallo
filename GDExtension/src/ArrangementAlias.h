@@ -8,7 +8,6 @@
 #include <CGAL/Arr_polyline_traits_2.h>
 #include <CGAL/Arr_walk_along_line_point_location.h>
 #include <CGAL/Arrangement_with_history_2.h>
-#include <CGAL/partition_2.h>
 #include <CGAL/Arr_batched_point_location.h>
 
 namespace CGAL

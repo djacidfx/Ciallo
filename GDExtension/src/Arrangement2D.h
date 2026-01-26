@@ -4,25 +4,39 @@
 #include "godot_cpp/classes/ref_counted.hpp"
 #include <godot_cpp/templates/rid_owner.hpp>
 #include "ArrangementAlias.h"
+#include "ArrangementObserver.h"
 
 using namespace godot;
 
 class Arrangement2D : public Object
 {
     GDCLASS(Arrangement2D, Object)
+
 protected:
     static void _bind_methods();
 public:
-    Arrangement2D() = default;
     CGAL::Arrangement Arrangement = {};
     CGAL::PointLocation PointLocation = { Arrangement };
-    RID_Owner<CGAL::Curve_handle> CurveIDs;
+    ArrangementObserver Observer{Arrangement};
+
+    RID_Owner<CGAL::Curve_handle> CurveHandleOwner{};
+    RID_Owner<Vector2> QueryPointOwner{};
+
+    RID_Owner<CGAL::Face_const_handle> FaceHandleOwner{};
+    std::unordered_map<CGAL::Face_const_handle, RID> FaceHandleToID{};
+    Array InvalidFaceIDs{}; // array of face handle rid
 
     void _notification(int what);
 
-    RID add(PackedVector2Array polyline);
-    void free_rid(RID id);
-    Array batch_query(PackedVector2Array points) const; // return array of PackedVector2Array
+    Arrangement2D();
+
+    RID create_polyline();
+    Array set_polyline(RID id, PackedVector2Array data); // return invalid face RIDs
+    Array remove_polyline(RID id);
+
+    RID query(Vector2 point);
+    Array batch_query(PackedVector2Array points); // return array of face RIDs
+    PackedVector2Array face_get_polygon(RID id);
 
     static PackedVector2Array RemoveConsecutiveOverlappingPoint(PackedVector2Array polyline);
     static std::vector<CGAL::Point> Vector2Point(PackedVector2Array polyline);
