@@ -67,14 +67,14 @@ suffix = env['suffix'].replace(".dev", "").replace(".universal", "")
 
 lib_filename = "{}{}{}{}".format(env.subst('$SHLIBPREFIX'), libname, suffix, env.subst('$SHLIBSUFFIX'))
 
+conandeps = SConscript("conan_installed/SConscript_conandeps")
+conan_flags = conandeps["conandeps"]
+env.MergeFlags(conan_flags)
+
 library = env.SharedLibrary(
     "bin/{}/{}".format(env['platform'], lib_filename),
     source=sources,
 )
-
-conandeps = SConscript("conan_installed/SConscript_conandeps")
-conan_flags = conandeps["conandeps"]
-env.MergeFlags(conan_flags)
 
 copy = env.Install("../Ciallo/addons/Ciallo/Lib/{}/".format(env["platform"]), library)
 
