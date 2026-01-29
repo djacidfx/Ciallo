@@ -24,7 +24,7 @@ public:
 
     RID_Owner<CGAL::Face_const_handle> FaceHandleOwner{};
     std::unordered_map<CGAL::Face_const_handle, RID> FaceHandleToID{};
-    Array InvalidFaceIDs{}; // array of face handle rid
+    Array InvalidFaceIDs = {}; // array of face handle rid
 
     void _notification(int what);
 
@@ -37,6 +37,7 @@ public:
     RID query(Vector2 point);
     Array batch_query(PackedVector2Array points); // return array of face RIDs
     PackedVector2Array face_get_polygon(RID id);
+    bool face_is_unbounded(RID id);
 
     static PackedVector2Array RemoveConsecutiveOverlappingPoint(PackedVector2Array polyline);
     static std::vector<CGAL::Point> Vector2Point(PackedVector2Array polyline);

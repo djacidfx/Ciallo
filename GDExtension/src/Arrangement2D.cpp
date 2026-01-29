@@ -12,6 +12,7 @@ void Arrangement2D::_bind_methods()
     ClassDB::bind_method(D_METHOD("query", "point"), &Arrangement2D::query);
     ClassDB::bind_method(D_METHOD("batch_query", "points"), &Arrangement2D::batch_query);
     ClassDB::bind_method(D_METHOD("face_get_polygon", "id"), &Arrangement2D::face_get_polygon);
+    ClassDB::bind_method(D_METHOD("face_is_unbounded", "id"), &Arrangement2D::face_is_unbounded);
 }
 
 void Arrangement2D::_notification(int what)
@@ -33,21 +34,27 @@ Arrangement2D::Arrangement2D()
 
 RID Arrangement2D::create_polyline()
 {
-    return CurveHandleOwner.make_rid();
+    return CurveHandleOwner.make_rid({});
 }
 
 Array Arrangement2D::set_polyline(RID id, PackedVector2Array data)
 {
-	auto curve_handle_ptr = CurveHandleOwner.get_or_null(id);
-	auto curve_handle = *curve_handle_ptr;
-	if (curve_handle != Arrangement.curves_end())
+	CGAL::Curve_handle* ptr = CurveHandleOwner.get_or_null(id);
+	if (ptr == nullptr)
+	{
+		print_error(vformat("Given rid {} is not a polyline", id));
+		return {};
+	}
+
+	CGAL::Curve_handle curve_handle = *ptr;
+	if (curve_handle != nullptr)
 		CGAL::remove_curve(Arrangement, curve_handle);
 
 	if (data.size() == 0) return {};
 	data = RemoveConsecutiveOverlappingPoint(data);
 	CGAL::Curve curve = CurveConstructor(Vector2Point(data));
 	auto handle = CGAL::insert(Arrangement, curve);
-	*curve_handle_ptr = handle;
+	*ptr = handle;
 
 	Array result = InvalidFaceIDs;
 	InvalidFaceIDs = Array();
@@ -56,17 +63,19 @@ Array Arrangement2D::set_polyline(RID id, PackedVector2Array data)
 
 Array Arrangement2D::remove_polyline(RID id)
 {
-    CGAL::Curve_handle* handle_ptr = CurveHandleOwner.get_or_null(id);
-    if (handle_ptr == nullptr)
+    CGAL::Curve_handle* ptr = CurveHandleOwner.get_or_null(id);
+    if (ptr == nullptr)
     {
-        print_error("Invalid Curve ID {}", id);
-        return {};
+    	print_error(vformat("Given rid {} is not a polyline", id));
+    	return {};
     }
-    CGAL::remove_curve(Arrangement, *handle_ptr);
-	CurveHandleOwner.free(id);
+    CurveHandleOwner.free(id);
+    CGAL::Curve_handle curve_handle = *ptr;
+	if (curve_handle != nullptr)
+		CGAL::remove_curve(Arrangement, curve_handle);
 
 	Array result = InvalidFaceIDs;
-	InvalidFaceIDs = Array();
+	InvalidFaceIDs = {};
 	return result;
 }
 
@@ -90,7 +99,7 @@ RID Arrangement2D::query(Vector2 p)
 
 Array Arrangement2D::batch_query(PackedVector2Array points)
 {
-	Array rids;
+	Array rids{};
 	rids.resize(points.size());
 
 	using Query_result = std::pair<CGAL::Point, CGAL::PointLocation::Result_type>;
@@ -119,13 +128,24 @@ Array Arrangement2D::batch_query(PackedVector2Array points)
 	return rids;
 }
 
-
 PackedVector2Array Arrangement2D::face_get_polygon(RID id)
 {
 	if (!id.is_valid() || !FaceHandleOwner.owns(id)) return {};
 	auto handle = *FaceHandleOwner.get_or_null(id);
 	if (handle->is_unbounded()) return {};
 	return Face2Vector(handle);
+}
+
+bool Arrangement2D::face_is_unbounded(RID id)
+{
+	if (!id.is_valid()) return false;
+	if (!FaceHandleOwner.owns(id))
+	{
+		print_error(vformat("Given rid {} is not a face", id));
+		return false;
+	}
+	CGAL::Face_const_handle handle = *FaceHandleOwner.get_or_null(id);
+	return handle->is_unbounded();
 }
 
 PackedVector2Array Arrangement2D::RemoveConsecutiveOverlappingPoint(PackedVector2Array polyline)
