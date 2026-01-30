@@ -24,6 +24,12 @@ void Arrangement2D::_notification(int what)
 		{
 			CurveHandleOwner.free(id);
 		}
+		rids.clear();
+		FaceHandleOwner.get_owned_list(&rids);
+		for (auto id : rids)
+		{
+			FaceHandleOwner.free(id);
+		}
 	}
 }
 
