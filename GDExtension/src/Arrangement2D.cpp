@@ -10,6 +10,7 @@ void Arrangement2D::_bind_methods()
     ClassDB::bind_method(D_METHOD("remove_polyline", "id"), &Arrangement2D::remove_polyline);
     ClassDB::bind_method(D_METHOD("set_polyline", "id", "data"), &Arrangement2D::set_polyline);
     ClassDB::bind_method(D_METHOD("query", "point"), &Arrangement2D::query);
+	ClassDB::bind_method(D_METHOD("polyline_query", "polyline"), &Arrangement2D::polyline_query);
     ClassDB::bind_method(D_METHOD("batch_query", "points"), &Arrangement2D::batch_query);
     ClassDB::bind_method(D_METHOD("face_get_polygon", "id"), &Arrangement2D::face_get_polygon);
     ClassDB::bind_method(D_METHOD("face_is_unbounded", "id"), &Arrangement2D::face_is_unbounded);
@@ -91,16 +92,23 @@ RID Arrangement2D::query(Vector2 p)
 	auto faceHandlePtr = std::get_if<CGAL::Face_const_handle>(&obj);
 	if (faceHandlePtr != nullptr)
 	{
-		CGAL::Face_const_handle handle = *faceHandlePtr;
-		if (FaceHandleToID.find(handle) == FaceHandleToID.end())
-		{
-			RID id = FaceHandleOwner.make_rid(handle);
-			FaceHandleToID[handle] = id;
-			return id;
-		}
-		return FaceHandleToID[handle];
+		CacheFaceHandle(*faceHandlePtr);
 	}
 	return {};
+}
+
+RID Arrangement2D::CacheFaceHandle(CGAL::Face_const_handle handle)
+{
+	if (FaceHandleToID.find(handle) == FaceHandleToID.end())
+	{
+		RID id = FaceHandleOwner.make_rid(handle);
+		FaceHandleToID[handle] = id;
+		return id;
+	}
+	else
+	{
+		return FaceHandleToID[handle];
+	}
 }
 
 Array Arrangement2D::batch_query(PackedVector2Array points)
@@ -120,18 +128,72 @@ Array Arrangement2D::batch_query(PackedVector2Array points)
 		size_t index = std::distance(ps.begin(), std::find(ps.begin(), ps.end(), p));
 		auto faceHandlePtr = std::get_if<CGAL::Face_const_handle>(&obj);
 		if (faceHandlePtr != nullptr)
-		{
-			CGAL::Face_const_handle handle = *faceHandlePtr;
-			if (FaceHandleToID.find(handle) == FaceHandleToID.end())
-			{
-				RID id = FaceHandleOwner.make_rid(handle);
-				FaceHandleToID[handle] = id;
-				rids[index] = id;
-			}
-			rids[index] = FaceHandleToID[handle];
-		}
+			rids[index] = CacheFaceHandle(*faceHandlePtr);
 	}
 	return rids;
+}
+
+Array Arrangement2D::polyline_query(PackedVector2Array polyline)
+{
+	auto line = RemoveConsecutiveOverlappingPoint(polyline);
+	if (line.size() == 0) return {};
+	if (line.size() == 1) return { query(line[0]) };
+	auto mono_curves = ConstructXMonotoneCurve(line);
+
+	std::vector<RID> ids{};
+	for (auto& curve : mono_curves)
+	{
+		auto face_handles = ZoneQuery(curve);
+		for (auto handle : face_handles)
+		{
+			ids.push_back(CacheFaceHandle(handle));
+		}
+	}
+	// remove duplicate
+	Array result{};
+	std::set s(ids.begin(), ids.end());
+	for (RID id : s)
+		result.push_back(id);
+	return result;
+}
+
+std::vector<CGAL::X_monotone_curve> Arrangement2D::ConstructXMonotoneCurve(PackedVector2Array polyline)
+{
+
+	auto curve = CurveConstructor(Vector2Point(polyline));
+	using Make_x_monotone_result = std::variant<CGAL::Point, CGAL::X_monotone_curve>;
+	std::list<Make_x_monotone_result> result_objects;
+	XMonoMaker(curve, std::back_inserter(result_objects));
+
+	std::vector<CGAL::X_monotone_curve> result{};
+	for (const auto& x_obj : result_objects)
+	{
+		const auto* mono_curve = std::get_if<CGAL::X_monotone_curve>(&x_obj);
+		if (mono_curve != nullptr)
+		{
+			result.push_back(*mono_curve);
+		}
+	}
+	return result;
+}
+
+std::vector<CGAL::Face_const_handle> Arrangement2D::ZoneQuery(const CGAL::X_monotone_curve& monoCurve)
+{
+	std::vector<CGAL::Face_const_handle> result;
+	constexpr int MAX_RESULT = 256;
+	using Result = std::variant<CGAL::Arrangement::Vertex_handle, CGAL::Arrangement::Halfedge_handle, CGAL::Arrangement::Face_handle>;
+	std::vector<Result> output(MAX_RESULT);
+	auto beginIt = output.begin();
+	auto endIt = CGAL::zone(Arrangement, monoCurve, beginIt, PointLocation);
+	for (auto it = beginIt; it != endIt; ++it)
+	{
+		if (auto faceHandlePtr = std::get_if<CGAL::Arrangement::Face_handle>(&*it))
+		{
+			result.emplace_back(*faceHandlePtr);
+		}
+	}
+
+	return result;
 }
 
 PackedVector2Array Arrangement2D::face_get_polygon(RID id)
@@ -180,7 +242,7 @@ std::vector<CGAL::Point> Arrangement2D::Vector2Point(PackedVector2Array polyline
 }
 /// <remarks>
 /// If a line is inserted(pierced) into a face but not across it, CGAL will return vertices associated with this line.
-/// Need to eliminate this pattern with a palindromic detection.
+/// Need to eliminate this pattern with palindromic detection.
 /// </remarks>
 PackedVector2Array Arrangement2D::Face2Vector(CGAL::Face_const_handle face)
 {

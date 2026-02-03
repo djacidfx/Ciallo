@@ -35,13 +35,19 @@ public:
     Array remove_polyline(RID id);
 
     RID query(Vector2 point);
-    Array batch_query(PackedVector2Array points); // return array of face RIDs
+    Array batch_query(PackedVector2Array points);
+    Array polyline_query(PackedVector2Array polyline);// return array of face RIDs
     PackedVector2Array face_get_polygon(RID id);
     bool face_is_unbounded(RID id);
 
+    RID CacheFaceHandle(CGAL::Face_const_handle handle);
+    std::vector<CGAL::Face_const_handle> ZoneQuery(const CGAL::X_monotone_curve& monoCurve);
+    static std::vector<CGAL::X_monotone_curve> ConstructXMonotoneCurve(PackedVector2Array polyline);
     static PackedVector2Array RemoveConsecutiveOverlappingPoint(PackedVector2Array polyline);
     static std::vector<CGAL::Point> Vector2Point(PackedVector2Array polyline);
     static PackedVector2Array Face2Vector(CGAL::Face_const_handle face);
     inline static const CGAL::Geom_traits::Construct_curve_2 CurveConstructor =
         CGAL::Geom_traits{}.construct_curve_2_object();
+    inline static const CGAL::Geom_traits::Make_x_monotone_2 XMonoMaker =
+        CGAL::Geom_traits{}.make_x_monotone_2_object();
 };
