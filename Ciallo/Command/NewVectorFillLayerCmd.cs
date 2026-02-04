@@ -1,23 +1,20 @@
 ﻿using System.Collections.Generic;
 using Ciallo.Data;
-using Ciallo.GuiControl;
 using Ciallo.Misc;
 using Ciallo.Rendering;
 using Frent;
-using Godot;
-using R3;
 
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class NewFillLayerCmd : CommandBase
+public class NewVectorFillLayerCmd : CommandBase
 {
     private VectorFillLayerSetting _setting = new();
     private readonly NewPolylineLayerCmd _polylineCmd;
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public NewFillLayerCmd(CommonLayerSetting commonSetting = null)
+    public NewVectorFillLayerCmd(CommonLayerSetting commonSetting = null)
     {
         commonSetting ??= new CommonLayerSetting
         {
@@ -33,6 +30,7 @@ public class NewFillLayerCmd : CommandBase
     {
         layerE.Add(_setting);
         _polylineCmd.TargetE = layerE;
+        layerE.Add(new ArrangementManager());
     }
 
     protected override void Do(Entity layerE)

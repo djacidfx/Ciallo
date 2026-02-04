@@ -76,7 +76,8 @@ public static partial class AppDocumentManager
                     if (polylineDataE.Has<StrokeSetting>())
                     {
                         new CommandBuilder(resultWorld.Create())
-                            .NewStroke(layerE)
+                            .NewStroke()
+                            .LayerAddStroke(layerE)
                             .SetPolylineGeometry(geometry)
                             .SetStrokeBrush(brushMap[polylineDataE.Get<StrokeSetting>().BrushE])
                             .Do();
