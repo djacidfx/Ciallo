@@ -23,7 +23,7 @@ public class NewFilledPolygonCmd : CommandBase
         _setting = setting ?? new FilledPolygonSetting();
     }
 
-    protected override void BeforeFirstDo(Entity polygonE)
+    public override void BeforeFirstDo(Entity polygonE)
     {
         polygonE.Add(new LayerTreeNode());
         polygonE.Add(new PolylineGeometry());
@@ -31,7 +31,7 @@ public class NewFilledPolygonCmd : CommandBase
         _setting.RegisterProperties(CommandManager).AddTo(polygonE);
     }
 
-    protected override void Do(Entity targetE)
+    public override void Do(Entity targetE)
     {
         _subs = new();
         _subs.AddTo(targetE);
@@ -60,7 +60,7 @@ public class NewFilledPolygonCmd : CommandBase
         targetE.Add(polygonBody);
     }
 
-    protected override void Undo(Entity targetE)
+    public override void Undo(Entity targetE)
     {
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(targetE);

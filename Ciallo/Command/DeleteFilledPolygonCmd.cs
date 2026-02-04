@@ -21,7 +21,7 @@ public class DeleteFilledPolygonCmd : CommandBase
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
     public override IEnumerable<GodotObject> UndoRefObjects => [_polygonView, _polygonOverlay, _polygonBody];
 
-    protected override void BeforeFirstDo(Entity polygonE)
+    public override void BeforeFirstDo(Entity polygonE)
     {
         _polygonBody = polygonE.Get<Body>();
         _polygonOverlay = polygonE.Get<PolylineWireframe>();
@@ -32,7 +32,7 @@ public class DeleteFilledPolygonCmd : CommandBase
         _index = _parentE.Get<LayerTreeNode>().FindPathTo(polygonE).Single();
     }
 
-    protected override void Do(Entity polygonE)
+    public override void Do(Entity polygonE)
     {
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(polygonE);
@@ -56,7 +56,7 @@ public class DeleteFilledPolygonCmd : CommandBase
         // geometry objects to be deleted with entity itself.
     }
 
-    protected override void Undo(Entity polygonE)
+    public override void Undo(Entity polygonE)
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();

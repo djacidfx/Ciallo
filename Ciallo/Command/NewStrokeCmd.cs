@@ -10,14 +10,14 @@ public class NewStrokeCmd : CommandBase
 {
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    protected override void BeforeFirstDo(Entity strokeE)
+    public override void BeforeFirstDo(Entity strokeE)
     {
         strokeE.Add(new LayerTreeNode());
         strokeE.Add(new StrokeSetting());
         strokeE.Add(new PolylineGeometry());
     }
 
-    protected override void Do(Entity strokeE)
+    public override void Do(Entity strokeE)
     {
         // Data
         strokeE.Tag<ToSerializeTag>();
@@ -38,7 +38,7 @@ public class NewStrokeCmd : CommandBase
         strokeE.Add(strokeBody);
     }
 
-    protected override void Undo(Entity strokeE)
+    public override void Undo(Entity strokeE)
     {
         // Body
         strokeE.Get<Body>().QueueFree();

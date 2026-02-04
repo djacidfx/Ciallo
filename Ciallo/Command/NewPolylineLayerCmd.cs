@@ -24,7 +24,7 @@ public class NewPolylineLayerCmd : CommandBase
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    protected override void BeforeFirstDo(Entity layerE)
+    public override void BeforeFirstDo(Entity layerE)
     {
         layerE.Add(new LayerTreeNode());
 
@@ -37,7 +37,7 @@ public class NewPolylineLayerCmd : CommandBase
         layerE.Add(_setting);
     }
 
-    protected override void Do(Entity layerE)
+    public override void Do(Entity layerE)
     {
         _subs = new();
         _subs.AddTo(layerE);
@@ -65,7 +65,7 @@ public class NewPolylineLayerCmd : CommandBase
         layerE.Add(holder);
     }
 
-    protected override void Undo(Entity layerE)
+    public override void Undo(Entity layerE)
     {
         // Body
         layerE.Get<PolylineBodyHolder>().QueueFree();

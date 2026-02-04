@@ -26,19 +26,19 @@ public class NewVectorFillLayerCmd : CommandBase
         _polylineCmd = new(null, commonSetting);
     }
 
-    protected override void BeforeFirstDo(Entity layerE)
+    public override void BeforeFirstDo(Entity layerE)
     {
         layerE.Add(_setting);
         _polylineCmd.TargetE = layerE;
         layerE.Add(new ArrangementManager());
     }
 
-    protected override void Do(Entity layerE)
+    public override void Do(Entity layerE)
     {
         _polylineCmd.Do();
     }
 
-    protected override void Undo(Entity layerE)
+    public override void Undo(Entity layerE)
     {
         _polylineCmd.Undo();
     }

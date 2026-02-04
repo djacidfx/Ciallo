@@ -21,7 +21,7 @@ public class DeletePolylineLayerCmd : CommandBase
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
     public override IEnumerable<GodotObject> UndoRefObjects => [_layerView, _bodyHolder];
 
-    protected override void BeforeFirstDo(Entity layerE)
+    public override void BeforeFirstDo(Entity layerE)
     {
         var node = layerE.Get<LayerTreeNode>();
         _parentE = node.Parent;
@@ -40,7 +40,7 @@ public class DeletePolylineLayerCmd : CommandBase
         _layerView = layerE.Get<PolylineLayerView>();
     }
 
-    protected override void Do(Entity layerE)
+    public override void Do(Entity layerE)
     {
         // Delete children
         _deleteChildrenCmd.Do();
@@ -62,7 +62,7 @@ public class DeletePolylineLayerCmd : CommandBase
         layerE.Detach<ToSerializeTag>();
     }
 
-    protected override void Undo(Entity layerE)
+    public override void Undo(Entity layerE)
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();

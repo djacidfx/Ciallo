@@ -26,7 +26,7 @@ public class MoveLayerCmd : CommandBase
         _dst = [..dst];
     }
 
-    protected override void BeforeFirstDo(Entity layerE)
+    public override void BeforeFirstDo(Entity layerE)
     {
         if (_src.Length == 0)
         {
@@ -35,7 +35,7 @@ public class MoveLayerCmd : CommandBase
         }
     }
 
-    protected override void Do(Entity layerE)
+    public override void Do(Entity layerE)
     {
         // Data
         var root = Document.Get<LayerTreeNode>();
@@ -52,7 +52,7 @@ public class MoveLayerCmd : CommandBase
         // Overlay is order-free
     }
 
-    protected override void Undo(Entity layerE)
+    public override void Undo(Entity layerE)
     {
         // View
         var worldView = Document.Get<WorldView>();

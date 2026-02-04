@@ -19,12 +19,12 @@ public class LayerAddStrokeCmd : CommandBase
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
 
-    protected override void BeforeFirstDo(Entity strokeE)
+    public override void BeforeFirstDo(Entity strokeE)
     {
         _index = _layerE.Get<LayerTreeNode>().Children.Count;
     }
 
-    protected override void Do(Entity strokeE)
+    public override void Do(Entity strokeE)
     {
         // Data
         _layerE.Get<LayerTreeNode>().InsertChild(_index, strokeE);
@@ -42,7 +42,7 @@ public class LayerAddStrokeCmd : CommandBase
         _layerE.Get<PolylineBodyHolder>().InsertNodeAt(strokeE.Get<Body>(), _index);
     }
 
-    protected override void Undo(Entity strokeE)
+    public override void Undo(Entity strokeE)
     {
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(strokeE);
