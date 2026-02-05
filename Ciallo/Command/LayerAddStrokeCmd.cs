@@ -12,16 +12,18 @@ public class LayerAddStrokeCmd : CommandBase
     private readonly Entity _layerE;
     private int _index;
 
-    public LayerAddStrokeCmd(Entity layerE)
+    public LayerAddStrokeCmd(Entity layerE, int index = -1)
     {
         _layerE = layerE;
+        _index = index;
     }
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
 
     public override void BeforeFirstDo(Entity strokeE)
     {
-        _index = _layerE.Get<LayerTreeNode>().Children.Count;
+        if (_index < 0)
+            _index = _layerE.Get<LayerTreeNode>().Children.Count + _index + 1;
     }
 
     public override void Do(Entity strokeE)
