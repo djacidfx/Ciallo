@@ -84,12 +84,13 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         removed.Get<T>().Parent = Entity.Null;
     }
 
-    public void RemoveChild(Entity child)
+    public int RemoveChild(Entity child)
     {
         int idx = Children.IndexOf(child);
         if (idx < 0) throw new ArgumentException("The specified entity is not a child of this node.");
         Children.RemoveAt(idx);
         child.Get<T>().Parent = Entity.Null;
+        return idx;
     }
 
     public void AddDescendant(IReadOnlyList<int> parentPath, Entity child)
