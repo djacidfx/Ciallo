@@ -12,8 +12,9 @@ void Arrangement2D::_bind_methods()
     ClassDB::bind_method(D_METHOD("query", "point"), &Arrangement2D::query);
 	ClassDB::bind_method(D_METHOD("polyline_query", "polyline"), &Arrangement2D::polyline_query);
     ClassDB::bind_method(D_METHOD("batch_query", "points"), &Arrangement2D::batch_query);
-    ClassDB::bind_method(D_METHOD("face_get_polygon", "id"), &Arrangement2D::face_get_polygon);
-    ClassDB::bind_method(D_METHOD("face_is_unbounded", "id"), &Arrangement2D::face_is_unbounded);
+    ClassDB::bind_method(D_METHOD("get_polygon", "face_id"), &Arrangement2D::get_polygon);
+    ClassDB::bind_method(D_METHOD("is_unbounded_face", "id"), &Arrangement2D::is_unbounded_face);
+	ClassDB::bind_method(D_METHOD("get_unbounded_face"), &Arrangement2D::get_unbounded_face);
 }
 
 void Arrangement2D::_notification(int what)
@@ -44,7 +45,7 @@ RID Arrangement2D::create_polyline()
     return CurveHandleOwner.make_rid({});
 }
 
-Array Arrangement2D::set_polyline(RID id, PackedVector2Array data)
+TypedArray<RID> Arrangement2D::set_polyline(RID id, PackedVector2Array data)
 {
 	CGAL::Curve_handle* ptr = CurveHandleOwner.get_or_null(id);
 	if (ptr == nullptr)
@@ -57,18 +58,18 @@ Array Arrangement2D::set_polyline(RID id, PackedVector2Array data)
 	if (curve_handle != nullptr)
 		CGAL::remove_curve(Arrangement, curve_handle);
 
-	if (data.size() == 0) return {};
 	data = RemoveConsecutiveOverlappingPoint(data);
+	if (data.size() < 2) return {};
 	CGAL::Curve curve = CurveConstructor(Vector2Point(data));
 	auto handle = CGAL::insert(Arrangement, curve);
 	*ptr = handle;
 
-	Array result = InvalidFaceIDs;
-	InvalidFaceIDs = Array();
+	TypedArray<RID> result = InvalidFaceIDs;
+	InvalidFaceIDs = TypedArray<RID>();
 	return result;
 }
 
-Array Arrangement2D::remove_polyline(RID id)
+TypedArray<RID> Arrangement2D::remove_polyline(RID id)
 {
     CGAL::Curve_handle* ptr = CurveHandleOwner.get_or_null(id);
     if (ptr == nullptr)
@@ -81,8 +82,8 @@ Array Arrangement2D::remove_polyline(RID id)
 	if (curve_handle != nullptr)
 		CGAL::remove_curve(Arrangement, curve_handle);
 
-	Array result = InvalidFaceIDs;
-	InvalidFaceIDs = {};
+	auto result = InvalidFaceIDs;
+	InvalidFaceIDs = TypedArray<RID>();
 	return result;
 }
 
@@ -92,7 +93,7 @@ RID Arrangement2D::query(Vector2 p)
 	auto faceHandlePtr = std::get_if<CGAL::Face_const_handle>(&obj);
 	if (faceHandlePtr != nullptr)
 	{
-		CacheFaceHandle(*faceHandlePtr);
+		return CacheFaceHandle(*faceHandlePtr);
 	}
 	return {};
 }
@@ -111,9 +112,9 @@ RID Arrangement2D::CacheFaceHandle(CGAL::Face_const_handle handle)
 	}
 }
 
-Array Arrangement2D::batch_query(PackedVector2Array points)
+TypedArray<RID> Arrangement2D::batch_query(PackedVector2Array points)
 {
-	Array rids{};
+	TypedArray<RID> rids{};
 	rids.resize(points.size());
 
 	using Query_result = std::pair<CGAL::Point, CGAL::PointLocation::Result_type>;
@@ -133,36 +134,34 @@ Array Arrangement2D::batch_query(PackedVector2Array points)
 	return rids;
 }
 
-Array Arrangement2D::polyline_query(PackedVector2Array polyline)
+TypedArray<RID> Arrangement2D::polyline_query(PackedVector2Array polyline)
 {
-	auto line = RemoveConsecutiveOverlappingPoint(polyline);
-	if (line.size() == 0) return {};
-	if (line.size() == 1) return { query(line[0]) };
-	auto mono_curves = ConstructXMonotoneCurve(line);
+	polyline = RemoveConsecutiveOverlappingPoint(polyline);
+	if (polyline.size() == 0) return {};
+	if (polyline.size() == 1) return { query(polyline[0]) };
 
-	std::vector<RID> ids{};
+	auto mono_curves = ConstructXMonotoneCurve(polyline);
+	std::set<RID> ids{}; // remove duplicate
 	for (auto& curve : mono_curves)
 	{
 		auto face_handles = ZoneQuery(curve);
 		for (auto handle : face_handles)
 		{
-			ids.push_back(CacheFaceHandle(handle));
+			ids.insert(CacheFaceHandle(handle));
 		}
 	}
-	// remove duplicate
-	Array result{};
-	std::set s(ids.begin(), ids.end());
-	for (RID id : s)
+
+	TypedArray<RID> result{};
+	for (RID id : ids)
 		result.push_back(id);
 	return result;
 }
 
 std::vector<CGAL::X_monotone_curve> Arrangement2D::ConstructXMonotoneCurve(PackedVector2Array polyline)
 {
-
 	auto curve = CurveConstructor(Vector2Point(polyline));
 	using Make_x_monotone_result = std::variant<CGAL::Point, CGAL::X_monotone_curve>;
-	std::list<Make_x_monotone_result> result_objects;
+	std::vector<Make_x_monotone_result> result_objects;
 	XMonoMaker(curve, std::back_inserter(result_objects));
 
 	std::vector<CGAL::X_monotone_curve> result{};
@@ -179,12 +178,13 @@ std::vector<CGAL::X_monotone_curve> Arrangement2D::ConstructXMonotoneCurve(Packe
 
 std::vector<CGAL::Face_const_handle> Arrangement2D::ZoneQuery(const CGAL::X_monotone_curve& monoCurve)
 {
-	std::vector<CGAL::Face_const_handle> result;
+	std::vector<CGAL::Face_const_handle> result{};
 	constexpr int MAX_RESULT = 256;
 	using Result = std::variant<CGAL::Arrangement::Vertex_handle, CGAL::Arrangement::Halfedge_handle, CGAL::Arrangement::Face_handle>;
 	std::vector<Result> output(MAX_RESULT);
 	auto beginIt = output.begin();
 	auto endIt = CGAL::zone(Arrangement, monoCurve, beginIt, PointLocation);
+
 	for (auto it = beginIt; it != endIt; ++it)
 	{
 		if (auto faceHandlePtr = std::get_if<CGAL::Arrangement::Face_handle>(&*it))
@@ -196,15 +196,14 @@ std::vector<CGAL::Face_const_handle> Arrangement2D::ZoneQuery(const CGAL::X_mono
 	return result;
 }
 
-PackedVector2Array Arrangement2D::face_get_polygon(RID id)
+TypedArray<PackedVector2Array> Arrangement2D::get_polygon(RID id)
 {
 	if (!id.is_valid() || !FaceHandleOwner.owns(id)) return {};
 	auto handle = *FaceHandleOwner.get_or_null(id);
-	if (handle->is_unbounded()) return {};
 	return Face2Vector(handle);
 }
 
-bool Arrangement2D::face_is_unbounded(RID id)
+bool Arrangement2D::is_unbounded_face(RID id)
 {
 	if (!id.is_valid()) return false;
 	if (!FaceHandleOwner.owns(id))
@@ -244,16 +243,18 @@ std::vector<CGAL::Point> Arrangement2D::Vector2Point(PackedVector2Array polyline
 /// If a line is inserted(pierced) into a face but not across it, CGAL will return vertices associated with this line.
 /// Need to eliminate this pattern with palindromic detection.
 /// </remarks>
-PackedVector2Array Arrangement2D::Face2Vector(CGAL::Face_const_handle face)
+TypedArray<PackedVector2Array> Arrangement2D::Face2Vector(CGAL::Face_const_handle face)
 {
-	std::vector<CGAL::Arrangement::Ccb_halfedge_const_circulator> ccb_circulators;
-	ccb_circulators.push_back(face->outer_ccb());
-	for (auto hole = face->holes_begin(); hole != face->holes_end(); ++hole)
+	std::vector<CGAL::Arrangement::Ccb_halfedge_const_circulator> ccb_circulators{};
+	if (!face->is_unbounded())
+		ccb_circulators.push_back(face->outer_ccb());
+	for (auto holeIt = face->holes_begin(); holeIt != face->holes_end(); ++holeIt)
 	{
-		// Don't deal with holes in current version
-		// ccb_circulators.push_back(*hole);
+		CGAL::Arrangement::Ccb_halfedge_const_circulator hole_ccb = *holeIt;
+		ccb_circulators.push_back(hole_ccb);
 	}
 
+	TypedArray<PackedVector2Array> result{};
 	for (auto& start_iterator : ccb_circulators)
 	{
 		// Remove palindromic halfEdges.
@@ -326,8 +327,12 @@ PackedVector2Array Arrangement2D::Face2Vector(CGAL::Face_const_handle face)
 				}
 			}
 		}
-		return polygon;
+		result.push_back(polygon);
 	}
-	// Not reachable
-	return {};
+	return result;
+}
+
+RID Arrangement2D::get_unbounded_face()
+{
+	return CacheFaceHandle(Arrangement.unbounded_face());
 }

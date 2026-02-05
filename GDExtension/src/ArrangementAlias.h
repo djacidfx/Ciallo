@@ -3,7 +3,6 @@
 #define CGAL_DISABLE_GMP true
 
 #include "CustomArrangement.h"
-#include <CGAL/Exact_predicates_inexact_constructions_kernel.h>
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>
 #include <CGAL/Arr_polyline_traits_2.h>
 #include <CGAL/Arr_walk_along_line_point_location.h>
