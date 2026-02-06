@@ -131,7 +131,7 @@ public class PaintTool : ToolBase
             var builder = new CommandBuilder(Entity.Null);
             foreach (var strokeE in toDeleteStrokes)
             {
-                builder.SetTarget(strokeE).DeleteStroke();
+                builder.SetTarget(strokeE).LayerRemoveStroke().DeleteStroke();
             }
 
             var selectionManager = Document.Get<SelectionManager>();
