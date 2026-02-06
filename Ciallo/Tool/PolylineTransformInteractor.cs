@@ -28,8 +28,8 @@ public class PolylineTransformInteractor : InteractiveSessionBase
         if (session is not PolylineTransformHover hover) return;
 
         bool polylineHovered = !hover.HoveredPolyline.IsNull;
-        bool rotationDotHovered = hover.RotationArea?.IsHovered == true;
-        bool cornerDotsHovered = hover.CornerAreas.Any(a => a.IsHovered);
+        bool rotationDotHovered = hover.RotationBody?.IsHovered == true;
+        bool cornerDotsHovered = hover.CornerBodies.Any(a => a.IsHovered);
 
         var selectionManager = Document.Get<SelectionManager>();
         if (polylineHovered && Input.IsKeyPressed(Key.Shift))
@@ -55,7 +55,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
         }
         if (cornerDotsHovered)
         {
-            _transformType = Array.FindIndex(hover.CornerAreas, a => a.IsHovered) + 2;
+            _transformType = Array.FindIndex(hover.CornerBodies, a => a.IsHovered) + 2;
         }
     }
 

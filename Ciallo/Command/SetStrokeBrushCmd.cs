@@ -15,13 +15,13 @@ public class SetStrokeBrushCmd : CommandBase
         _newBrushE = newBrushE;
     }
 
-    protected override void BeforeFirstDo(Entity strokeE)
+    public override void BeforeFirstDo(Entity strokeE)
     {
         var setting = strokeE.Get<StrokeSetting>();
         _oldBrushE = setting.BrushE;
     }
 
-    protected override void Do(Entity strokeE)
+    public override void Do(Entity strokeE)
     {
         // Data
         var setting = strokeE.Get<StrokeSetting>();
@@ -32,7 +32,7 @@ public class SetStrokeBrushCmd : CommandBase
             _newBrushE.IsNull ? AutoloadRendering.MissingBrushMaterial : _newBrushE.Get<BrushMaterial>();
     }
 
-    protected override void Undo(Entity strokeE)
+    public override void Undo(Entity strokeE)
     {
         // View
         strokeE.Get<StrokeView>().Material = !_oldBrushE.IsNull

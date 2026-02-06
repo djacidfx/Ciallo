@@ -8,35 +8,35 @@ namespace Ciallo.Tool;
 
 public class ImageTransformHover : InteractiveSessionBase
 {
-    public Body RotationArea;
-    public Body TranslationArea;
-    public Body[] CornerAreas = [];
+    public Body RotationBody;
+    public Body TranslationBody;
+    public Body[] CornerBodies = [];
 
     public override void Start(CursorButtonData data)
     {
         var setting = WorkingLayer.Get<ImageLayerSetting>();
-        var manager = Document.Get<WorldBody>();
+        var worldBody = Document.Get<WorldBody>();
 
         WorkingLayer.Get<TransformOverlayBox>().Visible = true;
 
-        // Create areas
-        Body[] areas = manager.CreateAddTransformAreas(setting.ImageSize, setting.ImageTransform.Value);
-        RotationArea = areas[0];
-        TranslationArea = areas[1];
-        CornerAreas = areas[2..6];
+        // Create bodies
+        Body[] bodies = worldBody.CreateAddTransformAreas(setting.ImageSize, setting.ImageTransform.Value);
+        RotationBody = bodies[0];
+        TranslationBody = bodies[1];
+        CornerBodies = bodies[2..6];
     }
 
     public override void Interacting(CursorMotionData data) { }
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
-        RotationArea.QueueFree();
-        TranslationArea.QueueFree();
+        RotationBody.QueueFree();
+        TranslationBody.QueueFree();
 
-        Array.ForEach(CornerAreas, b => b.QueueFree());
-        RotationArea = null;
-        TranslationArea = null;
-        CornerAreas = [];
+        Array.ForEach(CornerBodies, b => b.QueueFree());
+        RotationBody = null;
+        TranslationBody = null;
+        CornerBodies = [];
         WorkingLayer.Get<TransformOverlayBox>().Visible = false;
     }
 

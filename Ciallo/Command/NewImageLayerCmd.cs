@@ -34,7 +34,7 @@ public class NewImageLayerCmd : CommandBase
         _commonSetting = commonSetting;
     }
 
-    protected override void BeforeFirstDo(Entity layerE)
+    public override void BeforeFirstDo(Entity layerE)
     {
         layerE.Add(new LayerTreeNode());
 
@@ -43,7 +43,7 @@ public class NewImageLayerCmd : CommandBase
         _commonSetting.RegisterProperties(CommandManager).AddTo(layerE);
     }
 
-    protected override void Do(Entity layerE)
+    public override void Do(Entity layerE)
     {
         _subs = new();
         _subs.AddTo(layerE);
@@ -88,7 +88,7 @@ public class NewImageLayerCmd : CommandBase
         layerContainer.CreateAdd(layerE);
     }
 
-    protected override void Undo(Entity layerE)
+    public override void Undo(Entity layerE)
     {
         // Panel
         var layerContainer = Document.Get<LayerContainer>();

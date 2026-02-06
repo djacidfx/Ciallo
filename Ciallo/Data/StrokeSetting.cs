@@ -1,6 +1,7 @@
 ﻿using System.Runtime.Serialization;
 using Frent;
 using Godot;
+using R3;
 
 namespace Ciallo.Data;
 
@@ -8,6 +9,5 @@ namespace Ciallo.Data;
 public class StrokeSetting
 {
     [DataMember] public Entity BrushE = Entity.Null;
-    [DataMember] public bool OverrideColor = false;
-    [DataMember] public Color Color = Colors.White;
+    [DataMember] public ReactiveProperty<Color> OverrideColor = null;
 }

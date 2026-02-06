@@ -17,18 +17,18 @@ public class SetPolylineGeometryCmd : CommandBase
         _newGeometry = newGeometry;
     }
 
-    protected override void BeforeFirstDo(Entity polylineE)
+    public override void BeforeFirstDo(Entity polylineE)
     {
         _oldGeometry = polylineE.Get<PolylineGeometry>();
     }
 
-    protected override void Do(Entity polylineE)
+    public override void Do(Entity polylineE)
     {
         // Data
         polylineE.Get<PolylineGeometry>() = _newGeometry;
 
         // Overlay
-        polylineE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Positions, _newGeometry.Radii);
+        polylineE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Positions);
 
         // Polyline has stroke
         if (polylineE.Has<StrokeSetting>())
@@ -54,7 +54,7 @@ public class SetPolylineGeometryCmd : CommandBase
         }
     }
 
-    protected override void Undo(Entity polylineE)
+    public override void Undo(Entity polylineE)
     {
         if (polylineE.Has<FilledPolygonSetting>())
         {
@@ -77,7 +77,7 @@ public class SetPolylineGeometryCmd : CommandBase
         }
 
         // Overlay
-        polylineE.Get<PolylineWireframe>().SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii);
+        polylineE.Get<PolylineWireframe>().SetGeometry(_oldGeometry.Positions);
 
         // Data
         polylineE.Get<PolylineGeometry>() = _oldGeometry;

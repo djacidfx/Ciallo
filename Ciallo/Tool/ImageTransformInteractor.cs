@@ -16,17 +16,17 @@ public class ImageTransformInteractor : InteractiveSessionBase
     public override void BeforeSrcEnd(InteractiveSessionBase session)
     {
         if (session is not ImageTransformHover hover) return;
-        if (hover.RotationArea.IsHovered)
+        if (hover.RotationBody.IsHovered)
         {
             _transformType = 0;
         }
-        if (hover.TranslationArea.IsHovered)
+        if (hover.TranslationBody.IsHovered)
         {
             _transformType = 1;
         }
-        for (int i = 0; i < hover.CornerAreas.Length; i++)
+        for (int i = 0; i < hover.CornerBodies.Length; i++)
         {
-            if (hover.CornerAreas[i].IsHovered)
+            if (hover.CornerBodies[i].IsHovered)
             {
                 _transformType = 2 + i;
                 break;

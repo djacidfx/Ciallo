@@ -7,7 +7,7 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class DeleteBrushCmd : CommandBase
 {
-    protected override void Do(Entity brushE)
+    public override void Do(Entity brushE)
     {
         // UI
         var list = Document.Get<DocumentBrushList>();
@@ -21,7 +21,7 @@ public class DeleteBrushCmd : CommandBase
         brushE.Detach<ToSerializeTag>();
     }
 
-    protected override void Undo(Entity brushE)
+    public override void Undo(Entity brushE)
     {
         // Data
         brushE.Tag<ToSerializeTag>();

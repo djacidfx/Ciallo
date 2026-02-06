@@ -10,13 +10,13 @@ public class SetWorkingLayerCmd : CommandBase
 {
     public Entity OldLayerE;
 
-    protected override void BeforeFirstDo(Entity newLayerE)
+    public override void BeforeFirstDo(Entity newLayerE)
     {
         var sm = Document.Get<SelectionManager>();
         OldLayerE = sm.WorkingLayer.Value;
     }
 
-    protected override void Do(Entity newLayerE)
+    public override void Do(Entity newLayerE)
     {
         // Selection manager
         var sm = Document.Get<SelectionManager>();
@@ -31,7 +31,7 @@ public class SetWorkingLayerCmd : CommandBase
         layerContainer.SetWorkingLayerNoSignal(newLayerE);
     }
 
-    protected override void Undo(Entity newLayerE)
+    public override void Undo(Entity newLayerE)
     {
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();

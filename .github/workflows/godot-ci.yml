@@ -3,6 +3,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "./Ciallo/**"
 
 env:
   GODOT_VERSION: 4.5.1.stable.mono

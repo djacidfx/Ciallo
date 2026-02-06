@@ -15,73 +15,71 @@ public class NewFilledPolygonCmd : CommandBase
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
+    private CompositeDisposable _subs;
+
     public NewFilledPolygonCmd(Entity layerE, FilledPolygonSetting setting = null)
     {
         _layerE = layerE;
         _setting = setting ?? new FilledPolygonSetting();
     }
 
-    private CompositeDisposable _subs;
+    public override void BeforeFirstDo(Entity polygonE)
+    {
+        polygonE.Add(new LayerTreeNode());
+        polygonE.Add(new PolylineGeometry());
+        polygonE.Add(_setting);
+        _setting.RegisterProperties(CommandManager).AddTo(polygonE);
+    }
 
-    protected override void Do(Entity polygonE)
+    public override void Do(Entity targetE)
     {
         _subs = new();
-        _subs.AddTo(polygonE);
-        // Data
-        if (!polygonE.Has<LayerTreeNode>())
-        {
-            polygonE.Add(new LayerTreeNode());
-            polygonE.Add(new PolylineGeometry());
-        }
+        _subs.AddTo(targetE);
 
-        polygonE.Tag<ToSerializeTag>();
-        _layerE.Get<LayerTreeNode>().AddChild(polygonE);
-        polygonE.Add(_setting);
+        // Data
+        targetE.Tag<ToSerializeTag>();
+        _layerE.Get<LayerTreeNode>().AddChild(targetE);
 
         // View
-        var polygonView = new Polygon2D() { Antialiased = true };
+        var polygonView = new Polygon2D() { Antialiased = true }; // The antialiasing result is not satisfying
         var layerView = _layerE.Get<PolylineLayerView>();
         layerView.AddChild(polygonView);
-        polygonE.Add(polygonView);
+        targetE.Add(polygonView);
         polygonView.SetOwner(layerView.Owner);
 
-        _setting.Color.Subscribe(polygonView.SetColor).AddTo(polygonE).AddTo(_subs);
-        CommandManager.RegisterProperty(_setting.Color).AddTo(polygonE).AddTo(_subs);
+        _setting.Color.Subscribe(polygonView.SetColor).AddTo(_subs);
 
         // Overlay
         var overlay = new PolylineWireframe() { Visible = false };
-        var worldOverlay = Document.Get<WorldOverlay>();
-        worldOverlay.AddChild(overlay);
-        polygonE.Add(overlay);
-
-        // Cursor detection
-        var polygonArea = new Body();
-        _layerE.Get<PolylineBodyHolder>().AddChild(polygonArea);
-        polygonE.Add(polygonArea);
-    }
-
-    protected override void Undo(Entity polygonE)
-    {
-        // Selection manager
-        Document.Get<SelectionManager>().SelectedPolylines.Remove(polygonE);
+        Document.Get<WorldOverlay>().AddChild(overlay);
+        targetE.Add(overlay);
 
         // Body
-        polygonE.Get<Body>().QueueFree();
-        polygonE.Remove<Body>();
+        var polygonBody = new Body();
+        _layerE.Get<PolylineBodyHolder>().AddChild(polygonBody);
+        targetE.Add(polygonBody);
+    }
+
+    public override void Undo(Entity targetE)
+    {
+        // Selection manager
+        Document.Get<SelectionManager>().SelectedPolylines.Remove(targetE);
+        // Body
+        targetE.Get<Body>().QueueFree();
+        targetE.Remove<Body>();
 
         // Overlay
-        polygonE.Get<PolylineWireframe>().QueueFree();
-        polygonE.Remove<PolylineWireframe>();
+        targetE.Get<PolylineWireframe>().QueueFree();
+        targetE.Remove<PolylineWireframe>();
 
         // View
-        // Pitfall: godot cannot deal with polygons shape as arabic numerals '8'.
-        polygonE.Get<Polygon2D>().QueueFree();
-        polygonE.Remove<Polygon2D>();
+        // Pitfall: godot can only handle simple polygon.
+        targetE.Get<Polygon2D>().QueueFree();
+        targetE.Remove<Polygon2D>();
 
         // Data
-        polygonE.Remove<FilledPolygonSetting>();
         _layerE.Get<LayerTreeNode>().RemoveChild(^1);
-        polygonE.Detach<ToSerializeTag>();
+        targetE.Detach<ToSerializeTag>();
 
         _subs.Dispose();
     }

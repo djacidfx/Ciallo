@@ -9,8 +9,8 @@ namespace Ciallo.Command;
 
 public abstract class CommandBase : ICommand
 {
-    public bool HasExecuted;
-    public Entity TargetE { protected get; init; }
+    public bool IsExecuted;
+    public Entity TargetE { protected get; set; }
     public World WorkingWorld => TargetE.World;
     public Entity Document => WorkingWorld.Document();
     public virtual string Name => GetType().Name.Humanize();
@@ -18,6 +18,11 @@ public abstract class CommandBase : ICommand
     public CommandManager CommandManager => Document.Get<CommandManager>();
 
     public Array<Node> GetNodesInGroup(StringName group) => SceneTree.GetNodesInGroup(group);
+
+    protected CommandBase(Entity targetE = default)
+    {
+        TargetE = targetE;
+    }
 
     /// <summary>
     /// `DoRefEntities` are the entities will be destroyed when this command is ready to redo and deleted.
@@ -30,15 +35,15 @@ public abstract class CommandBase : ICommand
     public virtual IEnumerable<GodotObject> DoRefObjects => [];
     public virtual IEnumerable<GodotObject> UndoRefObjects => [];
 
-    protected virtual void BeforeFirstDo(Entity targetE) { }
-    protected abstract void Do(Entity targetE);
-    protected abstract void Undo(Entity targetE);
+    public virtual void BeforeFirstDo(Entity targetE) { }
+    public abstract void Do(Entity targetE);
+    public abstract void Undo(Entity targetE);
 
     public void Do()
     {
-        if (!HasExecuted) BeforeFirstDo(TargetE);
+        if (!IsExecuted) BeforeFirstDo(TargetE);
         Do(TargetE);
-        HasExecuted = true;
+        IsExecuted = true;
     }
 
     public void Undo() => Undo(TargetE);

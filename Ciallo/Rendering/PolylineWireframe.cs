@@ -20,7 +20,7 @@ public partial class PolylineWireframe : Node2D
         AddChild(Dots);
     }
 
-    public void SetGeometry(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
+    public void SetGeometry(IReadOnlyList<Vector2> points)
     {
         float wireframeRadius = AppPreference.StrokeWireframeRadius;
         float dotRadius = AppPreference.StrokeDotRadius;

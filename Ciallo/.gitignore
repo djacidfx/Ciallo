@@ -1,12 +1,15 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+*.translation
 
 # GdUnit4
 /gdunit4_testadapter_v5/
 /Tests/.runsettings
 /Temp/
 
+# ignore copilot
+.idea/.idea.Ciallo/.idea/copilot*
 
 # copied from https://gist.github.com/drch-/00d98ab2b93b930f55e0f7c62abc4af2.js
 # User-specific files

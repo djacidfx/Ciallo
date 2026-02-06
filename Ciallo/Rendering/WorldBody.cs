@@ -24,8 +24,8 @@ public partial class WorldBody : Node2D
 
     public Control.CursorShape MouseDefaultCursorShape { get; set; }
 
-    private readonly ReactiveProperty<Body> _hoveringArea = new();
-    public ReadOnlyReactiveProperty<Body> HoveringArea => _hoveringArea;
+    private readonly ReactiveProperty<Body> _hoveringBody = new();
+    public ReadOnlyReactiveProperty<Body> HoveringBody => _hoveringBody;
 
     public override void _EnterTree()
     {
@@ -33,63 +33,63 @@ public partial class WorldBody : Node2D
         _cursorSwitcher = _canvasLayer.GetChild<Control>(0);
     }
 
-    private void SetHoveringArea(Body value)
+    private void SetHoveringBody(Body value)
     {
         _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
-        var area = _hoveringArea.Value;
-        if (area == value) return;
+        var body = _hoveringBody.Value;
+        if (body == value) return;
 
-        if (area != null) area.IsHovered = false;
+        if (body != null) body.IsHovered = false;
         if (value != null) value.IsHovered = true;
-        _hoveringArea.Value = value;
+        _hoveringBody.Value = value;
     }
 
     // Note: not implement screen position, world size
     public Body CreateAddRect(Vector2 size, Vector2 position, CursorRectFlags flags = default)
     {
-        var area = CreateAddRect(flags);
-        area.AddChild(new CollisionShape2D()
+        var body = CreateAddRect(flags);
+        body.AddChild(new CollisionShape2D()
         {
             Shape = new RectangleShape2D { Size = size },
         });
-        area.Position = flags.HasFlag(CursorRectFlags.CornerPosition) ? position + size * 0.5f : position;
+        body.Position = flags.HasFlag(CursorRectFlags.CornerPosition) ? position + size * 0.5f : position;
 
-        return area;
+        return body;
     }
 
     public Body CreateAddRect(Vector2 size, Transform2D transform)
     {
-        var area = CreateAddRect();
-        area.AddChild(new CollisionShape2D()
+        var body = CreateAddRect();
+        body.AddChild(new CollisionShape2D()
         {
             Shape = new RectangleShape2D { Size = size },
             Transform = transform,
         });
-        return area;
+        return body;
     }
 
     public Body CreateAddRect(CursorRectFlags flags = default)
     {
-        var area = new Body();
+        var body = new Body();
 
         if (flags.HasFlag(CursorRectFlags.ScreenPosition))
-            _canvasLayer.AddChild(area);
+            _canvasLayer.AddChild(body);
         else
-            AddChild(area);
+            AddChild(body);
 
-        return area;
+        return body;
     }
 
     public static Body CreateRect(Vector2 size, Vector2 center)
     {
-        var area = new Body();
-        area.AddChild(new CollisionShape2D()
+        var body = new Body();
+        body.AddChild(new CollisionShape2D()
         {
             Shape = new RectangleShape2D { Size = size },
         });
-        area.Position = center;
+        body.Position = center;
 
-        return area;
+        return body;
     }
 
     private static int GetCanvasLayer(Node n)
@@ -128,9 +128,9 @@ public partial class WorldBody : Node2D
             CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke,
         };
         var hits = GetWorld2D().DirectSpaceState.IntersectPoint(pointQuery, 32);
-        var area = hits.Count > 0 ? TopMostFromHits(hits) : null;
+        var body = hits.Count > 0 ? TopMostFromHits(hits) : null;
 
-        SetHoveringArea(area);
+        SetHoveringBody(body);
     }
 
     public List<Entity> RectQuery(Rect2 rect)
@@ -179,15 +179,15 @@ public partial class WorldBody : Node2D
         var translation = CreateAddRect(size, transform);
         translation.MouseDefaultCursorShape = Control.CursorShape.Move;
 
-        var cornerAreas = new Body[corners.Length];
+        var cornerBodies = new Body[corners.Length];
         foreach (var (idx, pos) in corners.Index())
         {
-            var a = CreateAddRect(dotAreaSize, pos, CursorRectFlags.ScreenSize);
-            a.MouseDefaultCursorShape = idx % 2 == 0 ? Control.CursorShape.Fdiagsize : Control.CursorShape.Bdiagsize;
-            cornerAreas[idx] = a;
+            var body = CreateAddRect(dotAreaSize, pos, CursorRectFlags.ScreenSize);
+            body.MouseDefaultCursorShape = idx % 2 == 0 ? Control.CursorShape.Fdiagsize : Control.CursorShape.Bdiagsize;
+            cornerBodies[idx] = body;
         }
 
-        return [rotation, translation, ..cornerAreas];
+        return [rotation, translation, ..cornerBodies];
     }
 
     public Body[] CreateAddTransformAreas(Vector2 size, Vector2 position)

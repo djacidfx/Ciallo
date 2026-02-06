@@ -20,7 +20,7 @@ public class DeleteImageLayerCmd : CommandBase
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
     public override IEnumerable<GodotObject> UndoRefObjects => [_sprite, _overlay];
 
-    protected override void BeforeFirstDo(Entity layerE)
+    public override void BeforeFirstDo(Entity layerE)
     {
         _overlay = layerE.Get<TransformOverlayBox>();
         _sprite = layerE.Get<Sprite2D>();
@@ -30,7 +30,7 @@ public class DeleteImageLayerCmd : CommandBase
         _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(layerE);
     }
 
-    protected override void Do(Entity layerE)
+    public override void Do(Entity layerE)
     {
         // Overlay
         _overlay.RemoveFromParent();
@@ -50,7 +50,7 @@ public class DeleteImageLayerCmd : CommandBase
         layerE.Detach<ToSerializeTag>();
     }
 
-    protected override void Undo(Entity layerE)
+    public override void Undo(Entity layerE)
     {
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();

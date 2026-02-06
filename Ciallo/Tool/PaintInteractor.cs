@@ -62,7 +62,8 @@ public class PaintInteractor : InteractiveSessionBase
             Tilts = [.._generator.Tilts],
         };
         new CommandBuilder(WorkingLayer.World.Create())
-            .NewStroke(WorkingLayer)
+            .NewStroke()
+            .LayerAddStroke(WorkingLayer)
             .SetStrokeBrush(_brushE)
             .SetPolylineGeometry(geom)
             .Commit();
