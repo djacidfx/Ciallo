@@ -28,6 +28,7 @@ public class PaintInteractor : InteractiveSessionBase
             var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
             new CommandBuilder(Document.World.Create())
                 .NewBrush(setting).SetWorkingBrush().Commit();
+            AppBrushLibrary.SelectedIndex.Value = -1;
         }
         _brushE = Document.Get<SelectionManager>().WorkingBrush.Value;
 

@@ -178,6 +178,7 @@ public class PaintTool : ToolBase
             .NewBrush(setting)
             .SetWorkingBrush()
             .Commit();
+        AppBrushLibrary.SelectedIndex.Value = -1;
     }
 
     public override bool CanHandleLayer(params Entity[] layerEs)
