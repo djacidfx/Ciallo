@@ -15,11 +15,10 @@ using StateMachine = StateMachine<InteractiveSessionBase, StateMachineToolBase.T
 using StateConfiguration = StateMachine<InteractiveSessionBase, StateMachineToolBase.Trigger>.StateConfiguration;
 
 /// <summary>
-/// Work with InteractiveSessionBase to provide tool functionality.
+/// Create tool with state machine management.
 /// </summary>
 /// <remarks>
-/// Provide state machine management and input routing to the current interactive session.
-/// See stateless library https://github.com/dotnet-state-machine/stateless for the state machine api.
+/// See stateless library https://github.com/dotnet-state-machine/stateless for the state machine configuration api.
 /// </remarks>
 /// <remarks>
 /// By product design, all the interactions that involve active user input (not hover) should set key input as handled.
@@ -29,14 +28,20 @@ using StateConfiguration = StateMachine<InteractiveSessionBase, StateMachineTool
 /// Initial states are configured to refresh (call End then Start) when user undo/redo.
 /// Key design idea: The only source of data change when hovering is undo/redo, so refreshing the session can reduce mind burden.
 /// </remarks>
+/// <remarks>
+/// Prioity: State machine transit > Route to session
+/// Prioity of trigger: Godot action > Key > Mouse button.
+/// </remarks>
 public abstract partial class StateMachineToolBase : ITool
 {
+    public readonly StateMachine Machine = new(ToolInactive.Instance);
+
     public Entity Document
     {
-        get => _document;
+        get;
         init
         {
-            _document = value;
+            field = value;
             ConfigureStateMachine();
         }
     }
@@ -45,9 +50,9 @@ public abstract partial class StateMachineToolBase : ITool
     public SceneTree GetTree() => (SceneTree)Engine.GetMainLoop();
 
     private CursorButtonData _currentCursor;
-    private readonly HashSet<AppAction> _triggerActions = new();
-    public readonly StateMachine Machine = new(ToolInactive.Instance);
-    private readonly Entity _document;
+
+    private readonly HashSet<AppAction> _triggerActions = [];
+
     private IDisposable _commandManagerSub;
 
     protected StateMachineToolBase()
