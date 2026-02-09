@@ -11,8 +11,8 @@ using Stateless;
 
 namespace Ciallo.Tool;
 
-using StateMachine = StateMachine<InteractiveSessionBase, ToolBase.Trigger>;
-using StateConfiguration = StateMachine<InteractiveSessionBase, ToolBase.Trigger>.StateConfiguration;
+using StateMachine = StateMachine<InteractiveSessionBase, StateMachineToolBase.Trigger>;
+using StateConfiguration = StateMachine<InteractiveSessionBase, StateMachineToolBase.Trigger>.StateConfiguration;
 
 /// <summary>
 /// Work with InteractiveSessionBase to provide tool functionality.
@@ -29,7 +29,7 @@ using StateConfiguration = StateMachine<InteractiveSessionBase, ToolBase.Trigger
 /// Initial states are configured to refresh (call End then Start) when user undo/redo.
 /// Key design idea: The only source of data change when hovering is undo/redo, so refreshing the session can reduce mind burden.
 /// </remarks>
-public abstract partial class ToolBase : ITool
+public abstract partial class StateMachineToolBase : ITool
 {
     public Entity Document
     {
@@ -50,7 +50,7 @@ public abstract partial class ToolBase : ITool
     private readonly Entity _document;
     private IDisposable _commandManagerSub;
 
-    protected ToolBase()
+    protected StateMachineToolBase()
     {
         Machine.Configure(ToolInactive.Instance)
             .Permit(Trigger.Activate, ToolActive.Instance);

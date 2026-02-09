@@ -4,7 +4,7 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public abstract partial class ToolBase
+public abstract partial class StateMachineToolBase
 {
     public class Trigger
     {

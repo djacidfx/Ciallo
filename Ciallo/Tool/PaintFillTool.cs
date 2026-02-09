@@ -10,7 +10,7 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.PaintFill)]
-public partial class PaintFillTool : ToolBase
+public partial class PaintFillTool : StateMachineToolBase
 {
     public readonly ReactiveProperty<Color> Color = new(Colors.Black);
 
