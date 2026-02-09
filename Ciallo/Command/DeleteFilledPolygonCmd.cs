@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
 using Ciallo.Rendering;
@@ -10,24 +10,13 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class DeleteFilledPolygonCmd : CommandBase
 {
-    private Polygon2D _polygonView;
-    private PolylineWireframe _polygonOverlay;
-    private Body _polygonBody;
-    private FilledPolygonSetting _polygonSetting;
-
     private Entity _parentE; // layer entity
     private int _index = -1;
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
-    public override IEnumerable<GodotObject> UndoRefObjects => [_polygonView, _polygonOverlay, _polygonBody];
 
     public override void BeforeFirstDo(Entity polygonE)
     {
-        _polygonBody = polygonE.Get<Body>();
-        _polygonOverlay = polygonE.Get<PolylineWireframe>();
-        _polygonView = polygonE.Get<Polygon2D>();
-        _polygonSetting = polygonE.Get<FilledPolygonSetting>();
-
         _parentE = polygonE.Get<LayerTreeNode>().Parent;
         _index = _parentE.Get<LayerTreeNode>().FindPathTo(polygonE).Single();
     }
@@ -38,22 +27,17 @@ public class DeleteFilledPolygonCmd : CommandBase
         Document.Get<SelectionManager>().SelectedPolylines.Remove(polygonE);
 
         // Body
-        _polygonBody.RemoveFromParent();
-        polygonE.Remove<Body>();
+        polygonE.Get<Body>().RemoveFromParent();
 
         // Overlay
-        _polygonOverlay.RemoveFromParent();
-        polygonE.Remove<PolylineWireframe>();
+        polygonE.Get<PolylineWireframe>().RemoveFromParent();
 
         // View
-        _polygonView.RemoveFromParent();
-        polygonE.Remove<Polygon2D>();
+        polygonE.Get<Polygon2D>().RemoveFromParent();
 
         // Data
         _parentE.Get<LayerTreeNode>().RemoveChild(polygonE);
-        polygonE.Remove<FilledPolygonSetting>();
         polygonE.Detach<ToSerializeTag>();
-        // geometry objects to be deleted with entity itself.
     }
 
     public override void Undo(Entity polygonE)
@@ -61,22 +45,18 @@ public class DeleteFilledPolygonCmd : CommandBase
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();
         parentNode.InsertChild(_index, polygonE);
-        polygonE.Add(_polygonSetting);
         polygonE.Tag<ToSerializeTag>();
 
         // View
         var layerView = _parentE.Get<PolylineLayerView>();
-        layerView.InsertNodeAt(_polygonView, _index);
-        polygonE.Add(_polygonView);
+        layerView.InsertNodeAt(polygonE.Get<Polygon2D>(), _index);
 
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
-        worldOverlay.AddChild(_polygonOverlay);
-        polygonE.Add(_polygonOverlay);
+        worldOverlay.AddChild(polygonE.Get<PolylineWireframe>());
 
         // Body
         var areaHolder = _parentE.Get<PolylineBodyHolder>();
-        areaHolder.InsertNodeAt(_polygonBody, _index);
-        polygonE.Add(_polygonBody);
+        areaHolder.InsertNodeAt(polygonE.Get<Body>(), _index);
     }
 }

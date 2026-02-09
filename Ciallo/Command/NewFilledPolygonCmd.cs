@@ -29,6 +29,18 @@ public class NewFilledPolygonCmd : CommandBase
         polygonE.Add(new PolylineGeometry());
         polygonE.Add(_setting);
         _setting.RegisterProperties(CommandManager).AddTo(polygonE);
+
+        // View
+        var polygonView = new Polygon2D() { Antialiased = true }; // The antialiasing result is not satisfying
+        polygonE.AddNode(polygonView);
+
+        // Overlay
+        var overlay = new PolylineWireframe() { Visible = false };
+        polygonE.AddNode(overlay);
+
+        // Body
+        var polygonBody = new Body();
+        polygonE.AddNode(polygonBody);
     }
 
     public override void Do(Entity targetE)
@@ -41,41 +53,35 @@ public class NewFilledPolygonCmd : CommandBase
         _layerE.Get<LayerTreeNode>().AddChild(targetE);
 
         // View
-        var polygonView = new Polygon2D() { Antialiased = true }; // The antialiasing result is not satisfying
+        var polygonView = targetE.Get<Polygon2D>();
         var layerView = _layerE.Get<PolylineLayerView>();
         layerView.AddChild(polygonView);
-        targetE.Add(polygonView);
         polygonView.SetOwner(layerView.Owner);
 
         _setting.Color.Subscribe(polygonView.SetColor).AddTo(_subs);
 
         // Overlay
-        var overlay = new PolylineWireframe() { Visible = false };
+        var overlay = targetE.Get<PolylineWireframe>();
         Document.Get<WorldOverlay>().AddChild(overlay);
-        targetE.Add(overlay);
 
         // Body
-        var polygonBody = new Body();
+        var polygonBody = targetE.Get<Body>();
         _layerE.Get<PolylineBodyHolder>().AddChild(polygonBody);
-        targetE.Add(polygonBody);
     }
 
     public override void Undo(Entity targetE)
     {
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(targetE);
+
         // Body
-        targetE.Get<Body>().QueueFree();
-        targetE.Remove<Body>();
+        targetE.Get<Body>().RemoveFromParent();
 
         // Overlay
-        targetE.Get<PolylineWireframe>().QueueFree();
-        targetE.Remove<PolylineWireframe>();
+        targetE.Get<PolylineWireframe>().RemoveFromParent();
 
         // View
-        // Pitfall: godot can only handle simple polygon.
-        targetE.Get<Polygon2D>().QueueFree();
-        targetE.Remove<Polygon2D>();
+        targetE.Get<Polygon2D>().RemoveFromParent();
 
         // Data
         _layerE.Get<LayerTreeNode>().RemoveChild(^1);

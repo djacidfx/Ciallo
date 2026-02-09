@@ -144,8 +144,11 @@ public static class GodotNodeExtension
 public static class EntityNodeExtension
 {
     /// <summary>
-    /// Calling AddNode ensures that the node's lifecycle is tied to the entity's lifecycle.
+    /// Add node as a component of the entity, and automatically free the node when the entity is deleted.
     /// </summary>
+    /// <remarks>
+    /// Ensure the node's lifecycle is tied to the entity's lifecycle.
+    /// </remarks>
     public static void AddNode<T>(this Entity e, T node) where T : Node
     {
         e.Add(node);

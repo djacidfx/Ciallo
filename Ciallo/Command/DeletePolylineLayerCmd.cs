@@ -4,7 +4,6 @@ using Ciallo.Data;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
-using Godot;
 
 namespace Ciallo.Command;
 
@@ -15,11 +14,8 @@ public class DeletePolylineLayerCmd : CommandBase
     private int _index;
 
     private CommandBuilder _deleteChildrenCmd;
-    private PolylineLayerView _layerView;
-    private PolylineBodyHolder _bodyHolder;
 
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
-    public override IEnumerable<GodotObject> UndoRefObjects => [_layerView, _bodyHolder];
 
     public override void BeforeFirstDo(Entity layerE)
     {
@@ -35,9 +31,6 @@ public class DeletePolylineLayerCmd : CommandBase
             else
                 _deleteChildrenCmd.SetTarget(polylineE).DeleteFilledPolygon();
         }
-
-        _bodyHolder = layerE.Get<PolylineBodyHolder>();
-        _layerView = layerE.Get<PolylineLayerView>();
     }
 
     public override void Do(Entity layerE)
@@ -46,12 +39,10 @@ public class DeletePolylineLayerCmd : CommandBase
         _deleteChildrenCmd.Do();
 
         // Cursor detection
-        _bodyHolder.RemoveFromParent();
-        layerE.Remove<PolylineBodyHolder>();
+        layerE.Get<PolylineBodyHolder>().RemoveFromParent();
 
         // View
-        _layerView.RemoveFromParent();
-        layerE.Remove<PolylineLayerView>();
+        layerE.Get<PolylineLayerView>().RemoveFromParent();
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
@@ -75,13 +66,11 @@ public class DeletePolylineLayerCmd : CommandBase
 
         // View
         var worldView = Document.Get<WorldView>();
-        worldView.InsertNodeAt(_layerView, _index); // order matters
-        layerE.Add(_layerView);
+        worldView.InsertNodeAt(layerE.Get<PolylineLayerView>(), _index); // order matters
 
         // Body
         var worldArea = Document.Get<WorldBody>();
-        worldArea.AddChild(_bodyHolder);
-        layerE.Add(_bodyHolder);
+        worldArea.AddChild(layerE.Get<PolylineBodyHolder>());
 
         // Restore Children
         _deleteChildrenCmd.Undo();

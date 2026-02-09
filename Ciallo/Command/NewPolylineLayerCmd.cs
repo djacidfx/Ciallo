@@ -35,6 +35,14 @@ public class NewPolylineLayerCmd : CommandBase
         layerE.Add(_commonSetting);
         _commonSetting.RegisterProperties(Document.Get<CommandManager>()).AddTo(layerE);
         layerE.Add(_setting);
+
+        // View
+        var layerView = new PolylineLayerView();
+        layerE.AddNode(layerView);
+
+        // Body
+        var holder = new PolylineBodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
+        layerE.AddNode(holder);
     }
 
     public override void Do(Entity layerE)
@@ -53,27 +61,23 @@ public class NewPolylineLayerCmd : CommandBase
 
         // View
         var worldView = Document.Get<WorldView>();
-        var layerView = new PolylineLayerView();
+        var layerView = layerE.Get<PolylineLayerView>();
         worldView.AddChild(layerView);
-        layerE.Add(layerView);
         layerView.SetOwner(worldView);
         layerView.ObserveLayerSetting(_commonSetting).AddTo(_subs);
 
         // Body
-        var holder = new PolylineBodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
+        var holder = layerE.Get<PolylineBodyHolder>();
         Document.Get<WorldBody>().AddChild(holder);
-        layerE.Add(holder);
     }
 
     public override void Undo(Entity layerE)
     {
         // Body
-        layerE.Get<PolylineBodyHolder>().QueueFree();
-        layerE.Remove<PolylineBodyHolder>();
+        layerE.Get<PolylineBodyHolder>().RemoveFromParent();
 
         // View
-        layerE.Get<PolylineLayerView>().QueueFree();
-        layerE.Remove<PolylineLayerView>();
+        layerE.Get<PolylineLayerView>().RemoveFromParent();
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();

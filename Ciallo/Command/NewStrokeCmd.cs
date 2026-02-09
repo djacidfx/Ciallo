@@ -15,44 +15,31 @@ public class NewStrokeCmd : CommandBase
         strokeE.Add(new LayerTreeNode());
         strokeE.Add(new StrokeSetting());
         strokeE.Add(new PolylineGeometry());
-    }
-
-    public override void Do(Entity strokeE)
-    {
-        // Data
-        strokeE.Tag<ToSerializeTag>();
 
         // View
         var strokeView = new StrokeView()
         {
             Material = AutoloadRendering.MissingBrushMaterial,
         };
-        strokeE.Add(strokeView);
+        strokeE.AddNode(strokeView);
 
         // Overlay
         var strokeOverlay = new PolylineWireframe() { Visible = false };
-        strokeE.Add(strokeOverlay);
+        strokeE.AddNode(strokeOverlay);
 
         // Body
         var strokeBody = new Body();
-        strokeE.Add(strokeBody);
+        strokeE.AddNode(strokeBody);
+    }
+
+    public override void Do(Entity strokeE)
+    {
+        // Data
+        strokeE.Tag<ToSerializeTag>();
     }
 
     public override void Undo(Entity strokeE)
     {
-        // Body
-        strokeE.Get<Body>().QueueFree();
-        strokeE.Remove<Body>();
-
-        // Overlay
-        strokeE.Get<PolylineWireframe>().QueueFree();
-        strokeE.Remove<PolylineWireframe>();
-
-        // View
-        strokeE.Get<StrokeView>().QueueFree();
-        strokeE.Remove<StrokeView>();
-
-        // Data
         strokeE.Detach<ToSerializeTag>();
     }
 }
