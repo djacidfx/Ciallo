@@ -77,7 +77,7 @@ public static partial class AppDocumentManager
                     {
                         new CommandBuilder(resultWorld.Create())
                             .NewStroke()
-                            .LayerAddStroke(layerE)
+                            .AddToLayerTree(layerE)
                             .SetPolylineGeometry(geometry)
                             .SetStrokeBrush(brushMap[polylineDataE.Get<StrokeSetting>().BrushE])
                             .Do();

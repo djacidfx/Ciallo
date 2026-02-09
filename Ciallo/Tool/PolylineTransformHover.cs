@@ -133,7 +133,7 @@ public class PolylineTransformHover : InteractiveSessionBase
             var cmd = new CommandBuilder();
             foreach (var e in Document.Get<SelectionManager>().SelectedPolylines)
             {
-                cmd.SetTarget(e).LayerRemoveStroke().DeleteStroke();
+                cmd.SetTarget(e).RemoveFromLayerTree().DeleteStroke();
             }
             cmd.Commit();
             Restart(data);
