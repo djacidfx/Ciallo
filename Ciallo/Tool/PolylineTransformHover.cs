@@ -112,5 +112,34 @@ public class PolylineTransformHover : InteractiveSessionBase
 
         HoveredPolyline = Entity.Null;
     }
-    public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
+
+    public void Restart(CursorButtonData data)
+    {
+        Cancel();
+        Start(data);
+    }
+
+    public override bool OnKey(InputEventKey key, CursorButtonData data)
+    {
+        if (AppActions.CancelInteraction.IsJustPressed)
+        {
+            Document.Get<SelectionManager>().SelectedPolylines.Clear();
+            Restart(data);
+            return true;
+        }
+
+        if (AppActions.Delete.IsJustPressed)
+        {
+            var cmd = new CommandBuilder();
+            foreach (var e in Document.Get<SelectionManager>().SelectedPolylines)
+            {
+                cmd.SetTarget(e).LayerRemoveStroke().DeleteStroke();
+            }
+            cmd.Commit();
+            Restart(data);
+            return true;
+        }
+
+        return false;
+    }
 }
