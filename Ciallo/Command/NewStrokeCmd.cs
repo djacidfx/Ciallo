@@ -17,19 +17,16 @@ public class NewStrokeCmd : CommandBase
         strokeE.Add(new PolylineGeometry());
 
         // View
-        var strokeView = new StrokeView()
+        strokeE.AddNode(new StrokeView()
         {
             Material = AutoloadRendering.MissingBrushMaterial,
-        };
-        strokeE.AddNode(strokeView);
+        });
 
         // Overlay
-        var strokeOverlay = new PolylineWireframe() { Visible = false };
-        strokeE.AddNode(strokeOverlay);
+        strokeE.AddNode(new PolylineWireframe() { Visible = false });
 
         // Body
-        var strokeBody = new Body();
-        strokeE.AddNode(strokeBody);
+        strokeE.AddNode(new Body());
     }
 
     public override void Do(Entity strokeE)

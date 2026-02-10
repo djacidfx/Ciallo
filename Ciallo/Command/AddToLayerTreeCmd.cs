@@ -1,5 +1,4 @@
 using Ciallo.Data;
-using Ciallo.Rendering;
 using Frent;
 
 namespace Ciallo.Command;
@@ -26,18 +25,6 @@ public class AddToLayerTreeCmd : CommandBase
     {
         // Data
         _parentE.Get<LayerTreeNode>().InsertChild(_index, strokeE);
-
-        // View
-        var strokeView = strokeE.Get<StrokeView>();
-        var layerView = _parentE.Get<PolylineLayerView>();
-        layerView.InsertNodeAt(strokeView, _index);
-        strokeView.SetOwner(layerView.Owner);
-
-        // Overlay
-        Document.Get<WorldOverlay>().AddChild(strokeE.Get<PolylineWireframe>());
-
-        // Body
-        _parentE.Get<PolylineBodyHolder>().InsertNodeAt(strokeE.Get<Body>(), _index);
     }
 
     public override void Undo(Entity strokeE)
@@ -45,16 +32,6 @@ public class AddToLayerTreeCmd : CommandBase
         // Selection manager
         Document.Get<SelectionManager>().SelectedPolylines.Remove(strokeE);
 
-        // Body
-        strokeE.Get<Body>().RemoveFromParent();
-
-        // Overlay
-        strokeE.Get<PolylineWireframe>().RemoveFromParent();
-
-        // View
-        strokeE.Get<StrokeView>().RemoveFromParent();
-
-        // Data
-        _parentE.Get<LayerTreeNode>().RemoveChild(strokeE);
+        _parentE.Get<LayerTreeNode>().RemoveChild(_index);
     }
 }
