@@ -21,15 +21,15 @@ public partial class CommandManager : UndoRedo
     public void AddDo(CommandWrapperObject cmdWrapper)
     {
         AddDoMethod(new(cmdWrapper, CommandWrapperObject.MethodName.Do));
-        AddDoReference(cmdWrapper); // order matters, first add first delete
         AddDoReference(cmdWrapper.DoDeleter);
+        AddDoReference(cmdWrapper); // order matters, first add first delete
     }
 
     public void AddUndo(CommandWrapperObject cmdWrapper)
     {
         AddUndoMethod(new(cmdWrapper, CommandWrapperObject.MethodName.Undo));
-        AddUndoReference(cmdWrapper); // order matters
         AddUndoReference(cmdWrapper.UndoDeleter);
+        AddUndoReference(cmdWrapper); // order matters
     }
 
     public static bool SkipPropertyCommit = false; // not thread safe

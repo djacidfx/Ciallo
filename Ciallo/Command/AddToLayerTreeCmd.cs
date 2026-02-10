@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
@@ -16,8 +15,6 @@ public class AddToLayerTreeCmd : CommandBase
         _parentE = parentE;
         _index = index;
     }
-
-    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
 
     public override void BeforeFirstDo(Entity strokeE)
     {
