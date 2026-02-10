@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 using Frent;
 using Frent.Components;
 using ObservableCollections;
+using R3;
 
 namespace Ciallo.Data;
 
@@ -20,9 +21,9 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public Entity Self; // When this component is added to entity, assigned automatically.
     [DataMember] public Entity Parent;
     [DataMember(Name = "Children")] private readonly ObservableList<Entity> _children = [];
+    private readonly Subject<Unit> _childrenChanged = new();
 
     public IReadOnlyList<Entity> Children => _children;
-
     public int ChildCount => _children.Count;
     public int DescendantCount => CountSubtreeNodes((T)this) - 1;
     public bool IsLeaf => _children.Count == 0;
@@ -52,6 +53,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
         _children.Add(child);
         child.Get<T>().Parent = Self;
+        _childrenChanged.OnNext(Unit.Default);
     }
 
     public Entity GetChild(Index index) => _children[index];
@@ -61,13 +63,14 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
         _children.Insert(idx, child);
         child.Get<T>().Parent = Self;
+        _childrenChanged.OnNext(Unit.Default);
     }
 
     public void MoveChild(int srcIdx, int dstIdx)
     {
         var moving = _children[srcIdx];
-        _children.RemoveAt(srcIdx);
-        _children.Insert(dstIdx, moving);
+        _children.Move(srcIdx, dstIdx);
+        _childrenChanged.OnNext(Unit.Default);
         // Parent unchanged (same parent)
     }
 
@@ -77,6 +80,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         var removed = _children[i];
         _children.RemoveAt(i);
         removed.Get<T>().Parent = Entity.Null;
+        _childrenChanged.OnNext(Unit.Default);
         return removed;
     }
 
@@ -96,6 +100,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
                 child.Get<T>().Parent = Entity.Null;
         }
         _children.Clear();
+        _childrenChanged.OnNext(Unit.Default);
     }
 
     public void AddDescendant(IReadOnlyList<int> parentPath, Entity child)
@@ -112,10 +117,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public Entity RemoveDescendant(IReadOnlyList<int> targetPath)
     {
         var parentNode = GetDescendantNode(targetPath.SkipLast(1).ToArray());
-        var removed = parentNode._children[targetPath[^1]];
-        parentNode._children.RemoveAt(targetPath[^1]);
-        removed.Get<T>().Parent = Entity.Null;
-        return removed;
+        return parentNode.RemoveChild(targetPath[^1]);
     }
 
     /// <summary>
@@ -313,6 +315,60 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         foreach (var e in n._children)
             cnt += CountSubtreeNodes(e.Get<T>());
         return cnt;
+    }
+
+    #endregion
+
+    #region Observable
+
+    public Observable<CollectionAddEvent<Entity>> ObserveAdd()
+    {
+        return _children.ObserveAdd().Zip(_childrenChanged, static (@event, _) => @event);
+    }
+
+    public Observable<CollectionChangedEvent<Entity>> ObserveChanged()
+    {
+        return _children.ObserveChanged().Zip(_childrenChanged, static (@event, _) => @event);
+    }
+
+    public Observable<CollectionRemoveEvent<Entity>> ObserveRemove()
+    {
+        return _children.ObserveRemove().Zip(_childrenChanged, static (@event, _) => @event);
+    }
+
+    public Observable<CollectionReplaceEvent<Entity>> ObserveReplace()
+    {
+        return _children.ObserveReplace().Zip(_childrenChanged, static (@event, _) => @event);
+    }
+
+    public Observable<CollectionMoveEvent<Entity>> ObserveMove()
+    {
+        return _children.ObserveMove().Zip(_childrenChanged, static (@event, _) => @event);
+    }
+
+    public Observable<CollectionResetEvent<Entity>> ObserveReset()
+    {
+        return _children.ObserveReset().Zip(_childrenChanged, static (@event, _) => @event);
+    }
+
+    public Observable<Unit> ObserveClear()
+    {
+        return _children.ObserveClear().Zip(_childrenChanged, static (_, __) => Unit.Default);
+    }
+
+    public Observable<(int Index, int Count)> ObserveReverse()
+    {
+        return _children.ObserveReverse().Zip(_childrenChanged, static (@event, _) => @event);
+    }
+
+    public Observable<(int Index, int Count, IComparer<Entity> Comparer)> ObserveSort()
+    {
+        return _children.ObserveSort().Zip(_childrenChanged, static (@event, _) => @event);
+    }
+
+    public Observable<int> ObserveCountChanged(bool notifyCurrentCount = false)
+    {
+        return _children.ObserveCountChanged(notifyCurrentCount).Zip(_childrenChanged, static (count, _) => count);
     }
 
     #endregion

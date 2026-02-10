@@ -1,14 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.Serialization;
+using Frent;
+using ObservableCollections;
+using R3;
 
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
 public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
 {
-    public static int LayerCreationId = 0; 
+    public static int LayerCreationId = 0;
     /// <summary>
     /// Assume the given node is focused and going to be deleted, return the path to the next node that should have focus.
     /// e.g. Used at deletion of working layer to determine the new working layer.
@@ -51,4 +55,14 @@ public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
         // Fallback to parent
         return [..parentPath];
     }
+
+    // Hide ObserveReverse, Replace, Reset, Sort
+    [Obsolete("LayerTreeNode disallows ObserveReplace", error: true)]
+    public new Observable<CollectionReplaceEvent<Entity>> ObserveReplace() => throw new NotSupportedException();
+    [Obsolete("LayerTreeNode disallows ObserveReset", error: true)]
+    public new Observable<CollectionResetEvent<Entity>> ObserveReset() => throw new NotSupportedException();
+    [Obsolete("LayerTreeNode disallows ObserveReverse", error: true)]
+    public new Observable<(int Index, int Count)> ObserveReverse() => throw new NotSupportedException();
+    [Obsolete("LayerTreeNode disallows ObserveSort", error: true)]
+    public new Observable<(int Index, int Count, IComparer<Entity> Comparer)> ObserveSort() => throw new NotSupportedException();
 }
