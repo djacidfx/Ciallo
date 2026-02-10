@@ -36,7 +36,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public void Destroy()
     {
         // Remove from parent
-        if (!Parent.IsDeletedOrNull())
+        if (!Parent.IsDyingOrDead)
             Parent.Get<T>().RemoveChild(Self);
         Parent = Entity.Null;
 

@@ -79,7 +79,7 @@ public class PolylineTransformHover : InteractiveSessionBase
         // hover hinter
         _hoverSub = Document.Get<WorldBody>().HoveringBody.Skip(1).Subscribe(body =>
         {
-            if (!HoveredPolyline.IsDeletedOrNull()) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
+            if (!HoveredPolyline.IsDyingOrDead) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
             if (body == null)
             {
                 HoveredPolyline = Entity.Null;
@@ -104,7 +104,7 @@ public class PolylineTransformHover : InteractiveSessionBase
         _layerE.Get<PolylineBodyHolder>().SetAreaCursor(Control.CursorShape.Arrow);
 
         // overlays
-        if (!HoveredPolyline.IsDeletedOrNull()) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
+        if (!HoveredPolyline.IsDyingOrDead) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
         _wireframes.ForEach(node => node.QueueFree());
         _wireframes.Clear();
         _transformBox?.QueueFree();

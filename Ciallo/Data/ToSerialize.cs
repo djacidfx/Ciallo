@@ -21,19 +21,12 @@ public struct ToSerializeTag;
 
 public static class EntityExtension
 {
-    /// <summary>
-    /// Entity has been deleted by user or null.
-    /// </summary>
-    /// <remarks>
-    /// It may be deleted by undo stack or not.
-    /// </remarks>
-    public static bool IsDeletedOrNull(this Entity self)
+    extension(Entity self)
     {
-        return !self.IsAlive || !self.Tagged<ToSerializeTag>();
-    }
-
-    public static bool IsDocument(this Entity self)
-    {
-        return self.World.Document() == self;
+        /// <summary>
+        /// If entity has been deleted by user. It may or may not has been deleted by undo stack.
+        /// </summary>
+        public bool IsDyingOrDead => !self.IsAlive || !self.Tagged<ToSerializeTag>();
+        public bool IsDocument => self.World.Document() == self; // If entity is the singleton document entity.
     }
 }

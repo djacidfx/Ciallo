@@ -4,7 +4,6 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.GuiBinding;
-using Ciallo.Misc;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -51,7 +50,7 @@ public class PolylineTransformTool : StateMachineToolBase
         selectAllButton.Pressed += () =>
         {
             var layerE = selectionManager.WorkingLayer.Value;
-            if (layerE.IsDeletedOrNull()) return;
+            if (layerE.IsDyingOrDead) return;
             selectionManager.SelectedPolylines.Clear();
             selectionManager.SelectedPolylines.AddRange(layerE.Get<LayerTreeNode>().Children);
             Machine.Fire(Trigger.Refresh);
@@ -163,7 +162,7 @@ public class PolylineTransformTool : StateMachineToolBase
     {
         if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
-        return !e.IsDeletedOrNull() && e.Has<PolylineLayerSetting>();
+        return !e.IsDyingOrDead && e.Has<PolylineLayerSetting>();
     }
 
     public override void OnActivated()

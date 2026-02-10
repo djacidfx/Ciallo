@@ -53,6 +53,7 @@ public static partial class AppDocumentManager
         // Load layers and strokes
         var dataTreeRoot = dataDocument.Get<LayerTreeNode>();
         Dictionary<Entity, Entity> layerMap = [];
+        layerMap.Add(dataDocument, resultDocument); // documents are root layers
 
         foreach (var layerDataE in dataTreeRoot.Children)
         {

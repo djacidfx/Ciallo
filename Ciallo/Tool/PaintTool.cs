@@ -26,7 +26,7 @@ public class PaintTool : StateMachineToolBase
             .PermitIf(Press(MouseButton.Left), Left, () =>
             {
                 var brushE = Document.Get<SelectionManager>().WorkingBrush.Value;
-                return !brushE.IsDeletedOrNull() || AppBrushLibrary.HasSelection;
+                return !brushE.IsDyingOrDead || AppBrushLibrary.HasSelection;
             });
 
         Configure(Left)
@@ -148,7 +148,7 @@ public class PaintTool : StateMachineToolBase
         container.AddProperty("Brush in document", brushList);
 
         var rView = selectionM.WorkingBrush
-            .Select(e => e.IsDeletedOrNull() ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
+            .Select(e => e.IsDyingOrDead ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
         var radiusControl = new SpinSlider
         {
             MinValue = 0.1f,
@@ -185,6 +185,6 @@ public class PaintTool : StateMachineToolBase
     {
         if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
-        return !e.IsDeletedOrNull() && e.Has<PolylineLayerSetting>();
+        return !e.IsDyingOrDead && e.Has<PolylineLayerSetting>();
     }
 }

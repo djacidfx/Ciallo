@@ -221,7 +221,7 @@ public partial class LayerContainer : Container
     public void SetWorkingLayerNoSignal(Entity layerE)
     {
         _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
-        if (layerE.IsNull || layerE.IsDocument()) return;
+        if (layerE.IsNull || layerE.IsDocument) return;
         var layerControl = layerE.Get<LayerBlock>();
         var activeButton = layerControl.WorkingButton;
         // Warning note: button group will not be updated by `SetPressedNoSignal`.
