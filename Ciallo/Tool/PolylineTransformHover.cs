@@ -72,9 +72,7 @@ public class PolylineTransformHover : InteractiveSessionBase
         }
 
         // Enable cursor detections on polylines of working layer
-        _layerE = selectionManager.WorkingLayer.Value;
-        var holder = _layerE.Get<PolylineBodyHolder>();
-        holder.SetAreaCursor(Control.CursorShape.Move);
+        WorkingLayer.Get<PolylineBodyHolder>().SetAreaCursor(Control.CursorShape.Move);
 
         // hover hinter
         _hoverSub = Document.Get<WorldBody>().HoveringBody.Skip(1).Subscribe(body =>
@@ -101,7 +99,7 @@ public class PolylineTransformHover : InteractiveSessionBase
         Array.ForEach(CornerBodies, b => b.QueueFree());
         CornerBodies = [];
 
-        _layerE.Get<PolylineBodyHolder>().SetAreaCursor(Control.CursorShape.Arrow);
+        WorkingLayer.Get<PolylineBodyHolder>().SetAreaCursor(Control.CursorShape.Arrow);
 
         // overlays
         if (!HoveredPolyline.IsDyingOrDead) HoveredPolyline.Get<PolylineWireframe>().SetVisible(false);
