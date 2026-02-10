@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Frent;
 using Frent.Components;
+using ObservableCollections;
 
 namespace Ciallo.Data;
 
@@ -18,11 +19,13 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 {
     public Entity Self; // When this component is added to entity, assigned automatically.
     [DataMember] public Entity Parent;
-    [DataMember] public List<Entity> Children = [];
+    [DataMember(Name = "Children")] private readonly ObservableList<Entity> _children = [];
 
-    public int ChildCount => Children.Count;
+    public IReadOnlyList<Entity> Children => _children;
+
+    public int ChildCount => _children.Count;
     public int DescendantCount => CountSubtreeNodes((T)this) - 1;
-    public bool IsLeaf => Children.Count == 0;
+    public bool IsLeaf => _children.Count == 0;
 
     public void Init(Entity self)
     {
@@ -35,18 +38,10 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         // Remove from parent
         if (!Parent.IsDeletedOrNull())
             Parent.Get<T>().RemoveChild(Self);
-
-        // Detach all children
-        foreach (var child in Children)
-        {
-            if (child.IsDeletedOrNull()) continue;
-            // Clear parent reference before removing component
-            child.Get<T>().Parent = Entity.Null;
-            child.Remove<T>();
-        }
-
-        Children.Clear();
         Parent = Entity.Null;
+
+        RemoveAllChildren();
+
         Self = Entity.Null;
     }
 
@@ -55,42 +50,52 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public void AddChild(Entity child)
     {
         if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
-        Children.Add(child);
+        _children.Add(child);
         child.Get<T>().Parent = Self;
     }
 
-    public Entity GetChild(Index index) => Children[index];
+    public Entity GetChild(Index index) => _children[index];
 
     public void InsertChild(int idx, Entity child)
     {
         if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
-        Children.Insert(idx, child);
+        _children.Insert(idx, child);
         child.Get<T>().Parent = Self;
     }
 
     public void MoveChild(int srcIdx, int dstIdx)
     {
-        var moving = Children[srcIdx];
-        Children.RemoveAt(srcIdx);
-        Children.Insert(dstIdx, moving);
+        var moving = _children[srcIdx];
+        _children.RemoveAt(srcIdx);
+        _children.Insert(dstIdx, moving);
         // Parent unchanged (same parent)
     }
 
-    public void RemoveChild(Index idx)
+    public Entity RemoveChild(Index idx)
     {
-        int i = idx.GetOffset(Children.Count);
-        var removed = Children[i];
-        Children.RemoveAt(i);
+        int i = idx.GetOffset(_children.Count);
+        var removed = _children[i];
+        _children.RemoveAt(i);
         removed.Get<T>().Parent = Entity.Null;
+        return removed;
     }
 
     public int RemoveChild(Entity child)
     {
-        int idx = Children.IndexOf(child);
+        int idx = _children.IndexOf(child);
         if (idx < 0) throw new ArgumentException("The specified entity is not a child of this node.");
-        Children.RemoveAt(idx);
-        child.Get<T>().Parent = Entity.Null;
+        RemoveChild(idx);
         return idx;
+    }
+
+    public void RemoveAllChildren()
+    {
+        foreach (var child in _children)
+        {
+            if (child.IsAlive)
+                child.Get<T>().Parent = Entity.Null;
+        }
+        _children.Clear();
     }
 
     public void AddDescendant(IReadOnlyList<int> parentPath, Entity child)
@@ -107,8 +112,8 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public Entity RemoveDescendant(IReadOnlyList<int> targetPath)
     {
         var parentNode = GetDescendantNode(targetPath.SkipLast(1).ToArray());
-        var removed = parentNode.Children[targetPath[^1]];
-        parentNode.Children.RemoveAt(targetPath[^1]);
+        var removed = parentNode._children[targetPath[^1]];
+        parentNode._children.RemoveAt(targetPath[^1]);
         removed.Get<T>().Parent = Entity.Null;
         return removed;
     }
@@ -124,7 +129,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         var srcParentPath = srcPath.SkipLast(1).ToArray();
         var srcParent = GetDescendantNode(srcParentPath);
         int srcIdx = srcPath[^1];
-        var moving = srcParent.Children[srcIdx];
+        var moving = srcParent._children[srcIdx];
 
         // Resolve destination parent and insertion index before mutating the tree
         var dstParentPath = dstPath.SkipLast(1).ToArray();
@@ -170,22 +175,22 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public Entity GetDescendant([NotNull] IReadOnlyList<int> path)
     {
         if (path.Count == 0) throw new ArgumentException("Path cannot be empty.", nameof(path));
-        if (path.Count == 1) return Children[path[0]];
-        return Children[path[0]].Get<T>().GetDescendant(path.Skip(1).ToArray());
+        if (path.Count == 1) return _children[path[0]];
+        return _children[path[0]].Get<T>().GetDescendant(path.Skip(1).ToArray());
     }
 
     public T GetDescendantNode([NotNull] IReadOnlyList<int> path)
     {
         if (path.Count == 0) return (T)this;
-        return Children[path[0]].Get<T>().GetDescendantNode(path.Skip(1).ToArray());
+        return _children[path[0]].Get<T>().GetDescendantNode(path.Skip(1).ToArray());
     }
 
     public T GetNodeOrNull([NotNull] IReadOnlyList<int> path)
     {
         if (path.Count == 0) return (T)this;
         int idx = path[0];
-        if (idx < 0 || idx >= Children.Count) return null;
-        var childNode = Children[idx].Get<T>();
+        if (idx < 0 || idx >= _children.Count) return null;
+        var childNode = _children[idx].Get<T>();
         return childNode.GetNodeOrNull(path.Skip(1).ToArray());
     }
 
@@ -216,12 +221,12 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
             return [];
         }
 
-        var childNodes = node.Children.Select(e => e.Get<T>()).ToList();
+        var childNodes = node._children.Select(e => e.Get<T>()).ToList();
         var index = childNodes.IndexOf(targetNode);
         if (index >= 0) // found
         {
             path = [index];
-            return [node.Children[index]];
+            return [node._children[index]];
         }
 
         // not found, searching in children branches
@@ -230,7 +235,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
             var ePath = BreadthFirstSearch(childNode, targetNode, out path);
             if (path == null) continue;
             path.Insert(0, i);
-            ePath.Insert(0, node.Children[i]);
+            ePath.Insert(0, node._children[i]);
             return ePath;
         }
 
@@ -253,7 +258,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 
         bool Dfs(T node)
         {
-            for (int i = 0; i < node.Children.Count; i++)
+            for (int i = 0; i < node._children.Count; i++)
             {
                 // Visit this child.
                 path.Add(i);
@@ -261,7 +266,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
                 remaining--;
 
                 // Traverse its subtree in preorder.
-                var childNode = node.Children[i].Get<T>();
+                var childNode = node._children[i].Get<T>();
                 if (Dfs(childNode)) return true;
 
                 // Backtrack and continue with next sibling.
@@ -291,11 +296,11 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         {
             int idx = path[depth];
             for (int i = 0; i < idx; i++)
-                index += CountSubtreeNodes(node.Children[i].Get<T>());
+                index += CountSubtreeNodes(node._children[i].Get<T>());
 
             if (depth > 0) index++;
 
-            node = node.Children[idx].Get<T>();
+            node = node._children[idx].Get<T>();
         }
 
         return index;
@@ -305,7 +310,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public static int CountSubtreeNodes(T n)
     {
         int cnt = 1;
-        foreach (var e in n.Children)
+        foreach (var e in n._children)
             cnt += CountSubtreeNodes(e.Get<T>());
         return cnt;
     }

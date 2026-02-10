@@ -3,7 +3,8 @@ using System.Collections.Generic;
 using Godot;
 using R3;
 
-namespace Ciallo.Misc;
+// ReSharper disable once CheckNamespace
+namespace Ciallo;
 
 public static class GodotControlExtension
 {

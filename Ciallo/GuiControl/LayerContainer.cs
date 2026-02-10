@@ -4,7 +4,6 @@ using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.GuiBinding;
-using Ciallo.Misc;
 using Ciallo.Widget;
 using Frent;
 using Godot;
