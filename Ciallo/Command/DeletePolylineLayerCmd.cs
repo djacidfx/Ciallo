@@ -14,8 +14,8 @@ public class DeletePolylineLayerCmd : CommandBase
     private int _index;
 
     private CommandBuilder _deleteChildrenCmd;
-
-    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
+    private readonly List<Entity> _deletedEntities = [];
+    public override IEnumerable<Entity> UndoRefEntities => _deletedEntities;
 
     public override void BeforeFirstDo(Entity layerE)
     {
@@ -23,9 +23,11 @@ public class DeletePolylineLayerCmd : CommandBase
         _parentE = node.Parent;
         _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(layerE);
 
+        _deletedEntities.Add(layerE);
         _deleteChildrenCmd = new CommandBuilder();
         foreach (var polylineE in node.Children.AsEnumerable().Reverse())
         {
+            _deletedEntities.Add(polylineE);
             if (polylineE.Has<StrokeSetting>())
                 _deleteChildrenCmd.SetTarget(polylineE).RemoveFromLayerTree().DeleteStroke();
             else
@@ -69,8 +71,8 @@ public class DeletePolylineLayerCmd : CommandBase
         worldView.InsertNodeAt(layerE.Get<PolylineLayerView>(), _index); // order matters
 
         // Body
-        var worldArea = Document.Get<WorldBody>();
-        worldArea.AddChild(layerE.Get<PolylineBodyHolder>());
+        var worldBody = Document.Get<WorldBody>();
+        worldBody.AddChild(layerE.Get<PolylineBodyHolder>());
 
         // Restore Children
         _deleteChildrenCmd.Undo();

@@ -28,7 +28,6 @@ public class PolylineTransformHover : InteractiveSessionBase
     }
 
     private IDisposable _hoverSub;
-    private Entity _layerE;
     private TransformOverlayBox _transformBox;
     private List<Entity> _polylineEs;
     private readonly List<Node2D> _wireframes = [];
