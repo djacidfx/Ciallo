@@ -11,28 +11,28 @@ public class NewStrokeCmd : CommandBase
 {
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public override void BeforeFirstDo(Entity strokeE)
+    public override void BeforeFirstDo(Entity targetE)
     {
         // Data
         var layerNode = new LayerTreeNode();
-        strokeE.Add(layerNode);
-        strokeE.Add(new StrokeSetting());
-        strokeE.Add(new PolylineGeometry());
+        targetE.Add(layerNode);
+        targetE.Add(new StrokeSetting());
+        targetE.Add(new PolylineGeometry());
 
         // View
         var strokeView = new StrokeView()
         {
             Material = AutoloadRendering.MissingBrushMaterial,
         };
-        strokeE.AddNode(strokeView);
+        targetE.AddNode(strokeView);
 
         // Overlay
         var strokeWireframe = new PolylineWireframe() { Visible = false };
-        strokeE.AddNode(strokeWireframe);
+        targetE.AddNode(strokeWireframe);
 
         // Body
         var strokeBody = new Body();
-        strokeE.AddNode(strokeBody);
+        targetE.AddNode(strokeBody);
 
         // Layer tree events
         layerNode.TreeEntered.Subscribe(et =>
@@ -40,18 +40,18 @@ public class NewStrokeCmd : CommandBase
             (int index, var layerE) = (et.Index, et.Value);
 
             OnAdd(layerE, index);
-        }).AddTo(strokeE);
+        }).AddTo(targetE);
 
         layerNode.TreeExited.Subscribe(_ =>
         {
             OnRemove();
-        }).AddTo(strokeE);
+        }).AddTo(targetE);
 
         layerNode.Moved.Subscribe(et =>
         {
             OnRemove();
             OnAdd(et.Value, et.NewIndex);
-        });
+        }).AddTo(targetE);
         return;
 
         void OnAdd(Entity layerE, int index)
@@ -81,13 +81,13 @@ public class NewStrokeCmd : CommandBase
         }
     }
 
-    public override void Do(Entity strokeE)
+    public override void Do(Entity targetE)
     {
-        strokeE.Tag<ToSerializeTag>();
+        targetE.Tag<ToSerializeTag>();
     }
 
-    public override void Undo(Entity strokeE)
+    public override void Undo(Entity targetE)
     {
-        strokeE.Detach<ToSerializeTag>();
+        targetE.Detach<ToSerializeTag>();
     }
 }

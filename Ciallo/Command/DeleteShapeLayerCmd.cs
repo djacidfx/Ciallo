@@ -27,11 +27,8 @@ public class DeleteShapeLayerCmd : CommandBase
         _deleteChildrenCmd = new CommandBuilder();
         foreach (var shapeE in node.Children.AsEnumerable().Reverse())
         {
+            _deleteChildrenCmd.SetTarget(shapeE).RemoveFromLayerTree().DeleteShape();
             _deletedEntities.Add(shapeE);
-            if (shapeE.Has<StrokeSetting>())
-                _deleteChildrenCmd.SetTarget(shapeE).RemoveFromLayerTree().DeleteShape();
-            else
-                _deleteChildrenCmd.SetTarget(shapeE).DeleteFilledPolygon();
         }
     }
 

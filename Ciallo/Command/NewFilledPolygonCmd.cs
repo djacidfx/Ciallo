@@ -15,78 +15,86 @@ public class NewFilledPolygonCmd : CommandBase
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    private CompositeDisposable _subs;
-
     public NewFilledPolygonCmd(Entity layerE, FilledPolygonSetting setting = null)
     {
         _layerE = layerE;
         _setting = setting ?? new FilledPolygonSetting();
     }
 
-    public override void BeforeFirstDo(Entity polygonE)
+    public override void BeforeFirstDo(Entity targetE)
     {
-        polygonE.Add(new LayerTreeNode());
-        polygonE.Add(new PolylineGeometry());
-        polygonE.Add(_setting);
-        _setting.RegisterProperties(CommandManager).AddTo(polygonE);
+        var layerNode = new LayerTreeNode();
+        targetE.Add(layerNode);
+        targetE.Add(new PolylineGeometry());
+        targetE.Add(_setting);
+        _setting.RegisterProperties(CommandManager).AddTo(targetE);
 
         // View
         var polygonView = new Polygon2D() { Antialiased = true }; // The antialiasing result is not satisfying
-        polygonE.AddNode(polygonView);
+        targetE.AddNode(polygonView);
+        _setting.Color.Subscribe(polygonView.SetColor).AddTo(targetE);
 
         // Overlay
         var overlay = new PolylineWireframe() { Visible = false };
-        polygonE.AddNode(overlay);
+        targetE.AddNode(overlay);
 
         // Body
         var polygonBody = new Body();
-        polygonE.AddNode(polygonBody);
+        targetE.AddNode(polygonBody);
+
+        // Layer tree events
+        layerNode.TreeEntered.Subscribe(et =>
+        {
+            (int index, var layerE) = (et.Index, et.Value);
+            OnAdd(layerE, index);
+        }).AddTo(targetE);
+
+        layerNode.TreeExited.Subscribe(_ => OnRemove()).AddTo(targetE);
+
+        layerNode.Moved.Subscribe(et =>
+        {
+            OnRemove();
+            OnAdd(et.Value, et.NewIndex);
+        }).AddTo(targetE);
+
+        return;
+
+        void OnAdd(Entity layerE, int index)
+        {
+            // View
+            var layerView = layerE.Get<ShapeLayerView>();
+            layerView.InsertNodeAt(polygonView, index);
+            polygonView.SetOwner(layerView.Owner);
+
+            // Overlay
+            Document.Get<WorldOverlay>().AddChild(overlay);
+
+            // Body
+            layerE.Get<ShapeBodyHolder>().InsertNodeAt(polygonBody, index);
+        }
+
+        void OnRemove()
+        {
+            // Body
+            polygonBody.RemoveFromParent();
+
+            // Overlay
+            overlay.RemoveFromParent();
+
+            // View
+            polygonView.RemoveFromParent();
+        }
     }
 
     public override void Do(Entity targetE)
     {
-        _subs = new();
-        _subs.AddTo(targetE);
-
-        // Data
         targetE.Tag<ToSerializeTag>();
-        _layerE.Get<LayerTreeNode>().AddChild(targetE);
-
-        // View
-        var polygonView = targetE.Get<Polygon2D>();
-        var layerView = _layerE.Get<ShapeLayerView>();
-        layerView.AddChild(polygonView);
-        polygonView.SetOwner(layerView.Owner);
-
-        _setting.Color.Subscribe(polygonView.SetColor).AddTo(_subs);
-
-        // Overlay
-        var overlay = targetE.Get<PolylineWireframe>();
-        Document.Get<WorldOverlay>().AddChild(overlay);
-
-        // Body
-        var polygonBody = targetE.Get<Body>();
-        _layerE.Get<ShapeBodyHolder>().AddChild(polygonBody);
     }
 
     public override void Undo(Entity targetE)
     {
-        // Selection manager
         Document.Get<SelectionManager>().SelectedShapes.Remove(targetE);
 
-        // Body
-        targetE.Get<Body>().RemoveFromParent();
-
-        // Overlay
-        targetE.Get<PolylineWireframe>().RemoveFromParent();
-
-        // View
-        targetE.Get<Polygon2D>().RemoveFromParent();
-
-        // Data
-        _layerE.Get<LayerTreeNode>().RemoveChild(^1);
         targetE.Detach<ToSerializeTag>();
-
-        _subs.Dispose();
     }
 }
