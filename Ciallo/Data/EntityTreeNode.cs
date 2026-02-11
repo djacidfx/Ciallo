@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Frent;
 using Frent.Components;
-using ObservableCollections;
 using R3;
 
 namespace Ciallo.Data;
@@ -20,9 +19,16 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 {
     public Entity Self; // When this component is added to entity, assigned automatically.
     [DataMember] public Entity Parent;
-    [DataMember(Name = "Children")] private readonly ObservableList<Entity> _children = [];
+    [DataMember(Name = "Children")] private readonly List<Entity> _children = [];
 
-    private readonly Subject<Unit> _childrenChanged = new();
+    private readonly Subject<TreeMutationEvent> _localMutations = new(); // local node events
+    private readonly Subject<TreeMutationEvent> _mutations = new(); // include events from descendants
+    private readonly Subject<TreeNodeAddChildEvent> _add = new();
+    private readonly Subject<TreeNodeRemoveChildEvent> _remove = new();
+    private readonly Subject<TreeNodeMoveChildEvent> _move = new();
+    private readonly Subject<Unit> _clear = new();
+    private readonly Subject<int> _countChanged = new();
+
     public readonly Subject<(Entity, int)> TreeEntered = new(); // Parent, index in the parent
     public readonly Subject<Unit> TreeExiting = new();
     public readonly Subject<Unit> TreeExited = new();
@@ -31,6 +37,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public IReadOnlyList<Entity> Children => _children;
     public int DescendantCount => CountSubtreeNodes((T)this) - 1;
     public bool IsLeaf => _children.Count == 0;
+    public bool IsRoot => !Parent.IsNull;
 
     public void Init(Entity self)
     {
@@ -40,13 +47,10 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 
     public void Destroy()
     {
-        // Remove from parent
         if (!Parent.IsDyingOrDead)
             Parent.Get<T>().RemoveChild(Self);
         Parent = Entity.Null;
-
-        RemoveAllChildren();
-
+        _children.Clear();
         Self = Entity.Null;
     }
 
@@ -54,10 +58,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 
     public void AddChild(Entity child)
     {
-        if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
-        _children.Add(child);
-        child.Get<T>().Parent = Self;
-        _childrenChanged.OnNext(Unit.Default);
+        InsertChild(_children.Count, child);
     }
 
     public Entity GetChild(Index index) => _children[index];
@@ -65,28 +66,55 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public void InsertChild(int idx, Entity child)
     {
         if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
-        _children.Insert(idx, child);
+        if (idx < 0 || idx > _children.Count) throw new ArgumentOutOfRangeException(nameof(idx));
+        if (child.Equals(Self)) throw new InvalidOperationException("Cannot insert self as child.");
+
         var childNode = child.Get<T>();
+        var oldParent = childNode.Parent;
+        if (!oldParent.IsNull) throw new InvalidOperationException("Node already has a parent.");
+
+        _children.Insert(idx, child);
         childNode.Parent = Self;
-        childNode.TreeEntered.OnNext((Self, idx));
-        _childrenChanged.OnNext(Unit.Default);
+
+        var mutation = new TreeMutationEvent(TreeMutationKind.Insert, child, Entity.Null, -1, Self, idx);
+        PublishLocalMutation(mutation);
+
+        _add.OnNext(new TreeNodeAddChildEvent(idx, child));
+        _countChanged.OnNext(_children.Count);
     }
 
     public void MoveChild(int srcIdx, int dstIdx)
     {
-        var movingE = _children[srcIdx];
-        _children.Move(srcIdx, dstIdx);
-        movingE.Get<T>().Moved.OnNext((srcIdx, dstIdx));
-        _childrenChanged.OnNext(Unit.Default);
+        if (srcIdx < 0 || srcIdx >= _children.Count) throw new ArgumentOutOfRangeException(nameof(srcIdx));
+        if (dstIdx < 0 || dstIdx >= _children.Count) throw new ArgumentOutOfRangeException(nameof(dstIdx));
+        if (srcIdx == dstIdx) return;
+
+        var moving = _children[srcIdx];
+        _children.RemoveAt(srcIdx);
+        if (dstIdx > srcIdx) dstIdx--;
+        _children.Insert(dstIdx, moving);
+        var mutation = new TreeMutationEvent(TreeMutationKind.Move, moving, Self, srcIdx, Self, dstIdx);
+        PublishLocalMutation(mutation);
+
+        _move.OnNext(new TreeNodeMoveChildEvent(srcIdx, dstIdx, moving));
     }
 
     public Entity RemoveChild(Index idx)
     {
         int i = idx.GetOffset(_children.Count);
+        if (i < 0 || i >= _children.Count) throw new ArgumentOutOfRangeException(nameof(idx));
+
         var removed = _children[i];
         _children.RemoveAt(i);
-        removed.Get<T>().Parent = Entity.Null;
-        _childrenChanged.OnNext(Unit.Default);
+
+        if (removed.IsAlive)
+            removed.Get<T>().Parent = Entity.Null;
+
+        var mutation = new TreeMutationEvent(TreeMutationKind.Remove, removed, Self, i, Entity.Null, -1);
+        PublishLocalMutation(mutation);
+
+        _remove.OnNext(new TreeNodeRemoveChildEvent(i, removed));
+        _countChanged.OnNext(_children.Count);
         return removed;
     }
 
@@ -100,13 +128,13 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 
     public void RemoveAllChildren()
     {
-        foreach (var child in _children)
-        {
-            if (child.IsAlive)
-                child.Get<T>().Parent = Entity.Null;
-        }
-        _children.Clear();
-        _childrenChanged.OnNext(Unit.Default);
+        if (_children.Count == 0) return;
+
+        while (_children.Count > 0)
+            RemoveChild(^1);
+
+        PublishLocalMutation(new TreeMutationEvent(TreeMutationKind.Clear, Entity.Null, Self, -1, Entity.Null, -1));
+        _clear.OnNext(Unit.Default);
     }
 
     public void AddDescendant(IReadOnlyList<int> parentPath, Entity child)
@@ -211,7 +239,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 
     #endregion
 
-    #region utility
+    #region Utility
 
     /// <summary>
     /// Breadth first search for the entity.
@@ -325,56 +353,58 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 
     #endregion
 
-    #region Observable
+    #region Event
 
-    public Observable<CollectionAddEvent<Entity>> ObserveAdd()
+    private void PublishLocalMutation(TreeMutationEvent mutation)
     {
-        return _children.ObserveAdd().Zip(_childrenChanged, static (@event, _) => @event);
+        _localMutations.OnNext(mutation);
+        ApplyLifecycleSignalsFromMutation(mutation);
+
+        BubbleMutation(mutation);
     }
 
-    public Observable<CollectionChangedEvent<Entity>> ObserveChanged()
+    private void BubbleMutation(TreeMutationEvent mutation)
     {
-        return _children.ObserveChanged().Zip(_childrenChanged, static (@event, _) => @event);
+        _mutations.OnNext(mutation);
+
+        if (Parent.IsNull || !Parent.IsAlive)
+            return;
+
+        Parent.Get<T>().BubbleMutation(mutation);
     }
 
-    public Observable<CollectionRemoveEvent<Entity>> ObserveRemove()
+    private static void ApplyLifecycleSignalsFromMutation(TreeMutationEvent mutation)
     {
-        return _children.ObserveRemove().Zip(_childrenChanged, static (@event, _) => @event);
+        if (mutation.Node.IsNull || !mutation.Node.IsAlive || !mutation.Node.Has<T>())
+            return;
+
+        var node = mutation.Node.Get<T>();
+        switch (mutation.Kind)
+        {
+            case TreeMutationKind.Insert:
+                node.TreeEntered.OnNext((mutation.NewParent, mutation.NewIndex));
+                break;
+            case TreeMutationKind.Remove:
+                node.TreeExiting.OnNext(Unit.Default);
+                node.TreeExited.OnNext(Unit.Default);
+                break;
+            case TreeMutationKind.Move:
+                node.Moved.OnNext((mutation.OldIndex, mutation.NewIndex));
+                break;
+        }
     }
 
-    public Observable<CollectionReplaceEvent<Entity>> ObserveReplace()
+    public Observable<TreeMutationEvent> ObserveMutation(bool includeDescendants = false)
     {
-        return _children.ObserveReplace().Zip(_childrenChanged, static (@event, _) => @event);
+        return includeDescendants ? _mutations : _localMutations;
     }
-
-    public Observable<CollectionMoveEvent<Entity>> ObserveMove()
+    public Observable<TreeNodeAddChildEvent> ObserveAddChild() => _add;
+    public Observable<TreeNodeRemoveChildEvent> ObserveRemoveChild() => _remove;
+    public Observable<TreeNodeMoveChildEvent> ObserveMoveChild() => _move;
+    public Observable<Unit> ObserveClearChildren() => _clear;
+    public Observable<int> ObserveChildCountChanged(bool notifyCurrentCount = false)
     {
-        return _children.ObserveMove().Zip(_childrenChanged, static (@event, _) => @event);
-    }
-
-    public Observable<CollectionResetEvent<Entity>> ObserveReset()
-    {
-        return _children.ObserveReset().Zip(_childrenChanged, static (@event, _) => @event);
-    }
-
-    public Observable<Unit> ObserveClear()
-    {
-        return _children.ObserveClear().Zip(_childrenChanged, static (_, __) => Unit.Default);
-    }
-
-    public Observable<(int Index, int Count)> ObserveReverse()
-    {
-        return _children.ObserveReverse().Zip(_childrenChanged, static (@event, _) => @event);
-    }
-
-    public Observable<(int Index, int Count, IComparer<Entity> Comparer)> ObserveSort()
-    {
-        return _children.ObserveSort().Zip(_childrenChanged, static (@event, _) => @event);
-    }
-
-    public Observable<int> ObserveCountChanged(bool notifyCurrentCount = false)
-    {
-        return _children.ObserveCountChanged(notifyCurrentCount).Zip(_childrenChanged, static (count, _) => count);
+        return notifyCurrentCount ? _countChanged.Prepend(_children.Count) : _countChanged;
     }
 
     #endregion
