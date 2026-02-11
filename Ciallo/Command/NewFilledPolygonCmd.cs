@@ -54,7 +54,7 @@ public class NewFilledPolygonCmd : CommandBase
 
         // View
         var polygonView = targetE.Get<Polygon2D>();
-        var layerView = _layerE.Get<PolylineLayerView>();
+        var layerView = _layerE.Get<ShapeLayerView>();
         layerView.AddChild(polygonView);
         polygonView.SetOwner(layerView.Owner);
 
@@ -66,13 +66,13 @@ public class NewFilledPolygonCmd : CommandBase
 
         // Body
         var polygonBody = targetE.Get<Body>();
-        _layerE.Get<PolylineBodyHolder>().AddChild(polygonBody);
+        _layerE.Get<ShapeBodyHolder>().AddChild(polygonBody);
     }
 
     public override void Undo(Entity targetE)
     {
         // Selection manager
-        Document.Get<SelectionManager>().SelectedPolylines.Remove(targetE);
+        Document.Get<SelectionManager>().SelectedShapes.Remove(targetE);
 
         // Body
         targetE.Get<Body>().RemoveFromParent();

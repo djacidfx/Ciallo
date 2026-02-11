@@ -23,7 +23,7 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
 
         _dashPreview = new StrokeView();
         _dashPreview.Material = AutoloadRendering.DashWireframeMaterial;
-        var layerView = WorkingLayer.Get<PolylineLayerView>();
+        var layerView = WorkingLayer.Get<ShapeLayerView>();
         layerView.AddChild(_dashPreview);
     }
 

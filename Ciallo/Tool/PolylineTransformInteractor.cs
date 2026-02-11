@@ -25,27 +25,27 @@ public class PolylineTransformInteractor : InteractiveSessionBase
 
     public override void BeforeSrcEnd(InteractiveSessionBase session)
     {
-        if (session is not PolylineTransformHover hover) return;
+        if (session is not ShapeTransformHover hover) return;
 
-        bool polylineHovered = !hover.HoveredPolyline.IsNull;
+        bool shapeHovered = !hover.HoveredShape.IsNull;
         bool rotationDotHovered = hover.RotationBody?.IsHovered == true;
         bool cornerDotsHovered = hover.CornerBodies.Any(a => a.IsHovered);
 
         var selectionManager = Document.Get<SelectionManager>();
-        if (polylineHovered && Input.IsKeyPressed(Key.Shift))
+        if (shapeHovered && Input.IsKeyPressed(Key.Shift))
         {
-            var hoverE = hover.HoveredPolyline;
-            if (!selectionManager.SelectedPolylines.Remove(hoverE))
-                selectionManager.SelectedPolylines.Add(hoverE);
+            var hoverE = hover.HoveredShape;
+            if (!selectionManager.SelectedShapes.Remove(hoverE))
+                selectionManager.SelectedShapes.Add(hoverE);
             _transformType = 0;
         }
-        if (polylineHovered)
+        if (shapeHovered)
         {
-            var hoverE = hover.HoveredPolyline;
-            if (!selectionManager.SelectedPolylines.Contains(hoverE))
+            var hoverE = hover.HoveredShape;
+            if (!selectionManager.SelectedShapes.Contains(hoverE))
             {
-                selectionManager.SelectedPolylines.Clear();
-                selectionManager.SelectedPolylines.Add(hoverE);
+                selectionManager.SelectedShapes.Clear();
+                selectionManager.SelectedShapes.Add(hoverE);
             }
             _transformType = 0;
         }
@@ -61,7 +61,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
 
     public override void Start(CursorButtonData data)
     {
-        _processingEs = Document.Get<SelectionManager>().SelectedPolylines.ToArray();
+        _processingEs = Document.Get<SelectionManager>().SelectedShapes.ToArray();
         _currTransform = Transform2D.Identity;
         _currPositions = new Vector2[_processingEs.Length][];
         foreach (var (i, e) in _processingEs.Index())

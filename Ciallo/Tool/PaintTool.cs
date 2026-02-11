@@ -114,14 +114,14 @@ public class PaintTool : StateMachineToolBase
             if ((MouseButton)buttonIndex != MouseButton.Right) return;
             var brushE = Document.Get<BrushManager>().Brushes[(int)idx];
             var query = brushE.World.CreateQuery().With<StrokeSetting>().Build();
-            List<Entity> toDeleteStrokes = [];
+            List<Entity> toDeleteShapes = [];
             foreach (var strokeE in query.EnumerateWithEntities())
             {
                 if (strokeE.Get<StrokeSetting>().BrushE == brushE)
-                    toDeleteStrokes.Add(strokeE);
+                    toDeleteShapes.Add(strokeE);
             }
 
-            if (toDeleteStrokes.Count > 0)
+            if (toDeleteShapes.Count > 0)
             {
                 var dialog = GetTree().GetNodesInGroup("Dialog").OfType<YesNoDialog>().First();
                 dialog.DialogText = "[Delete Brush Hint]".Tr();
@@ -129,9 +129,9 @@ public class PaintTool : StateMachineToolBase
             }
 
             var builder = new CommandBuilder(Entity.Null);
-            foreach (var strokeE in toDeleteStrokes)
+            foreach (var strokeE in toDeleteShapes)
             {
-                builder.SetTarget(strokeE).RemoveFromLayerTree().DeleteStroke();
+                builder.SetTarget(strokeE).RemoveFromLayerTree().DeleteShape();
             }
 
             var selectionManager = Document.Get<SelectionManager>();
@@ -185,6 +185,6 @@ public class PaintTool : StateMachineToolBase
     {
         if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
-        return !e.IsDyingOrDead && e.Has<PolylineLayerSetting>();
+        return !e.IsDyingOrDead && e.Has<ShapeLayerSetting>();
     }
 }

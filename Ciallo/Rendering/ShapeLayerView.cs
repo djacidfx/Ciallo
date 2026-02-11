@@ -4,9 +4,9 @@ using R3;
 
 namespace Ciallo.Rendering;
 
-public partial class PolylineLayerView : CanvasGroup
+public partial class ShapeLayerView : CanvasGroup
 {
-    public PolylineLayerView() { }
+    public ShapeLayerView() { }
 
     // if true, this node can be replaced by a regular node2D
     public bool IsDefault => SelfModulate.IsEqualApprox(Colors.White);

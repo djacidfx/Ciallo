@@ -64,29 +64,29 @@ public static partial class AppDocumentManager
                 new CommandBuilder(layerE).NewImageLayer(layerDataE.Get<ImageLayerSetting>(), commonLayerSetting).Do();
                 layerMap.Add(layerDataE, layerE);
             }
-            else if (layerDataE.Has<PolylineLayerSetting>())
+            else if (layerDataE.Has<ShapeLayerSetting>())
             {
                 var layerE = resultWorld.Create();
-                new CommandBuilder(layerE).NewPolylineLayer(layerDataE.Get<PolylineLayerSetting>(), commonLayerSetting).Do();
+                new CommandBuilder(layerE).NewShapeLayer(layerDataE.Get<ShapeLayerSetting>(), commonLayerSetting).Do();
                 layerMap.Add(layerDataE, layerE);
 
-                foreach (var polylineDataE in layerDataE.Get<LayerTreeNode>().Children)
+                foreach (var shapeDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
-                    var geometry = polylineDataE.Get<PolylineGeometry>();
+                    var geometry = shapeDataE.Get<PolylineGeometry>();
 
-                    if (polylineDataE.Has<StrokeSetting>())
+                    if (shapeDataE.Has<StrokeSetting>())
                     {
                         new CommandBuilder(resultWorld.Create())
                             .NewStroke()
                             .AddToLayerTree(layerE)
                             .SetPolylineGeometry(geometry)
-                            .SetStrokeBrush(brushMap[polylineDataE.Get<StrokeSetting>().BrushE])
+                            .SetStrokeBrush(brushMap[shapeDataE.Get<StrokeSetting>().BrushE])
                             .Do();
                     }
-                    else if (polylineDataE.Has<FilledPolygonSetting>())
+                    else if (shapeDataE.Has<FilledPolygonSetting>())
                     {
                         new CommandBuilder(resultWorld.Create())
-                            .NewFilledPolygon(layerE, polylineDataE.Get<FilledPolygonSetting>())
+                            .NewFilledPolygon(layerE, shapeDataE.Get<FilledPolygonSetting>())
                             .SetPolylineGeometry(geometry)
                             .Do();
                     }

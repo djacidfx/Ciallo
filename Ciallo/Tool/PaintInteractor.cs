@@ -36,7 +36,7 @@ public class PaintInteractor : InteractiveSessionBase
 
         _strokePreview = new StrokeView();
         _strokePreview.Material = brushMaterial;
-        var layerView = WorkingLayer.Get<PolylineLayerView>();
+        var layerView = WorkingLayer.Get<ShapeLayerView>();
         layerView.AddChild(_strokePreview);
 
         var brushSetting = _brushE.Get<BrushSetting>();

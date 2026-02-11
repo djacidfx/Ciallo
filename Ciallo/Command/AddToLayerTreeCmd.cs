@@ -30,7 +30,7 @@ public class AddToLayerTreeCmd : CommandBase
     public override void Undo(Entity strokeE)
     {
         // Selection manager
-        Document.Get<SelectionManager>().SelectedPolylines.Remove(strokeE);
+        Document.Get<SelectionManager>().SelectedShapes.Remove(strokeE);
 
         _parentE.Get<LayerTreeNode>().RemoveChild(_index);
     }

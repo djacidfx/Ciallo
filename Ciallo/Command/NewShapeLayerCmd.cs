@@ -10,15 +10,15 @@ using R3;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class NewPolylineLayerCmd : CommandBase
+public class NewShapeLayerCmd : CommandBase
 {
-    private readonly PolylineLayerSetting _setting;
+    private readonly ShapeLayerSetting _setting;
     private CommonLayerSetting _commonSetting;
     private CompositeDisposable _subs;
 
-    public NewPolylineLayerCmd(PolylineLayerSetting setting = null, CommonLayerSetting commonSetting = null)
+    public NewShapeLayerCmd(ShapeLayerSetting setting = null, CommonLayerSetting commonSetting = null)
     {
-        _setting = setting?.Clone() ?? new PolylineLayerSetting();
+        _setting = setting?.Clone() ?? new ShapeLayerSetting();
         _commonSetting = commonSetting;
     }
 
@@ -32,18 +32,18 @@ public class NewPolylineLayerCmd : CommandBase
 
         _commonSetting ??= new CommonLayerSetting
         {
-            Name = { Value = $"{"Line layer".Tr()} {LayerTreeNode.LayerCreationId++}" }
+            Name = { Value = $"{"Shape layer".Tr()} {LayerTreeNode.LayerCreationId++}" }
         };
         layerE.Add(_commonSetting);
         _commonSetting.RegisterProperties(Document.Get<CommandManager>()).AddTo(layerE);
         layerE.Add(_setting);
 
         // View
-        var view = new PolylineLayerView();
+        var view = new ShapeLayerView();
         layerE.AddNode(view);
 
         // Body
-        var bodyHolder = new PolylineBodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
+        var bodyHolder = new ShapeBodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
         layerE.AddNode(bodyHolder);
 
         // Layer tree events
@@ -93,23 +93,23 @@ public class NewPolylineLayerCmd : CommandBase
 
         // View
         var worldView = Document.Get<WorldView>();
-        var layerView = layerE.Get<PolylineLayerView>();
+        var layerView = layerE.Get<ShapeLayerView>();
         worldView.AddChild(layerView);
         layerView.SetOwner(worldView);
         layerView.ObserveLayerSetting(_commonSetting).AddTo(_subs);
 
         // Body
-        var holder = layerE.Get<PolylineBodyHolder>();
+        var holder = layerE.Get<ShapeBodyHolder>();
         Document.Get<WorldBody>().AddChild(holder);
     }
 
     public override void Undo(Entity layerE)
     {
         // Body
-        layerE.Get<PolylineBodyHolder>().RemoveFromParent();
+        layerE.Get<ShapeBodyHolder>().RemoveFromParent();
 
         // View
-        layerE.Get<PolylineLayerView>().RemoveFromParent();
+        layerE.Get<ShapeLayerView>().RemoveFromParent();
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
@@ -123,7 +123,7 @@ public class NewPolylineLayerCmd : CommandBase
     }
 }
 
-public partial class PolylineBodyHolder : Node2D
+public partial class ShapeBodyHolder : Node2D
 {
     public void SetAreaCursor(Control.CursorShape shape)
     {

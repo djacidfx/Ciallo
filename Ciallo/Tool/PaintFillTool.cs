@@ -45,6 +45,6 @@ public partial class PaintFillTool : StateMachineToolBase
     {
         if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
-        return !e.IsDyingOrDead && e.Has<PolylineLayerSetting>();
+        return !e.IsDyingOrDead && e.Has<ShapeLayerSetting>();
     }
 }

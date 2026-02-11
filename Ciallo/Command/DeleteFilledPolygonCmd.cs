@@ -24,7 +24,7 @@ public class DeleteFilledPolygonCmd : CommandBase
     public override void Do(Entity polygonE)
     {
         // Selection manager
-        Document.Get<SelectionManager>().SelectedPolylines.Remove(polygonE);
+        Document.Get<SelectionManager>().SelectedShapes.Remove(polygonE);
 
         // Body
         polygonE.Get<Body>().RemoveFromParent();
@@ -48,7 +48,7 @@ public class DeleteFilledPolygonCmd : CommandBase
         polygonE.Tag<ToSerializeTag>();
 
         // View
-        var layerView = _parentE.Get<PolylineLayerView>();
+        var layerView = _parentE.Get<ShapeLayerView>();
         layerView.InsertNodeAt(polygonE.Get<Polygon2D>(), _index);
 
         // Overlay
@@ -56,7 +56,7 @@ public class DeleteFilledPolygonCmd : CommandBase
         worldOverlay.AddChild(polygonE.Get<PolylineWireframe>());
 
         // Body
-        var areaHolder = _parentE.Get<PolylineBodyHolder>();
+        var areaHolder = _parentE.Get<ShapeBodyHolder>();
         areaHolder.InsertNodeAt(polygonE.Get<Body>(), _index);
     }
 }

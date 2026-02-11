@@ -5,14 +5,14 @@ using R3;
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
-public class PolylineLayerSetting
+public class ShapeLayerSetting
 {
     [DataMember] public ReactiveProperty<PolylineLayerRenderMode> RenderMode = new(PolylineLayerRenderMode.Realtime);
 
-    public PolylineLayerSetting Clone()
+    public ShapeLayerSetting Clone()
     {
         var bytes = MessagePackSerializer.Serialize(this);
-        return MessagePackSerializer.Deserialize<PolylineLayerSetting>(bytes);
+        return MessagePackSerializer.Deserialize<ShapeLayerSetting>(bytes);
     }
 }
 

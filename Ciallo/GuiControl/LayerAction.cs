@@ -12,7 +12,7 @@ public partial class LayerAction : Control
     {
         if (AppDocumentManager.WorkingDocument.Value.IsNull) return;
         new CommandBuilder(AppDocumentManager.WorkingDocument.Value.World.Create())
-            .NewPolylineLayer()
+            .NewShapeLayer()
             .SetWorkingLayer()
             .Commit();
     }
@@ -30,9 +30,9 @@ public partial class LayerAction : Control
 
         var nextLayerE = nextLayerPath.IsEmpty ? document : root.GetDescendant(nextLayerPath);
 
-        if (currentLayerE.Has<PolylineLayerSetting>())
+        if (currentLayerE.Has<ShapeLayerSetting>())
             new CommandBuilder(nextLayerE).SetWorkingLayer()
-                .SetTarget(currentLayerE).DeletePolylineLayer()
+                .SetTarget(currentLayerE).DeleteShapeLayer()
                 .Commit();
         else if (currentLayerE.Has<ImageLayerSetting>())
             new CommandBuilder(nextLayerE).SetWorkingLayer()

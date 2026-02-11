@@ -25,7 +25,7 @@ public partial class ExportGodotScene : FileDialog
             foreach (var child in root.GetAllDescendants())
             {
                 // Remove unnecessary canvas group
-                if (child is PolylineLayerView { IsDefault: true } layer)
+                if (child is ShapeLayerView { IsDefault: true } layer)
                 {
                     var node = new Node2D();
                     layer.ReplaceBy(node);

@@ -8,7 +8,7 @@ using Frent;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class DeletePolylineLayerCmd : CommandBase
+public class DeleteShapeLayerCmd : CommandBase
 {
     private Entity _parentE;
     private int _index;
@@ -25,13 +25,13 @@ public class DeletePolylineLayerCmd : CommandBase
 
         _deletedEntities.Add(layerE);
         _deleteChildrenCmd = new CommandBuilder();
-        foreach (var polylineE in node.Children.AsEnumerable().Reverse())
+        foreach (var shapeE in node.Children.AsEnumerable().Reverse())
         {
-            _deletedEntities.Add(polylineE);
-            if (polylineE.Has<StrokeSetting>())
-                _deleteChildrenCmd.SetTarget(polylineE).RemoveFromLayerTree().DeleteStroke();
+            _deletedEntities.Add(shapeE);
+            if (shapeE.Has<StrokeSetting>())
+                _deleteChildrenCmd.SetTarget(shapeE).RemoveFromLayerTree().DeleteShape();
             else
-                _deleteChildrenCmd.SetTarget(polylineE).DeleteFilledPolygon();
+                _deleteChildrenCmd.SetTarget(shapeE).DeleteFilledPolygon();
         }
     }
 
@@ -41,10 +41,10 @@ public class DeletePolylineLayerCmd : CommandBase
         _deleteChildrenCmd.Do();
 
         // Cursor detection
-        layerE.Get<PolylineBodyHolder>().RemoveFromParent();
+        layerE.Get<ShapeBodyHolder>().RemoveFromParent();
 
         // View
-        layerE.Get<PolylineLayerView>().RemoveFromParent();
+        layerE.Get<ShapeLayerView>().RemoveFromParent();
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
@@ -68,11 +68,11 @@ public class DeletePolylineLayerCmd : CommandBase
 
         // View
         var worldView = Document.Get<WorldView>();
-        worldView.InsertNodeAt(layerE.Get<PolylineLayerView>(), _index); // order matters
+        worldView.InsertNodeAt(layerE.Get<ShapeLayerView>(), _index); // order matters
 
         // Body
         var worldBody = Document.Get<WorldBody>();
-        worldBody.AddChild(layerE.Get<PolylineBodyHolder>());
+        worldBody.AddChild(layerE.Get<ShapeBodyHolder>());
 
         // Restore Children
         _deleteChildrenCmd.Undo();

@@ -12,6 +12,7 @@ public class NewStrokeCmd : CommandBase
 
     public override void BeforeFirstDo(Entity strokeE)
     {
+        // Data
         strokeE.Add(new LayerTreeNode());
         strokeE.Add(new StrokeSetting());
         strokeE.Add(new PolylineGeometry());
@@ -31,7 +32,6 @@ public class NewStrokeCmd : CommandBase
 
     public override void Do(Entity strokeE)
     {
-        // Data
         strokeE.Tag<ToSerializeTag>();
     }
 
