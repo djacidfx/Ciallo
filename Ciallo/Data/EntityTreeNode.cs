@@ -21,10 +21,14 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public Entity Self; // When this component is added to entity, assigned automatically.
     [DataMember] public Entity Parent;
     [DataMember(Name = "Children")] private readonly ObservableList<Entity> _children = [];
+
     private readonly Subject<Unit> _childrenChanged = new();
+    public readonly Subject<(Entity, int)> TreeEntered = new(); // Parent, index in the parent
+    public readonly Subject<Unit> TreeExiting = new();
+    public readonly Subject<Unit> TreeExited = new();
+    public readonly Subject<(int, int)> Moved = new();
 
     public IReadOnlyList<Entity> Children => _children;
-    public int ChildCount => _children.Count;
     public int DescendantCount => CountSubtreeNodes((T)this) - 1;
     public bool IsLeaf => _children.Count == 0;
 
@@ -62,16 +66,18 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     {
         if (!child.Has<T>()) throw new ArgumentException($"Child entity must have {typeof(T).Name} component.");
         _children.Insert(idx, child);
-        child.Get<T>().Parent = Self;
+        var childNode = child.Get<T>();
+        childNode.Parent = Self;
+        childNode.TreeEntered.OnNext((Self, idx));
         _childrenChanged.OnNext(Unit.Default);
     }
 
     public void MoveChild(int srcIdx, int dstIdx)
     {
-        var moving = _children[srcIdx];
+        var movingE = _children[srcIdx];
         _children.Move(srcIdx, dstIdx);
+        movingE.Get<T>().Moved.OnNext((srcIdx, dstIdx));
         _childrenChanged.OnNext(Unit.Default);
-        // Parent unchanged (same parent)
     }
 
     public Entity RemoveChild(Index idx)
