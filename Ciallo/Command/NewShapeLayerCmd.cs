@@ -14,7 +14,6 @@ public class NewShapeLayerCmd : CommandBase
 {
     private readonly ShapeLayerSetting _setting;
     private CommonLayerSetting _commonSetting;
-    private CompositeDisposable _subs;
 
     public NewShapeLayerCmd(ShapeLayerSetting setting = null, CommonLayerSetting commonSetting = null)
     {
@@ -40,48 +39,16 @@ public class NewShapeLayerCmd : CommandBase
 
         // View
         var view = new ShapeLayerView();
+        view.ObserveLayerSetting(_commonSetting).AddTo(layerE);
         layerE.AddNode(view);
 
         // Body
         var bodyHolder = new ShapeBodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
         layerE.AddNode(bodyHolder);
-
-        // Layer tree events
-        node.ObserveAddChild().Subscribe(et =>
-        {
-            var strokeE = et.Value;
-            var index = et.Index;
-            // View
-            var strokeView = strokeE.Get<StrokeView>();
-            view.InsertNodeAt(strokeView, index);
-            strokeView.SetOwner(view.Owner);
-
-            // Overlay
-            Document.Get<WorldOverlay>().AddChild(strokeE.Get<PolylineWireframe>());
-
-            // Body
-            bodyHolder.InsertNodeAt(strokeE.Get<Body>(), index);
-        }).AddTo(layerE);
-
-        node.ObserveRemoveChild().Subscribe(et =>
-        {
-            var strokeE = et.Value;
-            // Body
-            strokeE.Get<Body>().RemoveFromParent();
-
-            // Overlay
-            strokeE.Get<PolylineWireframe>().RemoveFromParent();
-
-            // View
-            strokeE.Get<StrokeView>().RemoveFromParent();
-        }).AddTo(layerE);
     }
 
     public override void Do(Entity layerE)
     {
-        _subs = new();
-        _subs.AddTo(layerE);
-
         // Data
         var root = Document.Get<LayerTreeNode>();
         layerE.Tag<ToSerializeTag>();
@@ -96,7 +63,6 @@ public class NewShapeLayerCmd : CommandBase
         var layerView = layerE.Get<ShapeLayerView>();
         worldView.AddChild(layerView);
         layerView.SetOwner(worldView);
-        layerView.ObserveLayerSetting(_commonSetting).AddTo(_subs);
 
         // Body
         var holder = layerE.Get<ShapeBodyHolder>();
@@ -118,8 +84,6 @@ public class NewShapeLayerCmd : CommandBase
         // Data
         Document.Get<LayerTreeNode>().RemoveChild(^1);
         layerE.Detach<ToSerializeTag>();
-
-        _subs.Dispose();
     }
 }
 

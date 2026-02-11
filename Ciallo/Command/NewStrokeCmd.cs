@@ -2,6 +2,7 @@
 using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
+using R3;
 
 namespace Ciallo.Command;
 
@@ -13,21 +14,71 @@ public class NewStrokeCmd : CommandBase
     public override void BeforeFirstDo(Entity strokeE)
     {
         // Data
-        strokeE.Add(new LayerTreeNode());
+        var layerNode = new LayerTreeNode();
+        strokeE.Add(layerNode);
         strokeE.Add(new StrokeSetting());
         strokeE.Add(new PolylineGeometry());
 
         // View
-        strokeE.AddNode(new StrokeView()
+        var strokeView = new StrokeView()
         {
             Material = AutoloadRendering.MissingBrushMaterial,
-        });
+        };
+        strokeE.AddNode(strokeView);
 
         // Overlay
-        strokeE.AddNode(new PolylineWireframe() { Visible = false });
+        var strokeWireframe = new PolylineWireframe() { Visible = false };
+        strokeE.AddNode(strokeWireframe);
 
         // Body
-        strokeE.AddNode(new Body());
+        var strokeBody = new Body();
+        strokeE.AddNode(strokeBody);
+
+        // Layer tree events
+        layerNode.TreeEntered.Subscribe(et =>
+        {
+            (int index, var layerE) = (et.Index, et.Value);
+
+            OnAdd(layerE, index);
+        }).AddTo(strokeE);
+
+        layerNode.TreeExited.Subscribe(_ =>
+        {
+            OnRemove();
+        }).AddTo(strokeE);
+
+        layerNode.Moved.Subscribe(et =>
+        {
+            OnRemove();
+            OnAdd(et.Value, et.NewIndex);
+        });
+        return;
+
+        void OnAdd(Entity layerE, int index)
+        {
+            // View
+            var layerView = layerE.Get<ShapeLayerView>();
+            layerView.InsertNodeAt(strokeView, index);
+            strokeView.SetOwner(layerView.Owner);
+
+            // Overlay
+            Document.Get<WorldOverlay>().AddChild(strokeWireframe);
+
+            // Body
+            layerE.Get<ShapeBodyHolder>().InsertNodeAt(strokeBody, index);
+        }
+
+        void OnRemove()
+        {
+            // Body
+            strokeBody.RemoveFromParent();
+
+            // Overlay
+            strokeWireframe.RemoveFromParent();
+
+            // View
+            strokeView.RemoveFromParent();
+        }
     }
 
     public override void Do(Entity strokeE)
