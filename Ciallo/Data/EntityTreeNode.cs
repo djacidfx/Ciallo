@@ -6,6 +6,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using Frent;
 using Frent.Components;
+using ObservableCollections;
 using R3;
 
 namespace Ciallo.Data;
@@ -23,16 +24,16 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 
     private readonly Subject<TreeMutationEvent> _localMutations = new(); // local node events
     private readonly Subject<TreeMutationEvent> _mutations = new(); // include events from descendants
-    private readonly Subject<TreeNodeAddChildEvent> _add = new();
-    private readonly Subject<TreeNodeRemoveChildEvent> _remove = new();
-    private readonly Subject<TreeNodeMoveChildEvent> _move = new();
+    private readonly Subject<CollectionAddEvent<Entity>> _add = new();
+    private readonly Subject<CollectionRemoveEvent<Entity>> _remove = new();
+    private readonly Subject<CollectionMoveEvent<Entity>> _move = new();
     private readonly Subject<Unit> _clear = new();
     private readonly Subject<int> _countChanged = new();
 
-    public readonly Subject<(Entity, int)> TreeEntered = new(); // Parent, index in the parent
+    public readonly Subject<CollectionAddEvent<Entity>> TreeEntered = new();
     public readonly Subject<Unit> TreeExiting = new();
     public readonly Subject<Unit> TreeExited = new();
-    public readonly Subject<(int, int)> Moved = new();
+    public readonly Subject<CollectionMoveEvent<Entity>> Moved = new();
 
     public IReadOnlyList<Entity> Children => _children;
     public int DescendantCount => CountSubtreeNodes((T)this) - 1;
@@ -79,7 +80,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         var mutation = new TreeMutationEvent(TreeMutationKind.Insert, child, Entity.Null, -1, Self, idx);
         PublishLocalMutation(mutation);
 
-        _add.OnNext(new TreeNodeAddChildEvent(idx, child));
+        _add.OnNext(new(idx, child));
         _countChanged.OnNext(_children.Count);
     }
 
@@ -96,7 +97,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         var mutation = new TreeMutationEvent(TreeMutationKind.Move, moving, Self, srcIdx, Self, dstIdx);
         PublishLocalMutation(mutation);
 
-        _move.OnNext(new TreeNodeMoveChildEvent(srcIdx, dstIdx, moving));
+        _move.OnNext(new(srcIdx, dstIdx, moving));
     }
 
     public Entity RemoveChild(Index idx)
@@ -113,7 +114,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         var mutation = new TreeMutationEvent(TreeMutationKind.Remove, removed, Self, i, Entity.Null, -1);
         PublishLocalMutation(mutation);
 
-        _remove.OnNext(new TreeNodeRemoveChildEvent(i, removed));
+        _remove.OnNext(new(i, removed));
         _countChanged.OnNext(_children.Count);
         return removed;
     }
@@ -382,14 +383,14 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         switch (mutation.Kind)
         {
             case TreeMutationKind.Insert:
-                node.TreeEntered.OnNext((mutation.NewParent, mutation.NewIndex));
+                node.TreeEntered.OnNext(new(mutation.NewIndex, mutation.NewParent));
                 break;
             case TreeMutationKind.Remove:
                 node.TreeExiting.OnNext(Unit.Default);
                 node.TreeExited.OnNext(Unit.Default);
                 break;
             case TreeMutationKind.Move:
-                node.Moved.OnNext((mutation.OldIndex, mutation.NewIndex));
+                node.Moved.OnNext(new(mutation.OldIndex, mutation.NewIndex, mutation.Node));
                 break;
         }
     }
@@ -398,9 +399,9 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     {
         return includeDescendants ? _mutations : _localMutations;
     }
-    public Observable<TreeNodeAddChildEvent> ObserveAddChild() => _add;
-    public Observable<TreeNodeRemoveChildEvent> ObserveRemoveChild() => _remove;
-    public Observable<TreeNodeMoveChildEvent> ObserveMoveChild() => _move;
+    public Observable<CollectionAddEvent<Entity>> ObserveAddChild() => _add;
+    public Observable<CollectionRemoveEvent<Entity>> ObserveRemoveChild() => _remove;
+    public Observable<CollectionMoveEvent<Entity>> ObserveMoveChild() => _move;
     public Observable<Unit> ObserveClearChildren() => _clear;
     public Observable<int> ObserveChildCountChanged(bool notifyCurrentCount = false)
     {

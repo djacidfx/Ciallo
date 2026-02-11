@@ -21,9 +21,3 @@ public enum TreeMutationKind
     Move,
     Clear,
 }
-
-public readonly record struct TreeNodeAddChildEvent(int Index, Entity Child);
-
-public readonly record struct TreeNodeRemoveChildEvent(int Index, Entity Child);
-
-public readonly record struct TreeNodeMoveChildEvent(int OldIndex, int NewIndex, Entity Child);

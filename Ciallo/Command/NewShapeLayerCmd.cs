@@ -49,7 +49,7 @@ public class NewShapeLayerCmd : CommandBase
         // Layer tree events
         node.ObserveAddChild().Subscribe(et =>
         {
-            var strokeE = et.Child;
+            var strokeE = et.Value;
             var index = et.Index;
             // View
             var strokeView = strokeE.Get<StrokeView>();
@@ -65,7 +65,7 @@ public class NewShapeLayerCmd : CommandBase
 
         node.ObserveRemoveChild().Subscribe(et =>
         {
-            var strokeE = et.Child;
+            var strokeE = et.Value;
             // Body
             strokeE.Get<Body>().RemoveFromParent();
 
