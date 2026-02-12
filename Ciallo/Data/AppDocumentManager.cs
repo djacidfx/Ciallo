@@ -66,7 +66,7 @@ public static partial class AppDocumentManager
         AppBrushLibrary.SelectedIndex.Value = 0;
 
         new CommandBuilder(document.World.Create())
-            .NewPolylineLayer()
+            .NewShapeLayer()
             .SetWorkingLayer()
             .Do();
         if (AppBrushLibrary.BrushSettings.Count > 0)

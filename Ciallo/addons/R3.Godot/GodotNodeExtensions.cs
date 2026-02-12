@@ -40,12 +40,8 @@ public static class GodotNodeExtensions
         return disposable;
     }
 
-    /// <remarks>
-    /// Godot doesn't expose "node destroyed" signal. Use Entity's OnDelete event can cover the most usages.
-    /// </remarks>
-    public static T AddTo<T>(this T disposable, Entity e) where T : IDisposable
+    public static void AddTo(this IDisposable disposable, Entity e)
     {
         e.OnDelete += _ => disposable.Dispose();
-        return disposable;
     }
 }

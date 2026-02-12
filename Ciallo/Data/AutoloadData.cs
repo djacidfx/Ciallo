@@ -19,12 +19,17 @@ public partial class AutoloadData : Node
 
         // Message pack serializer setup
         var defaultResolver = CompositeResolver.Create(
-            [EntityToIndexFormatter.Instance, TypeFormatter.Instance, ImageTextureFormatter.Instance, ImageFormatter.Instance],
+            [
+                EntityToIndexFormatter.Instance,
+                TypeFormatter.Instance,
+                ImageTextureFormatter.Instance,
+                ImageFormatter.Instance
+            ],
             [
                 GodotResolver.Instance,
                 AttributeFormatterResolver.Instance,
                 ReactivePropertyResolver.Instance,
-                StandardResolver.Instance
+                StandardResolverAllowPrivate.Instance
             ]
         );
         MessagePackSerializer.DefaultOptions = MessagePackSerializerOptions.Standard.WithResolver(defaultResolver);

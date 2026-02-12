@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Ciallo.Misc;
+// ReSharper disable once CheckNamespace
+namespace Ciallo;
 
 public static class ReadOnlyListExtensions
 {

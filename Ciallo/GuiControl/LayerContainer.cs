@@ -4,7 +4,6 @@ using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.GuiBinding;
-using Ciallo.Misc;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -222,7 +221,7 @@ public partial class LayerContainer : Container
     public void SetWorkingLayerNoSignal(Entity layerE)
     {
         _workingLayerButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
-        if (layerE.IsNull || layerE.IsDocument()) return;
+        if (layerE.IsNull || layerE.IsDocument) return;
         var layerControl = layerE.Get<LayerBlock>();
         var activeButton = layerControl.WorkingButton;
         // Warning note: button group will not be updated by `SetPressedNoSignal`.

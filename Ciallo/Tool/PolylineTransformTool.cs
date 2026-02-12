@@ -4,7 +4,6 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.GuiBinding;
-using Ciallo.Misc;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -14,11 +13,11 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Select)]
-public class PolylineTransformTool : ToolBase
+public class PolylineTransformTool : StateMachineToolBase
 {
-    public readonly PolylineTransformHover Hover = new();
+    public readonly ShapeTransformHover Hover = new();
     public readonly PolylineTransformInteractor Transform = new();
-    public readonly RectSelectPolylineInteractor Select = new();
+    public readonly RectSelectShapeInteractor Select = new();
 
     protected override void ConfigureStateMachine()
     {
@@ -51,20 +50,20 @@ public class PolylineTransformTool : ToolBase
         selectAllButton.Pressed += () =>
         {
             var layerE = selectionManager.WorkingLayer.Value;
-            if (layerE.IsDeletedOrNull()) return;
-            selectionManager.SelectedPolylines.Clear();
-            selectionManager.SelectedPolylines.AddRange(layerE.Get<LayerTreeNode>().Children);
+            if (layerE.IsDyingOrDead) return;
+            selectionManager.SelectedShapes.Clear();
+            selectionManager.SelectedShapes.AddRange(layerE.Get<LayerTreeNode>().Children);
             Machine.Fire(Trigger.Refresh);
         };
         var deselectAllButton = PropertyContainer.CreateButton("Deselect").AddToChildOf(selectionButtonGroup);
         deselectAllButton.Pressed += () =>
         {
-            selectionManager.SelectedPolylines.Clear();
+            selectionManager.SelectedShapes.Clear();
             Machine.Fire(Trigger.Refresh);
         };
 
         var polylineEditBox = PropertyContainer.CreateBox().AddToChildOf(container)
-            .VisibleIf(selectionManager.SelectedPolylines.ObserveCountChanged().Prepend(0), count => count > 0);
+            .VisibleIf(selectionManager.SelectedShapes.ObserveCountChanged().Prepend(0), count => count > 0);
 
         var simplificationRatioEdit = new SpinSlider()
         {
@@ -78,7 +77,7 @@ public class PolylineTransformTool : ToolBase
         simplifyButton.Pressed += () =>
         {
             var builder = new CommandBuilder(Entity.Null);
-            foreach (var polylineE in selectionManager.SelectedPolylines)
+            foreach (var polylineE in selectionManager.SelectedShapes)
             {
                 var geom = polylineE.Get<PolylineGeometry>();
                 if (geom.Positions.Count < 4) continue;
@@ -93,7 +92,7 @@ public class PolylineTransformTool : ToolBase
         smoothSubdivideButton.Pressed += () =>
         {
             var builder = new CommandBuilder(Entity.Null);
-            foreach (var polylineE in selectionManager.SelectedPolylines)
+            foreach (var polylineE in selectionManager.SelectedShapes)
             {
                 var geom = polylineE.Get<PolylineGeometry>();
                 if (geom.Positions.Count < 2) continue;
@@ -114,7 +113,7 @@ public class PolylineTransformTool : ToolBase
         linearSubdivideButton.Pressed += () =>
         {
             var builder = new CommandBuilder(Entity.Null);
-            foreach (var polylineE in selectionManager.SelectedPolylines)
+            foreach (var polylineE in selectionManager.SelectedShapes)
             {
                 var geom = polylineE.Get<PolylineGeometry>();
                 if (geom.Positions.Count < 2) continue;
@@ -135,7 +134,7 @@ public class PolylineTransformTool : ToolBase
         smoothButton.Pressed += () =>
         {
             var builder = new CommandBuilder(Entity.Null);
-            foreach (var polylineE in selectionManager.SelectedPolylines)
+            foreach (var polylineE in selectionManager.SelectedShapes)
             {
                 var geom = polylineE.Get<PolylineGeometry>();
                 if (geom.Positions.Count < 3) continue;
@@ -163,16 +162,16 @@ public class PolylineTransformTool : ToolBase
     {
         if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
-        return !e.IsDeletedOrNull() && e.Has<PolylineLayerSetting>();
+        return !e.IsDyingOrDead && e.Has<ShapeLayerSetting>();
     }
 
     public override void OnActivated()
     {
-        WorkingLayer.Get<PolylineBodyHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
+        WorkingLayer.Get<ShapeBodyHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
     }
 
     public override void OnDeactivated()
     {
-        WorkingLayer.Get<PolylineBodyHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
+        WorkingLayer.Get<ShapeBodyHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
     }
 }

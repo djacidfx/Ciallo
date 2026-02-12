@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
+using Frent;
+using Godot;
 
 // ReSharper disable once CheckNamespace
-namespace Godot;
+namespace Ciallo;
 
 public static class GodotNodeExtension
 {
@@ -136,5 +138,26 @@ public static class GodotNodeExtension
     {
         node.GetParent().RemoveChild(node);
         return node;
+    }
+}
+
+public static class EntityNodeExtension
+{
+    /// <summary>
+    /// Add node as a component of the entity, and automatically free the node when the entity is deleted.
+    /// </summary>
+    /// <remarks>
+    /// Ensure the node's lifecycle is tied to the entity's lifecycle.
+    /// </remarks>
+    public static void AddNode<T>(this Entity e, T node) where T : Node
+    {
+        e.Add(node);
+        e.OnDelete += ent =>
+        {
+            if (!ent.Has<T>()) return;
+            var n = ent.Get<T>();
+            if (GodotObject.IsInstanceValid(n))
+                n.QueueFree();
+        };
     }
 }

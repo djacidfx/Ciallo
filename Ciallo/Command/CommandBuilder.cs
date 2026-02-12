@@ -29,12 +29,6 @@ public partial class CommandBuilder
         return this;
     }
 
-    public CommandBuilder AddCommand(ICommand cmd)
-    {
-        Commands.Add(cmd);
-        return this;
-    }
-
     public CommandBuilder Commit(bool execute = true)
     {
         if (Commands.Count == 0) return this;

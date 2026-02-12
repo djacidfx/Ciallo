@@ -4,22 +4,18 @@ using Ciallo.Data;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
-using Godot;
 
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class DeletePolylineLayerCmd : CommandBase
+public class DeleteShapeLayerCmd : CommandBase
 {
     private Entity _parentE;
     private int _index;
 
     private CommandBuilder _deleteChildrenCmd;
-    private PolylineLayerView _layerView;
-    private PolylineBodyHolder _bodyHolder;
-
-    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
-    public override IEnumerable<GodotObject> UndoRefObjects => [_layerView, _bodyHolder];
+    private readonly List<Entity> _deletedEntities = [];
+    public override IEnumerable<Entity> UndoRefEntities => _deletedEntities;
 
     public override void BeforeFirstDo(Entity layerE)
     {
@@ -27,17 +23,13 @@ public class DeletePolylineLayerCmd : CommandBase
         _parentE = node.Parent;
         _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(layerE);
 
+        _deletedEntities.Add(layerE);
         _deleteChildrenCmd = new CommandBuilder();
-        foreach (var polylineE in node.Children.AsEnumerable().Reverse())
+        foreach (var shapeE in node.Children.AsEnumerable().Reverse())
         {
-            if (polylineE.Has<StrokeSetting>())
-                _deleteChildrenCmd.SetTarget(polylineE).LayerRemoveStroke().DeleteStroke();
-            else
-                _deleteChildrenCmd.SetTarget(polylineE).DeleteFilledPolygon();
+            _deleteChildrenCmd.SetTarget(shapeE).RemoveFromLayerTree().DeleteShape();
+            _deletedEntities.Add(shapeE);
         }
-
-        _bodyHolder = layerE.Get<PolylineBodyHolder>();
-        _layerView = layerE.Get<PolylineLayerView>();
     }
 
     public override void Do(Entity layerE)
@@ -46,12 +38,10 @@ public class DeletePolylineLayerCmd : CommandBase
         _deleteChildrenCmd.Do();
 
         // Cursor detection
-        _bodyHolder.RemoveFromParent();
-        layerE.Remove<PolylineBodyHolder>();
+        layerE.Get<ShapeBodyHolder>().RemoveFromParent();
 
         // View
-        _layerView.RemoveFromParent();
-        layerE.Remove<PolylineLayerView>();
+        layerE.Get<ShapeLayerView>().RemoveFromParent();
 
         // Layer panel
         var layerTreeControl = Document.Get<LayerContainer>();
@@ -75,13 +65,11 @@ public class DeletePolylineLayerCmd : CommandBase
 
         // View
         var worldView = Document.Get<WorldView>();
-        worldView.InsertNodeAt(_layerView, _index); // order matters
-        layerE.Add(_layerView);
+        worldView.InsertNodeAt(layerE.Get<ShapeLayerView>(), _index); // order matters
 
         // Body
-        var worldArea = Document.Get<WorldBody>();
-        worldArea.AddChild(_bodyHolder);
-        layerE.Add(_bodyHolder);
+        var worldBody = Document.Get<WorldBody>();
+        worldBody.AddChild(layerE.Get<ShapeBodyHolder>());
 
         // Restore Children
         _deleteChildrenCmd.Undo();

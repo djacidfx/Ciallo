@@ -28,6 +28,7 @@ public class PaintInteractor : InteractiveSessionBase
             var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
             new CommandBuilder(Document.World.Create())
                 .NewBrush(setting).SetWorkingBrush().Commit();
+            AppBrushLibrary.SelectedIndex.Value = -1;
         }
         _brushE = Document.Get<SelectionManager>().WorkingBrush.Value;
 
@@ -35,7 +36,7 @@ public class PaintInteractor : InteractiveSessionBase
 
         _strokePreview = new StrokeView();
         _strokePreview.Material = brushMaterial;
-        var layerView = WorkingLayer.Get<PolylineLayerView>();
+        var layerView = WorkingLayer.Get<ShapeLayerView>();
         layerView.AddChild(_strokePreview);
 
         var brushSetting = _brushE.Get<BrushSetting>();
@@ -63,7 +64,7 @@ public class PaintInteractor : InteractiveSessionBase
         };
         new CommandBuilder(WorkingLayer.World.Create())
             .NewStroke()
-            .LayerAddStroke(WorkingLayer)
+            .AddToLayerTree(WorkingLayer)
             .SetStrokeBrush(_brushE)
             .SetPolylineGeometry(geom)
             .Commit();

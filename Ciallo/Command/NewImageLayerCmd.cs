@@ -14,7 +14,6 @@ public class NewImageLayerCmd : CommandBase
 {
     private readonly ImageLayerSetting _setting;
     private CommonLayerSetting _commonSetting;
-    private Sprite2D _sprite;
     private CompositeDisposable _subs;
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
@@ -41,6 +40,16 @@ public class NewImageLayerCmd : CommandBase
         _commonSetting ??= new CommonLayerSetting { Name = { Value = "Image".Tr() } };
         layerE.Add(_commonSetting);
         _commonSetting.RegisterProperties(CommandManager).AddTo(layerE);
+        layerE.Add(_setting);
+
+        var sprite = new Sprite2D
+        {
+            Texture = _setting.Texture,
+        };
+        layerE.AddNode(sprite);
+
+        var layerOverlay = new TransformOverlayBox(_setting.ImageSize) { Visible = false };
+        layerE.AddNode(layerOverlay);
     }
 
     public override void Do(Entity layerE)
@@ -50,32 +59,26 @@ public class NewImageLayerCmd : CommandBase
 
         layerE.Tag<ToSerializeTag>();
         Document.Get<LayerTreeNode>().AddChild(layerE);
-        layerE.Add(_setting);
         CommandManager.RegisterProperty(_setting.ImageTransform).AddTo(_subs);
 
         // View
         var worldView = Document.Get<WorldView>();
-        _sprite = new Sprite2D
-        {
-            Texture = _setting.Texture,
-        };
-        worldView.AddChild(_sprite);
-        _setting.ImageTransform.Subscribe(_sprite.SetTransform).AddTo(_subs);
-        layerE.Add(_sprite);
-        _sprite.SetOwner(worldView);
+        var sprite = layerE.Get<Sprite2D>();
+        worldView.AddChild(sprite);
+        _setting.ImageTransform.Subscribe(sprite.SetTransform).AddTo(_subs);
+        sprite.SetOwner(worldView);
 
-        _commonSetting.IsVisible.Subscribe(_sprite.SetVisible).AddTo(_subs);
+        _commonSetting.IsVisible.Subscribe(sprite.SetVisible).AddTo(_subs);
         _commonSetting.Opacity.Subscribe(v =>
         {
-            var color = _sprite.SelfModulate;
+            var color = sprite.SelfModulate;
             color.A = v;
-            _sprite.SelfModulate = color;
+            sprite.SelfModulate = color;
         }).AddTo(_subs);
 
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
-        var layerOverlay = new TransformOverlayBox(_setting.ImageSize) { Visible = false };
-        layerE.Add(layerOverlay);
+        var layerOverlay = layerE.Get<TransformOverlayBox>();
         worldOverlay.AddChild(layerOverlay);
         _setting.ImageTransform.Subscribe(t =>
         {
@@ -95,15 +98,12 @@ public class NewImageLayerCmd : CommandBase
         layerContainer.RemoveFree(layerE);
 
         // Overlay
-        layerE.Get<TransformOverlayBox>().QueueFree();
-        layerE.Remove<TransformOverlayBox>();
+        layerE.Get<TransformOverlayBox>().RemoveFromParent();
 
         // View
-        _sprite.QueueFree();
-        layerE.Remove<Sprite2D>();
+        layerE.Get<Sprite2D>().RemoveFromParent();
 
         // Data
-        layerE.Remove<ImageLayerSetting>();
         Document.Get<LayerTreeNode>().RemoveChild(layerE);
         layerE.Detach<ToSerializeTag>();
 

@@ -10,7 +10,7 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.PaintFill)]
-public partial class PaintFillTool : ToolBase
+public partial class PaintFillTool : StateMachineToolBase
 {
     public readonly ReactiveProperty<Color> Color = new(Colors.Black);
 
@@ -45,6 +45,6 @@ public partial class PaintFillTool : ToolBase
     {
         if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
-        return !e.IsDeletedOrNull() && e.Has<PolylineLayerSetting>();
+        return !e.IsDyingOrDead && e.Has<ShapeLayerSetting>();
     }
 }

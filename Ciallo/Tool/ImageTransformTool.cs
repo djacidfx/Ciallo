@@ -8,7 +8,7 @@ using Godot;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Select)]
-public class ImageTransformTool : ToolBase
+public class ImageTransformTool : StateMachineToolBase
 {
     public readonly ImageTransformHover Hover = new();
     public readonly ImageTransformInteractor Left = new();

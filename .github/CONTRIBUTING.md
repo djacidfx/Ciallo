@@ -87,7 +87,7 @@ After getting a basic idea on Ciallo's code architecture here, you can check AI 
 
 Ciallo is built on Godot. Building the core part of Ciallo is the same as building a standard Godot C# project:
 
-- Set up Godot 4.5.1 with .Net9. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
+- Set up Godot 4.5.1 with .Net10. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
 - Open the `Ciallo/project.godot` file with your Godot editor, then build and run.
   - Note: Godot will raise annoying errors about autoload before first build, we can safely ignore them.
 - Enable the "Embedded game size stretches..." option in the game run window.

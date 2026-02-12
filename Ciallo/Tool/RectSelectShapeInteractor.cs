@@ -6,7 +6,7 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class RectSelectPolylineInteractor : InteractiveSessionBase
+public class RectSelectShapeInteractor : InteractiveSessionBase
 {
     private StrokeView _boxSelectionDash;
     private Rect2 _boxSelectionRect;
@@ -36,14 +36,14 @@ public class RectSelectPolylineInteractor : InteractiveSessionBase
         {
             foreach (var e in es)
             {
-                if (!selectionManager.SelectedPolylines.Remove(e))
-                    selectionManager.SelectedPolylines.Add(e);
+                if (!selectionManager.SelectedShapes.Remove(e))
+                    selectionManager.SelectedShapes.Add(e);
             }
         }
         else
         {
-            selectionManager.SelectedPolylines.Clear();
-            selectionManager.SelectedPolylines.AddRange(es);
+            selectionManager.SelectedShapes.Clear();
+            selectionManager.SelectedShapes.AddRange(es);
         }
 
         Clear();

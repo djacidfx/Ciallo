@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
@@ -13,19 +13,10 @@ public class DeleteImageLayerCmd : CommandBase
     private Entity _parentE;
     private int _index;
 
-    private ImageLayerSetting _setting;
-    private Sprite2D _sprite;
-    private TransformOverlayBox _overlay;
-
     public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
-    public override IEnumerable<GodotObject> UndoRefObjects => [_sprite, _overlay];
 
     public override void BeforeFirstDo(Entity layerE)
     {
-        _overlay = layerE.Get<TransformOverlayBox>();
-        _sprite = layerE.Get<Sprite2D>();
-        _setting = layerE.Get<ImageLayerSetting>();
-
         _parentE = layerE.Get<LayerTreeNode>().Parent;
         _index = _parentE.Get<LayerTreeNode>().Children.IndexOf(layerE);
     }
@@ -33,12 +24,10 @@ public class DeleteImageLayerCmd : CommandBase
     public override void Do(Entity layerE)
     {
         // Overlay
-        _overlay.RemoveFromParent();
-        layerE.Remove<TransformOverlayBox>();
+        layerE.Get<TransformOverlayBox>().RemoveFromParent();
 
         // View
-        _sprite.RemoveFromParent();
-        layerE.Remove<Sprite2D>();
+        layerE.Get<Sprite2D>().RemoveFromParent();
 
         // Layer panel
         var layerContainer = Document.Get<LayerContainer>();
@@ -46,7 +35,6 @@ public class DeleteImageLayerCmd : CommandBase
 
         // Data
         _parentE.Get<LayerTreeNode>().RemoveChild(_index);
-        layerE.Remove<ImageLayerSetting>();
         layerE.Detach<ToSerializeTag>();
     }
 
@@ -55,7 +43,6 @@ public class DeleteImageLayerCmd : CommandBase
         // Data
         var parentNode = _parentE.Get<LayerTreeNode>();
         parentNode.InsertChild(_index, layerE);
-        layerE.Add(_setting);
         layerE.Tag<ToSerializeTag>();
 
         // Layer panel
@@ -64,12 +51,10 @@ public class DeleteImageLayerCmd : CommandBase
 
         // View
         var worldView = Document.Get<WorldView>();
-        worldView.InsertNodeAt(_sprite, _index);
-        layerE.Add(_sprite);
+        worldView.InsertNodeAt(layerE.Get<Sprite2D>(), _index);
 
         // Overlay
         var worldOverlay = Document.Get<WorldOverlay>();
-        worldOverlay.AddChild(_overlay);
-        layerE.Add(_overlay);
+        worldOverlay.AddChild(layerE.Get<TransformOverlayBox>());
     }
 }

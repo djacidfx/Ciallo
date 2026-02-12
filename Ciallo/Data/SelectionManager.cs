@@ -16,7 +16,7 @@ public class SelectionManager
     {
         get
         {
-            if (WorkingLayer.Value.IsDeletedOrNull()) return [];
+            if (WorkingLayer.Value.IsDyingOrDead) return [];
             var world = WorkingLayer.Value.World;
             ImmutableArray<int> path = [..world.Document().Get<LayerTreeNode>().FindPathTo(WorkingLayer.Value)];
             return path;
@@ -27,5 +27,5 @@ public class SelectionManager
 
     [DataMember] public ReactiveProperty<Entity> WorkingBrush = new(Entity.Null);
 
-    public ObservableList<Entity> SelectedPolylines = [];
+    public ObservableList<Entity> SelectedShapes = [];
 }

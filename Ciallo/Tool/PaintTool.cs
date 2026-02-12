@@ -13,7 +13,7 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Paint)]
-public class PaintTool : ToolBase
+public class PaintTool : StateMachineToolBase
 {
     public readonly ReactiveProperty<Entity> BrushE = new(Entity.Null);
 
@@ -26,7 +26,7 @@ public class PaintTool : ToolBase
             .PermitIf(Press(MouseButton.Left), Left, () =>
             {
                 var brushE = Document.Get<SelectionManager>().WorkingBrush.Value;
-                return !brushE.IsDeletedOrNull() || AppBrushLibrary.HasSelection;
+                return !brushE.IsDyingOrDead || AppBrushLibrary.HasSelection;
             });
 
         Configure(Left)
@@ -114,14 +114,14 @@ public class PaintTool : ToolBase
             if ((MouseButton)buttonIndex != MouseButton.Right) return;
             var brushE = Document.Get<BrushManager>().Brushes[(int)idx];
             var query = brushE.World.CreateQuery().With<StrokeSetting>().Build();
-            List<Entity> toDeleteStrokes = [];
+            List<Entity> toDeleteShapes = [];
             foreach (var strokeE in query.EnumerateWithEntities())
             {
                 if (strokeE.Get<StrokeSetting>().BrushE == brushE)
-                    toDeleteStrokes.Add(strokeE);
+                    toDeleteShapes.Add(strokeE);
             }
 
-            if (toDeleteStrokes.Count > 0)
+            if (toDeleteShapes.Count > 0)
             {
                 var dialog = GetTree().GetNodesInGroup("Dialog").OfType<YesNoDialog>().First();
                 dialog.DialogText = "[Delete Brush Hint]".Tr();
@@ -129,9 +129,9 @@ public class PaintTool : ToolBase
             }
 
             var builder = new CommandBuilder(Entity.Null);
-            foreach (var strokeE in toDeleteStrokes)
+            foreach (var strokeE in toDeleteShapes)
             {
-                builder.SetTarget(strokeE).LayerRemoveStroke().DeleteStroke();
+                builder.SetTarget(strokeE).RemoveFromLayerTree().DeleteShape();
             }
 
             var selectionManager = Document.Get<SelectionManager>();
@@ -148,7 +148,7 @@ public class PaintTool : ToolBase
         container.AddProperty("Brush in document", brushList);
 
         var rView = selectionM.WorkingBrush
-            .Select(e => e.IsDeletedOrNull() ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
+            .Select(e => e.IsDyingOrDead ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
         var radiusControl = new SpinSlider
         {
             MinValue = 0.1f,
@@ -178,12 +178,13 @@ public class PaintTool : ToolBase
             .NewBrush(setting)
             .SetWorkingBrush()
             .Commit();
+        AppBrushLibrary.SelectedIndex.Value = -1;
     }
 
     public override bool CanHandleLayer(params Entity[] layerEs)
     {
         if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
-        return !e.IsDeletedOrNull() && e.Has<PolylineLayerSetting>();
+        return !e.IsDyingOrDead && e.Has<ShapeLayerSetting>();
     }
 }

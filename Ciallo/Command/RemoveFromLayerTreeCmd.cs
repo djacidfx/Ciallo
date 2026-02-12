@@ -4,9 +4,9 @@ using Frent;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class LayerRemoveStrokeCmd : CommandBase
+public class RemoveFromLayerTreeCmd : CommandBase
 {
-    private LayerAddStrokeCmd _addCmd;
+    private AddToLayerTreeCmd _addCmd;
 
     public override void BeforeFirstDo(Entity strokeE)
     {

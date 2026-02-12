@@ -2,6 +2,7 @@
 using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
+using R3;
 
 namespace Ciallo.Command;
 
@@ -10,49 +11,83 @@ public class NewStrokeCmd : CommandBase
 {
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public override void BeforeFirstDo(Entity strokeE)
-    {
-        strokeE.Add(new LayerTreeNode());
-        strokeE.Add(new StrokeSetting());
-        strokeE.Add(new PolylineGeometry());
-    }
-
-    public override void Do(Entity strokeE)
+    public override void BeforeFirstDo(Entity targetE)
     {
         // Data
-        strokeE.Tag<ToSerializeTag>();
+        var layerNode = new LayerTreeNode();
+        targetE.Add(layerNode);
+        targetE.Add(new StrokeSetting());
+        targetE.Add(new PolylineGeometry());
 
         // View
         var strokeView = new StrokeView()
         {
             Material = AutoloadRendering.MissingBrushMaterial,
         };
-        strokeE.Add(strokeView);
+        targetE.AddNode(strokeView);
 
         // Overlay
-        var strokeOverlay = new PolylineWireframe() { Visible = false };
-        strokeE.Add(strokeOverlay);
+        var strokeWireframe = new PolylineWireframe() { Visible = false };
+        targetE.AddNode(strokeWireframe);
 
         // Body
         var strokeBody = new Body();
-        strokeE.Add(strokeBody);
+        targetE.AddNode(strokeBody);
+
+        // Layer tree events
+        layerNode.TreeEntered.Subscribe(et =>
+        {
+            (int index, var layerE) = (et.Index, et.Value);
+
+            OnAdd(layerE, index);
+        }).AddTo(targetE);
+
+        layerNode.TreeExited.Subscribe(_ =>
+        {
+            OnRemove();
+        }).AddTo(targetE);
+
+        layerNode.Moved.Subscribe(et =>
+        {
+            OnRemove();
+            OnAdd(et.Value, et.NewIndex);
+        }).AddTo(targetE);
+        return;
+
+        void OnAdd(Entity layerE, int index)
+        {
+            // View
+            var layerView = layerE.Get<ShapeLayerView>();
+            layerView.InsertNodeAt(strokeView, index);
+            strokeView.SetOwner(layerView.Owner);
+
+            // Overlay
+            Document.Get<WorldOverlay>().AddChild(strokeWireframe);
+
+            // Body
+            layerE.Get<ShapeBodyHolder>().InsertNodeAt(strokeBody, index);
+        }
+
+        void OnRemove()
+        {
+            // Body
+            strokeBody.RemoveFromParent();
+
+            // Overlay
+            strokeWireframe.RemoveFromParent();
+
+            // View
+            strokeView.RemoveFromParent();
+        }
     }
 
-    public override void Undo(Entity strokeE)
+    public override void Do(Entity targetE)
     {
-        // Body
-        strokeE.Get<Body>().QueueFree();
-        strokeE.Remove<Body>();
+        targetE.Tag<ToSerializeTag>();
+    }
 
-        // Overlay
-        strokeE.Get<PolylineWireframe>().QueueFree();
-        strokeE.Remove<PolylineWireframe>();
-
-        // View
-        strokeE.Get<StrokeView>().QueueFree();
-        strokeE.Remove<StrokeView>();
-
-        // Data
-        strokeE.Detach<ToSerializeTag>();
+    public override void Undo(Entity targetE)
+    {
+        targetE.Detach<ToSerializeTag>();
     }
 }

@@ -240,7 +240,7 @@ SIGGRAPH 2023 Talk
 
 Ciallo is built on Godot. Building the core part of Ciallo is the same as building a standard Godot C# project:
 
-- Set up Godot 4.5.1 with .Net9. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
+- Set up latest Godot and .Net. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), and pay attention to the version.
 - Open the `Ciallo/project.godot` file with your Godot editor, then build and run.
 
 Go to [Contributing Tab](https://github.com/ShenCiao/Ciallo?tab=contributing-ov-file#how-to-build) for a more complete guide.
