@@ -38,7 +38,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public IReadOnlyList<Entity> Children => _children;
     public int DescendantCount => CountSubtreeNodes((T)this) - 1;
     public bool IsLeaf => _children.Count == 0;
-    public bool IsRoot => !Parent.IsNull;
+    public bool IsRoot => Parent.IsNull;
 
     public void Init(Entity self)
     {
@@ -84,15 +84,19 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         _countChanged.OnNext(_children.Count);
     }
 
+    /// <summary>
+    /// Post-removal coordinates
+    /// </summary>
     public void MoveChild(int srcIdx, int dstIdx)
     {
-        if (srcIdx < 0 || srcIdx >= _children.Count) throw new ArgumentOutOfRangeException(nameof(srcIdx));
-        if (dstIdx < 0 || dstIdx >= _children.Count) throw new ArgumentOutOfRangeException(nameof(dstIdx));
+        if (srcIdx < 0 || srcIdx >= _children.Count)
+            throw new ArgumentOutOfRangeException(nameof(srcIdx));
+        if (dstIdx < 0 || dstIdx >= _children.Count)
+            throw new ArgumentOutOfRangeException(nameof(dstIdx));
         if (srcIdx == dstIdx) return;
 
         var moving = _children[srcIdx];
         _children.RemoveAt(srcIdx);
-        if (dstIdx > srcIdx) dstIdx--;
         _children.Insert(dstIdx, moving);
         var mutation = new TreeMutationEvent(TreeMutationKind.Move, moving, Self, srcIdx, Self, dstIdx);
         PublishLocalMutation(mutation);
@@ -156,7 +160,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     }
 
     /// <summary>
-    /// Move a descendant node to another position.
+    /// Move a descendant node to another position. Post-removal coordinates.
     /// </summary>
     /// <param name="srcPath">Which to move.</param>
     /// <param name="dstPath">Insertion path.</param>
