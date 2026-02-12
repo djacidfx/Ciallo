@@ -10,14 +10,12 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class NewFilledPolygonCmd : CommandBase
 {
-    private readonly Entity _layerE;
     private readonly FilledPolygonSetting _setting;
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public NewFilledPolygonCmd(Entity layerE, FilledPolygonSetting setting = null)
+    public NewFilledPolygonCmd(FilledPolygonSetting setting = null)
     {
-        _layerE = layerE;
         _setting = setting ?? new FilledPolygonSetting();
     }
 

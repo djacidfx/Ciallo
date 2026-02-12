@@ -88,6 +88,8 @@ public class NewStrokeCmd : CommandBase
 
     public override void Undo(Entity targetE)
     {
+        Document.Get<SelectionManager>().SelectedShapes.Remove(targetE);
+
         targetE.Detach<ToSerializeTag>();
     }
 }

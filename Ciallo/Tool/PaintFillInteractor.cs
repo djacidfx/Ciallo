@@ -51,7 +51,8 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
             Tilts = [.._generator.Tilts],
         };
         new CommandBuilder(WorkingLayer.World.Create())
-            .NewFilledPolygon(WorkingLayer, setting)
+            .NewFilledPolygon(setting)
+            .AddToLayerTree(WorkingLayer)
             .SetPolylineGeometry(geom)
             .Commit();
         Clear();

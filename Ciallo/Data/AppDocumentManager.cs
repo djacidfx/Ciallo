@@ -89,6 +89,7 @@ public static partial class AppDocumentManager
         document.Get<CommandManager>().Free();
 
         // Dispose world
+        // Warning: Dispose a world don't trigger it's entities' deletion events.
         document.World.Dispose();
     }
 

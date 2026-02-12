@@ -86,7 +86,8 @@ public static partial class AppDocumentManager
                     else if (shapeDataE.Has<FilledPolygonSetting>())
                     {
                         new CommandBuilder(resultWorld.Create())
-                            .NewFilledPolygon(layerE, shapeDataE.Get<FilledPolygonSetting>())
+                            .NewFilledPolygon(shapeDataE.Get<FilledPolygonSetting>())
+                            .AddToLayerTree(layerE)
                             .SetPolylineGeometry(geometry)
                             .Do();
                     }
