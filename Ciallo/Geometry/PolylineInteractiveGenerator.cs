@@ -202,7 +202,14 @@ public class PolylineInteractiveGenerator
         if (_previewPointCache.Count > 0)
         {
             RemoveLatestPoints(_previewPointCache.Count);
+
+            _positions.Add(data.WorldPosition);
+            float radius = CalculateRadius(_previewPointCache[^1]);
+            _radii.Add(radius);
+            _pressures.Add(_previewPointCache[^1].Pressure);
+            _tilts.Add(data.Tilt);
         }
+
         _previewPointCache.Clear();
         _processedPointCache.Clear();
         _processedRadiusCache.Clear();
