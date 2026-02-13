@@ -32,77 +32,93 @@ public class NewImageLayerCmd : CommandBase
         _commonSetting = commonSetting;
     }
 
-    public override void BeforeFirstDo(Entity layerE)
+    public override void BeforeFirstDo(Entity targetE)
     {
         // Data
-        layerE.Add(new LayerTreeNode());
+        var layerNode = new LayerTreeNode();
+        targetE.Add(layerNode);
         _commonSetting ??= new CommonLayerSetting { Name = { Value = "Image".Tr() } };
-        layerE.Add(_commonSetting);
-        _commonSetting.RegisterProperties(CommandManager).AddTo(layerE);
-        layerE.Add(_setting);
-        CommandManager.RegisterProperty(_setting.ImageTransform).AddTo(layerE);
+        targetE.Add(_commonSetting);
+        _commonSetting.RegisterProperties(CommandManager).AddTo(targetE);
+        targetE.Add(_setting);
+        CommandManager.RegisterProperty(_setting.ImageTransform).AddTo(targetE);
 
         // View
         var sprite = new Sprite2D
         {
             Texture = _setting.Texture,
         };
-        layerE.AddNode(sprite);
+        targetE.AddNode(sprite);
 
-        _commonSetting.IsVisible.Subscribe(sprite.SetVisible).AddTo(layerE);
+        _commonSetting.IsVisible.Subscribe(sprite.SetVisible).AddTo(targetE);
         _commonSetting.Opacity.Subscribe(v =>
         {
             var color = sprite.SelfModulate;
             color.A = v;
             sprite.SelfModulate = color;
-        }).AddTo(layerE);
-        _setting.ImageTransform.Subscribe(sprite.SetTransform).AddTo(layerE);
+        }).AddTo(targetE);
+        _setting.ImageTransform.Subscribe(sprite.SetTransform).AddTo(targetE);
 
         // Overlay
         var layerOverlay = new TransformOverlayBox(_setting.ImageSize) { Visible = false };
-        layerE.AddNode(layerOverlay);
+        targetE.AddNode(layerOverlay);
         _setting.ImageTransform.Subscribe(t =>
         {
             layerOverlay.LocalTransform = t;
             layerOverlay.UpdateGeometry();
-        }).AddTo(layerE);
+        }).AddTo(targetE);
+
+        // Layer tree events
+        layerNode.TreeEntered.Subscribe(et =>
+        {
+            OnAdd(et.Index);
+        }).AddTo(targetE);
+
+        layerNode.TreeExited.Subscribe(_ => OnRemove()).AddTo(targetE);
+
+        layerNode.Moved.Subscribe(et =>
+        {
+            OnRemove();
+            OnAdd(et.NewIndex);
+        }).AddTo(targetE);
+
+        return;
+
+        void OnAdd(int index)
+        {
+            // Panel
+            var layerContainer = Document.Get<LayerContainer>();
+            layerContainer.CreateInsert(targetE, index);
+
+            // View
+            var worldView = Document.Get<WorldView>();
+            worldView.InsertNodeAt(sprite, index);
+            sprite.SetOwner(worldView);
+
+            // Overlay
+            Document.Get<WorldOverlay>().AddChild(layerOverlay);
+        }
+
+        void OnRemove()
+        {
+            // Overlay
+            layerOverlay.RemoveFromParent();
+
+            // View
+            sprite.RemoveFromParent();
+
+            // Panel
+            Document.Get<LayerContainer>().RemoveFree(targetE);
+        }
     }
 
-    public override void Do(Entity layerE)
+    public override void Do(Entity targetE)
     {
-        layerE.Tag<ToSerializeTag>();
-        Document.Get<LayerTreeNode>().AddChild(layerE);
-
-        // View
-        var worldView = Document.Get<WorldView>();
-        var sprite = layerE.Get<Sprite2D>();
-        worldView.AddChild(sprite);
-        sprite.SetOwner(worldView);
-
-        // Overlay
-        var worldOverlay = Document.Get<WorldOverlay>();
-        var layerOverlay = layerE.Get<TransformOverlayBox>();
-        worldOverlay.AddChild(layerOverlay);
-
-        // Panel
-        var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.CreateAdd(layerE);
+        targetE.Tag<ToSerializeTag>();
     }
 
-    public override void Undo(Entity layerE)
+    public override void Undo(Entity targetE)
     {
-        // Panel
-        var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.RemoveFree(layerE);
-
-        // Overlay
-        layerE.Get<TransformOverlayBox>().RemoveFromParent();
-
-        // View
-        layerE.Get<Sprite2D>().RemoveFromParent();
-
-        // Data
-        Document.Get<LayerTreeNode>().RemoveChild(layerE);
-        layerE.Detach<ToSerializeTag>();
+        targetE.Detach<ToSerializeTag>();
     }
 }

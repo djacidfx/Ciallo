@@ -61,13 +61,19 @@ public static partial class AppDocumentManager
             if (layerDataE.Has<ImageLayerSetting>())
             {
                 var layerE = resultWorld.Create();
-                new CommandBuilder(layerE).NewImageLayer(layerDataE.Get<ImageLayerSetting>(), commonLayerSetting).Do();
+                new CommandBuilder(layerE)
+                    .NewImageLayer(layerDataE.Get<ImageLayerSetting>(), commonLayerSetting)
+                    .AddToLayerTree(resultDocument)
+                    .Do();
                 layerMap.Add(layerDataE, layerE);
             }
             else if (layerDataE.Has<ShapeLayerSetting>())
             {
                 var layerE = resultWorld.Create();
-                new CommandBuilder(layerE).NewShapeLayer(layerDataE.Get<ShapeLayerSetting>(), commonLayerSetting).Do();
+                new CommandBuilder(layerE)
+                    .NewShapeLayer(layerDataE.Get<ShapeLayerSetting>(), commonLayerSetting)
+                    .AddToLayerTree(resultDocument)
+                    .Do();
                 layerMap.Add(layerDataE, layerE);
 
                 foreach (var shapeDataE in layerDataE.Get<LayerTreeNode>().Children)

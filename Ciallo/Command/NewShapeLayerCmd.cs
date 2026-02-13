@@ -23,67 +23,81 @@ public class NewShapeLayerCmd : CommandBase
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public override void BeforeFirstDo(Entity layerE)
+    public override void BeforeFirstDo(Entity targetE)
     {
         // Data
-        var node = new LayerTreeNode();
-        layerE.Add(node);
+        var layerNode = new LayerTreeNode();
+        targetE.Add(layerNode);
 
         _commonSetting ??= new CommonLayerSetting
         {
             Name = { Value = $"{"Shape layer".Tr()} {LayerTreeNode.LayerCreationId++}" }
         };
-        layerE.Add(_commonSetting);
-        _commonSetting.RegisterProperties(Document.Get<CommandManager>()).AddTo(layerE);
-        layerE.Add(_setting);
+        targetE.Add(_commonSetting);
+        _commonSetting.RegisterProperties(Document.Get<CommandManager>()).AddTo(targetE);
+        targetE.Add(_setting);
 
         // View
         var view = new ShapeLayerView();
-        view.ObserveLayerSetting(_commonSetting).AddTo(layerE);
-        layerE.AddNode(view);
+        view.ObserveLayerSetting(_commonSetting).AddTo(targetE);
+        targetE.AddNode(view);
 
         // Body
         var bodyHolder = new ShapeBodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
-        layerE.AddNode(bodyHolder);
+        targetE.AddNode(bodyHolder);
+
+        // Layer tree events
+        layerNode.TreeEntered.Subscribe(et =>
+        {
+            OnAdd(et.Index);
+        }).AddTo(targetE);
+
+        layerNode.TreeExited.Subscribe(_ => OnRemove()).AddTo(targetE);
+
+        layerNode.Moved.Subscribe(et =>
+        {
+            OnRemove();
+            OnAdd(et.NewIndex);
+        }).AddTo(targetE);
+
+        return;
+
+        void OnAdd(int index)
+        {
+            // Layer panel
+            var layerContainer = Document.Get<LayerContainer>();
+            layerContainer.CreateInsert(targetE, index);
+
+            // View
+            var worldView = Document.Get<WorldView>();
+            worldView.InsertNodeAt(view, index);
+            view.SetOwner(worldView);
+
+            // Body
+            Document.Get<WorldBody>().AddChild(bodyHolder);
+        }
+
+        void OnRemove()
+        {
+            // Body
+            bodyHolder.RemoveFromParent();
+
+            // View
+            view.RemoveFromParent();
+
+            // Layer panel
+            Document.Get<LayerContainer>().RemoveFree(targetE);
+        }
     }
 
-    public override void Do(Entity layerE)
+    public override void Do(Entity targetE)
     {
-        // Data
-        var root = Document.Get<LayerTreeNode>();
-        layerE.Tag<ToSerializeTag>();
-        root.AddChild(layerE);
-
-        // Layer panel
-        var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.CreateAdd(layerE);
-
-        // View
-        var worldView = Document.Get<WorldView>();
-        var layerView = layerE.Get<ShapeLayerView>();
-        worldView.AddChild(layerView);
-        layerView.SetOwner(worldView);
-
-        // Body
-        var holder = layerE.Get<ShapeBodyHolder>();
-        Document.Get<WorldBody>().AddChild(holder);
+        targetE.Tag<ToSerializeTag>();
     }
 
-    public override void Undo(Entity layerE)
+    public override void Undo(Entity targetE)
     {
-        // Body
-        layerE.Get<ShapeBodyHolder>().RemoveFromParent();
-
-        // View
-        layerE.Get<ShapeLayerView>().RemoveFromParent();
-
-        // Layer panel
-        var layerTreeControl = Document.Get<LayerContainer>();
-        layerTreeControl.RemoveFree(layerE);
-
-        // Data
-        Document.Get<LayerTreeNode>().RemoveChild(^1);
-        layerE.Detach<ToSerializeTag>();
+        targetE.Detach<ToSerializeTag>();
     }
 }
 
