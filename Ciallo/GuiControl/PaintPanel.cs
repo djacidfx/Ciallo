@@ -17,7 +17,6 @@ public partial class PaintPanel : PanelContainer, IInitable
 
     public void Init(Entity self) => WorldEventDispatcher.Document = self;
 
-    private Polygon2D _background;
     private DocumentSetting _documentSetting;
 
     [OnInstantiate]
@@ -28,14 +27,13 @@ public partial class PaintPanel : PanelContainer, IInitable
 
     public override void _Ready()
     {
-        _background = GetNode<Polygon2D>("%Background");
         float w = _documentSetting.ReferenceSize.Value.X, h = _documentSetting.ReferenceSize.Value.Y;
-        _background.Polygon = [new(-w / 2, -h / 2), new(w / 2, -h / 2), new(w / 2, h / 2), new(-w / 2, h / 2)];
+        Background.Polygon = [new(-w / 2, -h / 2), new(w / 2, -h / 2), new(w / 2, h / 2), new(-w / 2, h / 2)];
 
         CameraZoom.Subscribe(v => MainCamera.Zoom = Vector2.One * v).AddTo(this);
         CameraRotation.Subscribe(v => MainCamera.Rotation = v).AddTo(this);
         CameraOffset.Subscribe(v => MainCamera.Position = v).AddTo(this);
-        _documentSetting.BackgroundColor.Subscribe(_background.SetColor).AddTo(this);
+        _documentSetting.BackgroundColor.Subscribe(Background.SetColor).AddTo(this);
 
         ZoomControl.BindNumber(CameraZoom);
         var degCanvasRotation = CameraRotation.Project(

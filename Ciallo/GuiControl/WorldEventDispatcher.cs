@@ -26,6 +26,9 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
     private Stopwatch _timer;
 
+    public Entity Document;
+    private ToolManager ToolManager => Document.Get<ToolManager>();
+
     public override void _Ready()
     {
         _timer = Stopwatch.StartNew();
@@ -161,9 +164,6 @@ public partial class WorldEventDispatcher : SubViewportContainer
         _prevScreenPos = screenPos;
         _prevWorldPos = worldPos;
     }
-
-    public Entity Document;
-    private ToolManager ToolManager => Document.Get<ToolManager>();
 
     private void DispatchKey(InputEventKey key)
     {
