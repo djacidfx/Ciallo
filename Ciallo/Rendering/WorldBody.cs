@@ -145,6 +145,8 @@ public partial class WorldBody : Node2D
         List<Entity> result = [];
         Array<Rid> exclude = [];
         const int maxIteration = 256;
+        // IntersectShape returns multiple shapes rather than multiple physics bodies.
+        // So set max result to 1 and exclude the hit body in the next query to get all bodies in the rect.
         for (int i = 0; i < maxIteration; i++)
         {
             var hit = GetWorld2D().DirectSpaceState.IntersectShape(rectQuery, 1);
