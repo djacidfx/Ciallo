@@ -159,10 +159,12 @@ public partial class LayerContainer : Container
     public void RemoveFree(Entity layerE)
     {
         // Layer block
+        layerE.Get<LayerBlock>().RemoveFromParent(); // necessary to avoid index error
         layerE.Get<LayerBlock>().QueueFree();
         layerE.Remove<LayerBlock>();
 
         // Layer property
+        layerE.Get<LayerProperty>().RemoveFromParent();
         layerE.Get<LayerProperty>().QueueFree();
         layerE.Remove<LayerProperty>();
 

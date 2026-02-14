@@ -53,25 +53,33 @@ public class NewShapeLayerCmd : CommandBase
         // Layer tree events
         layerNode.TreeEntered.Subscribe(et =>
         {
+            // Layer panel
+            Document.Get<LayerContainer>().CreateInsert(targetE, et.Index);
+
             OnAdd(et.Value, et.Index);
         }).AddTo(targetE);
 
-        layerNode.TreeExited.Subscribe(_ => OnRemove()).AddTo(targetE);
+        layerNode.TreeExited.Subscribe(_ =>
+        {
+            OnRemove();
+
+            // Layer panel
+            Document.Get<LayerContainer>().RemoveFree(targetE);
+        }).AddTo(targetE);
 
         layerNode.Moved.Subscribe(et =>
         {
             OnRemove();
             OnAdd(et.Value, et.NewIndex);
+
+            // Layer panel
+            Document.Get<LayerContainer>().Move([et.OldIndex], [et.NewIndex]);
         }).AddTo(targetE);
 
         return;
 
         void OnAdd(Entity parentE, int index)
         {
-            // Layer panel
-            var layerContainer = Document.Get<LayerContainer>();
-            layerContainer.CreateInsert(targetE, index);
-
             // View
             var worldView = Document.Get<WorldView>();
             worldView.InsertNodeAt(view, index);
@@ -94,9 +102,6 @@ public class NewShapeLayerCmd : CommandBase
 
             // View
             view.RemoveFromParent();
-
-            // Layer panel
-            Document.Get<LayerContainer>().RemoveFree(targetE);
         }
     }
 
