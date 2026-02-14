@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Ciallo.Data;
+using Ciallo.GuiControl;
 using Ciallo.Misc;
 using Frent;
 using Godot;
@@ -21,6 +22,7 @@ public partial class WorldBody : Node2D
 {
     private CanvasLayer _canvasLayer;
     private Control _cursorSwitcher; // This is supposed to be the job of ViewportContainer, but it doesn't respond even if changing MouseDefaultCursorShape.
+    private PaintPanel _paintPanel;
 
     public Control.CursorShape MouseDefaultCursorShape { get; set; }
 
@@ -31,23 +33,13 @@ public partial class WorldBody : Node2D
     {
         _canvasLayer = GetChild<CanvasLayer>(0);
         _cursorSwitcher = _canvasLayer.GetChild<Control>(0);
-    }
-
-    private void SetHoveringBody(Body value)
-    {
-        _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
-        var body = _hoveringBody.Value;
-        if (body == value) return;
-
-        if (body != null) body.IsHovered = false;
-        if (value != null) value.IsHovered = true;
-        _hoveringBody.Value = value;
+        _paintPanel = (PaintPanel)Owner;
     }
 
     // Note: not implement screen position, world size
-    public Body CreateAddRect(Vector2 size, Vector2 position, CursorRectFlags flags = default)
+    public Body CreateAddRectBody(Vector2 size, Vector2 position, CursorRectFlags flags = default)
     {
-        var body = CreateAddRect(flags);
+        var body = CreateAddBody(flags);
         body.AddChild(new CollisionShape2D()
         {
             Shape = new RectangleShape2D { Size = size },
@@ -57,9 +49,9 @@ public partial class WorldBody : Node2D
         return body;
     }
 
-    public Body CreateAddRect(Vector2 size, Transform2D transform)
+    public Body CreateAddRectBody(Vector2 size, Transform2D transform)
     {
-        var body = CreateAddRect();
+        var body = CreateAddBody();
         body.AddChild(new CollisionShape2D()
         {
             Shape = new RectangleShape2D { Size = size },
@@ -68,7 +60,7 @@ public partial class WorldBody : Node2D
         return body;
     }
 
-    public Body CreateAddRect(CursorRectFlags flags = default)
+    private Body CreateAddBody(CursorRectFlags flags = default)
     {
         var body = new Body();
 
@@ -76,6 +68,14 @@ public partial class WorldBody : Node2D
             _canvasLayer.AddChild(body);
         else
             AddChild(body);
+
+        if (flags.HasFlag(CursorRectFlags.ScreenSize))
+        {
+            _paintPanel.CameraZoom.Subscribe(v =>
+            {
+                body.Scale = Vector2.One / v;
+            }).AddTo(body);
+        }
 
         return body;
     }
@@ -90,6 +90,17 @@ public partial class WorldBody : Node2D
         body.Position = center;
 
         return body;
+    }
+
+    private void SetHoveringBody(Body value)
+    {
+        _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
+        var body = _hoveringBody.Value;
+        if (body == value) return;
+
+        body?.IsHovered = false;
+        value?.IsHovered = true;
+        _hoveringBody.Value = value;
     }
 
     private static int GetCanvasLayer(Node n)
@@ -176,15 +187,15 @@ public partial class WorldBody : Node2D
         var topMid = (corners[0] + corners[3]) * 0.5f;
         Vector2 rotationDotPos = topMid + barLength * barDir;
 
-        var rotation = CreateAddRect(dotAreaSize, rotationDotPos);
+        var rotation = CreateAddRectBody(dotAreaSize, rotationDotPos, CursorRectFlags.ScreenSize);
         rotation.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-        var translation = CreateAddRect(size, transform);
+        var translation = CreateAddRectBody(size, transform);
         translation.MouseDefaultCursorShape = Control.CursorShape.Move;
 
         var cornerBodies = new Body[corners.Length];
         foreach (var (idx, pos) in corners.Index())
         {
-            var body = CreateAddRect(dotAreaSize, pos, CursorRectFlags.ScreenSize);
+            var body = CreateAddRectBody(dotAreaSize, pos, CursorRectFlags.ScreenSize);
             body.MouseDefaultCursorShape = idx % 2 == 0 ? Control.CursorShape.Fdiagsize : Control.CursorShape.Bdiagsize;
             cornerBodies[idx] = body;
         }
