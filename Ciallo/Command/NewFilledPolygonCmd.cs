@@ -68,7 +68,7 @@ public class NewFilledPolygonCmd : CommandBase
             Document.Get<WorldOverlay>().AddChild(overlay);
 
             // Body
-            layerE.Get<ShapeBodyHolder>().InsertNodeAt(polygonBody, index);
+            layerE.Get<BodyHolder>().InsertNodeAt(polygonBody, index);
         }
 
         void OnRemove()

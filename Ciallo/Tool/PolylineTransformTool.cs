@@ -4,6 +4,7 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.GuiBinding;
+using Ciallo.Rendering;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -167,11 +168,11 @@ public class PolylineTransformTool : StateMachineToolBase
 
     public override void OnActivated()
     {
-        WorkingLayer.Get<ShapeBodyHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
+        WorkingLayer.Get<BodyHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
     }
 
     public override void OnDeactivated()
     {
-        WorkingLayer.Get<ShapeBodyHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
+        WorkingLayer.Get<BodyHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
     }
 }

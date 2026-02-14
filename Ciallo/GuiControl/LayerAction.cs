@@ -28,23 +28,17 @@ public partial class LayerAction : Control
         var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
         var root = document.Get<LayerTreeNode>();
         var nextLayerPath = root.GetNextFocusPathAfterDeletion(workingLayerPath);
-
         var nextLayerE = nextLayerPath.IsEmpty ? document : root.GetDescendant(nextLayerPath);
 
+        var cmd = new CommandBuilder(nextLayerE)
+            .SetWorkingLayer()
+            .SetTarget(currentLayerE)
+            .RemoveFromLayerTree();
         if (currentLayerE.Has<ShapeLayerSetting>())
-            new CommandBuilder(nextLayerE)
-                .SetWorkingLayer()
-                .SetTarget(currentLayerE)
-                .RemoveFromLayerTree()
-                .DeleteShapeLayer()
-                .Commit();
+            cmd.DeleteShapeLayer();
         else if (currentLayerE.Has<ImageLayerSetting>())
-            new CommandBuilder(nextLayerE)
-                .SetWorkingLayer()
-                .SetTarget(currentLayerE)
-                .RemoveFromLayerTree()
-                .DeleteImageLayer()
-                .Commit();
+            cmd.DeleteImageLayer();
+        cmd.Commit();
     }
 
     public void OnAddImage()

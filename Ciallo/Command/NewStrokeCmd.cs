@@ -65,7 +65,7 @@ public class NewStrokeCmd : CommandBase
             Document.Get<WorldOverlay>().AddChild(strokeWireframe);
 
             // Body
-            layerE.Get<ShapeBodyHolder>().InsertNodeAt(strokeBody, index);
+            layerE.Get<BodyHolder>().InsertNodeAt(strokeBody, index);
         }
 
         void OnRemove()

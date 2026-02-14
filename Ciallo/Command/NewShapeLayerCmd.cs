@@ -43,7 +43,7 @@ public class NewShapeLayerCmd : CommandBase
         targetE.AddNode(view);
 
         // Body
-        var bodyHolder = new ShapeBodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
+        var bodyHolder = new BodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
         targetE.AddNode(bodyHolder);
 
         // Layer tree events
@@ -100,15 +100,3 @@ public class NewShapeLayerCmd : CommandBase
         targetE.Detach<ToSerializeTag>();
     }
 }
-
-public partial class ShapeBodyHolder : Node2D
-{
-    public void SetAreaCursor(Control.CursorShape shape)
-    {
-        foreach (var child in GetChildren())
-        {
-            var area = (Body)child;
-            area.MouseDefaultCursorShape = shape;
-        }
-    }
-};
