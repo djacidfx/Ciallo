@@ -28,6 +28,12 @@ public partial class AutoloadGuiControl : Node
             // World overlay
             var worldOverlay = paintPanel.GetNode<WorldOverlay>("%WorldOverlay");
             document.Add(worldOverlay);
+            document.Add<OverlayHolder>(worldOverlay);
+
+            // World body
+            var worldBody = paintPanel.GetNode<WorldBody>("%WorldBody");
+            document.Add(worldBody);
+            document.Add<BodyHolder>(worldBody);
 
             // Document brush editor
             var panel = BrushPanel.Instantiate();
@@ -43,10 +49,6 @@ public partial class AutoloadGuiControl : Node
             // Bind to document brush settings
             var bm = document.Get<BrushManager>();
             panel.BindBrushSetting(bm.Brushes, e => e.Get<BrushSetting>());
-
-            // World button manager
-            var worldButtonManager = paintPanel.GetNode<WorldBody>("%WorldBody");
-            document.Add(worldButtonManager);
         }).AddTo(this);
 
 
@@ -56,7 +58,7 @@ public partial class AutoloadGuiControl : Node
             document.Get<BrushPanel>().QueueFree();
             document.Remove<BrushPanel>();
 
-            // View and overlay are the children of paint panel
+            // View, overlay and body are the children of paint panel
 
             // Paint panel
             var paintPanelContainer = GetTree().GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().Single();

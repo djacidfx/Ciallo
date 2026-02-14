@@ -18,7 +18,7 @@ namespace Ciallo.Rendering;
 /// <remarks>
 /// Physical bodies (Body class) are used for click detection, and other selection operations on canvas.
 /// </remarks>
-public partial class WorldBody : Node2D
+public partial class WorldBody : BodyHolder
 {
     private CanvasLayer _canvasLayer;
     private Control _cursorSwitcher; // This is supposed to be the job of ViewportContainer, but it doesn't respond even if changing MouseDefaultCursorShape.
