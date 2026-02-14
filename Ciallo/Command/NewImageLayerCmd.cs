@@ -71,7 +71,7 @@ public class NewImageLayerCmd : CommandBase
         // Layer tree events
         layerNode.TreeEntered.Subscribe(et =>
         {
-            OnAdd(et.Index);
+            OnAdd(et.Value, et.Index);
         }).AddTo(targetE);
 
         layerNode.TreeExited.Subscribe(_ => OnRemove()).AddTo(targetE);
@@ -79,12 +79,12 @@ public class NewImageLayerCmd : CommandBase
         layerNode.Moved.Subscribe(et =>
         {
             OnRemove();
-            OnAdd(et.NewIndex);
+            OnAdd(et.Value, et.NewIndex);
         }).AddTo(targetE);
 
         return;
 
-        void OnAdd(int index)
+        void OnAdd(Entity parentE, int index)
         {
             // Panel
             var layerContainer = Document.Get<LayerContainer>();
@@ -96,7 +96,7 @@ public class NewImageLayerCmd : CommandBase
             sprite.SetOwner(worldView);
 
             // Overlay
-            Document.Get<WorldOverlay>().AddChild(layerOverlay);
+            parentE.Get<OverlayHolder>().InsertNodeAt(layerOverlay, index);
         }
 
         void OnRemove()

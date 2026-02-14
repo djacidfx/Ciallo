@@ -62,7 +62,7 @@ public class NewStrokeCmd : CommandBase
             strokeView.SetOwner(layerView.Owner);
 
             // Overlay
-            Document.Get<WorldOverlay>().AddChild(strokeWireframe);
+            layerE.Get<OverlayHolder>().InsertNodeAt(strokeWireframe, index);
 
             // Body
             layerE.Get<BodyHolder>().InsertNodeAt(strokeBody, index);

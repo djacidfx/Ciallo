@@ -42,6 +42,10 @@ public class NewShapeLayerCmd : CommandBase
         view.ObserveLayerSetting(_commonSetting).AddTo(targetE);
         targetE.AddNode(view);
 
+        // Overlay
+        var overlayHolder = new OverlayHolder();
+        targetE.AddNode(overlayHolder);
+
         // Body
         var bodyHolder = new BodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
         targetE.AddNode(bodyHolder);
@@ -49,7 +53,7 @@ public class NewShapeLayerCmd : CommandBase
         // Layer tree events
         layerNode.TreeEntered.Subscribe(et =>
         {
-            OnAdd(et.Index);
+            OnAdd(et.Value, et.Index);
         }).AddTo(targetE);
 
         layerNode.TreeExited.Subscribe(_ => OnRemove()).AddTo(targetE);
@@ -57,12 +61,12 @@ public class NewShapeLayerCmd : CommandBase
         layerNode.Moved.Subscribe(et =>
         {
             OnRemove();
-            OnAdd(et.NewIndex);
+            OnAdd(et.Value, et.NewIndex);
         }).AddTo(targetE);
 
         return;
 
-        void OnAdd(int index)
+        void OnAdd(Entity parentE, int index)
         {
             // Layer panel
             var layerContainer = Document.Get<LayerContainer>();
@@ -73,14 +77,20 @@ public class NewShapeLayerCmd : CommandBase
             worldView.InsertNodeAt(view, index);
             view.SetOwner(worldView);
 
+            // Overlay
+            parentE.Get<OverlayHolder>().InsertNodeAt(overlayHolder, index);
+
             // Body
-            Document.Get<WorldBody>().AddChild(bodyHolder);
+            parentE.Get<BodyHolder>().InsertNodeAt(bodyHolder, index);
         }
 
         void OnRemove()
         {
             // Body
             bodyHolder.RemoveFromParent();
+
+            // Overlay
+            overlayHolder.RemoveFromParent();
 
             // View
             view.RemoveFromParent();

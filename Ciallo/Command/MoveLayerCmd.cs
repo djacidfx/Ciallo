@@ -4,7 +4,6 @@ using Ciallo.Data;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
-using Godot;
 
 namespace Ciallo.Command;
 
@@ -49,11 +48,17 @@ public class MoveLayerCmd : CommandBase
         var worldView = Document.Get<WorldView>();
         worldView.MoveNode(_src, _dst);
 
-        // Overlay is order-free
+        // Overlay
+        var worldOverlay = Document.Get<WorldOverlay>();
+        worldOverlay.MoveNode(_src, _dst);
     }
 
     public override void Undo(Entity layerE)
     {
+        // Overlay
+        var worldOverlay = Document.Get<WorldOverlay>();
+        worldOverlay.MoveNode(_dst, _src);
+
         // View
         var worldView = Document.Get<WorldView>();
         worldView.MoveNode(_dst, _src);
