@@ -6,7 +6,7 @@ using Frent;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class DeleteShapeLayerCmd : CommandBase
+public class DeleteLayerCmd : CommandBase
 {
     private CommandBuilder _deleteChildrenCmd;
     private readonly List<Entity> _deletedEntities = [];
@@ -15,13 +15,17 @@ public class DeleteShapeLayerCmd : CommandBase
     public override void BeforeFirstDo(Entity layerE)
     {
         var node = layerE.Get<LayerTreeNode>();
-        _deleteChildrenCmd = new CommandBuilder();
-        foreach (var shapeE in node.Children.AsEnumerable().Reverse())
+        if (!node.IsLeaf)
         {
-            _deleteChildrenCmd.SetTarget(shapeE)
-                .RemoveFromLayerTree()
-                .DeleteShape();
-            _deletedEntities.Add(shapeE);
+            _deleteChildrenCmd = new CommandBuilder();
+
+            foreach (var shapeE in node.Children.AsEnumerable().Reverse())
+            {
+                _deleteChildrenCmd.SetTarget(shapeE)
+                    .RemoveFromLayerTree()
+                    .DeleteShape();
+                _deletedEntities.Add(shapeE);
+            }
         }
         _deletedEntities.Add(layerE);
     }
@@ -29,7 +33,7 @@ public class DeleteShapeLayerCmd : CommandBase
     public override void Do(Entity layerE)
     {
         // Delete children
-        _deleteChildrenCmd.Do();
+        _deleteChildrenCmd?.Do();
 
         layerE.Detach<ToSerializeTag>();
     }
@@ -39,6 +43,6 @@ public class DeleteShapeLayerCmd : CommandBase
         layerE.Tag<ToSerializeTag>();
 
         // Restore Children
-        _deleteChildrenCmd.Undo();
+        _deleteChildrenCmd?.Undo();
     }
 }

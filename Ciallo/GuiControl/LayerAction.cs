@@ -30,15 +30,12 @@ public partial class LayerAction : Control
         var nextLayerPath = root.GetNextFocusPathAfterDeletion(workingLayerPath);
         var nextLayerE = nextLayerPath.IsEmpty ? document : root.GetDescendant(nextLayerPath);
 
-        var cmd = new CommandBuilder(nextLayerE)
+        new CommandBuilder(nextLayerE)
             .SetWorkingLayer()
             .SetTarget(currentLayerE)
-            .RemoveFromLayerTree();
-        if (currentLayerE.Has<ShapeLayerSetting>())
-            cmd.DeleteShapeLayer();
-        else if (currentLayerE.Has<ImageLayerSetting>())
-            cmd.DeleteImageLayer();
-        cmd.Commit();
+            .RemoveFromLayerTree()
+            .DeleteLayer()
+            .Commit();
     }
 
     public void OnAddImage()
