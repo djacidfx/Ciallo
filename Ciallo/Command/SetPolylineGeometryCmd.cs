@@ -17,69 +17,67 @@ public class SetPolylineGeometryCmd : CommandBase
         _newGeometry = newGeometry;
     }
 
-    public override void BeforeFirstDo(Entity polylineE)
+    public override void BeforeFirstDo(Entity targetE)
     {
-        _oldGeometry = polylineE.Get<PolylineGeometry>();
+        _oldGeometry = targetE.Get<PolylineGeometry>();
     }
 
-    public override void Do(Entity polylineE)
+    public override void Do(Entity targetE)
     {
         // Data
-        polylineE.Get<PolylineGeometry>() = _newGeometry;
+        targetE.Get<PolylineGeometry>() = _newGeometry;
 
         // Overlay
-        polylineE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Positions);
+        targetE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Positions);
 
         // Polyline has stroke
-        if (polylineE.Has<StrokeSetting>())
+        if (targetE.Has<StrokeSetting>())
         {
             // View
-            polylineE.Get<StrokeView>()
+            targetE.Get<StrokeView>()
                 .SetGeometry(_newGeometry.Positions, _newGeometry.Radii, _newGeometry.Pressures);
 
             // Cursor detection
-            polylineE.Get<Body>().SetStrokeShape(_newGeometry.Positions, _newGeometry.Radii);
+            targetE.Get<Body>().SetStrokeShape(_newGeometry.Positions, _newGeometry.Radii);
         }
 
         // Polyline has fill
-        else if (polylineE.Has<FilledPolygonSetting>())
+        else if (targetE.Has<FilledPolygonSetting>())
         {
             var polygon = _newGeometry.Positions.ToSimplePolygon();
             // View
-            var polygonView = polylineE.Get<Polygon2D>();
-            polygonView.Polygon = [..polygon];
+            targetE.Get<Polygon2D>().Polygon = [..polygon];
 
             // Cursor detection
-            polylineE.Get<Body>().SetSimplePolygon(polygon);
+            targetE.Get<Body>().SetSimplePolygon(polygon);
         }
     }
 
-    public override void Undo(Entity polylineE)
+    public override void Undo(Entity targetE)
     {
-        if (polylineE.Has<FilledPolygonSetting>())
+        if (targetE.Has<FilledPolygonSetting>())
         {
             var polygon = _oldGeometry.Positions.ToSimplePolygon();
-            // Cursor detection
-            polylineE.Get<Body>().SetSimplePolygon(polygon);
+            // Body
+            targetE.Get<Body>().SetSimplePolygon(polygon);
 
             // View
-            var polygonView = polylineE.Get<Polygon2D>();
-            polygonView.Polygon = [..polygon];
+            targetE.Get<Polygon2D>().Polygon = [..polygon];
         }
-        else if (polylineE.Has<StrokeSetting>())
+        else if (targetE.Has<StrokeSetting>())
         {
             // Body
-            polylineE.Get<Body>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);
+            targetE.Get<Body>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);
 
             // View
-            polylineE.Get<StrokeView>()
+            targetE.Get<StrokeView>()
                 .SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii, _oldGeometry.Pressures);
         }
 
         // Overlay
-        polylineE.Get<PolylineWireframe>().SetGeometry(_oldGeometry.Positions);
+        targetE.Get<PolylineWireframe>().SetGeometry(_oldGeometry.Positions);
 
         // Data
-        polylineE.Get<PolylineGeometry>() = _oldGeometry;
+        targetE.Get<PolylineGeometry>() = _oldGeometry;
     }
 }
