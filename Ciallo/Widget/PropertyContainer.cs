@@ -27,16 +27,14 @@ public partial class PropertyContainer : VBoxContainer
 
     public static BoxContainer CreateBox()
     {
-        var box = new VBoxContainer()
-        {
-        };
+        var box = new VBoxContainer();
         box.AddThemeConstantOverride("separation", 20);
         return box;
     }
 
     public static Container CreatePropertyControl(string name, [NotNull] Control control)
     {
-        // Note: If a control's CustomMinimumSize is zero, it will never be wrapped in FlowContainer.
+        // Pitfall: If a control's CustomMinimumSize is zero, it will never be wrapped in FlowContainer.
         var box = CreateHContainer();
         box.AddChild(new Label
         {
@@ -44,14 +42,14 @@ public partial class PropertyContainer : VBoxContainer
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Left,
             SizeFlagsVertical = SizeFlags.ShrinkBegin,
-            CustomMinimumSize = new(150, 0),
+            CustomMinimumSize = new(32, 0),
         });
         control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         box.AddChild(control);
 
         if (control is not CheckBox)
         {
-            var controlMinSize = control.CustomMinimumSize.Max(new Vector2(150, 30));
+            var controlMinSize = control.CustomMinimumSize.Max(new Vector2(32, 32));
             control.CustomMinimumSize = controlMinSize;
         }
         return box;
@@ -59,9 +57,7 @@ public partial class PropertyContainer : VBoxContainer
 
     public static Container CreateHContainer()
     {
-        var box = new HFlowContainer()
-        {
-        };
+        var box = new HFlowContainer();
         box.AddThemeConstantOverride("h_separation", 15);
         return box;
     }
@@ -92,7 +88,7 @@ public partial class PropertyContainer : VBoxContainer
             Name = text,
             Text = text,
             Alignment = HorizontalAlignment.Left,
-            CustomMinimumSize = new(0, 30),
+            CustomMinimumSize = new(0, 32),
             SizeFlagsHorizontal = SizeFlags.Fill,
         };
         return button;

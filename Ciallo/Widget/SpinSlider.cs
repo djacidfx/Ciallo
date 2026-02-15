@@ -128,7 +128,7 @@ public partial class SpinSlider : HBoxContainer
             AllowGreater = _allowGreater,
             Rounded = _rounded,
             Value = _value,
-            CustomMinimumSize = new(100, 0),
+            CustomMinimumSize = new(64, 0),
             Scrollable = false,
             SizeFlagsVertical = SizeFlags.ShrinkCenter | SizeFlags.ExpandFill,
             SizeFlagsHorizontal = SizeFlags.ExpandFill

@@ -37,7 +37,7 @@ public partial class PaintFillTool : StateMachineToolBase
     {
         container.AddProperty("Fill Color", new ColorPickerButton
         {
-            CustomMinimumSize = new(0, 30),
+            CustomMinimumSize = new(0, 32),
         }.BindColor(Color));
     }
 

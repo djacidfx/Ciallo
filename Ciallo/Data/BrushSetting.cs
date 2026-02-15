@@ -64,7 +64,7 @@ public class BrushSetting
 
         var colorPickerButton = new ColorPickerButton()
         {
-            CustomMinimumSize = new(0, 30),
+            CustomMinimumSize = new(0, 32),
         };
         var picker = colorPickerButton.GetPicker();
         picker.ColorModesVisible = false;
