@@ -1,10 +1,8 @@
-using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.GuiBinding;
 using Ciallo.GuiControl;
-using Ciallo.Misc;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -45,7 +43,8 @@ public class PaintTool : StateMachineToolBase
 
         var brushSelector = new OptionButton()
             {
-                CustomMinimumSize = new(0, 30),
+                CustomMinimumSize = new(256, 32),
+                FitToLongestItem = false,
             }
             .ObserveObservableList(AppBrushLibrary.BrushSettings, s => s.Name)
             .BindSelectionIndex(AppBrushLibrary.SelectedIndex);
@@ -61,24 +60,24 @@ public class PaintTool : StateMachineToolBase
             Step = 0.03333333f,
             ExpEdit = true
         }.ReactiveBindNumber(radiusView);
-        var boxBrushRadius = container.AddProperty("Radius", appBrushRadiusControl);
-        boxBrushRadius.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
+        container.AddProperty("Radius", appBrushRadiusControl)
+            .VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
 
         var colorView = AppBrushLibrary.SelectedIndex
             .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color)
             .ToReadOnlyReactiveProperty();
         var appBrushColorControl = new ColorPickerButton()
         {
-            CustomMinimumSize = new(0, 30),
+            CustomMinimumSize = new(0, 32),
         }.ReactiveBindColor(colorView);
-        var boxBrushColor = container.AddProperty("Color", appBrushColorControl);
-        boxBrushColor.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
+        container.AddProperty("Color", appBrushColorControl)
+            .VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
 
         var useBrushButton = new Button()
         {
             Text = "Use brush",
             Alignment = HorizontalAlignment.Left,
-            CustomMinimumSize = new(0, 30),
+            CustomMinimumSize = new(0, 32),
             SizeFlagsHorizontal = Control.SizeFlags.Fill
         };
         useBrushButton.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
@@ -87,7 +86,7 @@ public class PaintTool : StateMachineToolBase
         {
             Text = "Manage brush library",
             Alignment = HorizontalAlignment.Left,
-            CustomMinimumSize = new(0, 30),
+            CustomMinimumSize = new(0, 32),
             SizeFlagsHorizontal = Control.SizeFlags.Fill
         };
         manageButton.Pressed += () => GetTree().GetNodesInGroup("Dialog").OfType<BrushPanel>().First().Popup();
@@ -103,52 +102,15 @@ public class PaintTool : StateMachineToolBase
         // ---------------------------------------------
         var brushList = new DocumentBrushList()
         {
-            CustomMinimumSize = new(0, 150),
+            CustomMinimumSize = new(256, 150),
         };
-        brushList.ItemSelected += idx =>
-        {
-            new CommandBuilder(Document.Get<BrushManager>().Brushes[(int)idx]).SetWorkingBrush().Commit();
-        };
-        brushList.ItemClicked += async (idx, _, buttonIndex) =>
-        {
-            if ((MouseButton)buttonIndex != MouseButton.Right) return;
-            var brushE = Document.Get<BrushManager>().Brushes[(int)idx];
-            var query = brushE.World.CreateQuery().With<StrokeSetting>().Build();
-            List<Entity> toDeleteShapes = [];
-            foreach (var strokeE in query.EnumerateWithEntities())
-            {
-                if (strokeE.Get<StrokeSetting>().BrushE == brushE)
-                    toDeleteShapes.Add(strokeE);
-            }
-
-            if (toDeleteShapes.Count > 0)
-            {
-                var dialog = GetTree().GetNodesInGroup("Dialog").OfType<YesNoDialog>().First();
-                dialog.DialogText = "[Delete Brush Hint]".Tr();
-                if (!await dialog.PopupCollectInput()) return;
-            }
-
-            var builder = new CommandBuilder(Entity.Null);
-            foreach (var strokeE in toDeleteShapes)
-            {
-                builder.SetTarget(strokeE).RemoveFromLayerTree().DeleteShape();
-            }
-
-            var selectionManager = Document.Get<SelectionManager>();
-            if (selectionManager.WorkingBrush.Value == brushE)
-                builder.SetTarget(Entity.Null).SetWorkingBrush();
-            builder.SetTarget(brushE).DeleteBrush();
-            builder.Commit();
-        };
-        var brushM = Document.Get<BrushManager>();
-        var selectionM = Document.Get<SelectionManager>();
-        foreach (var brushE in brushM.Brushes)
-            brushList.AddItem(brushE.Get<BrushSetting>().Name.Value);
         Document.Add(brushList);
         container.AddProperty("Brush in document", brushList);
 
+        var selectionM = Document.Get<SelectionManager>();
         var rView = selectionM.WorkingBrush
-            .Select(e => e.IsDyingOrDead ? null : e.Get<BrushSetting>().BaseRadius).ToReadOnlyReactiveProperty();
+            .Select(e => e.IsDyingOrDead ? null : e.Get<BrushSetting>().BaseRadius)
+            .ToReadOnlyReactiveProperty();
         var radiusControl = new SpinSlider
         {
             MinValue = 0.1f,
@@ -163,7 +125,7 @@ public class PaintTool : StateMachineToolBase
         {
             Text = "Manage brush in document",
             Alignment = HorizontalAlignment.Left,
-            CustomMinimumSize = new(0, 30),
+            CustomMinimumSize = new(0, 32),
             SizeFlagsHorizontal = Control.SizeFlags.Fill
         };
         manageDocumentBrush.Pressed += () => Document.Get<BrushPanel>().Popup();
