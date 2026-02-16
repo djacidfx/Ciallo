@@ -16,49 +16,48 @@ public static class BindCheckBox
         return button;
     }
 
-    public static CheckBox BindBool(this CheckBox checkBox, ReactiveProperty<bool> property, out CompositeDisposable subs)
+    extension(CheckBox checkBox)
     {
-        BindBool((BaseButton)checkBox, property, out subs);
-        return checkBox;
-    }
+        public CheckBox BindBool(ReactiveProperty<bool> property, out CompositeDisposable subs)
+        {
+            BindBool((BaseButton)checkBox, property, out subs);
+            return checkBox;
+        }
+        public CheckBox BindBool(ReactiveProperty<bool> property)
+        {
+            BindBool(checkBox, property, out var sub);
+            sub.AddTo(checkBox);
+            return checkBox;
+        }
+        /// <summary>
+        /// Bind a bitflag property to a CheckBox.
+        /// </summary>
+        /// <param name="property"></param>
+        /// <param name="mask">The bits to toggle on and off</param>
+        /// <param name="subs"></param>
+        /// <typeparam name="T">Enum with FlagsAttribute</typeparam>
+        public CheckBox BindFlag<T>(ReactiveProperty<T> property, T mask, out CompositeDisposable subs) where T : Enum
+        {
+            subs = new CompositeDisposable();
 
-    public static CheckBox BindBool(this CheckBox checkBox, ReactiveProperty<bool> property)
-    {
-        BindBool(checkBox, property, out var sub);
-        sub.AddTo(checkBox);
-        return checkBox;
-    }
-
-    /// <summary>
-    /// Bind a bitflag property to a CheckBox.
-    /// </summary>
-    /// <param name="checkBox"></param>
-    /// <param name="property"></param>
-    /// <param name="mask">The bits to toggle on and off</param>
-    /// <param name="subs"></param>
-    /// <typeparam name="T">Enum with FlagsAttribute</typeparam>
-    public static CheckBox BindFlag<T>(this CheckBox checkBox, ReactiveProperty<T> property, T mask, out CompositeDisposable subs) where T : Enum
-    {
-        subs = new CompositeDisposable();
-
-        // reflect enum bits to checkbox pressed state
-        property.Subscribe(value => checkBox.ButtonPressed = value.HasFlag(mask)).AddTo(subs);
-        checkBox
-            .OnToggledAsObservable()
-            .Subscribe(pressed =>
-            {
-                property.Value = pressed
-                    ? (T)((dynamic)property.Value | (dynamic)mask)
-                    : (T)((dynamic)property.Value & ~(dynamic)mask);
-            })
-            .AddTo(subs);
-        return checkBox;
-    }
-
-    public static CheckBox BindFlag<T>(this CheckBox checkBox, ReactiveProperty<T> property, T mask) where T : Enum
-    {
-        BindFlag(checkBox, property, mask, out var sub);
-        sub.AddTo(checkBox);
-        return checkBox;
+            // reflect enum bits to checkbox pressed state
+            property.Subscribe(value => checkBox.ButtonPressed = value.HasFlag(mask)).AddTo(subs);
+            checkBox
+                .OnToggledAsObservable()
+                .Subscribe(pressed =>
+                {
+                    property.Value = pressed
+                        ? (T)((dynamic)property.Value | (dynamic)mask)
+                        : (T)((dynamic)property.Value & ~(dynamic)mask);
+                })
+                .AddTo(subs);
+            return checkBox;
+        }
+        public CheckBox BindFlag<T>(ReactiveProperty<T> property, T mask) where T : Enum
+        {
+            BindFlag(checkBox, property, mask, out var sub);
+            sub.AddTo(checkBox);
+            return checkBox;
+        }
     }
 }
