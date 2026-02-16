@@ -10,12 +10,21 @@ namespace Ciallo;
 /// </summary>
 public partial class CommandManager : UndoRedo
 {
-    public readonly ReactiveProperty<bool> DocumentModified = new(false);
+    private ulong _savedVersion;
+    private readonly ReactiveProperty<bool> _documentModified = new(false);
+    public ReadOnlyReactiveProperty<bool> DocumentModified => _documentModified;
     public readonly Subject<bool> UndoRedoExecuted = new(); // true is undo, false is redo
 
     public CommandManager()
     {
         SetMaxSteps(3);
+        _savedVersion = GetVersion();
+        VersionChanged += () =>
+        {
+            // Note UndoRedo invoke VersionChanged at free, so check if alive
+            if (IsInstanceValid(this))
+                _documentModified.Value = _savedVersion != GetVersion();
+        };
     }
 
     public void AddDo(CommandWrapperObject cmdWrapper)
@@ -35,21 +44,27 @@ public partial class CommandManager : UndoRedo
     public new void CommitAction(bool execute = true)
     {
         base.CommitAction(execute);
-        DocumentModified.Value = true;
+        _documentModified.Value = true;
     }
 
     public new void Undo()
     {
+        if (!HasUndo()) return;
         base.Undo();
-        DocumentModified.Value = true;
         UndoRedoExecuted.OnNext(true);
     }
 
     public new void Redo()
     {
+        if (!HasRedo()) return;
         base.Redo();
-        DocumentModified.Value = true;
         UndoRedoExecuted.OnNext(false);
+    }
+
+    public void OnSave()
+    {
+        _savedVersion = GetVersion();
+        _documentModified.Value = false;
     }
 }
 
