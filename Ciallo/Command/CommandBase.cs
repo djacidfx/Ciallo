@@ -15,7 +15,6 @@ public abstract class CommandBase : ICommand
     public Entity Document => WorkingWorld.Document();
     public virtual string Name => GetType().Name.Humanize();
     public SceneTree SceneTree => (SceneTree)Engine.GetMainLoop();
-    public CommandManager CommandManager => Document.Get<CommandManager>();
 
     public Array<Node> GetNodesInGroup(StringName group) => SceneTree.GetNodesInGroup(group);
 

@@ -25,7 +25,6 @@ public class NewFilledPolygonCmd : CommandBase
         targetE.Add(layerNode);
         targetE.Add(new PolylineGeometry());
         targetE.Add(_setting);
-        _setting.RegisterProperties(CommandManager).AddTo(targetE);
 
         // View
         var polygonView = new Polygon2D() { Antialiased = true }; // The antialiasing result is not satisfying

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Ciallo.Command;
+﻿using Ciallo.Command;
 using Godot;
 using R3;
 
@@ -34,33 +32,6 @@ public partial class CommandManager : UndoRedo
         AddUndoReference(cmdWrapper); // order matters
     }
 
-    public static bool SkipPropertyCommit = false; // not thread safe
-    /// <summary>
-    /// Make a ReactiveProperty redo undoable
-    /// </summary>
-    /// <returns> Subscriptions to unregister </returns>
-    public CompositeDisposable RegisterProperty<T>(ReactiveProperty<T> property)
-    {
-        ReactiveProperty<T> old = new(property.Value);
-        var subs = new CompositeDisposable();
-
-        // If time within TimeSpan has no more changes, commit the final value.
-        property.Skip(1).Where(_ => !SkipPropertyCommit).Debounce(TimeSpan.FromMilliseconds(250)).Subscribe(newValue =>
-        {
-            if (EqualityComparer<T>.Default.Equals(old.Value, newValue)) return;
-            var obj = new PropertyWrapperObject<T>(property, old);
-            CreateAction("Property Change");
-            AddDoMethod(new(obj, PropertyWrapperObject<T>.MethodName.Do));
-            AddDoReference(obj);
-            AddUndoReference(obj);
-            AddUndoMethod(new(obj, PropertyWrapperObject<T>.MethodName.Undo));
-            CommitAction(false); // Property already been the value
-            old.Value = newValue;
-        }).AddTo(subs);
-
-        return subs;
-    }
-
     public new void CommitAction(bool execute = true)
     {
         base.CommitAction(execute);
@@ -79,27 +50,6 @@ public partial class CommandManager : UndoRedo
         base.Redo();
         DocumentModified.Value = true;
         UndoRedoExecuted.OnNext(false);
-    }
-}
-
-public partial class PropertyWrapperObject<T>(ReactiveProperty<T> property, ReactiveProperty<T> old) : GodotObject
-{
-    public readonly T NewValue = property.Value;
-    public readonly T OldValue = old.Value;
-
-    public void Do()
-    {
-        CommandManager.SkipPropertyCommit = true;
-        property.Value = NewValue;
-        CommandManager.SkipPropertyCommit = false;
-        old.Value = NewValue;
-    }
-    public void Undo()
-    {
-        CommandManager.SkipPropertyCommit = true;
-        property.Value = OldValue;
-        CommandManager.SkipPropertyCommit = false;
-        old.Value = OldValue;
     }
 }
 

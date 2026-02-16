@@ -34,7 +34,6 @@ public class NewShapeLayerCmd : CommandBase
             Name = { Value = $"{"Shape layer".Tr()} {LayerTreeNode.LayerCreationId++}" }
         };
         targetE.Add(_commonSetting);
-        _commonSetting.RegisterProperties(Document.Get<CommandManager>()).AddTo(targetE);
         targetE.Add(_setting);
 
         // View

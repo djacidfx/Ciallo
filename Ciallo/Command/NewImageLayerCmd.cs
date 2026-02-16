@@ -39,9 +39,7 @@ public class NewImageLayerCmd : CommandBase
         targetE.Add(layerNode);
         _commonSetting ??= new CommonLayerSetting { Name = { Value = "Image".Tr() } };
         targetE.Add(_commonSetting);
-        _commonSetting.RegisterProperties(CommandManager).AddTo(targetE);
         targetE.Add(_setting);
-        CommandManager.RegisterProperty(_setting.ImageTransform).AddTo(targetE);
 
         // View
         var sprite = new Sprite2D
