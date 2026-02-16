@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using Ciallo.Command;
 using Godot;
 using R3;
 
-namespace Ciallo.Command;
+// ReSharper disable once CheckNamespace
+namespace Ciallo;
 
 /// <summary>
 /// Inherits from UndoRedo with extra methods to manage commands.
