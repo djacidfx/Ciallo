@@ -4,12 +4,11 @@ using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Ciallo.Misc;
 using Godot;
 using ObservableCollections;
 using R3;
 
-namespace Ciallo.GuiBinding;
+namespace Ciallo;
 
 // Note: DeselectAll does not emit ItemSelected signal
 // Shen: being lazy here, not implement output disposable version

@@ -3,7 +3,6 @@ using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
-using Ciallo.GuiBinding;
 using Ciallo.Rendering;
 using Ciallo.Widget;
 using Frent;

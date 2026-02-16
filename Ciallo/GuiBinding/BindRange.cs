@@ -4,7 +4,7 @@ using Godot;
 using R3;
 using Range = Godot.Range;
 
-namespace Ciallo.GuiBinding;
+namespace Ciallo;
 
 public static class BindRange
 {

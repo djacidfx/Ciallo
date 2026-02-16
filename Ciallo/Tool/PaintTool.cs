@@ -1,7 +1,6 @@
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
-using Ciallo.GuiBinding;
 using Ciallo.GuiControl;
 using Ciallo.Widget;
 using Frent;

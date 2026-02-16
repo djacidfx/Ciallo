@@ -1,7 +1,7 @@
 ﻿using Godot;
 using R3;
 
-namespace Ciallo.GuiBinding;
+namespace Ciallo;
 
 public static class BindLineEdit
 {

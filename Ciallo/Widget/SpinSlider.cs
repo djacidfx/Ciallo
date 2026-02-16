@@ -1,5 +1,4 @@
-﻿using Ciallo.GuiBinding;
-using Godot;
+﻿using Godot;
 using Range = Godot.Range;
 
 namespace Ciallo.Widget;

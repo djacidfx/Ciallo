@@ -1,5 +1,4 @@
 using Ciallo.Data;
-using Ciallo.GuiBinding;
 using Ciallo.Misc;
 using Frent;
 using Frent.Components;

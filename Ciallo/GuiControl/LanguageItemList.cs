@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Ciallo.Data;
-using Ciallo.GuiBinding;
 using Godot;
 
 namespace Ciallo.GuiControl;

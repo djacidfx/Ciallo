@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.Specialized;
 using System.Linq;
-using Ciallo.Misc;
 using Godot;
 using ObservableCollections;
 using R3;
 
-namespace Ciallo.GuiBinding;
+namespace Ciallo;
 
 public static class BindOptionButton
 {
