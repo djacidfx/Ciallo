@@ -26,7 +26,7 @@ public static class RegisterCheckBox
                 innerChange = true;
                 control.SetPressed(toggleOn);
             }));
-            manager.AddUndoMethod(Callable.From(delegate
+            manager.AddUndoMethod(Callable.From(() =>
             {
                 innerChange = true;
                 control.SetPressed(!toggleOn);
