@@ -19,6 +19,8 @@ public static class RegisterCheckBox
                 return;
             }
             manager.CreateAction("Toggle checkbox " + control.Name);
+            // Block error messages on passing CustomCallable with lambda
+            Engine.PrintErrorMessages = false;
             manager.AddDoMethod(Callable.From(() =>
             {
                 innerChange = true;
@@ -29,6 +31,7 @@ public static class RegisterCheckBox
                 innerChange = true;
                 control.SetPressed(!toggleOn);
             }));
+            Engine.PrintErrorMessages = true;
             manager.CommitAction(false);
         };
         return control;
