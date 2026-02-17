@@ -111,12 +111,13 @@ public class PaintTool : StateMachineToolBase
             .Select(e => e.IsDyingOrDead ? null : e.Get<BrushSetting>().BaseRadius)
             .ToReadOnlyReactiveProperty();
         var radiusControl = new SpinSlider
-        {
-            MinValue = 0.1f,
-            MaxValue = 256f,
-            Step = 0.03333333f,
-            ExpEdit = true,
-        }.ReactiveBindNumber(rView);
+            {
+                MinValue = 0.1f,
+                MaxValue = 256f,
+                Step = 0.03333333f,
+                ExpEdit = true,
+            }.ReactiveBindNumber(rView)
+            .RegisterUndo(Document.Get<CommandManager>());
         var radiusBox = container.AddProperty("Radius", radiusControl);
         radiusBox.VisibleIf(selectionM.WorkingBrush, e => !e.IsNull);
 

@@ -1,5 +1,4 @@
 ﻿using Godot;
-using Range = Godot.Range;
 
 namespace Ciallo.Widget;
 
@@ -10,7 +9,7 @@ namespace Ciallo.Widget;
 public partial class SpinSlider : HBoxContainer
 {
     [Signal]
-    public delegate void ValueChangedEventHandler(double newValue);
+    public delegate void ValueChangedEventHandler(double oldValue, double newValue);
 
     public HSlider Slider { get; private set; }
     public SpinBox SpinBox { get; private set; }
@@ -45,8 +44,12 @@ public partial class SpinSlider : HBoxContainer
         get => _value;
         set
         {
+            // ReSharper disable once CompareOfFloatsByEqualityOperator
+            if (_value == value) return;
+            var oldValue = _value;
             _value = value;
-            if (IsInstanceValid(Slider)) Slider.Value = value;
+            if (IsInstanceValid(Slider)) Slider.SetValueNoSignal(value);
+            EmitSignalValueChanged(oldValue, value);
         }
     }
 
@@ -140,7 +143,8 @@ public partial class SpinSlider : HBoxContainer
         Slider.Share(SpinBox);
         AddChild(Slider);
         AddChild(SpinBox);
-        Connect(Slider);
+
+        Slider.ValueChanged += v => Value = v;
 
         // Pitfall: LineEdit has no way to show rounded number without modifying the number itself.
         // Have to do this manually.
@@ -154,17 +158,6 @@ public partial class SpinSlider : HBoxContainer
         SpinBox.GetLineEdit().SubmitOnFocusExit();
     }
 
-    private void Connect(Range control)
-    {
-        control.ValueChanged += value =>
-        {
-            // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (_value == value) return;
-            _value = value;
-            EmitSignal(SignalName.ValueChanged, Value);
-        };
-    }
-
     public void SetValueNoSignal(double value)
     {
         _value = value;
@@ -172,5 +165,32 @@ public partial class SpinSlider : HBoxContainer
             Slider.SetValueNoSignal(value);
     }
 
-    public void RegisterUndo(CommandManager manager) { }
+    public SpinSlider RegisterUndo(CommandManager manager)
+    {
+        // block inner change to avoid infinite loop.
+        bool innerChange = false;
+        ValueChanged += (oldValue, newValue) =>
+        {
+            if (innerChange)
+            {
+                innerChange = false;
+                return;
+            }
+            manager.CreateAction("Change value of SpinSlider " + GetInstanceId(), UndoRedo.MergeMode.Ends);
+            Engine.PrintErrorMessages = false;
+            manager.AddDoMethod(Callable.From(() =>
+            {
+                innerChange = true;
+                Value = newValue;
+            }));
+            manager.AddUndoMethod(Callable.From(() =>
+            {
+                innerChange = true;
+                Value = oldValue;
+            }));
+            Engine.PrintErrorMessages = true;
+            manager.CommitAction(false);
+        };
+        return this;
+    }
 }

@@ -56,8 +56,8 @@ public static class BindRange
         {
             subs = new();
             property.Subscribe(value => spinSlider.SetValueNoSignal(double.CreateChecked<T>(value))).AddTo(subs);
-            spinSlider.SignalAsObservable<float>(SpinSlider.SignalName.ValueChanged)
-                .Subscribe(value => property.Value = T.CreateChecked(value))
+            spinSlider.SignalAsObservable<double, double>(SpinSlider.SignalName.ValueChanged)
+                .Subscribe(v => property.Value = T.CreateChecked(v.Item2))
                 .AddTo(subs);
             return spinSlider;
         }

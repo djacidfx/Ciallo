@@ -60,7 +60,9 @@ public partial class LayerContainer : Container
         property.VisibleIf(AppDocumentManager.WorkingDocument.CurrentValue.Get<SelectionManager>().WorkingLayer, e);
         e.Add(property);
 
-        property.Opacity.BindNumber(e.Get<CommonLayerSetting>().Opacity);
+        property.Opacity
+            .BindNumber(e.Get<CommonLayerSetting>().Opacity)
+            .RegisterUndo(e.Document.Get<CommandManager>());
     }
 
     public void CreateInsertBlock(Entity e, int index)
