@@ -10,7 +10,7 @@ public static class BindCheckBox
     {
         if (!button.ToggleMode) throw new ArgumentException("Button must be in toggle mode", nameof(button));
         subs = new CompositeDisposable();
-        property.Subscribe(value => button.ButtonPressed = value).AddTo(subs);
+        property.Subscribe(button.SetPressedNoSignal).AddTo(subs);
         button.OnToggledAsObservable()
             .Subscribe(value => property.Value = value).AddTo(subs);
         return button;
@@ -41,7 +41,7 @@ public static class BindCheckBox
             subs = new CompositeDisposable();
 
             // reflect enum bits to checkbox pressed state
-            property.Subscribe(value => checkBox.ButtonPressed = value.HasFlag(mask)).AddTo(subs);
+            property.Subscribe(value => checkBox.SetPressedNoSignal(value.HasFlag(mask))).AddTo(subs);
             checkBox
                 .OnToggledAsObservable()
                 .Subscribe(pressed =>

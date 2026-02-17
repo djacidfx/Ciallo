@@ -53,13 +53,6 @@ public partial class LayerContainer : Container
         CreateAddProperty(layerE);
     }
 
-    public void CreateAdd(Entity layerE)
-    {
-        _subscriptions[layerE] = new CompositeDisposable();
-        CreateAddBlock(layerE);
-        CreateAddProperty(layerE);
-    }
-
     public void CreateAddProperty(Entity e)
     {
         var property = LayerProperty.Instantiate();
@@ -72,16 +65,9 @@ public partial class LayerContainer : Container
 
     public void CreateInsertBlock(Entity e, int index)
     {
-        var control = CreateAddBlock(e);
-        _rootContainer.MoveChild(control, index);
-    }
-
-    public Control CreateAddBlock(Entity e)
-    {
         var layerControl = CreateBlock(e);
-        _rootContainer.AddChild(layerControl);
+        _rootContainer.InsertNodeAt(layerControl, index);
         e.Add(layerControl);
-        return layerControl;
     }
 
     private LayerBlock CreateBlock(Entity e)
@@ -91,7 +77,9 @@ public partial class LayerContainer : Container
 
         var block = LayerBlock.Instantiate();
         block.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
-        block.VisibleButton.BindBool(commonSetting.IsVisible, out var sub);
+        block.VisibleButton
+            .BindBool(commonSetting.IsVisible, out var sub)
+            .RegisterUndo(e.Document.Get<CommandManager>());
         sub.AddTo(subs);
 
         var lineEdit = block.GetNode<LabelLineEdit>("%LabelLineEdit");
