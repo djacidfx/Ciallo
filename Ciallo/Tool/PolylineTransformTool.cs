@@ -71,7 +71,7 @@ public class PolylineTransformTool : StateMachineToolBase
             MaxValue = 0.5,
         };
         simplificationRatioEdit.BindNumber(SimplificationRatio);
-        container.CreatePropertyContainer("Simplification ratio", simplificationRatioEdit).AddToChildOf(polylineEditBox);
+        container.CreatePropertyBox("Simplification ratio", simplificationRatioEdit).AddToChildOf(polylineEditBox);
 
         var simplifyButton = container.CreateButton("Simplify").AddToChildOf(polylineEditBox);
         simplifyButton.Pressed += () =>

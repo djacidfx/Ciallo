@@ -1,5 +1,4 @@
 using Ciallo.Data;
-using Ciallo.Misc;
 using Ciallo.Tool;
 using Ciallo.Widget;
 using Godot;
@@ -24,17 +23,15 @@ public partial class ToolPropertyPanel : Container
             var holder = new DocumentToolPropertyContainer()
             {
                 SizeFlagsHorizontal = SizeFlags.ExpandFill
-            };
-            holder.VisibleIf(AppDocumentManager.WorkingDocument, document);
+            }.VisibleIf(AppDocumentManager.WorkingDocument, document);
             document.Add(holder);
             PropertyHolder.AddChild(holder);
 
             var toolManager = document.Get<ToolManager>();
             foreach (var tool in toolManager.Tools)
             {
-                var container = new PropertyContainer();
+                var container = new PropertyContainer(document);
                 container.VisibleIf(toolManager.ActiveTool, tool);
-
                 container.QueueFreeChildren();
                 tool.DrawProperty(container);
 
@@ -44,9 +41,8 @@ public partial class ToolPropertyPanel : Container
 
         AppDocumentManager.LoadedDocuments.ObserveRemove().Select(et => et.Value).Subscribe(document =>
         {
-            var box = document.Get<DocumentToolPropertyContainer>();
+            document.Get<DocumentToolPropertyContainer>().QueueFree();
             document.Remove<DocumentToolPropertyContainer>();
-            box.QueueFree();
         }).AddTo(this);
     }
 }

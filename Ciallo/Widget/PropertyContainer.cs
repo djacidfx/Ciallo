@@ -7,6 +7,13 @@ namespace Ciallo.Widget;
 [GlobalClass, Icon("res://Icon/tune.svg")]
 public partial class PropertyContainer : VBoxContainer
 {
+    public PropertyContainer() { }
+
+    public PropertyContainer(Entity document)
+    {
+        Document = document;
+    }
+
     public Entity Document;
 
     public override void _EnterTree()
@@ -16,7 +23,7 @@ public partial class PropertyContainer : VBoxContainer
 
     public Container AddProperty(string name, [NotNull] Control control)
     {
-        var box = CreatePropertyContainer(name, control);
+        var box = CreatePropertyBox(name, control);
         AddChild(box);
         return box;
     }
@@ -28,9 +35,28 @@ public partial class PropertyContainer : VBoxContainer
         return child;
     }
 
-    public void AssignDocument(Entity document)
+    /// <summary>
+    /// Make control undoable if possible. Return true if undo is registered successfully
+    /// </summary>
+    /// <param name="control"></param>
+    /// <returns></returns>
+    private bool RegisterUndo(Control control)
     {
-        Document = document;
+        if (Document.IsNull) return false;
+        var cmdM = Document.Get<CommandManager>();
+        switch (control)
+        {
+            case ColorPickerButton colorPickerButton:
+                colorPickerButton.RegisterUndo(cmdM);
+                return true;
+            case CheckBox checkBox:
+                checkBox.RegisterUndo(cmdM);
+                return true;
+            case SpinSlider spinSlider:
+                spinSlider.RegisterUndo(cmdM);
+                return true;
+        }
+        return false;
     }
 
     public BoxContainer CreateBox()
@@ -40,8 +66,9 @@ public partial class PropertyContainer : VBoxContainer
         return box;
     }
 
-    public Container CreatePropertyContainer(string name, [NotNull] Control control)
+    public Container CreatePropertyBox(string name, [NotNull] Control control)
     {
+        RegisterUndo(control);
         // Pitfall: If a control's CustomMinimumSize is zero, it will never be wrapped in FlowContainer.
         var box = CreateHContainer();
         box.AddChild(new Label
@@ -75,6 +102,7 @@ public partial class PropertyContainer : VBoxContainer
     /// </summary>
     public Container CreateCheckBoxCombo(string name, CheckBox checkBox, Control control)
     {
+        RegisterUndo(control);
         control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         control.Visible = checkBox.IsPressed();
 

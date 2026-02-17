@@ -98,7 +98,7 @@ public class BrushSetting
             AllowLesser = true,
             AllowGreater = true,
         }.BindNumber(StampInterval);
-        container.CreatePropertyContainer("Interval", stampIntervalControl).AddToChildOf(stampBox);
+        container.CreatePropertyBox("Interval", stampIntervalControl).AddToChildOf(stampBox);
 
         var stampTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.StampTexture);
         var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage).VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.StampTexture));
@@ -122,7 +122,7 @@ public class BrushSetting
         var degreeView = StampRotation.Project(Mathf.RadToDeg, Mathf.DegToRad, out var subs);
         subs.AddTo(stampRotationControl);
         stampRotationControl.BindNumber(degreeView);
-        container.CreatePropertyContainer("Stamp rotation", stampRotationControl).AddToChildOf(stampBox);
+        container.CreatePropertyBox("Stamp rotation", stampRotationControl).AddToChildOf(stampBox);
 
         var rotationNoiseFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.RotationNoise);
         var rotationNoiseBox = new VBoxContainer();
@@ -136,7 +136,7 @@ public class BrushSetting
             AllowGreater = true,
             Rounded = true,
         }.BindNumber(RotationNoiseOctave);
-        container.CreatePropertyContainer("Rotation noise octave", noiseOctaveControl).AddToChildOf(rotationNoiseBox);
+        container.CreatePropertyBox("Rotation noise octave", noiseOctaveControl).AddToChildOf(rotationNoiseBox);
 
         var rotationNoiseAmplitudeControl = new SpinSlider
         {
@@ -144,7 +144,7 @@ public class BrushSetting
             MaxValue = Mathf.Pi * 16,
             Step = 0.01,
         }.BindNumber(RotationNoiseAmplitude);
-        container.CreatePropertyContainer("Rotation noise amplitude", rotationNoiseAmplitudeControl).AddToChildOf(rotationNoiseBox);
+        container.CreatePropertyBox("Rotation noise amplitude", rotationNoiseAmplitudeControl).AddToChildOf(rotationNoiseBox);
 
         var rotationNoiseFrequencyControl = new SpinSlider
         {
@@ -154,7 +154,7 @@ public class BrushSetting
             AllowGreater = true,
             ExpEdit = true,
         }.BindNumber(RotationNoiseFrequency);
-        container.CreatePropertyContainer("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
+        container.CreatePropertyBox("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
 
         // ---------Airbrush----------
         var falloffCurveEdit = new MappingCurveEdit();

@@ -9,6 +9,8 @@ public static class RegisterCheckBox
 {
     public static CheckBox RegisterUndo(this CheckBox control, CommandManager manager)
     {
+        if (manager == null)
+            return control;
         // block inner change to avoid infinite loop.
         bool innerChange = false;
         control.Toggled += toggleOn =>
