@@ -118,7 +118,9 @@ public partial class BrushPanel : AcceptDialog
         }
     }
 
-    public void BindBrushSetting<T>(ObservableList<T> list, Func<T, BrushSetting> toBrushSetting)
+    public void BindBrushSetting<T>(
+        ObservableList<T> list,
+        Func<T, BrushSetting> toBrushSetting)
     {
         BrushSelector.ObserveObservableList(list, e => toBrushSetting(e).Name)
             .BindSelectionIndex(SelectedIndex);
@@ -152,7 +154,7 @@ public partial class BrushPanel : AcceptDialog
                     PropertiesHolder.QueueFreeChildren();
                     break;
                 case NotifyCollectionChangedAction.Replace:
-                    throw new("Replace action is not supported yet");
+                    throw new("Replace action is not supported");
             }
         }).AddTo(this);
     }

@@ -79,13 +79,13 @@ public class BrushSetting
         var pp2FlowCurveEdit = new MappingCurveEdit();
         pp2FlowCurveEdit.Curve = Pressure2FlowCurve;
         var flowCurveFlagCheck = new CheckBox().BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
-        PropertyContainer.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit).AddToChildOf(container);
+        container.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit).AddToChildOf(container);
 
         var typeButton = new OptionButton().BindEnum(RenderingType);
         container.AddProperty("Rendering type", typeButton);
 
         // ---------Stamp------------ 
-        var stampBox = PropertyContainer.CreateBox();
+        var stampBox = container.CreateBox();
         stampBox.VisibleIf(RenderingType, BrushRenderingType.Stamp);
         container.AddChild(stampBox);
 
@@ -98,20 +98,20 @@ public class BrushSetting
             AllowLesser = true,
             AllowGreater = true,
         }.BindNumber(StampInterval);
-        PropertyContainer.CreatePropertyControl("Interval", stampIntervalControl).AddToChildOf(stampBox);
+        container.CreatePropertyContainer("Interval", stampIntervalControl).AddToChildOf(stampBox);
 
         var stampTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.StampTexture);
         var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage).VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.StampTexture));
-        PropertyContainer.CreateCheckBoxCombo("Stamp texture", stampTextureFlagCheck, stampTextureEdit).AddToChildOf(stampBox);
+        container.CreateCheckBoxCombo("Stamp texture", stampTextureFlagCheck, stampTextureEdit).AddToChildOf(stampBox);
 
         var maskDiskFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskDisk);
         var diskOpacityCurveEdit = new MappingCurveEdit();
         diskOpacityCurveEdit.Curve = DiskOpacityCurve;
-        PropertyContainer.CreateCheckBoxCombo("Mask disk", maskDiskFlagCheck, diskOpacityCurveEdit).AddToChildOf(stampBox);
+        container.CreateCheckBoxCombo("Mask disk", maskDiskFlagCheck, diskOpacityCurveEdit).AddToChildOf(stampBox);
 
         var maskTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskTexture);
         var maskTextureEdit = ImageTextureEdit.Instantiate(MaskTexture, ConvertStampImage);
-        PropertyContainer.CreateCheckBoxCombo("Mask texture", maskTextureFlagCheck, maskTextureEdit).AddToChildOf(stampBox);
+        container.CreateCheckBoxCombo("Mask texture", maskTextureFlagCheck, maskTextureEdit).AddToChildOf(stampBox);
 
         var stampRotationControl = new SpinSlider
         {
@@ -122,11 +122,11 @@ public class BrushSetting
         var degreeView = StampRotation.Project(Mathf.RadToDeg, Mathf.DegToRad, out var subs);
         subs.AddTo(stampRotationControl);
         stampRotationControl.BindNumber(degreeView);
-        PropertyContainer.CreatePropertyControl("Stamp rotation", stampRotationControl).AddToChildOf(stampBox);
+        container.CreatePropertyContainer("Stamp rotation", stampRotationControl).AddToChildOf(stampBox);
 
         var rotationNoiseFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.RotationNoise);
         var rotationNoiseBox = new VBoxContainer();
-        PropertyContainer.CreateCheckBoxCombo("Rotation noise", rotationNoiseFlagCheck, rotationNoiseBox).AddToChildOf(stampBox);
+        container.CreateCheckBoxCombo("Rotation noise", rotationNoiseFlagCheck, rotationNoiseBox).AddToChildOf(stampBox);
 
         var noiseOctaveControl = new SpinSlider()
         {
@@ -136,7 +136,7 @@ public class BrushSetting
             AllowGreater = true,
             Rounded = true,
         }.BindNumber(RotationNoiseOctave);
-        PropertyContainer.CreatePropertyControl("Rotation noise octave", noiseOctaveControl).AddToChildOf(rotationNoiseBox);
+        container.CreatePropertyContainer("Rotation noise octave", noiseOctaveControl).AddToChildOf(rotationNoiseBox);
 
         var rotationNoiseAmplitudeControl = new SpinSlider
         {
@@ -144,7 +144,7 @@ public class BrushSetting
             MaxValue = Mathf.Pi * 16,
             Step = 0.01,
         }.BindNumber(RotationNoiseAmplitude);
-        PropertyContainer.CreatePropertyControl("Rotation noise amplitude", rotationNoiseAmplitudeControl).AddToChildOf(rotationNoiseBox);
+        container.CreatePropertyContainer("Rotation noise amplitude", rotationNoiseAmplitudeControl).AddToChildOf(rotationNoiseBox);
 
         var rotationNoiseFrequencyControl = new SpinSlider
         {
@@ -154,7 +154,7 @@ public class BrushSetting
             AllowGreater = true,
             ExpEdit = true,
         }.BindNumber(RotationNoiseFrequency);
-        PropertyContainer.CreatePropertyControl("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
+        container.CreatePropertyContainer("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
 
         // ---------Airbrush----------
         var falloffCurveEdit = new MappingCurveEdit();

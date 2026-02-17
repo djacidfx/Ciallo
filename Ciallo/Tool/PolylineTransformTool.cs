@@ -45,8 +45,8 @@ public class PolylineTransformTool : StateMachineToolBase
     public override void DrawProperty(PropertyContainer container)
     {
         var selectionManager = Document.Get<SelectionManager>();
-        var selectionButtonGroup = PropertyContainer.CreateHContainer().AddToChildOf(container);
-        var selectAllButton = PropertyContainer.CreateButton("Select all").AddToChildOf(selectionButtonGroup);
+        var selectionButtonGroup = container.CreateHContainer().AddToChildOf(container);
+        var selectAllButton = container.CreateButton("Select all").AddToChildOf(selectionButtonGroup);
         selectAllButton.Pressed += () =>
         {
             var layerE = selectionManager.WorkingLayer.Value;
@@ -55,14 +55,14 @@ public class PolylineTransformTool : StateMachineToolBase
             selectionManager.SelectedShapes.AddRange(layerE.Get<LayerTreeNode>().Children);
             Machine.Fire(Trigger.Refresh);
         };
-        var deselectAllButton = PropertyContainer.CreateButton("Deselect").AddToChildOf(selectionButtonGroup);
+        var deselectAllButton = container.CreateButton("Deselect").AddToChildOf(selectionButtonGroup);
         deselectAllButton.Pressed += () =>
         {
             selectionManager.SelectedShapes.Clear();
             Machine.Fire(Trigger.Refresh);
         };
 
-        var polylineEditBox = PropertyContainer.CreateBox().AddToChildOf(container)
+        var polylineEditBox = container.CreateBox().AddToChildOf(container)
             .VisibleIf(selectionManager.SelectedShapes.ObserveCountChanged().Prepend(0), count => count > 0);
 
         var simplificationRatioEdit = new SpinSlider()
@@ -71,9 +71,9 @@ public class PolylineTransformTool : StateMachineToolBase
             MaxValue = 0.5,
         };
         simplificationRatioEdit.BindNumber(SimplificationRatio);
-        PropertyContainer.CreatePropertyControl("Simplification ratio", simplificationRatioEdit).AddToChildOf(polylineEditBox);
+        container.CreatePropertyContainer("Simplification ratio", simplificationRatioEdit).AddToChildOf(polylineEditBox);
 
-        var simplifyButton = PropertyContainer.CreateButton("Simplify").AddToChildOf(polylineEditBox);
+        var simplifyButton = container.CreateButton("Simplify").AddToChildOf(polylineEditBox);
         simplifyButton.Pressed += () =>
         {
             var builder = new CommandBuilder(Entity.Null);
@@ -88,7 +88,7 @@ public class PolylineTransformTool : StateMachineToolBase
             builder.Commit();
         };
 
-        var smoothSubdivideButton = PropertyContainer.CreateButton("Smooth subdivide").AddToChildOf(polylineEditBox);
+        var smoothSubdivideButton = container.CreateButton("Smooth subdivide").AddToChildOf(polylineEditBox);
         smoothSubdivideButton.Pressed += () =>
         {
             var builder = new CommandBuilder(Entity.Null);
@@ -109,7 +109,7 @@ public class PolylineTransformTool : StateMachineToolBase
             builder.Commit();
         };
 
-        var linearSubdivideButton = PropertyContainer.CreateButton("Linear subdivide").AddToChildOf(polylineEditBox);
+        var linearSubdivideButton = container.CreateButton("Linear subdivide").AddToChildOf(polylineEditBox);
         linearSubdivideButton.Pressed += () =>
         {
             var builder = new CommandBuilder(Entity.Null);
@@ -130,7 +130,7 @@ public class PolylineTransformTool : StateMachineToolBase
             builder.Commit();
         };
 
-        var smoothButton = PropertyContainer.CreateButton("Smooth").AddToChildOf(polylineEditBox);
+        var smoothButton = container.CreateButton("Smooth").AddToChildOf(polylineEditBox);
         smoothButton.Pressed += () =>
         {
             var builder = new CommandBuilder(Entity.Null);

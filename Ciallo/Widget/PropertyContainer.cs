@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Frent;
 using Godot;
 
 namespace Ciallo.Widget;
@@ -6,6 +7,8 @@ namespace Ciallo.Widget;
 [GlobalClass, Icon("res://Icon/tune.svg")]
 public partial class PropertyContainer : VBoxContainer
 {
+    public Entity Document;
+
     public override void _EnterTree()
     {
         AddThemeConstantOverride("separation", 20);
@@ -13,7 +16,7 @@ public partial class PropertyContainer : VBoxContainer
 
     public Container AddProperty(string name, [NotNull] Control control)
     {
-        var box = CreatePropertyControl(name, control);
+        var box = CreatePropertyContainer(name, control);
         AddChild(box);
         return box;
     }
@@ -25,14 +28,19 @@ public partial class PropertyContainer : VBoxContainer
         return child;
     }
 
-    public static BoxContainer CreateBox()
+    public void AssignDocument(Entity document)
+    {
+        Document = document;
+    }
+
+    public BoxContainer CreateBox()
     {
         var box = new VBoxContainer();
         box.AddThemeConstantOverride("separation", 20);
         return box;
     }
 
-    public static Container CreatePropertyControl(string name, [NotNull] Control control)
+    public Container CreatePropertyContainer(string name, [NotNull] Control control)
     {
         // Pitfall: If a control's CustomMinimumSize is zero, it will never be wrapped in FlowContainer.
         var box = CreateHContainer();
@@ -55,7 +63,7 @@ public partial class PropertyContainer : VBoxContainer
         return box;
     }
 
-    public static Container CreateHContainer()
+    public Container CreateHContainer()
     {
         var box = new HFlowContainer();
         box.AddThemeConstantOverride("h_separation", 15);
@@ -65,7 +73,7 @@ public partial class PropertyContainer : VBoxContainer
     /// <summary>
     /// Control is visible if checkBox is pressed.
     /// </summary>
-    public static Container CreateCheckBoxCombo(string name, CheckBox checkBox, Control control)
+    public Container CreateCheckBoxCombo(string name, CheckBox checkBox, Control control)
     {
         control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         control.Visible = checkBox.IsPressed();
@@ -81,7 +89,7 @@ public partial class PropertyContainer : VBoxContainer
         return container;
     }
 
-    public static Button CreateButton(string text)
+    public Button CreateButton(string text)
     {
         var button = new Button()
         {
