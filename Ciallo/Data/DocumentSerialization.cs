@@ -115,7 +115,7 @@ public static partial class AppDocumentManager
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (CanSaveFile(settings.FilePath.Value))
             Save(WorkingDocument.Value, settings.FilePath.Value);
-        WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified.Value = false;
+        WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
     }
 
     public static void SaveWorkingWorldAs(string filePath)
@@ -127,7 +127,7 @@ public static partial class AppDocumentManager
             Save(WorkingDocument.Value, filePath);
             settings.FilePath.Value = filePath;
             settings.Name.Value = filePath.GetFile().GetBaseName();
-            WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified.Value = false;
+            WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
         }
     }
 
