@@ -25,7 +25,6 @@ public partial class SpinSlider : HBoxContainer
         {
             _minValue = value;
             if (IsInstanceValid(Slider)) Slider.MinValue = value;
-            if (IsInstanceValid(SpinBox)) SpinBox.MinValue = value;
         }
     }
 
@@ -37,7 +36,6 @@ public partial class SpinSlider : HBoxContainer
         {
             _maxValue = value;
             if (IsInstanceValid(Slider)) Slider.MaxValue = value;
-            if (IsInstanceValid(SpinBox)) SpinBox.MaxValue = value;
         }
     }
 
@@ -49,7 +47,6 @@ public partial class SpinSlider : HBoxContainer
         {
             _value = value;
             if (IsInstanceValid(Slider)) Slider.Value = value;
-            if (IsInstanceValid(SpinBox)) SpinBox.Value = value;
         }
     }
 
@@ -61,7 +58,6 @@ public partial class SpinSlider : HBoxContainer
         {
             _step = value;
             if (IsInstanceValid(Slider)) Slider.Step = value;
-            if (IsInstanceValid(SpinBox)) SpinBox.Step = value;
         }
     }
 
@@ -73,7 +69,6 @@ public partial class SpinSlider : HBoxContainer
         {
             _expEdit = value;
             if (IsInstanceValid(Slider)) Slider.ExpEdit = value;
-            if (IsInstanceValid(SpinBox)) SpinBox.ExpEdit = value;
         }
     }
 
@@ -85,7 +80,6 @@ public partial class SpinSlider : HBoxContainer
         {
             _allowLesser = value;
             if (IsInstanceValid(Slider)) Slider.AllowLesser = value;
-            if (IsInstanceValid(SpinBox)) SpinBox.AllowLesser = value;
         }
     }
 
@@ -97,7 +91,6 @@ public partial class SpinSlider : HBoxContainer
         {
             _allowGreater = value;
             if (IsInstanceValid(Slider)) Slider.AllowGreater = value;
-            if (IsInstanceValid(SpinBox)) SpinBox.AllowGreater = value;
         }
     }
 
@@ -143,10 +136,11 @@ public partial class SpinSlider : HBoxContainer
             Rounded = _rounded,
             Value = _value,
         };
+
+        Slider.Share(SpinBox);
         AddChild(Slider);
         AddChild(SpinBox);
         Connect(Slider);
-        Connect(SpinBox);
 
         // Pitfall: LineEdit has no way to show rounded number without modifying the number itself.
         // Have to do this manually.
@@ -165,9 +159,18 @@ public partial class SpinSlider : HBoxContainer
         control.ValueChanged += value =>
         {
             // ReSharper disable once CompareOfFloatsByEqualityOperator
-            if (Value == value) return;
-            Value = value;
+            if (_value == value) return;
+            _value = value;
             EmitSignal(SignalName.ValueChanged, Value);
         };
     }
+
+    public void SetValueNoSignal(double value)
+    {
+        _value = value;
+        if (IsInstanceValid(Slider))
+            Slider.SetValueNoSignal(value);
+    }
+
+    public void RegisterUndo(CommandManager manager) { }
 }

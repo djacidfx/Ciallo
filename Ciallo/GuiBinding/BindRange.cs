@@ -55,18 +55,22 @@ public static class BindRange
             out CompositeDisposable subs) where T : INumber<T>
         {
             subs = new();
-            property.Subscribe(value => spinSlider.Value = double.CreateChecked<T>(value)).AddTo(subs);
+            property.Subscribe(value => spinSlider.SetValueNoSignal(double.CreateChecked<T>(value))).AddTo(subs);
             spinSlider.SignalAsObservable<float>(SpinSlider.SignalName.ValueChanged)
-                .Subscribe(value => property.Value = T.CreateChecked(value)).AddTo(subs);
+                .Subscribe(value => property.Value = T.CreateChecked(value))
+                .AddTo(subs);
             return spinSlider;
         }
+
         public SpinSlider BindNumber<T>(ReactiveProperty<T> property) where T : INumber<T>
         {
             BindNumber(spinSlider, property, out var subs);
             subs.AddTo(spinSlider);
             return spinSlider;
         }
-        public SpinSlider ReactiveBindNumber<T>(ReadOnlyReactiveProperty<ReactiveProperty<T>> view,
+
+        public SpinSlider ReactiveBindNumber<T>(
+            ReadOnlyReactiveProperty<ReactiveProperty<T>> view,
             out CompositeDisposable subs) where T : INumber<T>
         {
             subs = new();
@@ -84,6 +88,7 @@ public static class BindRange
             }).AddTo(subs);
             return spinSlider;
         }
+
         /// <summary>
         /// Binds a SpinSlider dynamically to a ReactiveProperty provided by the ReadOnlyReactiveProperty.
         /// </summary>
