@@ -20,12 +20,12 @@ public partial class ToolPropertyPanel : Container
 
         AppDocumentManager.LoadedDocuments.ObserveAdd().Select(et => et.Value).Subscribe(document =>
         {
-            var holder = new DocumentToolPropertyContainer()
+            var holderPerDocument = new DocumentToolPropertyContainer()
             {
                 SizeFlagsHorizontal = SizeFlags.ExpandFill
             }.VisibleIf(AppDocumentManager.WorkingDocument, document);
-            document.Add(holder);
-            PropertyHolder.AddChild(holder);
+            document.Add(holderPerDocument);
+            PropertyHolder.AddChild(holderPerDocument);
 
             var toolManager = document.Get<ToolManager>();
             foreach (var tool in toolManager.Tools)
@@ -35,7 +35,7 @@ public partial class ToolPropertyPanel : Container
                 container.QueueFreeChildren();
                 tool.DrawProperty(container);
 
-                PropertyHolder.AddChild(container);
+                holderPerDocument.AddChild(container);
             }
         }).AddTo(this);
 
