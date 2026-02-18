@@ -76,16 +76,18 @@ public partial class LayerContainer : Container
     {
         var commonSetting = e.Get<CommonLayerSetting>();
         var subs = _subscriptions[e];
+        var cmdM = e.Document.Get<CommandManager>();
 
         var block = LayerBlock.Instantiate();
         block.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
         block.VisibleButton
-            .BindBool(commonSetting.IsVisible, out var sub)
-            .RegisterUndo(e.Document.Get<CommandManager>());
-        sub.AddTo(subs);
-
-        var lineEdit = block.GetNode<LabelLineEdit>("%LabelLineEdit");
-        lineEdit.BindString(commonSetting.Name);
+            .BindBool(commonSetting.IsVisible, out var sub0)
+            .RegisterUndo(cmdM);
+        var lineEdit = block.GetNode<LabelLineEdit>("%LabelLineEdit")
+            .BindString(commonSetting.Name, out var sub1)
+            .RegisterUndo(cmdM);
+        sub0.AddTo(subs);
+        sub1.AddTo(subs);
 
         block.MouseEntered += () => _mouseHoveringLayer = block;
         block.MouseExited += () => _mouseHoveringLayer = null;

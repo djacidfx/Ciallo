@@ -55,6 +55,9 @@ public partial class PropertyContainer : VBoxContainer
             case SpinSlider spinSlider:
                 spinSlider.RegisterUndo(cmdM);
                 return true;
+            case LineEdit lineEdit:
+                lineEdit.RegisterUndo(cmdM);
+                return true;
         }
         return false;
     }
