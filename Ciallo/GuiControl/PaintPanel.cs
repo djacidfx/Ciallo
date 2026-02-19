@@ -1,5 +1,4 @@
 using Ciallo.Data;
-using Ciallo.GuiBinding;
 using Ciallo.Misc;
 using Frent;
 using Frent.Components;
@@ -11,13 +10,12 @@ namespace Ciallo.GuiControl;
 [SceneTree]
 public partial class PaintPanel : PanelContainer, IInitable
 {
-    public readonly ReactiveProperty<float> Zoom = new(1f);
-    public readonly ReactiveProperty<float> CanvasRotation = new(0f);
-    public readonly ReactiveProperty<Vector2> Offset = new(Vector2.Zero);
+    public readonly ReactiveProperty<float> CameraZoom = new(1f);
+    public readonly ReactiveProperty<float> CameraRotation = new(0f);
+    public readonly ReactiveProperty<Vector2> CameraOffset = new(Vector2.Zero);
 
     public void Init(Entity self) => WorldEventDispatcher.Document = self;
 
-    private Polygon2D _background;
     private DocumentSetting _documentSetting;
 
     [OnInstantiate]
@@ -28,19 +26,22 @@ public partial class PaintPanel : PanelContainer, IInitable
 
     public override void _Ready()
     {
-        _background = GetNode<Polygon2D>("%Background");
         float w = _documentSetting.ReferenceSize.Value.X, h = _documentSetting.ReferenceSize.Value.Y;
-        _background.Polygon = [new(-w / 2, -h / 2), new(w / 2, -h / 2), new(w / 2, h / 2), new(-w / 2, h / 2)];
+        Background.Polygon = [new(-w / 2, -h / 2), new(w / 2, -h / 2), new(w / 2, h / 2), new(-w / 2, h / 2)];
 
-        Zoom.Subscribe(v => MainCamera.Zoom = Vector2.One * v);
-        CanvasRotation.Subscribe(v => MainCamera.Rotation = -v);
-        Offset.Subscribe(v => MainCamera.Position = v);
-        _documentSetting.BackgroundColor.Subscribe(_background.SetColor).AddTo(this);
+        CameraZoom.Subscribe(v => MainCamera.Zoom = Vector2.One * v).AddTo(this);
+        CameraRotation.Subscribe(v => MainCamera.Rotation = v).AddTo(this);
+        CameraOffset.Subscribe(v => MainCamera.Position = v).AddTo(this);
+        _documentSetting.BackgroundColor.Subscribe(Background.SetColor).AddTo(this);
 
-        ZoomControl.BindNumber(Zoom);
-        var degRotation = CanvasRotation.Project(Mathf.RadToDeg, Mathf.DegToRad, out var sub);
+        ZoomControl.BindNumber(CameraZoom);
+        var degCanvasRotation = CameraRotation.Project(
+            rad => -Mathf.RadToDeg(rad),
+            deg => -Mathf.DegToRad(deg),
+            out var sub
+        );
         sub.AddTo(RotationControl);
-        RotationControl.BindNumber(degRotation);
+        RotationControl.BindNumber(degCanvasRotation);
         BackgroundColorControl.BindColor(_documentSetting.BackgroundColor);
     }
 }

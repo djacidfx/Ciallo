@@ -71,7 +71,7 @@ public class ShapeTransformHover : InteractiveSessionBase
         }
 
         // Enable cursor detections on shapes of working layer
-        WorkingLayer.Get<ShapeBodyHolder>().SetAreaCursor(Control.CursorShape.Move);
+        WorkingLayer.Get<BodyHolder>().SetAreaCursor(Control.CursorShape.Move);
 
         // hover hinter
         _hoverSub = Document.Get<WorldBody>().HoveringBody.Skip(1).Subscribe(body =>
@@ -98,7 +98,7 @@ public class ShapeTransformHover : InteractiveSessionBase
         Array.ForEach(CornerBodies, b => b.QueueFree());
         CornerBodies = [];
 
-        WorkingLayer.Get<ShapeBodyHolder>().SetAreaCursor(Control.CursorShape.Arrow);
+        WorkingLayer.Get<BodyHolder>().SetAreaCursor(Control.CursorShape.Arrow);
 
         // overlays
         if (!HoveredShape.IsDyingOrDead) HoveredShape.Get<PolylineWireframe>().SetVisible(false);

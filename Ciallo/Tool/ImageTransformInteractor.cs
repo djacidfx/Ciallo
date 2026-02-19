@@ -1,4 +1,5 @@
-﻿using Ciallo.Data;
+﻿using Ciallo.Command;
+using Ciallo.Data;
 using Ciallo.Geometry;
 using Godot;
 
@@ -162,6 +163,9 @@ public class ImageTransformInteractor : InteractiveSessionBase
 
     public override void End(CursorButtonData data)
     {
+        new CommandBuilder(WorkingLayer)
+            .SetProperty(_startTransform, e => e.Get<ImageLayerSetting>().ImageTransform)
+            .Commit();
         Clear();
     }
 

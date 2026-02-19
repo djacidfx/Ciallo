@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics.CodeAnalysis;
+using Frent;
 using Godot;
 
 namespace Ciallo.Widget;
@@ -6,6 +7,15 @@ namespace Ciallo.Widget;
 [GlobalClass, Icon("res://Icon/tune.svg")]
 public partial class PropertyContainer : VBoxContainer
 {
+    public PropertyContainer() { }
+
+    public PropertyContainer(Entity document)
+    {
+        Document = document;
+    }
+
+    public Entity Document;
+
     public override void _EnterTree()
     {
         AddThemeConstantOverride("separation", 20);
@@ -13,7 +23,7 @@ public partial class PropertyContainer : VBoxContainer
 
     public Container AddProperty(string name, [NotNull] Control control)
     {
-        var box = CreatePropertyControl(name, control);
+        var box = CreatePropertyBox(name, control);
         AddChild(box);
         return box;
     }
@@ -25,18 +35,44 @@ public partial class PropertyContainer : VBoxContainer
         return child;
     }
 
-    public static BoxContainer CreateBox()
+    /// <summary>
+    /// Make control undoable if possible. Return true if undo is registered successfully
+    /// </summary>
+    /// <param name="control"></param>
+    /// <returns></returns>
+    private bool RegisterUndo(Control control)
     {
-        var box = new VBoxContainer()
+        if (Document.IsNull) return false;
+        var cmdM = Document.Get<CommandManager>();
+        switch (control)
         {
-        };
+            case ColorPickerButton colorPickerButton:
+                colorPickerButton.RegisterUndo(cmdM);
+                return true;
+            case CheckBox checkBox:
+                checkBox.RegisterUndo(cmdM);
+                return true;
+            case SpinSlider spinSlider:
+                spinSlider.RegisterUndo(cmdM);
+                return true;
+            case LineEdit lineEdit:
+                lineEdit.RegisterUndo(cmdM);
+                return true;
+        }
+        return false;
+    }
+
+    public BoxContainer CreateBox()
+    {
+        var box = new VBoxContainer();
         box.AddThemeConstantOverride("separation", 20);
         return box;
     }
 
-    public static Container CreatePropertyControl(string name, [NotNull] Control control)
+    public Container CreatePropertyBox(string name, [NotNull] Control control)
     {
-        // Note: If a control's CustomMinimumSize is zero, it will never be wrapped in FlowContainer.
+        RegisterUndo(control);
+        // Pitfall: If a control's CustomMinimumSize is zero, it will never be wrapped in FlowContainer.
         var box = CreateHContainer();
         box.AddChild(new Label
         {
@@ -44,24 +80,22 @@ public partial class PropertyContainer : VBoxContainer
             VerticalAlignment = VerticalAlignment.Center,
             HorizontalAlignment = HorizontalAlignment.Left,
             SizeFlagsVertical = SizeFlags.ShrinkBegin,
-            CustomMinimumSize = new(150, 0),
+            CustomMinimumSize = new(32, 0),
         });
         control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         box.AddChild(control);
 
         if (control is not CheckBox)
         {
-            var controlMinSize = control.CustomMinimumSize.Max(new Vector2(150, 30));
+            var controlMinSize = control.CustomMinimumSize.Max(new Vector2(32, 32));
             control.CustomMinimumSize = controlMinSize;
         }
         return box;
     }
 
-    public static Container CreateHContainer()
+    public Container CreateHContainer()
     {
-        var box = new HFlowContainer()
-        {
-        };
+        var box = new HFlowContainer();
         box.AddThemeConstantOverride("h_separation", 15);
         return box;
     }
@@ -69,8 +103,9 @@ public partial class PropertyContainer : VBoxContainer
     /// <summary>
     /// Control is visible if checkBox is pressed.
     /// </summary>
-    public static Container CreateCheckBoxCombo(string name, CheckBox checkBox, Control control)
+    public Container CreateCheckBoxCombo(string name, CheckBox checkBox, Control control)
     {
+        RegisterUndo(control);
         control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
         control.Visible = checkBox.IsPressed();
 
@@ -85,14 +120,14 @@ public partial class PropertyContainer : VBoxContainer
         return container;
     }
 
-    public static Button CreateButton(string text)
+    public Button CreateButton(string text)
     {
         var button = new Button()
         {
             Name = text,
             Text = text,
             Alignment = HorizontalAlignment.Left,
-            CustomMinimumSize = new(0, 30),
+            CustomMinimumSize = new(0, 32),
             SizeFlagsHorizontal = SizeFlags.Fill,
         };
         return button;

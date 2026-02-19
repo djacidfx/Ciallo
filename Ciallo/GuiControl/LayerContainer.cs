@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
-using Ciallo.GuiBinding;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -54,13 +53,6 @@ public partial class LayerContainer : Container
         CreateAddProperty(layerE);
     }
 
-    public void CreateAdd(Entity layerE)
-    {
-        _subscriptions[layerE] = new CompositeDisposable();
-        CreateAddBlock(layerE);
-        CreateAddProperty(layerE);
-    }
-
     public void CreateAddProperty(Entity e)
     {
         var property = LayerProperty.Instantiate();
@@ -68,35 +60,34 @@ public partial class LayerContainer : Container
         property.VisibleIf(AppDocumentManager.WorkingDocument.CurrentValue.Get<SelectionManager>().WorkingLayer, e);
         e.Add(property);
 
-        property.Opacity.BindNumber(e.Get<CommonLayerSetting>().Opacity);
+        property.Opacity
+            .BindNumber(e.Get<CommonLayerSetting>().Opacity)
+            .RegisterUndo(e.Document.Get<CommandManager>());
     }
 
     public void CreateInsertBlock(Entity e, int index)
     {
-        var control = CreateAddBlock(e);
-        _rootContainer.MoveChild(control, index);
-    }
-
-    public Control CreateAddBlock(Entity e)
-    {
         var layerControl = CreateBlock(e);
-        _rootContainer.AddChild(layerControl);
+        _rootContainer.InsertNodeAt(layerControl, index);
         e.Add(layerControl);
-        return layerControl;
     }
 
     private LayerBlock CreateBlock(Entity e)
     {
         var commonSetting = e.Get<CommonLayerSetting>();
         var subs = _subscriptions[e];
+        var cmdM = e.Document.Get<CommandManager>();
 
         var block = LayerBlock.Instantiate();
         block.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
-        block.VisibleButton.BindBool(commonSetting.IsVisible, out var sub);
-        sub.AddTo(subs);
-
-        var lineEdit = block.GetNode<LabelLineEdit>("%LabelLineEdit");
-        lineEdit.BindString(commonSetting.Name);
+        block.VisibleButton
+            .BindBool(commonSetting.IsVisible, out var sub0)
+            .RegisterUndo(cmdM);
+        var lineEdit = block.GetNode<LabelLineEdit>("%LabelLineEdit")
+            .BindString(commonSetting.Name, out var sub1)
+            .RegisterUndo(cmdM);
+        sub0.AddTo(subs);
+        sub1.AddTo(subs);
 
         block.MouseEntered += () => _mouseHoveringLayer = block;
         block.MouseExited += () => _mouseHoveringLayer = null;
@@ -159,10 +150,12 @@ public partial class LayerContainer : Container
     public void RemoveFree(Entity layerE)
     {
         // Layer block
+        layerE.Get<LayerBlock>().RemoveFromParent(); // necessary to avoid index error
         layerE.Get<LayerBlock>().QueueFree();
         layerE.Remove<LayerBlock>();
 
         // Layer property
+        layerE.Get<LayerProperty>().RemoveFromParent();
         layerE.Get<LayerProperty>().QueueFree();
         layerE.Remove<LayerProperty>();
 

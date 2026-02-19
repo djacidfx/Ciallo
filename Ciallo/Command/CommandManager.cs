@@ -1,21 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Ciallo.Command;
 using Godot;
 using R3;
 
-namespace Ciallo.Command;
+// ReSharper disable once CheckNamespace
+namespace Ciallo;
 
 /// <summary>
 /// Inherits from UndoRedo with extra methods to manage commands.
 /// </summary>
 public partial class CommandManager : UndoRedo
 {
-    public readonly ReactiveProperty<bool> DocumentModified = new(false);
+    private ulong _savedVersion;
+    private readonly ReactiveProperty<bool> _documentModified = new(false);
+    public ReadOnlyReactiveProperty<bool> DocumentModified => _documentModified;
     public readonly Subject<bool> UndoRedoExecuted = new(); // true is undo, false is redo
 
     public CommandManager()
     {
         SetMaxSteps(3);
+        _savedVersion = GetVersion();
+        VersionChanged += () =>
+        {
+            // Note UndoRedo invoke VersionChanged at free, so check if alive
+            if (IsInstanceValid(this))
+                _documentModified.Value = _savedVersion != GetVersion();
+        };
     }
 
     public void AddDo(CommandWrapperObject cmdWrapper)
@@ -32,72 +41,30 @@ public partial class CommandManager : UndoRedo
         AddUndoReference(cmdWrapper); // order matters
     }
 
-    public static bool SkipPropertyCommit = false; // not thread safe
-    /// <summary>
-    /// Make a ReactiveProperty redo undoable
-    /// </summary>
-    /// <returns> Subscriptions to unregister </returns>
-    public CompositeDisposable RegisterProperty<T>(ReactiveProperty<T> property)
-    {
-        ReactiveProperty<T> old = new(property.Value);
-        var subs = new CompositeDisposable();
-
-        // If time within TimeSpan has no more changes, commit the final value.
-        property.Skip(1).Where(_ => !SkipPropertyCommit).Debounce(TimeSpan.FromMilliseconds(250)).Subscribe(newValue =>
-        {
-            if (EqualityComparer<T>.Default.Equals(old.Value, newValue)) return;
-            var obj = new PropertyWrapperObject<T>(property, old);
-            CreateAction("Property Change");
-            AddDoMethod(new(obj, PropertyWrapperObject<T>.MethodName.Do));
-            AddDoReference(obj);
-            AddUndoReference(obj);
-            AddUndoMethod(new(obj, PropertyWrapperObject<T>.MethodName.Undo));
-            CommitAction(false); // Property already been the value
-            old.Value = newValue;
-        }).AddTo(subs);
-
-        return subs;
-    }
-
     public new void CommitAction(bool execute = true)
     {
         base.CommitAction(execute);
-        DocumentModified.Value = true;
+        _documentModified.Value = true;
     }
 
     public new void Undo()
     {
+        if (!HasUndo()) return;
         base.Undo();
-        DocumentModified.Value = true;
         UndoRedoExecuted.OnNext(true);
     }
 
     public new void Redo()
     {
+        if (!HasRedo()) return;
         base.Redo();
-        DocumentModified.Value = true;
         UndoRedoExecuted.OnNext(false);
     }
-}
 
-public partial class PropertyWrapperObject<T>(ReactiveProperty<T> property, ReactiveProperty<T> old) : GodotObject
-{
-    public readonly T NewValue = property.Value;
-    public readonly T OldValue = old.Value;
-
-    public void Do()
+    public void OnSave()
     {
-        CommandManager.SkipPropertyCommit = true;
-        property.Value = NewValue;
-        CommandManager.SkipPropertyCommit = false;
-        old.Value = NewValue;
-    }
-    public void Undo()
-    {
-        CommandManager.SkipPropertyCommit = true;
-        property.Value = OldValue;
-        CommandManager.SkipPropertyCommit = false;
-        old.Value = OldValue;
+        _savedVersion = GetVersion();
+        _documentModified.Value = false;
     }
 }
 

@@ -1,7 +1,3 @@
-using Godot;
-
 namespace Ciallo.Rendering;
 
-public partial class WorldOverlay : Node2D
-{
-}
+public partial class WorldOverlay : OverlayHolder { }

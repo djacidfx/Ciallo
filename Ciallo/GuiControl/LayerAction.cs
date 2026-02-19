@@ -13,6 +13,7 @@ public partial class LayerAction : Control
         if (AppDocumentManager.WorkingDocument.Value.IsNull) return;
         new CommandBuilder(AppDocumentManager.WorkingDocument.Value.World.Create())
             .NewShapeLayer()
+            .AddToLayerTree(AppDocumentManager.WorkingDocument.Value)
             .SetWorkingLayer()
             .Commit();
     }
@@ -27,17 +28,14 @@ public partial class LayerAction : Control
         var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
         var root = document.Get<LayerTreeNode>();
         var nextLayerPath = root.GetNextFocusPathAfterDeletion(workingLayerPath);
-
         var nextLayerE = nextLayerPath.IsEmpty ? document : root.GetDescendant(nextLayerPath);
 
-        if (currentLayerE.Has<ShapeLayerSetting>())
-            new CommandBuilder(nextLayerE).SetWorkingLayer()
-                .SetTarget(currentLayerE).DeleteShapeLayer()
-                .Commit();
-        else if (currentLayerE.Has<ImageLayerSetting>())
-            new CommandBuilder(nextLayerE).SetWorkingLayer()
-                .SetTarget(currentLayerE).DeleteImageLayer()
-                .Commit();
+        new CommandBuilder(nextLayerE)
+            .SetWorkingLayer()
+            .SetTarget(currentLayerE)
+            .RemoveFromLayerTree()
+            .DeleteLayer()
+            .Commit();
     }
 
     public void OnAddImage()
@@ -60,6 +58,8 @@ public partial class LayerAction : Control
         }
         if (image == null) return;
         new CommandBuilder(AppDocumentManager.WorkingDocument.Value.World.Create())
-            .NewImageLayer(image).Commit();
+            .NewImageLayer(image)
+            .AddToLayerTree(AppDocumentManager.WorkingDocument.Value)
+            .Commit();
     }
 }

@@ -10,14 +10,12 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class NewFilledPolygonCmd : CommandBase
 {
-    private readonly Entity _layerE;
     private readonly FilledPolygonSetting _setting;
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public NewFilledPolygonCmd(Entity layerE, FilledPolygonSetting setting = null)
+    public NewFilledPolygonCmd(FilledPolygonSetting setting = null)
     {
-        _layerE = layerE;
         _setting = setting ?? new FilledPolygonSetting();
     }
 
@@ -27,7 +25,6 @@ public class NewFilledPolygonCmd : CommandBase
         targetE.Add(layerNode);
         targetE.Add(new PolylineGeometry());
         targetE.Add(_setting);
-        _setting.RegisterProperties(CommandManager).AddTo(targetE);
 
         // View
         var polygonView = new Polygon2D() { Antialiased = true }; // The antialiasing result is not satisfying
@@ -67,10 +64,10 @@ public class NewFilledPolygonCmd : CommandBase
             polygonView.SetOwner(layerView.Owner);
 
             // Overlay
-            Document.Get<WorldOverlay>().AddChild(overlay);
+            layerE.Get<OverlayHolder>().InsertNodeAt(overlay, index);
 
             // Body
-            layerE.Get<ShapeBodyHolder>().InsertNodeAt(polygonBody, index);
+            layerE.Get<BodyHolder>().InsertNodeAt(polygonBody, index);
         }
 
         void OnRemove()

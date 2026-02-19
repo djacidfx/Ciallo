@@ -1,5 +1,4 @@
 ﻿using System.Runtime.Serialization;
-using Ciallo.Command;
 using R3;
 
 namespace Ciallo.Data;
@@ -14,15 +13,6 @@ public class CommonLayerSetting
     [DataMember] public ReactiveProperty<bool> IsVisible = new(true);
     [DataMember] public ReactiveProperty<float> Opacity = new(1.0f);
     [DataMember] public ReactiveProperty<bool> IsLocked = new(false);
-
-    public CompositeDisposable RegisterProperties(CommandManager manager)
-    {
-        CompositeDisposable subs = new();
-        manager.RegisterProperty(Name).AddTo(subs);
-        manager.RegisterProperty(IsVisible).AddTo(subs);
-        manager.RegisterProperty(Opacity).AddTo(subs);
-        return subs;
-    }
 
     public void CopySettingFrom(CommonLayerSetting other)
     {

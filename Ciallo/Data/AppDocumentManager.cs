@@ -24,7 +24,9 @@ public static partial class AppDocumentManager
 
     public static readonly ReactiveProperty<Entity> WorkingDocument = new(Entity.Null);
 
-    public static bool WorkingDocumentModified => !WorkingDocument.Value.IsNull && WorkingDocument.Value.Get<CommandManager>().DocumentModified.Value;
+    public static bool WorkingDocumentModified =>
+        !WorkingDocument.Value.IsNull &&
+        WorkingDocument.Value.Get<CommandManager>().DocumentModified.CurrentValue;
 
     private static readonly Dictionary<World, Entity> WorldToDocument = [];
     public static Entity Document([NotNull] this World world) => WorldToDocument[world];
@@ -89,6 +91,7 @@ public static partial class AppDocumentManager
         document.Get<CommandManager>().Free();
 
         // Dispose world
+        // Warning: Dispose a world don't trigger it's entities' deletion events.
         document.World.Dispose();
     }
 

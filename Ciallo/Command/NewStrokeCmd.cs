@@ -62,10 +62,10 @@ public class NewStrokeCmd : CommandBase
             strokeView.SetOwner(layerView.Owner);
 
             // Overlay
-            Document.Get<WorldOverlay>().AddChild(strokeWireframe);
+            layerE.Get<OverlayHolder>().InsertNodeAt(strokeWireframe, index);
 
             // Body
-            layerE.Get<ShapeBodyHolder>().InsertNodeAt(strokeBody, index);
+            layerE.Get<BodyHolder>().InsertNodeAt(strokeBody, index);
         }
 
         void OnRemove()
@@ -88,6 +88,8 @@ public class NewStrokeCmd : CommandBase
 
     public override void Undo(Entity targetE)
     {
+        Document.Get<SelectionManager>().SelectedShapes.Remove(targetE);
+
         targetE.Detach<ToSerializeTag>();
     }
 }

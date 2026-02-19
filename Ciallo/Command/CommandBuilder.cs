@@ -29,9 +29,9 @@ public partial class CommandBuilder
         return this;
     }
 
-    public CommandBuilder Commit(bool execute = true)
+    public void Commit(bool execute = true)
     {
-        if (Commands.Count == 0) return this;
+        if (Commands.Count == 0) return;
         if (TargetE.IsNull) throw new InvalidOperationException("TargetE is not set in CommandBuilder.");
         var cm = TargetE.World.Document().Get<CommandManager>();
 
@@ -44,24 +44,21 @@ public partial class CommandBuilder
         cm.CommitAction(execute);
 
         Commands.Clear();
-        return this;
     }
 
-    public CommandBuilder Do()
+    public void Do()
     {
         foreach (var cmd in Commands)
         {
             cmd.Do();
         }
-        return this;
     }
 
-    public CommandBuilder Undo()
+    public void Undo()
     {
         foreach (var cmd in Commands.AsEnumerable().Reverse())
         {
             cmd.Undo();
         }
-        return this;
     }
 }

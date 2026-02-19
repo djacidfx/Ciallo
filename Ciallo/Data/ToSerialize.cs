@@ -28,5 +28,6 @@ public static class EntityExtension
         /// </summary>
         public bool IsDyingOrDead => !self.IsAlive || !self.Tagged<ToSerializeTag>();
         public bool IsDocument => self.World.Document() == self; // If entity is the singleton document entity.
+        public Entity Document => self.World.Document();
     }
 }

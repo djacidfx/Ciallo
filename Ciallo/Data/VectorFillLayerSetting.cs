@@ -1,6 +1,5 @@
 ﻿using System.Runtime.Serialization;
 using Frent;
-using R3;
 using ObservableCollections;
 
 namespace Ciallo.Data;
@@ -8,5 +7,5 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class VectorFillLayerSetting
 {
-    [DataMember] public ObservableList<Entity> ReferenceLayerEs = [];
+    [DataMember] public ObservableHashSet<Entity> ReferenceLayerEs = [];
 }

@@ -44,7 +44,7 @@ public class CommandBuilderGenerator : IIncrementalGenerator
         if (source is { } value)
         {
             string result = BuildSourceText(value);
-            context.AddSource($"CommandBuilder.{value.CommandName}.g.cs", SourceText.From(result, Encoding.UTF8));
+            context.AddSource($"CommandBuilder.{value.CommandMetadataName}.g.cs", SourceText.From(result, Encoding.UTF8));
         }
     }
 
@@ -67,14 +67,26 @@ public class CommandBuilderGenerator : IIncrementalGenerator
         string methodName = GetBuilderMethodName(typeSymbol.Name);
         string commandTypeName = typeSymbol.ToDisplayString(CommandTypeFormat);
 
-        return new CommandToGenerate(typeSymbol.Name, methodName, commandTypeName, constructors);
+        ImmutableArray<string> methodTypeParameters = typeSymbol.TypeParameters
+            .Select(static p => EscapeIdentifier(p.Name))
+            .ToImmutableArray();
+
+        string methodTypeParameterList = methodTypeParameters.IsDefaultOrEmpty
+            ? string.Empty
+            : $"<{string.Join(", ", methodTypeParameters)}>";
+
+        return new CommandToGenerate(
+            methodName,
+            typeSymbol.MetadataName,
+            commandTypeName,
+            methodTypeParameterList,
+            constructors);
     }
 
     private static CommandConstructor CreateConstructor(IMethodSymbol constructorSymbol)
     {
         var parameters = constructorSymbol.Parameters
             .Select(CreateParameter)
-            .Where(static parameter => !string.IsNullOrEmpty(parameter.ArgumentExpression))
             .ToImmutableArray();
 
         return new CommandConstructor(parameters);
@@ -137,14 +149,15 @@ public class CommandBuilderGenerator : IIncrementalGenerator
 
             builder.AppendLine(
                 $$"""
-                      public CommandBuilder {{command.BuilderMethodName}}({{parameters}})
+                      public CommandBuilder {{command.BuilderMethodName}}{{command.MethodTypeParameterList}}({{parameters}})
                       {
                           var cmd = new {{command.CommandTypeName}}({{arguments}}) { TargetE = TargetE };
                           Commands.Add(cmd);
                           return this;
                       }
 
-                  """);
+                  """
+            );
         }
 
         builder.AppendLine("}");
@@ -175,20 +188,23 @@ public class CommandBuilderGenerator : IIncrementalGenerator
 public readonly struct CommandToGenerate
 {
     public CommandToGenerate(
-        string commandName,
         string builderMethodName,
+        string commandMetadataName,
         string commandTypeName,
+        string methodTypeParameterList,
         ImmutableArray<CommandConstructor> constructors)
     {
-        CommandName = commandName;
         BuilderMethodName = builderMethodName;
+        CommandMetadataName = commandMetadataName;
         CommandTypeName = commandTypeName;
+        MethodTypeParameterList = methodTypeParameterList;
         Constructors = constructors;
     }
 
-    public string CommandName { get; }
     public string BuilderMethodName { get; }
+    public string CommandMetadataName { get; }
     public string CommandTypeName { get; }
+    public string MethodTypeParameterList { get; }
     public ImmutableArray<CommandConstructor> Constructors { get; }
 }
 

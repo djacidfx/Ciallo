@@ -61,13 +61,19 @@ public static partial class AppDocumentManager
             if (layerDataE.Has<ImageLayerSetting>())
             {
                 var layerE = resultWorld.Create();
-                new CommandBuilder(layerE).NewImageLayer(layerDataE.Get<ImageLayerSetting>(), commonLayerSetting).Do();
+                new CommandBuilder(layerE)
+                    .NewImageLayer(layerDataE.Get<ImageLayerSetting>(), commonLayerSetting)
+                    .AddToLayerTree(resultDocument)
+                    .Do();
                 layerMap.Add(layerDataE, layerE);
             }
             else if (layerDataE.Has<ShapeLayerSetting>())
             {
                 var layerE = resultWorld.Create();
-                new CommandBuilder(layerE).NewShapeLayer(layerDataE.Get<ShapeLayerSetting>(), commonLayerSetting).Do();
+                new CommandBuilder(layerE)
+                    .NewShapeLayer(layerDataE.Get<ShapeLayerSetting>(), commonLayerSetting)
+                    .AddToLayerTree(resultDocument)
+                    .Do();
                 layerMap.Add(layerDataE, layerE);
 
                 foreach (var shapeDataE in layerDataE.Get<LayerTreeNode>().Children)
@@ -86,7 +92,8 @@ public static partial class AppDocumentManager
                     else if (shapeDataE.Has<FilledPolygonSetting>())
                     {
                         new CommandBuilder(resultWorld.Create())
-                            .NewFilledPolygon(layerE, shapeDataE.Get<FilledPolygonSetting>())
+                            .NewFilledPolygon(shapeDataE.Get<FilledPolygonSetting>())
+                            .AddToLayerTree(layerE)
                             .SetPolylineGeometry(geometry)
                             .Do();
                     }
@@ -108,7 +115,7 @@ public static partial class AppDocumentManager
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (CanSaveFile(settings.FilePath.Value))
             Save(WorkingDocument.Value, settings.FilePath.Value);
-        WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified.Value = false;
+        WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
     }
 
     public static void SaveWorkingWorldAs(string filePath)
@@ -120,7 +127,7 @@ public static partial class AppDocumentManager
             Save(WorkingDocument.Value, filePath);
             settings.FilePath.Value = filePath;
             settings.Name.Value = filePath.GetFile().GetBaseName();
-            WorkingDocument.CurrentValue.Get<CommandManager>().DocumentModified.Value = false;
+            WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
         }
     }
 

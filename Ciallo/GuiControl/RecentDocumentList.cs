@@ -1,4 +1,3 @@
-using Ciallo.GuiBinding;
 using Godot;
 
 namespace Ciallo.GuiControl;

@@ -1,4 +1,7 @@
-﻿using Ciallo.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Ciallo.Command;
+using Ciallo.Data;
 using Ciallo.Misc;
 using Frent;
 using Frent.Components;
@@ -15,11 +18,56 @@ public partial class DocumentBrushList : ItemList, IInitable
     public DocumentBrushList()
     {
         TooltipText = "[Document Brush List Tooltip]".Tr();
+        AutoWidth = true;
     }
 
     public void Init(Entity document)
     {
         _document = document;
+
+        ItemSelected += idx =>
+        {
+            new CommandBuilder(document.Get<BrushManager>().Brushes[(int)idx])
+                .SetWorkingBrush()
+                .Commit();
+        };
+
+        ItemClicked += async (idx, _, buttonIndex) =>
+        {
+            if ((MouseButton)buttonIndex != MouseButton.Right) return;
+            var brushE = document.Get<BrushManager>().Brushes[(int)idx];
+            var query = brushE.World.CreateQuery().With<StrokeSetting>().Build();
+            List<Entity> toDeleteShapes = [];
+            foreach (var strokeE in query.EnumerateWithEntities())
+            {
+                if (strokeE.Get<StrokeSetting>().BrushE == brushE)
+                    toDeleteShapes.Add(strokeE);
+            }
+
+            if (toDeleteShapes.Count > 0)
+            {
+                var dialog = GetTree().GetNodesInGroup("Dialog").OfType<YesNoDialog>().First();
+                dialog.DialogText = "[Delete Brush Hint]".Tr();
+                if (!await dialog.PopupCollectInput()) return;
+            }
+
+            var cmd = new CommandBuilder(Entity.Null);
+            foreach (var strokeE in toDeleteShapes)
+            {
+                cmd.SetTarget(strokeE)
+                    .RemoveFromLayerTree()
+                    .DeleteShape();
+            }
+
+            var selectionManager = document.Get<SelectionManager>();
+            if (selectionManager.WorkingBrush.Value == brushE)
+                cmd.SetTarget(Entity.Null).SetWorkingBrush();
+            cmd.SetTarget(brushE).DeleteBrush().Commit();
+        };
+
+        var brushM = document.Get<BrushManager>();
+        foreach (var brushE in brushM.Brushes)
+            AddItem(brushE.Get<BrushSetting>().Name.Value);
     }
 
     public void Add(Entity brushE)

@@ -1,7 +1,6 @@
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
-using Ciallo.GuiBinding;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -37,7 +36,7 @@ public partial class PaintFillTool : StateMachineToolBase
     {
         container.AddProperty("Fill Color", new ColorPickerButton
         {
-            CustomMinimumSize = new(0, 30),
+            CustomMinimumSize = new(0, 32),
         }.BindColor(Color));
     }
 
