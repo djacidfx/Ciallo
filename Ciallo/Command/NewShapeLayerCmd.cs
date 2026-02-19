@@ -12,13 +12,11 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class NewShapeLayerCmd : CommandBase
 {
-    private readonly ShapeLayerSetting _setting;
-    private CommonLayerSetting _commonSetting;
+    public readonly Entity CopyE;
 
-    public NewShapeLayerCmd(ShapeLayerSetting setting = null, CommonLayerSetting commonSetting = null)
+    public NewShapeLayerCmd(Entity copyE = default)
     {
-        _setting = setting?.Clone() ?? new ShapeLayerSetting();
-        _commonSetting = commonSetting;
+        CopyE = copyE;
     }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
@@ -29,16 +27,23 @@ public class NewShapeLayerCmd : CommandBase
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
 
-        _commonSetting ??= new CommonLayerSetting
-        {
-            Name = { Value = $"{"Shape layer".Tr()} {LayerTreeNode.LayerCreationId++}" }
-        };
-        targetE.Add(_commonSetting);
-        targetE.Add(_setting);
+        var commonSetting = CopyE.IsNull
+            ? new CommonLayerSetting
+            {
+                Name = { Value = $"{"Shape layer".Tr()} {LayerTreeNode.LayerCreationId++}" }
+            }
+            : CopyE.Get<CommonLayerSetting>().Clone();
+        targetE.Add(commonSetting);
+
+        var shapeLayerSetting = CopyE.IsNull
+            ? new ShapeLayerSetting()
+            : CopyE.Get<ShapeLayerSetting>().Clone();
+
+        targetE.Add(shapeLayerSetting);
 
         // View
         var view = new ShapeLayerView();
-        view.ObserveLayerSetting(_commonSetting).AddTo(targetE);
+        view.ObserveLayerSetting(commonSetting).AddTo(targetE);
         targetE.AddNode(view);
 
         // Overlay

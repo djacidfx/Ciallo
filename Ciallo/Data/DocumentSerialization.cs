@@ -71,7 +71,7 @@ public static partial class AppDocumentManager
             {
                 var layerE = resultWorld.Create();
                 new CommandBuilder(layerE)
-                    .NewShapeLayer(layerDataE.Get<ShapeLayerSetting>(), commonLayerSetting)
+                    .NewShapeLayer(layerDataE)
                     .AddToLayerTree(resultDocument)
                     .Do();
                 layerMap.Add(layerDataE, layerE);
