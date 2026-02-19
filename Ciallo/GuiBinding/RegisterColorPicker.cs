@@ -37,7 +37,7 @@ public static class RegisterColorPicker
                 innerChange = true;
                 control.Color = oldColor;
                 control.EmitSignal(ColorPickerButton.SignalName.ColorChanged, oldColor);
-                recordedColor = newColor;
+                recordedColor = oldColor;
             }));
             Engine.PrintErrorMessages = true;
             manager.CommitAction(false);
