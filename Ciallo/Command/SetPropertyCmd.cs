@@ -1,6 +1,5 @@
 ﻿using System;
 using Frent;
-using Microsoft.CodeAnalysis;
 using R3;
 
 namespace Ciallo.Command;
@@ -8,8 +7,10 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class SetPropertyCmd<T> : CommandBase
 {
-    private Optional<T> _oldValue;
-    private Optional<T> _newValue;
+    private T _oldValue;
+    private readonly bool _inputOldValue;
+    private T _newValue;
+    private readonly bool _inputNewValue;
     private readonly Func<Entity, ReactiveProperty<T>> _getProperty;
 
 
@@ -17,32 +18,35 @@ public class SetPropertyCmd<T> : CommandBase
     {
         _getProperty = getProperty;
         _newValue = newValue;
+        _inputNewValue = true;
     }
 
     public SetPropertyCmd(Func<Entity, ReactiveProperty<T>> getProperty, T oldValue, T newValue) : this(getProperty, newValue)
     {
         _oldValue = oldValue;
+        _inputOldValue = true;
     }
 
     public SetPropertyCmd(T oldValue, Func<Entity, ReactiveProperty<T>> getProperty)
     {
         _oldValue = oldValue;
+        _inputOldValue = true;
         _getProperty = getProperty;
     }
 
     public override void BeforeFirstDo(Entity targetE)
     {
-        if (!_oldValue.HasValue) _oldValue = _getProperty(targetE).Value;
-        if (!_newValue.HasValue) _newValue = _getProperty(targetE).Value;
+        if (!_inputOldValue) _oldValue = _getProperty(targetE).Value;
+        if (!_inputNewValue) _newValue = _getProperty(targetE).Value;
     }
 
     public override void Do(Entity targetE)
     {
-        _getProperty(targetE).Value = _newValue.Value;
+        _getProperty(targetE).Value = _newValue;
     }
 
     public override void Undo(Entity targetE)
     {
-        _getProperty(targetE).Value = _oldValue.Value;
+        _getProperty(targetE).Value = _oldValue;
     }
 }
