@@ -28,8 +28,9 @@ public class SetStrokeBrushCmd : CommandBase
         setting.BrushE = _newBrushE;
 
         // View
-        strokeE.Get<StrokeView>().Material =
-            _newBrushE.IsNull ? AutoloadRendering.MissingBrushMaterial : _newBrushE.Get<BrushMaterial>();
+        strokeE.Get<StrokeView>().Material = _newBrushE.IsNull
+            ? AutoloadRendering.MissingBrushMaterial
+            : _newBrushE.Get<BrushMaterial>();
     }
 
     public override void Undo(Entity strokeE)

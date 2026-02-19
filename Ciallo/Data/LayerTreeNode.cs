@@ -8,7 +8,7 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
 {
-    public static int LayerCreationId = 0;
+    public static int LayerCreationId = 1;
 
     /// <summary>
     /// Assume the given node is focused and going to be deleted, return the path to the next node that should have focus.
@@ -17,7 +17,7 @@ public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
     /// <param name="path">The given node path.</param>
     /// <returns>
     /// Return priority: next sibling > previous sibling > parent > empty array (no nodes after deletion)
-    /// If the node is root (path is empty), return empty array.
+    /// If the deleted node is root (path is empty), return empty array.
     /// </returns>
     public ImmutableArray<int> GetNextFocusPathAfterDeletion(IReadOnlyList<int> path)
     {
