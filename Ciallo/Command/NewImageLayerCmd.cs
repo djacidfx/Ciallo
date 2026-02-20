@@ -12,24 +12,22 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class NewImageLayerCmd : CommandBase
 {
-    private readonly ImageLayerSetting _setting;
-    private CommonLayerSetting _commonSetting;
+    private readonly ImageLayerSetting _imageLayerSetting;
+    public readonly Entity CopyE;
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
-    public NewImageLayerCmd(Image image, CommonLayerSetting commonSetting = null)
+    public NewImageLayerCmd(Image image)
     {
-        _setting = new ImageLayerSetting
+        _imageLayerSetting = new ImageLayerSetting
         {
             Texture = ImageTexture.CreateFromImage(image)
         };
-        _commonSetting = commonSetting;
     }
 
-    public NewImageLayerCmd(ImageLayerSetting setting, CommonLayerSetting commonSetting = null)
+    public NewImageLayerCmd(Entity copyE = default)
     {
-        _setting = setting;
-        _commonSetting = commonSetting;
+        CopyE = copyE;
     }
 
     public override void BeforeFirstDo(Entity targetE)
@@ -37,30 +35,37 @@ public class NewImageLayerCmd : CommandBase
         // Data
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
-        _commonSetting ??= new CommonLayerSetting { Name = { Value = "Image".Tr() } };
-        targetE.Add(_commonSetting);
-        targetE.Add(_setting);
+
+        var commonSetting = CopyE.IsNull
+            ? new CommonLayerSetting { Name = { Value = "Image".Tr() } }
+            : CopyE.Get<CommonLayerSetting>().Clone();
+        targetE.Add(commonSetting);
+
+        var setting = _imageLayerSetting ?? (CopyE.IsNull
+            ? new ImageLayerSetting()
+            : CopyE.Get<ImageLayerSetting>().Clone());
+        targetE.Add(setting);
 
         // View
         var sprite = new Sprite2D
         {
-            Texture = _setting.Texture,
+            Texture = setting.Texture,
         };
         targetE.AddNode(sprite);
 
-        _commonSetting.IsVisible.Subscribe(sprite.SetVisible).AddTo(targetE);
-        _commonSetting.Opacity.Subscribe(v =>
+        commonSetting.IsVisible.Subscribe(sprite.SetVisible).AddTo(targetE);
+        commonSetting.Opacity.Subscribe(v =>
         {
             var color = sprite.SelfModulate;
             color.A = v;
             sprite.SelfModulate = color;
         }).AddTo(targetE);
-        _setting.ImageTransform.Subscribe(sprite.SetTransform).AddTo(targetE);
+        setting.ImageTransform.Subscribe(sprite.SetTransform).AddTo(targetE);
 
         // Overlay
-        var layerOverlay = new TransformOverlayBox(_setting.ImageSize) { Visible = false };
+        var layerOverlay = new TransformOverlayBox(setting.ImageSize) { Visible = false };
         targetE.AddNode(layerOverlay);
-        _setting.ImageTransform.Subscribe(t =>
+        setting.ImageTransform.Subscribe(t =>
         {
             layerOverlay.LocalTransform = t;
             layerOverlay.UpdateGeometry();
