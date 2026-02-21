@@ -69,6 +69,7 @@ public static partial class AppDocumentManager
 
         new CommandBuilder(document.World.Create())
             .NewShapeLayer()
+            .AddToLayerTree(document)
             .SetWorkingLayer()
             .Do();
         if (AppBrushLibrary.BrushSettings.Count > 0)
