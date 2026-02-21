@@ -65,7 +65,7 @@ public class PaintInteractor : InteractiveSessionBase
         new CommandBuilder(WorkingLayer.World.Create())
             .NewStroke()
             .AddToLayerTree(WorkingLayer)
-            .SetStrokeBrush(_brushE)
+            .SetProperty(e => e.Get<StrokeSetting>().BrushE, _brushE)
             .SetPolylineGeometry(geom)
             .Commit();
         Clear();

@@ -9,15 +9,29 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class NewStrokeCmd : CommandBase
 {
+    public Entity CopyE { get; }
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
+
+    public NewStrokeCmd(Entity copyE = default)
+    {
+        CopyE = copyE;
+    }
 
     public override void BeforeFirstDo(Entity targetE)
     {
         // Data
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
-        targetE.Add(new StrokeSetting());
-        targetE.Add(new PolylineGeometry());
+
+        var strokeSetting = CopyE.IsNull
+            ? new StrokeSetting()
+            : CopyE.Get<StrokeSetting>().Clone();
+        targetE.Add(strokeSetting);
+
+        var polylineGeometry = CopyE.IsNull
+            ? new PolylineGeometry()
+            : CopyE.Get<PolylineGeometry>().Clone();
+        targetE.Add(polylineGeometry);
 
         // View
         var strokeView = new StrokeView()
@@ -25,6 +39,13 @@ public class NewStrokeCmd : CommandBase
             Material = AutoloadRendering.MissingBrushMaterial,
         };
         targetE.AddNode(strokeView);
+
+        strokeSetting.BrushE.Subscribe(brushE =>
+        {
+            strokeView.Material = brushE.IsNull || !brushE.Has<BrushMaterial>()
+                ? AutoloadRendering.MissingBrushMaterial
+                : brushE.Get<BrushMaterial>();
+        }).AddTo(targetE);
 
         // Overlay
         var strokeWireframe = new PolylineWireframe() { Visible = false };

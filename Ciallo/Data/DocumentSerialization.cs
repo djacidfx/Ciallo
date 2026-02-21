@@ -81,17 +81,18 @@ public static partial class AppDocumentManager
 
                     if (shapeDataE.Has<StrokeSetting>())
                     {
+                        var newBrush = brushMap[shapeDataE.Get<StrokeSetting>().BrushE.Value];
                         new CommandBuilder(resultWorld.Create())
-                            .NewStroke()
+                            .NewStroke(shapeDataE)
                             .AddToLayerTree(layerE)
                             .SetPolylineGeometry(geometry)
-                            .SetStrokeBrush(brushMap[shapeDataE.Get<StrokeSetting>().BrushE])
+                            .SetProperty(e => e.Get<StrokeSetting>().BrushE, newBrush)
                             .Do();
                     }
                     else if (shapeDataE.Has<FilledPolygonSetting>())
                     {
                         new CommandBuilder(resultWorld.Create())
-                            .NewFilledPolygon(shapeDataE.Get<FilledPolygonSetting>())
+                            .NewFilledPolygon(shapeDataE)
                             .AddToLayerTree(layerE)
                             .SetPolylineGeometry(geometry)
                             .Do();
