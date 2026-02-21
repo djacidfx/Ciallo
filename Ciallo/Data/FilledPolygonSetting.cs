@@ -9,4 +9,12 @@ public class FilledPolygonSetting
 {
     // Same as Polygon2D fill color. If texture is set, it will be multiplied by this color.
     [DataMember] public ReactiveProperty<Color> Color = new(Colors.White);
+
+    public FilledPolygonSetting Clone()
+    {
+        return new FilledPolygonSetting
+        {
+            Color = { Value = Color.Value },
+        };
+    }
 }

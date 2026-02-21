@@ -10,26 +10,29 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class NewFilledPolygonCmd : CommandBase
 {
-    private readonly FilledPolygonSetting _setting;
+    public Entity CopyE { get; }
+
+    public NewFilledPolygonCmd(Entity copyE = default)
+    {
+        CopyE = copyE;
+    }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
-
-    public NewFilledPolygonCmd(FilledPolygonSetting setting = null)
-    {
-        _setting = setting ?? new FilledPolygonSetting();
-    }
 
     public override void BeforeFirstDo(Entity targetE)
     {
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
         targetE.Add(new PolylineGeometry());
-        targetE.Add(_setting);
+        var setting = CopyE.IsNull
+            ? new FilledPolygonSetting()
+            : CopyE.Get<FilledPolygonSetting>().Clone();
+        targetE.Add(setting);
 
         // View
         var polygonView = new Polygon2D() { Antialiased = true }; // The antialiasing result is not satisfying
         targetE.AddNode(polygonView);
-        _setting.Color.Subscribe(polygonView.SetColor).AddTo(targetE);
+        setting.Color.Subscribe(polygonView.SetColor).AddTo(targetE);
 
         // Overlay
         var overlay = new PolylineWireframe() { Visible = false };
