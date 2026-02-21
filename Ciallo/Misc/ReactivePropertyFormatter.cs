@@ -7,22 +7,22 @@ namespace Ciallo.Misc;
 
 public class ReactivePropertyFormatter<T> : IMessagePackFormatter<ReactiveProperty<T>>
 {
-    public void Serialize(ref MessagePackWriter writer, ReactiveProperty<T> value, MessagePackSerializerOptions options)
+    public void Serialize(ref MessagePackWriter writer, ReactiveProperty<T> property, MessagePackSerializerOptions options)
     {
-        if (value == null)
+        if (property == null)
         {
-            writer.WriteNil();
-            return;
+            // By design of Ciallo, reactive property itself cannot be null
+            throw new("ReactiveProperty cannot be null");
         }
         var formatter = options.Resolver.GetFormatterWithVerify<T>();
-        formatter.Serialize(ref writer, value.Value, options);
+        formatter.Serialize(ref writer, property.Value, options);
     }
 
     public ReactiveProperty<T> Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
     {
-        if (reader.TryReadNil())
+        if (reader.TryReadNil()) // inner value is null
         {
-            return null;
+            return new ReactiveProperty<T>(default);
         }
         var formatter = options.Resolver.GetFormatterWithVerify<T>();
         var inner = formatter.Deserialize(ref reader, options);
