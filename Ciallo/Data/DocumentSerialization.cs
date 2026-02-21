@@ -57,12 +57,11 @@ public static partial class AppDocumentManager
 
         foreach (var layerDataE in dataTreeRoot.Children)
         {
-            var commonLayerSetting = layerDataE.Has<CommonLayerSetting>() ? layerDataE.Get<CommonLayerSetting>() : null;
             if (layerDataE.Has<ImageLayerSetting>())
             {
                 var layerE = resultWorld.Create();
                 new CommandBuilder(layerE)
-                    .NewImageLayer(layerDataE.Get<ImageLayerSetting>(), commonLayerSetting)
+                    .NewImageLayer(layerDataE)
                     .AddToLayerTree(resultDocument)
                     .Do();
                 layerMap.Add(layerDataE, layerE);
