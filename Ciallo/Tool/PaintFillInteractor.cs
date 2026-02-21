@@ -42,7 +42,6 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
             Clear();
             return;
         }
-        var setting = new FilledPolygonSetting() { Color = { Value = tool.Color.Value } };
         var geom = new PolylineGeometry()
         {
             Positions = [.._generator.Positions],
@@ -51,9 +50,10 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
             Tilts = [.._generator.Tilts],
         };
         new CommandBuilder(WorkingLayer.World.Create())
-            .NewFilledPolygon(setting)
+            .NewFilledPolygon()
             .AddToLayerTree(WorkingLayer)
             .SetPolylineGeometry(geom)
+            .SetProperty(e => e.Get<FilledPolygonSetting>().Color, tool.Color.Value)
             .Commit();
         Clear();
     }
