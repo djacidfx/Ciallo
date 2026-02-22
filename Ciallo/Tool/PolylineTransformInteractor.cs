@@ -66,14 +66,14 @@ public class PolylineTransformInteractor : InteractiveSessionBase
         _currPositions = new Vector2[_processingEs.Length][];
         foreach (var (i, e) in _processingEs.Index())
         {
-            var geom = e.Get<PolylineGeometry>();
-            var bounding = geom.Positions.GetBoundingBox();
+            var positions = e.Get<PolylineGeometry>().Positions.Value;
+            var bounding = positions.GetBoundingBox();
             _origRect = i == 0 ? bounding : _origRect.Merge(bounding);
             // allocate buffer once per interaction
-            var buffer = new Vector2[geom.Positions.Count];
+            var buffer = new Vector2[positions.Length];
             for (int j = 0; j < buffer.Length; j++)
             {
-                buffer[j] = geom.Positions[j];
+                buffer[j] = positions[j];
             }
             _currPositions[i] = buffer;
         }
@@ -160,11 +160,11 @@ public class PolylineTransformInteractor : InteractiveSessionBase
         {
             var geom = e.Get<PolylineGeometry>();
             for (int j = 0; j < _currPositions[i].Length; j++)
-                _currPositions[i][j] = _currTransform * geom.Positions[j];
+                _currPositions[i][j] = _currTransform * geom.Positions.Value[j];
 
             if (e.Has<StrokeSetting>())
             {
-                e.Get<StrokeView>().SetGeometry(_currPositions[i], geom.Radii, geom.Pressures);
+                e.Get<StrokeView>().SetGeometry(_currPositions[i], geom.Radii.Value, geom.Pressures.Value);
             }
             if (e.Has<FilledPolygonSetting>())
             {
@@ -181,9 +181,9 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             var cmd = new CommandBuilder();
             foreach (var e in _processingEs)
             {
-                var newGeom = e.Get<PolylineGeometry>().Clone();
-                newGeom.Positions = newGeom.Positions.Select(p => resultT * p).ToList();
-                cmd.SetTarget(e).SetPolylineGeometry(newGeom);
+                var oldPositions = e.Get<PolylineGeometry>().Positions.Value;
+                var newPositions = oldPositions.Select(p => resultT * p);
+                cmd.SetTarget(e).SetPolylineGeometry([..newPositions]);
             }
             cmd.Commit();
         }
@@ -197,14 +197,14 @@ public class PolylineTransformInteractor : InteractiveSessionBase
         foreach (var e in _processingEs)
         {
             var geom = e.Get<PolylineGeometry>();
-            var points = geom.Positions.ToArray();
+            var points = geom.Positions.Value;
             if (e.Has<StrokeSetting>())
             {
-                e.Get<StrokeView>().SetGeometry(points, geom.Radii, geom.Pressures);
+                e.Get<StrokeView>().SetGeometry(points, geom.Radii.Value, geom.Pressures.Value);
             }
             if (e.Has<FilledPolygonSetting>())
             {
-                e.Get<Polygon2D>().SetPolygon(points);
+                e.Get<Polygon2D>().SetPolygon(points.AsSpan());
             }
         }
         Clear();

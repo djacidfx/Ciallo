@@ -23,7 +23,11 @@ public class NewFilledPolygonCmd : CommandBase
     {
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
-        targetE.Add(new PolylineGeometry());
+
+        var polylineGeometry = CopyE.IsNull
+            ? new PolylineGeometry()
+            : CopyE.Get<PolylineGeometry>().Clone();
+        targetE.Add(polylineGeometry);
         var setting = CopyE.IsNull
             ? new FilledPolygonSetting()
             : CopyE.Get<FilledPolygonSetting>().Clone();
@@ -41,6 +45,13 @@ public class NewFilledPolygonCmd : CommandBase
         // Body
         var polygonBody = new Body();
         targetE.AddNode(polygonBody);
+
+        polylineGeometry.Positions.DebounceFrame(1).Subscribe(p =>
+        {
+            polygonView.SetPolygon(p.AsSpan());
+            overlay.SetGeometry(p);
+            polygonBody.SetSimplePolygon(p);
+        }).AddTo(targetE);
 
         // Layer tree events
         layerNode.TreeEntered.Subscribe(et =>

@@ -53,7 +53,7 @@ public class ShapeTransformHover : InteractiveSessionBase
 
                 // transform box overlay
                 var geom = e.Get<PolylineGeometry>();
-                var bound = geom.Positions.GetBoundingBox();
+                var bound = geom.Positions.Value.GetBoundingBox();
                 rect = i == 0 ? bound : rect.Merge(bound);
             }
             if (!rect.IsEqualApprox(default))

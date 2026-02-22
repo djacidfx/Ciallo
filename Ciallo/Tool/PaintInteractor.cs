@@ -55,18 +55,11 @@ public class PaintInteractor : InteractiveSessionBase
     {
         _generator.End(data);
 
-        var geom = new PolylineGeometry()
-        {
-            Positions = [.._generator.Positions],
-            Radii = [.._generator.Radii],
-            Pressures = [.._generator.Pressures],
-            Tilts = [.._generator.Tilts],
-        };
         new CommandBuilder(WorkingLayer.World.Create())
             .NewStroke()
             .AddToLayerTree(WorkingLayer)
             .SetProperty(e => e.Get<StrokeSetting>().BrushE, _brushE)
-            .SetPolylineGeometry(geom)
+            .SetPolylineGeometry([.._generator.Positions], [.._generator.Radii], [.._generator.Pressures], [.._generator.Tilts])
             .Commit();
         Clear();
     }

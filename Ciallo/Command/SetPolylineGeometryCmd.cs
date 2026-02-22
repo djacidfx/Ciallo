@@ -1,6 +1,5 @@
-﻿using Ciallo.Data;
-using Ciallo.Geometry;
-using Ciallo.Rendering;
+﻿using System.Collections.Immutable;
+using Ciallo.Data;
 using Frent;
 using Godot;
 
@@ -9,75 +8,45 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class SetPolylineGeometryCmd : CommandBase
 {
-    private readonly PolylineGeometry _newGeometry;
-    private PolylineGeometry _oldGeometry;
+    public ImmutableArray<Vector2>? Positions { get; }
+    public ImmutableArray<float>? Radii { get; }
+    public ImmutableArray<float>? Pressures { get; }
+    public ImmutableArray<Vector2>? Tilts { get; }
 
-    public SetPolylineGeometryCmd(PolylineGeometry newGeometry)
+    private CommandBuilder _cmd;
+
+    public SetPolylineGeometryCmd(
+        ImmutableArray<Vector2>? positions = null,
+        ImmutableArray<float>? radii = null,
+        ImmutableArray<float>? pressures = null,
+        ImmutableArray<Vector2>? tilts = null)
     {
-        _newGeometry = newGeometry;
+        Positions = positions;
+        Radii = radii;
+        Pressures = pressures;
+        Tilts = tilts;
     }
 
     public override void BeforeFirstDo(Entity targetE)
     {
-        _oldGeometry = targetE.Get<PolylineGeometry>();
+        _cmd = new(targetE);
+        if (Positions.HasValue)
+            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Positions, Positions.Value);
+        if (Radii.HasValue)
+            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Radii, Radii.Value);
+        if (Pressures.HasValue)
+            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Pressures, Pressures.Value);
+        if (Tilts.HasValue)
+            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Tilts, Tilts.Value);
     }
 
     public override void Do(Entity targetE)
     {
-        // Data
-        targetE.Get<PolylineGeometry>() = _newGeometry;
-
-        // Overlay
-        targetE.Get<PolylineWireframe>().SetGeometry(_newGeometry.Positions);
-
-        // Polyline has stroke
-        if (targetE.Has<StrokeSetting>())
-        {
-            // View
-            targetE.Get<StrokeView>()
-                .SetGeometry(_newGeometry.Positions, _newGeometry.Radii, _newGeometry.Pressures);
-
-            // Cursor detection
-            targetE.Get<Body>().SetStrokeShape(_newGeometry.Positions, _newGeometry.Radii);
-        }
-
-        // Polyline has fill
-        else if (targetE.Has<FilledPolygonSetting>())
-        {
-            var polygon = _newGeometry.Positions.ToSimplePolygon();
-            // View
-            targetE.Get<Polygon2D>().Polygon = [..polygon];
-
-            // Cursor detection
-            targetE.Get<Body>().SetSimplePolygon(polygon);
-        }
+        _cmd.Do();
     }
 
     public override void Undo(Entity targetE)
     {
-        if (targetE.Has<FilledPolygonSetting>())
-        {
-            var polygon = _oldGeometry.Positions.ToSimplePolygon();
-            // Body
-            targetE.Get<Body>().SetSimplePolygon(polygon);
-
-            // View
-            targetE.Get<Polygon2D>().Polygon = [..polygon];
-        }
-        else if (targetE.Has<StrokeSetting>())
-        {
-            // Body
-            targetE.Get<Body>().SetStrokeShape(_oldGeometry.Positions, _oldGeometry.Radii);
-
-            // View
-            targetE.Get<StrokeView>()
-                .SetGeometry(_oldGeometry.Positions, _oldGeometry.Radii, _oldGeometry.Pressures);
-        }
-
-        // Overlay
-        targetE.Get<PolylineWireframe>().SetGeometry(_oldGeometry.Positions);
-
-        // Data
-        targetE.Get<PolylineGeometry>() = _oldGeometry;
+        _cmd.Undo();
     }
 }

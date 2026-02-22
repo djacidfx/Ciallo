@@ -81,12 +81,11 @@ public static partial class AppDocumentManager
 
                     if (shapeDataE.Has<StrokeSetting>())
                     {
-                        var newBrush = brushMap[shapeDataE.Get<StrokeSetting>().BrushE.Value];
+                        var resultBrush = brushMap[shapeDataE.Get<StrokeSetting>().BrushE.Value];
                         new CommandBuilder(resultWorld.Create())
                             .NewStroke(shapeDataE)
                             .AddToLayerTree(layerE)
-                            .SetPolylineGeometry(geometry)
-                            .SetProperty(e => e.Get<StrokeSetting>().BrushE, newBrush)
+                            .SetProperty(e => e.Get<StrokeSetting>().BrushE, resultBrush)
                             .Do();
                     }
                     else if (shapeDataE.Has<FilledPolygonSetting>())
@@ -94,7 +93,6 @@ public static partial class AppDocumentManager
                         new CommandBuilder(resultWorld.Create())
                             .NewFilledPolygon(shapeDataE)
                             .AddToLayerTree(layerE)
-                            .SetPolylineGeometry(geometry)
                             .Do();
                     }
                 }

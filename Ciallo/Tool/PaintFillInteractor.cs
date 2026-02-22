@@ -42,17 +42,10 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
             Clear();
             return;
         }
-        var geom = new PolylineGeometry()
-        {
-            Positions = [.._generator.Positions],
-            Radii = [.._generator.Radii],
-            Pressures = [.._generator.Pressures],
-            Tilts = [.._generator.Tilts],
-        };
         new CommandBuilder(WorkingLayer.World.Create())
             .NewFilledPolygon()
             .AddToLayerTree(WorkingLayer)
-            .SetPolylineGeometry(geom)
+            .SetPolylineGeometry([.._generator.Positions], [.._generator.Radii], [.._generator.Pressures], [.._generator.Tilts])
             .SetProperty(e => e.Get<FilledPolygonSetting>().Color, tool.Color.Value)
             .Commit();
         Clear();

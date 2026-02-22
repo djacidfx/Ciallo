@@ -47,13 +47,28 @@ public class NewStrokeCmd : CommandBase
                 : brushE.Get<BrushMaterial>();
         }).AddTo(targetE);
 
+        polylineGeometry.ObserveAll().Subscribe(v =>
+        {
+            strokeView.SetGeometry(v.Item1, v.Item2, v.Item3);
+        }).AddTo(targetE);
+
         // Overlay
         var strokeWireframe = new PolylineWireframe() { Visible = false };
         targetE.AddNode(strokeWireframe);
 
+        polylineGeometry.Positions.DebounceFrame(1).Subscribe(p =>
+        {
+            strokeWireframe.SetGeometry(p);
+        }).AddTo(targetE);
+
         // Body
         var strokeBody = new Body();
         targetE.AddNode(strokeBody);
+
+        polylineGeometry.ObserveShape().Subscribe(v =>
+        {
+            strokeBody.SetStrokeShape(v.Item1, v.Item2);
+        }).AddTo(targetE);
 
         // Layer tree events
         layerNode.TreeEntered.Subscribe(et =>
