@@ -15,7 +15,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
     private int _transformType = -1; // 0: Move, 1: Rotate, 2~5: Scale corners
 
     private Entity[] _processingEs;
-    private Vector2[][] _currPositions;
+    private Vector2[][] _currPolylines;
     private Transform2D _currTransform = Transform2D.Identity;
 
     private Vector2[] _startCorners;
@@ -63,7 +63,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
     {
         _processingEs = Document.Get<SelectionManager>().SelectedShapes.ToArray();
         _currTransform = Transform2D.Identity;
-        _currPositions = new Vector2[_processingEs.Length][];
+        _currPolylines = new Vector2[_processingEs.Length][];
         foreach (var (i, e) in _processingEs.Index())
         {
             var positions = e.Get<PolylineGeometry>().Positions.Value;
@@ -75,7 +75,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             {
                 buffer[j] = positions[j];
             }
-            _currPositions[i] = buffer;
+            _currPolylines[i] = buffer;
         }
 
         // Show transform box only when scaling
@@ -159,16 +159,16 @@ public class PolylineTransformInteractor : InteractiveSessionBase
         foreach (var (i, e) in _processingEs.Index())
         {
             var geom = e.Get<PolylineGeometry>();
-            for (int j = 0; j < _currPositions[i].Length; j++)
-                _currPositions[i][j] = _currTransform * geom.Positions.Value[j];
+            for (int j = 0; j < _currPolylines[i].Length; j++)
+                _currPolylines[i][j] = _currTransform * geom.Positions.Value[j];
 
             if (e.Has<StrokeSetting>())
             {
-                e.Get<StrokeView>().SetGeometry(_currPositions[i], geom.Radii.Value, geom.Pressures.Value);
+                e.Get<StrokeView>().SetGeometry(_currPolylines[i], geom.Radii.Value, geom.Pressures.Value);
             }
             if (e.Has<FilledPolygonSetting>())
             {
-                e.Get<Polygon2D>().SetPolygon(CollectionsMarshal.AsSpan(_currPositions[i].ToSimplePolygon()));
+                e.Get<Polygon2D>().SetPolygon(CollectionsMarshal.AsSpan(_currPolylines[i].ToSimplePolygon()));
             }
         }
     }
