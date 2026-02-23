@@ -9,7 +9,7 @@ namespace Ciallo.Tool;
 [RegisterTool(ToolButton.Select)]
 public class ImageLayerSelectTool : StateMachineToolBase
 {
-    public readonly ImageTransformHover Hover = new();
+    public readonly ImageLayerSelectHover Hover = new();
     public readonly ImageTransformInteractor Left = new();
 
     protected override void ConfigureStateMachine()

@@ -6,7 +6,7 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class ImageTransformHover : InteractiveSessionBase
+public class ImageLayerSelectHover : InteractiveSessionBase
 {
     public Body RotationBody;
     public Body TranslationBody;

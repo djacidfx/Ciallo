@@ -16,7 +16,7 @@ public class ImageTransformInteractor : InteractiveSessionBase
 
     public override void BeforeSrcEnd(InteractiveSessionBase session)
     {
-        if (session is not ImageTransformHover hover) return;
+        if (session is not ImageLayerSelectHover hover) return;
         if (hover.RotationBody.IsHovered)
         {
             _transformType = 0;

@@ -25,7 +25,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
 
     public override void BeforeSrcEnd(InteractiveSessionBase session)
     {
-        if (session is not ShapeSelectHover hover) return;
+        if (session is not ShapeLayerSelectHover hover) return;
 
         bool shapeHovered = !hover.HoveredShape.IsNull;
         bool rotationDotHovered = hover.RotationBody?.IsHovered == true;
