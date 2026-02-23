@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
@@ -15,7 +16,7 @@ public class PaintTool : StateMachineToolBase
     public readonly ReactiveProperty<Entity> BrushE = new(Entity.Null);
 
     public readonly PaintHover Hover = new();
-    public readonly PaintInteractor Left = new();
+    public readonly PaintInteractor Left = new() { MovingMinInterval = TimeSpan.Zero };
 
     protected override void ConfigureStateMachine()
     {

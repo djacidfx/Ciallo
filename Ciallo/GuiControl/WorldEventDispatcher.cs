@@ -139,8 +139,6 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
                 _prevPressure = currentPressure;
                 _prevTilt = motion.Tilt;
-
-                _timer.Restart();
             }
             else
             {
@@ -161,6 +159,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
             }
         }
 
+        _timer.Restart();
         _prevScreenPos = screenPos;
         _prevWorldPos = worldPos;
     }

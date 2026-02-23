@@ -27,9 +27,10 @@ public abstract class InteractiveSessionBase
     /// </summary>
     /// <remarks>
     /// Multiple input in one frame could cause Godot stutter.
-    /// E.g. Calling 5-10 times Polygon2D.SetPolygon to set 500 points in one frame stutters godot. 
+    /// E.g. 144FPS screen, 1000Hz mouse report rate, dragging mouse could cause 6-7 input events in one frame
+    /// Directly calling Polygon2D.SetPolygon to set 500 points in one frame will stutter godot. 
     /// </remarks>
-    public TimeSpan UpdateMinInterval = TimeSpan.FromMilliseconds(10);
+    public TimeSpan MovingMinInterval = TimeSpan.FromMilliseconds(5);
 
     public virtual void BeforeSrcEnd(InteractiveSessionBase session) { }
     public virtual void AfterSrcEnd(InteractiveSessionBase session) { }

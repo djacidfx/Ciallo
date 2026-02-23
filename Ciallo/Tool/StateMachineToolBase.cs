@@ -49,7 +49,8 @@ public abstract partial class StateMachineToolBase : ITool
     public Entity WorkingLayer => WorkingLayers.First();
     public SceneTree GetTree() => (SceneTree)Engine.GetMainLoop();
 
-    private CursorButtonData _currentCursor;
+    private CursorButtonData _lastestCursor;
+    private TimeSpan _accumulatedInterval = TimeSpan.Zero;
 
     private readonly HashSet<AppAction> _triggerActions = [];
 
@@ -73,7 +74,7 @@ public abstract partial class StateMachineToolBase : ITool
             .OnEntry(t =>
             {
                 t.Source.BeforeDstStart(session);
-                t.Destination.Start(_currentCursor);
+                t.Destination.Start(_lastestCursor);
                 t.Source.AfterDstStart(session);
             })
             .OnExit(t =>
@@ -83,7 +84,7 @@ public abstract partial class StateMachineToolBase : ITool
                     t.Trigger == Trigger.Get(AppActions.CancelInteraction, false) ||
                     t.Trigger == Trigger.Deactivate)
                     t.Source.Cancel();
-                else t.Source.End(_currentCursor);
+                else t.Source.End(_lastestCursor);
                 t.Destination.AfterSrcEnd(t.Source);
             });
     }
@@ -113,7 +114,8 @@ public abstract partial class StateMachineToolBase : ITool
 
     public void OnMouseButton(InputEventMouseButton button, CursorButtonData data)
     {
-        _currentCursor = data;
+        _accumulatedInterval = TimeSpan.Zero;
+        _lastestCursor = data;
         var trigger = Trigger.Get(button.ButtonIndex, button.Pressed);
         if (Machine.CanFire(trigger))
             Machine.Fire(trigger);
@@ -136,7 +138,7 @@ public abstract partial class StateMachineToolBase : ITool
             return true;
         }
         // Route to current session
-        return Machine.State.OnKey(key, _currentCursor);
+        return Machine.State.OnKey(key, _lastestCursor);
     }
 
     private Trigger DetectTriggerAction()
@@ -153,8 +155,20 @@ public abstract partial class StateMachineToolBase : ITool
 
     public void OnMoving(CursorMotionData data)
     {
-        _currentCursor = data;
-        Machine.State.Interacting(data);
+        _accumulatedInterval += data.TimeDelta;
+        if (_accumulatedInterval > Machine.State.MovingMinInterval)
+        {
+            CursorMotionData motion = (CursorMotionData)_lastestCursor; // Copy all non-delta
+            motion.ScreenDelta = data.ScreenPosition - _lastestCursor.ScreenPosition;
+            motion.WorldDelta = data.WorldPosition - _lastestCursor.WorldPosition;
+            motion.PressureDelta = data.Pressure - _lastestCursor.Pressure;
+            motion.TiltDelta = data.Tilt - _lastestCursor.Tilt;
+            motion.TimeDelta = _accumulatedInterval;
+
+            Machine.State.Interacting(motion);
+            _lastestCursor = data;
+            _accumulatedInterval = TimeSpan.Zero;
+        }
     }
 
     public abstract void DrawProperty(PropertyContainer container);
