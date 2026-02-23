@@ -34,7 +34,8 @@ using StateConfiguration = StateMachine<InteractiveSessionBase, StateMachineTool
 /// </remarks>
 public abstract partial class StateMachineToolBase : ITool
 {
-    public readonly StateMachine Machine = new(ToolInactive.Instance);
+    public readonly ReactiveProperty<InteractiveSessionBase> ActiveSession = new(ToolInactive.Instance);
+    public readonly StateMachine Machine;
 
     public Entity Document
     {
@@ -58,6 +59,8 @@ public abstract partial class StateMachineToolBase : ITool
 
     protected StateMachineToolBase()
     {
+        Machine = new(() => ActiveSession.Value, s => ActiveSession.Value = s);
+
         Machine.Configure(ToolInactive.Instance)
             .Permit(Trigger.Activate, ToolActive.Instance);
 
@@ -171,7 +174,18 @@ public abstract partial class StateMachineToolBase : ITool
         }
     }
 
-    public abstract void DrawProperty(PropertyContainer container);
+    public virtual void DrawProperty(PropertyContainer container)
+    {
+        foreach (var state in Machine.GetInfo().States)
+        {
+            if (state.UnderlyingState is not InteractiveSessionBase session) continue;
+            var sessionContainer = new PropertyContainer()
+                .VisibleIf(ActiveSession, session)
+                .AddToChildOf(container);
+            session.DrawProperty(sessionContainer);
+        }
+    }
+
     public abstract bool CanHandleLayer(params Entity[] layerEs);
 
     public void OnActivate(params Entity[] layerEs)

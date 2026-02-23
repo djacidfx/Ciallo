@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Ciallo.Geometry;
+using Ciallo.Widget;
 using Frent;
 using Godot;
 
@@ -41,4 +42,5 @@ public abstract class InteractiveSessionBase
     public virtual void AfterDstStart(InteractiveSessionBase session) { }
     public abstract void Cancel();
     public abstract bool OnKey(InputEventKey key, CursorButtonData data);
+    public virtual void DrawProperty(PropertyContainer container) { }
 }

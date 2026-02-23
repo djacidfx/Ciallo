@@ -34,6 +34,7 @@ public partial class PaintFillTool : StateMachineToolBase
 
     public override void DrawProperty(PropertyContainer container)
     {
+        base.DrawProperty(container);
         container.AddProperty("Fill Color", new ColorPickerButton
         {
             CustomMinimumSize = new(0, 32),
