@@ -7,7 +7,7 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
+public class PaintFillInteractor : InteractiveSessionBase
 {
     private readonly PolylineInteractiveGenerator _generator = new()
     {
@@ -16,6 +16,12 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
         AllowIntersection = false,
     };
     private StrokeView _dashPreview;
+    private Color _fillColor;
+
+    public override void BeforeSrcEnd(InteractiveSessionBase session)
+    {
+        _fillColor = ((PaintFillHover)session).FillColor.Value;
+    }
 
     public override void Start(CursorButtonData data)
     {
@@ -46,7 +52,7 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
             .NewFilledPolygon()
             .AddToLayerTree(WorkingLayer)
             .SetPolylineGeometry([.._generator.Positions], [.._generator.Radii], [.._generator.Pressures], [.._generator.Tilts])
-            .SetProperty(e => e.Get<FilledPolygonSetting>().Color, tool.Color.Value)
+            .SetProperty(e => e.Get<FilledPolygonSetting>().Color, _fillColor)
             .Commit();
         Clear();
     }

@@ -7,10 +7,12 @@ namespace Ciallo.Geometry;
 [DebuggerDisplay("{ToString(),nq}")]
 public struct CursorButtonData
 {
-    public Vector2 ScreenPosition;
-    public Vector2 WorldPosition;
-    public float Pressure;
-    public Vector2 Tilt;
+    public Vector2 ScreenPosition = Vector2.Inf;
+    public Vector2 WorldPosition = Vector2.Inf;
+    public float Pressure = 1.0f;
+    public Vector2 Tilt = Vector2.Zero;
+
+    public CursorButtonData() { }
 
     public static explicit operator CursorMotionData(CursorButtonData b) =>
         new()
