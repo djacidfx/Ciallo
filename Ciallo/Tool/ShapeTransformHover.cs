@@ -35,6 +35,28 @@ public class ShapeTransformHover : InteractiveSessionBase
     public override void Start(CursorButtonData data)
     {
         var selectionManager = Document.Get<SelectionManager>();
+        var worldBody = Document.Get<WorldBody>();
+        var layerBody = WorkingLayer.Get<BodyHolder>();
+
+        // Enable cursor detections on shapes of working layer
+        worldBody.EnableHoverDetection = true;
+        worldBody.CursorWorldPosition = data.WorldPosition;
+
+        layerBody.SetAreaCursor(Control.CursorShape.Move);
+
+        // hover hinter
+        _hoverSub = Document.Get<WorldBody>().HoveringBody.Subscribe(body =>
+        {
+            if (!HoveredShape.IsDyingOrDead) HoveredShape.Get<PolylineWireframe>().SetVisible(false);
+            if (body == null)
+            {
+                HoveredShape = Entity.Null;
+                return;
+            }
+            HoveredShape = body.SelfEntity;
+            if (!HoveredShape.IsNull) HoveredShape.Get<PolylineWireframe>().SetVisible(true);
+        });
+
         // Polyline transform
         if (selectionManager.SelectedShapes.Count > 0)
         {
@@ -63,30 +85,18 @@ public class ShapeTransformHover : InteractiveSessionBase
             }
 
             // transform cursor bodies
-            var worldBody = Document.Get<WorldBody>();
             Body[] bodies = worldBody.CreateAddTransformAreas(rect.Size, rect.GetCenter());
             RotationBody = bodies[0];
             bodies[1].QueueFree();
             CornerBodies = bodies[2..6];
         }
-
-        // Enable cursor detections on shapes of working layer
-        WorkingLayer.Get<BodyHolder>().SetAreaCursor(Control.CursorShape.Move);
-
-        // hover hinter
-        _hoverSub = Document.Get<WorldBody>().HoveringBody.Skip(1).Subscribe(body =>
-        {
-            if (!HoveredShape.IsDyingOrDead) HoveredShape.Get<PolylineWireframe>().SetVisible(false);
-            if (body == null)
-            {
-                HoveredShape = Entity.Null;
-                return;
-            }
-            HoveredShape = body.SelfEntity;
-            if (!HoveredShape.IsNull) HoveredShape.Get<PolylineWireframe>().SetVisible(true);
-        });
     }
-    public override void Moving(CursorMotionData data) { }
+
+    public override void Moving(CursorMotionData data)
+    {
+        Document.Get<WorldBody>().CursorWorldPosition = data.WorldPosition;
+    }
+
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
@@ -99,6 +109,7 @@ public class ShapeTransformHover : InteractiveSessionBase
         CornerBodies = [];
 
         WorkingLayer.Get<BodyHolder>().SetAreaCursor(Control.CursorShape.Arrow);
+        Document.Get<WorldBody>().EnableHoverDetection = false;
 
         // overlays
         if (!HoveredShape.IsDyingOrDead) HoveredShape.Get<PolylineWireframe>().SetVisible(false);

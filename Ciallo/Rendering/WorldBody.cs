@@ -24,16 +24,45 @@ public partial class WorldBody : BodyHolder
     private Control _cursorSwitcher; // This is supposed to be the job of ViewportContainer, but it doesn't respond even if changing MouseDefaultCursorShape.
     private PaintPanel _paintPanel;
 
-    public Control.CursorShape MouseDefaultCursorShape { get; set; }
-
     private readonly ReactiveProperty<Body> _hoveringBody = new();
     public ReadOnlyReactiveProperty<Body> HoveringBody => _hoveringBody;
+
+    public bool EnableHoverDetection
+    {
+        get;
+        set
+        {
+            field = value;
+            SetHoveringBody(null);
+        }
+    } = false;
+    public Control.CursorShape MouseDefaultCursorShape { get; set; }
+    public Vector2 CursorWorldPosition { get; set; } // Recieve from interactor
 
     public override void _EnterTree()
     {
         _canvasLayer = GetChild<CanvasLayer>(0);
         _cursorSwitcher = _canvasLayer.GetChild<Control>(0);
         _paintPanel = (PaintPanel)Owner;
+    }
+
+    public override void _PhysicsProcess(double delta)
+    {
+        if (!EnableHoverDetection) return;
+        // See following pages for the point query method:
+        // https://docs.godotengine.org/en/stable/tutorials/physics/ray-casting.html#space
+        // https://godotforums.org/d/34175-collision-with-point
+        // Note this is different to RayCast2D node, which is a ray on XY plane. We want a top-down cast here (a point on XY plane).
+        var pointQuery = new PhysicsPointQueryParameters2D()
+        {
+            CollideWithBodies = true,
+            Position = CursorWorldPosition,
+            CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke,
+        };
+        var hits = GetWorld2D().DirectSpaceState.IntersectPoint(pointQuery, 32);
+        var body = hits.Count > 0 ? TopMostFromHits(hits) : null;
+
+        SetHoveringBody(body);
     }
 
     // Note: not implement screen position, world size
@@ -94,9 +123,11 @@ public partial class WorldBody : BodyHolder
 
     private void SetHoveringBody(Body value)
     {
-        _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
         var body = _hoveringBody.Value;
         if (body == value) return;
+
+        _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
+        GetViewport()?.UpdateMouseCursorState();
 
         body?.IsHovered = false;
         value?.IsHovered = true;
@@ -124,24 +155,6 @@ public partial class WorldBody : BodyHolder
             .ThenByDescending(GetIndexPath, NodeIndexPathComparer.Instance) // child parent hierarchy
             .ThenByDescending(n => n.GetIndex())
             .First();
-    }
-
-    public void UpdateHovering(Vector2 worldPosition)
-    {
-        // See following pages for the point query method:
-        // https://docs.godotengine.org/en/stable/tutorials/physics/ray-casting.html#space
-        // https://godotforums.org/d/34175-collision-with-point
-        // Note this is different to RayCast2D node, which is a ray on XY plane. We want a top-down cast here (a point on XY plane).
-        var pointQuery = new PhysicsPointQueryParameters2D()
-        {
-            CollideWithBodies = true,
-            Position = worldPosition,
-            CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke,
-        };
-        var hits = GetWorld2D().DirectSpaceState.IntersectPoint(pointQuery, 32);
-        var body = hits.Count > 0 ? TopMostFromHits(hits) : null;
-
-        SetHoveringBody(body);
     }
 
     public List<Entity> RectQuery(Rect2 rect)

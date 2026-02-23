@@ -18,11 +18,7 @@ public partial class Body : StaticBody2D, IInitable, IDestroyable
     public Control.CursorShape MouseDefaultCursorShape
     {
         get => _mouseDefaultCursorShape;
-        set
-        {
-            _mouseDefaultCursorShape = value;
-            GetViewport()?.UpdateMouseCursorState();
-        }
+        set => _mouseDefaultCursorShape = value;
     }
 
     public Body()

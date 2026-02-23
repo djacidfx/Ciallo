@@ -17,6 +17,8 @@ public class ImageTransformHover : InteractiveSessionBase
         var setting = WorkingLayer.Get<ImageLayerSetting>();
         var worldBody = Document.Get<WorldBody>();
 
+        worldBody.EnableHoverDetection = true;
+        worldBody.CursorWorldPosition = data.WorldPosition;
         WorkingLayer.Get<TransformOverlayBox>().Visible = true;
 
         // Create bodies
@@ -26,7 +28,11 @@ public class ImageTransformHover : InteractiveSessionBase
         CornerBodies = bodies[2..6];
     }
 
-    public override void Moving(CursorMotionData data) { }
+    public override void Moving(CursorMotionData data)
+    {
+        Document.Get<WorldBody>().CursorWorldPosition = data.WorldPosition;
+    }
+
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
@@ -37,7 +43,9 @@ public class ImageTransformHover : InteractiveSessionBase
         RotationBody = null;
         TranslationBody = null;
         CornerBodies = [];
+
         WorkingLayer.Get<TransformOverlayBox>().Visible = false;
+        Document.Get<WorldBody>().EnableHoverDetection = false;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data)

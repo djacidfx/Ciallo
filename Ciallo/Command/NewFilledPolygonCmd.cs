@@ -46,7 +46,7 @@ public class NewFilledPolygonCmd : CommandBase
         var polygonBody = new Body();
         targetE.AddNode(polygonBody);
 
-        polylineGeometry.Positions.DebounceFrame(1).Subscribe(p =>
+        polylineGeometry.Positions.Subscribe(p =>
         {
             polygonView.SetPolygon(p.AsSpan());
             overlay.SetGeometry(p);
