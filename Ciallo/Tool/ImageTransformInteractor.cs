@@ -43,7 +43,7 @@ public class ImageTransformInteractor : InteractiveSessionBase
         _startCorners = _setting.GetCorners();
     }
 
-    public override void Interacting(CursorMotionData data)
+    public override void Moving(CursorMotionData data)
     {
         if (_transformType == 0)
         {

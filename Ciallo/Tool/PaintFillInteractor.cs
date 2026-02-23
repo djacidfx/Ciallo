@@ -27,7 +27,7 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
         layerView.AddChild(_dashPreview);
     }
 
-    public override void Interacting(CursorMotionData data)
+    public override void Moving(CursorMotionData data)
     {
         _generator.Update(data);
         ImmutableArray<Vector2> points = [.._generator.Positions, _generator.Positions[0]];

@@ -96,7 +96,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
         }
     }
 
-    public override void Interacting(CursorMotionData data)
+    public override void Moving(CursorMotionData data)
     {
         // Note: Still stutter when moving multiple strokes
         // No GC during interaction

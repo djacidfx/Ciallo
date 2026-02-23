@@ -9,7 +9,7 @@ public class PaintHover : InteractiveSessionBase
     {
         Document.Get<WorldBody>().MouseDefaultCursorShape = Control.CursorShape.Cross;
     }
-    public override void Interacting(CursorMotionData data) { }
+    public override void Moving(CursorMotionData data) { }
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {

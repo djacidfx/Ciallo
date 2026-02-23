@@ -45,7 +45,7 @@ public class PaintInteractor : InteractiveSessionBase
         _generator.Start(data);
     }
 
-    public override void Interacting(CursorMotionData data)
+    public override void Moving(CursorMotionData data)
     {
         _generator.Update(data);
         _strokePreview.SetGeometry(_generator.Positions, _generator.Radii, _generator.Pressures);

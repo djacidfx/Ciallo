@@ -165,7 +165,7 @@ public abstract partial class StateMachineToolBase : ITool
             motion.TiltDelta = data.Tilt - _lastestCursor.Tilt;
             motion.TimeDelta = _accumulatedInterval;
 
-            Machine.State.Interacting(motion);
+            Machine.State.Moving(motion);
             _lastestCursor = data;
             _accumulatedInterval = TimeSpan.Zero;
         }
@@ -228,7 +228,7 @@ public abstract class InternalToolState : InteractiveSessionBase
     public override void End(CursorButtonData cursor) { }
     public override void Cancel() { }
     public override bool OnKey(InputEventKey key, CursorButtonData data) { return false; }
-    public override void Interacting(CursorMotionData data) { }
+    public override void Moving(CursorMotionData data) { }
 }
 
 public class ToolActive : InternalToolState

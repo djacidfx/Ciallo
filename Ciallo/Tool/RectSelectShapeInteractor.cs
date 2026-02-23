@@ -20,7 +20,7 @@ public class RectSelectShapeInteractor : InteractiveSessionBase
         _boxSelectionRect.Size = Vector2.Zero;
     }
 
-    public override void Interacting(CursorMotionData data)
+    public override void Moving(CursorMotionData data)
     {
         _boxSelectionRect.Size = data.WorldPosition - _boxSelectionRect.Position;
         var points = _boxSelectionRect.GetCorners();

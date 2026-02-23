@@ -35,7 +35,7 @@ public abstract class InteractiveSessionBase
     public virtual void BeforeSrcEnd(InteractiveSessionBase session) { }
     public virtual void AfterSrcEnd(InteractiveSessionBase session) { }
     public abstract void Start(CursorButtonData data);
-    public abstract void Interacting(CursorMotionData data);
+    public abstract void Moving(CursorMotionData data);
     public abstract void End(CursorButtonData data);
     public virtual void BeforeDstStart(InteractiveSessionBase session) { }
     public virtual void AfterDstStart(InteractiveSessionBase session) { }

@@ -26,7 +26,7 @@ public class ImageTransformHover : InteractiveSessionBase
         CornerBodies = bodies[2..6];
     }
 
-    public override void Interacting(CursorMotionData data) { }
+    public override void Moving(CursorMotionData data) { }
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {

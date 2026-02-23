@@ -86,7 +86,7 @@ public class ShapeTransformHover : InteractiveSessionBase
             if (!HoveredShape.IsNull) HoveredShape.Get<PolylineWireframe>().SetVisible(true);
         });
     }
-    public override void Interacting(CursorMotionData data) { }
+    public override void Moving(CursorMotionData data) { }
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
