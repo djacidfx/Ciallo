@@ -14,11 +14,11 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Select)]
-public class PolylineTransformTool : StateMachineToolBase
+public class ShapeLayerSelectTool : StateMachineToolBase
 {
-    public readonly ShapeTransformHover Hover = new();
+    public readonly ShapeSelectHover Hover = new();
     public readonly PolylineTransformInteractor Transform = new();
-    public readonly RectSelectShapeInteractor Select = new();
+    public readonly RectSelectPolylineInteractor Select = new();
 
     protected override void ConfigureStateMachine()
     {
