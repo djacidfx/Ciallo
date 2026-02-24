@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Ciallo.Geometry;
-using Ciallo.Misc;
 using Godot;
 using Newtonsoft.Json;
 using ObservableCollections;
