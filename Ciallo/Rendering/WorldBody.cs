@@ -45,7 +45,7 @@ public partial class WorldBody : BodyHolder
             _cursorSwitcher.MouseDefaultCursorShape = value;
         }
     }
-    public Vector2 CursorWorldPosition { get; set; } // Recieve from interactor
+    public Vector2 CursorWorldPosition { get; set; } // Received from interactor
 
     public override void _EnterTree()
     {

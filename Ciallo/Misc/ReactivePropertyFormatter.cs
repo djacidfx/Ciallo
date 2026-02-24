@@ -12,7 +12,7 @@ public class ReactivePropertyFormatter<T> : IMessagePackFormatter<ReactiveProper
         if (property == null)
         {
             // By design of Ciallo, reactive property itself cannot be null
-            throw new("ReactiveProperty cannot be null");
+            throw new ArgumentNullException(nameof(property), "ReactiveProperty cannot be null.");
         }
         var formatter = options.Resolver.GetFormatterWithVerify<T>();
         formatter.Serialize(ref writer, property.Value, options);

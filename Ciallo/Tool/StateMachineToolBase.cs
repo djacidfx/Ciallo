@@ -161,7 +161,7 @@ public abstract partial class StateMachineToolBase : ITool
         _accumulatedInterval += data.TimeDelta;
         if (_accumulatedInterval > Machine.State.MovingMinInterval)
         {
-            CursorMotionData motion = (CursorMotionData)_lastestCursor; // Copy all non-delta
+            CursorMotionData motion = data; // Copy all non-delta
             motion.ScreenDelta = data.ScreenPosition - _lastestCursor.ScreenPosition;
             motion.WorldDelta = data.WorldPosition - _lastestCursor.WorldPosition;
             motion.PressureDelta = data.Pressure - _lastestCursor.Pressure;
