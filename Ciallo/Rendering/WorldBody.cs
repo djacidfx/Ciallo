@@ -36,7 +36,15 @@ public partial class WorldBody : BodyHolder
             SetHoveringBody(null);
         }
     } = false;
-    public Control.CursorShape MouseDefaultCursorShape { get; set; }
+    public Control.CursorShape MouseDefaultCursorShape
+    {
+        get;
+        set
+        {
+            field = value;
+            _cursorSwitcher.MouseDefaultCursorShape = value;
+        }
+    }
     public Vector2 CursorWorldPosition { get; set; } // Recieve from interactor
 
     public override void _EnterTree()
