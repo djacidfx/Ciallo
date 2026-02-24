@@ -1,7 +1,7 @@
 ﻿using System;
 using Godot;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 public static class RandomExtension
 {

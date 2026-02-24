@@ -3,7 +3,7 @@ using MessagePack;
 using MessagePack.Formatters;
 using R3;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 public class ReactivePropertyFormatter<T> : IMessagePackFormatter<ReactiveProperty<T>>
 {

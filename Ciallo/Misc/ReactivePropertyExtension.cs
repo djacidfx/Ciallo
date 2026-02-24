@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using R3;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 public static class ReactivePropertyExtension
 {

@@ -10,10 +10,13 @@ public interface ICommand
     public void Undo();
 
     /// <summary>
-    /// `DoRefEntities` are the entities will be destroyed when this command is ready to redo and deleted.
+    /// DoRefEntities are commonly referencing entities created by commands.
+    /// The referenced entities will be destroyed when current command is ready to be redoed and deleted.
+    /// </summary>
+    /// <remarks>
     /// e.g. User undo the most recent command, then clear the whole history. So the most recent command satisfies the above statement.
     /// Entity version of `add_do_reference`.
-    /// </summary>
+    /// </remarks>
     public IEnumerable<Entity> DoRefEntities { get; }
     public IEnumerable<Entity> UndoRefEntities { get; }
 

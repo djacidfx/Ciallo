@@ -2,7 +2,7 @@
 using System.Reflection;
 using Newtonsoft.Json;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 public class ReactivePropertyConverter : JsonConverter
 {

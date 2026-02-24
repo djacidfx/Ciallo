@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 // Gen by copilot
 public sealed class LanguageComparer : StringComparer

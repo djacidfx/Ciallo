@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 public partial class AutoloadMisc : Node
 {
@@ -10,11 +10,7 @@ public partial class AutoloadMisc : Node
         // GetTree().AutoAcceptQuit = false;
     }
 
-    public override void _Notification(int what)
-    {
-    }
+    public override void _Notification(int what) { }
 
-    public override void _Ready()
-    {
-    }
+    public override void _Ready() { }
 }
