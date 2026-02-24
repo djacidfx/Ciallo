@@ -54,24 +54,10 @@ public class NewFilledPolygonCmd : CommandBase
         }).AddTo(targetE);
 
         // Layer tree events
-        layerNode.TreeEntered.Subscribe(et =>
+        var events = layerNode.MovedAsExitEnter;
+        events.Enter.Subscribe(et =>
         {
             (int index, var layerE) = (et.Index, et.Value);
-            OnAdd(layerE, index);
-        }).AddTo(targetE);
-
-        layerNode.TreeExited.Subscribe(_ => OnRemove()).AddTo(targetE);
-
-        layerNode.Moved.Subscribe(et =>
-        {
-            OnRemove();
-            OnAdd(et.Value, et.NewIndex);
-        }).AddTo(targetE);
-
-        return;
-
-        void OnAdd(Entity layerE, int index)
-        {
             // View
             var layerView = layerE.Get<ShapeLayerView>();
             layerView.InsertNodeAt(polygonView, index);
@@ -82,9 +68,9 @@ public class NewFilledPolygonCmd : CommandBase
 
             // Body
             layerE.Get<BodyHolder>().InsertNodeAt(polygonBody, index);
-        }
+        }).AddTo(targetE);
 
-        void OnRemove()
+        events.Exit.Subscribe(_ =>
         {
             // Body
             polygonBody.RemoveFromParent();
@@ -94,7 +80,7 @@ public class NewFilledPolygonCmd : CommandBase
 
             // View
             polygonView.RemoveFromParent();
-        }
+        }).AddTo(targetE);
     }
 
     public override void Do(Entity targetE)

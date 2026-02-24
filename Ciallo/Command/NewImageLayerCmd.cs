@@ -72,37 +72,24 @@ public class NewImageLayerCmd : CommandBase
         }).AddTo(targetE);
 
         // Layer tree events
-        layerNode.TreeEntered.Subscribe(et =>
-        {
-            OnAdd(et.Value, et.Index);
-        }).AddTo(targetE);
+        var events = layerNode.MovedAsExitEnter;
 
-        layerNode.TreeExited.Subscribe(_ => OnRemove()).AddTo(targetE);
-
-        layerNode.Moved.Subscribe(et =>
-        {
-            OnRemove();
-            OnAdd(et.Value, et.NewIndex);
-        }).AddTo(targetE);
-
-        return;
-
-        void OnAdd(Entity parentE, int index)
+        events.Enter.Subscribe(et =>
         {
             // Panel
             var layerContainer = Document.Get<LayerContainer>();
-            layerContainer.CreateInsert(targetE, index);
+            layerContainer.CreateInsert(targetE, et.Index);
 
             // View
             var worldView = Document.Get<WorldView>();
-            worldView.InsertNodeAt(sprite, index);
+            worldView.InsertNodeAt(sprite, et.Index);
             sprite.SetOwner(worldView);
 
             // Overlay
-            parentE.Get<OverlayHolder>().InsertNodeAt(layerOverlay, index);
-        }
+            et.Value.Get<OverlayHolder>().InsertNodeAt(layerOverlay, et.Index);
+        }).AddTo(targetE);
 
-        void OnRemove()
+        events.Exit.Subscribe(_ =>
         {
             // Overlay
             layerOverlay.RemoveFromParent();
@@ -112,7 +99,7 @@ public class NewImageLayerCmd : CommandBase
 
             // Panel
             Document.Get<LayerContainer>().RemoveFree(targetE);
-        }
+        }).AddTo(targetE);
     }
 
     public override void Do(Entity targetE)
