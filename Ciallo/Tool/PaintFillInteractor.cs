@@ -7,7 +7,7 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
+public class PaintFillInteractor : InteractiveSessionBase
 {
     private readonly PolylineInteractiveGenerator _generator = new()
     {
@@ -16,6 +16,12 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
         AllowIntersection = false,
     };
     private StrokeView _dashPreview;
+    private Color _fillColor;
+
+    public override void BeforeSrcEnd(InteractiveSessionBase session)
+    {
+        _fillColor = ((PaintFillHover)session).FillColor.Value;
+    }
 
     public override void Start(CursorButtonData data)
     {
@@ -27,7 +33,7 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
         layerView.AddChild(_dashPreview);
     }
 
-    public override void Interacting(CursorMotionData data)
+    public override void Moving(CursorMotionData data)
     {
         _generator.Update(data);
         ImmutableArray<Vector2> points = [.._generator.Positions, _generator.Positions[0]];
@@ -42,18 +48,11 @@ public class PaintFillInteractor(PaintFillTool tool) : InteractiveSessionBase
             Clear();
             return;
         }
-        var setting = new FilledPolygonSetting() { Color = { Value = tool.Color.Value } };
-        var geom = new PolylineGeometry()
-        {
-            Positions = [.._generator.Positions],
-            Radii = [.._generator.Radii],
-            Pressures = [.._generator.Pressures],
-            Tilts = [.._generator.Tilts],
-        };
         new CommandBuilder(WorkingLayer.World.Create())
-            .NewFilledPolygon(setting)
+            .NewFilledPolygon()
             .AddToLayerTree(WorkingLayer)
-            .SetPolylineGeometry(geom)
+            .SetPolylineGeometry([.._generator.Positions], [.._generator.Radii], [.._generator.Pressures], [.._generator.Tilts])
+            .SetProperty(e => e.Get<FilledPolygonSetting>().Color, _fillColor)
             .Commit();
         Clear();
     }

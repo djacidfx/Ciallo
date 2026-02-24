@@ -57,12 +57,11 @@ public static partial class AppDocumentManager
 
         foreach (var layerDataE in dataTreeRoot.Children)
         {
-            var commonLayerSetting = layerDataE.Has<CommonLayerSetting>() ? layerDataE.Get<CommonLayerSetting>() : null;
             if (layerDataE.Has<ImageLayerSetting>())
             {
                 var layerE = resultWorld.Create();
                 new CommandBuilder(layerE)
-                    .NewImageLayer(layerDataE.Get<ImageLayerSetting>(), commonLayerSetting)
+                    .NewImageLayer(layerDataE)
                     .AddToLayerTree(resultDocument)
                     .Do();
                 layerMap.Add(layerDataE, layerE);
@@ -71,7 +70,7 @@ public static partial class AppDocumentManager
             {
                 var layerE = resultWorld.Create();
                 new CommandBuilder(layerE)
-                    .NewShapeLayer(layerDataE.Get<ShapeLayerSetting>(), commonLayerSetting)
+                    .NewShapeLayer(layerDataE)
                     .AddToLayerTree(resultDocument)
                     .Do();
                 layerMap.Add(layerDataE, layerE);
@@ -82,19 +81,18 @@ public static partial class AppDocumentManager
 
                     if (shapeDataE.Has<StrokeSetting>())
                     {
+                        var resultBrush = brushMap[shapeDataE.Get<StrokeSetting>().BrushE.Value];
                         new CommandBuilder(resultWorld.Create())
-                            .NewStroke()
+                            .NewStroke(shapeDataE)
                             .AddToLayerTree(layerE)
-                            .SetPolylineGeometry(geometry)
-                            .SetStrokeBrush(brushMap[shapeDataE.Get<StrokeSetting>().BrushE])
+                            .SetProperty(e => e.Get<StrokeSetting>().BrushE, resultBrush)
                             .Do();
                     }
                     else if (shapeDataE.Has<FilledPolygonSetting>())
                     {
                         new CommandBuilder(resultWorld.Create())
-                            .NewFilledPolygon(shapeDataE.Get<FilledPolygonSetting>())
+                            .NewFilledPolygon(shapeDataE)
                             .AddToLayerTree(layerE)
-                            .SetPolylineGeometry(geometry)
                             .Do();
                     }
                 }

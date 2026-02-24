@@ -10,26 +10,33 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class NewFilledPolygonCmd : CommandBase
 {
-    private readonly FilledPolygonSetting _setting;
+    public Entity CopyE { get; }
+
+    public NewFilledPolygonCmd(Entity copyE = default)
+    {
+        CopyE = copyE;
+    }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
-
-    public NewFilledPolygonCmd(FilledPolygonSetting setting = null)
-    {
-        _setting = setting ?? new FilledPolygonSetting();
-    }
 
     public override void BeforeFirstDo(Entity targetE)
     {
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
-        targetE.Add(new PolylineGeometry());
-        targetE.Add(_setting);
+
+        var polylineGeometry = CopyE.IsNull
+            ? new PolylineGeometry()
+            : CopyE.Get<PolylineGeometry>().Clone();
+        targetE.Add(polylineGeometry);
+        var setting = CopyE.IsNull
+            ? new FilledPolygonSetting()
+            : CopyE.Get<FilledPolygonSetting>().Clone();
+        targetE.Add(setting);
 
         // View
         var polygonView = new Polygon2D() { Antialiased = true }; // The antialiasing result is not satisfying
         targetE.AddNode(polygonView);
-        _setting.Color.Subscribe(polygonView.SetColor).AddTo(targetE);
+        setting.Color.Subscribe(polygonView.SetColor).AddTo(targetE);
 
         // Overlay
         var overlay = new PolylineWireframe() { Visible = false };
@@ -39,25 +46,18 @@ public class NewFilledPolygonCmd : CommandBase
         var polygonBody = new Body();
         targetE.AddNode(polygonBody);
 
+        polylineGeometry.Positions.Subscribe(p =>
+        {
+            polygonView.SetPolygon(p.AsSpan());
+            overlay.SetGeometry(p);
+            polygonBody.SetSimplePolygon(p);
+        }).AddTo(targetE);
+
         // Layer tree events
-        layerNode.TreeEntered.Subscribe(et =>
+        var events = layerNode.MovedAsExitEnter;
+        events.Enter.Subscribe(et =>
         {
             (int index, var layerE) = (et.Index, et.Value);
-            OnAdd(layerE, index);
-        }).AddTo(targetE);
-
-        layerNode.TreeExited.Subscribe(_ => OnRemove()).AddTo(targetE);
-
-        layerNode.Moved.Subscribe(et =>
-        {
-            OnRemove();
-            OnAdd(et.Value, et.NewIndex);
-        }).AddTo(targetE);
-
-        return;
-
-        void OnAdd(Entity layerE, int index)
-        {
             // View
             var layerView = layerE.Get<ShapeLayerView>();
             layerView.InsertNodeAt(polygonView, index);
@@ -68,9 +68,9 @@ public class NewFilledPolygonCmd : CommandBase
 
             // Body
             layerE.Get<BodyHolder>().InsertNodeAt(polygonBody, index);
-        }
+        }).AddTo(targetE);
 
-        void OnRemove()
+        events.Exit.Subscribe(_ =>
         {
             // Body
             polygonBody.RemoveFromParent();
@@ -80,7 +80,7 @@ public class NewFilledPolygonCmd : CommandBase
 
             // View
             polygonView.RemoveFromParent();
-        }
+        }).AddTo(targetE);
     }
 
     public override void Do(Entity targetE)

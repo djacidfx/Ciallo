@@ -40,7 +40,7 @@ public partial class DocumentBrushList : ItemList, IInitable
             List<Entity> toDeleteShapes = [];
             foreach (var strokeE in query.EnumerateWithEntities())
             {
-                if (strokeE.Get<StrokeSetting>().BrushE == brushE)
+                if (strokeE.Get<StrokeSetting>().BrushE.Value == brushE)
                     toDeleteShapes.Add(strokeE);
             }
 

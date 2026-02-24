@@ -21,4 +21,15 @@ public class CommonLayerSetting
         Opacity.Value = other.Opacity.Value;
         IsLocked.Value = other.IsLocked.Value;
     }
+
+    public CommonLayerSetting Clone()
+    {
+        return new CommonLayerSetting
+        {
+            Name = { Value = Name.Value },
+            IsVisible = { Value = IsVisible.Value },
+            Opacity = { Value = Opacity.Value },
+            IsLocked = { Value = IsLocked.Value },
+        };
+    }
 }

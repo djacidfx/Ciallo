@@ -1,11 +1,12 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Collections.Immutable;
+using System.Runtime.Serialization;
 using Frent;
-using ObservableCollections;
+using R3;
 
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
 public class VectorFillLayerSetting
 {
-    [DataMember] public ObservableHashSet<Entity> ReferenceLayerEs = [];
+    [DataMember] public ReactiveProperty<ImmutableHashSet<Entity>> ReferenceLayers;
 }

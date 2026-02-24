@@ -45,7 +45,7 @@ public class PaintInteractor : InteractiveSessionBase
         _generator.Start(data);
     }
 
-    public override void Interacting(CursorMotionData data)
+    public override void Moving(CursorMotionData data)
     {
         _generator.Update(data);
         _strokePreview.SetGeometry(_generator.Positions, _generator.Radii, _generator.Pressures);
@@ -55,18 +55,11 @@ public class PaintInteractor : InteractiveSessionBase
     {
         _generator.End(data);
 
-        var geom = new PolylineGeometry()
-        {
-            Positions = [.._generator.Positions],
-            Radii = [.._generator.Radii],
-            Pressures = [.._generator.Pressures],
-            Tilts = [.._generator.Tilts],
-        };
         new CommandBuilder(WorkingLayer.World.Create())
             .NewStroke()
             .AddToLayerTree(WorkingLayer)
-            .SetStrokeBrush(_brushE)
-            .SetPolylineGeometry(geom)
+            .SetProperty(e => e.Get<StrokeSetting>().BrushE, _brushE)
+            .SetPolylineGeometry([.._generator.Positions], [.._generator.Radii], [.._generator.Pressures], [.._generator.Tilts])
             .Commit();
         Clear();
     }

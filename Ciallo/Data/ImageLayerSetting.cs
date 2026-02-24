@@ -27,4 +27,13 @@ public class ImageLayerSetting
     public Vector2 Position => ImageTransform.Value.Origin;
     public Vector2 Scale => ImageTransform.Value.Scale;
     public float Rotation => ImageTransform.Value.Rotation;
+
+    public ImageLayerSetting Clone()
+    {
+        return new ImageLayerSetting
+        {
+            Texture = Texture,
+            ImageTransform = { Value = ImageTransform.Value },
+        };
+    }
 }

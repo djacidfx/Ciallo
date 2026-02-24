@@ -8,6 +8,15 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class StrokeSetting
 {
-    [DataMember] public Entity BrushE = Entity.Null;
-    [DataMember] public ReactiveProperty<Color> OverrideColor = null;
+    [DataMember] public ReactiveProperty<Entity> BrushE = new(default);
+    [DataMember] public ReactiveProperty<Color?> OverrideColor = new();
+
+    public StrokeSetting Clone()
+    {
+        return new StrokeSetting
+        {
+            BrushE = { Value = BrushE.Value },
+            OverrideColor = { Value = OverrideColor.Value },
+        };
+    }
 }

@@ -34,7 +34,8 @@ using StateConfiguration = StateMachine<InteractiveSessionBase, StateMachineTool
 /// </remarks>
 public abstract partial class StateMachineToolBase : ITool
 {
-    public readonly StateMachine Machine = new(ToolInactive.Instance);
+    public readonly ReactiveProperty<InteractiveSessionBase> ActiveSession = new(ToolInactive.Instance);
+    public readonly StateMachine Machine;
 
     public Entity Document
     {
@@ -49,7 +50,8 @@ public abstract partial class StateMachineToolBase : ITool
     public Entity WorkingLayer => WorkingLayers.First();
     public SceneTree GetTree() => (SceneTree)Engine.GetMainLoop();
 
-    private CursorButtonData _currentCursor;
+    private CursorButtonData _lastestCursor;
+    private TimeSpan _accumulatedInterval = TimeSpan.Zero;
 
     private readonly HashSet<AppAction> _triggerActions = [];
 
@@ -57,6 +59,8 @@ public abstract partial class StateMachineToolBase : ITool
 
     protected StateMachineToolBase()
     {
+        Machine = new(() => ActiveSession.Value, s => ActiveSession.Value = s);
+
         Machine.Configure(ToolInactive.Instance)
             .Permit(Trigger.Activate, ToolActive.Instance);
 
@@ -73,7 +77,7 @@ public abstract partial class StateMachineToolBase : ITool
             .OnEntry(t =>
             {
                 t.Source.BeforeDstStart(session);
-                t.Destination.Start(_currentCursor);
+                t.Destination.Start(_lastestCursor);
                 t.Source.AfterDstStart(session);
             })
             .OnExit(t =>
@@ -83,7 +87,7 @@ public abstract partial class StateMachineToolBase : ITool
                     t.Trigger == Trigger.Get(AppActions.CancelInteraction, false) ||
                     t.Trigger == Trigger.Deactivate)
                     t.Source.Cancel();
-                else t.Source.End(_currentCursor);
+                else t.Source.End(_lastestCursor);
                 t.Destination.AfterSrcEnd(t.Source);
             });
     }
@@ -113,7 +117,8 @@ public abstract partial class StateMachineToolBase : ITool
 
     public void OnMouseButton(InputEventMouseButton button, CursorButtonData data)
     {
-        _currentCursor = data;
+        _accumulatedInterval = TimeSpan.Zero;
+        _lastestCursor = data;
         var trigger = Trigger.Get(button.ButtonIndex, button.Pressed);
         if (Machine.CanFire(trigger))
             Machine.Fire(trigger);
@@ -136,7 +141,7 @@ public abstract partial class StateMachineToolBase : ITool
             return true;
         }
         // Route to current session
-        return Machine.State.OnKey(key, _currentCursor);
+        return Machine.State.OnKey(key, _lastestCursor);
     }
 
     private Trigger DetectTriggerAction()
@@ -153,11 +158,34 @@ public abstract partial class StateMachineToolBase : ITool
 
     public void OnMoving(CursorMotionData data)
     {
-        _currentCursor = data;
-        Machine.State.Interacting(data);
+        _accumulatedInterval += data.TimeDelta;
+        if (_accumulatedInterval > Machine.State.MovingMinInterval)
+        {
+            CursorMotionData motion = data; // Copy all non-delta
+            motion.ScreenDelta = data.ScreenPosition - _lastestCursor.ScreenPosition;
+            motion.WorldDelta = data.WorldPosition - _lastestCursor.WorldPosition;
+            motion.PressureDelta = data.Pressure - _lastestCursor.Pressure;
+            motion.TiltDelta = data.Tilt - _lastestCursor.Tilt;
+            motion.TimeDelta = _accumulatedInterval;
+
+            Machine.State.Moving(motion);
+            _lastestCursor = data;
+            _accumulatedInterval = TimeSpan.Zero;
+        }
     }
 
-    public abstract void DrawProperty(PropertyContainer container);
+    public virtual void DrawProperty(PropertyContainer container)
+    {
+        foreach (var state in Machine.GetInfo().States)
+        {
+            if (state.UnderlyingState is not InteractiveSessionBase session) continue;
+            var sessionContainer = new PropertyContainer()
+                .VisibleIf(ActiveSession, session)
+                .AddToChildOf(container);
+            session.DrawProperty(sessionContainer);
+        }
+    }
+
     public abstract bool CanHandleLayer(params Entity[] layerEs);
 
     public void OnActivate(params Entity[] layerEs)
@@ -214,7 +242,7 @@ public abstract class InternalToolState : InteractiveSessionBase
     public override void End(CursorButtonData cursor) { }
     public override void Cancel() { }
     public override bool OnKey(InputEventKey key, CursorButtonData data) { return false; }
-    public override void Interacting(CursorMotionData data) { }
+    public override void Moving(CursorMotionData data) { }
 }
 
 public class ToolActive : InternalToolState

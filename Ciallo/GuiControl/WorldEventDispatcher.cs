@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Ciallo.Geometry;
-using Ciallo.Rendering;
 using Ciallo.Tool;
 using Frent;
 using Godot;
@@ -14,10 +13,9 @@ namespace Ciallo.GuiControl;
 public partial class WorldEventDispatcher : SubViewportContainer
 {
     private Camera2D _camera;
-    private WorldBody _worldBody;
 
-    private bool _isHovering = false;
-    private bool _isPanning = false;
+    private bool _isHovering;
+    private bool _isPanning;
 
     private Vector2 _prevScreenPos;
     private Vector2 _prevWorldPos;
@@ -34,7 +32,6 @@ public partial class WorldEventDispatcher : SubViewportContainer
         _timer = Stopwatch.StartNew();
 
         _camera = GetNode<Camera2D>("%MainCamera");
-        _worldBody = GetNode<WorldBody>("%WorldBody");
 
         GuiInput += OnGuiInput;
         MouseEntered += OnMouseEnter;
@@ -139,8 +136,6 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
                 _prevPressure = currentPressure;
                 _prevTilt = motion.Tilt;
-
-                _timer.Restart();
             }
             else
             {
@@ -161,6 +156,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
             }
         }
 
+        _timer.Restart();
         _prevScreenPos = screenPos;
         _prevWorldPos = worldPos;
     }
@@ -179,7 +175,6 @@ public partial class WorldEventDispatcher : SubViewportContainer
     public void DispatchMotion(CursorMotionData data)
     {
         ToolManager.ActiveTool.Value?.OnMoving(data);
-        _worldBody.UpdateHovering(data.WorldPosition);
     }
 
     public void OnMouseEnter()

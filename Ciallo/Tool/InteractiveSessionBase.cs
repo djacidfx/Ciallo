@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Ciallo.Geometry;
+using Ciallo.Widget;
 using Frent;
 using Godot;
 
@@ -20,13 +22,25 @@ public abstract class InteractiveSessionBase
     public Entity Document { get; set; }
     public Entity[] WorkingLayers;
     public Entity WorkingLayer => WorkingLayers.Single();
+    /// <summary>
+    /// Tell the tool to throttle update interval in this interactive session.
+    /// Set this to 0 if need raw input data. 
+    /// </summary>
+    /// <remarks>
+    /// Multiple input in one frame could cause Godot stutter.
+    /// E.g. 144FPS screen, 1000Hz mouse report rate, dragging mouse could cause 6-7 input events in one frame
+    /// Directly calling Polygon2D.SetPolygon to set 500 points in one frame will stutter godot. 
+    /// </remarks>
+    public TimeSpan MovingMinInterval = TimeSpan.FromMilliseconds(5);
+
     public virtual void BeforeSrcEnd(InteractiveSessionBase session) { }
     public virtual void AfterSrcEnd(InteractiveSessionBase session) { }
     public abstract void Start(CursorButtonData data);
-    public abstract void Interacting(CursorMotionData data);
+    public abstract void Moving(CursorMotionData data);
     public abstract void End(CursorButtonData data);
     public virtual void BeforeDstStart(InteractiveSessionBase session) { }
     public virtual void AfterDstStart(InteractiveSessionBase session) { }
     public abstract void Cancel();
     public abstract bool OnKey(InputEventKey key, CursorButtonData data);
+    public virtual void DrawProperty(PropertyContainer container) { }
 }

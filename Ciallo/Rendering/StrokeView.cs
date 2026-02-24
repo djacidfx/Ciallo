@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Ciallo.Geometry;
@@ -35,14 +34,14 @@ public partial class StrokeView : MultiMeshInstance2D
     public void SetGeometry([NotNull] IReadOnlyList<Vector2> positions, float radius)
     {
         SetGeometry(positions,
-            Enumerable.Repeat(radius, positions.Count).ToImmutableArray());
+            [..Enumerable.Repeat(radius, positions.Count)]);
     }
 
     public void SetGeometry(
         [NotNull] IReadOnlyList<Vector2> positions,
         [NotNull] IReadOnlyList<float> radii)
     {
-        SetGeometry(positions, radii, Enumerable.Repeat(1.0f, positions.Count).ToImmutableArray());
+        SetGeometry(positions, radii, [..Enumerable.Repeat(1.0f, positions.Count)]);
     }
 
     public void SetGeometry(

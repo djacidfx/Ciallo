@@ -16,7 +16,7 @@ public class ImageTransformInteractor : InteractiveSessionBase
 
     public override void BeforeSrcEnd(InteractiveSessionBase session)
     {
-        if (session is not ImageTransformHover hover) return;
+        if (session is not ImageLayerSelectHover hover) return;
         if (hover.RotationBody.IsHovered)
         {
             _transformType = 0;
@@ -43,7 +43,7 @@ public class ImageTransformInteractor : InteractiveSessionBase
         _startCorners = _setting.GetCorners();
     }
 
-    public override void Interacting(CursorMotionData data)
+    public override void Moving(CursorMotionData data)
     {
         if (_transformType == 0)
         {
