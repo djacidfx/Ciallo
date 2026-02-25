@@ -42,5 +42,6 @@ public abstract class InteractiveSessionBase
     public virtual void AfterDstStart(InteractiveSessionBase session) { }
     public abstract void Cancel();
     public abstract bool OnKey(InputEventKey key, CursorButtonData data);
+    public virtual void OnMouseButton(InputEventMouseButton button, CursorButtonData data) { }
     public virtual void DrawProperty(PropertyContainer container) { }
 }

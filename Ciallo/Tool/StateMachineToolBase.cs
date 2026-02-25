@@ -122,6 +122,8 @@ public abstract partial class StateMachineToolBase : ITool
         var trigger = Trigger.Get(button.ButtonIndex, button.Pressed);
         if (Machine.CanFire(trigger))
             Machine.Fire(trigger);
+        else
+            Machine.State.OnMouseButton(button, data);
     }
 
     public bool OnKey(InputEventKey key)
