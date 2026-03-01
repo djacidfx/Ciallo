@@ -7,11 +7,6 @@ using Godot;
 
 namespace Ciallo.Rendering;
 
-/// <summary>
-/// On a special architected system (shen's laptop with touch screen), calling UpdateBuffer lags CPU?? Seems like system's GPU driver bug.
-/// Shen didn't find the issue in his another laptop, and failed to fix it.
-/// A pray to Alan Turing has been made to avoid this issue on users' computer.
-/// </summary>
 [Tool, GlobalClass]
 public partial class StrokeView : MultiMeshInstance2D
 {
