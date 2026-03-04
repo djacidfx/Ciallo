@@ -10,7 +10,7 @@ namespace Ciallo.Tool;
 [RegisterTool(ToolButton.Select)]
 public class ShapeLayerSelectTool : StateMachineToolBase
 {
-    public readonly ShapeLayerSelectHover Hover = new();
+    public readonly PolylineSelectHover Hover = new();
     public readonly PolylineTransformInteractor Transform = new();
     public readonly RectSelectPolylineInteractor Select = new();
 

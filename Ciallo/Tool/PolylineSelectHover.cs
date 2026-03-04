@@ -14,7 +14,7 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public class ShapeLayerSelectHover : InteractiveSessionBase
+public class PolylineSelectHover : InteractiveSessionBase
 {
     public Entity HoveredShape;
     public Body RotationBody;
