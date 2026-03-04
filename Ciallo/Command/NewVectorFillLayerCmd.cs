@@ -44,6 +44,7 @@ public class NewVectorFillLayerCmd : CommandBase
 
         // Overlay extra
         var overlayHolder = targetE.Get<OverlayHolder>();
+        overlayHolder.Visible = false;
         overlayHolder.AddChild(new OverlayHolder()); // hold stroke overlay 
         overlayHolder.AddChild(new OverlayHolder()); // hold wireframe overlay
     }

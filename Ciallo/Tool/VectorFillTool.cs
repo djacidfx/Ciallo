@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
+using Ciallo.Rendering;
 using Frent;
 using Godot;
 
@@ -30,5 +31,17 @@ public class VectorFillTool : StateMachineToolBase
         bool isVectorFillLayer = e.Has<VectorFillLayerSetting>();
         bool isShapeLayer = e.Has<ShapeLayerSetting>();
         return !e.IsDyingOrDead && (isVectorFillLayer || isShapeLayer);
+    }
+
+    public override void OnActivated()
+    {
+        if (WorkingLayer.Has<VectorFillLayerSetting>())
+            WorkingLayer.Get<OverlayHolder>().Visible = true;
+    }
+
+    public override void OnDeactivated()
+    {
+        if (WorkingLayer.Has<VectorFillLayerSetting>())
+            WorkingLayer.Get<OverlayHolder>().Visible = false;
     }
 }

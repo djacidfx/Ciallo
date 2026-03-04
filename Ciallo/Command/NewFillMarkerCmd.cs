@@ -89,8 +89,8 @@ public class NewFillMarkerCmd : CommandBase
 
             // Overlay
             var holder = layerE.Get<OverlayHolder>();
-            holder.GetChild(0).AddChild(wireframeOverlay);
-            holder.GetChild(1).AddChild(strokeOverlay);
+            holder.GetChild(0).AddChild(strokeOverlay);
+            holder.GetChild(1).AddChild(wireframeOverlay);
 
             // Body
             layerE.Get<BodyHolder>().InsertNodeAt(strokeBody, index);

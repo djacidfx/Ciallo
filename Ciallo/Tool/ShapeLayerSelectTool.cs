@@ -46,11 +46,15 @@ public class ShapeLayerSelectTool : StateMachineToolBase
 
     public override void OnActivated()
     {
+        if (WorkingLayer.Has<VectorFillLayerSetting>())
+            WorkingLayer.Get<OverlayHolder>().Visible = true;
         WorkingLayer.Get<BodyHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
     }
 
     public override void OnDeactivated()
     {
+        if (WorkingLayer.Has<VectorFillLayerSetting>())
+            WorkingLayer.Get<OverlayHolder>().Visible = false;
         WorkingLayer.Get<BodyHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
     }
 }
