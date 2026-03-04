@@ -39,7 +39,9 @@ public class ShapeLayerSelectTool : StateMachineToolBase
     {
         if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
-        return !e.IsDyingOrDead && e.Has<ShapeLayerSetting>();
+        bool isShapeLayer = e.Has<ShapeLayerSetting>();
+        bool isVectorFillLayer = e.Has<VectorFillLayerSetting>();
+        return !e.IsDyingOrDead && (isShapeLayer || isVectorFillLayer);
     }
 
     public override void OnActivated()

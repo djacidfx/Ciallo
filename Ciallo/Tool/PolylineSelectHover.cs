@@ -52,13 +52,14 @@ public class PolylineSelectHover : InteractiveSessionBase
         // hover hinter
         _hoverSub = Document.Get<WorldBody>().HoveringBody.Subscribe(body =>
         {
-            if (!HoveredShape.IsNull) HoveredShape.Get<PolylineWireframe>().SetVisible(false);
+            if (!HoveredShape.IsDyingOrDead) HoveredShape.Get<PolylineWireframe>().SetVisible(false);
             if (body == null)
             {
                 HoveredShape = Entity.Null;
                 return;
             }
-            body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
+            if (!body.SelfEntity.IsDyingOrDead)
+                body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
             HoveredShape = body.SelfEntity;
         });
 
@@ -86,13 +87,13 @@ public class PolylineSelectHover : InteractiveSessionBase
             {
                 _transformBox = new TransformOverlayBox(rect.Size, rect.GetCenter());
                 worldOverlay.AddChild(_transformBox);
-            }
 
-            // transform cursor bodies
-            Body[] bodies = worldBody.CreateAddTransformAreas(rect.Size, rect.GetCenter());
-            RotationBody = bodies[0];
-            bodies[1].QueueFree();
-            CornerBodies = bodies[2..6];
+                // transform cursor bodies
+                Body[] bodies = worldBody.CreateAddTransformAreas(rect.Size, rect.GetCenter());
+                RotationBody = bodies[0];
+                bodies[1].QueueFree();
+                CornerBodies = bodies[2..6];
+            }
         }
     }
 
@@ -116,7 +117,8 @@ public class PolylineSelectHover : InteractiveSessionBase
         Document.Get<WorldBody>().EnableHoverDetection = false;
 
         // overlays
-        if (!HoveredShape.IsDyingOrDead) HoveredShape.Get<PolylineWireframe>().SetVisible(false);
+        if (!HoveredShape.IsDyingOrDead)
+            HoveredShape.Get<PolylineWireframe>().SetVisible(false);
         _wireframes.ForEach(node => node.QueueFree());
         _wireframes.Clear();
         _transformBox?.QueueFree();
