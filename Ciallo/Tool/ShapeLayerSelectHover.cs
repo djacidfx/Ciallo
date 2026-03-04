@@ -52,14 +52,14 @@ public class ShapeLayerSelectHover : InteractiveSessionBase
         // hover hinter
         _hoverSub = Document.Get<WorldBody>().HoveringBody.Subscribe(body =>
         {
-            if (!HoveredShape.IsDyingOrDead) HoveredShape.Get<PolylineWireframe>().SetVisible(false);
+            if (!HoveredShape.IsNull) HoveredShape.Get<PolylineWireframe>().SetVisible(false);
             if (body == null)
             {
                 HoveredShape = Entity.Null;
                 return;
             }
+            body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
             HoveredShape = body.SelfEntity;
-            if (!HoveredShape.IsNull) HoveredShape.Get<PolylineWireframe>().SetVisible(true);
         });
 
         // Polyline transform
@@ -79,11 +79,10 @@ public class ShapeLayerSelectHover : InteractiveSessionBase
                 _wireframes.Add(wire);
 
                 // transform box overlay
-                var geom = e.Get<PolylineGeometry>();
-                var bound = geom.Positions.Value.GetBoundingBox();
+                var bound = e.Get<PolylineGeometry>().Positions.Value.GetBoundingBox();
                 rect = i == 0 ? bound : rect.Merge(bound);
             }
-            if (!rect.IsEqualApprox(default))
+            if (!rect.IsEqualApprox(default) && !rect.Size.IsZeroApprox())
             {
                 _transformBox = new TransformOverlayBox(rect.Size, rect.GetCenter());
                 worldOverlay.AddChild(_transformBox);
