@@ -25,8 +25,9 @@ public partial class LayerAction : Control
         var currentLayerE = document.Get<SelectionManager>().WorkingLayer.Value;
         if (currentLayerE.IsNull) return;
 
-        var workingLayerPath = document.Get<SelectionManager>().WorkingLayerPath;
+        var workingLayerE = document.Get<SelectionManager>().WorkingLayer.Value;
         var root = document.Get<LayerTreeNode>();
+        var workingLayerPath = root.FindPathTo(workingLayerE);
         var nextLayerPath = root.GetNextFocusPathAfterDeletion(workingLayerPath);
         var nextLayerE = nextLayerPath.IsEmpty ? document : root.GetDescendant(nextLayerPath);
 

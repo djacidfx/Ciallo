@@ -1,5 +1,4 @@
-﻿using System.Collections.Immutable;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using Frent;
 using ObservableCollections;
 using R3;
@@ -10,18 +9,6 @@ namespace Ciallo.Data;
 public class SelectionManager
 {
     [DataMember] public ObservableList<Entity> SelectedLayers = [];
-
-    // Empty array represents no selection (or root node is selected).
-    public ImmutableArray<int> WorkingLayerPath
-    {
-        get
-        {
-            if (WorkingLayer.Value.IsDyingOrDead) return [];
-            var world = WorkingLayer.Value.World;
-            ImmutableArray<int> path = [..world.Document().Get<LayerTreeNode>().FindPathTo(WorkingLayer.Value)];
-            return path;
-        }
-    }
 
     [DataMember] public ReactiveProperty<Entity> WorkingLayer = new(Entity.Null);
 

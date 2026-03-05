@@ -11,7 +11,6 @@ public class PaintInteractor : InteractiveSessionBase
 {
     private Entity _brushE;
     private StrokeView _strokePreview;
-
     private readonly PolylineInteractiveGenerator _generator = new()
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
