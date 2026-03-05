@@ -19,7 +19,6 @@ public class PaintInteractor : InteractiveSessionBase
 
     public override void Start(CursorButtonData data)
     {
-        OS.LowProcessorUsageMode = false; // Reduce input lag if user has device in high reporting rate.
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
         // Selection in brush library has higher priority
@@ -74,7 +73,6 @@ public class PaintInteractor : InteractiveSessionBase
     {
         _generator.Clear();
         _strokePreview.QueueFree();
-        OS.LowProcessorUsageMode = true;
         Input.MouseMode = Input.MouseModeEnum.Visible;
     }
 }
