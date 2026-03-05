@@ -71,8 +71,8 @@ public partial class StrokeView : MultiMeshInstance2D
         else if (positions.Count == 1) // a point, render it as an ultra short segment
         {
             multiMesh.InstanceCount = 1;
-            ps = [positions[0], positions[0] + 1e-5f * Vector2.Right];
-            rs = [radii[0], radii[0] + 1e-5f];
+            ps = [positions[0], positions[0] + 1e-2f * Vector2.Right];
+            rs = [radii[0], radii[0] + 1e-2f];
             pressures = [0, 0];
         }
         else throw new("Unreachable");
