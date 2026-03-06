@@ -71,9 +71,9 @@ public partial class StrokeView : MultiMeshInstance2D
         else if (positions.Count == 1) // a point, render it as an ultra short segment
         {
             multiMesh.InstanceCount = 1;
-            ps = [positions[0], positions[0] + 1e-2f * Vector2.Right];
-            rs = [radii[0], radii[0] + 1e-2f];
-            pressures = [0, 0];
+            ps = [positions[0], positions[0] + 1e-2f * Vector2.Right * radii[0]];
+            rs = [radii[0], radii[0]];
+            pressures = [pressures[0], pressures[0]];
         }
         else throw new("Unreachable");
 
@@ -121,7 +121,7 @@ public partial class StrokeView : MultiMeshInstance2D
         }
 
         // Set bounding box
-        var boundingBox = positions.GetBoundingBox(radii);
+        var boundingBox = ps.GetBoundingBox(rs);
         // Incorrect method:
         // RenderingServer.CanvasItemSetCustomRect(strokeView.GetCanvasItem(), true, boundingBox);
         // Godot cannot save the value in the scene.

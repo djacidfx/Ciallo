@@ -41,6 +41,7 @@ public class PaintInteractor : InteractiveSessionBase
         _generator.RadiusSampler = brushSetting.ToRadiusSampler();
 
         _generator.Start(data);
+        _strokePreview.SetGeometry(_generator.Positions, _generator.Radii, _generator.Pressures);
     }
 
     public override void Moving(CursorMotionData data)
@@ -62,16 +63,14 @@ public class PaintInteractor : InteractiveSessionBase
         Clear();
     }
 
-    public override void Cancel()
-    {
-        Clear();
-    }
+    public override void Cancel() => Clear();
     public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
 
     public void Clear()
     {
         _generator.Clear();
         _strokePreview.QueueFree();
+        _strokePreview = null;
         Input.MouseMode = Input.MouseModeEnum.Visible;
     }
 }

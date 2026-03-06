@@ -26,7 +26,7 @@ instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
 // Canvas mode is used for drawing wireframe
 uniform int RadiusMode : hint_enum("World", "Canvas") = 0;
 // Dash
-uniform float DashLength = -1.0; // length with unit "L/r"
+uniform float DashLength = -1.0; // radius-normalized length
 uniform float GapLength = -1.0;
 uniform float DashForwardSpeed = 0.0;
 // Pen pressure map curve
@@ -241,7 +241,7 @@ void fragment() {
 			float aaEdge = 3.0 / scale;
 			float aaStart = 1.0 - aaEdge/r_p;
 			aaStart = clamp(aaStart, 0.0, 1.0);
-			
+
 			float lambda;
 			if (cosPhi0 < cosTheta) lambda = d0/r0;
 			else if (cosPhi1 > cosTheta) lambda = d1/r1;
