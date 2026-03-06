@@ -10,8 +10,8 @@ namespace Ciallo.Data;
 public class FillMarkerSetting : IEquatable<FillMarkerSetting>
 {
     // Marker use stroke/polyline has single point
-    [DataMember(Order = 0)] public ReactiveProperty<Entity> StrokeBrushE = new(default);
-    [DataMember(Order = 1)] public ReactiveProperty<Color?> StrokeOverrideColor = new(null);
+    [DataMember(Order = 0)] public ReactiveProperty<Entity> MarkerBrushE = new(default);
+    [DataMember(Order = 1)] public ReactiveProperty<Color?> MarkerOverrideColor = new(null);
     // Order = 2 for future FillMaterial entity
     [DataMember(Order = 3)] public ReactiveProperty<Color> FillColor = new(Colors.White);
 
@@ -19,8 +19,8 @@ public class FillMarkerSetting : IEquatable<FillMarkerSetting>
     {
         return new FillMarkerSetting
         {
-            StrokeBrushE = { Value = StrokeBrushE.Value },
-            StrokeOverrideColor = { Value = StrokeOverrideColor.Value },
+            MarkerBrushE = { Value = MarkerBrushE.Value },
+            MarkerOverrideColor = { Value = MarkerOverrideColor.Value },
             FillColor = { Value = FillColor.Value },
         };
     }
@@ -30,8 +30,8 @@ public class FillMarkerSetting : IEquatable<FillMarkerSetting>
         if (ReferenceEquals(other, null)) return false;
         if (ReferenceEquals(this, other)) return true;
 
-        return Equals(StrokeBrushE.Value, other.StrokeBrushE.Value)
-               && Nullable.Equals(StrokeOverrideColor.Value, other.StrokeOverrideColor.Value)
+        return Equals(MarkerBrushE.Value, other.MarkerBrushE.Value)
+               && Nullable.Equals(MarkerOverrideColor.Value, other.MarkerOverrideColor.Value)
                && FillColor.Value.Equals(other.FillColor.Value);
     }
 
@@ -40,8 +40,8 @@ public class FillMarkerSetting : IEquatable<FillMarkerSetting>
     public override int GetHashCode()
     {
         return HashCode.Combine(
-            StrokeBrushE.Value,
-            StrokeOverrideColor.Value,
+            MarkerBrushE.Value,
+            MarkerOverrideColor.Value,
             FillColor.Value
         );
     }

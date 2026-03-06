@@ -34,8 +34,8 @@ public class NewFillMarkerCmd : CommandBase
             ? new FillMarkerSetting()
             : CopyE.Get<FillMarkerSetting>().Clone();
         targetE.Add(setting);
-        if (!setting.StrokeBrushE.Value.IsNull && setting.StrokeBrushE.Value.World != targetE.World)
-            setting.StrokeBrushE.Value = default;
+        if (!setting.MarkerBrushE.Value.IsNull && setting.MarkerBrushE.Value.World != targetE.World)
+            setting.MarkerBrushE.Value = default;
 
         // By design, polygons attached to fill markers are views,
         // Strokes attached are overlay
@@ -56,7 +56,7 @@ public class NewFillMarkerCmd : CommandBase
         var strokeOverlay = new StrokeView() { Material = AutoloadRendering.MissingBrushMaterial };
         targetE.AddNode(strokeOverlay);
 
-        setting.StrokeBrushE.Subscribe(brushE =>
+        setting.MarkerBrushE.Subscribe(brushE =>
         {
             strokeOverlay.Material = brushE.IsNull || !brushE.Has<BrushMaterial>()
                 ? AutoloadRendering.MissingBrushMaterial
