@@ -10,7 +10,7 @@ public class DeleteBrushCmd : CommandBase
     public override void Do(Entity brushE)
     {
         // UI
-        var list = Document.Get<DocumentBrushList>();
+        var list = Document.Get<DocumentBrushListViewer>();
         list.Remove(brushE);
 
         // Material removed on its own
@@ -29,7 +29,7 @@ public class DeleteBrushCmd : CommandBase
         bm.Add(brushE);
 
         // UI
-        var list = Document.Get<DocumentBrushList>();
+        var list = Document.Get<DocumentBrushListViewer>();
         list.Add(brushE);
     }
 }

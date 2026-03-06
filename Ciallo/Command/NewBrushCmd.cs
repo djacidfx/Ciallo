@@ -37,7 +37,7 @@ public class NewBrushCmd : CommandBase
         brushE.Add(material);
 
         // UI
-        var list = Document.Get<DocumentBrushList>();
+        var list = Document.Get<DocumentBrushListViewer>();
         list.Add(brushE);
     }
 
@@ -46,7 +46,7 @@ public class NewBrushCmd : CommandBase
         var bm = Document.Get<BrushManager>();
 
         // UI
-        var list = Document.Get<DocumentBrushList>();
+        var list = Document.Get<DocumentBrushListViewer>();
         list.Remove(brushE);
 
         // Material

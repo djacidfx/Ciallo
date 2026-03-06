@@ -98,7 +98,7 @@ public class PaintHover : InteractiveSessionBase
         // ---------------------------------------------
         container.AddChild(new HSeparator());
         // ---------------------------------------------
-        var brushList = new DocumentBrushList()
+        var brushList = new DocumentBrushListViewer()
         {
             CustomMinimumSize = new(256, 150),
         };

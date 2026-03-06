@@ -9,12 +9,12 @@ using R3;
 
 namespace Ciallo.GuiControl;
 
-public partial class DocumentBrushList : ItemList, IInitable
+public partial class DocumentBrushListViewer : ItemList, IInitable
 {
     private Entity _document;
     public BrushManager Manager => _document.Get<BrushManager>();
 
-    public DocumentBrushList()
+    public DocumentBrushListViewer()
     {
         TooltipText = "[Document Brush List Tooltip]".Tr();
         AutoWidth = true;
