@@ -34,25 +34,25 @@ public static partial class AppDocumentManager
 
     public static void CopyWorldByData(Entity dataDocument)
     {
+        Dictionary<Entity, Entity> entityMap = [];
         // Load brushes
         var resultDocument = Create(dataDocument.Get<DocumentSetting>());
         var resultWorld = resultDocument.World;
         WorkingDocument.Value = resultDocument;
-        Dictionary<Entity, Entity> brushMap = [];
         var loadBrushCmd = new CommandBuilder();
         foreach (var brushDataE in dataDocument.Get<BrushManager>().Brushes)
         {
             var setting = brushDataE.Get<BrushSetting>();
             var brushE = resultWorld.Create();
             loadBrushCmd.SetTarget(brushE).NewBrush(setting);
-            brushMap.Add(brushDataE, brushE);
+            entityMap.Add(brushDataE, brushE);
         }
         loadBrushCmd.Do();
 
         // Load layers and strokes
         var dataTreeRoot = dataDocument.Get<LayerTreeNode>();
-        Dictionary<Entity, Entity> layerMap = [];
-        layerMap.Add(dataDocument, resultDocument); // documents are root layers
+
+        entityMap.Add(dataDocument, resultDocument); // documents are root layers
 
         foreach (var layerDataE in dataTreeRoot.Children)
         {
@@ -63,7 +63,7 @@ public static partial class AppDocumentManager
                     .NewImageLayer(layerDataE)
                     .AddToLayerTree(resultDocument)
                     .Do();
-                layerMap.Add(layerDataE, layerE);
+                entityMap.Add(layerDataE, layerE);
             }
             else if (layerDataE.Has<ShapeLayerSetting>())
             {
@@ -72,15 +72,13 @@ public static partial class AppDocumentManager
                     .NewShapeLayer(layerDataE)
                     .AddToLayerTree(resultDocument)
                     .Do();
-                layerMap.Add(layerDataE, layerE);
+                entityMap.Add(layerDataE, layerE);
 
                 foreach (var shapeDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
-                    var geometry = shapeDataE.Get<PolylineGeometry>();
-
                     if (shapeDataE.Has<StrokeSetting>())
                     {
-                        var resultBrush = brushMap[shapeDataE.Get<StrokeSetting>().BrushE.Value];
+                        var resultBrush = entityMap[shapeDataE.Get<StrokeSetting>().BrushE.Value];
                         new CommandBuilder(resultWorld.Create())
                             .NewStroke(shapeDataE)
                             .AddToLayerTree(layerE)
@@ -100,10 +98,10 @@ public static partial class AppDocumentManager
 
         // Load selection
         var dataSm = dataDocument.Get<SelectionManager>();
-        new CommandBuilder(layerMap[dataSm.WorkingLayer.CurrentValue]).SetWorkingLayer().Do();
+        new CommandBuilder(entityMap[dataSm.WorkingLayer.CurrentValue]).SetWorkingLayer().Do();
         var brushes = dataDocument.Get<BrushManager>().Brushes;
         var idx = brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
-        if (idx != -1) new CommandBuilder(brushMap[brushes[idx]]).SetWorkingBrush().Do();
+        if (idx != -1) new CommandBuilder(entityMap[brushes[idx]]).SetWorkingBrush().Do();
     }
 
     public static void SaveWorkingWorld()
