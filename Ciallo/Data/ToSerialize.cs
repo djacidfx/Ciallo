@@ -24,7 +24,7 @@ public static class EntityExtension
     extension(Entity self)
     {
         /// <summary>
-        /// If entity has been deleted by user. It may or may not has been deleted by undo stack.
+        /// Check if entity has been deleted by user. It may or may not has been deleted by undo stack.
         /// </summary>
         public bool IsDyingOrDead => !self.IsAlive || !self.Tagged<ToSerializeTag>();
         public bool IsDocument => self.World.Document() == self; // If entity is the singleton document entity.
