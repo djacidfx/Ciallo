@@ -16,11 +16,10 @@ public partial class OpenDocumentDialog : FileDialog
 
     public static bool LoadWorldFile(string path)
     {
-        World dataWorld;
         Entity dataDocument;
         try
         {
-            dataWorld = AppDocumentManager.Load(path, out dataDocument);
+            dataDocument = AppDocumentManager.Load(path);
         }
         catch (Exception exception)
         {
@@ -31,7 +30,7 @@ public partial class OpenDocumentDialog : FileDialog
             return false;
         }
         AppDocumentManager.CopyWorldByData(dataDocument);
-        dataWorld.Dispose();
+        dataDocument.World.Dispose();
         if (!AppPreference.RecentFiles.Contains(path))
             AppPreference.RecentFiles.Add(path);
         return true;

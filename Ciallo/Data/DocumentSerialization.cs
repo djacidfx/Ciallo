@@ -131,7 +131,7 @@ public static partial class AppDocumentManager
         if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (!File.Exists(settings.FilePath.Value)) return;
-        var world = Load(settings.FilePath.Value, out var document);
+        var document = Load(settings.FilePath.Value);
         CopyWorldByData(document);
     }
 
@@ -150,7 +150,7 @@ public static partial class AppDocumentManager
         writer.Close();
     }
 
-    public static World Load(string filePath, out Entity document)
+    public static Entity Load(string filePath)
     {
         if (!File.Exists(filePath)) throw new FileNotFoundException($"File {filePath} not found.");
         var reader = new ZipReader();
@@ -159,9 +159,9 @@ public static partial class AppDocumentManager
         var componentBin = reader.ReadFile("ComponentData.bin");
         reader.Close();
 
-        var world = Deserialize([ecBin, componentBin], out document);
+        var document = Deserialize([ecBin, componentBin]);
         document.Get<DocumentSetting>().FilePath.Value = filePath;
-        return world;
+        return document;
     }
 
     /// <remarks>
@@ -208,7 +208,7 @@ public static partial class AppDocumentManager
         return [ecBin, componentBin];
     }
 
-    public static World Deserialize(byte[][] bins, out Entity document)
+    public static Entity Deserialize(byte[][] bins)
     {
         var world = new World();
 
@@ -221,7 +221,7 @@ public static partial class AppDocumentManager
             entities.Add(e);
         }
 
-        document = entities[0];
+        var document = entities[0];
 
         EntityToIndexFormatter.Instance.EntityList = entities;
 
@@ -245,7 +245,7 @@ public static partial class AppDocumentManager
             }
         }
 
-        return world;
+        return document;
     }
 
     public static IEnumerable<Type> GetToSerializeTypes()
