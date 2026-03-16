@@ -1,4 +1,5 @@
-﻿using Ciallo.Data;
+﻿using System;
+using Ciallo.Data;
 using Ciallo.GuiControl;
 using Frent;
 
@@ -7,6 +8,11 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class DeleteBrushCmd : CommandBase
 {
+    public override void BeforeFirstDo(Entity targetE)
+    {
+        throw new NotImplementedException();
+    }
+
     public override void Do(Entity brushE)
     {
         // UI

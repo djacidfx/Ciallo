@@ -35,7 +35,7 @@ public class VectorFillHover : InteractiveSessionBase
                 .AddToLayerTree(Document, i)
                 .SetWorkingLayer()
                 .SetTarget(WorkingLayer.World.Create())
-                .NewFillMarker()
+                .NewVectorFillMarker()
                 .AddToLayerTree(layerE)
                 .SetPolylineGeometry([data.WorldPosition], [100.0f], [1.0f], [Vector2.Zero])
                 .SetProperty(e => e.Get<FillMarkerSetting>().MarkerBrushE, brushE)

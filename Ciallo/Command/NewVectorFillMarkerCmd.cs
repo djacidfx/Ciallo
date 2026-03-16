@@ -8,11 +8,11 @@ using R3;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class NewFillMarkerCmd : CommandBase
+public class NewVectorFillMarkerCmd : CommandBase
 {
     public Entity CopyE { get; }
 
-    public NewFillMarkerCmd(Entity copyE = default)
+    public NewVectorFillMarkerCmd(Entity copyE = default)
     {
         CopyE = copyE;
     }

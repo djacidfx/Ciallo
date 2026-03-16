@@ -35,7 +35,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
     public override void End(CursorButtonData data)
     {
         new CommandBuilder(WorkingLayer.World.Create())
-            .NewFillMarker()
+            .NewVectorFillMarker()
             .AddToLayerTree(WorkingLayer)
             .SetPolylineGeometry([data.WorldPosition], [MarkerRadius], [1.0f], [Vector2.Zero])
             .Commit();

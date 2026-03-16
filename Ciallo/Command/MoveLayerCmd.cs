@@ -22,6 +22,8 @@ public class MoveLayerCmd : CommandBase
         _dst = [..dst];
     }
 
+    public override void BeforeFirstDo(Entity targetE) { }
+
     public override void Do(Entity layerE)
     {
         // Data
