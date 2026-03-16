@@ -64,8 +64,8 @@ public partial class NewDocumentDialog : ConfirmationDialog
         };
         var document = AppDocumentManager.Create(setting);
         AppDocumentManager.WorkingDocument.Value = document;
-        AppDocumentManager.InitialEmptyWorldForUser(document);
-        AppDocumentManager.SaveWorkingWorld();
+        AppDocumentManager.InitialEmptyDocumentForUser(document);
+        AppDocumentManager.SaveWorkingDocument();
         Hide();
 
         AppPreference.RecentFiles.Add(filePath);

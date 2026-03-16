@@ -49,11 +49,11 @@ public partial class MenuFile : PopupMenu
                 break;
             case 2: // Close Document
                 if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
-                _ = AppDocumentManager.UserCloseWorkingWorld();
+                _ = AppDocumentManager.UserCloseWorkingDocument();
                 break;
             case 4: // Save
                 if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
-                AppDocumentManager.SaveWorkingWorld();
+                AppDocumentManager.SaveWorkingDocument();
                 break;
             case 5: // Save as
                 if (AppDocumentManager.WorkingDocument.Value.IsNull) break;

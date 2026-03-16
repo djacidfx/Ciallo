@@ -80,7 +80,7 @@ public partial class AutoloadData : Node
     {
         if (what == NotificationWMCloseRequest)
         {
-            var result = await AppDocumentManager.UserCloseWorkingWorld();
+            var result = await AppDocumentManager.UserCloseWorkingDocument();
             if (!result) return;
 
             AppBrushLibrary.Save();

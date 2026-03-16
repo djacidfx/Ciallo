@@ -104,7 +104,7 @@ public static partial class AppDocumentManager
         if (idx != -1) new CommandBuilder(entityMap[brushes[idx]]).SetWorkingBrush().Do();
     }
 
-    public static void SaveWorkingWorld()
+    public static void SaveWorkingDocument()
     {
         if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
@@ -113,7 +113,7 @@ public static partial class AppDocumentManager
         WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
     }
 
-    public static void SaveWorkingWorldAs(string filePath)
+    public static void SaveWorkingDocumentAs(string filePath)
     {
         if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
@@ -126,7 +126,7 @@ public static partial class AppDocumentManager
         }
     }
 
-    public static void ReloadWorkingWorld() // for debug
+    public static void ReloadWorkingDocument() // for debug
     {
         if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();

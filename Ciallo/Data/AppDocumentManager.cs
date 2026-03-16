@@ -63,7 +63,7 @@ public static partial class AppDocumentManager
         return document;
     }
 
-    public static void InitialEmptyWorldForUser(Entity document)
+    public static void InitialEmptyDocumentForUser(Entity document)
     {
         AppBrushLibrary.SelectedIndex.Value = 0;
 
@@ -106,7 +106,7 @@ public static partial class AppDocumentManager
     }
 
     // If false, user cancels the close operation.
-    public static async Task<bool> UserCloseWorkingWorld()
+    public static async Task<bool> UserCloseWorkingDocument()
     {
         if (WorkingDocument.Value.IsNull) return true;
 
@@ -117,7 +117,7 @@ public static partial class AppDocumentManager
             var result = await dialog.PopupCollectInput();
             if (result == 1) // Yes
             {
-                SaveWorkingWorld();
+                SaveWorkingDocument();
                 Remove(WorkingDocument.Value);
                 return true;
             }
