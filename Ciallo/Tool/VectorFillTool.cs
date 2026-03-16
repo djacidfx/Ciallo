@@ -11,7 +11,7 @@ namespace Ciallo.Tool;
 public class VectorFillTool : StateMachineToolBase
 {
     public readonly VectorFillHover Hover = new();
-    public readonly PaintFillMarkerInteractor Left = new();
+    public readonly PaintVectorFillMarkerInteractor Left = new();
 
     protected override void ConfigureStateMachine()
     {

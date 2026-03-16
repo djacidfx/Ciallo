@@ -29,6 +29,7 @@ public class VectorFillHover : InteractiveSessionBase
         {
             var i = WorkingLayer.Get<LayerTreeNode>().Index;
             var layerE = WorkingLayer.World.Create();
+            var brushE = Document.Get<BrushManager>().Brushes[0];
             new CommandBuilder(layerE)
                 .NewVectorFillLayer()
                 .AddToLayerTree(Document, i)
@@ -36,7 +37,8 @@ public class VectorFillHover : InteractiveSessionBase
                 .SetTarget(WorkingLayer.World.Create())
                 .NewFillMarker()
                 .AddToLayerTree(layerE)
-                .SetPolylineGeometry([data.WorldPosition], [10.0f], [1.0f], [Vector2.Zero])
+                .SetPolylineGeometry([data.WorldPosition], [100.0f], [1.0f], [Vector2.Zero])
+                .SetProperty(e => e.Get<FillMarkerSetting>().MarkerBrushE, brushE)
                 .Commit();
         }
     }

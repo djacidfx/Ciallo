@@ -42,7 +42,12 @@ public class NewFillMarkerCmd : CommandBase
         // View
         var polygonView = new Polygon2D() { Antialiased = true };
         targetE.AddNode(polygonView);
-        setting.FillColor.Subscribe(polygonView.SetColor).AddTo(TargetE);
+        setting.MarkerBrushE
+            .Where(e => !e.IsNull)
+            .Select(e => e.Get<FillMarkerBrushSetting>().FillColor.AsObservable())
+            .Switch()
+            .Subscribe(polygonView.SetColor)
+            .AddTo(targetE);
 
         // Overlay
         var wireframeOverlay = new PolylineWireframe() { Visible = false };

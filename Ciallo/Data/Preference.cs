@@ -78,4 +78,11 @@ public class Preference
     }
 
     #endregion
+
+    #region VectorFillTool
+
+    [DataMember]
+    public ReactiveProperty<float> VectorFillMarkerRadius = new(10.0f);
+
+    #endregion
 }
