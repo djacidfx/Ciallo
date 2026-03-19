@@ -42,7 +42,7 @@ public static partial class AppDocumentManager
         var loadBrushCmd = new CommandBuilder();
         foreach (var brushDataE in dataDocument.Get<BrushManager>().StrokeBrushEs)
         {
-            var setting = brushDataE.Get<BrushSetting>();
+            var setting = brushDataE.Get<StrokeBrushSetting>();
             var brushE = resultWorld.Create();
             loadBrushCmd.SetTarget(brushE).NewBrush(setting);
             entityMap.Add(brushDataE, brushE);

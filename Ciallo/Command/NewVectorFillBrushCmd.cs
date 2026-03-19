@@ -21,13 +21,13 @@ public class NewVectorFillBrushCmd : CommandBase
     {
         // Data
         var setting = CopyE.IsNull
-            ? new FillMarkerBrushSetting()
-            : CopyE.Get<FillMarkerBrushSetting>().Clone();
+            ? new VectorFillBrushSetting()
+            : CopyE.Get<VectorFillBrushSetting>().Clone();
         targetE.Add(setting);
 
         // View
-        var strokeBrushMaterial = new BrushMaterial();
-        strokeBrushMaterial.ObserveBrushSetting(setting.MarkerBrush);
+        var strokeBrushMaterial = new StrokeBrushMaterial();
+        strokeBrushMaterial.ObserveBrushSetting(setting.MarkerStrokeBrush);
         targetE.Add(strokeBrushMaterial);
     }
 

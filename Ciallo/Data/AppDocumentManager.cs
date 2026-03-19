@@ -78,12 +78,12 @@ public static partial class AppDocumentManager
         {
             string path = $"res://Rendering/Image/Bullseye{i}.svg";
             var img = GD.Load<Image>(path);
-            BrushSetting.ConvertStampImage(img);
+            StrokeBrushSetting.ConvertStampImage(img);
             var tex = ImageTexture.CreateFromImage(img);
             var entity = document.World.Create();
             cmd.SetTarget(entity)
                 .NewVectorFillBrush()
-                .SetProperty(e => e.Get<FillMarkerBrushSetting>().MarkerBrush.StampTexture, tex);
+                .SetProperty(e => e.Get<VectorFillBrushSetting>().MarkerStrokeBrush.StampTexture, tex);
             if (i != 0)
                 cmd.SetProperty(e => e.Document.Get<SelectionManager>().WorkingVectorFillBrush, entity);
         }

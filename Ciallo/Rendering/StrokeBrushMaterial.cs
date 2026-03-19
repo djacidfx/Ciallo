@@ -7,17 +7,17 @@ using R3;
 
 namespace Ciallo.Rendering;
 
-public partial class BrushMaterial : ShaderMaterial
+public partial class StrokeBrushMaterial : ShaderMaterial
 {
     public CompositeDisposable Subs;
 
-    public BrushMaterial()
+    public StrokeBrushMaterial()
     {
         Shader = AutoloadRendering.StrokeShader;
         ResourceLocalToScene = true;
     }
 
-    public void ObserveBrushSetting(BrushSetting setting)
+    public void ObserveBrushSetting(StrokeBrushSetting setting)
     {
         Subs?.Dispose();
         Subs = new();

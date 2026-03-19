@@ -30,14 +30,14 @@ public class PaintInteractor : InteractiveSessionBase
         }
         _brushE = Document.Get<SelectionManager>().WorkingBrush.Value;
 
-        var brushMaterial = _brushE.Get<BrushMaterial>();
+        var brushMaterial = _brushE.Get<StrokeBrushMaterial>();
 
         _strokePreview = new StrokeView();
         _strokePreview.Material = brushMaterial;
         var layerView = WorkingLayer.Get<ShapeLayerView>();
         layerView.AddChild(_strokePreview);
 
-        var brushSetting = _brushE.Get<BrushSetting>();
+        var brushSetting = _brushE.Get<StrokeBrushSetting>();
         _generator.RadiusSampler = brushSetting.ToRadiusSampler();
 
         _generator.Start(data);

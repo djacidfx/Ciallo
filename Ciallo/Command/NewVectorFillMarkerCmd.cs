@@ -44,7 +44,7 @@ public class NewVectorFillMarkerCmd : CommandBase
         targetE.AddNode(polygonView);
         setting.BrushE
             .Where(e => !e.IsNull)
-            .Select(e => e.Get<FillMarkerBrushSetting>().FillColor.AsObservable())
+            .Select(e => e.Get<VectorFillBrushSetting>().FillColor.AsObservable())
             .Switch()
             .Subscribe(polygonView.SetColor)
             .AddTo(targetE);
@@ -58,14 +58,14 @@ public class NewVectorFillMarkerCmd : CommandBase
             wireframeOverlay.SetGeometry(p);
         }).AddTo(targetE);
 
-        var strokeOverlay = new StrokeView() { Material = AutoloadRendering.MissingBrushMaterial };
+        var strokeOverlay = new StrokeView() { Material = AutoloadRendering.MissingStrokeBrushMaterial };
         targetE.AddNode(strokeOverlay);
 
         setting.BrushE.Subscribe(brushE =>
         {
             strokeOverlay.Material = brushE.IsNull
-                ? AutoloadRendering.MissingBrushMaterial
-                : brushE.Get<BrushMaterial>();
+                ? AutoloadRendering.MissingStrokeBrushMaterial
+                : brushE.Get<StrokeBrushMaterial>();
         }).AddTo(targetE);
 
         polylineGeometry.ObserveAll().Subscribe(v =>

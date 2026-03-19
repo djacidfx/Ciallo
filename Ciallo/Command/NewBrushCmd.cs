@@ -9,11 +9,11 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class NewBrushCmd : CommandBase
 {
-    private readonly BrushSetting _setting;
+    private readonly StrokeBrushSetting _setting;
 
-    public NewBrushCmd(BrushSetting setting = null)
+    public NewBrushCmd(StrokeBrushSetting setting = null)
     {
-        _setting = setting?.Clone() ?? new BrushSetting();
+        _setting = setting?.Clone() ?? new StrokeBrushSetting();
         _setting.Labels.Remove(BrushLabel.BuiltIn);
     }
 
@@ -32,7 +32,7 @@ public class NewBrushCmd : CommandBase
         bm.StrokeBrushEs.Add(brushE);
 
         // Material
-        var material = new BrushMaterial();
+        var material = new StrokeBrushMaterial();
         material.ObserveBrushSetting(_setting);
         brushE.Add(material);
 
@@ -49,12 +49,12 @@ public class NewBrushCmd : CommandBase
 
         // Material
         // Note: Material is RefCounted, cannot be manually freed
-        brushE.Remove<BrushMaterial>();
+        brushE.Remove<StrokeBrushMaterial>();
 
         // Data
         var bm = Document.Get<BrushManager>();
         bm.StrokeBrushEs.Remove(brushE);
         brushE.Detach<ToSerializeTag>();
-        brushE.Remove<BrushSetting>();
+        brushE.Remove<StrokeBrushSetting>();
     }
 }

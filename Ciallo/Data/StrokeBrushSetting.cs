@@ -10,7 +10,7 @@ using R3;
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
-public class BrushSetting
+public class StrokeBrushSetting
 {
     [DataMember] public ReactiveProperty<string> Name = new("");
     [DataMember] public ObservableList<BrushLabel> Labels = [];
@@ -188,10 +188,10 @@ public class BrushSetting
         img.Resize(size.X, size.Y);
     }
 
-    public BrushSetting Clone()
+    public StrokeBrushSetting Clone()
     {
         var bytes = MessagePackSerializer.Serialize(this);
-        var setting = MessagePackSerializer.Deserialize<BrushSetting>(bytes); // Note: Fields or properties cannot be readonly
+        var setting = MessagePackSerializer.Deserialize<StrokeBrushSetting>(bytes); // Note: Fields or properties cannot be readonly
         setting.Labels.Remove(BrushLabel.BuiltIn);
         return setting;
     }

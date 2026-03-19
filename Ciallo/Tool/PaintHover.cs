@@ -107,7 +107,7 @@ public class PaintHover : InteractiveSessionBase
 
         var selectionM = Document.Get<SelectionManager>();
         var rView = selectionM.WorkingBrush
-            .Select(e => e.IsDyingOrDead ? null : e.Get<BrushSetting>().BaseRadius)
+            .Select(e => e.IsDyingOrDead ? null : e.Get<StrokeBrushSetting>().BaseRadius)
             .ToReadOnlyReactiveProperty();
         var radiusControl = new SpinSlider
         {

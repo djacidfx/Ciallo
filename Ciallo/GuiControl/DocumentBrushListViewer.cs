@@ -66,12 +66,12 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
 
         var brushM = document.Get<BrushManager>();
         foreach (var brushE in brushM.StrokeBrushEs)
-            AddItem(brushE.Get<BrushSetting>().Name.Value);
+            AddItem(brushE.Get<StrokeBrushSetting>().Name.Value);
     }
 
     public void Add(Entity brushE)
     {
-        var setting = brushE.Get<BrushSetting>();
+        var setting = brushE.Get<StrokeBrushSetting>();
         AddItem(setting.Name.Value);
         var sub = setting.Name.Subscribe(s =>
         {

@@ -36,15 +36,15 @@ public class NewStrokeCmd : CommandBase
         // View
         var strokeView = new StrokeView()
         {
-            Material = AutoloadRendering.MissingBrushMaterial,
+            Material = AutoloadRendering.MissingStrokeBrushMaterial,
         };
         targetE.AddNode(strokeView);
 
         strokeSetting.BrushE.Subscribe(brushE =>
         {
-            strokeView.Material = brushE.IsNull || !brushE.Has<BrushMaterial>()
-                ? AutoloadRendering.MissingBrushMaterial
-                : brushE.Get<BrushMaterial>();
+            strokeView.Material = brushE.IsNull || !brushE.Has<StrokeBrushMaterial>()
+                ? AutoloadRendering.MissingStrokeBrushMaterial
+                : brushE.Get<StrokeBrushMaterial>();
         }).AddTo(targetE);
 
         polylineGeometry.ObserveAll().Subscribe(v =>

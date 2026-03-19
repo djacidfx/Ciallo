@@ -121,7 +121,7 @@ public partial class BrushPanel : AcceptDialog
 
     public void BindBrushSetting<T>(
         ObservableList<T> list,
-        Func<T, BrushSetting> toBrushSetting,
+        Func<T, StrokeBrushSetting> toBrushSetting,
         Entity document = default)
     {
         BrushSelector.ObserveObservableList(list, e => toBrushSetting(e).Name)

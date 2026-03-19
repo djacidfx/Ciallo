@@ -5,10 +5,10 @@ using R3;
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
-public class FillMarkerBrushSetting
+public class VectorFillBrushSetting
 {
     [DataMember]
-    public BrushSetting MarkerBrush = new()
+    public StrokeBrushSetting MarkerStrokeBrush = new()
     {
         RenderingType = { Value = BrushRenderingType.Stamp },
         ActiveStampFlags = { Value = StampFlags.StampTexture },
@@ -17,11 +17,11 @@ public class FillMarkerBrushSetting
     [DataMember]
     public ReactiveProperty<Color> FillColor = new(Colors.Black);
 
-    public FillMarkerBrushSetting Clone()
+    public VectorFillBrushSetting Clone()
     {
-        return new FillMarkerBrushSetting
+        return new VectorFillBrushSetting
         {
-            MarkerBrush = MarkerBrush.Clone(),
+            MarkerStrokeBrush = MarkerStrokeBrush.Clone(),
             FillColor = { Value = FillColor.Value }
         };
     }

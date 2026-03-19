@@ -22,7 +22,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
         _vectorFillBrushE = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
 
-        _strokePreview = new StrokeView() { Material = _vectorFillBrushE.Get<BrushMaterial>() };
+        _strokePreview = new StrokeView() { Material = _vectorFillBrushE.Get<StrokeBrushMaterial>() };
         WorkingLayer.Get<ShapeLayerView>().AddChild(_strokePreview);
         _strokePreview.SetGeometry([data.WorldPosition], [MarkerRadius]);
     }
