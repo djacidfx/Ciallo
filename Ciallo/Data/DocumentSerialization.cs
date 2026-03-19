@@ -40,7 +40,7 @@ public static partial class AppDocumentManager
         var resultWorld = resultDocument.World;
         WorkingDocument.Value = resultDocument;
         var loadBrushCmd = new CommandBuilder();
-        foreach (var brushDataE in dataDocument.Get<BrushManager>().Brushes)
+        foreach (var brushDataE in dataDocument.Get<BrushManager>().StrokeBrushEs)
         {
             var setting = brushDataE.Get<BrushSetting>();
             var brushE = resultWorld.Create();
@@ -99,7 +99,7 @@ public static partial class AppDocumentManager
         // Load selection
         var dataSm = dataDocument.Get<SelectionManager>();
         new CommandBuilder(entityMap[dataSm.WorkingLayer.CurrentValue]).SetWorkingLayer().Do();
-        var brushes = dataDocument.Get<BrushManager>().Brushes;
+        var brushes = dataDocument.Get<BrushManager>().StrokeBrushEs;
         var idx = brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
         if (idx != -1) new CommandBuilder(entityMap[brushes[idx]]).SetWorkingBrush().Do();
     }

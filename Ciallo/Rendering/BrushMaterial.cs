@@ -38,8 +38,8 @@ public partial class BrushMaterial : ShaderMaterial
         // Stamp
         setting.ActiveStampFlags.Subscribe(value => SetShaderParameter("ActiveStampFlags", (int)value)).AddTo(Subs);
         setting.StampInterval.Subscribe(interval => SetShaderParameter("StampInterval", interval)).AddTo(Subs);
-        SetShaderParameter("StampTexture", setting.StampTexture);
-        SetShaderParameter("MultiplyTexture", setting.MaskTexture);
+        setting.StampTexture.Subscribe(tex => SetShaderParameter("StampTexture", tex)).AddTo(Subs);
+        setting.MaskTexture.Subscribe(tex => SetShaderParameter("MultiplyTexture", tex)).AddTo(Subs);
         var diskOpacityTex = ImageTexture.CreateFromImage(BakeCurve(setting.DiskOpacityCurve));
         setting.DiskOpacityCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
         {
@@ -68,7 +68,7 @@ public partial class BrushMaterial : ShaderMaterial
 
     public override void _Notification(int what)
     {
-        // TODO: Godot not calling this function, change it.
+        // TODO: Pitfall, Godot does not call NotificationPredelete on Resource class destruction.
         if (what == NotificationPredelete)
         {
             GD.Print("deleting brush material");

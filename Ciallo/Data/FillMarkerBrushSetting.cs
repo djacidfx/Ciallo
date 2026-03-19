@@ -7,11 +7,22 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class FillMarkerBrushSetting
 {
-    // public StrokeBrushSetting MarkerBrushSetting; // To implement brushes as stroke marker in the future
     [DataMember]
-    public ReactiveProperty<ImageTexture> Image = new(null);
-    [DataMember]
-    public ReactiveProperty<Color> MarkerColor = new(Colors.Black);
+    public BrushSetting MarkerBrush = new()
+    {
+        RenderingType = { Value = BrushRenderingType.Stamp },
+        ActiveStampFlags = { Value = StampFlags.StampTexture },
+    };
+
     [DataMember]
     public ReactiveProperty<Color> FillColor = new(Colors.Black);
+
+    public FillMarkerBrushSetting Clone()
+    {
+        return new FillMarkerBrushSetting
+        {
+            MarkerBrush = MarkerBrush.Clone(),
+            FillColor = { Value = FillColor.Value }
+        };
+    }
 }

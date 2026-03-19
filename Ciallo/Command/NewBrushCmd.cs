@@ -29,7 +29,7 @@ public class NewBrushCmd : CommandBase
         // Data
         brushE.Tag<ToSerializeTag>();
         var bm = Document.Get<BrushManager>();
-        bm.Add(brushE);
+        bm.StrokeBrushEs.Add(brushE);
 
         // Material
         var material = new BrushMaterial();
@@ -43,8 +43,6 @@ public class NewBrushCmd : CommandBase
 
     public override void Undo(Entity brushE)
     {
-        var bm = Document.Get<BrushManager>();
-
         // UI
         var list = Document.Get<DocumentBrushListViewer>();
         list.Remove(brushE);
@@ -54,7 +52,8 @@ public class NewBrushCmd : CommandBase
         brushE.Remove<BrushMaterial>();
 
         // Data
-        bm.Remove(brushE);
+        var bm = Document.Get<BrushManager>();
+        bm.StrokeBrushEs.Remove(brushE);
         brushE.Detach<ToSerializeTag>();
         brushE.Remove<BrushSetting>();
     }

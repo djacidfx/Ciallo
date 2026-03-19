@@ -162,7 +162,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             for (int j = 0; j < _currPolylines[i].Length; j++)
                 _currPolylines[i][j] = _currTransform * geom.Positions.Value[j];
 
-            if (e.Has<StrokeSetting>() || e.Has<FillMarkerSetting>())
+            if (e.Has<StrokeSetting>() || e.Has<VectorFillMarkerSetting>())
             {
                 e.Get<StrokeView>().SetGeometry(_currPolylines[i], geom.Radii.Value, geom.Pressures.Value);
             }

@@ -14,7 +14,7 @@ public class SelectionManager
 
     [DataMember] public ReactiveProperty<Entity> WorkingBrush = new(Entity.Null);
 
-    [DataMember] public ReactiveProperty<Entity> WorkingMarkerBrush = new(Entity.Null);
+    [DataMember] public ReactiveProperty<Entity> WorkingVectorFillBrush = new(Entity.Null);
 
     public ObservableList<Entity> SelectedShapes = [];
 }

@@ -17,7 +17,7 @@ public class SetWorkingBrushCmd : CommandBase
     public override void Do(Entity newBrushE)
     {
         // Data
-        var newIndex = Document.Get<BrushManager>().Brushes.IndexOf(newBrushE);
+        var newIndex = Document.Get<BrushManager>().StrokeBrushEs.IndexOf(newBrushE);
         Document.Get<SelectionManager>().WorkingBrush.Value = newBrushE;
 
         // UI
@@ -32,7 +32,7 @@ public class SetWorkingBrushCmd : CommandBase
     {
         // UI
         var brushList = Document.Get<DocumentBrushListViewer>();
-        var oldIdx = Document.Get<BrushManager>().Brushes.IndexOf(_oldBrushE);
+        var oldIdx = Document.Get<BrushManager>().StrokeBrushEs.IndexOf(_oldBrushE);
         if (oldIdx == -1)
             brushList.DeselectAll();
         else

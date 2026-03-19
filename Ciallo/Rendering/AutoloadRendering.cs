@@ -22,7 +22,7 @@ public partial class AutoloadRendering : Node
         DashWireframeMaterial = new();
         DashWireframeMaterial.SetShaderParameter("StrokeType", 0);
         DashWireframeMaterial.SetShaderParameter("RadiusMode", 1);
-        DashWireframeMaterial.SetShaderParameter("ActiveBrushFlags", (int)BrushSetting.BrushFlags.Dash);
+        DashWireframeMaterial.SetShaderParameter("ActiveBrushFlags", (int)BrushFlags.Dash);
         DashWireframeMaterial.SetShaderParameter("DashLength", 10f);
         DashWireframeMaterial.SetShaderParameter("GapLength", 5f);
         DashWireframeMaterial.SetShaderParameter("DashForwardSpeed", 10f);
@@ -35,7 +35,7 @@ public partial class AutoloadRendering : Node
         MissingBrushMaterial = new();
         MissingBrushMaterial.SetShaderParameter("StrokeType", 0);
         MissingBrushMaterial.SetShaderParameter("MaterialColor", Colors.Crimson);
-        MissingBrushMaterial.SetShaderParameter("ActiveBrushFlags", (int)BrushSetting.BrushFlags.Dash);
+        MissingBrushMaterial.SetShaderParameter("ActiveBrushFlags", (int)BrushFlags.Dash);
         MissingBrushMaterial.SetShaderParameter("DashLength", 5f);
         MissingBrushMaterial.SetShaderParameter("GapLength", 5f);
         MissingBrushMaterial.SetShaderParameter("DashForwardSpeed", 7f);

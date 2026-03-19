@@ -67,11 +67,28 @@ public static partial class AppDocumentManager
     {
         AppBrushLibrary.SelectedIndex.Value = 0;
 
-        new CommandBuilder(document.World.Create())
+        // Empty shape layer
+        var cmd = new CommandBuilder(document.World.Create())
             .NewShapeLayer()
             .AddToLayerTree(document)
-            .SetWorkingLayer()
-            .Do();
+            .SetWorkingLayer();
+        // Vector fill brushes
+        int bullseyeAssetCount = 3;
+        for (int i = 0; i < bullseyeAssetCount; i++)
+        {
+            string path = $"res://Rendering/Image/Bullseye{i}.svg";
+            var img = GD.Load<Image>(path);
+            BrushSetting.ConvertStampImage(img);
+            var tex = ImageTexture.CreateFromImage(img);
+            var entity = document.World.Create();
+            cmd.SetTarget(entity)
+                .NewVectorFillBrush()
+                .SetProperty(e => e.Get<FillMarkerBrushSetting>().MarkerBrush.StampTexture, tex);
+            if (i != 0)
+                cmd.SetProperty(e => e.Document.Get<SelectionManager>().WorkingVectorFillBrush, entity);
+        }
+        cmd.Do();
+
         if (AppBrushLibrary.BrushSettings.Count > 0)
             AppBrushLibrary.SelectedIndex.Value = 0;
         document.Get<ToolManager>().ActivatePaintTool();

@@ -12,7 +12,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 {
     private StrokeView _strokePreview;
     private List<Polygon2D> _fillPreviews = [];
-    private Entity _fillMakerBrushE;
+    private Entity _vectorFillBrushE;
 
     private float MarkerRadius => AppPreference.VectorFillMarkerRadius.Value;
 
@@ -20,9 +20,9 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
     {
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
-        _fillMakerBrushE = Document.Get<SelectionManager>().WorkingMarkerBrush.Value;
+        _vectorFillBrushE = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
 
-        _strokePreview = new StrokeView() { Material = _fillMakerBrushE.Get<BrushMaterial>() };
+        _strokePreview = new StrokeView() { Material = _vectorFillBrushE.Get<BrushMaterial>() };
         WorkingLayer.Get<ShapeLayerView>().AddChild(_strokePreview);
         _strokePreview.SetGeometry([data.WorldPosition], [MarkerRadius]);
     }
@@ -34,10 +34,12 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
     public override void End(CursorButtonData data)
     {
+        var brushE = WorkingLayer.Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
         new CommandBuilder(WorkingLayer.World.Create())
             .NewVectorFillMarker()
             .AddToLayerTree(WorkingLayer)
             .SetPolylineGeometry([data.WorldPosition], [MarkerRadius], [1.0f], [Vector2.Zero])
+            .SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, brushE)
             .Commit();
         Clear();
     }

@@ -31,18 +31,18 @@ public class NewVectorFillMarkerCmd : CommandBase
         targetE.Add(polylineGeometry);
 
         var setting = CopyE.IsNull
-            ? new FillMarkerSetting()
-            : CopyE.Get<FillMarkerSetting>().Clone();
+            ? new VectorFillMarkerSetting()
+            : CopyE.Get<VectorFillMarkerSetting>().Clone();
         targetE.Add(setting);
-        if (!setting.MarkerBrushE.Value.IsNull && setting.MarkerBrushE.Value.World != targetE.World)
-            setting.MarkerBrushE.Value = default;
+        if (!setting.BrushE.Value.IsNull && setting.BrushE.Value.World != targetE.World)
+            setting.BrushE.Value = default;
 
         // By design, polygons attached to fill markers are views,
         // Strokes attached are overlay
         // View
         var polygonView = new Polygon2D() { Antialiased = true };
         targetE.AddNode(polygonView);
-        setting.MarkerBrushE
+        setting.BrushE
             .Where(e => !e.IsNull)
             .Select(e => e.Get<FillMarkerBrushSetting>().FillColor.AsObservable())
             .Switch()
@@ -61,9 +61,9 @@ public class NewVectorFillMarkerCmd : CommandBase
         var strokeOverlay = new StrokeView() { Material = AutoloadRendering.MissingBrushMaterial };
         targetE.AddNode(strokeOverlay);
 
-        setting.MarkerBrushE.Subscribe(brushE =>
+        setting.BrushE.Subscribe(brushE =>
         {
-            strokeOverlay.Material = brushE.IsNull || !brushE.Has<BrushMaterial>()
+            strokeOverlay.Material = brushE.IsNull
                 ? AutoloadRendering.MissingBrushMaterial
                 : brushE.Get<BrushMaterial>();
         }).AddTo(targetE);

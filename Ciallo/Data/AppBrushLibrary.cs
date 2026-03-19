@@ -39,7 +39,7 @@ public static class AppBrushLibrary
             BaseRadius = { Value = 12f },
             Labels = { BrushLabel.BuiltIn },
             Color = { Value = new(0, 0, 0, 0.4f) },
-            ActiveBrushFlags = { Value = BrushSetting.BrushFlags.Pressure2Flow },
+            ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow },
             Pressure2FlowCurve = BezierCurve.EaseInOut(),
             FalloffCurve = new([
                 new(new(0, 1), new(-0.25f, 0), new(0.5f, 0)),
@@ -54,7 +54,7 @@ public static class AppBrushLibrary
             BaseRadius = { Value = 12f },
             Labels = { BrushLabel.BuiltIn },
             Color = { Value = new(0, 0, 0, 0.9f) },
-            ActiveBrushFlags = { Value = BrushSetting.BrushFlags.Pressure2Flow },
+            ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow },
             Pressure2FlowCurve = BezierCurve.EaseInOut(),
             FalloffCurve = new([
                 new(new(0, 1), new(-0.25f, 0), new(0.65f, 0)),
@@ -80,10 +80,10 @@ public static class AppBrushLibrary
             RenderingType = { Value = BrushRenderingType.Stamp },
             Labels = { BrushLabel.BuiltIn },
             Color = { Value = Colors.Black },
-            ActiveStampFlags = { Value = BrushSetting.StampFlags.StampTexture | BrushSetting.StampFlags.MaskTexture | BrushSetting.StampFlags.RotationNoise },
-            StampTexture = ImageTexture.CreateFromImage(images[0]),
+            ActiveStampFlags = { Value = StampFlags.StampTexture | StampFlags.MaskTexture | StampFlags.RotationNoise },
+            StampTexture = { Value = ImageTexture.CreateFromImage(images[0]) },
             StampInterval = { Value = 0.5f },
-            MaskTexture = ImageTexture.CreateFromImage(images[2]),
+            MaskTexture = { Value = ImageTexture.CreateFromImage(images[2]) },
             RotationNoiseAmplitude = { Value = 8 * Mathf.Pi },
             RotationNoiseFrequency = { Value = 0.343234f },
         });
@@ -93,8 +93,8 @@ public static class AppBrushLibrary
             Name = { Value = "Splatter".Tr() },
             RenderingType = { Value = BrushRenderingType.Stamp },
             Labels = { BrushLabel.BuiltIn },
-            ActiveStampFlags = { Value = BrushSetting.StampFlags.StampTexture | BrushSetting.StampFlags.RotationNoise },
-            StampTexture = ImageTexture.CreateFromImage(images[1]),
+            ActiveStampFlags = { Value = StampFlags.StampTexture | StampFlags.RotationNoise },
+            StampTexture = { Value = ImageTexture.CreateFromImage(images[1]) },
             RotationNoiseAmplitude = { Value = Mathf.Pi },
             RotationNoiseFrequency = { Value = 0.5f },
         });

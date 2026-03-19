@@ -26,7 +26,7 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
 
         ItemSelected += idx =>
         {
-            new CommandBuilder(document.Get<BrushManager>().Brushes[(int)idx])
+            new CommandBuilder(document.Get<BrushManager>().StrokeBrushEs[(int)idx])
                 .SetWorkingBrush()
                 .Commit();
         };
@@ -34,7 +34,7 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
         ItemClicked += async (idx, _, buttonIndex) =>
         {
             if ((MouseButton)buttonIndex != MouseButton.Right) return;
-            var brushE = document.Get<BrushManager>().Brushes[(int)idx];
+            var brushE = document.Get<BrushManager>().StrokeBrushEs[(int)idx];
             var query = brushE.World.CreateQuery().With<StrokeSetting>().Build();
             List<Entity> toDeleteShapes = [];
             foreach (var strokeE in query.EnumerateWithEntities())
@@ -65,7 +65,7 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
         };
 
         var brushM = document.Get<BrushManager>();
-        foreach (var brushE in brushM.Brushes)
+        foreach (var brushE in brushM.StrokeBrushEs)
             AddItem(brushE.Get<BrushSetting>().Name.Value);
     }
 
@@ -75,7 +75,7 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
         AddItem(setting.Name.Value);
         var sub = setting.Name.Subscribe(s =>
         {
-            var idx = Manager.Brushes.IndexOf(brushE);
+            var idx = Manager.StrokeBrushEs.IndexOf(brushE);
             SetItemText(idx, s);
         });
         SetItemMetadata(ItemCount - 1, Callable.From(() => sub.Dispose()));
@@ -83,7 +83,7 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
 
     public void Remove(Entity brushE)
     {
-        var idx = Manager.Brushes.IndexOf(brushE);
+        var idx = Manager.StrokeBrushEs.IndexOf(brushE);
         var subDispose = (Callable)GetItemMetadata(idx);
         subDispose.Call();
         RemoveItem(idx);

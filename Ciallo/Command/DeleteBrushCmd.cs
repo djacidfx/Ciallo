@@ -23,7 +23,7 @@ public class DeleteBrushCmd : CommandBase
 
         // Data
         var bm = Document.Get<BrushManager>();
-        bm.Remove(brushE);
+        bm.StrokeBrushEs.Remove(brushE);
         brushE.Detach<ToSerializeTag>();
     }
 
@@ -32,7 +32,7 @@ public class DeleteBrushCmd : CommandBase
         // Data
         brushE.Tag<ToSerializeTag>();
         var bm = Document.Get<BrushManager>();
-        bm.Add(brushE);
+        bm.StrokeBrushEs.Add(brushE);
 
         // UI
         var list = Document.Get<DocumentBrushListViewer>();

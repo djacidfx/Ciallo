@@ -29,10 +29,10 @@ public class BrushSetting
     // Stamp
     [DataMember] public ReactiveProperty<StampFlags> ActiveStampFlags = new();
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
-    [DataMember] public ImageTexture StampTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
+    [DataMember] public ReactiveProperty<ImageTexture> StampTexture = new(null);
     [DataMember] public BezierCurve DiskOpacityCurve = BezierCurve.EaseInOut(1.0f, 0.0f);
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
-    [DataMember] public ImageTexture MaskTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
+    [DataMember] public ReactiveProperty<ImageTexture> MaskTexture = new(null);
 
     [DataMember] public ReactiveProperty<int> RotationNoiseOctave = new(1);
     [DataMember] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
@@ -100,7 +100,8 @@ public class BrushSetting
         container.CreatePropertyBox("Interval", stampIntervalControl).AddToChildOf(stampBox);
 
         var stampTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.StampTexture);
-        var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage).VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.StampTexture));
+        var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage)
+            .VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.StampTexture));
         container.CreateCheckBoxCombo("Stamp texture", stampTextureFlagCheck, stampTextureEdit).AddToChildOf(stampBox);
 
         var maskDiskFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskDisk);
@@ -174,7 +175,7 @@ public class BrushSetting
     /// Converts the stamp image to L8 format, enforces a maximum size of 256x256 pixels,
     /// and resizes the image to ensure a square aspect ratio.
     /// </summary>
-    private static void ConvertStampImage(Image img)
+    public static void ConvertStampImage(Image img)
     {
         img.Convert(Image.Format.L8);
         var size = img.GetSize();
@@ -195,33 +196,28 @@ public class BrushSetting
         return setting;
     }
 
-    public static Image CreateDefaultWhiteImage()
-    {
-        return Image.CreateFromData(1, 1, true, Image.Format.L8, new byte[] { 255 });
-    }
-
     public Func<CursorMotionData, float> ToRadiusSampler()
     {
         var baseRadius = BaseRadius.Value;
         var curve = Pressure2RadiusCurve;
         return data => baseRadius * curve.SampleX(data.Pressure);
     }
+}
 
-    [Flags]
-    public enum StampFlags
-    {
-        StampTexture = 1 << 0,
-        MaskTexture = 1 << 1,
-        RotationNoise = 1 << 2,
-        MaskDisk = 1 << 3,
-    }
+[Flags]
+public enum BrushFlags
+{
+    Pressure2Flow = 1 << 0,
+    Dash = 1 << 1,
+}
 
-    [Flags]
-    public enum BrushFlags
-    {
-        Pressure2Flow = 1 << 0,
-        Dash = 1 << 1,
-    }
+[Flags]
+public enum StampFlags
+{
+    StampTexture = 1 << 0,
+    MaskTexture = 1 << 1,
+    RotationNoise = 1 << 2,
+    MaskDisk = 1 << 3,
 }
 
 public enum BrushRenderingType

@@ -48,7 +48,7 @@ public partial class AutoloadGuiControl : Node
             panel.Operators.Visible = false;
             // Bind to document brush settings
             var bm = document.Get<BrushManager>();
-            panel.BindBrushSetting(bm.Brushes, e => e.Get<BrushSetting>(), document);
+            panel.BindBrushSetting(bm.StrokeBrushEs, e => e.Get<BrushSetting>(), document);
         }).AddTo(this);
 
 
