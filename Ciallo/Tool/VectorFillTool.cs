@@ -16,8 +16,7 @@ public class VectorFillTool : StateMachineToolBase
     protected override void ConfigureStateMachine()
     {
         ConfigureInitial(Hover)
-            .PermitIf(Press(MouseButton.Left), Left,
-                () => WorkingLayer.Has<VectorFillLayerSetting>());
+            .Permit(Press(MouseButton.Left), Left);
         Configure(Left)
             .Permit(Release(MouseButton.Left), Hover)
             .Permit(Press(AppActions.CancelInteraction), Hover)

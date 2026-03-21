@@ -84,7 +84,7 @@ public static partial class AppDocumentManager
             cmd.SetTarget(entity)
                 .NewVectorFillBrush()
                 .SetProperty(e => e.Get<VectorFillBrushSetting>().MarkerStrokeBrush.StampTexture, tex);
-            if (i != 0)
+            if (i == 0)
                 cmd.SetProperty(e => e.Document.Get<SelectionManager>().WorkingVectorFillBrush, entity);
         }
         cmd.Do();

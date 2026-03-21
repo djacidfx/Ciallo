@@ -34,13 +34,25 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
     public override void End(CursorButtonData data)
     {
+        var cmd = new CommandBuilder();
+        Entity parentE = WorkingLayer;
+        if (WorkingLayer.Has<ShapeLayerSetting>())
+        {
+            parentE = WorkingLayer.World.Create();
+            var i = WorkingLayer.Get<LayerTreeNode>().Index;
+            cmd.SetTarget(parentE)
+                .NewVectorFillLayer()
+                .AddToLayerTree(Document, i)
+                .SetWorkingLayer();
+        }
         var brushE = WorkingLayer.Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
-        new CommandBuilder(WorkingLayer.World.Create())
+        cmd.SetTarget(WorkingLayer.World.Create())
             .NewVectorFillMarker()
-            .AddToLayerTree(WorkingLayer)
+            .AddToLayerTree(parentE)
             .SetPolylineGeometry([data.WorldPosition], [MarkerRadius], [1.0f], [Vector2.Zero])
             .SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, brushE)
             .Commit();
+
         Clear();
     }
 
