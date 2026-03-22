@@ -54,7 +54,8 @@ public static partial class AppDocumentManager
         LoadedDocuments.Add(document);
 
         document.Get<CommandManager>().DocumentModified
-            .CombineLatest(settings.Name, (modified, name) => (modified, name)).Subscribe(v =>
+            .CombineLatest(settings.Name, (modified, name) => (modified, name))
+            .Subscribe(v =>
             {
                 string prepend = v.modified ? "(*)" : "";
                 DisplayServer.WindowSetTitle($"{prepend + v.name} - Ciallo");
@@ -78,12 +79,11 @@ public static partial class AppDocumentManager
         {
             string path = $"res://Rendering/Image/Bullseye{i}.svg";
             var img = GD.Load<Image>(path);
-            StrokeBrushSetting.ConvertStampImage(img);
             var tex = ImageTexture.CreateFromImage(img);
             var entity = document.World.Create();
             cmd.SetTarget(entity)
                 .NewVectorFillBrush()
-                .SetProperty(e => e.Get<VectorFillBrushSetting>().MarkerStrokeBrush.StampTexture, tex);
+                .SetProperty(e => e.Get<VectorFillBrushSetting>().MarkerTexture, tex);
             if (i == 0)
                 cmd.SetProperty(e => e.Document.Get<SelectionManager>().WorkingVectorFillBrush, entity);
         }

@@ -8,11 +8,9 @@ namespace Ciallo.Data;
 public class VectorFillBrushSetting
 {
     [DataMember]
-    public StrokeBrushSetting MarkerStrokeBrush = new()
-    {
-        RenderingType = { Value = BrushRenderingType.Stamp },
-        ActiveStampFlags = { Value = StampFlags.StampTexture },
-    };
+    public ReactiveProperty<ImageTexture> MarkerTexture = new(null);
+    [DataMember]
+    public ReactiveProperty<Color> MarkerColor = new(Colors.Black);
 
     [DataMember]
     public ReactiveProperty<Color> FillColor = new(Colors.Black);
@@ -21,7 +19,7 @@ public class VectorFillBrushSetting
     {
         return new VectorFillBrushSetting
         {
-            MarkerStrokeBrush = MarkerStrokeBrush.Clone(),
+            MarkerTexture = { Value = MarkerTexture.Value },
             FillColor = { Value = FillColor.Value }
         };
     }

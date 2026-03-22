@@ -2,6 +2,7 @@
 using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
+using R3;
 
 namespace Ciallo.Command;
 
@@ -26,9 +27,13 @@ public class NewVectorFillBrushCmd : CommandBase
         targetE.Add(setting);
 
         // View
-        var strokeBrushMaterial = new StrokeBrushMaterial();
-        strokeBrushMaterial.ObserveBrushSetting(setting.MarkerStrokeBrush);
-        targetE.Add(strokeBrushMaterial);
+        var strokeMaterial = new StrokeBrushMaterial();
+        targetE.Add(strokeMaterial);
+
+        setting.MarkerColor.Subscribe(c =>
+        {
+            strokeMaterial.SetShaderParameter("MaterialColor", c);
+        }).AddTo(targetE);
     }
 
     public override void Do(Entity targetE)
@@ -39,7 +44,9 @@ public class NewVectorFillBrushCmd : CommandBase
 
     public override void Undo(Entity targetE)
     {
-        targetE.Document.Get<BrushManager>().VectorFillBrushEs.Remove(targetE);
+        var document = targetE.Document;
+        document.Get<BrushManager>().VectorFillBrushEs.Remove(targetE);
         targetE.Detach<ToSerializeTag>();
+        document.Get<SelectionManager>().SelectedShapes.Remove(targetE);
     }
 }

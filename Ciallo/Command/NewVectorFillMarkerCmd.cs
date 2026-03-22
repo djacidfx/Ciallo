@@ -43,8 +43,9 @@ public class NewVectorFillMarkerCmd : CommandBase
         var polygonView = new Polygon2D() { Antialiased = true };
         targetE.AddNode(polygonView);
         setting.BrushE
-            .Where(e => !e.IsNull)
-            .Select(e => e.Get<VectorFillBrushSetting>().FillColor.AsObservable())
+            .Select(e => e.IsNull
+                ? Observable.Return(Colors.Black)
+                : e.Get<VectorFillBrushSetting>().FillColor.AsObservable())
             .Switch()
             .Subscribe(polygonView.SetColor)
             .AddTo(targetE);
@@ -58,19 +59,33 @@ public class NewVectorFillMarkerCmd : CommandBase
             wireframeOverlay.SetGeometry(p);
         }).AddTo(targetE);
 
-        var strokeOverlay = new StrokeView() { Material = AutoloadRendering.MissingStrokeBrushMaterial };
-        targetE.AddNode(strokeOverlay);
+        var marker = new VectorFillMarkerView();
+        targetE.AddNode(marker);
 
         setting.BrushE.Subscribe(brushE =>
         {
-            strokeOverlay.Material = brushE.IsNull
+            marker.Stroke.Material = brushE.IsNull
                 ? AutoloadRendering.MissingStrokeBrushMaterial
                 : brushE.Get<StrokeBrushMaterial>();
         }).AddTo(targetE);
+        setting.BrushE
+            .Select(e => e.IsNull
+                ? Observable.Return<ImageTexture>(null)
+                : e.Get<VectorFillBrushSetting>().MarkerTexture.AsObservable())
+            .Switch()
+            .Subscribe(marker.Sprite.SetTexture)
+            .AddTo(targetE);
+        setting.BrushE
+            .Select(e => e.IsNull
+                ? Observable.Return(Colors.Black)
+                : e.Get<VectorFillBrushSetting>().MarkerColor.AsObservable())
+            .Switch()
+            .Subscribe(marker.Sprite.SetModulate)
+            .AddTo(targetE);
 
-        polylineGeometry.ObserveAll().Subscribe(v =>
+        polylineGeometry.ObserveShape().Subscribe(v =>
         {
-            strokeOverlay.SetGeometry(v.Item1, v.Item2, v.Item3);
+            marker.SetGeometry(v.Item1, v.Item2);
         }).AddTo(targetE);
 
         // Body
@@ -94,7 +109,7 @@ public class NewVectorFillMarkerCmd : CommandBase
 
             // Overlay
             var holder = layerE.Get<OverlayHolder>();
-            holder.GetChild(0).AddChild(strokeOverlay);
+            holder.GetChild(0).AddChild(marker);
             holder.GetChild(1).AddChild(wireframeOverlay);
 
             // Body
@@ -107,7 +122,7 @@ public class NewVectorFillMarkerCmd : CommandBase
             strokeBody.RemoveFromParent();
 
             // Overlay
-            strokeOverlay.RemoveFromParent();
+            marker.RemoveFromParent();
             wireframeOverlay.RemoveFromParent();
 
             // View

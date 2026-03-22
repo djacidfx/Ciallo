@@ -22,7 +22,7 @@ const BrushFlag BrushFlags = BrushFlag(1 << 0, 1 << 1);
 uniform int StrokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
 uniform int ActiveBrushFlags = 0;
 uniform vec4 MaterialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
-instance uniform vec4 overridingColor = vec4(0.0, 0.0, 0.0, -1.0);
+instance uniform vec4 OverridingColor = vec4(0.0, 0.0, 0.0, -1.0);
 // Canvas mode is used for drawing wireframe
 uniform int RadiusMode : hint_enum("World", "Canvas") = 0;
 // Dash
@@ -225,7 +225,7 @@ void fragment() {
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
 
-		COLOR = overridingColor.a >= 0.0 ? overridingColor : MaterialColor;
+		COLOR = OverridingColor.a >= 0.0 ? OverridingColor : MaterialColor;
     	float targetFlow = COLOR.a * flowRatio;
 		COLOR.a = COLOR.a * flowRatio;
 		if(targetFlow < 0.999){ // Can avoid little white dot
