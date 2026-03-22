@@ -25,10 +25,10 @@ public class PaintInteractor : InteractiveSessionBase
         {
             var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
             new CommandBuilder(Document.World.Create())
-                .NewBrush(setting).SetWorkingBrush().Commit();
+                .NewStrokeBrush(setting).SetWorkingStrokeBrush().Commit();
             AppBrushLibrary.SelectedIndex.Value = -1;
         }
-        _brushE = Document.Get<SelectionManager>().WorkingBrush.Value;
+        _brushE = Document.Get<SelectionManager>().WorkingStrokeBrush.Value;
 
         var brushMaterial = _brushE.Get<StrokeBrushMaterial>();
 

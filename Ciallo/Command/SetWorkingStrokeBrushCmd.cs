@@ -5,20 +5,20 @@ using Frent;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class SetWorkingBrushCmd : CommandBase
+public class SetWorkingStrokeBrushCmd : CommandBase
 {
     private Entity _oldBrushE;
 
     public override void BeforeFirstDo(Entity newBrushE)
     {
-        _oldBrushE = Document.Get<SelectionManager>().WorkingBrush.Value;
+        _oldBrushE = Document.Get<SelectionManager>().WorkingStrokeBrush.Value;
     }
 
     public override void Do(Entity newBrushE)
     {
         // Data
         var newIndex = Document.Get<BrushManager>().StrokeBrushEs.IndexOf(newBrushE);
-        Document.Get<SelectionManager>().WorkingBrush.Value = newBrushE;
+        Document.Get<SelectionManager>().WorkingStrokeBrush.Value = newBrushE;
 
         // UI
         var brushList = Document.Get<DocumentBrushListViewer>();
@@ -39,6 +39,6 @@ public class SetWorkingBrushCmd : CommandBase
             brushList.Select(oldIdx);
 
         // Data
-        Document.Get<SelectionManager>().WorkingBrush.Value = _oldBrushE;
+        Document.Get<SelectionManager>().WorkingStrokeBrush.Value = _oldBrushE;
     }
 }

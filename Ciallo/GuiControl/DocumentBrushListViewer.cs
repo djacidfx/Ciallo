@@ -27,7 +27,7 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
         ItemSelected += idx =>
         {
             new CommandBuilder(document.Get<BrushManager>().StrokeBrushEs[(int)idx])
-                .SetWorkingBrush()
+                .SetWorkingStrokeBrush()
                 .Commit();
         };
 
@@ -59,8 +59,8 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
             }
 
             var selectionManager = document.Get<SelectionManager>();
-            if (selectionManager.WorkingBrush.Value == brushE)
-                cmd.SetTarget(Entity.Null).SetWorkingBrush();
+            if (selectionManager.WorkingStrokeBrush.Value == brushE)
+                cmd.SetTarget(Entity.Null).SetWorkingStrokeBrush();
             cmd.SetTarget(brushE).DeleteBrush().Commit();
         };
 

@@ -106,7 +106,7 @@ public class PaintHover : InteractiveSessionBase
         container.AddProperty("Brush in document", brushList);
 
         var selectionM = Document.Get<SelectionManager>();
-        var rView = selectionM.WorkingBrush
+        var rView = selectionM.WorkingStrokeBrush
             .Select(e => e.IsDyingOrDead ? null : e.Get<StrokeBrushSetting>().BaseRadius)
             .ToReadOnlyReactiveProperty();
         var radiusControl = new SpinSlider
@@ -117,7 +117,7 @@ public class PaintHover : InteractiveSessionBase
             ExpEdit = true,
         }.ReactiveBindNumber(rView);
         container.AddProperty("Radius", radiusControl)
-            .VisibleIf(selectionM.WorkingBrush, e => !e.IsNull);
+            .VisibleIf(selectionM.WorkingStrokeBrush, e => !e.IsNull);
 
         var manageDocumentBrush = new Button()
         {
@@ -135,8 +135,8 @@ public class PaintHover : InteractiveSessionBase
         if (!AppBrushLibrary.HasSelection) return;
         var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
         new CommandBuilder(AppDocumentManager.WorkingDocument.Value.World.Create())
-            .NewBrush(setting)
-            .SetWorkingBrush()
+            .NewStrokeBrush(setting)
+            .SetWorkingStrokeBrush()
             .Commit();
         AppBrushLibrary.SelectedIndex.Value = -1;
     }

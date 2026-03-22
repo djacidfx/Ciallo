@@ -21,7 +21,7 @@ public class PaintTool : StateMachineToolBase
         ConfigureInitial(Hover)
             .PermitIf(Press(MouseButton.Left), Left, () =>
             {
-                var brushE = Document.Get<SelectionManager>().WorkingBrush.Value;
+                var brushE = Document.Get<SelectionManager>().WorkingStrokeBrush.Value;
                 return !brushE.IsDyingOrDead || AppBrushLibrary.HasSelection;
             });
 

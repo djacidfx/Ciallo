@@ -7,11 +7,11 @@ using Frent;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class NewBrushCmd : CommandBase
+public class NewStrokeBrushCmd : CommandBase
 {
     private readonly StrokeBrushSetting _setting;
 
-    public NewBrushCmd(StrokeBrushSetting setting = null)
+    public NewStrokeBrushCmd(StrokeBrushSetting setting = null)
     {
         _setting = setting?.Clone() ?? new StrokeBrushSetting();
         _setting.Labels.Remove(BrushLabel.BuiltIn);

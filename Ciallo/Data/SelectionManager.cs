@@ -12,7 +12,7 @@ public class SelectionManager
 
     [DataMember] public ReactiveProperty<Entity> WorkingLayer = new(Entity.Null);
 
-    [DataMember] public ReactiveProperty<Entity> WorkingBrush = new(Entity.Null);
+    [DataMember] public ReactiveProperty<Entity> WorkingStrokeBrush = new(Entity.Null);
 
     [DataMember] public ReactiveProperty<Entity> WorkingVectorFillBrush = new(Entity.Null);
 
