@@ -42,7 +42,7 @@ public class NewStrokeCmd : CommandBase
 
         strokeSetting.BrushE.Subscribe(brushE =>
         {
-            strokeView.Material = brushE.IsNull || !brushE.Has<StrokeBrushMaterial>()
+            strokeView.Material = !brushE.TryHas<StrokeBrushMaterial>()
                 ? AutoloadRendering.MissingStrokeBrushMaterial
                 : brushE.Get<StrokeBrushMaterial>();
         }).AddTo(targetE);

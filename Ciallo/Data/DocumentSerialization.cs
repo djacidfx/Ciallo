@@ -40,12 +40,18 @@ public static partial class AppDocumentManager
         var resultWorld = resultDocument.World;
         WorkingDocument.Value = resultDocument;
         var loadBrushCmd = new CommandBuilder();
-        foreach (var brushDataE in dataDocument.Get<BrushManager>().StrokeBrushEs)
+        foreach (var strokeBrushDataE in dataDocument.Get<BrushManager>().StrokeBrushEs)
         {
-            var setting = brushDataE.Get<StrokeBrushSetting>();
+            var setting = strokeBrushDataE.Get<StrokeBrushSetting>();
             var brushE = resultWorld.Create();
-            loadBrushCmd.SetTarget(brushE).NewStrokeBrush(setting);
-            entityMap.Add(brushDataE, brushE);
+            loadBrushCmd.SetTarget(brushE).NewStrokeBrush(strokeBrushDataE);
+            entityMap.Add(strokeBrushDataE, brushE);
+        }
+        foreach (var vectorFillBrushDataE in dataDocument.Get<BrushManager>().VectorFillBrushEs)
+        {
+            var brushE = resultWorld.Create();
+            loadBrushCmd.SetTarget(brushE).NewVectorFillBrush(vectorFillBrushDataE);
+            entityMap.Add(vectorFillBrushDataE, brushE);
         }
         loadBrushCmd.Do();
 
@@ -78,11 +84,10 @@ public static partial class AppDocumentManager
                 {
                     if (shapeDataE.Has<StrokeSetting>())
                     {
-                        var resultBrush = entityMap[shapeDataE.Get<StrokeSetting>().BrushE.Value];
+                        shapeDataE.Get<StrokeSetting>().BrushE.Value = entityMap[shapeDataE.Get<StrokeSetting>().BrushE.Value];
                         new CommandBuilder(resultWorld.Create())
                             .NewStroke(shapeDataE)
                             .AddToLayerTree(layerE)
-                            .SetProperty(e => e.Get<StrokeSetting>().BrushE, resultBrush)
                             .Do();
                     }
                     else if (shapeDataE.Has<FilledPolygonSetting>())
@@ -94,14 +99,42 @@ public static partial class AppDocumentManager
                     }
                 }
             }
+            else if (layerDataE.Has<VectorFillLayerSetting>())
+            {
+                var layerE = resultWorld.Create();
+                new CommandBuilder(layerE)
+                    .NewVectorFillLayer(layerDataE)
+                    .AddToLayerTree(resultDocument)
+                    .Do();
+                entityMap.Add(layerDataE, layerE);
+
+                foreach (var markerDataE in layerDataE.Get<LayerTreeNode>().Children)
+                {
+                    markerDataE.Get<VectorFillMarkerSetting>().BrushE.Value =
+                        entityMap[markerDataE.Get<VectorFillMarkerSetting>().BrushE.Value];
+                    var markerE = resultWorld.Create();
+                    new CommandBuilder(markerE)
+                        .NewVectorFillMarker(markerDataE)
+                        .AddToLayerTree(layerE)
+                        .Do();
+                }
+            }
         }
 
         // Load selection
+        var loadSelectionCmd = new CommandBuilder();
         var dataSm = dataDocument.Get<SelectionManager>();
-        new CommandBuilder(entityMap[dataSm.WorkingLayer.CurrentValue]).SetWorkingLayer().Do();
-        var brushes = dataDocument.Get<BrushManager>().StrokeBrushEs;
-        var idx = brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
-        if (idx != -1) new CommandBuilder(entityMap[brushes[idx]]).SetWorkingBrush().Do();
+        loadSelectionCmd.SetTarget(entityMap[dataSm.WorkingLayer.CurrentValue])
+            .SetWorkingLayer();
+
+        var dataStrokeBrushE = dataSm.WorkingStrokeBrush.Value;
+        if (!dataStrokeBrushE.IsNull)
+            loadSelectionCmd.SetTarget(entityMap[dataStrokeBrushE]).SetWorkingStrokeBrush().Do();
+        var dataVectorFillBrushE = dataSm.WorkingVectorFillBrush.Value;
+        if (!dataVectorFillBrushE.IsNull)
+            loadSelectionCmd.SetTarget(resultDocument)
+                .SetProperty(e => e.Get<SelectionManager>().WorkingVectorFillBrush, entityMap[dataVectorFillBrushE])
+                .Do();
     }
 
     public static void SaveWorkingDocument()

@@ -64,7 +64,7 @@ public class NewVectorFillMarkerCmd : CommandBase
 
         setting.BrushE.Subscribe(brushE =>
         {
-            marker.Stroke.Material = brushE.IsNull
+            marker.Stroke.Material = !brushE.TryHas<StrokeBrushMaterial>()
                 ? AutoloadRendering.MissingStrokeBrushMaterial
                 : brushE.Get<StrokeBrushMaterial>();
         }).AddTo(targetE);

@@ -9,19 +9,32 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class NewStrokeBrushCmd : CommandBase
 {
-    private readonly StrokeBrushSetting _setting;
+    private StrokeBrushSetting _setting;
+    public readonly Entity CopyE;
 
     public NewStrokeBrushCmd(StrokeBrushSetting setting = null)
     {
-        _setting = setting?.Clone() ?? new StrokeBrushSetting();
-        _setting.Labels.Remove(BrushLabel.BuiltIn);
+        _setting = setting;
+    }
+
+    public NewStrokeBrushCmd(Entity copyE = default)
+    {
+        CopyE = copyE;
     }
 
     public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
 
     public override void BeforeFirstDo(Entity brushE)
     {
+        _setting ??= CopyE.IsNull
+            ? new StrokeBrushSetting()
+            : CopyE.Get<StrokeBrushSetting>().Clone();
         brushE.Add(_setting);
+
+        // View
+        var material = new StrokeBrushMaterial();
+        material.ObserveBrushSetting(_setting);
+        brushE.Add(material);
     }
 
     public override void Do(Entity brushE)
@@ -30,11 +43,6 @@ public class NewStrokeBrushCmd : CommandBase
         brushE.Tag<ToSerializeTag>();
         var bm = Document.Get<BrushManager>();
         bm.StrokeBrushEs.Add(brushE);
-
-        // Material
-        var material = new StrokeBrushMaterial();
-        material.ObserveBrushSetting(_setting);
-        brushE.Add(material);
 
         // UI
         var list = Document.Get<DocumentBrushListViewer>();
@@ -47,14 +55,9 @@ public class NewStrokeBrushCmd : CommandBase
         var list = Document.Get<DocumentBrushListViewer>();
         list.Remove(brushE);
 
-        // Material
-        // Note: Material is RefCounted, cannot be manually freed
-        brushE.Remove<StrokeBrushMaterial>();
-
         // Data
         var bm = Document.Get<BrushManager>();
         bm.StrokeBrushEs.Remove(brushE);
         brushE.Detach<ToSerializeTag>();
-        brushE.Remove<StrokeBrushSetting>();
     }
 }
