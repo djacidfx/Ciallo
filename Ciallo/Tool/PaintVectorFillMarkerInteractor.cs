@@ -10,7 +10,7 @@ namespace Ciallo.Tool;
 
 public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 {
-    private StrokeView _strokePreview;
+    private VectorFillMarkerView _preview;
     private List<Polygon2D> _fillPreviews = [];
     private Entity _vectorFillBrushE;
 
@@ -22,14 +22,17 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
         _vectorFillBrushE = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
 
-        _strokePreview = new StrokeView() { Material = _vectorFillBrushE.Get<StrokeBrushMaterial>() };
-        WorkingLayer.Get<ShapeLayerView>().AddChild(_strokePreview);
-        _strokePreview.SetGeometry([data.WorldPosition], [MarkerRadius]);
+        _preview = new();
+        var setting = _vectorFillBrushE.Get<VectorFillBrushSetting>();
+        _preview.Sprite.Texture = setting.MarkerTexture.Value;
+        _preview.Sprite.Modulate = setting.MarkerColor.Value;
+        WorkingLayer.Get<ShapeLayerView>().AddChild(_preview);
+        _preview.SetGeometry([data.WorldPosition], [MarkerRadius]);
     }
 
     public override void Moving(CursorMotionData data)
     {
-        _strokePreview.SetGeometry([data.WorldPosition], [MarkerRadius]);
+        _preview.SetGeometry([data.WorldPosition], [MarkerRadius]);
     }
 
     public override void End(CursorButtonData data)
@@ -60,8 +63,8 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
     public void Clear()
     {
-        _strokePreview.QueueFree();
-        _strokePreview = null;
+        _preview.QueueFree();
+        _preview = null;
         _fillPreviews.ForEach(node => node.QueueFree());
         _fillPreviews.Clear();
         Input.MouseMode = Input.MouseModeEnum.Visible;
