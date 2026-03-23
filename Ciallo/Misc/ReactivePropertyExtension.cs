@@ -11,58 +11,47 @@ public static class ReactivePropertyExtension
     /// Create a ReactiveProperty two-way binded to the original one through the given selectors.
     /// Commonly used for unit conversion.
     /// </summary>
-    /// <returns></returns>
     public static ReactiveProperty<TTarget> Project<TSource, TTarget>(
         this ReactiveProperty<TSource> source,
         Func<TSource, TTarget> readSelector,
-        Func<TTarget, TSource> writeSelector,
-        out CompositeDisposable subs)
+        Func<TTarget, TSource> writeSelector)
     {
-        subs = new();
-        var view = new ReactiveProperty<TTarget>(readSelector(source.Value));
-        view.Subscribe(v => source.Value = writeSelector(v)).AddTo(subs);
-        source.Subscribe(v => view.Value = readSelector(v)).AddTo(subs);
-        return view;
-    }
-
-    public static ReactiveProperty<T> ProjectFloatingNumber<T>(
-        this ReactiveProperty<T> source,
-        Func<T, T> readSelector,
-        Func<T, T> writeSelector,
-        out CompositeDisposable subs) where T : IFloatingPoint<T>
-    {
-        subs = new();
-        var view = new ReactiveProperty<T>(readSelector(source.Value), FloatComparer<T>.Instance);
-        view.Subscribe(v => source.Value = writeSelector(v)).AddTo(subs);
-        source.Subscribe(v => view.Value = readSelector(v)).AddTo(subs);
-        return view;
+        var result = new ReactiveProperty<TTarget>(readSelector(source.Value));
+        var sub = source.Subscribe(v => result.Value = readSelector(v));
+        result.Subscribe(v => source.Value = writeSelector(v), _ => sub.Dispose());
+        return result;
     }
 
     /// <summary>
-    /// Project inner ReactiveProperty outside, similiar to Switch() operator
+    /// Project inner ReactiveProperty outside, similiar to Switch() operator.
     /// </summary>
-    public static ReactiveProperty<T> Flatten<T>(this Observable<ReactiveProperty<T>> outer, out CompositeDisposable subs)
+    /// <remarks>
+    /// Binding's subscription is managed by returned ReactiveProperty. Dispose it to dispose subscription.
+    /// </remarks>
+    public static ReactiveProperty<T> Flatten<T>(this Observable<ReactiveProperty<T>> outer)
     {
         var result = new ReactiveProperty<T>();
-        subs = new();
 
         IDisposable innerSub = null;
         ReactiveProperty<T> currentInner = null;
 
-        outer.Subscribe(inner =>
+        var outerSub = outer.Subscribe(inner =>
         {
             innerSub?.Dispose();
             currentInner = inner;
-            result.Value = inner.Value;
-            innerSub = inner.Subscribe(v => result.Value = v);
-        }).AddTo(subs);
+            result.Value = inner is null ? default : inner.Value;
+            innerSub = inner?.Subscribe(v => result.Value = v);
+        });
 
         result.Subscribe(v =>
-        {
-            currentInner?.Value = v;
-        }).AddTo(subs);
-
-        Disposable.Create(() => innerSub?.Dispose()).AddTo(subs);
+            {
+                currentInner?.Value = v;
+            },
+            _ =>
+            {
+                innerSub?.Dispose();
+                outerSub.Dispose();
+            });
 
         return result;
     }

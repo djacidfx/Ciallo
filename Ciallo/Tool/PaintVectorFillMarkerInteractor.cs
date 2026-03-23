@@ -12,7 +12,6 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 {
     private VectorFillMarkerView _preview;
     private List<Polygon2D> _fillPreviews = [];
-    private Entity _vectorFillBrushE;
 
     private float MarkerRadius => AppPreference.VectorFillMarkerRadius.Value;
 
@@ -20,13 +19,12 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
     {
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
-        _vectorFillBrushE = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
-
         _preview = new();
-        var setting = _vectorFillBrushE.Get<VectorFillBrushSetting>();
+        var vectorFillBrushE = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
+        var setting = vectorFillBrushE.Get<VectorFillBrushSetting>();
         _preview.Sprite.Texture = setting.MarkerTexture.Value;
         _preview.Sprite.Modulate = setting.MarkerColor.Value;
-        WorkingLayer.Get<ShapeLayerView>().AddChild(_preview);
+        WorkingLayer.Get<OverlayHolder>().AddChild(_preview);
         _preview.SetGeometry([data.WorldPosition], [MarkerRadius]);
     }
 
