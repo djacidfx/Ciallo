@@ -26,7 +26,7 @@ public static class ReactivePropertyExtension
     /// Project inner ReactiveProperty outside, similiar to Switch() operator.
     /// </summary>
     /// <remarks>
-    /// Binding's subscription is managed by returned ReactiveProperty. Dispose it to dispose subscription.
+    /// Binding's subscription is managed by returned ReactiveProperty. Dispose it to dispose the subscription.
     /// </remarks>
     public static ReactiveProperty<T> Flatten<T>(this Observable<ReactiveProperty<T>> outer)
     {

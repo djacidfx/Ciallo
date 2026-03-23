@@ -119,8 +119,8 @@ public class StrokeBrushSetting
             MaxValue = 180,
             Step = 0.1,
         };
-        var degreeView = StampRotation.Project(Mathf.RadToDeg, Mathf.DegToRad, out var subs);
-        subs.AddTo(stampRotationControl);
+        var degreeView = StampRotation.Project(Mathf.RadToDeg, Mathf.DegToRad);
+        degreeView.AddTo(stampRotationControl);
         stampRotationControl.BindNumber(degreeView);
         container.CreatePropertyBox("Stamp rotation", stampRotationControl).AddToChildOf(stampBox);
 
