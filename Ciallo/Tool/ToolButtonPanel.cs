@@ -1,4 +1,3 @@
-using Frent;
 using Godot;
 using R3;
 
@@ -11,10 +10,9 @@ namespace Ciallo.Tool;
 public partial class ToolButtonPanel : Container
 {
     public ButtonGroup ToolButtonGroup { get; } = new();
-    public readonly ReactiveProperty<ToolButton?> ActiveToolButton = new(0);
 
     [OnInstantiate]
-    private void Initialise(Entity document)
+    private void Initialise()
     {
         // Set button group
         foreach (var child in GetChildren())
@@ -22,14 +20,27 @@ public partial class ToolButtonPanel : Container
             var button = (Button)child;
             button.ButtonGroup = ToolButtonGroup;
         }
+    }
+
+    public ToolButtonPanel Bind(ReactiveProperty<ToolButton?> property)
+    {
+        property.Subscribe(toolButton =>
+        {
+            if (toolButton == null)
+                UnpressActiveButton();
+            else
+                PressButton(toolButton.Value);
+        }).AddTo(this);
 
         ToolButtonGroup.SignalAsObservable<BaseButton>(ButtonGroup.SignalName.Pressed)
             .DistinctUntilChanged()
             .Subscribe(button =>
             {
                 var toolButton = GetButtonEnum(button);
-                document.Get<ToolManager>().OnSwitchToolButton(toolButton);
+                property.Value = toolButton;
             }).AddTo(this);
+
+        return this;
     }
 
     public void PressButton(ToolButton toolButton)
@@ -37,7 +48,7 @@ public partial class ToolButtonPanel : Container
         GetButton(toolButton).ButtonPressed = true;
     }
 
-    public void DeactivateToolButton()
+    public void UnpressActiveButton()
     {
         ToolButtonGroup.GetPressedButton()?.SetPressedNoSignal(false);
     }

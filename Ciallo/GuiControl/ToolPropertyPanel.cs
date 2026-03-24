@@ -31,7 +31,7 @@ public partial class ToolPropertyPanel : Container
             foreach (var tool in toolManager.Tools)
             {
                 var container = new PropertyContainer(document);
-                container.VisibleIf(toolManager.ActiveTool, tool);
+                container.VisibleIf(toolManager.WorkingTool, tool);
                 container.QueueFreeChildren();
                 tool.DrawProperty(container);
 

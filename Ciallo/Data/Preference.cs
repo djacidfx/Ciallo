@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using Ciallo.Geometry;
+using Ciallo.Tool;
 using Godot;
 using Newtonsoft.Json;
 using ObservableCollections;
@@ -36,6 +37,8 @@ public class Preference
     public ReactiveProperty<string> Language = new("en");
     [DataMember]
     public ObservableList<string> RecentFiles = [];
+    [DataMember]
+    public ReactiveProperty<ToolButton?> PressedToolButton = new(null);
 
     [DataMember]
     public Color StrokeWireframeColor = Colors.Orange;

@@ -11,66 +11,34 @@ public partial class ToolManager : IInitable
 {
     public Dictionary<ToolButton, List<ITool>> ToolButtonMap;
     public IEnumerable<ITool> Tools => ToolButtonMap.Values.SelectMany(list => list);
-    public ToolButton? ActiveToolButton = null;
-    public readonly ReactiveProperty<ITool> ActiveTool = new(null);
+    public ReactiveProperty<ToolButton?> PressedToolButton => AppPreference.PressedToolButton;
+    public ReadOnlyReactiveProperty<ITool> WorkingTool { get; private set; }
     public Entity Document;
 
     public void Init(Entity self)
     {
         Document = self;
         ToolButtonMap = InitializeToolButtonMap(self);
+        var workingLayer = Document.Get<SelectionManager>().WorkingLayer;
+        WorkingTool = workingLayer.CombineLatest(PressedToolButton, (layerE, toolButton) =>
+        {
+            if (toolButton == null)
+                return null;
+            ToolButtonMap.TryGetValue(toolButton.Value, out var tools);
+            if (tools == null || tools.Count == 0)
+                return null;
+            return tools.FirstOrDefault(tool => tool.CanHandleLayer(layerE));
+        }).ToReadOnlyReactiveProperty();
+
+        WorkingTool.Pairwise().Subscribe(tool =>
+        {
+            tool.Previous?.OnDeactivate();
+            tool.Current?.OnActivate(Document.Get<SelectionManager>().WorkingLayer.Value);
+        });
     }
 
     public void ActivatePaintTool()
     {
-        Document.Get<ToolButtonPanel>().PressButton(ToolButton.Paint);
-    }
-
-    public void DeactivateTool()
-    {
-        ActiveTool.Value?.OnDeactivate();
-        ActiveTool.Value = null;
-    }
-
-    public void OnSwitchToolButton(ToolButton? toolButton)
-    {
-        ActiveToolButton = toolButton;
-        ActiveTool.Value?.OnDeactivate();
-        ActiveTool.Value = null;
-        if (toolButton == null)
-            return;
-        ToolButtonMap.TryGetValue(toolButton.Value, out var tools);
-        if (tools == null || tools.Count == 0)
-            return;
-        var selectionManager = Document.Get<SelectionManager>();
-        foreach (var tool in tools)
-        {
-            if (tool.CanHandleLayer(selectionManager.WorkingLayer.Value))
-            {
-                ActiveTool.Value = tool;
-                ActiveTool.Value.OnActivate(selectionManager.WorkingLayer.Value);
-                return;
-            }
-        }
-    }
-
-    public void OnSwitchLayer(params Entity[] layerEs)
-    {
-        ActiveTool.Value?.OnDeactivate();
-        ActiveTool.Value = null;
-        if (ActiveToolButton == null)
-            return;
-        ToolButtonMap.TryGetValue(ActiveToolButton.Value, out var tools);
-        if (tools == null || tools.Count == 0)
-            return;
-        foreach (var tool in tools)
-        {
-            if (tool.CanHandleLayer(layerEs))
-            {
-                ActiveTool.Value = tool;
-                ActiveTool.Value.OnActivate(layerEs);
-                return;
-            }
-        }
+        PressedToolButton.Value = ToolButton.Paint;
     }
 }
