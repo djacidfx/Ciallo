@@ -54,7 +54,7 @@ public class NewVectorFillMarkerCmd : CommandBase
         var wireframeOverlay = new PolylineWireframe() { Visible = false };
         targetE.AddNode(wireframeOverlay);
 
-        polylineGeometry.Positions.DebounceFrame(1).Subscribe(p =>
+        polylineGeometry.Positions.ThrottleLastFrame(1).Subscribe(p =>
         {
             wireframeOverlay.SetGeometry(p);
         }).AddTo(targetE);
