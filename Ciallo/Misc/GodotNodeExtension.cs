@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Collections.Specialized;
 using System.Linq;
 using Frent;
 using Godot;
+using ObservableCollections;
 
 // ReSharper disable once CheckNamespace
 namespace Ciallo;
@@ -138,6 +140,57 @@ public static class GodotNodeExtension
     {
         node.GetParent().RemoveChild(node);
         return node;
+    }
+
+    /// <summary>
+    /// Children sync with given list. Handles initial population and all incremental changes.
+    /// </summary>
+    public static void BindChildren(this Node node, INotifyCollectionChangedSynchronizedViewList<Node> childrenList)
+    {
+        foreach (var c in childrenList)
+            node.AddChild(c);
+
+        childrenList.CollectionChanged += (_, args) =>
+        {
+            switch (args.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    for (int i = 0; i < args.NewItems!.Count; i++)
+                    {
+                        var c = (Control)args.NewItems[i]!;
+                        node.AddChild(c);
+                        node.MoveChild(c, args.NewStartingIndex + i);
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Remove:
+                    foreach (var item in args.OldItems!)
+                        node.RemoveChild((Control)item!);
+                    break;
+
+                case NotifyCollectionChangedAction.Move:
+                    for (int i = 0; i < args.NewItems!.Count; i++)
+                        node.MoveChild((Control)args.NewItems[i]!, args.NewStartingIndex + i);
+                    break;
+
+                case NotifyCollectionChangedAction.Replace:
+                    for (int i = 0; i < args.OldItems!.Count; i++)
+                    {
+                        node.RemoveChild((Control)args.OldItems[i]!);
+                        var newC = (Control)args.NewItems![i]!;
+                        node.AddChild(newC);
+                        node.MoveChild(newC, args.NewStartingIndex + i);
+                    }
+                    break;
+
+                case NotifyCollectionChangedAction.Reset:
+                    foreach (var n in node.GetChildren())
+                        node.RemoveChild(n);
+                    foreach (var n in childrenList)
+                        node.AddChild(n);
+                    break;
+            }
+        };
     }
 }
 
