@@ -22,6 +22,9 @@ namespace Ciallo.Widget;
 /// (sourceIndex, destinationIndex). Middle-of-row gaps map to the last slot of the row above /
 /// first slot of the row below, matching the described drop semantics.
 /// </remarks>
+/// <remarks>
+/// If being contained by a ScrollContainer, remember to avoid scrollbar oscillation by setting the ScrollContainer.
+/// </remarks>
 [GlobalClass, Tool]
 public partial class DynamicGridContainer : Container
 {
@@ -39,23 +42,36 @@ public partial class DynamicGridContainer : Container
 
     private const float DragThreshold = 8f;
 
+    // ── cached layout state (set in Resort) ────────────────────────────────
+    private int _cols;
+    private Vector2 _itemSize;
+    private int _childCount;
+    private int _hSep;
+    private int _vSep;
+
     // ── visuals ────────────────────────────────────────────────────────────
     private readonly StrokeRect _selectionHighlight = new() // internal
     {
         Color = new(AppPreference.StrokeWireframeColor) { A = 1.0f },
+        MouseFilter = MouseFilterEnum.Ignore,
         Visible = false,
     };
-    private static readonly Color DropLineColor = new(1f, 1f, 1f, 0.9f);
+    private readonly ColorRect _dropHintLine = new()
+    {
+        Color = new(1f, 1f, 1f, 0.9f),
+        MouseFilter = MouseFilterEnum.Ignore,
+        Visible = false,
+    };
 
     private int HSeparation => GetThemeConstant("h_separation", "GridContainer");
     private int VSeparation => GetThemeConstant("v_separation", "GridContainer");
 
-    private readonly HashSet<Control> _hookedChildren = [];
-
     // ── public API ─────────────────────────────────────────────────────────
     public DynamicGridContainer()
     {
+        MouseFilter = MouseFilterEnum.Stop;
         AddChild(_selectionHighlight, false, InternalMode.Back);
+        AddChild(_dropHintLine, false, InternalMode.Back);
     }
 
     public void Select(int index)
@@ -70,27 +86,34 @@ public partial class DynamicGridContainer : Container
         if (what == NotificationSortChildren)
             Resort();
         else if (what == NotificationChildOrderChanged)
-            SetupChildInputHandlers();
+            EnsureChildMouseFilters();
     }
 
-    public override void _Draw()
+    private void UpdateDropHintLine()
     {
-        if (!_isDragging) return;
+        if (!_isDragging || _dropSlot < 0 || _dropSlot > _childCount)
+        {
+            _dropHintLine.Visible = false;
+            return;
+        }
+        const float lineWidth = 2f;
+        var slotCell = SlotToRowCol(_dropSlot);
 
-        var children = GetLayoutChildren();
-        if (children.Count == 0) return;
-
-        var (cols, itemSize) = CalcLayout(children);
-        int hSep = HSeparation;
-        int vSep = VSeparation;
-
-
-        // Drop indicator: vertical line at the left edge of the drop column
-        if (_dropSlot < 0 || _dropSlot > children.Count) return;
-        var slotCell = SlotToRowCol(_dropSlot, children.Count, cols);
-        float x = slotCell.X * (itemSize.X + hSep);
-        float y = slotCell.Y * (itemSize.Y + vSep);
-        DrawLine(new Vector2(x, y), new Vector2(x, y + itemSize.Y), DropLineColor, 2f);
+        if (_cols == 1)
+        {
+            // Single-column: horizontal line centred in the vertical separator gap
+            float yCentre = slotCell.Y * (_itemSize.Y + _vSep) - _vSep / 2f;
+            _dropHintLine.Position = new Vector2(0f, Mathf.Max(0f, yCentre - lineWidth / 2f));
+            _dropHintLine.Size = new Vector2(_itemSize.X, lineWidth);
+        }
+        else
+        {
+            // Multi-column: vertical line centred in the horizontal separator gap
+            float xCentre = slotCell.X * (_itemSize.X + _hSep) - _hSep / 2f;
+            _dropHintLine.Position = new Vector2(Mathf.Max(0f, xCentre - lineWidth / 2f), slotCell.Y * (_itemSize.Y + _vSep));
+            _dropHintLine.Size = new Vector2(lineWidth, _itemSize.Y);
+        }
+        _dropHintLine.Visible = true;
     }
 
     // ── layout ─────────────────────────────────────────────────────────────
@@ -98,7 +121,7 @@ public partial class DynamicGridContainer : Container
     {
         var result = new List<Control>();
         foreach (Node child in GetChildren())
-            if (child is Control c && !c.TopLevel && c.Visible)
+            if (child is Control { TopLevel: false, Visible: true } c)
                 result.Add(c);
         return result;
     }
@@ -106,7 +129,6 @@ public partial class DynamicGridContainer : Container
     private (int Cols, Vector2 ItemSize) CalcLayout(List<Control> children)
     {
         float w = Size.X;
-        float hSep = HSeparation;
         if (w <= 0f || children.Count == 0)
             return (1, new Vector2(Mathf.Max(w, 1f), MinRowHeight));
 
@@ -120,97 +142,113 @@ public partial class DynamicGridContainer : Container
         // ih = iw / ar
         // Solving ih = MaxRowHeight / MinRowHeight for cols:
         //   cols = (w + hSep) / (ih * ar + hSep)
-        int colsMin = Mathf.Max(1, Mathf.CeilToInt((w + hSep) / (MaxRowHeight * ar + hSep)));
-        int colsMax = Mathf.Max(colsMin, Mathf.FloorToInt((w + hSep) / (MinRowHeight * ar + hSep)));
+        int colsMin = Mathf.Max(1, Mathf.CeilToInt((w + _hSep) / (MaxRowHeight * ar + _hSep)));
+        int colsMax = Mathf.Max(colsMin, Mathf.FloorToInt((w + _hSep) / (MinRowHeight * ar + _hSep)));
         int cols = Mathf.Clamp(colsMax, 1, children.Count);
 
-        float iw = (w - (cols - 1) * hSep) / cols;
+        float iw = (w - (cols - 1) * _hSep) / cols;
         float ih = iw / ar;
         return (cols, new(iw, ih));
     }
 
     private void Resort()
     {
+        _hSep = HSeparation;
+        _vSep = VSeparation;
         var children = GetLayoutChildren();
         if (children.Count == 0)
         {
+            _cols = 0;
+            _itemSize = Vector2.Zero;
+            _childCount = 0;
             CustomMinimumSize = Vector2.Zero;
             _selectionHighlight.Visible = false;
-            QueueRedraw();
             return;
         }
 
-        var (cols, itemSize) = CalcLayout(children);
-        int hSep = HSeparation;
-        int vSep = VSeparation;
+        (_cols, _itemSize) = CalcLayout(children);
+        _childCount = children.Count;
+
         for (int i = 0; i < children.Count; i++)
         {
-            int col = i % cols;
-            int row = i / cols;
+            int col = i % _cols;
+            int row = i / _cols;
             FitChildInRect(children[i], new Rect2(
-                col * (itemSize.X + hSep),
-                row * (itemSize.Y + vSep),
-                itemSize.X, itemSize.Y));
+                col * (_itemSize.X + _hSep),
+                row * (_itemSize.Y + _vSep),
+                _itemSize.X, _itemSize.Y));
         }
 
         if (SelectedIndex >= 0 && SelectedIndex < children.Count)
         {
             _selectionHighlight.Visible = true;
-            FitChildInRect(_selectionHighlight, ItemRect(SelectedIndex, children.Count, cols, itemSize, hSep, vSep));
+            FitChildInRect(_selectionHighlight, ItemRect(SelectedIndex));
         }
         else
         {
             _selectionHighlight.Visible = false;
         }
 
-        int rows = Mathf.CeilToInt((float)children.Count / cols);
-        CustomMinimumSize = new Vector2(0f, rows * itemSize.Y + (rows - 1) * vSep);
-        QueueRedraw();
+        int rows = Mathf.CeilToInt((float)_childCount / _cols);
+        CustomMinimumSize = new Vector2(0f, rows * _itemSize.Y + (rows - 1) * _vSep);
     }
 
     // ── input ──────────────────────────────────────────────────────────────
-    private void SetupChildInputHandlers()
+    private void EnsureChildMouseFilters()
     {
-        _hookedChildren.RemoveWhere(c => !IsInstanceValid(c) || c.GetParent() != this);
-
         foreach (Node child in GetChildren())
-        {
-            if (child is not Control c || c.TopLevel || _hookedChildren.Contains(c)) continue;
-            _hookedChildren.Add(c);
-            var captured = c;
-            c.SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
-                .Subscribe(et => OnChildGuiInput(captured, et))
-                .AddTo(c);
-        }
+            if (child is Control c && !c.TopLevel)
+                c.MouseFilter = MouseFilterEnum.Ignore;
     }
 
-    private void OnChildGuiInput(Control child, InputEvent ev)
+    public override void _GuiInput(InputEvent et)
     {
-        switch (ev)
+        switch (et)
         {
-            case InputEventMouseButton { ButtonIndex: MouseButton.Left } mb when mb.Pressed:
-                _dragSource = child;
+            case InputEventMouseButton { ButtonIndex: MouseButton.Left } mb when mb.IsPressed():
+            {
+                int idx = HitTestIndex(mb.Position);
+                if (idx < 0) return;
+                _dragSource = GetLayoutChildren()[idx];
                 _dragStartGlobalPos = mb.GlobalPosition;
                 _isDragging = false;
-                Select(GetLayoutChildren().IndexOf(child));
+                Select(idx);
+                AcceptEvent();
+                break;
+            }
+            case InputEventMouseButton { ButtonIndex: MouseButton.Left } mb when mb.IsReleased():
+                FinishDrag(mb.Position);
+                AcceptEvent();
                 break;
 
-            case InputEventMouseButton { ButtonIndex: MouseButton.Left } mb
-                when !mb.Pressed && ReferenceEquals(_dragSource, child):
-                FinishDrag(mb.GlobalPosition - GlobalPosition);
-                break;
-
-            case InputEventMouseMotion motion
-                when ReferenceEquals(_dragSource, child) && motion.ButtonMask == MouseButtonMask.Left:
+            case InputEventMouseMotion { ButtonMask: MouseButtonMask.Left } motion when _dragSource != null:
                 if (!_isDragging)
                 {
                     if (motion.GlobalPosition.DistanceTo(_dragStartGlobalPos) <= DragThreshold) return;
                     _isDragging = true;
                 }
-                _dropSlot = ComputeDropSlot(motion.GlobalPosition - GlobalPosition);
-                QueueRedraw();
+                _dropSlot = ComputeDropSlot(motion.Position);
+                UpdateDropHintLine();
+                AcceptEvent();
                 break;
         }
+    }
+
+    private int HitTestIndex(Vector2 localPos)
+    {
+        if (_childCount == 0) return -1;
+
+        int col = Mathf.FloorToInt(localPos.X / (_itemSize.X + _hSep));
+        int row = Mathf.FloorToInt(localPos.Y / (_itemSize.Y + _vSep));
+        if (col < 0 || row < 0 || col >= _cols) return -1;
+
+        // Reject clicks that land inside the separator gap
+        float localX = localPos.X - col * (_itemSize.X + _hSep);
+        float localY = localPos.Y - row * (_itemSize.Y + _vSep);
+        if (localX > _itemSize.X || localY > _itemSize.Y) return -1;
+
+        int idx = row * _cols + col;
+        return idx >= _childCount ? -1 : idx;
     }
 
     private void FinishDrag(Vector2 localPos)
@@ -229,50 +267,50 @@ public partial class DynamicGridContainer : Container
         _dragSource = null;
         _isDragging = false;
         _dropSlot = -1;
-        QueueRedraw();
+        UpdateDropHintLine();
     }
 
     private int ComputeDropSlot(Vector2 localPos)
     {
-        var children = GetLayoutChildren();
-        if (children.Count == 0) return 0;
+        if (_childCount == 0) return 0;
 
-        var (cols, itemSize) = CalcLayout(children);
-        int hSep = HSeparation;
-        int vSep = VSeparation;
-        int rows = Mathf.CeilToInt((float)children.Count / cols);
+        if (_cols == 1)
+        {
+            // Single-column: drop positions are above/below each element; use nearest row boundary by Y.
+            return Mathf.Clamp(Mathf.RoundToInt(localPos.Y / (_itemSize.Y + _vSep)), 0, _childCount);
+        }
 
-        int row = Mathf.Clamp(Mathf.FloorToInt(localPos.Y / (itemSize.Y + vSep)), 0, rows - 1);
-        int rowStart = row * cols;
-        int rowItemCnt = Mathf.Min(cols, children.Count - rowStart);
+        int rows = Mathf.CeilToInt((float)_childCount / _cols);
+        int row = Mathf.Clamp(Mathf.FloorToInt(localPos.Y / (_itemSize.Y + _vSep)), 0, rows - 1);
+        int rowStart = row * _cols;
+        int rowItemCnt = Mathf.Min(_cols, _childCount - rowStart);
 
         // Nearest gap within the row: 0 = before first item, rowItemCnt = after last item in the row.
-        int gapInRow = Mathf.Clamp(Mathf.RoundToInt(localPos.X / (itemSize.X + hSep)), 0, rowItemCnt);
-        return Mathf.Min(rowStart + gapInRow, children.Count);
+        int gapInRow = Mathf.Clamp(Mathf.RoundToInt(localPos.X / (_itemSize.X + _hSep)), 0, rowItemCnt);
+        return Mathf.Min(rowStart + gapInRow, _childCount);
     }
 
-    // ── helpers ────────────────────────────────────────────────────────────
-    private static Rect2 ItemRect(int slotIdx, int count, int cols, Vector2 itemSize, int hSep, int vSep)
+    private Rect2 ItemRect(int slotIdx)
     {
-        var cell = SlotToRowCol(slotIdx, count, cols);
-        return new Rect2(cell.X * (itemSize.X + hSep), cell.Y * (itemSize.Y + vSep), itemSize.X, itemSize.Y);
+        var cell = SlotToRowCol(slotIdx);
+        return new Rect2(cell.X * (_itemSize.X + _hSep), cell.Y * (_itemSize.Y + _vSep), _itemSize.X, _itemSize.Y);
     }
 
     /// <summary>Maps an insertion slot index to a (col, row) cell coordinate for drawing.</summary>
-    private static Vector2I SlotToRowCol(int slot, int count, int cols)
+    private Vector2I SlotToRowCol(int slot)
     {
-        if (slot >= count)
+        if (slot >= _childCount)
         {
-            int last = count - 1;
-            int r = last / cols;
-            int c = last % cols + 1;
-            if (c >= cols)
+            int last = _childCount - 1;
+            int r = last / _cols;
+            int c = last % _cols + 1;
+            if (c >= _cols)
             {
                 c = 0;
                 r++;
             }
             return new(c, r);
         }
-        return new(slot % cols, slot / cols);
+        return new(slot % _cols, slot / _cols);
     }
 }
