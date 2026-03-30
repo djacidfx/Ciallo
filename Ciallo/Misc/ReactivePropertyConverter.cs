@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Godot;
 using Newtonsoft.Json;
 
 namespace Ciallo;
@@ -19,6 +20,7 @@ public class ReactivePropertyConverter : JsonConverter
         if (value == null)
         {
             writer.WriteNull();
+            GD.PrintErr("ReactivePropertyConverter: value is null, writing null.");
             return;
         }
         var valueProperty = value.GetType().GetProperty("Value", BindingFlags.Public | BindingFlags.Instance);
@@ -30,7 +32,7 @@ public class ReactivePropertyConverter : JsonConverter
     {
         if (reader.TokenType == JsonToken.Null)
         {
-            return null;
+            return Activator.CreateInstance(objectType, null);
         }
 
         var valueType = objectType.GetGenericArguments()[0];
