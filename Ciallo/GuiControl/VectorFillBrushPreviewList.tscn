@@ -1,0 +1,56 @@
+[gd_scene load_steps=6 format=3 uid="uid://62cqxnxs5way"]
+
+[ext_resource type="Script" uid="uid://b2pgo2j4ka41x" path="res://Widget/DynamicGridItemList.cs" id="1_2mi2j"]
+[ext_resource type="Texture2D" uid="uid://dm6dr88emw3ta" path="res://Icon/plus.svg" id="1_i8jn5"]
+[ext_resource type="Script" uid="uid://dnft8xk0egpnx" path="res://GuiControl/VectorFillBrushPreviewList.cs" id="1_t3di1"]
+[ext_resource type="Texture2D" uid="uid://dvgbavcaytc4e" path="res://Icon/minus.svg" id="2_t3di1"]
+[ext_resource type="Texture2D" uid="uid://ddgqnm1dvnk6w" path="res://Icon/content-copy.svg" id="3_4ist4"]
+
+[node name="VectorFillBrushPreviewList" type="HBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_t3di1")
+
+[node name="ButtonContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="AddButton" type="Button" parent="ButtonContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("1_i8jn5")
+expand_icon = true
+
+[node name="RemoveButton" type="Button" parent="ButtonContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("2_t3di1")
+expand_icon = true
+
+[node name="CopyButton" type="Button" parent="ButtonContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("3_4ist4")
+expand_icon = true
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_horizontal = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 2
+
+[node name="PreviewList" type="Container" parent="ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 0
+script = ExtResource("1_2mi2j")
+metadata/_custom_type_script = "uid://b2pgo2j4ka41x"

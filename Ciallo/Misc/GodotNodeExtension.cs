@@ -213,4 +213,14 @@ public static class EntityNodeExtension
                 n.QueueFree();
         };
     }
+
+    public static T QueueFreeWith<T>(this T node, Entity e) where T : Node
+    {
+        e.OnDelete += _ =>
+        {
+            if (GodotObject.IsInstanceValid(node))
+                node.QueueFree();
+        };
+        return node;
+    }
 }
