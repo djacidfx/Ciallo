@@ -30,7 +30,7 @@ public partial class ToolManager : IInitable
             return tools.FirstOrDefault(tool => tool.CanHandleLayer(layerE));
         }).ToReadOnlyReactiveProperty();
 
-        WorkingTool.ThrottleLastFrame(1).Pairwise().Subscribe(tool =>
+        WorkingTool.Pairwise().ThrottleLastFrame(1).Subscribe(tool =>
         {
             tool.Previous?.OnDeactivate();
             tool.Current?.OnActivate(Document.Get<SelectionManager>().WorkingLayer.Value);
