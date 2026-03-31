@@ -16,7 +16,7 @@ namespace Ciallo.Widget;
 [GlobalClass, Tool]
 public partial class DynamicGridContainer : Container
 {
-    [Export] public float MinRowHeight
+    [Export] public int MinRowHeight
     {
         get;
         set
@@ -24,12 +24,12 @@ public partial class DynamicGridContainer : Container
             field = value;
             QueueSort();
         }
-    } = 64f;
+    } = 48;
 
     // ── cached layout state (set in Resort) ────────────────────────────────
     protected int Cols;
     protected Vector2 ItemSize;
-    protected int ChildCount;
+    protected int LayoutChildCount;
     protected int HSep;
     protected int VSep;
 
@@ -41,6 +41,12 @@ public partial class DynamicGridContainer : Container
     {
         if (what == NotificationSortChildren)
             Resort();
+    }
+
+    public override Vector2 _GetMinimumSize()
+    {
+        int rows = Mathf.CeilToInt((float)LayoutChildCount / Cols);
+        return new(0f, Mathf.CeilToInt(rows * ItemSize.Y + (rows - 1) * VSep));
     }
 
     // ── layout ─────────────────────────────────────────────────────────────
@@ -81,13 +87,13 @@ public partial class DynamicGridContainer : Container
         {
             Cols = 0;
             ItemSize = Vector2.Zero;
-            ChildCount = 0;
+            LayoutChildCount = 0;
             CustomMinimumSize = Vector2.Zero;
             return;
         }
 
         (Cols, ItemSize) = CalcLayout(children);
-        ChildCount = children.Count;
+        LayoutChildCount = children.Count;
 
         for (int i = 0; i < children.Count; i++)
         {
@@ -99,7 +105,7 @@ public partial class DynamicGridContainer : Container
                 ItemSize.X, ItemSize.Y));
         }
 
-        int rows = Mathf.CeilToInt((float)ChildCount / Cols);
+        int rows = Mathf.CeilToInt((float)LayoutChildCount / Cols);
         CustomMinimumSize = new Vector2(0f, rows * ItemSize.Y + (rows - 1) * VSep);
     }
 
@@ -113,9 +119,9 @@ public partial class DynamicGridContainer : Container
     /// <summary>Maps an insertion slot index to a (col, row) cell coordinate for drawing.</summary>
     protected Vector2I SlotToRowCol(int slot)
     {
-        if (slot >= ChildCount)
+        if (slot >= LayoutChildCount)
         {
-            int last = ChildCount - 1;
+            int last = LayoutChildCount - 1;
             int r = last / Cols;
             int c = last % Cols + 1;
             if (c >= Cols)
