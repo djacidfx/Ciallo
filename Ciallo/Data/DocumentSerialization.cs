@@ -34,7 +34,7 @@ public static partial class AppDocumentManager
 
     public static void CopyWorldByData(Entity dataDocument)
     {
-        Dictionary<Entity, Entity> entityMap = [];
+        Dictionary<Entity, Entity> entityMap = new() { { Entity.Null, Entity.Null } };
         // Load brushes
         var resultDocument = Create(dataDocument.Get<DocumentSetting>());
         var resultWorld = resultDocument.World;
