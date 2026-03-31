@@ -20,7 +20,15 @@ public partial class DynamicGridItemList : DynamicGridContainer
     [Signal]
     public delegate void ItemClickedEventHandler(int idx);
 
-    public int SelectedIndex { get; private set; } = -1;
+    public Control SelectedControl
+    {
+        get;
+        set
+        {
+            field = value;
+            UpdateSelectionHighlight();
+        }
+    }
 
     // ── drag state ─────────────────────────────────────────────────────────
     private Control _dragSource;
@@ -34,6 +42,7 @@ public partial class DynamicGridItemList : DynamicGridContainer
     private readonly StrokeRect _selectionHighlight = new()
     {
         Color = new(AppPreference.StrokeWireframeColor) { A = 1.0f },
+        Width = 5f,
         MouseFilter = MouseFilterEnum.Ignore,
         Visible = false,
     };
@@ -49,12 +58,6 @@ public partial class DynamicGridItemList : DynamicGridContainer
         MouseFilter = MouseFilterEnum.Stop;
         AddChild(_selectionHighlight, false, InternalMode.Back);
         AddChild(_dropHintLine, false, InternalMode.Back);
-    }
-
-    public void Select(int index)
-    {
-        SelectedIndex = index;
-        UpdateSelectionHighlight();
     }
 
     // ── Godot overrides ────────────────────────────────────────────────────
@@ -75,10 +78,10 @@ public partial class DynamicGridItemList : DynamicGridContainer
     // ── visuals helpers ────────────────────────────────────────────────────
     private void UpdateSelectionHighlight()
     {
-        if (SelectedIndex >= 0 && SelectedIndex < ChildCount)
+        if (SelectedControl?.GetParent() == this)
         {
             _selectionHighlight.Visible = true;
-            FitChildInRect(_selectionHighlight, ItemRect(SelectedIndex));
+            FitChildInRect(_selectionHighlight, SelectedControl.GetRect());
         }
         else
         {
@@ -88,7 +91,7 @@ public partial class DynamicGridItemList : DynamicGridContainer
 
     private void UpdateDropHintLine()
     {
-        if (!_isDragging || _dropSlot < 0 || _dropSlot > ChildCount)
+        if (!_isDragging || _dropSlot < 0 || _dropSlot > LayoutChildCount)
         {
             _dropHintLine.Visible = false;
             return;
@@ -156,7 +159,7 @@ public partial class DynamicGridItemList : DynamicGridContainer
 
     private int HitTestIndex(Vector2 localPos)
     {
-        if (ChildCount == 0) return -1;
+        if (LayoutChildCount == 0) return -1;
 
         int col = Mathf.FloorToInt(localPos.X / (ItemSize.X + HSep));
         int row = Mathf.FloorToInt(localPos.Y / (ItemSize.Y + VSep));
@@ -167,7 +170,7 @@ public partial class DynamicGridItemList : DynamicGridContainer
         if (localX > ItemSize.X || localY > ItemSize.Y) return -1;
 
         int idx = row * Cols + col;
-        return idx >= ChildCount ? -1 : idx;
+        return idx >= LayoutChildCount ? -1 : idx;
     }
 
     private void FinishDrag(Vector2 localPos)
@@ -189,20 +192,20 @@ public partial class DynamicGridItemList : DynamicGridContainer
 
     private int ComputeDropSlot(Vector2 localPos)
     {
-        if (ChildCount == 0) return 0;
+        if (LayoutChildCount == 0) return 0;
 
         if (Cols == 1)
         {
             // Single-column: drop positions are above/below each element
-            return Mathf.Clamp(Mathf.RoundToInt(localPos.Y / (ItemSize.Y + VSep)), 0, ChildCount);
+            return Mathf.Clamp(Mathf.RoundToInt(localPos.Y / (ItemSize.Y + VSep)), 0, LayoutChildCount);
         }
 
-        int rows = Mathf.CeilToInt((float)ChildCount / Cols);
+        int rows = Mathf.CeilToInt((float)LayoutChildCount / Cols);
         int row = Mathf.Clamp(Mathf.FloorToInt(localPos.Y / (ItemSize.Y + VSep)), 0, rows - 1);
         int rowStart = row * Cols;
-        int rowItemCnt = Mathf.Min(Cols, ChildCount - rowStart);
+        int rowItemCnt = Mathf.Min(Cols, LayoutChildCount - rowStart);
 
         int gapInRow = Mathf.Clamp(Mathf.RoundToInt(localPos.X / (ItemSize.X + HSep)), 0, rowItemCnt);
-        return Mathf.Min(rowStart + gapInRow, ChildCount);
+        return Mathf.Min(rowStart + gapInRow, LayoutChildCount);
     }
 }
