@@ -74,8 +74,8 @@ public static partial class AppDocumentManager
             .AddToLayerTree(document)
             .SetWorkingLayer();
         // Vector fill brushes
-        int bullseyeAssetCount = 3;
-        for (int i = 0; i < bullseyeAssetCount; i++)
+        Color[] colors = [Colors.PaleTurquoise, Colors.Purple, Colors.LemonChiffon];
+        for (int i = 0; i < colors.Length; i++)
         {
             string path = $"res://Rendering/Image/Bullseye{i}.svg";
             var img = GD.Load<Image>(path);
@@ -83,7 +83,8 @@ public static partial class AppDocumentManager
             var entity = document.World.Create();
             cmd.SetTarget(entity)
                 .NewVectorFillBrush()
-                .SetProperty(e => e.Get<VectorFillBrushSetting>().MarkerTexture, tex);
+                .SetProperty(e => e.Get<VectorFillBrushSetting>().MarkerTexture, tex)
+                .SetProperty(e => e.Get<VectorFillBrushSetting>().FillColor, colors[i]);
             if (i == 0)
                 cmd.SetProperty(e => e.Document.Get<SelectionManager>().WorkingVectorFillBrush, entity);
         }
@@ -110,6 +111,9 @@ public static partial class AppDocumentManager
 
         // Dispose world
         // Warning: Dispose a world don't trigger it's entities' deletion events.
+        var allQuery = document.World.CreateQuery().Build();
+        foreach (Entity e in allQuery.EnumerateWithEntities())
+            e.Delete();
         document.World.Dispose();
     }
 
