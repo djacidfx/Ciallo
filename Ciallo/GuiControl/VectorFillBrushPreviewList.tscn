@@ -6,18 +6,24 @@
 [ext_resource type="Texture2D" uid="uid://dvgbavcaytc4e" path="res://Icon/minus.svg" id="2_t3di1"]
 [ext_resource type="Texture2D" uid="uid://ddgqnm1dvnk6w" path="res://Icon/content-copy.svg" id="3_4ist4"]
 
-[node name="VectorFillBrushPreviewList" type="HBoxContainer"]
+[node name="VectorFillBrushPreviewList" type="PanelContainer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 script = ExtResource("1_t3di1")
 
-[node name="ButtonContainer" type="VBoxContainer" parent="."]
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
 layout_mode = 2
 
-[node name="AddButton" type="Button" parent="ButtonContainer"]
+[node name="ButtonContainer" type="VBoxContainer" parent="HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="AddButton" type="Button" parent="HBoxContainer/ButtonContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -25,7 +31,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("1_i8jn5")
 expand_icon = true
 
-[node name="RemoveButton" type="Button" parent="ButtonContainer"]
+[node name="RemoveButton" type="Button" parent="HBoxContainer/ButtonContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -33,7 +39,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("2_t3di1")
 expand_icon = true
 
-[node name="CopyButton" type="Button" parent="ButtonContainer"]
+[node name="CopyButton" type="Button" parent="HBoxContainer/ButtonContainer"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -41,13 +47,13 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("3_4ist4")
 expand_icon = true
 
-[node name="ScrollContainer" type="ScrollContainer" parent="."]
+[node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-horizontal_scroll_mode = 0
-vertical_scroll_mode = 2
+horizontal_scroll_mode = 4
+vertical_scroll_mode = 4
 
-[node name="PreviewList" type="Container" parent="ScrollContainer"]
+[node name="PreviewList" type="Container" parent="HBoxContainer/ScrollContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
