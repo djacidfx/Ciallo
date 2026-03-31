@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
 using Frent;
@@ -12,7 +13,7 @@ public partial class ToolManager : IInitable
     public Dictionary<ToolButton, List<ITool>> ToolButtonMap;
     public IEnumerable<ITool> Tools => ToolButtonMap.Values.SelectMany(list => list);
     public ReactiveProperty<ToolButton?> PressedToolButton => AppPreference.PressedToolButton;
-    public ReadOnlyReactiveProperty<ITool> WorkingTool { get; private set; }
+    public ReactiveProperty<ITool> WorkingTool = new(null);
     public Entity Document;
 
     public void Init(Entity self)
@@ -20,21 +21,23 @@ public partial class ToolManager : IInitable
         Document = self;
         ToolButtonMap = InitializeToolButtonMap(self);
         var workingLayer = Document.Get<SelectionManager>().WorkingLayer;
-        WorkingTool = workingLayer.CombineLatest(PressedToolButton, (layerE, toolButton) =>
-        {
-            if (toolButton == null)
-                return null;
-            ToolButtonMap.TryGetValue(toolButton.Value, out var tools);
-            if (tools == null || tools.Count == 0)
-                return null;
-            return tools.FirstOrDefault(tool => tool.CanHandleLayer(layerE));
-        }).ToReadOnlyReactiveProperty();
-
-        WorkingTool.Pairwise().ThrottleLastFrame(1).Subscribe(tool =>
-        {
-            tool.Previous?.OnDeactivate();
-            tool.Current?.OnActivate(Document.Get<SelectionManager>().WorkingLayer.Value);
-        });
+        workingLayer.CombineLatest(PressedToolButton, ValueTuple.Create)
+            .DelayFrame(1)
+            .Subscribe(tuple =>
+            {
+                var (layerE, toolButton) = tuple;
+                if (toolButton == null)
+                {
+                    WorkingTool.Value = null;
+                    return;
+                }
+                
+                var targetTool = layerE.IsNull ? null 
+                    : ToolButtonMap[toolButton.Value].FirstOrDefault(t => t.CanHandleLayer(layerE));
+                WorkingTool.Value?.OnDeactivate();
+                targetTool?.OnActivate(layerE);
+                WorkingTool.Value = targetTool;
+            }).AddTo(Document);
     }
 
     public void ActivatePaintTool()
