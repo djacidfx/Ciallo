@@ -1,5 +1,4 @@
 ﻿using System;
-using Frent;
 
 namespace Ciallo.Data;
 /*
@@ -18,16 +17,3 @@ public class ToSerializeAttribute : Attribute;
 /// Label an entity should be serialized by MessagePack
 /// </summary>
 public struct ToSerializeTag;
-
-public static class EntityExtension
-{
-    extension(Entity self)
-    {
-        /// <summary>
-        /// Check if entity has been deleted by user. It may or may not has been deleted by undo stack.
-        /// </summary>
-        public bool IsDyingOrDead => !self.IsAlive || !self.Tagged<ToSerializeTag>();
-        public bool IsDocument => self.World.Document() == self; // If entity is the singleton document entity.
-        public Entity Document => self.World.Document();
-    }
-}
