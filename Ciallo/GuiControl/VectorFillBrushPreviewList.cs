@@ -70,8 +70,9 @@ public partial class VectorFillBrushPreviewList : Container
 
     private PanelContainer CreateBrushPreview(Entity e)
     {
+        var checkerboardMaterial = GD.Load<ShaderMaterial>("res://Rendering/Checkerboard.tres");
         var box = new PanelContainer().QueueFreeWith(e);
-        var background = new ColorRect();
+        var background = new ColorRect() { Material = checkerboardMaterial };
         box.AddChild(background);
         var markerPreview = new TextureRect()
         {

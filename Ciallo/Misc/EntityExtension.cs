@@ -16,5 +16,7 @@ public static class EntityExtension
         public Entity Document => self.World.Document();
 
         public T TryGet<T>() where T : class => self.IsNull || !self.TryHas<T>() ? null : self.Get<T>();
+
+        public static bool IsNotNull(Entity e) => !e.IsNull;
     }
 }
