@@ -20,14 +20,12 @@ namespace Ciallo.Data;
 /// </summary>
 public static partial class AppDocumentManager
 {
-    public static readonly ObservableList<Entity> LoadedDocuments = [];
+    public static readonly ObservableHashSet<Entity> LoadedDocuments = [];
 
     public static readonly ReactiveProperty<Entity> WorkingDocument = new(Entity.Null);
 
-    public static bool WorkingDocumentModified =>
-        !WorkingDocument.Value.IsNull &&
-        WorkingDocument.Value.Get<CommandManager>().DocumentModified.CurrentValue;
-
+    public static bool WorkingDocumentModified => !WorkingDocument.Value.IsNull &&
+                                                  WorkingDocument.Value.Get<CommandManager>().DocumentModified.CurrentValue;
     private static readonly Dictionary<World, Entity> WorldToDocument = [];
     public static Entity Document([NotNull] this World world) => WorldToDocument[world];
 
@@ -104,7 +102,7 @@ public static partial class AppDocumentManager
         // Remove working world
         LoadedDocuments.Remove(document);
         if (WorkingDocument.Value == document)
-            WorkingDocument.Value = LoadedDocuments.Count > 0 ? LoadedDocuments[0] : Entity.Null;
+            WorkingDocument.Value = Entity.Null;
 
         // Dispose or free managers
         document.Get<CommandManager>().Free();
