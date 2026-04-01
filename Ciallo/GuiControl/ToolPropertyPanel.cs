@@ -37,6 +37,12 @@ public partial class ToolPropertyPanel : Container
 
                 holderPerDocument.AddChild(container);
             }
+            holderPerDocument.AddChild(new Label
+                {
+                    Text = "[Cannot Tool Layer]",
+                    AutowrapMode = TextServer.AutowrapMode.WordSmart,
+                }
+                .VisibleIf(toolManager.WorkingTool, (ITool)null));
         }).AddTo(this);
 
         AppDocumentManager.LoadedDocuments.ObserveRemove().Select(et => et.Value).Subscribe(document =>
