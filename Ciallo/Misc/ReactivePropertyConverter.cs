@@ -20,6 +20,7 @@ public class ReactivePropertyConverter : JsonConverter
         if (value == null)
         {
             writer.WriteNull();
+            // By design, ReactiveProperty itself should not be null in any case 
             GD.PrintErr("ReactivePropertyConverter: value is null, writing null.");
             return;
         }
@@ -32,7 +33,7 @@ public class ReactivePropertyConverter : JsonConverter
     {
         if (reader.TokenType == JsonToken.Null)
         {
-            return Activator.CreateInstance(objectType, null);
+            return Activator.CreateInstance(objectType);
         }
 
         var valueType = objectType.GetGenericArguments()[0];

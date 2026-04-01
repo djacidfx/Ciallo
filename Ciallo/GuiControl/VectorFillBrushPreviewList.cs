@@ -12,21 +12,12 @@ namespace Ciallo.GuiControl;
 [SceneTree, Instantiable]
 public partial class VectorFillBrushPreviewList : Container
 {
-    public bool PreviewOnly
-    {
-        get;
-        set
-        {
-            field = value;
-            ButtonContainer.Visible = false;
-        }
-    }
-
     protected readonly Dictionary<Entity, Control> PreviewMap = [];
     protected ISynchronizedView<Entity, Control> SyncView;
     protected ObservableList<Entity> Brushes;
     protected ReactiveProperty<Entity> WorkingBrush;
     protected Entity Document;
+    private CompositeDisposable _subs;
 
     public void Init(Entity document)
     {
@@ -39,8 +30,10 @@ public partial class VectorFillBrushPreviewList : Container
     public void Bind(ObservableList<Entity> brushes, ReactiveProperty<Entity> workingBrush)
     {
         Brushes = brushes;
-        SyncView?.Dispose();
+        _subs?.Dispose();
+        _subs = new();
         SyncView = brushes.CreateView(GetOrCreateBrushPreview);
+        SyncView.AddTo(_subs);
 
         PreviewList.BindChildren(SyncView.ToNotifyCollectionChanged());
 
@@ -48,7 +41,7 @@ public partial class VectorFillBrushPreviewList : Container
         workingBrush.Subscribe(e =>
         {
             PreviewList.SelectedControl = e.IsNull ? null : GetOrCreateBrushPreview(e);
-        });
+        }).AddTo(_subs);
 
         PreviewList.Moved += (src, dst) =>
         {

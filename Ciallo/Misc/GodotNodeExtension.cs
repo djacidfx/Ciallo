@@ -157,7 +157,7 @@ public static class GodotNodeExtension
                 case NotifyCollectionChangedAction.Add:
                     for (int i = 0; i < args.NewItems!.Count; i++)
                     {
-                        var c = (Control)args.NewItems[i]!;
+                        var c = (Node)args.NewItems[i]!;
                         node.AddChild(c);
                         node.MoveChild(c, args.NewStartingIndex + i);
                     }
@@ -165,19 +165,19 @@ public static class GodotNodeExtension
 
                 case NotifyCollectionChangedAction.Remove:
                     foreach (var item in args.OldItems!)
-                        node.RemoveChild((Control)item!);
+                        node.RemoveChild((Node)item!);
                     break;
 
                 case NotifyCollectionChangedAction.Move:
                     for (int i = 0; i < args.NewItems!.Count; i++)
-                        node.MoveChild((Control)args.NewItems[i]!, args.NewStartingIndex + i);
+                        node.MoveChild((Node)args.NewItems[i]!, args.NewStartingIndex + i);
                     break;
 
                 case NotifyCollectionChangedAction.Replace:
                     for (int i = 0; i < args.OldItems!.Count; i++)
                     {
-                        node.RemoveChild((Control)args.OldItems[i]!);
-                        var newC = (Control)args.NewItems![i]!;
+                        node.RemoveChild((Node)args.OldItems[i]!);
+                        var newC = (Node)args.NewItems![i]!;
                         node.AddChild(newC);
                         node.MoveChild(newC, args.NewStartingIndex + i);
                     }

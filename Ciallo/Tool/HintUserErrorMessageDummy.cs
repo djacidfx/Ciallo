@@ -32,7 +32,7 @@ public class HintUserErrorMessageDummy : InteractiveSessionBase
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
-        Document.Get<WorldBody>().MouseDefaultCursorShape = Control.CursorShape.Forbidden;
+        Document.Get<WorldBody>().MouseDefaultCursorShape = default;
     }
     public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
 
