@@ -3,7 +3,6 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
-using Ciallo.Widget;
 using Frent;
 using Godot;
 
@@ -14,8 +13,6 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
     private VectorFillMarkerView _preview;
     private List<Polygon2D> _fillPreviews = [];
 
-    private Label _userErrorLabel;
-
     private float MarkerRadius => AppPreference.VectorFillMarkerRadius.Value;
 
     public override void Start(CursorButtonData data)
@@ -23,11 +20,6 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
         var vectorFillBrushE = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
-        if (vectorFillBrushE.IsNull)
-        {
-            _userErrorLabel.Visible = true;
-            return;
-        }
         _preview = new();
         var setting = vectorFillBrushE.Get<VectorFillBrushSetting>();
         _preview.Sprite.Texture = setting.MarkerTexture.Value;
@@ -38,7 +30,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
     public override void Moving(CursorMotionData data)
     {
-        _preview?.SetGeometry([data.WorldPosition], [MarkerRadius]);
+        _preview.SetGeometry([data.WorldPosition], [MarkerRadius]);
     }
 
     public override void End(CursorButtonData data)
@@ -74,21 +66,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
         _fillPreviews.ForEach(node => node.QueueFree());
         _fillPreviews.Clear();
         Input.MouseMode = Input.MouseModeEnum.Visible;
-        _userErrorLabel.Visible = false;
     }
-
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
-
-    public override void DrawProperty(PropertyContainer container)
-    {
-        _userErrorLabel = new Label()
-        {
-            Text = "Must select a fill brush to use this tool.",
-            AutowrapMode = TextServer.AutowrapMode.WordSmart,
-            Visible = false,
-        };
-        _userErrorLabel.AddThemeColorOverride("font_color", Colors.Sienna);
-        container.AddChild(_userErrorLabel);
-    }
 }
