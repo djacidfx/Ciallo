@@ -24,16 +24,21 @@ public partial class VectorFillBrushPreviewList : Container
 
     protected readonly Dictionary<Entity, Control> PreviewMap = [];
     protected ISynchronizedView<Entity, Control> SyncView;
+    protected ObservableList<Entity> Brushes;
     protected ReactiveProperty<Entity> WorkingBrush;
     protected Entity Document;
 
     public void Init(Entity document)
     {
         Document = document;
+        var sm = Document.Get<SelectionManager>();
+        var bm = Document.Get<BrushManager>();
+        Bind(bm.VectorFillBrushEs, sm.WorkingVectorFillBrush);
     }
 
     public void Bind(ObservableList<Entity> brushes, ReactiveProperty<Entity> workingBrush)
     {
+        Brushes = brushes;
         SyncView?.Dispose();
         SyncView = brushes.CreateView(GetOrCreateBrushPreview);
 
@@ -44,6 +49,11 @@ public partial class VectorFillBrushPreviewList : Container
         {
             PreviewList.SelectedControl = e.IsNull ? null : GetOrCreateBrushPreview(e);
         });
+
+        PreviewList.Moved += (src, dst) =>
+        {
+            Brushes.Move(src, dst);
+        };
     }
 
     private Control GetOrCreateBrushPreview(Entity e)

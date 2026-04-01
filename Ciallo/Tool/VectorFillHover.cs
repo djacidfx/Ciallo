@@ -1,5 +1,4 @@
-﻿using Ciallo.Data;
-using Ciallo.Geometry;
+﻿using Ciallo.Geometry;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Ciallo.Widget;
@@ -28,9 +27,6 @@ public class VectorFillHover : InteractiveSessionBase
     {
         var brushPreview = VectorFillBrushPreviewList.New(Document);
         brushPreview.CustomMinimumSize = new(0, 256);
-        var sm = Document.Get<SelectionManager>();
-        var bm = Document.Get<BrushManager>();
-        brushPreview.Bind(bm.VectorFillBrushEs, sm.WorkingVectorFillBrush);
         container.AddChild(brushPreview);
     }
 }

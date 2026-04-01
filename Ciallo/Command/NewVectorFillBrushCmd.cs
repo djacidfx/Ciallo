@@ -2,6 +2,7 @@
 using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
+using Godot;
 using R3;
 
 namespace Ciallo.Command;
@@ -23,6 +24,14 @@ public class NewVectorFillBrushCmd : CommandBase
         // Data
         var setting = CopyE.IsNull
             ? new VectorFillBrushSetting()
+            {
+                FillColor = { Value = Colors.LemonChiffon },
+                MarkerColor = { Value = Colors.Black },
+                MarkerTexture =
+                {
+                    Value = ImageTexture.CreateFromImage(GD.Load<Image>("res://Rendering/Image/Bullseye0.svg"))
+                },
+            }
             : CopyE.Get<VectorFillBrushSetting>().Clone();
         targetE.Add(setting);
 
