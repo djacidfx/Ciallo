@@ -1,61 +1,45 @@
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using Ciallo.Data;
-using Ciallo.Misc;
 using Godot;
+using R3;
 
 namespace Ciallo.Widget;
 
+[SceneTree]
 public partial class ImageTextureEdit : BoxContainer
 {
-    public TextureRect TexturePreview;
-    public Button LoadButton;
-    public Button ClearButton;
-    public Button RotateButton;
-    public Button InvertColorButton;
-    public FileDialog FileDialog;
     public Action<Image> ImageProcess;
-    public ImageTexture Texture;
-
+    public ReactiveProperty<ImageTexture> Texture;
 
     [OnInstantiate]
-    public void Initialise([NotNull] ImageTexture texture, Action<Image> imageProcess = null)
+    public void Initialise(ReactiveProperty<ImageTexture> texture, Action<Image> imageProcessOnLoad = null)
     {
         Texture = texture;
-        ImageProcess = imageProcess;
-    }
-
-    public override void _EnterTree()
-    {
-        TexturePreview = GetNode<TextureRect>("%TexturePreview");
-        LoadButton = GetNode<Button>("%LoadButton");
-        ClearButton = GetNode<Button>("%ClearButton");
-        RotateButton = GetNode<Button>("%RotateButton");
-        InvertColorButton = GetNode<Button>("%InvertColorButton");
-        FileDialog = GetNode<FileDialog>("%FileDialog");
+        ImageProcess = imageProcessOnLoad;
     }
 
     public override void _Ready()
     {
-        TexturePreview.Texture = Texture;
+        Texture.Subscribe(TexturePreview.SetTexture);
 
         LoadButton.Pressed += () => FileDialog.PopupCentered();
         ClearButton.Pressed += () =>
         {
-            Texture.SetImage(BrushSetting.CreateDefaultWhiteImage());
+            Texture.Value = null;
         };
+
         RotateButton.Pressed += () =>
         {
-            var image = Texture.GetImage();
+            var image = Texture.Value.GetImage();
             image.Rotate90(ClockDirection.Clockwise);
             if (!image.HasMipmaps()) image.GenerateMipmaps();
 
-            Texture.Update(image);
+            Texture.Value = ImageTexture.CreateFromImage(image);
         };
+
         InvertColorButton.Pressed += () =>
         {
-            var image = Texture.GetImage();
+            var image = Texture.Value.GetImage();
             image.ClearMipmaps();
             var w = image.GetWidth();
             var h = image.GetHeight();
@@ -66,7 +50,7 @@ public partial class ImageTextureEdit : BoxContainer
             }
             image.GenerateMipmaps();
 
-            Texture.Update(image);
+            Texture.Value = ImageTexture.CreateFromImage(image);
         };
 
         FileDialog.FileSelected += path =>
@@ -81,7 +65,8 @@ public partial class ImageTextureEdit : BoxContainer
             }
             ImageProcess?.Invoke(image);
             image.GenerateMipmaps();
-            Texture.SetImage(image);
+
+            Texture.Value = ImageTexture.CreateFromImage(image);
         };
     }
 }

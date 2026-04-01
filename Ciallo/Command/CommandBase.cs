@@ -34,7 +34,7 @@ public abstract class CommandBase : ICommand
     public virtual IEnumerable<GodotObject> DoRefObjects => [];
     public virtual IEnumerable<GodotObject> UndoRefObjects => [];
 
-    public virtual void BeforeFirstDo(Entity targetE) { }
+    public abstract void BeforeFirstDo(Entity targetE);
     public abstract void Do(Entity targetE);
     public abstract void Undo(Entity targetE);
 

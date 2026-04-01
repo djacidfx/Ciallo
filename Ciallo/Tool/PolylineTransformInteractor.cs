@@ -23,9 +23,9 @@ public class PolylineTransformInteractor : InteractiveSessionBase
     private TransformOverlayBox _transformBox;
     private Vector2 _center;
 
-    public override void BeforeSrcEnd(InteractiveSessionBase session)
+    public override void BeforeTransitionSrcEnd(InteractiveSessionBase session)
     {
-        if (session is not ShapeLayerSelectHover hover) return;
+        if (session is not PolylineSelectHover hover) return;
 
         bool shapeHovered = !hover.HoveredShape.IsNull;
         bool rotationDotHovered = hover.RotationBody?.IsHovered == true;
@@ -85,7 +85,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             var half = _origRect.Size * 0.5f;
             _startCorners =
             [
-                center - half, // -half
+                center - half,
                 new(center.X - half.X, center.Y + half.Y),
                 center + half,
                 new(center.X + half.X, center.Y - half.Y),
@@ -165,6 +165,10 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             if (e.Has<StrokeSetting>())
             {
                 e.Get<StrokeView>().SetGeometry(_currPolylines[i], geom.Radii.Value, geom.Pressures.Value);
+            }
+            if (e.Has<VectorFillMarkerSetting>())
+            {
+                e.Get<VectorFillMarkerView>().SetGeometry(_currPolylines[i], geom.Radii.Value);
             }
             if (e.Has<FilledPolygonSetting>())
             {

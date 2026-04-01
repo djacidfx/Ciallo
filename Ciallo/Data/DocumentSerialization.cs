@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Ciallo.Command;
-using Ciallo.Misc;
 using Frent;
 using Frent.Core;
 using Godot;
@@ -35,25 +34,31 @@ public static partial class AppDocumentManager
 
     public static void CopyWorldByData(Entity dataDocument)
     {
+        Dictionary<Entity, Entity> entityMap = new() { { Entity.Null, Entity.Null } };
         // Load brushes
         var resultDocument = Create(dataDocument.Get<DocumentSetting>());
         var resultWorld = resultDocument.World;
         WorkingDocument.Value = resultDocument;
-        Dictionary<Entity, Entity> brushMap = [];
         var loadBrushCmd = new CommandBuilder();
-        foreach (var brushDataE in dataDocument.Get<BrushManager>().Brushes)
+        foreach (var strokeBrushDataE in dataDocument.Get<BrushManager>().StrokeBrushEs)
         {
-            var setting = brushDataE.Get<BrushSetting>();
+            var setting = strokeBrushDataE.Get<StrokeBrushSetting>();
             var brushE = resultWorld.Create();
-            loadBrushCmd.SetTarget(brushE).NewBrush(setting);
-            brushMap.Add(brushDataE, brushE);
+            loadBrushCmd.SetTarget(brushE).NewStrokeBrush(strokeBrushDataE);
+            entityMap.Add(strokeBrushDataE, brushE);
+        }
+        foreach (var vectorFillBrushDataE in dataDocument.Get<BrushManager>().VectorFillBrushEs)
+        {
+            var brushE = resultWorld.Create();
+            loadBrushCmd.SetTarget(brushE).NewVectorFillBrush(vectorFillBrushDataE);
+            entityMap.Add(vectorFillBrushDataE, brushE);
         }
         loadBrushCmd.Do();
 
         // Load layers and strokes
         var dataTreeRoot = dataDocument.Get<LayerTreeNode>();
-        Dictionary<Entity, Entity> layerMap = [];
-        layerMap.Add(dataDocument, resultDocument); // documents are root layers
+
+        entityMap.Add(dataDocument, resultDocument); // documents are root layers
 
         foreach (var layerDataE in dataTreeRoot.Children)
         {
@@ -64,7 +69,7 @@ public static partial class AppDocumentManager
                     .NewImageLayer(layerDataE)
                     .AddToLayerTree(resultDocument)
                     .Do();
-                layerMap.Add(layerDataE, layerE);
+                entityMap.Add(layerDataE, layerE);
             }
             else if (layerDataE.Has<ShapeLayerSetting>())
             {
@@ -73,19 +78,16 @@ public static partial class AppDocumentManager
                     .NewShapeLayer(layerDataE)
                     .AddToLayerTree(resultDocument)
                     .Do();
-                layerMap.Add(layerDataE, layerE);
+                entityMap.Add(layerDataE, layerE);
 
                 foreach (var shapeDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
-                    var geometry = shapeDataE.Get<PolylineGeometry>();
-
                     if (shapeDataE.Has<StrokeSetting>())
                     {
-                        var resultBrush = brushMap[shapeDataE.Get<StrokeSetting>().BrushE.Value];
+                        shapeDataE.Get<StrokeSetting>().BrushE.Value = entityMap[shapeDataE.Get<StrokeSetting>().BrushE.Value];
                         new CommandBuilder(resultWorld.Create())
                             .NewStroke(shapeDataE)
                             .AddToLayerTree(layerE)
-                            .SetProperty(e => e.Get<StrokeSetting>().BrushE, resultBrush)
                             .Do();
                     }
                     else if (shapeDataE.Has<FilledPolygonSetting>())
@@ -97,17 +99,45 @@ public static partial class AppDocumentManager
                     }
                 }
             }
+            else if (layerDataE.Has<VectorFillLayerSetting>())
+            {
+                var layerE = resultWorld.Create();
+                new CommandBuilder(layerE)
+                    .NewVectorFillLayer(layerDataE)
+                    .AddToLayerTree(resultDocument)
+                    .Do();
+                entityMap.Add(layerDataE, layerE);
+
+                foreach (var markerDataE in layerDataE.Get<LayerTreeNode>().Children)
+                {
+                    markerDataE.Get<VectorFillMarkerSetting>().BrushE.Value =
+                        entityMap[markerDataE.Get<VectorFillMarkerSetting>().BrushE.Value];
+                    var markerE = resultWorld.Create();
+                    new CommandBuilder(markerE)
+                        .NewVectorFillMarker(markerDataE)
+                        .AddToLayerTree(layerE)
+                        .Do();
+                }
+            }
         }
 
         // Load selection
+        var loadSelectionCmd = new CommandBuilder();
         var dataSm = dataDocument.Get<SelectionManager>();
-        new CommandBuilder(layerMap[dataSm.WorkingLayer.CurrentValue]).SetWorkingLayer().Do();
-        var brushes = dataDocument.Get<BrushManager>().Brushes;
-        var idx = brushes.IndexOf(dataSm.WorkingBrush.CurrentValue);
-        if (idx != -1) new CommandBuilder(brushMap[brushes[idx]]).SetWorkingBrush().Do();
+        loadSelectionCmd.SetTarget(entityMap[dataSm.WorkingLayer.CurrentValue])
+            .SetWorkingLayer();
+
+        var dataStrokeBrushE = dataSm.WorkingStrokeBrush.Value;
+        if (!dataStrokeBrushE.IsNull)
+            loadSelectionCmd.SetTarget(entityMap[dataStrokeBrushE]).SetWorkingStrokeBrush().Do();
+        var dataVectorFillBrushE = dataSm.WorkingVectorFillBrush.Value;
+        if (!dataVectorFillBrushE.IsNull)
+            loadSelectionCmd.SetTarget(resultDocument)
+                .SetProperty(e => e.Get<SelectionManager>().WorkingVectorFillBrush, entityMap[dataVectorFillBrushE])
+                .Do();
     }
 
-    public static void SaveWorkingWorld()
+    public static void SaveWorkingDocument()
     {
         if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
@@ -116,7 +146,7 @@ public static partial class AppDocumentManager
         WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
     }
 
-    public static void SaveWorkingWorldAs(string filePath)
+    public static void SaveWorkingDocumentAs(string filePath)
     {
         if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
@@ -129,12 +159,12 @@ public static partial class AppDocumentManager
         }
     }
 
-    public static void ReloadWorkingWorld() // for debug
+    public static void ReloadWorkingDocument() // for debug
     {
         if (WorkingDocument.CurrentValue.IsNull) return;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
         if (!File.Exists(settings.FilePath.Value)) return;
-        var world = Load(settings.FilePath.Value, out var document);
+        var document = Load(settings.FilePath.Value);
         CopyWorldByData(document);
     }
 
@@ -153,7 +183,7 @@ public static partial class AppDocumentManager
         writer.Close();
     }
 
-    public static World Load(string filePath, out Entity document)
+    public static Entity Load(string filePath)
     {
         if (!File.Exists(filePath)) throw new FileNotFoundException($"File {filePath} not found.");
         var reader = new ZipReader();
@@ -162,9 +192,9 @@ public static partial class AppDocumentManager
         var componentBin = reader.ReadFile("ComponentData.bin");
         reader.Close();
 
-        var world = Deserialize([ecBin, componentBin], out document);
+        var document = Deserialize([ecBin, componentBin]);
         document.Get<DocumentSetting>().FilePath.Value = filePath;
-        return world;
+        return document;
     }
 
     /// <remarks>
@@ -211,7 +241,7 @@ public static partial class AppDocumentManager
         return [ecBin, componentBin];
     }
 
-    public static World Deserialize(byte[][] bins, out Entity document)
+    public static Entity Deserialize(byte[][] bins)
     {
         var world = new World();
 
@@ -224,7 +254,7 @@ public static partial class AppDocumentManager
             entities.Add(e);
         }
 
-        document = entities[0];
+        var document = entities[0];
 
         EntityToIndexFormatter.Instance.EntityList = entities;
 
@@ -248,7 +278,7 @@ public static partial class AppDocumentManager
             }
         }
 
-        return world;
+        return document;
     }
 
     public static IEnumerable<Type> GetToSerializeTypes()

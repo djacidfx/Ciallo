@@ -14,7 +14,7 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public class ShapeLayerSelectHover : InteractiveSessionBase
+public class PolylineSelectHover : InteractiveSessionBase
 {
     public Entity HoveredShape;
     public Body RotationBody;
@@ -58,8 +58,9 @@ public class ShapeLayerSelectHover : InteractiveSessionBase
                 HoveredShape = Entity.Null;
                 return;
             }
+            if (!body.SelfEntity.IsDyingOrDead)
+                body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
             HoveredShape = body.SelfEntity;
-            if (!HoveredShape.IsNull) HoveredShape.Get<PolylineWireframe>().SetVisible(true);
         });
 
         // Polyline transform
@@ -79,21 +80,20 @@ public class ShapeLayerSelectHover : InteractiveSessionBase
                 _wireframes.Add(wire);
 
                 // transform box overlay
-                var geom = e.Get<PolylineGeometry>();
-                var bound = geom.Positions.Value.GetBoundingBox();
+                var bound = e.Get<PolylineGeometry>().Positions.Value.GetBoundingBox();
                 rect = i == 0 ? bound : rect.Merge(bound);
             }
-            if (!rect.IsEqualApprox(default))
+            if (!rect.IsEqualApprox(default) && !rect.Size.IsZeroApprox())
             {
                 _transformBox = new TransformOverlayBox(rect.Size, rect.GetCenter());
                 worldOverlay.AddChild(_transformBox);
-            }
 
-            // transform cursor bodies
-            Body[] bodies = worldBody.CreateAddTransformAreas(rect.Size, rect.GetCenter());
-            RotationBody = bodies[0];
-            bodies[1].QueueFree();
-            CornerBodies = bodies[2..6];
+                // transform cursor bodies
+                Body[] bodies = worldBody.CreateAddTransformAreas(rect.Size, rect.GetCenter());
+                RotationBody = bodies[0];
+                bodies[1].QueueFree();
+                CornerBodies = bodies[2..6];
+            }
         }
     }
 
@@ -117,7 +117,8 @@ public class ShapeLayerSelectHover : InteractiveSessionBase
         Document.Get<WorldBody>().EnableHoverDetection = false;
 
         // overlays
-        if (!HoveredShape.IsDyingOrDead) HoveredShape.Get<PolylineWireframe>().SetVisible(false);
+        if (!HoveredShape.IsDyingOrDead)
+            HoveredShape.Get<PolylineWireframe>().SetVisible(false);
         _wireframes.ForEach(node => node.QueueFree());
         _wireframes.Clear();
         _transformBox?.QueueFree();

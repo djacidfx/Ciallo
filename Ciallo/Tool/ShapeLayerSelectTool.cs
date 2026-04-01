@@ -10,7 +10,7 @@ namespace Ciallo.Tool;
 [RegisterTool(ToolButton.Select)]
 public class ShapeLayerSelectTool : StateMachineToolBase
 {
-    public readonly ShapeLayerSelectHover Hover = new();
+    public readonly PolylineSelectHover Hover = new();
     public readonly PolylineTransformInteractor Transform = new();
     public readonly RectSelectPolylineInteractor Select = new();
 
@@ -39,16 +39,22 @@ public class ShapeLayerSelectTool : StateMachineToolBase
     {
         if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
-        return !e.IsDyingOrDead && e.Has<ShapeLayerSetting>();
+        bool isShapeLayer = e.Has<ShapeLayerSetting>();
+        bool isVectorFillLayer = e.Has<VectorFillLayerSetting>();
+        return !e.IsDyingOrDead && (isShapeLayer || isVectorFillLayer);
     }
 
     public override void OnActivated()
     {
+        if (WorkingLayer.Has<VectorFillLayerSetting>())
+            WorkingLayer.Get<OverlayHolder>().Visible = true;
         WorkingLayer.Get<BodyHolder>().ProcessMode = Node.ProcessModeEnum.Inherit;
     }
 
     public override void OnDeactivated()
     {
+        if (WorkingLayer.Has<VectorFillLayerSetting>())
+            WorkingLayer.Get<OverlayHolder>().Visible = false;
         WorkingLayer.Get<BodyHolder>().ProcessMode = Node.ProcessModeEnum.Disabled;
     }
 }

@@ -36,15 +36,15 @@ public class NewStrokeCmd : CommandBase
         // View
         var strokeView = new StrokeView()
         {
-            Material = AutoloadRendering.MissingBrushMaterial,
+            Material = AutoloadRendering.MissingStrokeBrushMaterial,
         };
         targetE.AddNode(strokeView);
 
         strokeSetting.BrushE.Subscribe(brushE =>
         {
-            strokeView.Material = brushE.IsNull || !brushE.Has<BrushMaterial>()
-                ? AutoloadRendering.MissingBrushMaterial
-                : brushE.Get<BrushMaterial>();
+            strokeView.Material = !brushE.TryHas<StrokeBrushMaterial>()
+                ? AutoloadRendering.MissingStrokeBrushMaterial
+                : brushE.Get<StrokeBrushMaterial>();
         }).AddTo(targetE);
 
         polylineGeometry.ObserveAll().Subscribe(v =>
@@ -71,27 +71,11 @@ public class NewStrokeCmd : CommandBase
         }).AddTo(targetE);
 
         // Layer tree events
-        layerNode.TreeEntered.Subscribe(et =>
+        var events = layerNode.MovedAsExitEnter;
+        events.Enter.Subscribe(et =>
         {
             (int index, var layerE) = (et.Index, et.Value);
 
-            OnAdd(layerE, index);
-        }).AddTo(targetE);
-
-        layerNode.TreeExited.Subscribe(_ =>
-        {
-            OnRemove();
-        }).AddTo(targetE);
-
-        layerNode.Moved.Subscribe(et =>
-        {
-            OnRemove();
-            OnAdd(et.Value, et.NewIndex);
-        }).AddTo(targetE);
-        return;
-
-        void OnAdd(Entity layerE, int index)
-        {
             // View
             var layerView = layerE.Get<ShapeLayerView>();
             layerView.InsertNodeAt(strokeView, index);
@@ -102,9 +86,9 @@ public class NewStrokeCmd : CommandBase
 
             // Body
             layerE.Get<BodyHolder>().InsertNodeAt(strokeBody, index);
-        }
+        }).AddTo(targetE);
 
-        void OnRemove()
+        events.Exit.Subscribe(_ =>
         {
             // Body
             strokeBody.RemoveFromParent();
@@ -114,7 +98,7 @@ public class NewStrokeCmd : CommandBase
 
             // View
             strokeView.RemoveFromParent();
-        }
+        }).AddTo(targetE);
     }
 
     public override void Do(Entity targetE)

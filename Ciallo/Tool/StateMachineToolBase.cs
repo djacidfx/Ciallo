@@ -76,19 +76,17 @@ public abstract partial class StateMachineToolBase : ITool
         return Machine.Configure(session).SubstateOf(ToolActive.Instance)
             .OnEntry(t =>
             {
-                t.Source.BeforeDstStart(session);
                 t.Destination.Start(_lastestCursor);
-                t.Source.AfterDstStart(session);
             })
             .OnExit(t =>
             {
-                t.Destination.BeforeSrcEnd(t.Source);
+                t.Destination.BeforeTransitionSrcEnd(t.Source);
                 if (t.Trigger == Trigger.Get(AppActions.CancelInteraction, true) ||
                     t.Trigger == Trigger.Get(AppActions.CancelInteraction, false) ||
                     t.Trigger == Trigger.Deactivate)
                     t.Source.Cancel();
-                else t.Source.End(_lastestCursor);
-                t.Destination.AfterSrcEnd(t.Source);
+                else
+                    t.Source.End(_lastestCursor);
             });
     }
 
@@ -122,6 +120,8 @@ public abstract partial class StateMachineToolBase : ITool
         var trigger = Trigger.Get(button.ButtonIndex, button.Pressed);
         if (Machine.CanFire(trigger))
             Machine.Fire(trigger);
+        else
+            Machine.State.OnMouseButton(button, data);
     }
 
     public bool OnKey(InputEventKey key)

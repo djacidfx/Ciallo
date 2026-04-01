@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using Ciallo.Geometry;
 using Ciallo.GuiControl;
-using Ciallo.Misc;
 using Ciallo.Rendering;
 using Godot;
 using MessagePack;
@@ -18,14 +17,14 @@ namespace Ciallo.Data;
 public static class AppBrushLibrary
 {
     public static ReactiveProperty<int> SelectedIndex;
-    public static readonly ObservableList<BrushSetting> BrushSettings = [];
-    public static ReadOnlyReactiveProperty<BrushSetting> SelectedBrushSetting;
+    public static readonly ObservableList<StrokeBrushSetting> BrushSettings = [];
+    public static ReadOnlyReactiveProperty<StrokeBrushSetting> SelectedBrushSetting;
 
     public static bool HasSelection => SelectedBrushSetting?.CurrentValue != null;
 
-    public static List<BrushSetting> CreateBuiltInBrushes()
+    public static List<StrokeBrushSetting> CreateBuiltInBrushes()
     {
-        List<BrushSetting> brushes = [];
+        List<StrokeBrushSetting> brushes = [];
         brushes.Add(new()
         {
             Name = { Value = "Solid".Tr() },
@@ -40,7 +39,7 @@ public static class AppBrushLibrary
             BaseRadius = { Value = 12f },
             Labels = { BrushLabel.BuiltIn },
             Color = { Value = new(0, 0, 0, 0.4f) },
-            ActiveBrushFlags = { Value = BrushSetting.BrushFlags.Pressure2Flow },
+            ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow },
             Pressure2FlowCurve = BezierCurve.EaseInOut(),
             FalloffCurve = new([
                 new(new(0, 1), new(-0.25f, 0), new(0.5f, 0)),
@@ -55,7 +54,7 @@ public static class AppBrushLibrary
             BaseRadius = { Value = 12f },
             Labels = { BrushLabel.BuiltIn },
             Color = { Value = new(0, 0, 0, 0.9f) },
-            ActiveBrushFlags = { Value = BrushSetting.BrushFlags.Pressure2Flow },
+            ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow },
             Pressure2FlowCurve = BezierCurve.EaseInOut(),
             FalloffCurve = new([
                 new(new(0, 1), new(-0.25f, 0), new(0.65f, 0)),
@@ -81,10 +80,10 @@ public static class AppBrushLibrary
             RenderingType = { Value = BrushRenderingType.Stamp },
             Labels = { BrushLabel.BuiltIn },
             Color = { Value = Colors.Black },
-            ActiveStampFlags = { Value = BrushSetting.StampFlags.StampTexture | BrushSetting.StampFlags.MaskTexture | BrushSetting.StampFlags.RotationNoise },
-            StampTexture = ImageTexture.CreateFromImage(images[0]),
+            ActiveStampFlags = { Value = StampFlags.StampTexture | StampFlags.MaskTexture | StampFlags.RotationNoise },
+            StampTexture = { Value = ImageTexture.CreateFromImage(images[0]) },
             StampInterval = { Value = 0.5f },
-            MaskTexture = ImageTexture.CreateFromImage(images[2]),
+            MaskTexture = { Value = ImageTexture.CreateFromImage(images[2]) },
             RotationNoiseAmplitude = { Value = 8 * Mathf.Pi },
             RotationNoiseFrequency = { Value = 0.343234f },
         });
@@ -94,8 +93,8 @@ public static class AppBrushLibrary
             Name = { Value = "Splatter".Tr() },
             RenderingType = { Value = BrushRenderingType.Stamp },
             Labels = { BrushLabel.BuiltIn },
-            ActiveStampFlags = { Value = BrushSetting.StampFlags.StampTexture | BrushSetting.StampFlags.RotationNoise },
-            StampTexture = ImageTexture.CreateFromImage(images[1]),
+            ActiveStampFlags = { Value = StampFlags.StampTexture | StampFlags.RotationNoise },
+            StampTexture = { Value = ImageTexture.CreateFromImage(images[1]) },
             RotationNoiseAmplitude = { Value = Mathf.Pi },
             RotationNoiseFrequency = { Value = 0.5f },
         });
@@ -195,16 +194,16 @@ public static class AppBrushLibrary
 
         // Load
         BrushSettings.Clear();
-        BrushSettings.AddRange(Enumerable.Repeat<BrushSetting>(null, manifestFileNames.Count));
+        BrushSettings.AddRange(Enumerable.Repeat<StrokeBrushSetting>(null, manifestFileNames.Count));
 
         foreach (var fn in fileNames)
         {
             using var file = FileAccess.Open(BrushFolder + fn + ".bin", FileAccess.ModeFlags.Read);
             var content = file.GetBuffer((long)file.GetLength());
-            BrushSetting brush;
+            StrokeBrushSetting strokeBrush;
             try
             {
-                brush = MessagePackSerializer.Deserialize<BrushSetting>(content);
+                strokeBrush = MessagePackSerializer.Deserialize<StrokeBrushSetting>(content);
             }
             catch (Exception)
             {
@@ -212,9 +211,9 @@ public static class AppBrushLibrary
             }
             var index = manifestFileNames.IndexOf(fn);
             if (index >= 0)
-                BrushSettings[index] = brush;
+                BrushSettings[index] = strokeBrush;
             else
-                BrushSettings.Add(brush);
+                BrushSettings.Add(strokeBrush);
         }
         return true;
     }
@@ -238,7 +237,7 @@ public static class AppBrushLibrary
         var preview = new StrokeView();
         panel.BrushPreviewViewport.AddChild(preview);
         // Note: Lazy on clearing these caches on destruction. I don't believe user will view 1e5 brushes in one session.
-        Dictionary<BrushSetting, BrushMaterial> materialCache = new();
+        Dictionary<StrokeBrushSetting, StrokeBrushMaterial> materialCache = new();
         CompositeDisposable curveChangeSubs = new();
         curveChangeSubs.AddTo(panel);
         SelectedBrushSetting.Subscribe(setting =>
@@ -265,7 +264,7 @@ public static class AppBrushLibrary
         int count = 1;
         panel.Add.Pressed += () =>
         {
-            var newBrush = new BrushSetting()
+            var newBrush = new StrokeBrushSetting()
             {
                 Name = { Value = "New brush".Tr() + " " + count++ },
             };

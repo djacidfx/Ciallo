@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.GuiControl;
-using Ciallo.Misc;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -38,12 +37,29 @@ public class NewShapeLayerCmd : CommandBase
         var shapeLayerSetting = CopyE.IsNull
             ? new ShapeLayerSetting()
             : CopyE.Get<ShapeLayerSetting>().Clone();
-
         targetE.Add(shapeLayerSetting);
 
+        // Others
+        ShapeLayerNonDataCreation(targetE);
+    }
+
+    public override void Do(Entity targetE)
+    {
+        targetE.Tag<ToSerializeTag>();
+    }
+
+    public override void Undo(Entity targetE)
+    {
+        targetE.Detach<ToSerializeTag>();
+    }
+
+    public static void ShapeLayerNonDataCreation(Entity targetE)
+    {
+        var layerNode = targetE.Get<LayerTreeNode>();
         // View
+        var document = targetE.Document;
         var view = new ShapeLayerView();
-        view.ObserveLayerSetting(commonSetting).AddTo(targetE);
+        view.ObserveLayerSetting(targetE.Get<CommonLayerSetting>()).AddTo(targetE);
         targetE.AddNode(view);
 
         // Overlay
@@ -58,7 +74,7 @@ public class NewShapeLayerCmd : CommandBase
         layerNode.TreeEntered.Subscribe(et =>
         {
             // Layer panel
-            Document.Get<LayerContainer>().CreateInsert(targetE, et.Index);
+            document.Get<LayerContainer>().CreateInsert(targetE, et.Index);
 
             OnAdd(et.Value, et.Index);
         }).AddTo(targetE);
@@ -68,7 +84,7 @@ public class NewShapeLayerCmd : CommandBase
             OnRemove();
 
             // Layer panel
-            Document.Get<LayerContainer>().RemoveFree(targetE);
+            document.Get<LayerContainer>().RemoveFree(targetE);
         }).AddTo(targetE);
 
         layerNode.Moved.Subscribe(et =>
@@ -77,7 +93,7 @@ public class NewShapeLayerCmd : CommandBase
             OnAdd(et.Value, et.NewIndex);
 
             // Layer panel
-            Document.Get<LayerContainer>().Move([et.OldIndex], [et.NewIndex]);
+            document.Get<LayerContainer>().Move([et.OldIndex], [et.NewIndex]);
         }).AddTo(targetE);
 
         return;
@@ -85,7 +101,7 @@ public class NewShapeLayerCmd : CommandBase
         void OnAdd(Entity parentE, int index)
         {
             // View
-            var worldView = Document.Get<WorldView>();
+            var worldView = document.Get<WorldView>();
             worldView.InsertNodeAt(view, index);
             view.SetOwner(worldView);
 
@@ -107,15 +123,5 @@ public class NewShapeLayerCmd : CommandBase
             // View
             view.RemoveFromParent();
         }
-    }
-
-    public override void Do(Entity targetE)
-    {
-        targetE.Tag<ToSerializeTag>();
-    }
-
-    public override void Undo(Entity targetE)
-    {
-        targetE.Detach<ToSerializeTag>();
     }
 }

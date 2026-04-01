@@ -30,6 +30,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public readonly Subject<CollectionMoveEvent<Entity>> Moved = new(); // srcIndex, dstIndex, Parent entity
     public MoveOrReparentAsExitEnter MovedAsExitEnter;
 
+    public int Index => Parent.Get<T>()._children.IndexOf(Self);
     public IReadOnlyList<Entity> Children => _children;
     public int DescendantCount => CountSubtreeNodes((T)this) - 1;
     public bool IsLeaf => _children.Count == 0;

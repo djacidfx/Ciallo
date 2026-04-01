@@ -31,12 +31,18 @@ public partial class ToolPropertyPanel : Container
             foreach (var tool in toolManager.Tools)
             {
                 var container = new PropertyContainer(document);
-                container.VisibleIf(toolManager.ActiveTool, tool);
+                container.VisibleIf(toolManager.WorkingTool, tool);
                 container.QueueFreeChildren();
                 tool.DrawProperty(container);
 
                 holderPerDocument.AddChild(container);
             }
+            holderPerDocument.AddChild(new Label
+                {
+                    Text = "[Cannot Tool Layer]",
+                    AutowrapMode = TextServer.AutowrapMode.WordSmart,
+                }
+                .VisibleIf(toolManager.WorkingTool, (ITool)null));
         }).AddTo(this);
 
         AppDocumentManager.LoadedDocuments.ObserveRemove().Select(et => et.Value).Subscribe(document =>

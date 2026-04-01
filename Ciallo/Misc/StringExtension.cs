@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 public static class StringExtension
 {

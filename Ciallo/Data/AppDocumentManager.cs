@@ -20,14 +20,12 @@ namespace Ciallo.Data;
 /// </summary>
 public static partial class AppDocumentManager
 {
-    public static readonly ObservableList<Entity> LoadedDocuments = [];
+    public static readonly ObservableHashSet<Entity> LoadedDocuments = [];
 
     public static readonly ReactiveProperty<Entity> WorkingDocument = new(Entity.Null);
 
-    public static bool WorkingDocumentModified =>
-        !WorkingDocument.Value.IsNull &&
-        WorkingDocument.Value.Get<CommandManager>().DocumentModified.CurrentValue;
-
+    public static bool WorkingDocumentModified => !WorkingDocument.Value.IsNull &&
+                                                  WorkingDocument.Value.Get<CommandManager>().DocumentModified.CurrentValue;
     private static readonly Dictionary<World, Entity> WorldToDocument = [];
     public static Entity Document([NotNull] this World world) => WorldToDocument[world];
 
@@ -54,7 +52,8 @@ public static partial class AppDocumentManager
         LoadedDocuments.Add(document);
 
         document.Get<CommandManager>().DocumentModified
-            .CombineLatest(settings.Name, (modified, name) => (modified, name)).Subscribe(v =>
+            .CombineLatest(settings.Name, (modified, name) => (modified, name))
+            .Subscribe(v =>
             {
                 string prepend = v.modified ? "(*)" : "";
                 DisplayServer.WindowSetTitle($"{prepend + v.name} - Ciallo");
@@ -63,15 +62,32 @@ public static partial class AppDocumentManager
         return document;
     }
 
-    public static void InitialEmptyWorldForUser(Entity document)
+    public static void InitialEmptyDocumentForUser(Entity document)
     {
         AppBrushLibrary.SelectedIndex.Value = 0;
 
-        new CommandBuilder(document.World.Create())
+        // Empty shape layer
+        var cmd = new CommandBuilder(document.World.Create())
             .NewShapeLayer()
             .AddToLayerTree(document)
-            .SetWorkingLayer()
-            .Do();
+            .SetWorkingLayer();
+        // Vector fill brushes
+        Color[] colors = [Colors.PaleTurquoise, Colors.Purple, Colors.LemonChiffon];
+        for (int i = 0; i < colors.Length; i++)
+        {
+            string path = $"res://Rendering/Image/Bullseye{i}.svg";
+            var img = GD.Load<Image>(path);
+            var tex = ImageTexture.CreateFromImage(img);
+            var entity = document.World.Create();
+            cmd.SetTarget(entity)
+                .NewVectorFillBrush()
+                .SetProperty(e => e.Get<VectorFillBrushSetting>().MarkerTexture, tex)
+                .SetProperty(e => e.Get<VectorFillBrushSetting>().FillColor, colors[i]);
+            if (i == 0)
+                cmd.SetProperty(e => e.Document.Get<SelectionManager>().WorkingVectorFillBrush, entity);
+        }
+        cmd.Do();
+
         if (AppBrushLibrary.BrushSettings.Count > 0)
             AppBrushLibrary.SelectedIndex.Value = 0;
         document.Get<ToolManager>().ActivatePaintTool();
@@ -86,13 +102,16 @@ public static partial class AppDocumentManager
         // Remove working world
         LoadedDocuments.Remove(document);
         if (WorkingDocument.Value == document)
-            WorkingDocument.Value = LoadedDocuments.Count > 0 ? LoadedDocuments[0] : Entity.Null;
+            WorkingDocument.Value = Entity.Null;
 
         // Dispose or free managers
         document.Get<CommandManager>().Free();
 
         // Dispose world
         // Warning: Dispose a world don't trigger it's entities' deletion events.
+        var allQuery = document.World.CreateQuery().Build();
+        foreach (Entity e in allQuery.EnumerateWithEntities())
+            e.Delete();
         document.World.Dispose();
     }
 
@@ -106,7 +125,7 @@ public static partial class AppDocumentManager
     }
 
     // If false, user cancels the close operation.
-    public static async Task<bool> UserCloseWorkingWorld()
+    public static async Task<bool> UserCloseWorkingDocument()
     {
         if (WorkingDocument.Value.IsNull) return true;
 
@@ -117,7 +136,7 @@ public static partial class AppDocumentManager
             var result = await dialog.PopupCollectInput();
             if (result == 1) // Yes
             {
-                SaveWorkingWorld();
+                SaveWorkingDocument();
                 Remove(WorkingDocument.Value);
                 return true;
             }

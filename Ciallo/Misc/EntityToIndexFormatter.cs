@@ -4,7 +4,7 @@ using Frent;
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 public class EntityToIndexFormatter : IMessagePackFormatter<Entity>
 {

@@ -42,7 +42,7 @@ public class BezierCurve
     public int Count => _points.Count;
 
     private readonly Subject<Unit> _changed = new();
-    public Observable<Unit> Changed => _changed.DebounceFrame(1);
+    public Observable<Unit> Changed => _changed.ThrottleLastFrame(1);
 
     private bool IsCacheInvalid => _cachedPolyline == null;
     private List<Vector2> _cachedPolyline;
@@ -50,9 +50,7 @@ public class BezierCurve
 
     public Rect2 BoundingBox => _points.GetBoundingBox();
 
-    public BezierCurve()
-    {
-    }
+    public BezierCurve() { }
 
     public BezierCurve(IReadOnlyList<Point> points)
     {

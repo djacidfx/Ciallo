@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 public class TypeFormatter : IMessagePackFormatter<Type>
 {

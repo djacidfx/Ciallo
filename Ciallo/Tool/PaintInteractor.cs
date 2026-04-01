@@ -11,7 +11,6 @@ public class PaintInteractor : InteractiveSessionBase
 {
     private Entity _brushE;
     private StrokeView _strokePreview;
-
     private readonly PolylineInteractiveGenerator _generator = new()
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
@@ -19,7 +18,6 @@ public class PaintInteractor : InteractiveSessionBase
 
     public override void Start(CursorButtonData data)
     {
-        OS.LowProcessorUsageMode = false; // Reduce input lag if user has device in high reporting rate.
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
         // Selection in brush library has higher priority
@@ -27,22 +25,23 @@ public class PaintInteractor : InteractiveSessionBase
         {
             var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
             new CommandBuilder(Document.World.Create())
-                .NewBrush(setting).SetWorkingBrush().Commit();
+                .NewStrokeBrush(setting).SetWorkingStrokeBrush().Commit();
             AppBrushLibrary.SelectedIndex.Value = -1;
         }
-        _brushE = Document.Get<SelectionManager>().WorkingBrush.Value;
+        _brushE = Document.Get<SelectionManager>().WorkingStrokeBrush.Value;
 
-        var brushMaterial = _brushE.Get<BrushMaterial>();
+        var brushMaterial = _brushE.Get<StrokeBrushMaterial>();
 
         _strokePreview = new StrokeView();
         _strokePreview.Material = brushMaterial;
         var layerView = WorkingLayer.Get<ShapeLayerView>();
         layerView.AddChild(_strokePreview);
 
-        var brushSetting = _brushE.Get<BrushSetting>();
+        var brushSetting = _brushE.Get<StrokeBrushSetting>();
         _generator.RadiusSampler = brushSetting.ToRadiusSampler();
 
         _generator.Start(data);
+        _strokePreview.SetGeometry(_generator.Positions, _generator.Radii, _generator.Pressures);
     }
 
     public override void Moving(CursorMotionData data)
@@ -64,17 +63,14 @@ public class PaintInteractor : InteractiveSessionBase
         Clear();
     }
 
-    public override void Cancel()
-    {
-        Clear();
-    }
+    public override void Cancel() => Clear();
     public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
 
     public void Clear()
     {
         _generator.Clear();
         _strokePreview.QueueFree();
-        OS.LowProcessorUsageMode = true;
+        _strokePreview = null;
         Input.MouseMode = Input.MouseModeEnum.Visible;
     }
 }

@@ -1,18 +1,12 @@
-[gd_scene load_steps=9 format=3 uid="uid://cmxkg61nilwq8"]
+[gd_scene load_steps=8 format=3 uid="uid://cmxkg61nilwq8"]
 
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://GuiControl/PaintPanel.cs" id="1_ract4"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_jsupi"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://GuiControl/WorldEventDispatcher.cs" id="3_7pmtm"]
 [ext_resource type="PackedScene" uid="uid://ce1yxw3pe0nme" path="res://Rendering/WorldView.tscn" id="4_3trrc"]
-[ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Rendering/Checkerboard.gdshader" id="5_ercqw"]
+[ext_resource type="Material" uid="uid://cnro8325i0qmw" path="res://Rendering/Checkerboard.tres" id="4_pm3jj"]
 [ext_resource type="Script" uid="uid://ci7loyp0at1cr" path="res://Rendering/WorldOverlay.cs" id="6_je3d8"]
 [ext_resource type="Script" uid="uid://dc5n5euy0qfdj" path="res://Rendering/WorldBody.cs" id="7_8h3gs"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_je3d8"]
-shader = ExtResource("5_ercqw")
-shader_parameter/size = 10.0
-shader_parameter/color1 = Color(1, 1, 1, 1)
-shader_parameter/color2 = Color(0.7, 0.7, 0.7, 1)
 
 [node name="PaintPanel" type="PanelContainer"]
 anchors_preset = 15
@@ -109,7 +103,7 @@ render_target_update_mode = 4
 
 [node name="Background" type="Polygon2D" parent="VBoxContainer/WorldEventDispatcher/SubViewport"]
 unique_name_in_owner = true
-material = SubResource("ShaderMaterial_je3d8")
+material = ExtResource("4_pm3jj")
 
 [node name="WorldView" parent="VBoxContainer/WorldEventDispatcher/SubViewport" instance=ExtResource("4_3trrc")]
 unique_name_in_owner = true

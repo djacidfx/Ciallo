@@ -28,6 +28,7 @@ public class NewFilledPolygonCmd : CommandBase
             ? new PolylineGeometry()
             : CopyE.Get<PolylineGeometry>().Clone();
         targetE.Add(polylineGeometry);
+
         var setting = CopyE.IsNull
             ? new FilledPolygonSetting()
             : CopyE.Get<FilledPolygonSetting>().Clone();

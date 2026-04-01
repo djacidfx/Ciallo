@@ -3,34 +3,57 @@ using System.Collections.Generic;
 using System.Numerics;
 using R3;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 public static class ReactivePropertyExtension
 {
+    /// <summary>
+    /// Create a ReactiveProperty two-way binded to the original one through the given selectors.
+    /// Commonly used for unit conversion.
+    /// </summary>
     public static ReactiveProperty<TTarget> Project<TSource, TTarget>(
         this ReactiveProperty<TSource> source,
         Func<TSource, TTarget> readSelector,
-        Func<TTarget, TSource> writeSelector,
-        out CompositeDisposable subs)
+        Func<TTarget, TSource> writeSelector)
     {
-        subs = new();
-        var view = new ReactiveProperty<TTarget>(readSelector(source.Value));
-        view.Subscribe(v => source.Value = writeSelector(v)).AddTo(subs);
-        source.Subscribe(v => view.Value = readSelector(v)).AddTo(subs);
-        return view;
+        var result = new ReactiveProperty<TTarget>(readSelector(source.Value));
+        var sub = source.Subscribe(v => result.Value = readSelector(v));
+        result.Subscribe(v => source.Value = writeSelector(v), _ => sub.Dispose());
+        return result;
     }
 
-    public static ReactiveProperty<T> ProjectFloatingNumber<T>(
-        this ReactiveProperty<T> source,
-        Func<T, T> readSelector,
-        Func<T, T> writeSelector,
-        out CompositeDisposable subs) where T : IFloatingPoint<T>
+    /// <summary>
+    /// Project inner ReactiveProperty outside, similiar to Switch() operator.
+    /// </summary>
+    /// <remarks>
+    /// Binding's subscription is managed by returned ReactiveProperty. Dispose it to dispose the subscription.
+    /// </remarks>
+    public static ReactiveProperty<T> Flatten<T>(this Observable<ReactiveProperty<T>> outer)
     {
-        subs = new();
-        var view = new ReactiveProperty<T>(readSelector(source.Value), FloatComparer<T>.Instance);
-        view.Subscribe(v => source.Value = writeSelector(v)).AddTo(subs);
-        source.Subscribe(v => view.Value = readSelector(v)).AddTo(subs);
-        return view;
+        var result = new ReactiveProperty<T>();
+
+        IDisposable innerSub = null;
+        ReactiveProperty<T> currentInner = null;
+
+        var outerSub = outer.Subscribe(inner =>
+        {
+            innerSub?.Dispose();
+            currentInner = inner;
+            result.Value = inner is null ? default : inner.Value;
+            innerSub = inner?.Subscribe(v => result.Value = v);
+        });
+
+        result.Subscribe(v =>
+            {
+                currentInner?.Value = v;
+            },
+            _ =>
+            {
+                innerSub?.Dispose();
+                outerSub.Dispose();
+            });
+
+        return result;
     }
 }
 

@@ -42,7 +42,7 @@ public class PolylineGeometry
     {
         return Positions
             .CombineLatest(Radii, (p, r) => (p, r))
-            .DebounceFrame(1);
+            .ThrottleLastFrame(1);
     }
 
     public Observable<(ImmutableArray<Vector2>, ImmutableArray<float>, ImmutableArray<float>, ImmutableArray<Vector2>)> ObserveAll()
@@ -50,7 +50,7 @@ public class PolylineGeometry
         return Positions
             .CombineLatest(Radii, Pressures, Tilts,
                 (p, r, pr, tt) => (p, r, pr, t: tt))
-            .DebounceFrame(1);
+            .ThrottleLastFrame(1);
     }
 
 

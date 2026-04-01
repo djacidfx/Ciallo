@@ -68,35 +68,5 @@ public static class BindRange
             subs.AddTo(spinSlider);
             return spinSlider;
         }
-
-        public SpinSlider ReactiveBindNumber<T>(
-            ReadOnlyReactiveProperty<ReactiveProperty<T>> view,
-            out CompositeDisposable subs) where T : INumber<T>
-        {
-            subs = new();
-            CompositeDisposable curSub = null;
-            var disposable = subs;
-            view.Subscribe(property =>
-            {
-                curSub?.Dispose();
-                if (property == null) curSub = null;
-                else
-                {
-                    spinSlider.BindNumber(property, out curSub);
-                    curSub.AddTo(disposable);
-                }
-            }).AddTo(subs);
-            return spinSlider;
-        }
-
-        /// <summary>
-        /// Binds a SpinSlider dynamically to a ReactiveProperty provided by the ReadOnlyReactiveProperty.
-        /// </summary>
-        public SpinSlider ReactiveBindNumber<T>(ReadOnlyReactiveProperty<ReactiveProperty<T>> view) where T : INumber<T>
-        {
-            ReactiveBindNumber(spinSlider, view, out var subs);
-            subs.AddTo(spinSlider);
-            return spinSlider;
-        }
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.Serialization;
 using Ciallo.Geometry;
-using Ciallo.Misc;
 using Ciallo.Widget;
 using Godot;
 using MessagePack;
@@ -11,7 +10,7 @@ using R3;
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
-public class BrushSetting
+public class StrokeBrushSetting
 {
     [DataMember] public ReactiveProperty<string> Name = new("");
     [DataMember] public ObservableList<BrushLabel> Labels = [];
@@ -30,10 +29,10 @@ public class BrushSetting
     // Stamp
     [DataMember] public ReactiveProperty<StampFlags> ActiveStampFlags = new();
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
-    [DataMember] public ImageTexture StampTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
+    [DataMember] public ReactiveProperty<ImageTexture> StampTexture = new(null);
     [DataMember] public BezierCurve DiskOpacityCurve = BezierCurve.EaseInOut(1.0f, 0.0f);
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
-    [DataMember] public ImageTexture MaskTexture = ImageTexture.CreateFromImage(CreateDefaultWhiteImage());
+    [DataMember] public ReactiveProperty<ImageTexture> MaskTexture = new(null);
 
     [DataMember] public ReactiveProperty<int> RotationNoiseOctave = new(1);
     [DataMember] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
@@ -101,7 +100,8 @@ public class BrushSetting
         container.CreatePropertyBox("Interval", stampIntervalControl).AddToChildOf(stampBox);
 
         var stampTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.StampTexture);
-        var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage).VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.StampTexture));
+        var stampTextureEdit = ImageTextureEdit.Instantiate(StampTexture, ConvertStampImage)
+            .VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.StampTexture));
         container.CreateCheckBoxCombo("Stamp texture", stampTextureFlagCheck, stampTextureEdit).AddToChildOf(stampBox);
 
         var maskDiskFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskDisk);
@@ -119,8 +119,8 @@ public class BrushSetting
             MaxValue = 180,
             Step = 0.1,
         };
-        var degreeView = StampRotation.Project(Mathf.RadToDeg, Mathf.DegToRad, out var subs);
-        subs.AddTo(stampRotationControl);
+        var degreeView = StampRotation.Project(Mathf.RadToDeg, Mathf.DegToRad);
+        degreeView.AddTo(stampRotationControl);
         stampRotationControl.BindNumber(degreeView);
         container.CreatePropertyBox("Stamp rotation", stampRotationControl).AddToChildOf(stampBox);
 
@@ -175,7 +175,7 @@ public class BrushSetting
     /// Converts the stamp image to L8 format, enforces a maximum size of 256x256 pixels,
     /// and resizes the image to ensure a square aspect ratio.
     /// </summary>
-    private static void ConvertStampImage(Image img)
+    public static void ConvertStampImage(Image img)
     {
         img.Convert(Image.Format.L8);
         var size = img.GetSize();
@@ -188,17 +188,12 @@ public class BrushSetting
         img.Resize(size.X, size.Y);
     }
 
-    public BrushSetting Clone()
+    public StrokeBrushSetting Clone()
     {
         var bytes = MessagePackSerializer.Serialize(this);
-        var setting = MessagePackSerializer.Deserialize<BrushSetting>(bytes); // Note: Fields or properties cannot be readonly
+        var setting = MessagePackSerializer.Deserialize<StrokeBrushSetting>(bytes); // Note: Fields or properties cannot be readonly
         setting.Labels.Remove(BrushLabel.BuiltIn);
         return setting;
-    }
-
-    public static Image CreateDefaultWhiteImage()
-    {
-        return Image.CreateFromData(1, 1, true, Image.Format.L8, new byte[] { 255 });
     }
 
     public Func<CursorMotionData, float> ToRadiusSampler()
@@ -207,22 +202,22 @@ public class BrushSetting
         var curve = Pressure2RadiusCurve;
         return data => baseRadius * curve.SampleX(data.Pressure);
     }
+}
 
-    [Flags]
-    public enum StampFlags
-    {
-        StampTexture = 1 << 0,
-        MaskTexture = 1 << 1,
-        RotationNoise = 1 << 2,
-        MaskDisk = 1 << 3,
-    }
+[Flags]
+public enum BrushFlags
+{
+    Pressure2Flow = 1 << 0,
+    Dash = 1 << 1,
+}
 
-    [Flags]
-    public enum BrushFlags
-    {
-        Pressure2Flow = 1 << 0,
-        Dash = 1 << 1,
-    }
+[Flags]
+public enum StampFlags
+{
+    StampTexture = 1 << 0,
+    MaskTexture = 1 << 1,
+    RotationNoise = 1 << 2,
+    MaskDisk = 1 << 3,
 }
 
 public enum BrushRenderingType

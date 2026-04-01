@@ -2,7 +2,7 @@
 using MessagePack;
 using MessagePack.Formatters;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 public class ImageTextureFormatter : IMessagePackFormatter<ImageTexture>
 {
@@ -54,6 +54,7 @@ public class ImageFormatter : IMessagePackFormatter<Image>
         }
         // Image class doesn't have a static function like Image.CreateLoadFromBuffer
         var data = MessagePackSerializer.Deserialize<byte[]>(ref reader, options);
+        // Not using Image.CreateFromData since it cannot directly load from PNG byte[].
         var image = Image.CreateEmpty(1, 1, false, Image.Format.L8);
         image.LoadPngFromBuffer(data);
         image.GenerateMipmaps();

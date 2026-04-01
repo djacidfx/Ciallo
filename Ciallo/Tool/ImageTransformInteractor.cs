@@ -14,7 +14,7 @@ public class ImageTransformInteractor : InteractiveSessionBase
     private Transform2D _startTransform;
     private Vector2[] _startCorners = [];
 
-    public override void BeforeSrcEnd(InteractiveSessionBase session)
+    public override void BeforeTransitionSrcEnd(InteractiveSessionBase session)
     {
         if (session is not ImageLayerSelectHover hover) return;
         if (hover.RotationBody.IsHovered)

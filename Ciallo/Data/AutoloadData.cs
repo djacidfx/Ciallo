@@ -1,5 +1,4 @@
 ﻿using System;
-using Ciallo.Misc;
 using Godot;
 using MessagePack;
 using MessagePack.Resolvers;
@@ -81,7 +80,7 @@ public partial class AutoloadData : Node
     {
         if (what == NotificationWMCloseRequest)
         {
-            var result = await AppDocumentManager.UserCloseWorkingWorld();
+            var result = await AppDocumentManager.UserCloseWorkingDocument();
             if (!result) return;
 
             AppBrushLibrary.Save();

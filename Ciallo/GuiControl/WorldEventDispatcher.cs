@@ -163,18 +163,18 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
     private void DispatchKey(InputEventKey key)
     {
-        if (ToolManager.ActiveTool.Value?.OnKey(key) == true)
+        if (ToolManager.WorkingTool.CurrentValue?.OnKey(key) == true)
             GetViewport().SetInputAsHandled();
     }
 
     private void DispatchMouseButton(InputEventMouseButton mouse, CursorButtonData data)
     {
-        ToolManager.ActiveTool.Value?.OnMouseButton(mouse, data);
+        ToolManager.WorkingTool.CurrentValue?.OnMouseButton(mouse, data);
     }
 
     public void DispatchMotion(CursorMotionData data)
     {
-        ToolManager.ActiveTool.Value?.OnMoving(data);
+        ToolManager.WorkingTool.CurrentValue?.OnMoving(data);
     }
 
     public void OnMouseEnter()

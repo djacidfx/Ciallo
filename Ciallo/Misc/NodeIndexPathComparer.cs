@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
-namespace Ciallo.Misc;
+namespace Ciallo;
 
 /// <summary>
 /// Compare node index paths to a root. in Godot rendering order (tree preorder) 

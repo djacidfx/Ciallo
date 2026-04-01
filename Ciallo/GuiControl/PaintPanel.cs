@@ -1,5 +1,4 @@
 using Ciallo.Data;
-using Ciallo.Misc;
 using Frent;
 using Frent.Components;
 using Godot;
@@ -37,10 +36,8 @@ public partial class PaintPanel : PanelContainer, IInitable
         ZoomControl.BindNumber(CameraZoom);
         var degCanvasRotation = CameraRotation.Project(
             rad => -Mathf.RadToDeg(rad),
-            deg => -Mathf.DegToRad(deg),
-            out var sub
-        );
-        sub.AddTo(RotationControl);
+            deg => -Mathf.DegToRad(deg)
+        ).AddTo(RotationControl);
         RotationControl.BindNumber(degCanvasRotation);
         BackgroundColorControl.BindColor(_documentSetting.BackgroundColor);
     }
