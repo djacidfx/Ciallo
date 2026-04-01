@@ -71,7 +71,7 @@ public class NewShapeLayerCmd : CommandBase
         targetE.AddNode(bodyHolder);
 
         // Layer tree events
-        layerNode.TreeEntered.Subscribe(et =>
+        layerNode.Added.Subscribe(et =>
         {
             // Layer panel
             document.Get<LayerContainer>().CreateInsert(targetE, et.Index);
@@ -79,7 +79,7 @@ public class NewShapeLayerCmd : CommandBase
             OnAdd(et.Value, et.Index);
         }).AddTo(targetE);
 
-        layerNode.TreeExited.Subscribe(_ =>
+        layerNode.Removed.Subscribe(_ =>
         {
             OnRemove();
 

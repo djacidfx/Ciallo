@@ -98,8 +98,8 @@ public class NewVectorFillMarkerCmd : CommandBase
         }).AddTo(targetE);
 
         // Layer tree events
-        var events = layerNode.MovedAsExitEnter;
-        events.Enter.Subscribe(et =>
+        var events = layerNode.MovedAsAddedRemoved;
+        events.Added.Subscribe(et =>
         {
             (int index, var layerE) = (et.Index, et.Value);
             // View
@@ -116,7 +116,7 @@ public class NewVectorFillMarkerCmd : CommandBase
             layerE.Get<BodyHolder>().InsertNodeAt(strokeBody, index);
         }).AddTo(targetE);
 
-        events.Exit.Subscribe(_ =>
+        events.Removed.Subscribe(_ =>
         {
             // Body
             strokeBody.RemoveFromParent();

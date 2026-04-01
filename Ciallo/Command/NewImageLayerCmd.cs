@@ -71,9 +71,9 @@ public class NewImageLayerCmd : CommandBase
         }).AddTo(targetE);
 
         // Layer tree events
-        var events = layerNode.MovedAsExitEnter;
+        var events = layerNode.MovedAsAddedRemoved;
 
-        events.Enter.Subscribe(et =>
+        events.Added.Subscribe(et =>
         {
             // Panel
             var layerContainer = Document.Get<LayerContainer>();
@@ -88,7 +88,7 @@ public class NewImageLayerCmd : CommandBase
             et.Value.Get<OverlayHolder>().InsertNodeAt(layerOverlay, et.Index);
         }).AddTo(targetE);
 
-        events.Exit.Subscribe(_ =>
+        events.Removed.Subscribe(_ =>
         {
             // Overlay
             layerOverlay.RemoveFromParent();
