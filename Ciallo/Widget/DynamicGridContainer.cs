@@ -45,6 +45,8 @@ public partial class DynamicGridContainer : Container
 
     public override Vector2 _GetMinimumSize()
     {
+        if (LayoutChildCount == 0 || Cols == 0)
+            return Vector2.Zero;
         int rows = Mathf.CeilToInt((float)LayoutChildCount / Cols);
         return new(0f, Mathf.CeilToInt(rows * ItemSize.Y + (rows - 1) * VSep));
     }
