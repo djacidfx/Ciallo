@@ -23,7 +23,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
     private TransformOverlayBox _transformBox;
     private Vector2 _center;
 
-    public override void BeforeSrcEnd(InteractiveSessionBase session)
+    public override void BeforeTransitionSrcEnd(InteractiveSessionBase session)
     {
         if (session is not PolylineSelectHover hover) return;
 

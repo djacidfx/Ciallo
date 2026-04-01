@@ -33,13 +33,10 @@ public abstract class InteractiveSessionBase
     /// </remarks>
     public TimeSpan MovingMinInterval = TimeSpan.FromMilliseconds(5);
 
-    public virtual void BeforeSrcEnd(InteractiveSessionBase session) { }
-    public virtual void AfterSrcEnd(InteractiveSessionBase session) { }
+    public virtual void BeforeTransitionSrcEnd(InteractiveSessionBase src) { }
     public abstract void Start(CursorButtonData data);
     public abstract void Moving(CursorMotionData data);
     public abstract void End(CursorButtonData data);
-    public virtual void BeforeDstStart(InteractiveSessionBase session) { }
-    public virtual void AfterDstStart(InteractiveSessionBase session) { }
     public abstract void Cancel();
     public abstract bool OnKey(InputEventKey key, CursorButtonData data);
     public virtual void OnMouseButton(InputEventMouseButton button, CursorButtonData data) { }

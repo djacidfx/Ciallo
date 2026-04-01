@@ -18,7 +18,7 @@ public class PaintFillInteractor : InteractiveSessionBase
     private StrokeView _dashPreview;
     private Color _fillColor;
 
-    public override void BeforeSrcEnd(InteractiveSessionBase session)
+    public override void BeforeTransitionSrcEnd(InteractiveSessionBase session)
     {
         _fillColor = ((PaintFillHover)session).FillColor.Value;
     }
