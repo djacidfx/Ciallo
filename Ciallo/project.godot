@@ -203,7 +203,10 @@ icon_explorer/preview_size_exp=7.0
 
 [rendering]
 
+rendering_device/vsync/swapchain_image_count=2
 textures/canvas_textures/default_texture_filter=0
+rendering_device/driver.windows="d3d12"
+rendering_device/fallback_to_vulkan=false
 viewport/hdr_2d=true
 anti_aliasing/screen_space_roughness_limiter/enabled=false
 anti_aliasing/quality/smaa_edge_detection_threshold=0.1
