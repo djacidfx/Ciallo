@@ -46,8 +46,6 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 
     public void Destroy()
     {
-        if (!Parent.IsDyingOrDead)
-            Parent.Get<T>().RemoveChild(Self);
         Parent = Entity.Null;
         _children.Clear();
         Self = Entity.Null;
@@ -399,21 +397,21 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     {
         return includeDescendants ? _mutations : _localMutations;
     }
-    
+
     public Observable<CollectionAddEvent<Entity>> ObserveAddChild(bool includeDescendants = false)
     {
         return ObserveMutation(includeDescendants)
             .Where(e => e.Kind == TreeMutationKind.Add)
             .Select(e => new CollectionAddEvent<Entity>(e.NewIndex, e.Target));
     }
-    
+
     public Observable<CollectionRemoveEvent<Entity>> ObserveRemoveChild(bool includeDescendants = false)
     {
         return ObserveMutation(includeDescendants)
             .Where(e => e.Kind == TreeMutationKind.Remove)
             .Select(e => new CollectionRemoveEvent<Entity>(e.OldIndex, e.Target));
     }
-    
+
     public Observable<CollectionMoveEvent<Entity>> ObserveMoveChild(bool includeDescendants = false)
     {
         return ObserveMutation(includeDescendants)
