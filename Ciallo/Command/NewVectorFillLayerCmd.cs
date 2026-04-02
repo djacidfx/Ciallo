@@ -44,11 +44,11 @@ public class NewVectorFillLayerCmd : CommandBase
             vectorFillLayerSetting.ReferenceLayers.Clear();
         targetE.Add(vectorFillLayerSetting);
 
-        var arrangement = new Arrangement2D();
-        targetE.Add(arrangement);
-
+        var arr = new Arrangement2D();
+        targetE.Add(arr);
         var syncDict = CreateSyncShapeDictionary(vectorFillLayerSetting.ReferenceLayers, out var subs);
-        syncDict.ObserveChanged().Subscribe(et => GD.Print(et));
+        subs.AddTo(targetE);
+        ArrangementBind(arr, syncDict).AddTo(targetE);
 
         // Others
         NewShapeLayerCmd.ShapeLayerNonDataCreation(targetE);
@@ -67,6 +67,47 @@ public class NewVectorFillLayerCmd : CommandBase
     public override void Undo(Entity targetE)
     {
         targetE.Detach<ToSerializeTag>();
+    }
+
+    public static CompositeDisposable ArrangementBind(Arrangement2D arr, ObservableDictionary<Entity, ImmutableArray<Vector2>> syncDict)
+    {
+        var subs = new CompositeDisposable();
+        var polylineRidMap = new Dictionary<Entity, Rid>();
+
+        // Initial population
+        foreach (var (e, positions) in syncDict)
+        {
+            var rid = arr.CreatePolyline();
+            polylineRidMap[e] = rid;
+            arr.SetPolyline(rid, positions);
+        }
+
+        syncDict.ObserveDictionaryAdd().Subscribe(et =>
+        {
+            var rid = arr.CreatePolyline();
+            polylineRidMap[et.Key] = rid;
+            arr.SetPolyline(rid, et.Value);
+        }).AddTo(subs);
+
+        syncDict.ObserveDictionaryRemove().Subscribe(et =>
+        {
+            arr.RemovePolyline(polylineRidMap[et.Key]);
+            polylineRidMap.Remove(et.Key);
+        }).AddTo(subs);
+
+        syncDict.ObserveDictionaryReplace().Subscribe(et =>
+        {
+            arr.SetPolyline(polylineRidMap[et.Key], et.NewValue);
+        }).AddTo(subs);
+
+        syncDict.ObserveClear().Subscribe(_ =>
+        {
+            foreach (var (_, rid) in polylineRidMap)
+                arr.RemovePolyline(rid);
+            polylineRidMap.Clear();
+        }).AddTo(subs);
+
+        return subs;
     }
 
     /// <summary>

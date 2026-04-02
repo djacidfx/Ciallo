@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -10,8 +10,9 @@ namespace Ciallo.Tool;
 
 public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 {
-    private VectorFillMarkerView _preview;
-    private List<Polygon2D> _fillPreviews = [];
+    private VectorFillMarkerView _markerPreview;
+    private Polygon2D _fillPreview;
+    private Rid _previewFaceId;
 
     private float MarkerRadius => AppPreference.VectorFillMarkerRadius.Value;
 
@@ -20,17 +21,23 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
         var vectorFillBrushE = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
-        _preview = new();
+
+        _markerPreview = new();
         var setting = vectorFillBrushE.Get<VectorFillBrushSetting>();
-        _preview.Sprite.Texture = setting.MarkerTexture.Value;
-        _preview.Sprite.Modulate = setting.MarkerColor.Value;
-        WorkingLayer.Get<OverlayHolder>().AddChild(_preview);
-        _preview.SetGeometry([data.WorldPosition], [MarkerRadius]);
+        _markerPreview.Sprite.Texture = setting.MarkerTexture.Value;
+        _markerPreview.Sprite.Modulate = setting.MarkerColor.Value;
+        WorkingLayer.Get<OverlayHolder>().AddChild(_markerPreview);
+        _markerPreview.SetGeometry([data.WorldPosition], [MarkerRadius]);
+
+        _fillPreview = new() { Color = setting.FillColor.Value };
+        WorkingLayer.Get<ShapeLayerView>().AddChild(_fillPreview);
+        UpdateFillPreview(data.WorldPosition);
     }
 
     public override void Moving(CursorMotionData data)
     {
-        _preview.SetGeometry([data.WorldPosition], [MarkerRadius]);
+        _markerPreview.SetGeometry([data.WorldPosition], [MarkerRadius]);
+        UpdateFillPreview(data.WorldPosition);
     }
 
     public override void End(CursorButtonData data)
@@ -62,12 +69,27 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
     public void Clear()
     {
-        _preview?.QueueFree();
-        _preview = null;
-        _fillPreviews.ForEach(node => node.QueueFree());
-        _fillPreviews.Clear();
+        _markerPreview?.QueueFree();
+        _markerPreview = null;
+        _fillPreview?.QueueFree();
         Input.MouseMode = Input.MouseModeEnum.Visible;
+        _previewFaceId = default;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
+
+    private void UpdateFillPreview(Vector2 position)
+    {
+        if (!WorkingLayer.Has<Arrangement2D>())
+            return;
+        var arr = WorkingLayer.Get<Arrangement2D>();
+        var faceId = arr.Query(position);
+        if (faceId == _previewFaceId)
+            return;
+
+        _previewFaceId = faceId;
+
+        var polygons = arr.GetPolygon(faceId);
+        _fillPreview.Polygon = polygons.Count > 0 ? polygons.First() : [];
+    }
 }

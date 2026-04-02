@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Godot;
 using Godot.Collections;
 
@@ -34,6 +36,11 @@ public class Arrangement2D
         return (Array<Rid>)_obj.Call("set_polyline", id, data);
     }
 
+    public Array<Rid> SetPolyline(Rid id, ImmutableArray<Vector2> data)
+    {
+        return SetPolyline(id, ImmutableCollectionsMarshal.AsArray(data));
+    }
+
     /// <returns>Array of face Rids that are returned in previous queries and invalid since removing polyline</returns>
     public Array<Rid> RemovePolyline(Rid id)
     {
@@ -43,7 +50,7 @@ public class Arrangement2D
         return (Array<Rid>)_obj.Call("remove_polyline", id);
     }
 
-    /// <returns>A face rid</returns>
+    /// <returns>A face rid. If cannot get face like the point is on an edge, return an invalid rid</returns>
     public Rid Query(Vector2 point)
     {
         return (Rid)_obj.Call("query", point);
