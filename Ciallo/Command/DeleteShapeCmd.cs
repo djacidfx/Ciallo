@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Ciallo.Data;
+﻿using Ciallo.Data;
 using Frent;
 
 namespace Ciallo.Command;
@@ -7,7 +6,7 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class DeleteShapeCmd : CommandBase
 {
-    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
+    public override void OnDeletedAsUndo() => TargetE.Delete();
 
     public override void BeforeFirstDo(Entity targetE) { }
 

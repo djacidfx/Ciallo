@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Ciallo.Data;
+﻿using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -17,7 +16,7 @@ public class NewVectorFillMarkerCmd : CommandBase
         CopyE = copyE;
     }
 
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
+    public override void OnDeletedAsDo() => TargetE.Delete();
 
     public override void BeforeFirstDo(Entity targetE)
     {

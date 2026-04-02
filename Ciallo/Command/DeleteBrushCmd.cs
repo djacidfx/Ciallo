@@ -9,6 +9,8 @@ public class DeleteBrushCmd : CommandBase
 {
     public override void BeforeFirstDo(Entity targetE) { }
 
+    public override void OnDeletedAsUndo() => TargetE.Delete();
+
     public override void Do(Entity brushE)
     {
         // UI

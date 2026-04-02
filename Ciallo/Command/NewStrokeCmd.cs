@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Ciallo.Data;
+﻿using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
 using R3;
@@ -10,7 +9,7 @@ namespace Ciallo.Command;
 public class NewStrokeCmd : CommandBase
 {
     public Entity CopyE { get; }
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
+    public override void OnDeletedAsDo() => TargetE.Delete();
 
     public NewStrokeCmd(Entity copyE = default)
     {

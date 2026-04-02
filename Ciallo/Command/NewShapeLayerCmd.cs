@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Ciallo.Data;
+﻿using Ciallo.Data;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
@@ -18,7 +17,7 @@ public class NewShapeLayerCmd : CommandBase
         CopyE = copyE;
     }
 
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
+    public override void OnDeletedAsDo() => TargetE.Delete();
 
     public override void BeforeFirstDo(Entity targetE)
     {

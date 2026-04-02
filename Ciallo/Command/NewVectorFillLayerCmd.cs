@@ -16,7 +16,7 @@ public class NewVectorFillLayerCmd : CommandBase
 {
     public Entity CopyE { get; }
 
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
+    public override void OnDeletedAsDo() => TargetE.Delete();
 
     public NewVectorFillLayerCmd(Entity copyE = default)
     {
@@ -46,7 +46,7 @@ public class NewVectorFillLayerCmd : CommandBase
 
         var arrangement = new Arrangement2D();
         targetE.Add(arrangement);
-        
+
         var syncDict = CreateSyncShapeDictionary(vectorFillLayerSetting.ReferenceLayers, out var subs);
         syncDict.ObserveChanged().Subscribe(et => GD.Print(et));
 

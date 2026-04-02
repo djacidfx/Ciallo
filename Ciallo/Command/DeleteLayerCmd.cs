@@ -10,7 +10,12 @@ public class DeleteLayerCmd : CommandBase
 {
     private CommandBuilder _deleteChildrenCmd;
     private readonly List<Entity> _deletedEntities = [];
-    public override IEnumerable<Entity> UndoRefEntities => _deletedEntities;
+
+    public override void OnDeletedAsUndo()
+    {
+        foreach (var e in _deletedEntities)
+            e.Delete();
+    }
 
     public override void BeforeFirstDo(Entity layerE)
     {

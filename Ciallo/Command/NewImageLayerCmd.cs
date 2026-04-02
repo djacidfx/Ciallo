@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Ciallo.Data;
+﻿using Ciallo.Data;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
@@ -14,7 +13,7 @@ public class NewImageLayerCmd : CommandBase
     private readonly ImageLayerSetting _imageLayerSetting;
     public readonly Entity CopyE;
 
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
+    public override void OnDeletedAsDo() => TargetE.Delete();
 
     public NewImageLayerCmd(Image image)
     {
