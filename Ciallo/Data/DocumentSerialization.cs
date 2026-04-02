@@ -32,6 +32,7 @@ public static partial class AppDocumentManager
         }
     }
 
+    // Slop design here
     public static void CopyWorldByData(Entity dataDocument)
     {
         Dictionary<Entity, Entity> entityMap = new() { { Entity.Null, Entity.Null } };
@@ -119,6 +120,14 @@ public static partial class AppDocumentManager
                         .Do();
                 }
             }
+        }
+
+        // Entity reference remap
+        foreach (var dataE in dataDocument.World.Query<VectorFillLayerSetting>().EnumerateWithEntities())
+        {
+            var resultE = entityMap[dataE];
+            var newEs = dataE.Get<VectorFillLayerSetting>().ReferenceLayers.Select(e => entityMap[e]);
+            resultE.Get<VectorFillLayerSetting>().ReferenceLayers.AddRange(newEs);
         }
 
         // Load selection

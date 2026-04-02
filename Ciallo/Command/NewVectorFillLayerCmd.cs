@@ -172,7 +172,6 @@ public class NewVectorFillLayerCmd : CommandBase
             foreach (var shapeE in layerNode.Children)
             {
                 var positions = shapeE.Get<PolylineGeometry>().Positions;
-                result[shapeE] = positions.Value;
                 positions.Subscribe(p => result[shapeE] = p).AddTo(layerDisposables);
             }
 

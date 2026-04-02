@@ -138,7 +138,7 @@ public class PaintHover : InteractiveSessionBase
     {
         if (!AppBrushLibrary.HasSelection) return;
         var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
-        new CommandBuilder(AppDocumentManager.WorkingDocument.Value.World.Create())
+        new CommandBuilder(Document.World.Create())
             .NewStrokeBrush(setting)
             .SetWorkingStrokeBrush()
             .Commit();
