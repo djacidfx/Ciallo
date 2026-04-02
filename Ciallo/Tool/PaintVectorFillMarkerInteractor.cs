@@ -43,6 +43,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
             var i = WorkingLayer.Get<LayerTreeNode>().Index;
             cmd.SetTarget(parentE)
                 .NewVectorFillLayer()
+                .SetObservableCollection(e => e.Get<VectorFillLayerSetting>().ReferenceLayers, layers => layers.Add(WorkingLayer))
                 .AddToLayerTree(Document, i)
                 .SetWorkingLayer();
         }
