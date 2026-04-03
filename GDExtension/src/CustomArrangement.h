@@ -646,16 +646,19 @@ namespace CGAL {
                 if (he->curve().data().size() == 1) {
                     // The edge is induced only by out curve - remove it.
                     CGAL_assertion(he->curve().data().front() == p_cv);
+                    bool checkSrc = false, checkTgt = false;
+                    if (src->degree() == 3) checkSrc = true;
+                    if (tgt->degree() == 3) checkTgt = true;
 
                     Base_arr_2::remove_edge(he);
                     n_removed++;
 
-                    if (src->degree() == 2) {
+                    if (checkSrc) {
                         Halfedge_handle e0 = src->incident_halfedges();
                         Halfedge_handle e1 = ++src->incident_halfedges();
                         if (are_mergeable(e0, e1)) merge_edge(e0, e1);
                     }
-                    if (tgt->degree() == 2) {
+                    if (checkTgt) {
                         Halfedge_handle e0 = tgt->incident_halfedges();
                         Halfedge_handle e1 = ++tgt->incident_halfedges();
                         if (are_mergeable(e0, e1)) merge_edge(e0, e1);
