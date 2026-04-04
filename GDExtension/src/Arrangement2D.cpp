@@ -4,6 +4,7 @@
 
 
 #include "Arrangement2D.h"
+#include <deque>
 
 void Arrangement2D::_bind_methods()
 {
@@ -264,42 +265,29 @@ TypedArray<PackedVector2Array> Arrangement2D::Face2Vector(CGAL::Face_const_handl
 	{
 		// Remove palindromic halfEdges.
 		auto curr = start_iterator;
-		bool palindromic = false;
 
-		std::vector<CGAL::Halfedge_const_handle> halfedge_stack{};
+		std::deque<CGAL::Halfedge_const_handle> halfedge_deque{};
 		do
 		{
-			if (!palindromic) // regular
+			if (!halfedge_deque.empty() && halfedge_deque.back() == curr->twin())
 			{
-				halfedge_stack.push_back(curr);
+				halfedge_deque.pop_back();
 			}
-
-			if (curr->prev() == curr->twin()) // prev is the same as twin, so this is a "peek edge" of the palindromic
+			else if (!halfedge_deque.empty() && halfedge_deque.front() == curr->twin())
 			{
-				halfedge_stack.pop_back();
-				palindromic = true;
+				halfedge_deque.pop_front();
 			}
-
-			if (palindromic)
+			else
 			{
-				if (!halfedge_stack.empty() && curr->twin() == halfedge_stack.back())
-				{
-					// do palindromic remove
-					halfedge_stack.pop_back();
-				}
-				else // not palindromic anymore
-				{
-					palindromic = false;
-					halfedge_stack.push_back(curr);
-				}
+				halfedge_deque.push_back(curr);
 			}
 		} while (++curr != start_iterator);
 
-		if (halfedge_stack.empty()) continue;
+		if (halfedge_deque.empty()) continue;
 
 		// Get the points from halfedges.
 		PackedVector2Array polygon = {};
-		for (auto& halfedge : halfedge_stack)
+		for (auto& halfedge : halfedge_deque)
 		{
 			// Points in halfedge->curve() is always in x-mono increasing order, may not begin from source and end to target, so we need to reverse some of them.
 			// halfedge->source()->point() is the start point of the polyline
