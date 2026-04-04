@@ -28,6 +28,11 @@ public class VectorFillHover : InteractiveSessionBase
 
     public override void DrawProperty(PropertyContainer container)
     {
+        container.AddChild(new Label
+        {
+            Text = "[Create Vector Fill Layer Hint]",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+        });
         var brushPreview = VectorFillBrushPreviewList.New(Document);
         brushPreview.CustomMinimumSize = new(0, 256);
         container.AddChild(brushPreview);

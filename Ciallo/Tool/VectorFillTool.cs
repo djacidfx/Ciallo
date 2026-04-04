@@ -36,9 +36,7 @@ public class VectorFillTool : StateMachineToolBase
     {
         if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
-        bool isVectorFillLayer = e.Has<VectorFillLayerSetting>();
-        bool isShapeLayer = e.Has<ShapeLayerSetting>();
-        return !e.IsDyingOrDead && (isVectorFillLayer || isShapeLayer);
+        return e.Has<VectorFillLayerSetting>();
     }
 
     public override void OnActivated()
