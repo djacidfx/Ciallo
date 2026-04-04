@@ -10,7 +10,7 @@ public class RemoveFromLayerTreeCmd : CommandBase
 
     public override void BeforeFirstDo(Entity strokeE)
     {
-        var layerE = strokeE.Get<LayerTreeNode>().Parent;
+        var layerE = strokeE.Get<LayerTreeNode>().Parent.CurrentValue;
         var index = layerE.Get<LayerTreeNode>().Children.IndexOf(strokeE);
 
         _addCmd = new(layerE, index) { TargetE = strokeE };

@@ -19,7 +19,9 @@ namespace Ciallo.Data;
 public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : EntityTreeNode<T>
 {
     public Entity Self; // When this component is added to entity, assigned automatically.
-    [DataMember] public Entity Parent;
+    [DataMember] private ReactiveProperty<Entity> _parent = new(default);
+    public ReadOnlyReactiveProperty<Entity> Parent => _parent;
+    public Entity ParentValue => _parent.Value;
     [DataMember(Name = "Children")] private readonly List<Entity> _children = [];
 
     private readonly Subject<TreeMutationEvent> _localMutations = new(); // local node events
@@ -31,22 +33,21 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public readonly Subject<CollectionMoveEvent<Entity>> Moved = new(); // srcIndex, dstIndex, Parent entity
     public MoveOrReparentAsExitEnter MovedAsAddedRemoved;
 
-    public int Index => Parent.Get<T>()._children.IndexOf(Self);
+    public int Index => ParentValue.Get<T>()._children.IndexOf(Self);
     public IReadOnlyList<Entity> Children => _children;
     public int DescendantCount => CountSubtreeNodes((T)this) - 1;
     public bool IsLeaf => _children.Count == 0;
-    public bool IsRoot => Parent.IsNull;
+    public bool IsRoot => ParentValue.IsNull;
 
     public void Init(Entity self)
     {
         Self = self;
-        Parent = Entity.Null;
         MovedAsAddedRemoved = new(Added, Removed, Moved);
     }
 
     public void Destroy()
     {
-        Parent = Entity.Null;
+        _parent.Value = Entity.Null;
         _children.Clear();
         Self = Entity.Null;
     }
@@ -67,11 +68,11 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         if (child.Equals(Self)) throw new InvalidOperationException("Cannot insert self as child.");
 
         var childNode = child.Get<T>();
-        var oldParent = childNode.Parent;
+        var oldParent = childNode.ParentValue;
         if (!oldParent.IsNull) throw new InvalidOperationException("Node already has a parent.");
 
         _children.Insert(idx, child);
-        childNode.Parent = Self;
+        childNode._parent.Value = Self;
     }
 
     public void InsertChild(int idx, Entity child)
@@ -105,7 +106,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         _children.RemoveAt(i);
 
         if (removed.IsAlive)
-            removed.Get<T>().Parent = Entity.Null;
+            removed.Get<T>()._parent.Value = Entity.Null;
         return removed;
     }
 
@@ -204,8 +205,8 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 
     public T GetParentNode()
     {
-        if (Parent.IsNull) return null;
-        return Parent.Get<T>();
+        if (ParentValue.IsNull) return null;
+        return ParentValue.Get<T>();
     }
 
     public Entity GetDescendant([NotNull] IReadOnlyList<int> path)
@@ -367,10 +368,10 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     {
         _mutations.OnNext(mutation);
 
-        if (Parent.IsNull || !Parent.IsAlive)
+        if (ParentValue.IsNull || !ParentValue.IsAlive)
             return;
 
-        Parent.Get<T>().BubbleMutation(mutation);
+        ParentValue.Get<T>().BubbleMutation(mutation);
     }
 
     private static void SignalTargetFromMutation(TreeMutationEvent mutation)
