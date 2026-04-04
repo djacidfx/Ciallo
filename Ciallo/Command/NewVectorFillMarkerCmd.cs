@@ -85,7 +85,7 @@ public class NewVectorFillMarkerCmd : CommandBase
                         polygonView.Polygons = [];
                         continue;
                     }
-                    var polygon = arr.GetPolygonWithHoles(rid);
+                    var polygon = arr.GetFacePolygons(rid);
                     if (polygon.Count == 1)
                     {
                         polygonView.Polygon = polygon.Single();

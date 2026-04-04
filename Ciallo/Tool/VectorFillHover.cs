@@ -11,16 +11,30 @@ namespace Ciallo.Tool;
 
 public class VectorFillHover : InteractiveSessionBase
 {
+    private Polygon2D _fillPreview;
+
     public override void Start(CursorButtonData data)
     {
         Document.Get<WorldBody>().MouseDefaultCursorShape = Control.CursorShape.Cross;
+
+        _fillPreview = new()
+        {
+            Material = AutoloadRendering.VectorFillPreviewMaterial,
+            Texture = AutoloadRendering.DummyTextureForUV,
+        };
+        WorkingLayer.Get<OverlayHolder>().AddChild(_fillPreview);
+        _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
     }
 
-    public override void Moving(CursorMotionData data) { }
+    public override void Moving(CursorMotionData data)
+    {
+        _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
+    }
 
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
+        _fillPreview.QueueFree();
         Document.Get<WorldBody>().MouseDefaultCursorShape = default;
     }
 

@@ -14,6 +14,15 @@ public partial class AutoloadRendering : Node
     public static StrokeBrushMaterial DashWireframeMaterial;
     public static StrokeBrushMaterial MissingStrokeBrushMaterial;
 
+    private static readonly ShaderMaterial FillHint = GD.Load<ShaderMaterial>("res://Rendering/FillHint.tres");
+    public static ShaderMaterial VectorFillPreviewMaterial;
+    public static readonly NoiseTexture2D DummyTextureForUV = new()
+    {
+        // Texture for Polygon2D creating UV coordinate, Polygon2D cannot get correct UV coordinate without a texture
+        Width = 128,
+        Height = 128,
+    };
+
     public override void _Ready()
     {
         StrokeShader.TakeOverPath("");
@@ -39,6 +48,9 @@ public partial class AutoloadRendering : Node
         MissingStrokeBrushMaterial.SetShaderParameter("DashLength", 5f);
         MissingStrokeBrushMaterial.SetShaderParameter("GapLength", 5f);
         MissingStrokeBrushMaterial.SetShaderParameter("DashForwardSpeed", 7f);
+
+        VectorFillPreviewMaterial = (ShaderMaterial)FillHint.Duplicate();
+        VectorFillPreviewMaterial.SetShaderParameter("shape_color", AppPreference.StrokeWireframeColor);
     }
 
     public static MultiMeshInstance2D CreateDots()

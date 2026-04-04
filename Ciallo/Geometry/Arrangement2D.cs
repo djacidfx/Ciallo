@@ -84,7 +84,7 @@ public class Arrangement2D
     /// if face is bounded the first polygon is outer rim and others are holes inside.
     /// if face is unbounded all the polygons are holes of the unbounded face. 
     /// </returns>
-    public Array<Vector2[]> GetPolygonWithHoles(Rid id)
+    public Array<Vector2[]> GetFacePolygons(Rid id)
     {
         return (Array<Vector2[]>)_obj.Call("get_polygon", id);
     }

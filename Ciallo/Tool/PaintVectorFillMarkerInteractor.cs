@@ -1,5 +1,4 @@
-﻿using System.Linq;
-using Ciallo.Command;
+﻿using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
@@ -12,7 +11,6 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 {
     private VectorFillMarkerView _markerPreview;
     private Polygon2D _fillPreview;
-    private Rid _previewFaceId;
     private Entity _fillBrush;
 
     private float MarkerRadius => AppPreference.VectorFillMarkerRadius.Value;
@@ -38,14 +36,14 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
             // To preview fill
             _fillPreview = new() { Color = setting.FillColor.Value };
             WorkingLayer.Get<ShapeLayerView>().AddChild(_fillPreview);
-            UpdateFillPreview(data.WorldPosition);
+            _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
         }
     }
 
     public override void Moving(CursorMotionData data)
     {
         _markerPreview?.SetGeometry([data.WorldPosition], [MarkerRadius]);
-        UpdateFillPreview(data.WorldPosition);
+        _fillPreview?.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
     }
 
     public override void End(CursorButtonData data)
@@ -82,24 +80,8 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
         _markerPreview = null;
         _fillPreview?.QueueFree();
         Input.MouseMode = Input.MouseModeEnum.Visible;
-        _previewFaceId = default;
         _fillBrush = Entity.Null;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
-
-    private void UpdateFillPreview(Vector2 position)
-    {
-        if (_fillPreview == null) return;
-
-        var arr = WorkingLayer.Get<Arrangement2D>();
-        var faceId = arr.Query(position);
-        if (faceId == _previewFaceId)
-            return;
-
-        _previewFaceId = faceId;
-
-        var polygons = arr.GetPolygonWithHoles(faceId);
-        _fillPreview.Polygon = polygons.Count > 0 ? polygons.First() : [];
-    }
 }
