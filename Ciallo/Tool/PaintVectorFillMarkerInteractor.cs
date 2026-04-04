@@ -89,7 +89,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
         _previewFaceId = faceId;
 
-        var polygons = arr.GetPolygon(faceId);
+        var polygons = arr.GetPolygonWithHoles(faceId);
         _fillPreview.Polygon = polygons.Count > 0 ? polygons.First() : [];
     }
 }

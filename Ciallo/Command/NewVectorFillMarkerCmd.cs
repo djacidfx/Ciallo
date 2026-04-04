@@ -1,4 +1,8 @@
-﻿using Ciallo.Data;
+﻿using System;
+using System.Linq;
+using System.Runtime.InteropServices;
+using Ciallo.Data;
+using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -37,7 +41,7 @@ public class NewVectorFillMarkerCmd : CommandBase
             setting.BrushE.Value = default;
 
         // By design, polygons attached to fill markers are views,
-        // Strokes attached are overlay
+        // Strokes and marker sprites attached are overlay
         // View
         var polygonView = new Polygon2D() { Antialiased = true };
         targetE.AddNode(polygonView);
@@ -48,6 +52,51 @@ public class NewVectorFillMarkerCmd : CommandBase
             .Switch()
             .Subscribe(polygonView.SetColor)
             .AddTo(targetE);
+
+        // Include both parent change and structure change.
+        Observable<Arrangement2D> changeArrObs = layerNode.Parent
+            .Select(e => e.TryGet<Arrangement2D>())
+            .Select(arr =>
+            {
+                var obs = Observable.Return(arr);
+                if (arr != null)
+                    obs = obs.Merge(arr.StructureChanged.Select(_ => arr));
+                return obs;
+            })
+            .Switch();
+        polylineGeometry.Positions.CombineLatest(changeArrObs, ValueTuple.Create)
+            .ThrottleLastFrame(1)
+            .Subscribe(tuple =>
+            {
+                var (positions, arr) = tuple;
+                if (arr == null)
+                {
+                    polygonView.Polygon = [];
+                    polygonView.Polygons = [];
+                    return;
+                }
+                var faceRids = arr.PolylineQuery(positions);
+                foreach (var rid in faceRids)
+                {
+                    bool isUnbounded = arr.IsUnboundedFace(rid);
+                    if (isUnbounded)
+                    {
+                        polygonView.Polygon = [];
+                        polygonView.Polygons = [];
+                        continue;
+                    }
+                    var polygon = arr.GetPolygonWithHoles(rid);
+                    if (polygon.Count == 1)
+                    {
+                        polygonView.Polygon = polygon.Single();
+                        polygonView.Polygons = [];
+                    }
+                    else
+                    {
+                        polygonView.SetPolygon(CollectionsMarshal.AsSpan(polygon.ConnectHoles()));
+                    }
+                }
+            }).AddTo(targetE);
 
         // Overlay
         var wireframeOverlay = new PolylineWireframe() { Visible = false };

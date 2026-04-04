@@ -79,14 +79,14 @@ public class NewVectorFillLayerCmd : CommandBase
         {
             var rid = arr.CreatePolyline();
             polylineRidMap[e] = rid;
-            arr.SetPolyline(rid, positions);
+            arr.SetPolylineWithSignal(rid, positions);
         }
 
         syncDict.ObserveDictionaryAdd().Subscribe(et =>
         {
             var rid = arr.CreatePolyline();
             polylineRidMap[et.Key] = rid;
-            arr.SetPolyline(rid, et.Value);
+            arr.SetPolylineWithSignal(rid, et.Value);
         }).AddTo(subs);
 
         syncDict.ObserveDictionaryRemove().Subscribe(et =>
@@ -97,7 +97,7 @@ public class NewVectorFillLayerCmd : CommandBase
 
         syncDict.ObserveDictionaryReplace().Subscribe(et =>
         {
-            arr.SetPolyline(polylineRidMap[et.Key], et.NewValue);
+            arr.SetPolylineWithSignal(polylineRidMap[et.Key], et.NewValue);
         }).AddTo(subs);
 
         syncDict.ObserveClear().Subscribe(_ =>
@@ -111,7 +111,7 @@ public class NewVectorFillLayerCmd : CommandBase
     }
 
     /// <summary>
-    /// Create a sync dictionary to keep track of all shapes under layerEs
+    /// Create a sync dictionary to keep track of all shapes under layerEs. One-way binding.
     /// </summary>
     /// <remarks>
     /// When setting entity's PolylineGeometry.Positions, this sync dict should replace element accordingly.

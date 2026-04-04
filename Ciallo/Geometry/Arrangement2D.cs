@@ -43,7 +43,7 @@ public class Arrangement2D
     }
 
     /// <returns>Array of face Rids that are returned in previous queries and invalid since polyline change</returns>
-    public Array<Rid> SetPolyline(Rid id, Vector2[] data)
+    private Array<Rid> SetPolyline(Rid id, Vector2[] data)
     {
         if (_polylineLengthTracker[id] > 0)
             GC.RemoveMemoryPressure(MemoryPerPoint * _polylineLengthTracker[id]);
