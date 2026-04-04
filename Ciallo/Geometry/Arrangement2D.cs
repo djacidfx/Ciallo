@@ -4,6 +4,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Godot;
 using Godot.Collections;
+using R3;
 
 namespace Ciallo.Geometry;
 
@@ -17,6 +18,22 @@ public class Arrangement2D
     private readonly GodotObject _obj = (GodotObject)ClassDB.Instantiate("Arrangement2D");
     public static readonly int MemoryPerPoint = 200; // byte in very rough estimation
     private readonly System.Collections.Generic.Dictionary<Rid, int> _polylineLengthTracker = new();
+
+    public readonly Subject<Unit> StructureChanged = new();
+
+    public Array<Rid> SetPolylineWithSignal(Rid id, ImmutableArray<Vector2> data)
+    {
+        var result = SetPolyline(id, ImmutableCollectionsMarshal.AsArray(data));
+        StructureChanged.OnNext(Unit.Default);
+        return result;
+    }
+
+    public Array<Rid> PolylineQuery(ImmutableArray<Vector2> polyline)
+    {
+        return PolylineQuery(ImmutableCollectionsMarshal.AsArray(polyline));
+    }
+
+    # region GDExtension bindings
 
     public Rid CreatePolyline()
     {
@@ -34,11 +51,6 @@ public class Arrangement2D
         if (data.Length > 0)
             GC.AddMemoryPressure(MemoryPerPoint * data.Length);
         return (Array<Rid>)_obj.Call("set_polyline", id, data);
-    }
-
-    public Array<Rid> SetPolyline(Rid id, ImmutableArray<Vector2> data)
-    {
-        return SetPolyline(id, ImmutableCollectionsMarshal.AsArray(data));
     }
 
     /// <returns>Array of face Rids that are returned in previous queries and invalid since removing polyline</returns>
@@ -70,9 +82,9 @@ public class Arrangement2D
     /// <returns>
     /// Array of polygons
     /// if face is bounded the first polygon is outer rim and others are holes inside.
-    /// if face is unbounded all polygons are holes of the unbounded face. 
+    /// if face is unbounded all the polygons are holes of the unbounded face. 
     /// </returns>
-    public Array<Vector2[]> GetPolygon(Rid id)
+    public Array<Vector2[]> GetPolygonWithHoles(Rid id)
     {
         return (Array<Vector2[]>)_obj.Call("get_polygon", id);
     }
@@ -95,4 +107,6 @@ public class Arrangement2D
         // Finalizer run in its own thread. Call_deferred makes it run in the main thread
         _obj.CallDeferred("free");
     }
+
+    # endregion
 }

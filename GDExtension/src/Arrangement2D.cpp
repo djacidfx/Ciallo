@@ -2,6 +2,7 @@
 // Created by Ciao on 2026/1/16.
 //
 
+
 #include "Arrangement2D.h"
 
 void Arrangement2D::_bind_methods()
@@ -19,6 +20,8 @@ void Arrangement2D::_bind_methods()
 
 void Arrangement2D::_notification(int what)
 {
+	// CGAL::Arrangement::Halfedge_handle he;
+	// auto x = he->source();
 	if (what == NOTIFICATION_PREDELETE) {
 		List<RID> rids;
 		CurveHandleOwner.get_owned_list(&rids);
@@ -37,7 +40,7 @@ void Arrangement2D::_notification(int what)
 
 Arrangement2D::Arrangement2D()
 {
-	Observer.arr = this;
+	// Observer.arr = this;
 }
 
 RID Arrangement2D::create_polyline()
@@ -50,7 +53,7 @@ TypedArray<RID> Arrangement2D::set_polyline(RID id, PackedVector2Array data)
 	CGAL::Curve_handle* ptr = CurveHandleOwner.get_or_null(id);
 	if (ptr == nullptr)
 	{
-		print_error(vformat("Given rid {} is not a polyline", id));
+		print_error(vformat("Given rid %d is not a polyline", id.get_id()));
 		return {};
 	}
 
@@ -64,9 +67,10 @@ TypedArray<RID> Arrangement2D::set_polyline(RID id, PackedVector2Array data)
 	auto handle = CGAL::insert(Arrangement, curve);
 	*ptr = handle;
 
-	TypedArray<RID> result = InvalidFaceIDs;
-	InvalidFaceIDs = TypedArray<RID>();
-	return result;
+	// TypedArray<RID> result = InvalidFaceIDs;
+	// InvalidFaceIDs = TypedArray<RID>();
+	// return result;
+	return {};
 }
 
 TypedArray<RID> Arrangement2D::remove_polyline(RID id)
@@ -82,9 +86,10 @@ TypedArray<RID> Arrangement2D::remove_polyline(RID id)
 	if (curve_handle != nullptr)
 		CGAL::remove_curve(Arrangement, curve_handle);
 
-	auto result = InvalidFaceIDs;
-	InvalidFaceIDs = TypedArray<RID>();
-	return result;
+	// auto result = InvalidFaceIDs;
+	// InvalidFaceIDs = TypedArray<RID>();
+	// return result;
+	return {};
 }
 
 RID Arrangement2D::query(Vector2 p)

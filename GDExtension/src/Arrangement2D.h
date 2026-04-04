@@ -17,7 +17,7 @@ protected:
 public:
     CGAL::Arrangement Arrangement = {};
     CGAL::PointLocation PointLocation = { Arrangement };
-    ArrangementObserver Observer{Arrangement};
+    // ArrangementObserver Observer{Arrangement};
 
     RID_Owner<CGAL::Curve_handle> CurveHandleOwner{};
     RID_Owner<Vector2> QueryPointOwner{};
