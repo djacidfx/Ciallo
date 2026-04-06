@@ -656,12 +656,15 @@ namespace CGAL {
                     if (checkSrc) {
                         Halfedge_handle e0 = src->incident_halfedges();
                         Halfedge_handle e1 = ++src->incident_halfedges();
-                        if (are_mergeable(e0, e1)) merge_edge(e0, e1);
+
+                        if (are_mergeable(e0, e1) && e0->curve().data().front() != p_cv)
+                            merge_edge(e0, e1);
                     }
                     if (checkTgt) {
                         Halfedge_handle e0 = tgt->incident_halfedges();
                         Halfedge_handle e1 = ++tgt->incident_halfedges();
-                        if (are_mergeable(e0, e1)) merge_edge(e0, e1);
+                        if (are_mergeable(e0, e1) && e0->curve().data().front() != p_cv)
+                            merge_edge(e0, e1);
                     }
                 }
                 else {
