@@ -37,6 +37,9 @@ public class DeleteLayerCmd : CommandBase
 
     public override void Do(Entity layerE)
     {
+        // If vector fill layer
+        layerE.TryGet<ArrangementSynchronizationHelper>()?.Unsubscribe();
+
         // Delete children
         _deleteChildrenCmd?.Do();
 
@@ -47,7 +50,8 @@ public class DeleteLayerCmd : CommandBase
     {
         layerE.Tag<ToSerializeTag>();
 
-        // Restore Children
         _deleteChildrenCmd?.Undo();
+
+        layerE.TryGet<ArrangementSynchronizationHelper>()?.Subscribe();
     }
 }

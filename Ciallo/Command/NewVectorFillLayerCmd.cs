@@ -46,9 +46,8 @@ public class NewVectorFillLayerCmd : CommandBase
 
         var arr = new Arrangement2D();
         targetE.Add(arr);
-        var syncDict = CreateSyncShapeDictionary(vectorFillLayerSetting.ReferenceLayers, out var subs);
-        subs.AddTo(targetE);
-        ArrangementBind(arr, syncDict).AddTo(targetE);
+        var helper = new ArrangementSynchronizationHelper(arr, vectorFillLayerSetting.ReferenceLayers);
+        targetE.Add(helper);
 
         // Others
         NewShapeLayerCmd.ShapeLayerNonDataCreation(targetE);
@@ -62,81 +61,109 @@ public class NewVectorFillLayerCmd : CommandBase
 
     public override void Do(Entity targetE)
     {
+        targetE.Get<ArrangementSynchronizationHelper>().Subscribe();
         targetE.Tag<ToSerializeTag>();
     }
     public override void Undo(Entity targetE)
     {
         targetE.Detach<ToSerializeTag>();
+        targetE.Get<ArrangementSynchronizationHelper>().Unsubscribe();
+    }
+}
+
+// Design this class to avoid observing the shape layers change after user deleting this vector fill layer.
+public class ArrangementSynchronizationHelper
+{
+    private readonly Arrangement2D _arr;
+    private readonly ObservableHashSet<Entity> _layerEs;
+    private readonly ObservableDictionary<Entity, ImmutableArray<Vector2>> _shapePositions = [];
+    public CompositeDisposable ArrangementSyncSubs;
+    public CompositeDisposable ShapeTrackingSubs;
+
+    public Dictionary<Entity, Rid> ShapeRids = [];
+
+    public ArrangementSynchronizationHelper(Arrangement2D arr, ObservableHashSet<Entity> layerEs)
+    {
+        _arr = arr;
+        _layerEs = layerEs;
+        foreach (var layerE in layerEs)
+        foreach (var shapeE in layerE.Get<LayerTreeNode>().Children)
+        {
+            _shapePositions[shapeE] = shapeE.Get<PolylineGeometry>().Positions.Value;
+            var rid = arr.CreatePolyline();
+            ShapeRids[shapeE] = rid;
+            arr.SetPolylineWithSignal(rid, _shapePositions[shapeE]);
+        }
     }
 
-    public static CompositeDisposable ArrangementBind(Arrangement2D arr, ObservableDictionary<Entity, ImmutableArray<Vector2>> syncDict)
+    public void Subscribe()
     {
-        var subs = new CompositeDisposable();
-        var polylineRidMap = new Dictionary<Entity, Rid>();
+        SubscribeShapeTracking();
+        SubscribeArrangementSync();
+    }
 
-        // Initial population
-        foreach (var (e, positions) in syncDict)
-        {
-            var rid = arr.CreatePolyline();
-            polylineRidMap[e] = rid;
-            arr.SetPolylineWithSignal(rid, positions);
-        }
+    public void Unsubscribe()
+    {
+        ArrangementSyncSubs?.Dispose();
+        ShapeTrackingSubs?.Dispose();
+    }
 
-        syncDict.ObserveDictionaryAdd().Subscribe(et =>
+    private void SubscribeArrangementSync()
+    {
+        var subs = ArrangementSyncSubs = new();
+        _shapePositions.ObserveDictionaryAdd().Subscribe(et =>
         {
-            var rid = arr.CreatePolyline();
-            polylineRidMap[et.Key] = rid;
-            arr.SetPolylineWithSignal(rid, et.Value);
+            var rid = _arr.CreatePolyline();
+            ShapeRids[et.Key] = rid;
+            _arr.SetPolylineWithSignal(rid, et.Value);
         }).AddTo(subs);
 
-        syncDict.ObserveDictionaryRemove().Subscribe(et =>
+        _shapePositions.ObserveDictionaryRemove().Subscribe(et =>
         {
-            arr.RemovePolyline(polylineRidMap[et.Key]);
-            polylineRidMap.Remove(et.Key);
+            _arr.RemovePolyline(ShapeRids[et.Key]);
+            ShapeRids.Remove(et.Key);
         }).AddTo(subs);
 
-        syncDict.ObserveDictionaryReplace().Subscribe(et =>
+        _shapePositions.ObserveDictionaryReplace().Subscribe(et =>
         {
-            arr.SetPolylineWithSignal(polylineRidMap[et.Key], et.NewValue);
+            _arr.SetPolylineWithSignal(ShapeRids[et.Key], et.NewValue);
         }).AddTo(subs);
 
-        syncDict.ObserveClear().Subscribe(_ =>
+        _shapePositions.ObserveClear().Subscribe(_ =>
         {
-            foreach (var (_, rid) in polylineRidMap)
-                arr.RemovePolyline(rid);
-            polylineRidMap.Clear();
+            foreach (var (_, rid) in ShapeRids)
+                _arr.RemovePolyline(rid);
+            ShapeRids.Clear();
         }).AddTo(subs);
-
-        return subs;
     }
 
     /// <summary>
-    /// Create a sync dictionary to keep track of all shapes under layerEs. One-way binding.
+    /// Subscribe to keep _shapePositions up to date. Does not repopulate existing entries.
     /// </summary>
-    /// <remarks>
-    /// When setting entity's PolylineGeometry.Positions, this sync dict should replace element accordingly.
-    /// When any LayerTreeNode children entity is added/removed, the corresponding entry in sync dictionary should also be added/removed.
-    /// </remarks>
-    public static ObservableDictionary<Entity, ImmutableArray<Vector2>> CreateSyncShapeDictionary(
-        ObservableHashSet<Entity> layerEs, out CompositeDisposable subs)
+    private void SubscribeShapeTracking()
     {
-        ObservableDictionary<Entity, ImmutableArray<Vector2>> result = [];
-        subs = new();
+        var subs = ShapeTrackingSubs = new();
 
         // Per-layer subscriptions keyed by layer entity
         var layerSubs = new Dictionary<Entity, CompositeDisposable>();
 
-        // Populate existing layers
-        foreach (var layerE in layerEs)
+        // Attach to existing layers
+        foreach (var layerE in _layerEs)
             SubscribeLayer(layerE);
 
         // Watch layer set changes
-        layerEs.ObserveAdd()
+        _layerEs.ObserveAdd()
             .Select(et => et.Value)
-            .Subscribe(SubscribeLayer)
+            .Subscribe(layerE =>
+            {
+                // Populate existing shapes before subscribing, so .Skip(1) in SubscribeLayer is correct
+                foreach (var shapeE in layerE.Get<LayerTreeNode>().Children)
+                    _shapePositions[shapeE] = shapeE.Get<PolylineGeometry>().Positions.Value;
+                SubscribeLayer(layerE);
+            })
             .AddTo(subs);
 
-        layerEs.ObserveRemove()
+        _layerEs.ObserveRemove()
             .Select(et => et.Value)
             .Subscribe(UnsubscribeLayer)
             .AddTo(subs);
@@ -149,16 +176,13 @@ public class NewVectorFillLayerCmd : CommandBase
             layerSubs.Clear();
         }));
 
-        return result;
-
         void UnsubscribeLayer(Entity layerE)
         {
             if (!layerSubs.TryGetValue(layerE, out var layerDisposables)) return;
             layerDisposables.Dispose();
             layerSubs.Remove(layerE);
-            // Remove all shapes that belonged to this layer
             foreach (var shapeE in layerE.Get<LayerTreeNode>().Children)
-                result.Remove(shapeE);
+                _shapePositions.Remove(shapeE);
         }
 
         void SubscribeLayer(Entity layerE)
@@ -168,26 +192,28 @@ public class NewVectorFillLayerCmd : CommandBase
 
             var layerNode = layerE.Get<LayerTreeNode>();
 
-            // Populate existing children
-            foreach (var shapeE in layerNode.Children)
-            {
-                var positions = shapeE.Get<PolylineGeometry>().Positions;
-                positions.Subscribe(p => result[shapeE] = p).AddTo(layerDisposables);
-            }
 
-            // Watch future children entering this layer
+            // _shapePositions already has correct values for existing shapes — skip current emission, watch future changes only
+            foreach (var shapeE in layerNode.Children)
+                shapeE.Get<PolylineGeometry>().Positions
+                    .Skip(1)
+                    .Subscribe(p => _shapePositions[shapeE] = p)
+                    .AddTo(layerDisposables);
+
+            // New shapes entering: subscribe from first emission to populate dict
             layerNode.ObserveAddChild()
                 .Select(et => et.Value)
                 .Subscribe(shapeE =>
                 {
-                    var positions = shapeE.Get<PolylineGeometry>().Positions;
-                    positions.Subscribe(p => result[shapeE] = p).AddTo(layerDisposables);
+                    shapeE.Get<PolylineGeometry>().Positions
+                        .Subscribe(p => _shapePositions[shapeE] = p)
+                        .AddTo(layerDisposables);
                 }).AddTo(layerDisposables);
 
-            // Watch children exiting this layer
+            // Shapes leaving: remove from dict
             layerNode.ObserveRemoveChild()
                 .Select(et => et.Value)
-                .Subscribe(shapeE => result.Remove(shapeE))
+                .Subscribe(shapeE => _shapePositions.Remove(shapeE))
                 .AddTo(layerDisposables);
         }
     }
