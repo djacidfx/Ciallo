@@ -2,6 +2,7 @@
 using System.Linq;
 using Ciallo.Data;
 using Frent;
+using Frent.Systems;
 
 namespace Ciallo.Command;
 
@@ -17,9 +18,9 @@ public class DeleteLayerCmd : CommandBase
             e.Delete();
     }
 
-    public override void BeforeFirstDo(Entity layerE)
+    public override void BeforeFirstDo(Entity targetE)
     {
-        var node = layerE.Get<LayerTreeNode>();
+        var node = targetE.Get<LayerTreeNode>();
         if (!node.IsLeaf)
         {
             _deleteChildrenCmd = new CommandBuilder();
@@ -32,18 +33,28 @@ public class DeleteLayerCmd : CommandBase
                 _deletedEntities.Add(shapeE);
             }
         }
-        _deletedEntities.Add(layerE);
+        _deletedEntities.Add(targetE);
     }
 
-    public override void Do(Entity layerE)
+    public override void Do(Entity targetE)
     {
         // If vector fill layer
-        layerE.TryGet<ArrangementSynchronizationHelper>()?.Unsubscribe();
-
+        targetE.TryGet<ArrangementSynchronizationHelper>()?.Unsubscribe();
+        
         // Delete children
         _deleteChildrenCmd?.Do();
 
-        layerE.Detach<ToSerializeTag>();
+        // Remove shape layer from vector fill layer settings
+        if (targetE.Has<ShapeLayerSetting>())
+        {
+            var query = targetE.World.Query<VectorFillLayerSetting>();
+            query.Delegate((ref VectorFillLayerSetting setting) =>
+            {
+                setting.ReferenceLayers.Remove(targetE);
+            });
+        }
+
+        targetE.Detach<ToSerializeTag>();
     }
 
     public override void Undo(Entity layerE)
