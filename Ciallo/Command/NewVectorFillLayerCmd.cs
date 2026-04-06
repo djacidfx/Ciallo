@@ -120,7 +120,7 @@ public class ArrangementSynchronizationHelper
 
         _shapePositions.ObserveDictionaryRemove().Subscribe(et =>
         {
-            _arr.RemovePolyline(ShapeRids[et.Key]);
+            _arr.RemovePolylineWithSignal(ShapeRids[et.Key]);
             ShapeRids.Remove(et.Key);
         }).AddTo(subs);
 
@@ -132,7 +132,7 @@ public class ArrangementSynchronizationHelper
         _shapePositions.ObserveClear().Subscribe(_ =>
         {
             foreach (var (_, rid) in ShapeRids)
-                _arr.RemovePolyline(rid);
+                _arr.RemovePolylineWithSignal(rid);
             ShapeRids.Clear();
         }).AddTo(subs);
     }

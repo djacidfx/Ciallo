@@ -97,4 +97,10 @@ public static class Polygon2DExtension
             }
         }
     }
+
+    public static void Clear(this Polygon2D node)
+    {
+        node.Polygon = null;
+        node.Polygons = null;
+    }
 }

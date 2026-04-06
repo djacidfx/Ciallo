@@ -1,9 +1,8 @@
 ﻿using System;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
+using Ciallo.Tool;
 using Frent;
 using Godot;
 using R3;
@@ -69,33 +68,10 @@ public class NewVectorFillMarkerCmd : CommandBase
             .Subscribe(tuple =>
             {
                 var (positions, arr) = tuple;
-                if (arr == null)
-                {
-                    polygonView.Polygon = [];
-                    polygonView.Polygons = [];
-                    return;
-                }
-                var faceRids = arr.PolylineQuery(positions);
-                foreach (var rid in faceRids)
-                {
-                    bool isUnbounded = arr.IsUnboundedFace(rid);
-                    if (isUnbounded)
-                    {
-                        polygonView.Polygon = [];
-                        polygonView.Polygons = [];
-                        continue;
-                    }
-                    var polygon = arr.GetFacePolygons(rid);
-                    if (polygon.Count == 1)
-                    {
-                        polygonView.Polygon = polygon.Single();
-                        polygonView.Polygons = [];
-                    }
-                    else
-                    {
-                        polygonView.SetPolygon(CollectionsMarshal.AsSpan(polygon.ConnectHoles()));
-                    }
-                }
+                if (arr == null || positions.IsDefaultOrEmpty)
+                    polygonView.Clear();
+                else
+                    polygonView.SetPolygonWithQueryResult(arr, positions[0]);
             }).AddTo(targetE);
 
         // Overlay

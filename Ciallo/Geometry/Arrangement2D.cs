@@ -21,11 +21,18 @@ public class Arrangement2D
 
     public readonly Subject<Unit> StructureChanged = new();
 
-    public Array<Rid> SetPolylineWithSignal(Rid id, ImmutableArray<Vector2> data)
+    public void SetPolylineWithSignal(Rid id, ImmutableArray<Vector2> data)
     {
         var result = SetPolyline(id, ImmutableCollectionsMarshal.AsArray(data));
         StructureChanged.OnNext(Unit.Default);
-        return result;
+    }
+
+    public void RemovePolylineWithSignal(Rid id)
+    {
+        bool toNotify = _polylineLengthTracker[id] != 0;
+        RemovePolyline(id);
+        if (toNotify)
+            StructureChanged.OnNext(Unit.Default);
     }
 
     public Array<Rid> PolylineQuery(ImmutableArray<Vector2> polyline)
@@ -43,7 +50,7 @@ public class Arrangement2D
     }
 
     /// <returns>Array of face Rids that are returned in previous queries and invalid since polyline change</returns>
-    private Array<Rid> SetPolyline(Rid id, Vector2[] data)
+    public Array<Rid> SetPolyline(Rid id, Vector2[] data)
     {
         if (_polylineLengthTracker[id] > 0)
             GC.RemoveMemoryPressure(MemoryPerPoint * _polylineLengthTracker[id]);
