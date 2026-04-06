@@ -1,6 +1,3 @@
-# material maker temp files
-*.mmcr
-
 # Godot auto generated files
 *.gen.*
 .godot/

@@ -1,3 +1,6 @@
+# Material marker temp files
+*.mmcr
+
 **/copilot*
 .idea/
 
