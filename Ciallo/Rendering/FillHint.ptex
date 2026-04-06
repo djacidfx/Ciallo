@@ -47,8 +47,8 @@
 			},
 			"name": "Material",
 			"node_position": {
-				"x": -227.556335449219,
-				"y": -447.605895996094
+				"x": -227.556350708008,
+				"y": -448.131256103516
 			},
 			"parameters": {
 				"blend": 1.0
@@ -89,20 +89,20 @@
 		{
 			"name": "tiler",
 			"node_position": {
-				"x": -684.843933105469,
-				"y": -470.618011474609
+				"x": -685.543273925781,
+				"y": -471.464172363281
 			},
 			"parameters": {
 				"fixed_offset": 0.0,
 				"inputs": 0.0,
 				"offset": 0.0,
-				"overlap": 0.0,
+				"overlap": 1.0,
 				"rotate": 0.0,
 				"scale": 0.0,
 				"scale_x": 1.0,
 				"scale_y": 1.0,
-				"tx": 16.0,
-				"ty": 16.0,
+				"tx": 4.0,
+				"ty": 4.0,
 				"value": 0.0,
 				"variations": false
 			},
@@ -129,13 +129,13 @@
 			"generic_size": 1,
 			"name": "rotate",
 			"node_position": {
-				"x": -872.055358886719,
+				"x": -872.055297851563,
 				"y": -471.290130615234
 			},
 			"parameters": {
 				"cx": 0.0,
 				"cy": 0.0,
-				"rotate": -45.0
+				"rotate": 45.0
 			},
 			"seed_int": 0,
 			"type": "rotate"
@@ -145,10 +145,10 @@
 			"name": "translate",
 			"node_position": {
 				"x": -436.9462890625,
-				"y": -465.252197265625
+				"y": -465.777618408203
 			},
 			"parameters": {
-				"translate_x": "$time*0.1",
+				"translate_x": "-$time*0.1",
 				"translate_y": "$time*0.1"
 			},
 			"seed_int": 0,
@@ -164,7 +164,7 @@
 				"edge": 0.0,
 				"radius": 0.1,
 				"shape": 1.0,
-				"sides": 4.0
+				"sides": 2.0
 			},
 			"seed_int": 0,
 			"type": "shape"
