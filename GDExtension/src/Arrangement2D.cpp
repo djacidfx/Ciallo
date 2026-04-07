@@ -249,6 +249,9 @@ std::vector<CGAL::Point> Arrangement2D::Vector2Point(PackedVector2Array polyline
 /// If a line is inserted(pierced) into a face but not across it, CGAL will return vertices associated with this line.
 /// Need to eliminate this pattern with palindromic detection.
 /// </remarks>
+/// <remarks>
+/// If the face has holes, they could be bestring-of-beads-shaped, remove their bridge/string lines to create multiple polygons
+/// </remarks>
 TypedArray<PackedVector2Array> Arrangement2D::Face2Vector(CGAL::Face_const_handle face)
 {
 	std::vector<CGAL::Arrangement::Ccb_halfedge_const_circulator> ccb_circulators{};
@@ -261,66 +264,116 @@ TypedArray<PackedVector2Array> Arrangement2D::Face2Vector(CGAL::Face_const_handl
 	}
 
 	TypedArray<PackedVector2Array> result{};
-	for (auto& start_iterator : ccb_circulators)
+	for (auto ccb : ccb_circulators)
 	{
 		// Remove palindromic halfEdges.
-		auto curr = start_iterator;
+		auto curr = ccb;
 
-		std::deque<CGAL::Halfedge_const_handle> halfedge_deque{};
+		std::deque<CGAL::Halfedge_const_handle> halfedges{};
 		do
 		{
-			if (!halfedge_deque.empty() && halfedge_deque.back() == curr->twin())
+			if (!halfedges.empty() && halfedges.back() == curr->twin())
 			{
-				halfedge_deque.pop_back();
+				halfedges.pop_back();
 			}
-			else if (!halfedge_deque.empty() && halfedge_deque.front() == curr->twin())
+			else if (!halfedges.empty() && halfedges.front() == curr->twin())
 			{
-				halfedge_deque.pop_front();
+				halfedges.pop_front();
 			}
 			else
 			{
-				halfedge_deque.push_back(curr);
+				halfedges.push_back(curr);
 			}
-		} while (++curr != start_iterator);
+		} while (++curr != ccb);
 
-		if (halfedge_deque.empty()) continue;
+		if (halfedges.empty()) continue;
 
-		// Get the points from halfedges.
-		PackedVector2Array polygon = {};
-		for (auto& halfedge : halfedge_deque)
+		// Remove bridges in multi-bulbed gourd-like shape
+		// twin_set: contains the twins of all halfedges in the CCB.
+		// If twin_set contains 'he', it means he->twin() is also in the CCB, so 'he' is a bridge halfedge.
+		std::set<CGAL::Halfedge_const_handle> twin_set{};
+		for (auto halfedge : halfedges)
 		{
-			// Points in halfedge->curve() is always in x-mono increasing order, may not begin from source and end to target, so we need to reverse some of them.
-			// halfedge->source()->point() is the start point of the polyline
-			// halfedge->target()->point() is the start point of the polyline
-			// halfedge->curve().points_begin() can be both source or target
+			twin_set.insert(halfedge->twin());
+		}
 
-			// cannot use `halfEdge->curve().points_end()-1`, must use --halfedge->curve().points_end().
-			auto beginIt = halfedge->curve().points_begin();
+		std::vector<CGAL::Halfedge_const_handle> polygon_stack{};
+		std::vector<std::vector<CGAL::Halfedge_const_handle>> polygon_groups{};
+		std::vector<CGAL::Halfedge_const_handle> bridge_stack{};
 
-			if (halfedge->source()->point() == *beginIt)
+		for (auto halfedge : halfedges)
+		{
+			if (twin_set.find(halfedge) != twin_set.end())
 			{
-				for (auto it = beginIt; it != --halfedge->curve().points_end(); ++it)
+				if (!bridge_stack.empty() && bridge_stack.back() == halfedge->twin())
 				{
-					Vector2 vec{
-						static_cast<float>(CGAL::to_double(it->x())),
-						static_cast<float>(CGAL::to_double(it->y()))
-					};
-					polygon.push_back(vec);
+					polygon_groups.emplace_back();
+					while (polygon_stack.back() != bridge_stack.back())
+					{
+						polygon_groups.back().push_back(polygon_stack.back());
+						polygon_stack.pop_back();
+					}
+					polygon_stack.pop_back(); // remove the bridge opener
+					if (polygon_groups.back().empty())
+						polygon_groups.pop_back();
+					else
+						std::reverse(polygon_groups.back().begin(), polygon_groups.back().end());
+
+					bridge_stack.pop_back();
 				}
+				else
+				{
+					polygon_stack.push_back(halfedge);
+					bridge_stack.push_back(halfedge);
+				}
+
 			}
 			else
 			{
-				// reverse iteration
-				for (auto it = --halfedge->curve().points_end(); it != beginIt; --it)
-				{
-					Vector2 vec{
-						static_cast<float>(CGAL::to_double(it->x())),
-						static_cast<float>(CGAL::to_double(it->y())) };
-					polygon.push_back(vec);
-				}
+				polygon_stack.push_back(halfedge);
 			}
 		}
-		result.push_back(polygon);
+		polygon_groups.push_back(std::move(polygon_stack));
+
+		// Get the points from halfedges.
+		for (auto& group : polygon_groups)
+		{
+			PackedVector2Array polygon = {};
+			for (auto& halfedge : group)
+			{
+				// Points in halfedge->curve() is always in x-mono increasing order, may not begin from source and end to target, so we need to reverse some of them.
+				// halfedge->source()->point() is the start point of the polyline
+				// halfedge->target()->point() is the end point of the polyline
+				// halfedge->curve().points_begin() can be both source or target
+
+				// cannot use `halfEdge->curve().points_end()-1`, must use --halfedge->curve().points_end().
+				auto beginIt = halfedge->curve().points_begin();
+
+				if (halfedge->source()->point() == *beginIt)
+				{
+					for (auto it = beginIt; it != --halfedge->curve().points_end(); ++it)
+					{
+						Vector2 vec{
+							static_cast<float>(CGAL::to_double(it->x())),
+							static_cast<float>(CGAL::to_double(it->y()))
+						};
+						polygon.push_back(vec);
+					}
+				}
+				else
+				{
+					// reverse iteration
+					for (auto it = --halfedge->curve().points_end(); it != beginIt; --it)
+					{
+						Vector2 vec{
+							static_cast<float>(CGAL::to_double(it->x())),
+							static_cast<float>(CGAL::to_double(it->y())) };
+						polygon.push_back(vec);
+					}
+				}
+			}
+			result.push_back(polygon);
+		}
 	}
 	return result;
 }
