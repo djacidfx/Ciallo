@@ -15,6 +15,9 @@ public static class EntityExtension
         public bool IsDocument => self.World.Document() == self; // If entity is the singleton document entity.
         public Entity Document => self.World.Document();
 
+        /// <summary>
+        /// Return null if entity is null or do not have T component.
+        /// </summary>
         public T TryGet<T>() where T : class => self.IsNull || !self.TryHas<T>() ? null : self.Get<T>();
 
         public static bool IsNotNull(Entity e) => !e.IsNull;

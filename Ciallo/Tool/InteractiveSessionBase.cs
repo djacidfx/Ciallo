@@ -12,10 +12,13 @@ namespace Ciallo.Tool;
 /// The actual place implementing canvas interaction behaviors.
 /// </summary>
 /// <remarks>
-/// Key design idea:
-/// Separating interactive logic from how to trigger an interactive session。This allows us to support key remapping and more.
+/// Key design ideas:
+/// - Separating interactive logic from how to trigger an interactive session。This allows us to support key remapping and more.
 /// E.g. Stroke drag interactor should not know it's started by dragging left mouse button, or pressing the 'G' key(like Blender)
 /// The tool script implement ITool is responsible for triggering the interactive session according to user input and tool state.
+///
+/// - Do not reactively change content (like those subscriptions in New*Cmds). Instead, gather necessary states at start() and refresh() on state change.
+/// Avoid a lot of boilerplate code
 /// </remarks>
 public abstract class InteractiveSessionBase
 {
