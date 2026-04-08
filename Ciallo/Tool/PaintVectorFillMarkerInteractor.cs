@@ -1,4 +1,5 @@
-﻿using Ciallo.Command;
+﻿using System.Collections.Generic;
+using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
@@ -49,16 +50,29 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
     public override void End(CursorButtonData data)
     {
         var cmd = new CommandBuilder();
-        Entity parentE = WorkingLayer;
+        Entity parentE = WorkingLayer; // parent of marker
         if (WorkingLayer.Has<ShapeLayerSetting>())
         {
             parentE = WorkingLayer.World.Create();
-            var i = WorkingLayer.Get<LayerTreeNode>().Index;
-            cmd.SetTarget(parentE)
-                .NewVectorFillLayer()
-                .SetObservableCollection(e => e.Get<VectorFillLayerSetting>().ReferenceLayers, layers => layers.Add(WorkingLayer))
-                .AddToLayerTree(Document, i)
-                .SetWorkingLayer();
+
+            // Get all visible shape layers as reference layers
+            List<Entity> referencesLayers = [];
+            foreach (var layer in WorkingLayer.World.Query<ShapeLayerSetting>().EnumerateWithEntities())
+            {
+                if (layer.Tagged<ToSerializeTag>() &&
+                    layer.Get<CommonLayerSetting>().IsVisible.Value)
+                {
+                    referencesLayers.Add(layer);
+                }
+            }
+
+            cmd.SetTarget(parentE).NewVectorFillLayer();
+            if (referencesLayers.Count > 0)
+            {
+                cmd.SetObservableCollection(e => e.Get<VectorFillLayerSetting>().ReferenceLayers,
+                    layers => layers.AddRange(referencesLayers));
+            }
+            cmd.AddToLayerTree(Document).SetWorkingLayer();
         }
         if (!_fillBrush.IsNull)
         {
