@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://bhueivskybp02"]
+[gd_scene format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://co17yxacb7838" path="res://GuiControl/OpenDocumentDialog.cs" id="3_j4qnp"]
@@ -22,7 +22,7 @@
 [ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://GuiControl/WelcomePanel.tscn" id="16_fpfj3"]
 [ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://GuiControl/LayerPanel.tscn" id="16_kjvhd"]
 
-[node name="Main" type="Panel"]
+[node name="Main" type="Panel" unique_id=1926960144]
 texture_filter = 2
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,10 +33,13 @@ size_flags_horizontal = 0
 size_flags_vertical = 0
 theme = ExtResource("1_j4qnp")
 
-[node name="NewDocumentDialog" parent="." groups=["Dialog"] instance=ExtResource("3_sc1dx")]
+[node name="Dialog" type="Control" parent="." unique_id=317513807]
+anchors_preset = 0
+
+[node name="NewDocumentDialog" parent="Dialog" unique_id=1736497745 groups=["Dialog"] instance=ExtResource("3_sc1dx")]
 visible = false
 
-[node name="OpenDocumentDialog" type="FileDialog" parent="." groups=["Dialog"]]
+[node name="OpenDocumentDialog" type="FileDialog" parent="Dialog" unique_id=1227874256 groups=["Dialog"]]
 use_hdr_2d = true
 title = "Open a File"
 initial_position = 1
@@ -49,19 +52,19 @@ filters = PackedStringArray("*.ciallo;")
 use_native_dialog = true
 script = ExtResource("3_j4qnp")
 
-[node name="AboutCiallo" parent="." groups=["Dialog"] instance=ExtResource("4_fpfj3")]
+[node name="AboutCiallo" parent="Dialog" unique_id=1102239031 groups=["Dialog"] instance=ExtResource("4_fpfj3")]
 visible = false
 
-[node name="NewLayer" type="ConfirmationDialog" parent="." groups=["Dialog"]]
+[node name="NewLayer" type="ConfirmationDialog" parent="Dialog" unique_id=202273283 groups=["Dialog"]]
 oversampling_override = 1.0
 
-[node name="BrushLibrary" parent="." groups=["Dialog"] instance=ExtResource("5_j4qnp")]
+[node name="BrushLibrary" parent="Dialog" unique_id=349746140 groups=["Dialog"] instance=ExtResource("5_j4qnp")]
 visible = false
 
-[node name="ExportImage" parent="." groups=["Dialog"] instance=ExtResource("6_sc1dx")]
+[node name="ExportImage" parent="Dialog" unique_id=1002906021 groups=["Dialog"] instance=ExtResource("6_sc1dx")]
 visible = false
 
-[node name="ExportGodotScene" type="FileDialog" parent="." groups=["Dialog"]]
+[node name="ExportGodotScene" type="FileDialog" parent="Dialog" unique_id=146299948 groups=["Dialog"]]
 use_hdr_2d = true
 initial_position = 2
 display_mode = 1
@@ -70,25 +73,25 @@ filters = PackedStringArray("*.scn", "*.tscn")
 use_native_dialog = true
 script = ExtResource("6_fpfj3")
 
-[node name="WarnUser" type="AcceptDialog" parent="." groups=["Dialog"]]
+[node name="WarnUser" type="AcceptDialog" parent="Dialog" unique_id=1802432901 groups=["Dialog"]]
 initial_position = 1
 transient = false
 always_on_top = true
 
-[node name="SaveChangeDialog" type="ConfirmationDialog" parent="." groups=["Dialog"]]
+[node name="SaveChangeDialog" type="ConfirmationDialog" parent="Dialog" unique_id=1236783369 groups=["Dialog"]]
 ok_button_text = "Save"
 script = ExtResource("8_5tuhn")
 
-[node name="YesNoDialog" type="ConfirmationDialog" parent="." groups=["Dialog"]]
+[node name="YesNoDialog" type="ConfirmationDialog" parent="Dialog" unique_id=1762343273 groups=["Dialog"]]
 script = ExtResource("9_2gh4u")
 
-[node name="SaveAsDialog" type="FileDialog" parent="." groups=["Dialog"]]
+[node name="SaveAsDialog" type="FileDialog" parent="Dialog" unique_id=663948942 groups=["Dialog"]]
 access = 2
 filters = PackedStringArray("*.ciallo;")
 use_native_dialog = true
 script = ExtResource("10_devvj")
 
-[node name="MainGui" type="VBoxContainer" parent="."]
+[node name="MainGui" type="VBoxContainer" parent="." unique_id=1229649880]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -98,95 +101,97 @@ grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="MenuBarContainer" type="PanelContainer" parent="MainGui"]
+[node name="MenuBarContainer" type="PanelContainer" parent="MainGui" unique_id=628027750]
 layout_mode = 2
 
-[node name="Margin" type="MarginContainer" parent="MainGui/MenuBarContainer"]
+[node name="Margin" type="MarginContainer" parent="MainGui/MenuBarContainer" unique_id=535236437]
 layout_mode = 2
 theme_override_constants/margin_left = 0
 theme_override_constants/margin_top = 5
 theme_override_constants/margin_bottom = 5
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MainGui/MenuBarContainer/Margin"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MainGui/MenuBarContainer/Margin" unique_id=966282668]
 layout_mode = 2
 
-[node name="TextureRect" type="TextureRect" parent="MainGui/MenuBarContainer/Margin/HBoxContainer"]
+[node name="TextureRect" type="TextureRect" parent="MainGui/MenuBarContainer/Margin/HBoxContainer" unique_id=1348989504]
 custom_minimum_size = Vector2(68.17, 0)
 layout_mode = 2
 texture = ExtResource("4_kjvhd")
 expand_mode = 2
 stretch_mode = 5
 
-[node name="Blank" type="Control" parent="MainGui/MenuBarContainer/Margin/HBoxContainer"]
+[node name="Blank" type="Control" parent="MainGui/MenuBarContainer/Margin/HBoxContainer" unique_id=1330219272]
 custom_minimum_size = Vector2(20, 0)
 layout_mode = 2
 
-[node name="MenuBar" type="MenuBar" parent="MainGui/MenuBarContainer/Margin/HBoxContainer"]
+[node name="MenuBar" type="MenuBar" parent="MainGui/MenuBarContainer/Margin/HBoxContainer" unique_id=926680703]
 layout_mode = 2
 size_flags_vertical = 4
 theme_override_constants/h_separation = 30
 flat = true
 
-[node name="File" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
+[node name="File" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar" unique_id=1777051197]
 auto_translate_mode = 1
 size = Vector2i(201, 172)
 submenu_popup_delay = 0.01
 script = ExtResource("5_5tuhn")
 
-[node name="Edit" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
+[node name="Edit" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar" unique_id=411502354]
 submenu_popup_delay = 0.1
 script = ExtResource("6_2gh4u")
 
-[node name="Window" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
+[node name="Window" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar" unique_id=1493039209]
 auto_translate_mode = 1
 submenu_popup_delay = 0.1
 script = ExtResource("8_c2ibq")
 
-[node name="Help" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar"]
+[node name="Help" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar" unique_id=1987393091]
 auto_translate_mode = 1
 size = Vector2i(144, 100)
 submenu_popup_delay = 0.1
 script = ExtResource("8_sc1dx")
 
-[node name="MarginContainer" type="MarginContainer" parent="MainGui"]
+[node name="MarginContainer" type="MarginContainer" parent="MainGui" unique_id=1395743540]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 10
 
-[node name="UIBlock" type="HSplitContainer" parent="MainGui/MarginContainer"]
+[node name="UIBlock" type="HSplitContainer" parent="MainGui/MarginContainer" unique_id=1603521729]
 layout_mode = 2
 size_flags_vertical = 3
+split_offsets = PackedInt32Array(365)
 split_offset = 365
 
-[node name="VSplit" type="VSplitContainer" parent="MainGui/MarginContainer/UIBlock"]
+[node name="VSplit" type="VSplitContainer" parent="MainGui/MarginContainer/UIBlock" unique_id=861482289]
 layout_mode = 2
+split_offsets = PackedInt32Array(500)
 split_offset = 500
 
-[node name="HSplitContainer" type="HSplitContainer" parent="MainGui/MarginContainer/UIBlock/VSplit"]
+[node name="HSplitContainer" type="HSplitContainer" parent="MainGui/MarginContainer/UIBlock/VSplit" unique_id=648431329]
 layout_mode = 2
 
-[node name="ToolButtonPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer"]
+[node name="ToolButtonPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer" unique_id=747777120]
 layout_mode = 2
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 5
 script = ExtResource("13_kjvhd")
 
-[node name="ToolButtonPanelPreview" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolButtonPanelContainer" instance=ExtResource("9_5vvyt")]
+[node name="ToolButtonPanelPreview" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolButtonPanelContainer" unique_id=559447363 instance=ExtResource("9_5vvyt")]
 layout_mode = 2
 
-[node name="ToolPropertyPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer" instance=ExtResource("10_c6i3y")]
+[node name="ToolPropertyPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer" unique_id=1992566448 instance=ExtResource("10_c6i3y")]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit"]
+[node name="MarginContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit" unique_id=840531377]
 layout_mode = 2
 theme_override_constants/margin_top = 15
 theme_override_constants/margin_right = 10
 
-[node name="LayerPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/MarginContainer" instance=ExtResource("16_kjvhd")]
+[node name="LayerPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/MarginContainer" unique_id=1083993257 instance=ExtResource("16_kjvhd")]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="PaintPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock" groups=["UncategorizedControl"]]
+[node name="PaintPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock" unique_id=1684309810 groups=["UncategorizedControl"]]
 layout_mode = 2
 theme_override_constants/margin_left = 0
 theme_override_constants/margin_top = 0
@@ -194,5 +199,5 @@ theme_override_constants/margin_right = 0
 theme_override_constants/margin_bottom = 0
 script = ExtResource("16_5tuhn")
 
-[node name="WelcomePanel" parent="MainGui/MarginContainer/UIBlock/PaintPanelContainer" instance=ExtResource("16_fpfj3")]
+[node name="WelcomePanel" parent="MainGui/MarginContainer/UIBlock/PaintPanelContainer" unique_id=1492248500 instance=ExtResource("16_fpfj3")]
 layout_mode = 2
