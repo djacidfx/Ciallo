@@ -1,5 +1,4 @@
 ﻿using Ciallo.Data;
-using Ciallo.GuiControl;
 using Frent;
 
 namespace Ciallo.Command;
@@ -13,13 +12,6 @@ public class DeleteBrushCmd : CommandBase
 
     public override void Do(Entity brushE)
     {
-        // UI
-        if (brushE.Has<StrokeBrushSetting>())
-        {
-            var list = Document.Get<DocumentBrushListViewer>();
-            list.Remove(brushE);
-        }
-
         // Data
         var bm = Document.Get<BrushManager>();
         bm.StrokeBrushEs.Remove(brushE);
@@ -37,12 +29,5 @@ public class DeleteBrushCmd : CommandBase
             bm.StrokeBrushEs.Add(brushE);
         if (brushE.Has<VectorFillBrushSetting>())
             bm.VectorFillBrushEs.Add(brushE);
-
-        // UI
-        if (brushE.Has<StrokeBrushSetting>())
-        {
-            var list = Document.Get<DocumentBrushListViewer>();
-            list.Add(brushE);
-        }
     }
 }

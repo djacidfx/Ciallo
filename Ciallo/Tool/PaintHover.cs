@@ -101,12 +101,12 @@ public class PaintHover : InteractiveSessionBase
         // ---------------------------------------------
         container.AddChild(new HSeparator());
         // ---------------------------------------------
-        var brushList = new DocumentBrushListViewer()
-        {
-            CustomMinimumSize = new(256, 150),
-        };
-        Document.Add(brushList);
-        container.AddProperty("Brush in document", brushList);
+        // var brushList = new DocumentBrushListViewer()
+        // {
+        //     CustomMinimumSize = new(256, 150),
+        // };
+        // Document.Add(brushList);
+        // container.AddProperty("Brush in document", brushList);
 
         var selectionM = Document.Get<SelectionManager>();
         var radius = selectionM.WorkingStrokeBrush

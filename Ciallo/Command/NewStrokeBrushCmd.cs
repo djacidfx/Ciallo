@@ -1,7 +1,7 @@
 ﻿using Ciallo.Data;
-using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
+using Godot;
 
 namespace Ciallo.Command;
 
@@ -23,38 +23,43 @@ public class NewStrokeBrushCmd : CommandBase
 
     public override void OnDeletedAsDo() => TargetE.Delete();
 
-    public override void BeforeFirstDo(Entity brushE)
+    public override void BeforeFirstDo(Entity targetE)
     {
         _setting ??= CopyE.IsNull
             ? new StrokeBrushSetting()
             : CopyE.Get<StrokeBrushSetting>().Clone();
-        brushE.Add(_setting);
+        targetE.Add(_setting);
 
-        // View
+        // material
         var material = new StrokeBrushMaterial();
         material.ObserveBrushSetting(_setting);
-        brushE.Add(material);
+        targetE.Add(material);
+        
+        // preview texture
+        var subViewport = new SubViewport()
+        {
+            Size = Vector2I.One * 256,
+        };
+        subViewport.QueueFreeWith(targetE);
+        Document.Get<SubViewportHolder>().AddChild(subViewport);
+        var texture = new ViewportTexture()
+        {
+            ViewportPath = subViewport.GetPath(),
+        };
+        targetE.Add(texture);
+
     }
 
-    public override void Do(Entity brushE)
+    public override void Do(Entity targetE)
     {
         // Data
-        brushE.Tag<ToSerializeTag>();
+        targetE.Tag<ToSerializeTag>();
         var bm = Document.Get<BrushManager>();
-        bm.StrokeBrushEs.Add(brushE);
-
-        // UI
-        var list = Document.Get<DocumentBrushListViewer>();
-        list.Add(brushE);
+        bm.StrokeBrushEs.Add(targetE);
     }
 
     public override void Undo(Entity brushE)
     {
-        // UI
-        var list = Document.Get<DocumentBrushListViewer>();
-        list.Remove(brushE);
-
-        // Data
         var bm = Document.Get<BrushManager>();
         bm.StrokeBrushEs.Remove(brushE);
         brushE.Detach<ToSerializeTag>();
