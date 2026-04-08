@@ -44,7 +44,7 @@ public class VectorFillHover : InteractiveSessionBase
     {
         container.AddChild(new Label
         {
-            Text = "[Create Vector Fill Layer Hint]",
+            Text = "Fill brush",
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
         });
         var brushPreview = VectorFillBrushPreviewList.New(Document);
@@ -62,11 +62,22 @@ public class VectorFillHover : InteractiveSessionBase
                 .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
         );
 
+        container.AddProperty("Marker radius",
+            new SpinSlider
+                {
+                    MinValue = 1.0f,
+                    MaxValue = 32f,
+                }
+                .BindNumber(AppPreference.VectorFillMarkerRadius)
+                .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
+        );
+
         var fillColor = sm.WorkingVectorFillBrush
             .Select(e => e.TryGet<VectorFillBrushSetting>()?.FillColor)
             .Flatten();
         container.AddProperty("Fill color",
-            new ColorPickerButton().BindColor(fillColor)
+            new ColorPickerButton()
+                .BindColor(fillColor)
                 .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
         );
     }
