@@ -1,4 +1,5 @@
 ﻿using Ciallo.Data;
+using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -34,20 +35,19 @@ public class NewStrokeBrushCmd : CommandBase
         var material = new StrokeBrushMaterial();
         material.ObserveBrushSetting(_setting);
         targetE.Add(material);
-        
+
         // preview texture
-        var subViewport = new SubViewport()
+        var viewport = new SubViewport()
         {
             Size = Vector2I.One * 256,
-        };
-        subViewport.QueueFreeWith(targetE);
-        Document.Get<SubViewportHolder>().AddChild(subViewport);
+        }.QueueFreeWith(targetE);
+        
+        Document.Get<SubViewportHolder>().AddChild(viewport);
         var texture = new ViewportTexture()
         {
-            ViewportPath = subViewport.GetPath(),
+            ViewportPath = viewport.GetPath(),
         };
         targetE.Add(texture);
-
     }
 
     public override void Do(Entity targetE)
