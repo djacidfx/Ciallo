@@ -1,6 +1,6 @@
 ﻿using Godot;
 
-namespace Ciallo;
+namespace Ciallo.Geometry;
 
 public static class FloatRemap
 {
