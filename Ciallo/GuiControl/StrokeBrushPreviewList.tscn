@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://dm6dr88emw3ta" path="res://Icon/plus.svg" id="2_7nalv"]
 [ext_resource type="Texture2D" uid="uid://dvgbavcaytc4e" path="res://Icon/minus.svg" id="3_1q6u5"]
 [ext_resource type="Texture2D" uid="uid://ddgqnm1dvnk6w" path="res://Icon/content-copy.svg" id="4_r82g4"]
+[ext_resource type="Texture2D" uid="uid://bgxr2a6lqjqvy" path="res://Icon/wrench.svg" id="5_7nalv"]
 [ext_resource type="Script" uid="uid://b2pgo2j4ka41x" path="res://Widget/DynamicGridItemList.cs" id="5_k4hjg"]
 
 [node name="StrokeBrushPreviewList" type="PanelContainer" unique_id=883336611]
@@ -45,6 +46,14 @@ custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
 theme_type_variation = &"ToolButton"
 icon = ExtResource("4_r82g4")
+expand_icon = true
+
+[node name="EditButton" type="Button" parent="HBoxContainer/ButtonContainer" unique_id=574108803]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("5_7nalv")
 expand_icon = true
 
 [node name="ScrollContainer" type="ScrollContainer" parent="HBoxContainer" unique_id=826455056]

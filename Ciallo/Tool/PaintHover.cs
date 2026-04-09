@@ -101,12 +101,9 @@ public class PaintHover : InteractiveSessionBase
         // ---------------------------------------------
         container.AddChild(new HSeparator());
         // ---------------------------------------------
-        // var brushList = new DocumentBrushListViewer()
-        // {
-        //     CustomMinimumSize = new(256, 150),
-        // };
-        // Document.Add(brushList);
-        // container.AddProperty("Brush in document", brushList);
+        var brushPreview = StrokeBrushPreviewList.New(Document);
+        brushPreview.CustomMinimumSize = new(0, 256);
+        container.AddChild(brushPreview);
 
         var selectionM = Document.Get<SelectionManager>();
         var radius = selectionM.WorkingStrokeBrush
@@ -122,16 +119,6 @@ public class PaintHover : InteractiveSessionBase
         radius.AddTo(radiusControl);
         container.AddProperty("Radius", radiusControl)
             .VisibleIf(selectionM.WorkingStrokeBrush, e => !e.IsNull);
-
-        var manageDocumentBrush = new Button()
-        {
-            Text = "Manage brush in document",
-            Alignment = HorizontalAlignment.Left,
-            CustomMinimumSize = new(0, 32),
-            SizeFlagsHorizontal = Control.SizeFlags.Fill
-        };
-        manageDocumentBrush.Pressed += () => Document.Get<BrushPanel>().Popup();
-        container.AddChild(manageDocumentBrush);
     }
 
     private void OnUseBrushPressed()

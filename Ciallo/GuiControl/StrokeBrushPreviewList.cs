@@ -61,25 +61,16 @@ public partial class StrokeBrushPreviewList : Container
         return box;
     }
 
-    private PanelContainer CreateBrushPreview(Entity e)
+    private Control CreateBrushPreview(Entity e)
     {
-        var box = new PanelContainer().QueueFreeWith(e);
-        var background = new ColorRect();
-        box.AddChild(background);
-        var stampPreview = new TextureRect()
+        var textureRect = new TextureRect()
         {
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.Scale,
-            CustomMinimumSize = new(32, 32),
+            StretchMode = TextureRect.StretchModeEnum.KeepAspect,
+            Texture = e.Get<ViewportTexture>(),
         };
-        var container = new CenterContainer();
-        container.AddChild(stampPreview);
-        box.AddChild(container);
-
-        var setting = e.Get<StrokeBrushSetting>();
-        setting.Color.Subscribe(background.SetColor).AddTo(e);
-        setting.StampTexture.Subscribe(stampPreview.SetTexture).AddTo(e);
-        return box;
+        textureRect.QueueFreeWith(e);
+        return textureRect;
     }
 
     public override void _Ready()
@@ -109,6 +100,8 @@ public partial class StrokeBrushPreviewList : Container
                 .DeleteBrush()
                 .Commit();
         };
+
+        EditButton.Pressed += () => Document.Get<BrushPanel>().Popup();
     }
 
     private void OnAddOrCopyButtonPressed(Entity copyE = default)

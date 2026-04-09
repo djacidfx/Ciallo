@@ -36,7 +36,9 @@ public partial class AutoloadGuiControl : Node
             document.Add<BodyHolder>(worldBody);
 
             // SubViewport holder (a dummy node for debugging efficiently)
-            paintPanel.AddChild(new SubViewportHolder());
+            var subViewportHolder = new SubViewportHolder();
+            paintPanel.AddChild(subViewportHolder);
+            document.Add(subViewportHolder);
 
             // Document brush editor
             var panel = BrushPanel.Instantiate();
