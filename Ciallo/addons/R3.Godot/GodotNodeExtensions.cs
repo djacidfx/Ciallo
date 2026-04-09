@@ -1,5 +1,4 @@
 ﻿using System;
-using Frent;
 using Godot;
 
 namespace R3;
@@ -38,10 +37,5 @@ public static class GodotNodeExtensions
 
         node.TreeExited += () => disposable.Dispose();
         return disposable;
-    }
-
-    public static void AddTo(this IDisposable disposable, Entity e)
-    {
-        e.OnDelete += _ => disposable.Dispose();
     }
 }

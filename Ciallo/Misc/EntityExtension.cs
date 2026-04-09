@@ -1,4 +1,5 @@
-﻿using Ciallo.Data;
+﻿using System;
+using Ciallo.Data;
 using Frent;
 
 namespace Ciallo;
@@ -21,5 +22,11 @@ public static class EntityExtension
         public T TryGet<T>() where T : class => self.IsNull || !self.TryHas<T>() ? null : self.Get<T>();
 
         public static bool IsNotNull(Entity e) => !e.IsNull;
+    }
+
+    public static T AddTo<T>(this T disposable, Entity e) where T : IDisposable
+    {
+        e.OnDelete += _ => disposable.Dispose();
+        return disposable;
     }
 }
