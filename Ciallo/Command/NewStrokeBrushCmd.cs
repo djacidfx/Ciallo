@@ -56,7 +56,8 @@ public class NewStrokeBrushCmd : CommandBase
         {
             Material = material,
         };
-        var previewRect = new Rect2(Vector2.Zero, size).Grow(-32f);
+        float gv = 16;
+        var previewRect = new Rect2(Vector2.Zero, size).GrowIndividual(-gv, -2*gv, -gv, -2*gv);
         _setting.BaseRadius.CombineLatest(_setting.Pressure2RadiusCurve.Changed.Prepend(Unit.Default), (r, _) => r)
             .Subscribe(r =>
             {
@@ -71,6 +72,14 @@ public class NewStrokeBrushCmd : CommandBase
                 previewStroke.SetGeometry(CreatePreviewGeometry(previewRect, n), radius);
             });
 
+        // background
+        var bg = new ColorRect
+        {
+            Size = new Vector2(size.X, size.Y),
+            Material = AutoloadRendering.CheckerboardMaterial,
+            Color = Colors.Transparent,
+        };
+        viewport.AddChild(bg);
         viewport.AddChild(previewStroke);
 
         Document.Get<SubViewportHolder>().AddChild(viewport);
@@ -92,7 +101,6 @@ public class NewStrokeBrushCmd : CommandBase
         brushE.Detach<ToSerializeTag>();
     }
 
-    private static List<Vector2> PreviewGeometry;
 
     private static List<Vector2> CreatePreviewGeometry(Rect2 dst, int numPoints = 32)
     {

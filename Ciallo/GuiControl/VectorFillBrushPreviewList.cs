@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
+using Ciallo.Rendering;
 using Frent;
 using Godot;
 using ObservableCollections;
@@ -63,9 +64,8 @@ public partial class VectorFillBrushPreviewList : Container
 
     private PanelContainer CreateBrushPreview(Entity e)
     {
-        var checkerboardMaterial = GD.Load<ShaderMaterial>("res://Rendering/Checkerboard.tres");
         var box = new PanelContainer().QueueFreeWith(e);
-        var background = new ColorRect() { Material = checkerboardMaterial };
+        var background = new ColorRect() { Material = AutoloadRendering.CheckerboardMaterial };
         box.AddChild(background);
         var markerPreview = new TextureRect()
         {

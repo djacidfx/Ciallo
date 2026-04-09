@@ -21,6 +21,7 @@ public partial class AutoloadRendering : Node
         Width = 256,
         Height = 256,
     };
+    public static readonly ShaderMaterial CheckerboardMaterial = GD.Load<ShaderMaterial>("res://Rendering/Checkerboard.tres");
 
     public override void _Ready()
     {
