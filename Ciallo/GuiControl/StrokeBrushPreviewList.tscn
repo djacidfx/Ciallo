@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://bgxr2a6lqjqvy" path="res://Icon/wrench.svg" id="5_7nalv"]
 [ext_resource type="Script" uid="uid://b2pgo2j4ka41x" path="res://Widget/DynamicGridItemList.cs" id="5_k4hjg"]
 
-[node name="StrokeBrushPreviewList" type="PanelContainer" unique_id=883336611]
+[node name="StrokeBrushPreviewList" type="MarginContainer" unique_id=431973182]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

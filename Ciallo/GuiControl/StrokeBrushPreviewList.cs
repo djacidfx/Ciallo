@@ -101,7 +101,7 @@ public partial class StrokeBrushPreviewList : Container
                 .Commit();
         };
 
-        EditButton.Pressed += () => Document.Get<BrushPanel>().Popup();
+        EditButton.Pressed += () => Document.Get<StrokeBrushEditor>().Popup();
     }
 
     private void OnAddOrCopyButtonPressed(Entity copyE = default)

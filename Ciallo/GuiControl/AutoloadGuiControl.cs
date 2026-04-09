@@ -40,30 +40,17 @@ public partial class AutoloadGuiControl : Node
             paintPanel.AddChild(subViewportHolder);
             document.Add(subViewportHolder);
 
-            // Document brush editor
-            var panel = BrushPanel.Instantiate();
-            panel.Title = "Brush in document";
-            panel.Visible = false;
-            panel.PopupWindow = true; // Hint user this is different from the brush library panel
-            panel.Exclusive = false; // Allow propagating input (redo/undo mainly) to main window
-            document.Add(panel);
-            ((SceneTree)Engine.GetMainLoop()).GetCurrentScene().AddChild(panel);
-            // Hide controls for being lazy
-            panel.BrushPreviewContainer.Visible = false;
-            panel.Operators.Visible = false;
-            // Bind to document brush settings
-            var bm = document.Get<BrushManager>();
-            panel.BindBrushSetting(bm.StrokeBrushEs, e => e.Get<StrokeBrushSetting>(), document);
+            // Document stroke brush editor
+            var editor = StrokeBrushEditor.New(document);
+            editor.Hide();
+            paintPanel.AddChild(editor);
+            document.Add(editor);
         }).AddTo(this);
 
 
         AppDocumentManager.LoadedDocuments.ObserveRemove().Select(et => et.Value).Subscribe(document =>
         {
-            // Document brush editor
-            document.Get<BrushPanel>().QueueFree();
-            document.Remove<BrushPanel>();
-
-            // View, overlay and body are the children of paint panel
+            // View, overlay... are the children of paint panel
 
             // Paint panel
             var paintPanelContainer = GetTree().GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().Single();
