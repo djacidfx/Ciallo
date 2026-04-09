@@ -1,9 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Ciallo.Data;
+using Ciallo.Geometry;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
+using R3;
 
 namespace Ciallo.Command;
 
@@ -38,7 +41,7 @@ public class NewStrokeBrushCmd : CommandBase
         targetE.Add(material);
 
         // preview texture
-        Vector2I size = new(256 * 2, 256);
+        Vector2I size = new(256, 128);
         var viewport = new SubViewport()
         {
             RenderTargetUpdateMode = SubViewport.UpdateMode.WhenVisible,
@@ -53,7 +56,21 @@ public class NewStrokeBrushCmd : CommandBase
         {
             Material = material,
         };
-        previewStroke.SetGeometry(CreatePreviewGeometry(), 12f);
+        var previewRect = new Rect2(Vector2.Zero, size).Grow(-32f);
+        _setting.BaseRadius.CombineLatest(_setting.Pressure2RadiusCurve.Changed.Prepend(Unit.Default), (r, _) => r)
+            .Subscribe(r =>
+            {
+                int n = 32;
+                float pi = Mathf.Pi;
+                var radius = Enumerable.Range(0, n)
+                    .Select(i => Mathf.Lerp(-pi / 2, pi / 2, (float)i / (n - 1)))
+                    .Select(Mathf.Cos) // pen pressure
+                    .Select(_setting.Pressure2RadiusCurve.SampleX)
+                    .Select(t => t * r.SigmoidRemap(5, 32, 6, 32))
+                    .ToArray();
+                previewStroke.SetGeometry(CreatePreviewGeometry(previewRect, n), radius);
+            });
+
         viewport.AddChild(previewStroke);
 
         Document.Get<SubViewportHolder>().AddChild(viewport);
@@ -75,39 +92,26 @@ public class NewStrokeBrushCmd : CommandBase
         brushE.Detach<ToSerializeTag>();
     }
 
-    // "2"-like Z shape with rounded corners, inside 256x256 viewport
-    private static List<Vector2> CreatePreviewGeometry()
+    private static List<Vector2> PreviewGeometry;
+
+    private static List<Vector2> CreatePreviewGeometry(Rect2 dst, int numPoints = 32)
     {
-        const float cr = 24f;
-        const float crD = 0.7071f * cr; // cr / √2 for 45° diagonal
+        var points = new List<Vector2>(numPoints);
 
-        Vector2 topRight = new(196f, 68f);
-        Vector2 topLeft = new(68f, 68f);
-        Vector2 botRight = new(196f, 196f);
-        Vector2 botLeft = new(60f, 196f);
+        float pi = Mathf.Pi;
+        // x ∈ [-π, π], y ∈ [-1, 1]
+        Rect2 src = new Rect2(-pi, -1f, 2f * pi, 2f);
+        Vector2 scale = dst.Size / src.Size;
+        Vector2 srcCenter = src.GetCenter();
+        Vector2 dstCenter = dst.GetCenter();
+        Transform2D transform = new Transform2D(0f, scale, 0f, dstCenter - srcCenter * scale);
 
-        Vector2 c1Entry = new(topLeft.X + cr, topLeft.Y); // top-left corner entry
-        Vector2 c1Exit = new(topLeft.X + crD, topLeft.Y + crD); // top-left corner exit (diagonal)
-        Vector2 c2Entry = new(botRight.X - crD, botRight.Y - crD); // bot-right corner entry
-        Vector2 c2Exit = new(botRight.X - cr, botRight.Y); // bot-right corner exit (left)
-
-        var points = new List<Vector2>();
-        points.Add(topRight);
-        points.Add(c1Entry);
-        AddBezier(points, c1Entry, topLeft, c1Exit);
-        points.Add(c2Entry);
-        AddBezier(points, c2Entry, botRight, c2Exit);
-        points.Add(botLeft);
-        return points;
-    }
-
-    private static void AddBezier(List<Vector2> points, Vector2 p0, Vector2 p1, Vector2 p2, int steps = 8)
-    {
-        for (int i = 1; i <= steps; i++)
+        for (int i = 0; i < numPoints; i++)
         {
-            float t = i / (float)steps;
-            float u = 1 - t;
-            points.Add(u * u * p0 + 2 * u * t * p1 + t * t * p2);
+            float x = Mathf.Lerp(-pi, pi, (float)i / (numPoints - 1));
+            float y = Mathf.Sin(x);
+            points.Add(transform * new Vector2(x, y));
         }
+        return points;
     }
 }
