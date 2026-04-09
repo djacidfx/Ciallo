@@ -26,6 +26,27 @@ public partial class DynamicGridContainer : Container
         }
     } = 48;
 
+    /// <summary>Actual max row height = MaxRowHeightRatio * MinRowHeight. Set to 0 to disable.</summary>
+    [Export] public float MaxRowHeightRatio
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueSort();
+        }
+    } = 2.0f;
+
+    [Export] public float AspectRatio
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueSort();
+        }
+    } = 1.0f;
+
     // ── cached layout state (set in Resort) ────────────────────────────────
     protected int Cols;
     protected Vector2 ItemSize;
@@ -67,16 +88,22 @@ public partial class DynamicGridContainer : Container
         if (w <= 0f || children.Count == 0)
             return (1, new Vector2(Mathf.Max(w, 1f), MinRowHeight));
 
-        var ms = children[0].GetCombinedMinimumSize();
-        float nw = Mathf.Max(ms.X, 1f);
-        float nh = Mathf.Max(ms.Y, 1f);
-        float ar = nw / nh;
+        float ar = AspectRatio > 0f ? AspectRatio : 1f;
 
         int colsMax = Mathf.FloorToInt((w + HSep) / (MinRowHeight * ar + HSep));
         int cols = Mathf.Clamp(colsMax, 1, children.Count);
 
         float iw = (w - (cols - 1) * HSep) / cols;
         float ih = iw / ar;
+
+        // Clamp item height to MaxRowHeightRatio * MinRowHeight; shrink width proportionally.
+        float maxRowHeight = MaxRowHeightRatio * MinRowHeight;
+        if (MaxRowHeightRatio > 0f && ih > maxRowHeight)
+        {
+            ih = maxRowHeight;
+            iw = ih * ar;
+        }
+
         return (cols, new(iw, ih));
     }
 
