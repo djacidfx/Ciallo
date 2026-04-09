@@ -1,4 +1,4 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3 uid="uid://cnro8325i0qmw"]
+[gd_resource type="ShaderMaterial" format=3 uid="uid://cnro8325i0qmw"]
 
 [ext_resource type="Shader" uid="uid://bvax4esac5ge3" path="res://Rendering/Checkerboard.gdshader" id="1_cmktr"]
 
