@@ -32,7 +32,6 @@ public class PolylineSelectHover : InteractiveSessionBase
 
     private IDisposable _hoverSub;
     private TransformOverlayBox _transformBox;
-    private List<Entity> _shapeEs;
     private readonly List<Node2D> _wireframes = [];
 
     public readonly ReactiveProperty<float> SimplificationRatio = new(0.25f);
@@ -63,16 +62,20 @@ public class PolylineSelectHover : InteractiveSessionBase
             HoveredShape = body.SelfEntity;
         });
 
+        // Remove prev selected elements, make this project-level operation if duplicated too many times. 
+        var deselect = selectionManager.SelectedShapes
+            .Where(e => e.Get<LayerTreeNode>().ParentValue != WorkingLayer).ToArray();
+        foreach (var e in deselect)
+            selectionManager.SelectedShapes.Remove(e);
+
         // Polyline transform
         if (selectionManager.SelectedShapes.Count > 0)
         {
             var worldOverlay = Document.Get<WorldOverlay>();
 
-            _shapeEs = [..selectionManager.SelectedShapes];
-
             // transform box
             Rect2 rect = default;
-            foreach (var (i, e) in _shapeEs.Index())
+            foreach (var (i, e) in selectionManager.SelectedShapes.Index())
             {
                 var wire = (Node2D)e.Get<PolylineWireframe>().Duplicate(0); // 0 means avoid duplicating script. Script duplication call constructor.
                 worldOverlay.AddChild(wire);
