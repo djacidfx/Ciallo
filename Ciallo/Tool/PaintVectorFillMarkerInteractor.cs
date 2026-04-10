@@ -72,7 +72,8 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
                 cmd.SetObservableCollection(e => e.Get<VectorFillLayerSetting>().ReferenceLayers,
                     layers => layers.AddRange(referencesLayers));
             }
-            cmd.AddToLayerTree(Document).SetWorkingLayer();
+            // index 0 is visual bottom of the layer tree
+            cmd.AddToLayerTree(Document, 0).SetWorkingLayer();
         }
         if (!_fillBrush.IsNull)
         {
