@@ -2,6 +2,7 @@
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
+using Ciallo.Widget;
 using Frent;
 using Godot;
 using ObservableCollections;
@@ -16,8 +17,10 @@ public partial class StrokeBrushPreviewList : Container
     protected ISynchronizedView<Entity, Control> SyncView;
     protected ObservableList<Entity> Brushes;
     protected ReactiveProperty<Entity> WorkingBrush;
-    protected Entity Document;
-    private CompositeDisposable _subs;
+    public Entity Document;
+    private CompositeDisposable _brushesSubs;
+    private CompositeDisposable _workingBrushSubs;
+    public readonly Subject<Entity> BrushClicked = new();
 
     public void Init(Entity document)
     {
@@ -27,26 +30,47 @@ public partial class StrokeBrushPreviewList : Container
         Bind(bm.StrokeBrushEs, sm.WorkingStrokeBrush);
     }
 
+    public void Init() { }
+
     public void Bind(ObservableList<Entity> brushes, ReactiveProperty<Entity> workingBrush)
     {
+        BindBrushes(brushes);
+        BindWorkingBrush(workingBrush);
+    }
+
+    public void BindBrushes(ObservableList<Entity> brushes)
+    {
         Brushes = brushes;
-        _subs?.Dispose();
-        _subs = new();
+        _brushesSubs?.Dispose();
+        _brushesSubs = new();
         SyncView = brushes.CreateView(GetOrCreateBrushPreview);
-        SyncView.AddTo(_subs);
+        SyncView.AddTo(_brushesSubs);
 
         PreviewList.BindChildren(SyncView.ToNotifyCollectionChanged());
 
-        WorkingBrush = workingBrush;
-        workingBrush.Subscribe(e =>
-        {
-            PreviewList.SelectedControl = e.IsNull ? null : GetOrCreateBrushPreview(e);
-        }).AddTo(_subs);
+        PreviewList.SignalAsObservable<int, int>(DynamicGridItemList.SignalName.Moved)
+            .Subscribe(tup => brushes.Move(tup.Item1, tup.Item2))
+            .AddTo(_brushesSubs);
+        PreviewList.SignalAsObservable<int>(DynamicGridItemList.SignalName.ItemClicked)
+            .Subscribe(idx => BrushClicked.OnNext(SyncView.Filtered.ElementAt(idx).Value))
+            .AddTo(_brushesSubs);
+    }
 
-        PreviewList.Moved += (src, dst) =>
-        {
-            Brushes.Move(src, dst);
-        };
+    public void BindWorkingBrush(ReactiveProperty<Entity> workingBrush)
+    {
+        WorkingBrush = workingBrush;
+        _workingBrushSubs?.Dispose();
+        _workingBrushSubs = new();
+        workingBrush.Subscribe(Select).AddTo(_workingBrushSubs);
+
+        PreviewList.SignalAsObservable<int>(DynamicGridItemList.SignalName.ItemClicked)
+            .Subscribe(idx => workingBrush.Value = SyncView.Filtered.ElementAt(idx).Value)
+            .AddTo(_workingBrushSubs);
+    }
+
+    public void Select(Entity e)
+    {
+        PreviewList.SelectedControl = e.IsNull ? null : GetOrCreateBrushPreview(e);
     }
 
     private Control GetOrCreateBrushPreview(Entity e)
@@ -75,18 +99,13 @@ public partial class StrokeBrushPreviewList : Container
 
     public override void _Ready()
     {
-        PreviewList.ItemClicked += idx =>
-        {
-            WorkingBrush.Value = SyncView.Filtered.ElementAt(idx).Value;
-        };
-
         AddButton.Pressed += () => OnAddOrCopyButtonPressed();
 
         CopyButton.Pressed += () => OnAddOrCopyButtonPressed(WorkingBrush.Value);
 
         RemoveButton.Pressed += () =>
         {
-            var oldE = WorkingBrush.Value;
+            var oldE = WorkingBrush?.Value ?? Entity.Null;
             if (oldE.IsNull) return;
             var es = SyncView.Filtered.Select(tup => tup.Value).ToList();
             var oldIdx = es.IndexOf(oldE);
@@ -119,6 +138,8 @@ public partial class StrokeBrushPreviewList : Container
         if (what == NotificationPredelete)
         {
             SyncView?.Dispose();
+            _brushesSubs?.Dispose();
+            _workingBrushSubs?.Dispose();
         }
     }
 }

@@ -44,7 +44,7 @@ public abstract class InteractiveSessionBase
     public abstract bool OnKey(InputEventKey key, CursorButtonData data);
     public virtual void OnMouseButton(InputEventMouseButton button, CursorButtonData data) { }
     public virtual void DrawProperty(PropertyContainer container) { }
-    public virtual void Refresh() // Suppose to only be called by hover sessions.
+    public virtual void Refresh(CursorButtonData data = default) // Suppose to only be called by hover sessions.
     {
         Cancel();
         Start(default);
