@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Immutable;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -28,10 +30,12 @@ public partial class StrokeBrushMaterial : ShaderMaterial
         setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("DashForwardSpeed", speed)).AddTo(Subs);
         // Brush-level flags
         setting.ActiveBrushFlags.Subscribe(value => SetShaderParameter("ActiveBrushFlags", (int)value)).AddTo(Subs);
-        var pp2FlowTex = ImageTexture.CreateFromImage(BakeCurve(setting.Pressure2FlowCurve));
-        setting.Pressure2FlowCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
+        ImageTexture pp2FlowTex = null;
+        setting.Pressure2FlowCurve.Subscribe(points =>
         {
-            pp2FlowTex.Update(BakeCurve(setting.Pressure2FlowCurve));
+            var img = BakeCurve(points);
+            if (pp2FlowTex == null) pp2FlowTex = ImageTexture.CreateFromImage(img);
+            else pp2FlowTex.Update(img);
             SetShaderParameter("Pressure2FlowCurve", pp2FlowTex);
         }).AddTo(Subs);
 
@@ -40,10 +44,12 @@ public partial class StrokeBrushMaterial : ShaderMaterial
         setting.StampInterval.Subscribe(interval => SetShaderParameter("StampInterval", interval)).AddTo(Subs);
         setting.StampTexture.Subscribe(tex => SetShaderParameter("StampTexture", tex)).AddTo(Subs);
         setting.MaskTexture.Subscribe(tex => SetShaderParameter("MultiplyTexture", tex)).AddTo(Subs);
-        var diskOpacityTex = ImageTexture.CreateFromImage(BakeCurve(setting.DiskOpacityCurve));
-        setting.DiskOpacityCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
+        ImageTexture diskOpacityTex = null;
+        setting.DiskOpacityCurve.Subscribe(points =>
         {
-            diskOpacityTex.Update(BakeCurve(setting.DiskOpacityCurve));
+            var img = BakeCurve(points);
+            if (diskOpacityTex == null) diskOpacityTex = ImageTexture.CreateFromImage(img);
+            else diskOpacityTex.Update(img);
             SetShaderParameter("DiskOpacityCurve", diskOpacityTex);
         }).AddTo(Subs);
         setting.StampRotation.Subscribe(rotation =>
@@ -57,10 +63,12 @@ public partial class StrokeBrushMaterial : ShaderMaterial
         setting.RotationNoiseFrequency.Subscribe(value => SetShaderParameter("RotationNoiseFrequency", value)).AddTo(Subs);
 
         // Airbrush
-        var falloffTex = ImageTexture.CreateFromImage(BakeCurve(setting.FalloffCurve));
-        setting.FalloffCurve.Changed.Prepend(new Unit()).Subscribe(_ =>
+        ImageTexture falloffTex = null;
+        setting.FalloffCurve.Subscribe(points =>
         {
-            falloffTex.Update(BakeCurve(setting.FalloffCurve));
+            var img = BakeCurve(points);
+            if (falloffTex == null) falloffTex = ImageTexture.CreateFromImage(img);
+            else falloffTex.Update(img);
             SetShaderParameter("FalloffCurve", falloffTex);
         }).AddTo(Subs);
         setting.AlphaDensity.Subscribe(v => SetShaderParameter("AlphaDensity", v)).AddTo(Subs);
@@ -76,13 +84,13 @@ public partial class StrokeBrushMaterial : ShaderMaterial
         }
     }
 
-    public static Image BakeCurve(BezierCurve curve)
+    public static Image BakeCurve(ImmutableArray<BezierPoint> points)
     {
         int n = 512;
-        curve.Tessellate(n);
-        var data = curve.SampleXList(Enumerable.Range(0, n).Select(i => (float)i / n).ToArray());
-        var bytes = MemoryMarshal.AsBytes(CollectionsMarshal.AsSpan(data));
-        var img = Image.CreateFromData(data.Count, 1, false, Image.Format.Rf, bytes);
+        var xs = Enumerable.Range(0, n).Select(i => (float)i / n).ToArray();
+        var data = points.SampleXList(xs);
+        var bytes = MemoryMarshal.AsBytes(data.AsSpan());
+        var img = Image.CreateFromData(data.Length, 1, false, Image.Format.Rf, bytes);
         img.GenerateMipmaps();
         return img;
     }

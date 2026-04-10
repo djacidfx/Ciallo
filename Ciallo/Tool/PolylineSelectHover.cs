@@ -296,7 +296,7 @@ public class PolylineSelectHover : InteractiveSessionBase
 
                 foreach (var polyT in polyTs)
                 {
-                    var (idx, t) = polyT.ResolvePolyT();
+                    var (idx, t) = polyT.Modf();
                     int nIdx = int.Min(idx + 1, geom.Count - 1);
                     positions.Add(geom.Positions.Value[idx].Lerp(geom.Positions.Value[nIdx], t));
                     radii.Add(float.Lerp(geom.Radii.Value[idx], geom.Radii.Value[nIdx], t));

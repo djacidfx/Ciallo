@@ -27,8 +27,7 @@ public class PaintHover : InteractiveSessionBase
 
     public override void DrawProperty(PropertyContainer container)
     {
-        var ppCurveEdit = new MappingCurveEdit();
-        ppCurveEdit.Curve = AppPreference.PenPressureRemapCurve;
+        var ppCurveEdit = new MappingCurveEdit().BindCurve(AppPreference.PenPressureRemapCurve);
         var aspectBox = new AspectRatioContainer();
         aspectBox.AddChild(ppCurveEdit);
         container.AddProperty("Global pen pressure remap", aspectBox);

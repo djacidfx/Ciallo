@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Runtime.Serialization;
 using Ciallo.Geometry;
 using Ciallo.Tool;
@@ -48,7 +50,7 @@ public class Preference
     public float StrokeDotRadius = 12f;
 
     [DataMember]
-    public BezierCurve PenPressureRemapCurve = BezierCurve.EaseInOut();
+    public ReactiveProperty<ImmutableArray<BezierPoint>> PenPressureRemapCurve = new(BezierCurveFactory.EaseInOut());
 
     #region Save Load Json
 
@@ -69,8 +71,15 @@ public class Preference
         using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
         string content = file.GetAsText();
 
-        JsonConvert.PopulateObject(content, this, JsonOptions);
-        return true;
+        try
+        {
+            JsonConvert.PopulateObject(content, this, JsonOptions);
+            return true;
+        }
+        catch (Exception)
+        {
+            return false;
+        }
     }
 
     public void Save()

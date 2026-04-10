@@ -119,7 +119,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
         {
             if (mouseEvent is InputEventMouseMotion motion)
             {
-                var currentPressure = AppPreference.PenPressureRemapCurve.SampleX(motion.Pressure);
+                var currentPressure = AppPreference.PenPressureRemapCurve.Value.SampleX(motion.Pressure);
 
                 DispatchMotion(new()
                 {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -57,17 +58,18 @@ public class NewStrokeBrushCmd : CommandBase
             Material = material,
         };
         float gv = 16;
-        var previewRect = new Rect2(Vector2.Zero, size).GrowIndividual(-gv, -2*gv, -gv, -2*gv);
-        _setting.BaseRadius.CombineLatest(_setting.Pressure2RadiusCurve.Changed.Prepend(Unit.Default), (r, _) => r)
-            .Subscribe(r =>
+        var previewRect = new Rect2(Vector2.Zero, size).GrowIndividual(-gv, -2 * gv, -gv, -2 * gv);
+        _setting.BaseRadius.CombineLatest(_setting.Pressure2RadiusCurve, ValueTuple.Create)
+            .Subscribe(combo =>
             {
+                var (r, pts) = combo;
                 int n = 32;
                 float pi = Mathf.Pi;
                 var radius = Enumerable.Range(0, n)
                     .Select(i => Mathf.Lerp(-pi / 2, pi / 2, (float)i / (n - 1)))
                     .Select(Mathf.Cos) // pen pressure
-                    .Select(_setting.Pressure2RadiusCurve.SampleX)
-                    .Select(t => t * r.SigmoidRemap(5, 32, 6, 32))
+                    .Select(x => pts.SampleX(x))
+                    .Select(ratio => ratio * r.SigmoidRemap(5, 32, 8, 32))
                     .ToArray();
                 previewStroke.SetGeometry(CreatePreviewGeometry(previewRect, n), radius);
             });

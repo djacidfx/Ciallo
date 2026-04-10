@@ -118,17 +118,23 @@ public static class PolylineExtension
     /// <param name="polyline"></param>
     /// <param name="x"></param>
     /// <returns>Y value at the given x</returns>
-    public static float SampleX([NotNull] this List<Vector2> polyline, float x)
+    public static float SampleX([NotNull] this IReadOnlyList<Vector2> polyline, float x)
     {
         if (polyline.Count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
         if (polyline.Count == 1) return polyline[0].Y;
         if (polyline.Count == 2) return SampleSegment(polyline[0], polyline[1], x);
 
-        var searchResult = polyline.BinarySearch(new Vector2(x, 0), Comparer<Vector2>.Create((a, b) => a.X.CompareTo(b.X)));
-        if (searchResult >= 0) return polyline[searchResult].Y;
-        // Get the index of the closest point after x
-        // see https://learn.microsoft.com/en-us/dotnet/api/system.array.binarysearch for the return value.
-        int idx = ~searchResult;
+        int lo = 0, hi = polyline.Count - 1;
+        while (lo <= hi)
+        {
+            int mid = (lo + hi) >> 1;
+            int cmp = polyline[mid].X.CompareTo(x);
+            if (cmp < 0) lo = mid + 1;
+            else if (cmp > 0) hi = mid - 1;
+            else return polyline[mid].Y; // exact match
+        }
+        // lo is the insertion point: first index where polyline[lo].X > x
+        int idx = lo;
         if (idx == 0) return polyline[0].Y;
         if (idx == polyline.Count) return polyline[^1].Y;
         return SampleSegment(polyline[idx - 1], polyline[idx], x);
@@ -147,40 +153,39 @@ public static class PolylineExtension
     /// <summary>
     /// Sample the polyline by the given x ordered list from small to large.
     /// </summary>
-    public static List<float> SampleXList([NotNull] this IReadOnlyList<Vector2> polyline, IReadOnlyList<float> xs)
+    public static float[] SampleXList([NotNull] this IReadOnlyList<Vector2> polyline, IReadOnlyList<float> xs)
     {
         int count = polyline.Count;
         if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
-        var ys = new List<float>(xs.Count);
+        var ys = new float[xs.Count];
         if (count == 1)
         {
             float y0 = polyline[0].Y;
             for (int i = 0; i < xs.Count; i++)
-                ys.Add(y0);
+                ys[i] = y0;
             return ys;
         }
         // For monotone-in-X polyline and sorted xs, scan segments in one pass
         int segIdx = 1;
-        foreach (var x in xs)
+        for (int i = 0; i < xs.Count; i++)
         {
+            float x = xs[i];
             // before first point
             if (x <= polyline[0].X)
             {
-                ys.Add(polyline[0].Y);
+                ys[i] = polyline[0].Y;
                 continue;
             }
             // after last point
             if (x >= polyline[count - 1].X)
             {
-                ys.Add(polyline[count - 1].Y);
+                ys[i] = polyline[count - 1].Y;
                 continue;
             }
             // advance segment until x is within [prev.X, curr.X]
             while (segIdx < count - 1 && x > polyline[segIdx].X)
                 segIdx++;
-            var p0 = polyline[segIdx - 1];
-            var p1 = polyline[segIdx];
-            ys.Add(SampleSegment(p0, p1, x));
+            ys[i] = SampleSegment(polyline[segIdx - 1], polyline[segIdx], x);
         }
         return ys;
     }

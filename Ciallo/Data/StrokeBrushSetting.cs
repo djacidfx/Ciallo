@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Runtime.Serialization;
 using Ciallo.Geometry;
 using Ciallo.Widget;
@@ -17,9 +18,9 @@ public class StrokeBrushSetting
     [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
     [DataMember] public ReactiveProperty<BrushFlags> ActiveBrushFlags = new();
     [DataMember] public ReactiveProperty<float> BaseRadius = new(5.0f);
-    [DataMember] public BezierCurve Pressure2RadiusCurve = BezierCurve.Linear(0.2f, 1.0f); // radius = baseRadius * curve(pressure)
+    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> Pressure2RadiusCurve = new(BezierCurveFactory.Linear(0.2f, 1.0f)); // radius = baseRadius * curve(pressure)
     [DataMember] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
-    [DataMember] public BezierCurve Pressure2FlowCurve = BezierCurve.Constant(1.0f); // finalFlow = curve(pressure) * Color.a
+    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> Pressure2FlowCurve = new(BezierCurveFactory.Constant(1.0f)); // finalFlow = curve(pressure) * Color.a
 
     // Vanilla
     [DataMember] public ReactiveProperty<float> DashLength = new(2.0f);
@@ -30,7 +31,7 @@ public class StrokeBrushSetting
     [DataMember] public ReactiveProperty<StampFlags> ActiveStampFlags = new();
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
     [DataMember] public ReactiveProperty<ImageTexture> StampTexture = new(null);
-    [DataMember] public BezierCurve DiskOpacityCurve = BezierCurve.EaseInOut(1.0f, 0.0f);
+    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> DiskOpacityCurve = new(BezierCurveFactory.EaseInOut(1.0f, 0.0f));
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
     [DataMember] public ReactiveProperty<ImageTexture> MaskTexture = new(null);
 
@@ -39,7 +40,7 @@ public class StrokeBrushSetting
     [DataMember] public ReactiveProperty<float> RotationNoiseFrequency = new(0.01f);
 
     // Airbrush
-    [DataMember] public BezierCurve FalloffCurve = BezierCurve.Linear(1.0f, 0.0f);
+    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> FalloffCurve = new(BezierCurveFactory.Linear(1.0f, 0.0f));
     [DataMember] public ReactiveProperty<float> AlphaDensity = new(1.0f);
 
     public void DrawProperty(PropertyContainer container)
@@ -69,14 +70,12 @@ public class StrokeBrushSetting
         picker.ColorMode = ColorPicker.ColorModeType.Rgb;
         container.AddProperty("RGB+Flow", colorPickerButton.BindColor(Color));
 
-        var pp2RadiusCurveEdit = new MappingCurveEdit { MinValue = 0.01f }; // MinValue avoid potential zero radius issue.
-        pp2RadiusCurveEdit.Curve = Pressure2RadiusCurve;
+        var pp2RadiusCurveEdit = new MappingCurveEdit { MinValue = 0.01f }.BindCurve(Pressure2RadiusCurve);
         var aspectBox = new AspectRatioContainer();
         aspectBox.AddChild(pp2RadiusCurveEdit);
         container.AddProperty("Pressure to radius", aspectBox);
 
-        var pp2FlowCurveEdit = new MappingCurveEdit();
-        pp2FlowCurveEdit.Curve = Pressure2FlowCurve;
+        var pp2FlowCurveEdit = new MappingCurveEdit().BindCurve(Pressure2FlowCurve);
         var flowCurveFlagCheck = new CheckBox().BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
         container.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit).AddToChildOf(container);
 
@@ -105,8 +104,7 @@ public class StrokeBrushSetting
         container.CreateCheckBoxCombo("Stamp texture", stampTextureFlagCheck, stampTextureEdit).AddToChildOf(stampBox);
 
         var maskDiskFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskDisk);
-        var diskOpacityCurveEdit = new MappingCurveEdit();
-        diskOpacityCurveEdit.Curve = DiskOpacityCurve;
+        var diskOpacityCurveEdit = new MappingCurveEdit().BindCurve(DiskOpacityCurve);
         container.CreateCheckBoxCombo("Mask disk", maskDiskFlagCheck, diskOpacityCurveEdit).AddToChildOf(stampBox);
 
         var maskTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskTexture);
@@ -157,8 +155,7 @@ public class StrokeBrushSetting
         container.CreatePropertyBox("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
 
         // ---------Airbrush----------
-        var falloffCurveEdit = new MappingCurveEdit();
-        falloffCurveEdit.Curve = FalloffCurve;
+        var falloffCurveEdit = new MappingCurveEdit().BindCurve(FalloffCurve);
         container.AddProperty("Opacity falloff", falloffCurveEdit).VisibleIf(RenderingType, BrushRenderingType.Airbrush);
 
         var alphaDensityControl = new SpinSlider
@@ -199,8 +196,8 @@ public class StrokeBrushSetting
     public Func<CursorMotionData, float> ToRadiusSampler()
     {
         var baseRadius = BaseRadius.Value;
-        var curve = Pressure2RadiusCurve;
-        return data => baseRadius * curve.SampleX(data.Pressure);
+        var points = Pressure2RadiusCurve.Value; // capture snapshot at sampler creation time
+        return data => baseRadius * points.SampleX(data.Pressure);
     }
 }
 
