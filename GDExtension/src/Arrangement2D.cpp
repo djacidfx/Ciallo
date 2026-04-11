@@ -60,10 +60,15 @@ TypedArray<RID> Arrangement2D::set_polyline(RID id, PackedVector2Array data)
 
 	CGAL::Curve_handle curve_handle = *ptr;
 	if (curve_handle != nullptr)
+	{
 		CGAL::remove_curve(Arrangement, curve_handle);
+		*ptr = nullptr;
+	}
+
 
 	data = RemoveConsecutiveOverlappingPoint(data);
-	if (data.size() < 2) return {};
+	if (data.size() < 2)
+		return {};
 	CGAL::Curve curve = CurveConstructor(Vector2Point(data));
 	auto handle = CGAL::insert(Arrangement, curve);
 	*ptr = handle;
@@ -82,8 +87,8 @@ TypedArray<RID> Arrangement2D::remove_polyline(RID id)
     	print_error(vformat("Given rid {} is not a polyline", id));
     	return {};
     }
+	CGAL::Curve_handle curve_handle = *ptr;
     CurveHandleOwner.free(id);
-    CGAL::Curve_handle curve_handle = *ptr;
 	if (curve_handle != nullptr)
 		CGAL::remove_curve(Arrangement, curve_handle);
 
