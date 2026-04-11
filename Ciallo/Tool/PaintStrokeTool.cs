@@ -14,12 +14,20 @@ public class PaintStrokeTool : StateMachineToolBase
     public readonly ReactiveProperty<Entity> BrushE = new(Entity.Null);
 
     public readonly PaintStrokeHover Hover = new();
-    public readonly PaintStrokeInteractor Left = new() { MovingMinInterval = TimeSpan.Zero };
+    public readonly PaintStrokeInteractor Left = new();
+    public readonly PaintStrokeOnVectorFill LeftOnFill = new();
 
     protected override void ConfigureStateMachine()
     {
         ConfigureInitial(Hover)
-            .PermitIf(Press(MouseButton.Left), Left, () =>
+            .PermitDynamicIf(Press(MouseButton.Left), () =>
+            {
+                if (WorkingLayer.Has<ShapeLayerSetting>())
+                    return Left;
+                if (WorkingLayer.Has<VectorFillLayerSetting>())
+                    return LeftOnFill;
+                throw new InvalidOperationException("Unreachable code: layer type is guaranteed by CanHandleLayer");
+            }, () =>
             {
                 var brushE = Document.Get<SelectionManager>().WorkingStrokeBrush.Value;
                 return !brushE.IsDyingOrDead || AppBrushLibrary.HasSelection;
@@ -29,12 +37,19 @@ public class PaintStrokeTool : StateMachineToolBase
             .Permit(Release(MouseButton.Left), Hover)
             .Permit(Press(AppActions.CancelInteraction), Hover)
             .Permit(Press(AppActions.ConfirmInteraction), Hover);
+
+        Configure(LeftOnFill)
+            .Permit(Release(MouseButton.Left), Hover)
+            .Permit(Press(AppActions.CancelInteraction), Hover)
+            .Permit(Press(AppActions.ConfirmInteraction), Hover);
     }
 
     public override bool CanHandleLayer(params Entity[] layerEs)
     {
         if (layerEs.Length != 1) return false;
         var e = layerEs.Single();
-        return !e.IsDyingOrDead && e.Has<ShapeLayerSetting>();
+        bool isShapeLayer = e.Has<ShapeLayerSetting>();
+        bool isVectorFillLayer = e.Has<VectorFillLayerSetting>();
+        return isShapeLayer || isVectorFillLayer;
     }
 }

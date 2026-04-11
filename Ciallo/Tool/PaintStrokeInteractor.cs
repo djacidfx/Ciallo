@@ -1,4 +1,5 @@
-﻿using Ciallo.Command;
+﻿using System;
+using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
@@ -15,6 +16,11 @@ public class PaintStrokeInteractor : InteractiveSessionBase
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
     };
+
+    public PaintStrokeInteractor()
+    {
+        MovingMinInterval = TimeSpan.Zero;
+    }
 
     public override void Start(CursorButtonData data)
     {
