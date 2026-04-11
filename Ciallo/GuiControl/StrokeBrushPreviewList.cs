@@ -46,7 +46,7 @@ public partial class StrokeBrushPreviewList : Container
         SyncView = brushes.CreateView(GetOrCreateBrushPreview);
         SyncView.AddTo(_brushesSubs);
 
-        PreviewList.BindChildren(SyncView.ToNotifyCollectionChanged());
+        PreviewList.ObserveChildren(SyncView.ToNotifyCollectionChanged());
 
         PreviewList.SignalAsObservable<int, int>(DynamicGridItemList.SignalName.Moved)
             .Subscribe(tup => brushes.Move(tup.Item1, tup.Item2))
