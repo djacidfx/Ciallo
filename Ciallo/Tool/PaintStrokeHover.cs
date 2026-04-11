@@ -10,7 +10,7 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public class PaintHover : InteractiveSessionBase
+public class PaintStrokeHover : InteractiveSessionBase
 {
     public override void Start(CursorButtonData data)
     {

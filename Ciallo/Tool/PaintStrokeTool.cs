@@ -9,12 +9,12 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Paint)]
-public class PaintTool : StateMachineToolBase
+public class PaintStrokeTool : StateMachineToolBase
 {
     public readonly ReactiveProperty<Entity> BrushE = new(Entity.Null);
 
-    public readonly PaintHover Hover = new();
-    public readonly PaintInteractor Left = new() { MovingMinInterval = TimeSpan.Zero };
+    public readonly PaintStrokeHover Hover = new();
+    public readonly PaintStrokeInteractor Left = new() { MovingMinInterval = TimeSpan.Zero };
 
     protected override void ConfigureStateMachine()
     {

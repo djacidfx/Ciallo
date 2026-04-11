@@ -7,11 +7,11 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class PaintInteractor : InteractiveSessionBase
+public class PaintStrokeInteractor : InteractiveSessionBase
 {
-    private Entity _brushE;
-    private StrokeView _strokePreview;
-    private readonly PolylineInteractiveGenerator _generator = new()
+    public Entity BrushE;
+    public StrokeView StrokePreview;
+    public readonly PolylineInteractiveGenerator Generator = new()
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
     };
@@ -28,37 +28,37 @@ public class PaintInteractor : InteractiveSessionBase
                 .NewStrokeBrush(setting).SetWorkingStrokeBrush().Commit();
             AppBrushLibrary.SelectedIndex.Value = -1;
         }
-        _brushE = Document.Get<SelectionManager>().WorkingStrokeBrush.Value;
+        BrushE = Document.Get<SelectionManager>().WorkingStrokeBrush.Value;
 
-        var brushMaterial = _brushE.Get<StrokeBrushMaterial>();
+        var brushMaterial = BrushE.Get<StrokeBrushMaterial>();
 
-        _strokePreview = new StrokeView();
-        _strokePreview.Material = brushMaterial;
+        StrokePreview = new StrokeView();
+        StrokePreview.Material = brushMaterial;
         var layerView = WorkingLayer.Get<ShapeLayerView>();
-        layerView.AddChild(_strokePreview);
+        layerView.AddChild(StrokePreview);
 
-        var brushSetting = _brushE.Get<StrokeBrushSetting>();
-        _generator.RadiusSampler = brushSetting.ToRadiusSampler();
+        var brushSetting = BrushE.Get<StrokeBrushSetting>();
+        Generator.RadiusSampler = brushSetting.ToRadiusSampler();
 
-        _generator.Start(data);
-        _strokePreview.SetGeometry(_generator.Positions, _generator.Radii, _generator.Pressures);
+        Generator.Start(data);
+        StrokePreview.SetGeometry(Generator.Positions, Generator.Radii, Generator.Pressures);
     }
 
     public override void Moving(CursorMotionData data)
     {
-        _generator.Update(data);
-        _strokePreview.SetGeometry(_generator.Positions, _generator.Radii, _generator.Pressures);
+        Generator.Update(data);
+        StrokePreview.SetGeometry(Generator.Positions, Generator.Radii, Generator.Pressures);
     }
 
     public override void End(CursorButtonData data)
     {
-        _generator.End(data);
+        Generator.End(data);
 
         new CommandBuilder(WorkingLayer.World.Create())
             .NewStroke()
             .AddToLayerTree(WorkingLayer)
-            .SetProperty(e => e.Get<StrokeSetting>().BrushE, _brushE)
-            .SetPolylineGeometry([.._generator.Positions], [.._generator.Radii], [.._generator.Pressures], [.._generator.Tilts])
+            .SetProperty(e => e.Get<StrokeSetting>().BrushE, BrushE)
+            .SetPolylineGeometry([..Generator.Positions], [..Generator.Radii], [..Generator.Pressures], [..Generator.Tilts])
             .Commit();
         Clear();
     }
@@ -68,9 +68,9 @@ public class PaintInteractor : InteractiveSessionBase
 
     public void Clear()
     {
-        _generator.Clear();
-        _strokePreview.QueueFree();
-        _strokePreview = null;
+        Generator.Clear();
+        StrokePreview.QueueFree();
+        StrokePreview = null;
         Input.MouseMode = Input.MouseModeEnum.Visible;
     }
 }
