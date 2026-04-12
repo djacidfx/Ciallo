@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using Ciallo.Data;
@@ -191,30 +192,41 @@ public class ArrangementSynchronizationHelper
             layerSubs[layerE] = layerDisposables;
 
             var layerNode = layerE.Get<LayerTreeNode>();
-
+            var shapeSubs = new Dictionary<Entity, IDisposable>();
 
             // _shapePositions already has correct values for existing shapes — skip current emission, watch future changes only
             foreach (var shapeE in layerNode.Children)
-                shapeE.Get<PolylineGeometry>().Positions
+                shapeSubs[shapeE] = shapeE.Get<PolylineGeometry>().Positions
                     .Skip(1)
-                    .Subscribe(p => _shapePositions[shapeE] = p)
-                    .AddTo(layerDisposables);
+                    .Subscribe(p => _shapePositions[shapeE] = p);
 
             // New shapes entering: subscribe from first emission to populate dict
             layerNode.ObserveAddChild()
                 .Select(et => et.Value)
                 .Subscribe(shapeE =>
                 {
-                    shapeE.Get<PolylineGeometry>().Positions
-                        .Subscribe(p => _shapePositions[shapeE] = p)
-                        .AddTo(layerDisposables);
+                    shapeSubs[shapeE] = shapeE.Get<PolylineGeometry>().Positions
+                        .Subscribe(p => _shapePositions[shapeE] = p);
                 }).AddTo(layerDisposables);
 
-            // Shapes leaving: remove from dict
+            // Shapes leaving: dispose per-shape subscription and remove from dict
             layerNode.ObserveRemoveChild()
                 .Select(et => et.Value)
-                .Subscribe(shapeE => _shapePositions.Remove(shapeE))
+                .Subscribe(shapeE =>
+                {
+                    if (shapeSubs.Remove(shapeE, out var d))
+                        d.Dispose();
+                    _shapePositions.Remove(shapeE);
+                })
                 .AddTo(layerDisposables);
+
+            // Dispose all remaining per-shape subscriptions when the layer is unsubscribed
+            layerDisposables.Add(Disposable.Create(() =>
+            {
+                foreach (var d in shapeSubs.Values)
+                    d.Dispose();
+                shapeSubs.Clear();
+            }));
         }
     }
 }

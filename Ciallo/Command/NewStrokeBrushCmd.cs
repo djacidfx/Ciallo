@@ -72,7 +72,7 @@ public class NewStrokeBrushCmd : CommandBase
                     .Select(ratio => ratio * r.SigmoidRemap(5, 32, 8, 32))
                     .ToArray();
                 previewStroke.SetGeometry(CreatePreviewGeometry(previewRect, n), radius);
-            });
+            }).AddTo(targetE);
 
         // background
         var bg = new ColorRect
