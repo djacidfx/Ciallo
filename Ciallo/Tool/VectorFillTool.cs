@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Ciallo.Command;
 using Ciallo.Data;
@@ -6,7 +7,8 @@ using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
-using Godot.Collections;
+using R3;
+using Array = Godot.Collections.Array;
 
 namespace Ciallo.Tool;
 
@@ -42,16 +44,38 @@ public class VectorFillTool : StateMachineToolBase
         return e.Has<VectorFillLayerSetting>();
     }
 
+    public readonly Subject<Unit> DeactivateSignal = new();
     public override void OnActivated()
     {
-        if (WorkingLayer.Has<VectorFillLayerSetting>())
-            WorkingLayer.Get<OverlayHolder>().Visible = true;
+        if (!WorkingLayer.Has<VectorFillLayerSetting>()) return;
+        WorkingLayer.Get<OverlayHolder>().Visible = true;
+
+        var referenceLayers = WorkingLayer.Get<VectorFillLayerSetting>().ReferenceLayers;
+        AppPreference.ShowVectorFillReferenceLayerWireframe
+            .TakeUntil(DeactivateSignal)
+            .Subscribe(visible => SetWireframeVisibility(referenceLayers, visible),
+                _ => SetWireframeVisibility(referenceLayers, false));
     }
 
     public override void OnDeactivated()
     {
-        if (WorkingLayer.Has<VectorFillLayerSetting>())
-            WorkingLayer.Get<OverlayHolder>().Visible = false;
+        DeactivateSignal.OnNext(Unit.Default);
+        if (!WorkingLayer.Has<VectorFillLayerSetting>()) return;
+        WorkingLayer.Get<OverlayHolder>().Visible = false;
+    }
+
+    public static void SetWireframeVisibility(IEnumerable<Entity> list, bool visible)
+    {
+        foreach (var e in list)
+        {
+            e.Get<OverlayHolder>().Visible = visible;
+            foreach (var n in e.Get<OverlayHolder>().GetChildren())
+            {
+                var node = (PolylineWireframe)n;
+                node.Visible = visible;
+                node.Dots.Visible = !visible;
+            }
+        }
     }
 }
 

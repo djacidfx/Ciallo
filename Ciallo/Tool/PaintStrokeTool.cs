@@ -52,4 +52,21 @@ public class PaintStrokeTool : StateMachineToolBase
         bool isVectorFillLayer = e.Has<VectorFillLayerSetting>();
         return isShapeLayer || isVectorFillLayer;
     }
+
+    public readonly Subject<Unit> DeactivateSignal = new();
+    public override void OnActivated()
+    {
+        if (!WorkingLayer.Has<VectorFillLayerSetting>()) return;
+
+        var referenceLayers = WorkingLayer.Get<VectorFillLayerSetting>().ReferenceLayers;
+        AppPreference.ShowVectorFillReferenceLayerWireframe
+            .TakeUntil(DeactivateSignal)
+            .Subscribe(visible => VectorFillTool.SetWireframeVisibility(referenceLayers, visible),
+                _ => VectorFillTool.SetWireframeVisibility(referenceLayers, false));
+    }
+
+    public override void OnDeactivated()
+    {
+        DeactivateSignal.OnNext(Unit.Default);
+    }
 }

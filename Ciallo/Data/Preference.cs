@@ -96,5 +96,8 @@ public class Preference
     [DataMember]
     public ReactiveProperty<float> VectorFillMarkerRadius = new(10.0f);
 
+    [DataMember]
+    public ReactiveProperty<bool> ShowVectorFillReferenceLayerWireframe = new(false);
+
     #endregion
 }

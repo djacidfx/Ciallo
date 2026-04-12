@@ -80,5 +80,13 @@ public class VectorFillHover : InteractiveSessionBase
                 .BindColor(fillColor)
                 .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
         );
+
+        var showWireframe = new CheckButton()
+            {
+                SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+                CustomMinimumSize = new(128, 0),
+            }
+            .BindBool(AppPreference.ShowVectorFillReferenceLayerWireframe);
+        container.AddProperty("Show reference wireframe", showWireframe);
     }
 }

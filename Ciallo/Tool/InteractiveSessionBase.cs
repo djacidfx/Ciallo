@@ -47,6 +47,6 @@ public abstract class InteractiveSessionBase
     public virtual void Refresh(CursorButtonData data = default) // Suppose to only be called by hover sessions.
     {
         Cancel();
-        Start(default);
+        Start(data);
     }
 }
