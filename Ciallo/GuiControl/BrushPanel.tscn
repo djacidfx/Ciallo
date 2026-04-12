@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://dw0q5mir7loyl"]
+[gd_scene format=3 uid="uid://dw0q5mir7loyl"]
 
 [ext_resource type="Script" uid="uid://b6xc7pixx1opt" path="res://GuiControl/BrushPanel.cs" id="1_0mb0o"]
 [ext_resource type="Texture2D" uid="uid://dm6dr88emw3ta" path="res://Icon/plus.svg" id="2_8ha6r"]
@@ -19,7 +19,7 @@ gradient = SubResource("Gradient_ydbix")
 fill = 2
 repeat = 1
 
-[node name="BrushPanel" type="AcceptDialog"]
+[node name="BrushPanel" type="AcceptDialog" unique_id=1348164898]
 auto_translate_mode = 1
 use_hdr_2d = true
 oversampling_override = 1.0
@@ -29,7 +29,7 @@ size = Vector2i(720, 960)
 visible = true
 script = ExtResource("1_0mb0o")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="."]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1291216663]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -40,12 +40,12 @@ offset_bottom = -49.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="VBoxContainer"]
+[node name="SubViewportContainer" type="SubViewportContainer" parent="VBoxContainer" unique_id=1679712578]
 layout_mode = 2
 size_flags_horizontal = 3
 stretch = true
 
-[node name="BrushPreviewViewport" type="SubViewport" parent="VBoxContainer/SubViewportContainer"]
+[node name="BrushPreviewViewport" type="SubViewport" parent="VBoxContainer/SubViewportContainer" unique_id=327045762]
 unique_name_in_owner = true
 disable_3d = true
 handle_input_locally = false
@@ -53,30 +53,31 @@ use_hdr_2d = true
 size = Vector2i(704, 2)
 render_target_update_mode = 4
 
-[node name="Camera2D" type="Camera2D" parent="VBoxContainer/SubViewportContainer/BrushPreviewViewport"]
+[node name="Camera2D" type="Camera2D" parent="VBoxContainer/SubViewportContainer/BrushPreviewViewport" unique_id=1757944598]
 
-[node name="Background" type="Sprite2D" parent="VBoxContainer/SubViewportContainer/BrushPreviewViewport"]
+[node name="Background" type="Sprite2D" parent="VBoxContainer/SubViewportContainer/BrushPreviewViewport" unique_id=37787497]
 texture = SubResource("GradientTexture2D_nvm6h")
 
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer" unique_id=598424851]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_top = 5
 
-[node name="Splitter" type="HSplitContainer" parent="VBoxContainer/MarginContainer"]
+[node name="Splitter" type="HSplitContainer" parent="VBoxContainer/MarginContainer" unique_id=1038259579]
 layout_mode = 2
+split_offsets = PackedInt32Array(256)
 split_offset = 256
 
-[node name="VBoxContainer2" type="HBoxContainer" parent="VBoxContainer/MarginContainer/Splitter"]
+[node name="VBoxContainer2" type="HBoxContainer" parent="VBoxContainer/MarginContainer/Splitter" unique_id=210863959]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Operators" type="VBoxContainer" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2"]
+[node name="Operators" type="VBoxContainer" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2" unique_id=1887994711]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="Add" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators"]
+[node name="Add" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators" unique_id=916536688]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -84,7 +85,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("2_8ha6r")
 expand_icon = true
 
-[node name="Remove" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators"]
+[node name="Remove" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators" unique_id=1944641052]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -92,7 +93,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("3_eaqx8")
 expand_icon = true
 
-[node name="Copy" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators"]
+[node name="Copy" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators" unique_id=749907029]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -100,7 +101,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("4_7s73l")
 expand_icon = true
 
-[node name="Reset" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators"]
+[node name="Reset" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators" unique_id=149406054]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -109,7 +110,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("5_eaqx8")
 expand_icon = true
 
-[node name="Top" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators"]
+[node name="Top" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators" unique_id=2144986749]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -117,7 +118,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("5_hu6b8")
 expand_icon = true
 
-[node name="Up" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators"]
+[node name="Up" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators" unique_id=860658995]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -125,7 +126,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("6_4gyxw")
 expand_icon = true
 
-[node name="Down" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators"]
+[node name="Down" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators" unique_id=307954576]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -133,7 +134,7 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("7_vldbi")
 expand_icon = true
 
-[node name="Bottom" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators"]
+[node name="Bottom" type="Button" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/Operators" unique_id=219626944]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(30, 30)
 layout_mode = 2
@@ -141,12 +142,12 @@ theme_type_variation = &"ToolButton"
 icon = ExtResource("8_tnq2j")
 expand_icon = true
 
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2"]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2" unique_id=139029193]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 
-[node name="BrushSelector" type="ItemList" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/ScrollContainer"]
+[node name="BrushSelector" type="ItemList" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer2/ScrollContainer" unique_id=1531245193]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(112, 0)
 layout_mode = 2
@@ -154,15 +155,15 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 auto_width = true
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer/Splitter"]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/MarginContainer/Splitter" unique_id=847969561]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer" unique_id=1535067533]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer/ScrollContainer"]
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer/ScrollContainer" unique_id=1146998978]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -170,7 +171,7 @@ theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 10
 
-[node name="PropertiesHolder" type="VBoxContainer" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer/ScrollContainer/MarginContainer"]
+[node name="PropertiesHolder" type="VBoxContainer" parent="VBoxContainer/MarginContainer/Splitter/VBoxContainer/ScrollContainer/MarginContainer" unique_id=469645041]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3

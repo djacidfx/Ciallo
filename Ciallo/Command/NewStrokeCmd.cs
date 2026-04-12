@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Ciallo.Data;
+﻿using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
 using R3;
@@ -10,7 +9,7 @@ namespace Ciallo.Command;
 public class NewStrokeCmd : CommandBase
 {
     public Entity CopyE { get; }
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
+    public override void OnDeletedAsDo() => TargetE.Delete();
 
     public NewStrokeCmd(Entity copyE = default)
     {
@@ -71,8 +70,8 @@ public class NewStrokeCmd : CommandBase
         }).AddTo(targetE);
 
         // Layer tree events
-        var events = layerNode.MovedAsExitEnter;
-        events.Enter.Subscribe(et =>
+        var events = layerNode.MovedAsAddedRemoved;
+        events.Added.Subscribe(et =>
         {
             (int index, var layerE) = (et.Index, et.Value);
 
@@ -88,7 +87,7 @@ public class NewStrokeCmd : CommandBase
             layerE.Get<BodyHolder>().InsertNodeAt(strokeBody, index);
         }).AddTo(targetE);
 
-        events.Exit.Subscribe(_ =>
+        events.Removed.Subscribe(_ =>
         {
             // Body
             strokeBody.RemoveFromParent();

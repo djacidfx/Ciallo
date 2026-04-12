@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
+using Ciallo.Rendering;
+using Ciallo.Widget;
 using Frent;
 using Godot;
 using ObservableCollections;
@@ -9,6 +11,12 @@ using R3;
 
 namespace Ciallo.GuiControl;
 
+/// <summary>
+/// 
+/// </summary>
+/// <remarks>
+/// Terrible code design here, duplicated with StrokeBrushPreview, refactor it once there is another change.
+/// </remarks>
 [SceneTree, Instantiable]
 public partial class VectorFillBrushPreviewList : Container
 {
@@ -16,8 +24,10 @@ public partial class VectorFillBrushPreviewList : Container
     protected ISynchronizedView<Entity, Control> SyncView;
     protected ObservableList<Entity> Brushes;
     protected ReactiveProperty<Entity> WorkingBrush;
-    protected Entity Document;
-    private CompositeDisposable _subs;
+    public Entity Document;
+    private CompositeDisposable _brushesSubs;
+    private CompositeDisposable _workingBrushSubs;
+    public readonly Subject<Entity> BrushClicked = new();
 
     public void Init(Entity document)
     {
@@ -27,26 +37,47 @@ public partial class VectorFillBrushPreviewList : Container
         Bind(bm.VectorFillBrushEs, sm.WorkingVectorFillBrush);
     }
 
+    public void Init() { }
+
     public void Bind(ObservableList<Entity> brushes, ReactiveProperty<Entity> workingBrush)
     {
+        BindBrushes(brushes);
+        BindWorkingBrush(workingBrush);
+    }
+
+    public void BindBrushes(ObservableList<Entity> brushes)
+    {
         Brushes = brushes;
-        _subs?.Dispose();
-        _subs = new();
+        _brushesSubs?.Dispose();
+        _brushesSubs = new();
         SyncView = brushes.CreateView(GetOrCreateBrushPreview);
-        SyncView.AddTo(_subs);
+        SyncView.AddTo(_brushesSubs);
 
-        PreviewList.BindChildren(SyncView.ToNotifyCollectionChanged());
+        PreviewList.ObserveChildren(SyncView.ToNotifyCollectionChanged());
 
+        PreviewList.SignalAsObservable<int, int>(DynamicGridItemList.SignalName.Moved)
+            .Subscribe(tup => brushes.Move(tup.Item1, tup.Item2))
+            .AddTo(_brushesSubs);
+        PreviewList.SignalAsObservable<int>(DynamicGridItemList.SignalName.ItemClicked)
+            .Subscribe(idx => BrushClicked.OnNext(SyncView.Filtered.ElementAt(idx).Value))
+            .AddTo(_brushesSubs);
+    }
+
+    public void BindWorkingBrush(ReactiveProperty<Entity> workingBrush)
+    {
         WorkingBrush = workingBrush;
-        workingBrush.Subscribe(e =>
-        {
-            PreviewList.SelectedControl = e.IsNull ? null : GetOrCreateBrushPreview(e);
-        }).AddTo(_subs);
+        _workingBrushSubs?.Dispose();
+        _workingBrushSubs = new();
+        workingBrush.Subscribe(Select).AddTo(_workingBrushSubs);
 
-        PreviewList.Moved += (src, dst) =>
-        {
-            Brushes.Move(src, dst);
-        };
+        PreviewList.SignalAsObservable<int>(DynamicGridItemList.SignalName.ItemClicked)
+            .Subscribe(idx => workingBrush.Value = SyncView.Filtered.ElementAt(idx).Value)
+            .AddTo(_workingBrushSubs);
+    }
+
+    public void Select(Entity e)
+    {
+        PreviewList.SelectedControl = e.IsNull ? null : GetOrCreateBrushPreview(e);
     }
 
     private Control GetOrCreateBrushPreview(Entity e)
@@ -63,9 +94,8 @@ public partial class VectorFillBrushPreviewList : Container
 
     private PanelContainer CreateBrushPreview(Entity e)
     {
-        var checkerboardMaterial = GD.Load<ShaderMaterial>("res://Rendering/Checkerboard.tres");
         var box = new PanelContainer().QueueFreeWith(e);
-        var background = new ColorRect() { Material = checkerboardMaterial };
+        var background = new ColorRect() { Material = AutoloadRendering.CheckerboardMaterial };
         box.AddChild(background);
         var markerPreview = new TextureRect()
         {
@@ -86,11 +116,6 @@ public partial class VectorFillBrushPreviewList : Container
 
     public override void _Ready()
     {
-        PreviewList.ItemClicked += idx =>
-        {
-            WorkingBrush.Value = SyncView.Filtered.ElementAt(idx).Value;
-        };
-
         AddButton.Pressed += () => OnAddOrCopyButtonPressed();
 
         CopyButton.Pressed += () => OnAddOrCopyButtonPressed(WorkingBrush.Value);
@@ -128,6 +153,8 @@ public partial class VectorFillBrushPreviewList : Container
         if (what == NotificationPredelete)
         {
             SyncView?.Dispose();
+            _brushesSubs?.Dispose();
+            _workingBrushSubs?.Dispose();
         }
     }
 }

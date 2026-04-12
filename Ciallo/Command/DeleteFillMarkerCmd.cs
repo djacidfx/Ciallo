@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using Frent;
 
 namespace Ciallo.Command;
 
 public class DeleteFillMarkerCmd : CommandBase
 {
-    public override IEnumerable<Entity> UndoRefEntities => ToEnumerable(TargetE);
+    public override void OnDeletedAsUndo() => TargetE.Delete();
 
     public override void BeforeFirstDo(Entity targetE)
     {

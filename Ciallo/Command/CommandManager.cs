@@ -91,34 +91,25 @@ public partial class CommandWrapperObject(ICommand command) : GodotObject
 }
 
 /// <summary>
-/// Automatically destroy entities and objects when the command is deleted, unless FreeWithoutDestroying is called.
+/// Delete unless FreeWithoutDestroying is called.
 /// </summary>
 public partial class ObjectDeleter(ICommand cmd, bool isDo) : GodotObject
 {
-    private bool _delete = true;
+    private bool _toDelete = true;
 
     public override void _Notification(int what)
     {
-        if (what != NotificationPredelete || !_delete) return;
+        if (what != NotificationPredelete || !_toDelete) return;
 
-        var entities = isDo ? cmd.DoRefEntities : cmd.UndoRefEntities;
-        if (entities != null)
-        {
-            foreach (var e in entities)
-                e.Delete();
-        }
-
-        var objects = isDo ? cmd.DoRefObjects : cmd.UndoRefObjects;
-        if (objects != null)
-        {
-            foreach (var obj in objects)
-                obj?.Free();
-        }
+        if (isDo)
+            cmd.OnDeletedAsDo();
+        else
+            cmd.OnDeletedAsUndo();
     }
 
     public void FreeWithoutDeleting()
     {
-        _delete = false;
+        _toDelete = false;
         Free();
     }
 }

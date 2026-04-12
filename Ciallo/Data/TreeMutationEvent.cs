@@ -21,7 +21,7 @@ public readonly record struct TreeMutationEvent(
 
 public enum TreeMutationKind
 {
-    Insert,
+    Add,
     Remove,
     Move,
 }
@@ -34,10 +34,10 @@ public record MoveOrReparentAsExitEnter
         Observable<CollectionMoveEvent<Entity>> moved)
     {
         // Order matters, moved trigger exit first
-        Exit = treeExited.Merge(moved.Select(et => new CollectionRemoveEvent<Entity>(et.OldIndex, et.Value)));
-        Enter = treeEntered.Merge(moved.Select(et => new CollectionAddEvent<Entity>(et.NewIndex, et.Value)));
+        Removed = treeExited.Merge(moved.Select(et => new CollectionRemoveEvent<Entity>(et.OldIndex, et.Value)));
+        Added = treeEntered.Merge(moved.Select(et => new CollectionAddEvent<Entity>(et.NewIndex, et.Value)));
     }
 
-    public readonly Observable<CollectionAddEvent<Entity>> Enter;
-    public readonly Observable<CollectionRemoveEvent<Entity>> Exit;
+    public readonly Observable<CollectionAddEvent<Entity>> Added;
+    public readonly Observable<CollectionRemoveEvent<Entity>> Removed;
 }

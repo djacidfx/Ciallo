@@ -1,4 +1,5 @@
-﻿using Ciallo.Data;
+﻿using System;
+using Ciallo.Data;
 using Frent;
 
 namespace Ciallo;
@@ -15,8 +16,17 @@ public static class EntityExtension
         public bool IsDocument => self.World.Document() == self; // If entity is the singleton document entity.
         public Entity Document => self.World.Document();
 
+        /// <summary>
+        /// Return null if entity is null or do not have T component.
+        /// </summary>
         public T TryGet<T>() where T : class => self.IsNull || !self.TryHas<T>() ? null : self.Get<T>();
 
         public static bool IsNotNull(Entity e) => !e.IsNull;
+    }
+
+    public static T AddTo<T>(this T disposable, Entity e) where T : IDisposable
+    {
+        e.OnDelete += _ => disposable.Dispose();
+        return disposable;
     }
 }

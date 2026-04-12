@@ -1,0 +1,179 @@
+{
+	"connections": [
+		{
+			"from": "scale",
+			"from_port": 0,
+			"to": "rotate",
+			"to_port": 0
+		},
+		{
+			"from": "rotate",
+			"from_port": 0,
+			"to": "tiler",
+			"to_port": 0
+		},
+		{
+			"from": "translate",
+			"from_port": 0,
+			"to": "Material",
+			"to_port": 0
+		},
+		{
+			"from": "tiler",
+			"from_port": 0,
+			"to": "translate",
+			"to_port": 0
+		},
+		{
+			"from": "shape_2",
+			"from_port": 0,
+			"to": "scale",
+			"to_port": 0
+		}
+	],
+	"label": "Graph",
+	"longdesc": "",
+	"name": "_Node_652",
+	"node_position": {
+		"x": 0.0,
+		"y": 0.0
+	},
+	"nodes": [
+		{
+			"export_last_target": "Godot 4/CanvasItem",
+			"export_paths": {
+				"Godot 4/CanvasItem": "C:/Users/Ciao/Documents/test/FillHint",
+				"Godot 4/CanvasItem with params": "C:/Users/Ciao/Documents/test/FillHint"
+			},
+			"name": "Material",
+			"node_position": {
+				"x": -227.556350708008,
+				"y": -448.131256103516
+			},
+			"parameters": {
+				"blend": 1.0
+			},
+			"seed_int": 0,
+			"type": "material_unlit"
+		},
+		{
+			"generic_size": 1,
+			"name": "shear",
+			"node_position": {
+				"x": -624.707641601563,
+				"y": -268.319213867188
+			},
+			"parameters": {
+				"amount": 1.0,
+				"center": 0.0,
+				"direction": 0.0
+			},
+			"seed_int": 0,
+			"type": "shear"
+		},
+		{
+			"name": "shape",
+			"node_position": {
+				"x": -1580.73400878906,
+				"y": -681.0771484375
+			},
+			"parameters": {
+				"edge": 0.0,
+				"radius": 0.1,
+				"shape": 0.0,
+				"sides": 2.0
+			},
+			"seed_int": 0,
+			"type": "shape"
+		},
+		{
+			"name": "tiler",
+			"node_position": {
+				"x": -685.543273925781,
+				"y": -471.464172363281
+			},
+			"parameters": {
+				"fixed_offset": 0.0,
+				"inputs": 0.0,
+				"offset": 0.0,
+				"overlap": 1.0,
+				"rotate": 0.0,
+				"scale": 0.0,
+				"scale_x": 1.0,
+				"scale_y": 1.0,
+				"tx": 4.0,
+				"ty": 4.0,
+				"value": 0.0,
+				"variations": false
+			},
+			"seed_int": 1585147008,
+			"type": "tiler"
+		},
+		{
+			"generic_size": 1,
+			"name": "scale",
+			"node_position": {
+				"x": -1077.98522949219,
+				"y": -474.944183349609
+			},
+			"parameters": {
+				"cx": 0.0,
+				"cy": 0.0,
+				"scale_x": 0.033,
+				"scale_y": 0.4
+			},
+			"seed_int": 0,
+			"type": "scale"
+		},
+		{
+			"generic_size": 1,
+			"name": "rotate",
+			"node_position": {
+				"x": -872.055297851563,
+				"y": -471.290130615234
+			},
+			"parameters": {
+				"cx": 0.0,
+				"cy": 0.0,
+				"rotate": 45.0
+			},
+			"seed_int": 0,
+			"type": "rotate"
+		},
+		{
+			"generic_size": 1,
+			"name": "translate",
+			"node_position": {
+				"x": -436.9462890625,
+				"y": -465.777618408203
+			},
+			"parameters": {
+				"translate_x": "-$time*0.1",
+				"translate_y": "$time*0.1"
+			},
+			"seed_int": 0,
+			"type": "translate"
+		},
+		{
+			"name": "shape_2",
+			"node_position": {
+				"x": -1366.833984375,
+				"y": -480.248016357422
+			},
+			"parameters": {
+				"edge": 0.0,
+				"radius": 0.1,
+				"shape": 1.0,
+				"sides": 2.0
+			},
+			"seed_int": 0,
+			"type": "shape"
+		}
+	],
+	"parameters": {
+
+	},
+	"seed_int": 0,
+	"shortdesc": "",
+	"type": "graph"
+}

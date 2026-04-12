@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Ciallo.Data;
+﻿using Ciallo.Data;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
@@ -18,7 +17,7 @@ public class NewShapeLayerCmd : CommandBase
         CopyE = copyE;
     }
 
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
+    public override void OnDeletedAsDo() => TargetE.Delete();
 
     public override void BeforeFirstDo(Entity targetE)
     {
@@ -71,7 +70,7 @@ public class NewShapeLayerCmd : CommandBase
         targetE.AddNode(bodyHolder);
 
         // Layer tree events
-        layerNode.TreeEntered.Subscribe(et =>
+        layerNode.Added.Subscribe(et =>
         {
             // Layer panel
             document.Get<LayerContainer>().CreateInsert(targetE, et.Index);
@@ -79,7 +78,7 @@ public class NewShapeLayerCmd : CommandBase
             OnAdd(et.Value, et.Index);
         }).AddTo(targetE);
 
-        layerNode.TreeExited.Subscribe(_ =>
+        layerNode.Removed.Subscribe(_ =>
         {
             OnRemove();
 

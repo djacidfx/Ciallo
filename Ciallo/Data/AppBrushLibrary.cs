@@ -40,7 +40,7 @@ public static class AppBrushLibrary
             Labels = { BrushLabel.BuiltIn },
             Color = { Value = new(0, 0, 0, 0.4f) },
             ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow },
-            Pressure2FlowCurve = BezierCurve.EaseInOut(),
+            Pressure2FlowCurve = new(BezierCurveFactory.EaseInOut()),
             FalloffCurve = new([
                 new(new(0, 1), new(-0.25f, 0), new(0.5f, 0)),
                 new(new(1, 0), new(-0.25f, 0), new(0.25f, 0))
@@ -55,7 +55,7 @@ public static class AppBrushLibrary
             Labels = { BrushLabel.BuiltIn },
             Color = { Value = new(0, 0, 0, 0.9f) },
             ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow },
-            Pressure2FlowCurve = BezierCurve.EaseInOut(),
+            Pressure2FlowCurve = new(BezierCurveFactory.EaseInOut()),
             FalloffCurve = new([
                 new(new(0, 1), new(-0.25f, 0), new(0.65f, 0)),
                 new(new(1, 0), new(0, 0.25f), new(0.25f, 0))
@@ -254,8 +254,8 @@ public static class AppBrushLibrary
                 material.ObserveBrushSetting(setting);
                 materialCache[setting] = material;
 
-                setting.BaseRadius.CombineLatest(setting.Pressure2RadiusCurve.Changed.Prepend(new Unit()), (r, _) => r)
-                    .Subscribe(r => UpdateStrokePreview(preview, setting.Pressure2RadiusCurve, r)).AddTo(curveChangeSubs);
+                setting.BaseRadius.CombineLatest(setting.Pressure2RadiusCurve, ValueTuple.Create)
+                    .Subscribe(t => UpdateStrokePreview(preview, t.Item2, t.Item1)).AddTo(curveChangeSubs);
             }
             preview.Material = material;
         }).AddTo(panel);
@@ -343,7 +343,7 @@ public static class AppBrushLibrary
         };
     }
 
-    private static void UpdateStrokePreview(StrokeView view, BezierCurve pressureCurve, float baseRadius = 0)
+    private static void UpdateStrokePreview(StrokeView view, ImmutableArray<BezierPoint> pressureCurve, float baseRadius = 0)
     {
         int n = 64;
         float gr = (1 + Mathf.Sqrt(5)) / 2; // golden ratio
@@ -369,7 +369,7 @@ public static class AppBrushLibrary
             .ToImmutableArray();
         float targetRadius = baseRadius.SigmoidRemap(2.0f, 16f, 0.25f / gr, 0.75f / gr);
         var radii = pressures
-            .Select(pressureCurve.SampleX)
+            .Select(p => pressureCurve.SampleX(p))
             .Select(radiusRatio => radiusRatio * targetRadius)
             .ToImmutableArray();
         view.SetGeometry(positions, radii, pressures);

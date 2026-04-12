@@ -72,7 +72,7 @@ public static partial class AppDocumentManager
             .AddToLayerTree(document)
             .SetWorkingLayer();
         // Vector fill brushes
-        Color[] colors = [Colors.PaleTurquoise, Colors.Purple, Colors.LemonChiffon];
+        Color[] colors = [Colors.PaleTurquoise, Colors.LightGreen, Colors.LemonChiffon, Colors.LightPink];
         for (int i = 0; i < colors.Length; i++)
         {
             string path = $"res://Rendering/Image/Bullseye{i}.svg";

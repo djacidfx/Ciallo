@@ -6,14 +6,13 @@ namespace Ciallo;
 
 public static class BindCheckBox
 {
-    private static BaseButton BindBool(this BaseButton button, ReactiveProperty<bool> property, out CompositeDisposable subs)
+    private static void BindBool(this BaseButton button, ReactiveProperty<bool> property, out CompositeDisposable subs)
     {
         if (!button.ToggleMode) throw new ArgumentException("Button must be in toggle mode", nameof(button));
         subs = new CompositeDisposable();
         property.Subscribe(button.SetPressedNoSignal).AddTo(subs);
         button.OnToggledAsObservable()
             .Subscribe(value => property.Value = value).AddTo(subs);
-        return button;
     }
 
     extension(CheckBox checkBox)
@@ -55,7 +54,7 @@ public static class BindCheckBox
         }
         public CheckBox BindFlag<T>(ReactiveProperty<T> property, T mask) where T : Enum
         {
-            BindFlag(checkBox, property, mask, out var sub);
+            checkBox.BindFlag(property, mask, out var sub);
             sub.AddTo(checkBox);
             return checkBox;
         }

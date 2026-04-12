@@ -1,6 +1,7 @@
 #pragma once
 
 #define CGAL_DISABLE_GMP true
+#define CGAL_DO_NOT_USE_BOOST_MP
 
 #include "CustomArrangement.h"
 #include <CGAL/Exact_predicates_exact_constructions_kernel.h>

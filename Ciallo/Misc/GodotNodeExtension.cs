@@ -145,7 +145,7 @@ public static class GodotNodeExtension
     /// <summary>
     /// Children sync with given list. Handles initial population and all incremental changes.
     /// </summary>
-    public static void BindChildren<T>(this Node node, INotifyCollectionChangedSynchronizedViewList<T> childrenList) where T : Node
+    public static void ObserveChildren<T>(this Node node, INotifyCollectionChangedSynchronizedViewList<T> childrenList) where T : Node
     {
         foreach (var c in childrenList)
             node.AddChild(c);

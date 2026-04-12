@@ -1,17 +1,18 @@
-﻿using System.Collections.Immutable;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using Frent;
-using R3;
+using ObservableCollections;
 
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
 public class VectorFillLayerSetting
 {
-    [DataMember] public ReactiveProperty<ImmutableHashSet<Entity>> ReferenceLayers = new([]);
+    [DataMember] public ObservableHashSet<Entity> ReferenceLayers = [];
 
-    public VectorFillLayerSetting Clone() => new()
+    public VectorFillLayerSetting Clone()
     {
-        ReferenceLayers = { Value = ReferenceLayers.Value },
-    };
+        VectorFillLayerSetting newObj = new();
+        newObj.ReferenceLayers.AddRange(ReferenceLayers);
+        return newObj;
+    }
 }

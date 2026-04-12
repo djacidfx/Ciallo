@@ -11,16 +11,30 @@ namespace Ciallo.Tool;
 
 public class VectorFillHover : InteractiveSessionBase
 {
+    private Polygon2D _fillPreview;
+
     public override void Start(CursorButtonData data)
     {
         Document.Get<WorldBody>().MouseDefaultCursorShape = Control.CursorShape.Cross;
+
+        _fillPreview = new()
+        {
+            Material = AutoloadRendering.VectorFillPreviewMaterial,
+            Texture = AutoloadRendering.DummyTextureForUV,
+        };
+        WorkingLayer.Get<OverlayHolder>().AddChild(_fillPreview);
+        _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
     }
 
-    public override void Moving(CursorMotionData data) { }
+    public override void Moving(CursorMotionData data)
+    {
+        _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
+    }
 
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
+        _fillPreview.QueueFree();
         Document.Get<WorldBody>().MouseDefaultCursorShape = default;
     }
 
@@ -28,6 +42,11 @@ public class VectorFillHover : InteractiveSessionBase
 
     public override void DrawProperty(PropertyContainer container)
     {
+        container.AddChild(new Label
+        {
+            Text = "Fill brush",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+        });
         var brushPreview = VectorFillBrushPreviewList.New(Document);
         brushPreview.CustomMinimumSize = new(0, 256);
         container.AddChild(brushPreview);
@@ -43,12 +62,31 @@ public class VectorFillHover : InteractiveSessionBase
                 .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
         );
 
+        container.AddProperty("Marker radius",
+            new SpinSlider
+                {
+                    MinValue = 1.0f,
+                    MaxValue = 32f,
+                }
+                .BindNumber(AppPreference.VectorFillMarkerRadius)
+                .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
+        );
+
         var fillColor = sm.WorkingVectorFillBrush
             .Select(e => e.TryGet<VectorFillBrushSetting>()?.FillColor)
             .Flatten();
         container.AddProperty("Fill color",
-            new ColorPickerButton().BindColor(fillColor)
+            new ColorPickerButton()
+                .BindColor(fillColor)
                 .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
         );
+
+        var showWireframe = new CheckButton()
+            {
+                SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+                CustomMinimumSize = new(128, 0),
+            }
+            .BindBool(AppPreference.ShowVectorFillReferenceLayerWireframe);
+        container.AddProperty("Show reference wireframe", showWireframe);
     }
 }

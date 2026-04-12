@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using Ciallo.Data;
+using Ciallo.Geometry;
 using Ciallo.Rendering;
+using Ciallo.Tool;
 using Frent;
 using Godot;
 using R3;
@@ -17,7 +19,7 @@ public class NewVectorFillMarkerCmd : CommandBase
         CopyE = copyE;
     }
 
-    public override IEnumerable<Entity> DoRefEntities => ToEnumerable(TargetE);
+    public override void OnDeletedAsDo() => TargetE.Delete();
 
     public override void BeforeFirstDo(Entity targetE)
     {
@@ -38,7 +40,7 @@ public class NewVectorFillMarkerCmd : CommandBase
             setting.BrushE.Value = default;
 
         // By design, polygons attached to fill markers are views,
-        // Strokes attached are overlay
+        // Strokes and marker sprites attached are overlay
         // View
         var polygonView = new Polygon2D() { Antialiased = true };
         targetE.AddNode(polygonView);
@@ -49,6 +51,28 @@ public class NewVectorFillMarkerCmd : CommandBase
             .Switch()
             .Subscribe(polygonView.SetColor)
             .AddTo(targetE);
+
+        // Include both parent change and structure change.
+        Observable<Arrangement2D> changeArrObs = layerNode.Parent
+            .Select(e => e.TryGet<Arrangement2D>())
+            .Select(arr =>
+            {
+                var obs = Observable.Return(arr);
+                if (arr != null)
+                    obs = obs.Merge(arr.StructureChanged.Select(_ => arr));
+                return obs;
+            })
+            .Switch();
+        polylineGeometry.Positions.CombineLatest(changeArrObs, ValueTuple.Create)
+            .ThrottleLastFrame(1)
+            .Subscribe(tuple =>
+            {
+                var (positions, arr) = tuple;
+                if (arr == null || positions.IsDefaultOrEmpty)
+                    polygonView.Clear();
+                else
+                    polygonView.SetPolygonWithQueryResult(arr, positions[0]);
+            }).AddTo(targetE);
 
         // Overlay
         var wireframeOverlay = new PolylineWireframe() { Visible = false };
@@ -98,8 +122,8 @@ public class NewVectorFillMarkerCmd : CommandBase
         }).AddTo(targetE);
 
         // Layer tree events
-        var events = layerNode.MovedAsExitEnter;
-        events.Enter.Subscribe(et =>
+        var events = layerNode.MovedAsAddedRemoved;
+        events.Added.Subscribe(et =>
         {
             (int index, var layerE) = (et.Index, et.Value);
             // View
@@ -116,7 +140,7 @@ public class NewVectorFillMarkerCmd : CommandBase
             layerE.Get<BodyHolder>().InsertNodeAt(strokeBody, index);
         }).AddTo(targetE);
 
-        events.Exit.Subscribe(_ =>
+        events.Removed.Subscribe(_ =>
         {
             // Body
             strokeBody.RemoveFromParent();

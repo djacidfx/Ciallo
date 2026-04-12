@@ -1,0 +1,8 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://gah5hxleu4ps"]
+
+[ext_resource type="Shader" uid="uid://b4vu84qp3io" path="res://Rendering/FillHint.gdshader" id="1"]
+
+[resource]
+shader = ExtResource("1")
+shader_parameter/strip_color = Color(0.8666667, 0.5372549, 0.4862745, 1)
+shader_parameter/variation = 0.0

@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using Ciallo.Data;
+﻿using Ciallo.Data;
 using Frent;
 using Godot;
 using Godot.Collections;
@@ -23,20 +22,12 @@ public abstract class CommandBase : ICommand
         TargetE = targetE;
     }
 
-    /// <summary>
-    /// `DoRefEntities` are the entities will be destroyed when this command is ready to redo and deleted.
-    /// e.g. User undo the most recent command, then clear the whole history. So the most recent command satisfies the above statement.
-    /// Entity version of `add_do_reference`.
-    /// </summary>
-    public virtual IEnumerable<Entity> DoRefEntities => [];
-    public virtual IEnumerable<Entity> UndoRefEntities => [];
-
-    public virtual IEnumerable<GodotObject> DoRefObjects => [];
-    public virtual IEnumerable<GodotObject> UndoRefObjects => [];
 
     public abstract void BeforeFirstDo(Entity targetE);
     public abstract void Do(Entity targetE);
     public abstract void Undo(Entity targetE);
+    public virtual void OnDeletedAsDo() { }
+    public virtual void OnDeletedAsUndo() { }
 
     public void Do()
     {
@@ -63,10 +54,5 @@ public abstract class CommandBase : ICommand
     public override string ToString()
     {
         return $"{Name}";
-    }
-
-    public static IEnumerable<Entity> ToEnumerable(Entity value)
-    {
-        if (!value.IsNull) yield return value;
     }
 }
