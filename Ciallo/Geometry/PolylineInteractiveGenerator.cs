@@ -254,16 +254,13 @@ public class PolylineInteractiveGenerator
 
     public void End(CursorButtonData data)
     {
-        if (_previewPointCache.Count > 0)
-        {
-            RemoveLatestPoints(_previewPointCache.Count);
-            _positions.Add(data.WorldPosition);
-            float radius = CalculateRadius(_previewPointCache[^1].Pressure);
-            _radii.Add(radius);
-            _pressures.Add(_previewPointCache[^1].Pressure);
-            _tilts.Add(data.Tilt);
-            RedistributeTaper();
-        }
+        RemoveLatestPoints(_previewPointCache.Count);
+        _positions.Add(data.WorldPosition);
+        float radius = CalculateRadius(data.Pressure);
+        _radii.Add(radius);
+        _pressures.Add(data.Pressure);
+        _tilts.Add(data.Tilt);
+        RedistributeTaper();
 
         _previewPointCache.Clear();
         _recordedPointCache.Clear();
