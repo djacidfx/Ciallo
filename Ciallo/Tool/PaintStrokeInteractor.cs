@@ -13,7 +13,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 {
     public Entity BrushE;
     public StrokeView StrokePreview;
-    public bool IsEnding { get; set; }
+    public bool IsTaperEnding = false;
     public readonly PolylineInteractiveGenerator Generator = new()
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
@@ -70,7 +70,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 
     public void OnEndPaintButton()
     {
-        if (IsEnding) return;
+        if (IsTaperEnding) return;
         if (AppPreference.TaperDuration.Value <= TimeSpan.FromMilliseconds(1))
         {
             Tool.Machine.Fire(PaintEnd);
@@ -78,7 +78,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         }
         Observable.Timer(AppPreference.TaperDuration.Value)
             .Subscribe(_ => Tool.Machine.Fire(PaintEnd));
-        IsEnding = true;
+        IsTaperEnding = true;
         Generator.StartTaperEnding();
     }
 
@@ -108,9 +108,22 @@ public class PaintStrokeInteractor : InteractiveSessionBase
     public void Clear()
     {
         Generator.Clear();
-        StrokePreview.QueueFree();
-        StrokePreview = null;
+        if (IsTaperEnding)
+        {
+            // An ugly patch to avoid one frame flicker
+            Observable.NextFrame().Subscribe(_ =>
+            {
+                StrokePreview.QueueFree();
+                StrokePreview = null;
+            });
+        }
+        else
+        {
+            StrokePreview.QueueFree();
+            StrokePreview = null;
+        }
+
         Input.MouseMode = Input.MouseModeEnum.Visible;
-        IsEnding = false;
+        IsTaperEnding = false;
     }
 }
