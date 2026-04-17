@@ -123,7 +123,7 @@ public class PaintStrokeHover : InteractiveSessionBase
 
         var taperTime = AppPreference.TaperDuration.Project(
             time => time.TotalMilliseconds, TimeSpan.FromMilliseconds);
-        container.AddProperty("Taper", new SpinSlider()
+        container.AddProperty("Taper end", new SpinSlider()
             {
                 MinValue = 0f,
                 MaxValue = 50f,
