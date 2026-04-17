@@ -196,20 +196,22 @@ public static class AppBrushLibrary
         BrushSettings.Clear();
         BrushSettings.AddRange(Enumerable.Repeat<StrokeBrushSetting>(null, manifestFileNames.Count));
 
-        foreach (var fn in fileNames)
+        foreach (var name in fileNames)
         {
-            using var file = FileAccess.Open(BrushFolder + fn + ".bin", FileAccess.ModeFlags.Read);
-            var content = file.GetBuffer((long)file.GetLength());
             StrokeBrushSetting strokeBrush;
             try
             {
+                using var file = FileAccess.Open(BrushFolder + name + ".bin", FileAccess.ModeFlags.Read);
+                var content = file.GetBuffer((long)file.GetLength());
                 strokeBrush = MessagePackSerializer.Deserialize<StrokeBrushSetting>(content);
             }
             catch (Exception)
             {
                 continue;
             }
-            var index = manifestFileNames.IndexOf(fn);
+            if (strokeBrush == null)
+                continue;
+            var index = manifestFileNames.IndexOf(name);
             if (index >= 0)
                 BrushSettings[index] = strokeBrush;
             else

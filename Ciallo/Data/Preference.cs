@@ -68,16 +68,16 @@ public class Preference
     {
         if (!FileAccess.FileExists(Path))
             return false;
-        using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
-        string content = file.GetAsText();
-
         try
         {
+            using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
+            string content = file.GetAsText();
             JsonConvert.PopulateObject(content, this, JsonOptions);
             return true;
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            GD.PrintRaw($"Failed to load preference: {e}");
             return false;
         }
     }

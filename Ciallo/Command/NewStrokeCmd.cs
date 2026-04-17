@@ -46,7 +46,7 @@ public class NewStrokeCmd : CommandBase
                 : brushE.Get<StrokeBrushMaterial>();
         }).AddTo(targetE);
 
-        polylineGeometry.ObserveAll().Subscribe(v =>
+        polylineGeometry.ObserveAll().ThrottleLastFrame(1).Subscribe(v =>
         {
             strokeView.SetGeometry(v.Item1, v.Item2, v.Item3);
         }).AddTo(targetE);
@@ -55,7 +55,7 @@ public class NewStrokeCmd : CommandBase
         var strokeWireframe = new PolylineWireframe() { Visible = false };
         targetE.AddNode(strokeWireframe);
 
-        polylineGeometry.Positions.DebounceFrame(1).Subscribe(p =>
+        polylineGeometry.Positions.ThrottleLastFrame(1).Subscribe(p =>
         {
             strokeWireframe.SetGeometry(p);
         }).AddTo(targetE);
@@ -64,7 +64,7 @@ public class NewStrokeCmd : CommandBase
         var strokeBody = new Body();
         targetE.AddNode(strokeBody);
 
-        polylineGeometry.ObserveShape().Subscribe(v =>
+        polylineGeometry.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
         {
             strokeBody.SetStrokeShape(v.Item1, v.Item2);
         }).AddTo(targetE);
