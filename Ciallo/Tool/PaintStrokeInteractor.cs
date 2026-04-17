@@ -5,6 +5,7 @@ using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
+using R3;
 
 namespace Ciallo.Tool;
 
@@ -12,10 +13,13 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 {
     public Entity BrushE;
     public StrokeView StrokePreview;
+    public bool IsEnding { get; set; }
     public readonly PolylineInteractiveGenerator Generator = new()
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
     };
+
+    public static readonly StateMachineToolBase.Trigger PaintEnd = new("PaintEnd");
 
     public PaintStrokeInteractor()
     {
@@ -56,6 +60,28 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         StrokePreview.SetGeometry(Generator.Positions, Generator.Radii, Generator.Pressures);
     }
 
+    public override void OnMouseButton(InputEventMouseButton button, CursorButtonData data)
+    {
+        if (button.ButtonIndex == MouseButton.Left && button.IsReleased())
+        {
+            OnEndPaintButton();
+        }
+    }
+
+    public void OnEndPaintButton()
+    {
+        if (IsEnding) return;
+        if (AppPreference.TaperDuration.Value <= TimeSpan.FromMilliseconds(1))
+        {
+            Tool.Machine.Fire(PaintEnd);
+            return;
+        }
+        Observable.Timer(AppPreference.TaperDuration.Value)
+            .Subscribe(_ => Tool.Machine.Fire(PaintEnd));
+        IsEnding = true;
+        Generator.StartTaperEnding();
+    }
+
     public override void End(CursorButtonData data)
     {
         Generator.End(data);
@@ -70,7 +96,14 @@ public class PaintStrokeInteractor : InteractiveSessionBase
     }
 
     public override void Cancel() => Clear();
-    public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
+    public override bool OnKey(InputEventKey key, CursorButtonData data)
+    {
+        if (AppActions.ConfirmInteraction.IsJustPressed)
+        {
+            OnEndPaintButton();
+        }
+        return true;
+    }
 
     public void Clear()
     {
@@ -78,5 +111,6 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         StrokePreview.QueueFree();
         StrokePreview = null;
         Input.MouseMode = Input.MouseModeEnum.Visible;
+        IsEnding = false;
     }
 }

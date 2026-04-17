@@ -193,11 +193,11 @@ public class StrokeBrushSetting
         return setting;
     }
 
-    public Func<CursorMotionData, float> ToRadiusSampler()
+    public Func<float, float> ToRadiusSampler()
     {
         var baseRadius = BaseRadius.Value;
         var points = Pressure2RadiusCurve.Value; // capture snapshot at sampler creation time
-        return data => baseRadius * points.SampleX(data.Pressure);
+        return pressure => baseRadius * points.SampleX(pressure);
     }
 }
 

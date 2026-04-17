@@ -1,10 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Ciallo.Widget;
+using Frent;
 using Godot;
 using R3;
 
@@ -117,7 +119,17 @@ public class PaintStrokeHover : InteractiveSessionBase
         }.BindNumber(radius);
         radius.AddTo(radiusControl);
         container.AddProperty("Radius", radiusControl)
-            .VisibleIf(selectionM.WorkingStrokeBrush, e => !e.IsNull);
+            .VisibleIf(selectionM.WorkingStrokeBrush, Entity.IsNotNull);
+
+        var taperTime = AppPreference.TaperDuration.Project(
+            time => time.TotalMilliseconds, TimeSpan.FromMilliseconds);
+        container.AddProperty("Taper", new SpinSlider()
+            {
+                MinValue = 0f,
+                MaxValue = 50f,
+            }.BindNumber(taperTime))
+            .VisibleIf(selectionM.WorkingStrokeBrush, Entity.IsNotNull);
+        ;
     }
 
     private void OnUseBrushPressed()

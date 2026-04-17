@@ -72,6 +72,7 @@ public abstract partial class StateMachineToolBase : ITool
 
     public StateConfiguration Configure(InteractiveSessionBase session)
     {
+        session.Tool = this;
         session.Document = Document;
         return Machine.Configure(session).SubstateOf(ToolActive.Instance)
             .OnEntry(t =>

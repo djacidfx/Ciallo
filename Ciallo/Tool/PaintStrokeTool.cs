@@ -34,14 +34,12 @@ public class PaintStrokeTool : StateMachineToolBase
             });
 
         Configure(Left)
-            .Permit(Release(MouseButton.Left), Hover)
             .Permit(Press(AppActions.CancelInteraction), Hover)
-            .Permit(Press(AppActions.ConfirmInteraction), Hover);
+            .Permit(PaintStrokeInteractor.PaintEnd, Hover);
 
         Configure(LeftOnFill)
             .Permit(Release(MouseButton.Left), Hover)
-            .Permit(Press(AppActions.CancelInteraction), Hover)
-            .Permit(Press(AppActions.ConfirmInteraction), Hover);
+            .Permit(PaintStrokeInteractor.PaintEnd, Hover);
     }
 
     public override bool CanHandleLayer(params Entity[] layerEs)
