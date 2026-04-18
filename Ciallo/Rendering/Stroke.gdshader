@@ -44,10 +44,7 @@ uniform mat2 CoordinateTransform;
 uniform sampler2D DiskOpacityCurve;
 uniform sampler2D MultiplyTexture;
 
-uniform int RotationNoiseOctave;
-uniform float RotationNoiseAmplitude = 0; // `= PI` don't compile
-uniform float RotationNoiseFrequency;
-// ---------------------------------
+uniform float RotationNoiseAmplitude = 0; // `= PI` don't compile// ---------------------------------
 uniform sampler2D FalloffCurve;
 uniform float AlphaDensity;
 
@@ -142,53 +139,12 @@ float sampleCurve(sampler2D curve, float t){
 	return texture(curve, vec2(t, 0)).r;
 }
 
-// ---------------------noise helper gen by copilot--------------------
-const int MAX_OCTAVES = 16;
-float fade(float t) {
-    return t * t * t * (t * (t * 6.0 - 15.0) + 10.0);
+// ---------------------rotation noise--------------------
+float hash1(float i) {
+    return fract(sin(i * 127.1 + 311.7) * 43758.5453123) * 2.0 - 1.0;
 }
-float grad1(float i) {
-    // Simple hash based on sine; deterministic without textures
-    float h = fract(sin(i * 127.1) * 43758.5453123);
-    return h * 2.0 - 1.0;
-}
-float perlinNoise1D(float x) {
-    float i0 = floor(x);
-    float i1 = i0 + 1.0;
-    float t  = x - i0;
-
-    float g0 = grad1(i0);
-    float g1 = grad1(i1);
-
-    float u = fade(t);
-
-    return 2.0 * mix(g0 * t, g1 * (t - 1.0), u);
-}
-
-// Fractal Brownian Motion (FBM) over 1D Perlin
 float noise1D(float x) {
-	x = mod(x, 1024.0);
-	x = abs(x - 512.0);
-    float sum = 0.0;
-    float amp = 1.0;      // start at 1.0, halve each octave (persistence = 0.5)
-    float freq = RotationNoiseFrequency; // start at base frequency, double each octave (lacunarity = 2.0)
-    float ampSum = 0.0;
-
-    for (int i = 0; i < MAX_OCTAVES; ++i) {
-        if (i >= RotationNoiseOctave) break;
-        sum += perlinNoise1D(x * freq) * amp;
-        ampSum += amp;
-
-        freq *= 2.0;
-        amp  *= 0.5;
-    }
-
-    // Normalize by cumulative amp so final amplitude parameter is consistent
-    if (ampSum > 0.0) {
-        sum /= ampSum;
-    }
-
-    return sum * RotationNoiseAmplitude;
+    return hash1(floor(x)) * RotationNoiseAmplitude;
 }
 
 vec2 solveTheQuadraticEq(vec2 pLocal){

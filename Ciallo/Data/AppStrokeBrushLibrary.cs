@@ -117,7 +117,6 @@ public static class AppStrokeBrushLibrary
             StampInterval = { Value = 0.25f },
             MaskTexture = { Value = ImageTexture.CreateFromImage(images[2]) },
             RotationNoiseAmplitude = { Value = 8 * Mathf.Pi },
-            RotationNoiseFrequency = { Value = 0.343234f },
         });
 
         brushes.Add(new()
@@ -128,7 +127,6 @@ public static class AppStrokeBrushLibrary
             ActiveStampFlags = { Value = StampFlags.StampTexture | StampFlags.RotationNoise },
             StampTexture = { Value = ImageTexture.CreateFromImage(images[1]) },
             RotationNoiseAmplitude = { Value = Mathf.Pi },
-            RotationNoiseFrequency = { Value = 0.5f },
         });
 
         return brushes;

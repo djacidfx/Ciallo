@@ -58,9 +58,7 @@ public partial class StrokeBrushMaterial : ShaderMaterial
             SetShaderParameter("CoordinateTransform", transform);
         }).AddTo(Subs);
 
-        setting.RotationNoiseOctave.Subscribe(value => SetShaderParameter("RotationNoiseOctave", value)).AddTo(Subs);
         setting.RotationNoiseAmplitude.Subscribe(value => SetShaderParameter("RotationNoiseAmplitude", value)).AddTo(Subs);
-        setting.RotationNoiseFrequency.Subscribe(value => SetShaderParameter("RotationNoiseFrequency", value)).AddTo(Subs);
 
         // Airbrush
         ImageTexture falloffTex = null;

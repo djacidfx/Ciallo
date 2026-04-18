@@ -35,9 +35,7 @@ public class StrokeBrushSetting
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
     [DataMember] public ReactiveProperty<ImageTexture> MaskTexture = new(null);
 
-    [DataMember] public ReactiveProperty<int> RotationNoiseOctave = new(1);
     [DataMember] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
-    [DataMember] public ReactiveProperty<float> RotationNoiseFrequency = new(0.01f);
 
     // Airbrush
     [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> FalloffCurve = new(BezierCurveFactory.Linear(1.0f, 0.0f));
@@ -128,16 +126,6 @@ public class StrokeBrushSetting
         var rotationNoiseBox = new VBoxContainer();
         container.CreateCheckBoxCombo("Rotation noise", rotationNoiseFlagCheck, rotationNoiseBox).AddToChildOf(stampBox);
 
-        var noiseOctaveControl = new SpinSlider()
-        {
-            MinValue = 1,
-            MaxValue = 8,
-            Step = 1,
-            AllowGreater = true,
-            Rounded = true,
-        }.BindNumber(RotationNoiseOctave);
-        container.CreatePropertyBox("Rotation noise octave", noiseOctaveControl).AddToChildOf(rotationNoiseBox);
-
         var rotationNoiseAmplitudeControl = new SpinSlider
         {
             MinValue = 0.0,
@@ -146,15 +134,6 @@ public class StrokeBrushSetting
         }.BindNumber(RotationNoiseAmplitude);
         container.CreatePropertyBox("Rotation noise amplitude", rotationNoiseAmplitudeControl).AddToChildOf(rotationNoiseBox);
 
-        var rotationNoiseFrequencyControl = new SpinSlider
-        {
-            MinValue = 0.001,
-            MaxValue = 0.5,
-            Step = float.E / 10000,
-            AllowGreater = true,
-            ExpEdit = true,
-        }.BindNumber(RotationNoiseFrequency);
-        container.CreatePropertyBox("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
 
         // ---------Airbrush----------
         var falloffCurveEdit = new MappingCurveEdit().BindCurve(FalloffCurve);
