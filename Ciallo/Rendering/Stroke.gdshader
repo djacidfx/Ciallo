@@ -85,12 +85,11 @@ void vertex() {
 	vec2 rs = unpack2floats(COLOR.x);
 	r0 = max(rs.x, 1e-7);
 	r1 = max(rs.y, 1e-7);
-	vec2 ns = unpack2floats(COLOR.y);
-	n0 = ns.x;
-	n1 = ns.y;
-	vec2 pps = unpack2floats(COLOR.z);
+	vec2 pps = unpack2floats(COLOR.y);
 	pp0 = pps.x;
 	pp1 = pps.y;
+	n0 = COLOR.z;
+	n1 = COLOR.w;
 
 	if(RadiusMode == 1){
 		r0 /= scale;
@@ -314,9 +313,9 @@ void fragment() {
 		float endN = x2 > segmentLength ? (n1 - n0) : x2n(x2);
 		float deltaN = endN - startN;
 
-		float lambda = clamp(abs(pLocal.y) / r_p * sinTheta, 0.0, 1.0);
+		float lambda = abs(pLocal.y) / sinTheta / r_p;
 		float curveFall = sampleCurve(FalloffCurve, lambda);
-		float A = 1.0 - exp(-deltaN * flow * curveFall * AlphaDensity);
+		float A = 1.0 - exp(-deltaN * AlphaDensity  * flow * curveFall);
 		COLOR = vec4(MaterialColor.rgb, A);
 	}
 

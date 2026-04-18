@@ -94,7 +94,10 @@ public partial class StrokeView : MultiMeshInstance2D
             var n = l / (r0 - r1) * Mathf.Log(r0 / r1);
             if (float.IsNaN(n))
             {
-                GD.PushError("NaN encountered in stroke parameterization.");
+                // Fallback to equal-radius approximation to avoid NaN propagation
+                var r = (r0 + r1) * 0.5f;
+                _ns.Add(_ns.Last() + l / r);
+                continue;
             }
             _ns.Add(_ns.Last() + n);
         }
@@ -113,8 +116,9 @@ public partial class StrokeView : MultiMeshInstance2D
             // Have to use instance color to store t.
             multiMesh.SetInstanceColor(i,
                 new(Float32Packer.Pack(rs[i], rs[i + 1]),
-                    Float32Packer.Pack(_ns[i], _ns[i + 1]),
-                    Float32Packer.Pack(pressures[i], pressures[i + 1]), 0)); // no enough empty spaces :(
+                    Float32Packer.Pack(pressures[i], pressures[i + 1]),
+                    _ns[i],
+                    _ns[i + 1]));
             // Have to set transform or do not render, this transform values are not used in shaders
             // Cannot access this matrix from the CanvasItem shader, so cannot be used for passing data.
             multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);
