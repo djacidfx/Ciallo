@@ -122,7 +122,7 @@ public class PolylineInteractiveGenerator
 
         // Since we can only detect pixel coordinate in grid, forward distance less than 3 or 4 pixels gives invalid moving direction and speed.
         // However, one pixel distance is enough to determine if cursor is turning back.
-        // So we use `_underForwardThreshold` for the minimum distance to detect forward movement. and use one pixel distance to detect turning back.
+        // So we use `_underForwardThreshold` for the minimum distance of forward movement. and use one pixel distance to detect turning back.
         bool isTurningBack = data.WorldDelta.Normalized().Dot(_lastRecordedMotion.WorldDirection) < -1e-5; // When direction is zero vector, Normalized gives zero too.
         if (isTurningBack && !_latestPointIsTurningPoint)
         {
@@ -231,9 +231,6 @@ public class PolylineInteractiveGenerator
     public void StartTaperEnding()
     {
         if (_recordedPointCache.Count < 2) return;
-        // Remove preview points first so they don't corrupt the drop-detection scan.
-        RemoveLatestPoints(_previewPointCache.Count);
-        _previewPointCache.Clear();
 
         for (int i = _pressures.Count - 1; i >= 1; i--)
         {
@@ -252,15 +249,19 @@ public class PolylineInteractiveGenerator
         }
     }
 
-    public void End(CursorButtonData data)
+    public void End(CursorButtonData _)
     {
-        RemoveLatestPoints(_previewPointCache.Count);
-        _positions.Add(data.WorldPosition);
-        float radius = CalculateRadius(data.Pressure);
-        _radii.Add(radius);
-        _pressures.Add(data.Pressure);
-        _tilts.Add(data.Tilt);
-        RedistributeTaper();
+        if (_previewPointCache.Count > 0)
+        {
+            RemoveLatestPoints(_previewPointCache.Count);
+            var data = _previewPointCache[^1];
+            _positions.Add(data.WorldPosition);
+            float radius = CalculateRadius(data.Pressure);
+            _radii.Add(radius);
+            _pressures.Add(data.Pressure);
+            _tilts.Add(data.Tilt);
+            RedistributeTaper();
+        }
 
         _previewPointCache.Clear();
         _recordedPointCache.Clear();
