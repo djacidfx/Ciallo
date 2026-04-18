@@ -64,7 +64,7 @@ public static partial class AppDocumentManager
 
     public static void InitialEmptyDocumentForUser(Entity document)
     {
-        AppBrushLibrary.SelectedIndex.Value = 0;
+        AppStrokeBrushLibrary.SelectedIndex.Value = 0;
 
         // Empty shape layer
         var cmd = new CommandBuilder(document.World.Create())
@@ -88,8 +88,8 @@ public static partial class AppDocumentManager
         }
         cmd.Do();
 
-        if (AppBrushLibrary.BrushSettings.Count > 0)
-            AppBrushLibrary.SelectedIndex.Value = 0;
+        if (AppStrokeBrushLibrary.BrushSettings.Count > 0)
+            AppStrokeBrushLibrary.SelectedIndex.Value = 0;
         document.Get<ToolManager>().ActivatePaintTool();
     }
 

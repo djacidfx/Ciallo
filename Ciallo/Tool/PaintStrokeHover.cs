@@ -39,12 +39,12 @@ public class PaintStrokeHover : InteractiveSessionBase
                 CustomMinimumSize = new(256, 32),
                 FitToLongestItem = false,
             }
-            .ObserveObservableList(AppBrushLibrary.BrushSettings, s => s.Name)
-            .BindSelectionIndex(AppBrushLibrary.SelectedIndex);
+            .ObserveObservableList(AppStrokeBrushLibrary.BrushSettings, s => s.Name)
+            .BindSelectionIndex(AppStrokeBrushLibrary.SelectedIndex);
         container.AddProperty("Library brush", brushSelector);
 
-        var radiusView = AppBrushLibrary.SelectedIndex
-            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.BaseRadius)
+        var radiusView = AppStrokeBrushLibrary.SelectedIndex
+            .Select(idx => AppStrokeBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.BaseRadius)
             .Flatten();
         var appBrushRadiusControl = new SpinSlider()
         {
@@ -56,10 +56,10 @@ public class PaintStrokeHover : InteractiveSessionBase
         radiusView.AddTo(appBrushRadiusControl);
 
         container.AddProperty("Radius", appBrushRadiusControl)
-            .VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
+            .VisibleIf(AppStrokeBrushLibrary.SelectedIndex, v => v >= 0);
 
-        var colorView = AppBrushLibrary.SelectedIndex
-            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color)
+        var colorView = AppStrokeBrushLibrary.SelectedIndex
+            .Select(idx => AppStrokeBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color)
             .Flatten();
         var appBrushColorControl = new ColorPickerButton()
         {
@@ -67,7 +67,7 @@ public class PaintStrokeHover : InteractiveSessionBase
         }.BindColor(colorView);
         colorView.AddTo(appBrushColorControl);
         container.AddProperty("Color", appBrushColorControl)
-            .VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
+            .VisibleIf(AppStrokeBrushLibrary.SelectedIndex, v => v >= 0);
 
         var useBrushButton = new Button()
         {
@@ -76,7 +76,7 @@ public class PaintStrokeHover : InteractiveSessionBase
             CustomMinimumSize = new(0, 32),
             SizeFlagsHorizontal = Control.SizeFlags.Fill
         };
-        useBrushButton.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
+        useBrushButton.VisibleIf(AppStrokeBrushLibrary.SelectedIndex, v => v >= 0);
         useBrushButton.Pressed += OnUseBrushPressed;
         var manageButton = new Button()
         {
@@ -134,12 +134,12 @@ public class PaintStrokeHover : InteractiveSessionBase
 
     private void OnUseBrushPressed()
     {
-        if (!AppBrushLibrary.HasSelection) return;
-        var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
+        if (!AppStrokeBrushLibrary.HasSelection) return;
+        var setting = AppStrokeBrushLibrary.SelectedBrushSetting.CurrentValue;
         new CommandBuilder(Document.World.Create())
             .NewStrokeBrush(setting)
             .SetWorkingStrokeBrush()
             .Commit();
-        AppBrushLibrary.SelectedIndex.Value = -1;
+        AppStrokeBrushLibrary.SelectedIndex.Value = -1;
     }
 }

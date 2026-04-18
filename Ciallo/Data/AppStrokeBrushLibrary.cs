@@ -14,7 +14,7 @@ using FileAccess = Godot.FileAccess;
 
 namespace Ciallo.Data;
 
-public static class AppBrushLibrary
+public static class AppStrokeBrushLibrary
 {
     public static ReactiveProperty<int> SelectedIndex;
     public static readonly ObservableList<StrokeBrushSetting> BrushSettings = [];

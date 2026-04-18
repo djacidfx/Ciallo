@@ -66,13 +66,13 @@ public partial class AutoloadData : Node
             }
         };
 
-        bool brushFilesExists = AppBrushLibrary.TryLoad();
-        if (!brushFilesExists) AppBrushLibrary.ResetBuiltInBrushes();
+        bool brushFilesExists = AppStrokeBrushLibrary.TryLoad();
+        if (!brushFilesExists) AppStrokeBrushLibrary.ResetBuiltInBrushes();
     }
 
     public override void _Ready()
     {
-        AppBrushLibrary.BindToGui();
+        AppStrokeBrushLibrary.BindToGui();
     }
 
     // ReSharper disable once AsyncVoidMethod
@@ -83,7 +83,7 @@ public partial class AutoloadData : Node
             var result = await AppDocumentManager.UserCloseWorkingDocument();
             if (!result) return;
 
-            AppBrushLibrary.Save();
+            AppStrokeBrushLibrary.Save();
             AppPreference.Save();
             AppDocumentManager.Clear();
             GetTree().Quit();

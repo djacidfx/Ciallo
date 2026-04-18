@@ -30,7 +30,7 @@ public class PaintStrokeTool : StateMachineToolBase
             }, () =>
             {
                 var brushE = Document.Get<SelectionManager>().WorkingStrokeBrush.Value;
-                return !brushE.IsDyingOrDead || AppBrushLibrary.HasSelection;
+                return !brushE.IsDyingOrDead || AppStrokeBrushLibrary.HasSelection;
             });
 
         Configure(Left)

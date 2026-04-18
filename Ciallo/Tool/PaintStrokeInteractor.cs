@@ -31,12 +31,12 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
         // Selection in brush library has higher priority
-        if (AppBrushLibrary.HasSelection)
+        if (AppStrokeBrushLibrary.HasSelection)
         {
-            var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
+            var setting = AppStrokeBrushLibrary.SelectedBrushSetting.CurrentValue;
             new CommandBuilder(Document.World.Create())
                 .NewStrokeBrush(setting).SetWorkingStrokeBrush().Commit();
-            AppBrushLibrary.SelectedIndex.Value = -1;
+            AppStrokeBrushLibrary.SelectedIndex.Value = -1;
         }
         BrushE = Document.Get<SelectionManager>().WorkingStrokeBrush.Value;
 
