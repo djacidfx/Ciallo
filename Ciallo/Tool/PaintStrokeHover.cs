@@ -125,11 +125,11 @@ public class PaintStrokeHover : InteractiveSessionBase
             time => time.TotalMilliseconds, TimeSpan.FromMilliseconds);
         container.AddProperty("Taper end", new SpinSlider()
             {
-                MinValue = 0f,
-                MaxValue = 50f,
+                MinValue = 0,
+                MaxValue = 50,
+                Step = 1,
             }.BindNumber(taperTime))
             .VisibleIf(selectionM.WorkingStrokeBrush, Entity.IsNotNull);
-        ;
     }
 
     private void OnUseBrushPressed()

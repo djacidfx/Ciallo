@@ -66,7 +66,6 @@ public class StrokeBrushSetting
             CustomMinimumSize = new(0, 32),
         };
         var picker = colorPickerButton.GetPicker();
-        picker.ColorModesVisible = false;
         picker.ColorMode = ColorPicker.ColorModeType.Rgb;
         container.AddProperty("RGB+Flow", colorPickerButton.BindColor(Color));
 
@@ -76,8 +75,11 @@ public class StrokeBrushSetting
         container.AddProperty("Pressure to radius", aspectBox);
 
         var pp2FlowCurveEdit = new MappingCurveEdit().BindCurve(Pressure2FlowCurve);
-        var flowCurveFlagCheck = new CheckBox().BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
-        container.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit).AddToChildOf(container);
+        var flowCurveFlagCheck = new CheckBox()
+            .BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow)
+            .VisibleIf(RenderingType, type => type != BrushRenderingType.Vanilla);
+        container.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit)
+            .AddToChildOf(container);
 
         var typeButton = new OptionButton().BindEnum(RenderingType);
         container.AddProperty("Rendering type", typeButton);
