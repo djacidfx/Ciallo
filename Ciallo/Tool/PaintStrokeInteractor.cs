@@ -76,8 +76,14 @@ public class PaintStrokeInteractor : InteractiveSessionBase
             Tool.Machine.Fire(PaintEnd);
             return;
         }
-        Observable.Timer(AppPreference.TaperDuration.Value)
+
+        var sceneTree = (SceneTree)Engine.GetMainLoop();
+        // Must trigger event before _process (Observable.Timer's call location), or cause flickering
+        sceneTree.SignalAsObservable(SceneTree.SignalName.ProcessFrame)
+            .SkipUntil(Observable.Timer(AppPreference.TaperDuration.Value))
+            .Take(1)
             .Subscribe(_ => Tool.Machine.Fire(PaintEnd));
+
         IsTaperEnding = true;
         Generator.StartTaperEnding();
     }
@@ -108,21 +114,8 @@ public class PaintStrokeInteractor : InteractiveSessionBase
     public void Clear()
     {
         Generator.Clear();
-        if (IsTaperEnding)
-        {
-            // An ugly patch to avoid one frame flicker
-            Observable.NextFrame().Subscribe(_ =>
-            {
-                StrokePreview.QueueFree();
-                StrokePreview = null;
-            });
-        }
-        else
-        {
-            StrokePreview.QueueFree();
-            StrokePreview = null;
-        }
-
+        StrokePreview.QueueFree();
+        StrokePreview = null;
         Input.MouseMode = Input.MouseModeEnum.Visible;
         IsTaperEnding = false;
     }
