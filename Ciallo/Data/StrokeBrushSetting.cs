@@ -166,6 +166,7 @@ public class StrokeBrushSetting
             MaxValue = 6,
             Step = 0.01,
             ExpEdit = true,
+            AllowGreater = true,
         }.BindNumber(AlphaDensity);
         container.AddProperty("Opacity density", alphaDensityControl).VisibleIf(RenderingType, BrushRenderingType.Airbrush);
     }

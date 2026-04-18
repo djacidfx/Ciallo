@@ -27,14 +27,46 @@ public static class AppStrokeBrushLibrary
         List<StrokeBrushSetting> brushes = [];
         brushes.Add(new()
         {
-            Name = { Value = "Solid".Tr() },
+            Name = { Value = "Solid".Tr() + "G-pen".Tr() },
             RenderingType = { Value = BrushRenderingType.Vanilla },
+            Pressure2RadiusCurve = { Value = BezierCurveFactory.GPenCurve(0.2f, 1.0f) },
             Labels = { BrushLabel.BuiltIn },
         });
 
         brushes.Add(new()
         {
-            Name = { Value = "High performance".Tr() + " " + "Soft airbrush".Tr() },
+            Name = { Value = "G-pen".Tr() },
+            RenderingType = { Value = BrushRenderingType.Airbrush },
+            ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow },
+            Pressure2RadiusCurve = { Value = BezierCurveFactory.GPenCurve(0.1f, 1.0f) },
+            Pressure2FlowCurve = { Value = BezierCurveFactory.EaseInOut(new Vector2(0.0f, 0.1f), new(0.75f, 1.0f)) },
+            FalloffCurve = { Value = BezierCurveFactory.Constant(1.0f) },
+            AlphaDensity = { Value = 8 },
+            Labels = { BrushLabel.BuiltIn },
+        });
+
+        brushes.Add(new()
+        {
+            Name = { Value = "Mapping pen".Tr() },
+            RenderingType = { Value = BrushRenderingType.Airbrush },
+            ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow },
+            Pressure2RadiusCurve = { Value = BezierCurveFactory.GPenCurve(0.1f, 1.0f) },
+            Pressure2FlowCurve =
+            {
+                Value =
+                [
+                    new(new(0.4f, 0.1f), new(-0.3f, 0), new(0.3f, 0)),
+                    new(new(0.75f, 1.0f), new(-0.1f, 0), new(0.1f, 0))
+                ]
+            },
+            FalloffCurve = { Value = BezierCurveFactory.Constant(1.0f) },
+            AlphaDensity = { Value = 8 },
+            Labels = { BrushLabel.BuiltIn },
+        });
+
+        brushes.Add(new()
+        {
+            Name = { Value = "Soft airbrush".Tr() },
             RenderingType = { Value = BrushRenderingType.Airbrush },
             BaseRadius = { Value = 12f },
             Labels = { BrushLabel.BuiltIn },
@@ -49,7 +81,7 @@ public static class AppStrokeBrushLibrary
 
         brushes.Add(new()
         {
-            Name = { Value = "High performance".Tr() + " " + "Hard airbrush".Tr() },
+            Name = { Value = "Hard airbrush".Tr() },
             RenderingType = { Value = BrushRenderingType.Airbrush },
             BaseRadius = { Value = 12f },
             Labels = { BrushLabel.BuiltIn },
@@ -82,7 +114,7 @@ public static class AppStrokeBrushLibrary
             Color = { Value = Colors.Black },
             ActiveStampFlags = { Value = StampFlags.StampTexture | StampFlags.MaskTexture | StampFlags.RotationNoise },
             StampTexture = { Value = ImageTexture.CreateFromImage(images[0]) },
-            StampInterval = { Value = 0.5f },
+            StampInterval = { Value = 0.25f },
             MaskTexture = { Value = ImageTexture.CreateFromImage(images[2]) },
             RotationNoiseAmplitude = { Value = 8 * Mathf.Pi },
             RotationNoiseFrequency = { Value = 0.343234f },
