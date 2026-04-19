@@ -99,13 +99,11 @@ public static partial class AppDocumentManager
 
         DisplayServer.WindowSetTitle("Ciallo");
 
-        // Remove working world
+        document.Get<ToolManager>().DeactivateWorkingTool();
+        // Signal working world removal
         LoadedDocuments.Remove(document);
         if (WorkingDocument.Value == document)
             WorkingDocument.Value = Entity.Null;
-
-        // Dispose or free managers
-        document.Get<CommandManager>().Free();
 
         // Dispose world
         // Warning: Dispose a world don't trigger it's entities' deletion events.

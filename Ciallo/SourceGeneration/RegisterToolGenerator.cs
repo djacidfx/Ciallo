@@ -160,7 +160,7 @@ public class RegisterToolGenerator : IIncrementalGenerator
 
             namespace Ciallo.Tool;
 
-            public partial class ToolManager : IInitable
+            public partial class ToolManager
             {
                 public Dictionary<ToolButton, List<ITool>> InitializeToolButtonMap(Entity document)
                 {

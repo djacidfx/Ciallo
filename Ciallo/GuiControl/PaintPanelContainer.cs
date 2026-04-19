@@ -18,6 +18,6 @@ public partial class PaintPanelContainer : Control
     {
         var panel = document.Get<PaintPanel>();
         document.Remove<PaintPanel>();
-        panel.QueueFree();
+        panel.Free();
     }
 }

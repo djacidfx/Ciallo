@@ -35,6 +35,7 @@ public class VectorFillHover : InteractiveSessionBase
     public override void Cancel()
     {
         _fillPreview.QueueFree();
+        _fillPreview = null;
         Document.Get<WorldBody>().MouseDefaultCursorShape = default;
     }
 
