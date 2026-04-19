@@ -16,7 +16,7 @@ public partial class MenuHelp : PopupMenu
         { "User manual", null },
         { "About Ciallo", null },
         { "Copy system info", null },
-        { "Bug report", null },
+        { "Report bug", null },
     };
 
     public override void _Ready()

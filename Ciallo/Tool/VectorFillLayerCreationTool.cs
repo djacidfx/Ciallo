@@ -54,7 +54,7 @@ public class VectorFillLayerCreationHover : InteractiveSessionBase
     {
         container.AddChild(new Label
         {
-            Text = "[Create Vector Fill Layer Hint]",
+            Text = "[Vector Fill Shape Layer Hint]".Tr(),
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
         });
     }
