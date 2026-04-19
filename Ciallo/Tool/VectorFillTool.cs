@@ -68,7 +68,6 @@ public class VectorFillTool : StateMachineToolBase
     {
         foreach (var e in list)
         {
-            e.Get<OverlayHolder>().Visible = visible;
             foreach (var n in e.Get<OverlayHolder>().GetChildren())
             {
                 var node = (PolylineWireframe)n;
