@@ -1,4 +1,6 @@
-﻿using Ciallo.Data;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
@@ -11,35 +13,70 @@ namespace Ciallo.Tool;
 
 public class VectorFillHover : InteractiveSessionBase
 {
-    private Polygon2D _fillPreview;
+    private readonly List<StrokeView> _contours = [];
 
     public override void Start(CursorButtonData data)
     {
         Document.Get<WorldBody>().MouseDefaultCursorShape = Control.CursorShape.Cross;
-
-        _fillPreview = new()
-        {
-            Material = AutoloadRendering.VectorFillPreviewMaterial,
-            Texture = AutoloadRendering.DummyTextureForUV,
-        };
-        WorkingLayer.Get<OverlayHolder>().AddChild(_fillPreview);
-        _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
+        SetContoursWithQueryResult(_contours, WorkingLayer.Get<OverlayHolder>(),
+            WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
     }
 
     public override void Moving(CursorMotionData data)
     {
-        _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
+        SetContoursWithQueryResult(_contours, WorkingLayer.Get<OverlayHolder>(),
+            WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
     }
 
     public override void End(CursorButtonData data) => Cancel();
+
     public override void Cancel()
     {
-        _fillPreview.QueueFree();
-        _fillPreview = null;
+        foreach (var sv in _contours) sv.QueueFree();
+        _contours.Clear();
         Document.Get<WorldBody>().MouseDefaultCursorShape = default;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
+
+    public static void SetContoursWithQueryResult(
+        List<StrokeView> contours, Node parent, Arrangement2D arr, Vector2 point)
+    {
+        var faceRid = arr.Query(point);
+        if (!faceRid.IsValid)
+        {
+            foreach (var sv in contours) sv.Multimesh.InstanceCount = 0;
+            return;
+        }
+        var polygons = arr.GetFacePolygons(faceRid);
+        if (polygons.Count == 0)
+        {
+            foreach (var sv in contours) sv.Multimesh.InstanceCount = 0;
+            return;
+        }
+
+        // Grow
+        while (contours.Count < polygons.Count)
+        {
+            var sv = new StrokeView { Material = AutoloadRendering.DashWireframeMaterial };
+            contours.Add(sv);
+            parent.AddChild(sv);
+        }
+        // Shrink
+        while (contours.Count > polygons.Count)
+        {
+            var sv = contours[^1];
+            contours.RemoveAt(contours.Count - 1);
+            sv.QueueFree();
+        }
+
+        float radius = AppPreference.StrokeWireframeRadius;
+        for (int i = 0; i < polygons.Count; i++)
+        {
+            var closed = polygons[i].Append(polygons[i][0]).ToArray();
+            contours[i].SetGeometry(closed, radius);
+        }
+    }
 
     public override void DrawProperty(PropertyContainer container)
     {

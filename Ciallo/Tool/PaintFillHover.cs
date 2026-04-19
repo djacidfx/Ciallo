@@ -25,7 +25,7 @@ public class PaintFillHover : InteractiveSessionBase
 
     public override void DrawProperty(PropertyContainer container)
     {
-        container.AddProperty("Fill Color", new ColorPickerButton
+        container.AddProperty("Fill color", new ColorPickerButton
         {
             CustomMinimumSize = new(0, 32),
         }.BindColor(FillColor));

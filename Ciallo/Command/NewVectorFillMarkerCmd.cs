@@ -51,6 +51,11 @@ public class NewVectorFillMarkerCmd : CommandBase
             .Switch()
             .Subscribe(polygonView.SetColor)
             .AddTo(targetE);
+        setting.BrushE.Subscribe(brushE =>
+        {
+            polygonView.Material = brushE.IsNull ? AutoloadRendering.MissingFillBrushMaterial : null;
+            polygonView.Texture = brushE.IsNull ? AutoloadRendering.DummyTextureForUV : null;
+        }).AddTo(targetE);
 
         // Include both parent change and structure change.
         Observable<Arrangement2D> changeArrObs = layerNode.Parent
