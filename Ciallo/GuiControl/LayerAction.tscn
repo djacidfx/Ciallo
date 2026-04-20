@@ -48,7 +48,7 @@ expand_icon = true
 [node name="ConvertToShape" type="Button" parent="." unique_id=1234567890]
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
-tooltip_text = "Convert VectorFill layer to Shape layer"
+tooltip_text = "Convert to shape layer"
 theme_type_variation = &"ToolButton"
 icon = ExtResource("5_conv1")
 expand_icon = true
