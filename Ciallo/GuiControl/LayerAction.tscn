@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://tugksq2pg442" path="res://Icon/layers-plus.svg" id="2_rh62m"]
 [ext_resource type="Texture2D" uid="uid://c6pduk2ad1t3i" path="res://Icon/layers-minus.svg" id="3_7h52i"]
 [ext_resource type="Texture2D" uid="uid://61obc8werubk" path="res://Icon/file-image-plus-outline.svg" id="4_54l2l"]
+[ext_resource type="Texture2D" uid="uid://c5018cdyomv64" path="res://Icon/layer-convert.svg" id="5_conv1"]
 
 [node name="LayerAction" type="HFlowContainer" unique_id=1292664685]
 offset_right = 258.0
@@ -42,4 +43,12 @@ layout_mode = 2
 tooltip_text = "Import an image"
 theme_type_variation = &"ToolButton"
 icon = ExtResource("4_54l2l")
+expand_icon = true
+
+[node name="ConvertToShape" type="Button" parent="." unique_id=1234567890]
+custom_minimum_size = Vector2(36, 36)
+layout_mode = 2
+tooltip_text = "Convert VectorFill layer to Shape layer"
+theme_type_variation = &"ToolButton"
+icon = ExtResource("5_conv1")
 expand_icon = true

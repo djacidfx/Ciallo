@@ -20,6 +20,7 @@ public partial class LayerAction : Control
         Root.NewLayer.Pressed += OnNewShapeLayer;
         Root.RemoveLayer.Pressed += OnRemoveLayer;
         Root.NewImage.Pressed += OnNewImage;
+        Root.ConvertToShape.Pressed += OnConvertToShape;
     }
 
     public void OnNewShapeLayer()
@@ -73,5 +74,10 @@ public partial class LayerAction : Control
             .NewImageLayer(image)
             .AddToLayerTree(AppDocumentManager.WorkingDocument.Value)
             .Commit();
+    }
+
+    public void OnConvertToShape()
+    {
+        // TODO: Convert working VectorFill layer to Shape layer
     }
 }
