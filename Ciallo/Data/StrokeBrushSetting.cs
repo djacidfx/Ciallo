@@ -188,6 +188,7 @@ public enum BrushFlags
 {
     Pressure2Flow = 1 << 0,
     Dash = 1 << 1,
+    Eraser = 1 << 2,
 }
 
 [Flags]

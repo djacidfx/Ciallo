@@ -2,8 +2,10 @@
 shader_type canvas_item;
 render_mode unshaded;
 render_mode skip_vertex_transform;
-
-const int Vanilla = 0, Stamp = 1, Airbrush = 2;
+// Godot doesn't support changing blend mode at runtime.
+#if defined(ERASER) 
+render_mode blend_mul;
+#endif
 
 struct StampFlag {
     int StampTexture;
@@ -16,9 +18,11 @@ const StampFlag StampFlags = StampFlag(1 << 0, 1 << 1, 1 << 2, 1 << 3);
 struct BrushFlag {
     int Pressure2FlowCurve;
     int Dash;
+	int Eraser;
 };
-const BrushFlag BrushFlags = BrushFlag(1 << 0, 1 << 1);
+const BrushFlag BrushFlags = BrushFlag(1 << 0, 1 << 1, 1 << 2);
 
+const int Vanilla = 0, Stamp = 1, Airbrush = 2;
 uniform int StrokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
 uniform int ActiveBrushFlags = 0;
 uniform vec4 MaterialColor : source_color = vec4(0.0, 0.0, 0.0, 1.0);
@@ -43,8 +47,8 @@ uniform sampler2D StampTexture;
 uniform mat2 CoordinateTransform;
 uniform sampler2D DiskOpacityCurve;
 uniform sampler2D MultiplyTexture;
-
 uniform float RotationNoiseAmplitude = 0; // `= PI` don't compile// ---------------------------------
+
 uniform sampler2D FalloffCurve;
 uniform float AlphaDensity;
 
@@ -66,6 +70,10 @@ varying flat float sinTheta;
 varying flat float cosTheta;
 varying flat float tanTheta;
 varying flat float scale;
+
+bool hasFlag(int flags, int flag) {
+	return (flags & flag) != 0;
+}
 
 vec2 unpack2floats(float f) {
     uint word = floatBitsToUint(f);
@@ -170,10 +178,11 @@ void fragment() {
     float cosPhi1 = (pLocal.x - segmentLength) / d1;
 	vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
 	float r_p = r0 - cosTheta * p_r.x;
+	bool isEraser = hasFlag(ActiveBrushFlags, BrushFlags.Eraser);
 
 	float t = mix(pp0, pp1, p_r.x/segmentLength);
 	t = clamp(t, 0.0, 1.0);
-	float flowRatio = ((ActiveBrushFlags & BrushFlags.Pressure2FlowCurve) != 0) ? sampleCurve(Pressure2FlowCurve, t) : 1.0;
+	float flowRatio = hasFlag(ActiveBrushFlags, BrushFlags.Pressure2FlowCurve) ? sampleCurve(Pressure2FlowCurve, t) : 1.0;
 
 	/*----------------------------------------------------------*/
 	if(StrokeType == Vanilla){
@@ -228,7 +237,7 @@ void fragment() {
  		int i = 0;
  		int MAX_i = 128;
  		float currStampIdx = ceil(startStampIdx);
- 		float currA = 1e-7;
+ 		float currA = isEraser ? 1.0 : 1e-7;
 		float flow = MaterialColor.a * flowRatio;
 		// Main loop
  		while(i < MAX_i && currStampIdx < endStampIdx){
@@ -238,24 +247,26 @@ void fragment() {
 			// Transform
 			pToCurrStamp *= CoordinateTransform;
 			// Rotation noise
-			float rotationNoise = (ActiveStampFlags & StampFlags.RotationNoise) != 0 ? noise1D(currStampIdx) : 0.0;
+			float rotationNoise = hasFlag(ActiveStampFlags, StampFlags.RotationNoise) ? noise1D(currStampIdx) : 0.0;
 			float cosRot = cos(rotationNoise);
 			float sinRot = sin(rotationNoise);
 			pToCurrStamp *= mat2(vec2(cosRot, sinRot), vec2(-sinRot, cosRot));
 
  			vec2 uv = (pToCurrStamp/r + 1.0)/2.0;
-			float textureMask = ((ActiveStampFlags & StampFlags.MaskTexture) != 0) ? texture(MultiplyTexture, uv).r : 1.0;
-			float nr = length(pToCurrStamp/r); // normalized r
-			float dotMask = ((ActiveStampFlags & StampFlags.MaskDisk) != 0) ? sampleCurve(DiskOpacityCurve, nr) : 1.0;
-			float stampSample = ((ActiveStampFlags & StampFlags.StampTexture) != 0) ? texture(StampTexture, uv).r : 1.0;
+			float textureMask = hasFlag(ActiveStampFlags, StampFlags.MaskTexture) ? texture(MultiplyTexture, uv).r : 1.0;
+ 			float nr = length(pToCurrStamp/r); // normalized r
+			float dotMask = hasFlag(ActiveStampFlags, StampFlags.MaskDisk) ? sampleCurve(DiskOpacityCurve, nr) : 1.0;
+			float stampSample = hasFlag(ActiveStampFlags, StampFlags.StampTexture) ? texture(StampTexture, uv).r : 1.0;
 			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || nr > 1.0;
 			float sampledA = isOutDisk ? 1e-7 : textureMask * dotMask * flow * stampSample;
 
- 			currA = sampledA + currA * (1.0 - sampledA);
+ 			currA = isEraser ? currA * (1.0 - sampledA)
+				: sampledA + currA * (1.0 - sampledA);
 			i++;
 			currStampIdx += 1.0;
  		}
- 		COLOR = vec4(MaterialColor.rgb, currA);
+		vec3 rgb = isEraser ? vec3(1.0, 1.0, 1.0) : MaterialColor.rgb;
+ 		COLOR = vec4(rgb, currA);
  	}
 	/*----------------------------------------------------------*/
 	if(StrokeType == Airbrush){
@@ -271,12 +282,14 @@ void fragment() {
 
 		float lambda = abs(pLocal.y) / sinTheta / r_p;
 		float curveFall = sampleCurve(FalloffCurve, lambda);
-		float A = 1.0 - exp(-deltaN * AlphaDensity  * flow * curveFall);
-		COLOR = vec4(MaterialColor.rgb, A);
+		float tempValue = exp(-deltaN * AlphaDensity  * flow * curveFall);
+		float A = isEraser ? tempValue : 1.0 - tempValue;
+		vec3 rgb = isEraser ? vec3(1.0, 1.0, 1.0) : MaterialColor.rgb;
+		COLOR = vec4(rgb, A);
 	}
 
 	// Dash
-	if((ActiveBrushFlags & BrushFlags.Dash) != 0){
+	if(hasFlag(ActiveBrushFlags, BrushFlags.Dash)){
 		float unitLength = DashLength + (GapLength > 0.0 ? GapLength : DashLength);
 		float pixelN = x2n(pLocal.x) + n0;
 		if(mod(pixelN + TIME * DashForwardSpeed, unitLength) > DashLength) discard;
