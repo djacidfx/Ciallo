@@ -15,7 +15,7 @@ public partial class AutoloadGuiControl : Node
         {
             // Layer tree control
             var layerPanel = GetTree().GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
-            layerPanel.CreateAddLayerContainer(document);
+            layerPanel.CreateAdd(document);
 
             // Paint panel
             var paintPanelContainer = GetTree().GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().Single();
@@ -58,7 +58,7 @@ public partial class AutoloadGuiControl : Node
 
             // Layer tree control
             var layerPanel = GetTree().GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
-            layerPanel.RemoveFreeLayerContainer(document);
+            layerPanel.RemoveFree(document);
         }).AddTo(this);
     }
 }

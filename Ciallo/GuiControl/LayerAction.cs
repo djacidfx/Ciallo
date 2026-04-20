@@ -1,17 +1,30 @@
 using Ciallo.Command;
 using Ciallo.Data;
+using Frent;
 using Godot;
 
 namespace Ciallo.GuiControl;
 
+[SceneTree(root: "Root"), Instantiable]
 public partial class LayerAction : Control
 {
-    private FileDialog _fileDialog;
+    public Entity Document;
 
-    public void OnNewLayer()
+    public void Init(Entity document)
     {
-        if (AppDocumentManager.WorkingDocument.Value.IsNull) return;
-        new CommandBuilder(AppDocumentManager.WorkingDocument.Value.World.Create())
+        Document = document;
+    }
+
+    public override void _Ready()
+    {
+        Root.NewLayer.Pressed += OnNewShapeLayer;
+        Root.RemoveLayer.Pressed += OnRemoveLayer;
+        Root.NewImage.Pressed += OnNewImage;
+    }
+
+    public void OnNewShapeLayer()
+    {
+        new CommandBuilder(Document.World.Create())
             .NewShapeLayer()
             .AddToLayerTree(AppDocumentManager.WorkingDocument.Value)
             .SetWorkingLayer()
@@ -20,8 +33,7 @@ public partial class LayerAction : Control
 
     public void OnRemoveLayer()
     {
-        if (AppDocumentManager.WorkingDocument.Value.IsNull) return;
-        var document = AppDocumentManager.WorkingDocument.CurrentValue;
+        var document = Document;
         var currentLayerE = document.Get<SelectionManager>().WorkingLayer.Value;
         if (currentLayerE.IsNull) return;
 
@@ -39,11 +51,10 @@ public partial class LayerAction : Control
             .Commit();
     }
 
-    public void OnAddImage()
+    public void OnNewImage()
     {
         if (AppDocumentManager.WorkingDocument.Value.IsNull) return;
-        _fileDialog = GetNode<FileDialog>("%FileDialog");
-        _fileDialog.Popup();
+        Root.FileDialog.Popup();
     }
 
     public void OnImageFileSelected(string path)
@@ -58,7 +69,7 @@ public partial class LayerAction : Control
             return;
         }
         if (image == null) return;
-        new CommandBuilder(AppDocumentManager.WorkingDocument.Value.World.Create())
+        new CommandBuilder(Document.World.Create())
             .NewImageLayer(image)
             .AddToLayerTree(AppDocumentManager.WorkingDocument.Value)
             .Commit();
