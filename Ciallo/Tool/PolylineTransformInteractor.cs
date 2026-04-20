@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -172,7 +171,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             }
             if (e.Has<FilledPolygonSetting>())
             {
-                e.Get<Polygon2D>().SetPolygon(CollectionsMarshal.AsSpan(_currPolylines[i].ToSimplePolygon()));
+                e.Get<Polygon2D>().SetPolygon(_currPolylines[i]);
             }
         }
     }

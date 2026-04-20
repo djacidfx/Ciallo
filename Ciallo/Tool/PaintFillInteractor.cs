@@ -52,7 +52,11 @@ public class PaintFillInteractor : InteractiveSessionBase
         new CommandBuilder(WorkingLayer.World.Create())
             .NewFilledPolygon()
             .AddToLayerTree(WorkingLayer)
-            .SetPolylineGeometry([.._generator.Positions], [.._generator.Radii], [.._generator.Pressures], [.._generator.Tilts])
+            .SetPolylineGeometry(
+                [.._generator.Positions, _generator.Positions[0]],
+                [.._generator.Radii, _generator.Radii[0]],
+                [.._generator.Pressures, _generator.Pressures[0]],
+                [.._generator.Tilts, _generator.Tilts[0]])
             .SetProperty(e => e.Get<FilledPolygonSetting>().BrushE, _fillBrush)
             .Commit();
         Clear();

@@ -444,11 +444,12 @@ public static class PolylineExtension
     /// Turn a polyline into a simple polygon.
     /// A simple polygon is a closed polygon that does not intersect itself (so no overlapping points).
     /// </summary>
+    /// <remarks>Deal closed polygon incorrectly</remarks>
     public static List<Vector2> ToSimplePolygon(this IReadOnlyList<Vector2> polyline)
     {
-        int i = FindFirstSelfIntersection(polyline, out _);
-        if (i == -1) return RemoveDuplicatePoints(polyline);
-        return RemoveDuplicatePoints(polyline.Take(i + 1).ToArray());
+        int i = polyline.FindFirstSelfIntersection(out _);
+        if (i == -1) return polyline.RemoveDuplicatePoints();
+        return polyline.Take(i + 1).ToArray().RemoveDuplicatePoints();
     }
 
     public static List<Vector2> RemoveDuplicatePoints(this IReadOnlyList<Vector2> polyline)
