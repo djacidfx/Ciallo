@@ -32,11 +32,24 @@ public class NewFilledPolygonCmd : CommandBase
             ? new FilledPolygonSetting()
             : CopyE.Get<FilledPolygonSetting>().Clone();
         targetE.Add(setting);
+        if (!setting.BrushE.Value.IsNull && setting.BrushE.Value.World != targetE.World)
+            setting.BrushE.Value = default;
 
         // View
-        var polygonView = new Polygon2D() { Antialiased = true }; // The antialiasing result is not satisfying
+        var polygonView = new Polygon2D() { Antialiased = true };
         targetE.AddNode(polygonView);
-        setting.Color.Subscribe(polygonView.SetColor).AddTo(targetE);
+        setting.BrushE
+            .Select(e => e.IsNull
+                ? Observable.Return(Colors.White)
+                : e.Get<VectorFillBrushSetting>().FillColor.AsObservable())
+            .Switch()
+            .Subscribe(polygonView.SetColor)
+            .AddTo(targetE);
+        setting.BrushE.Subscribe(brushE =>
+        {
+            polygonView.Material = brushE.IsNull ? AutoloadRendering.MissingFillBrushMaterial : null;
+            polygonView.Texture = brushE.IsNull ? AutoloadRendering.DummyTextureForUV : null;
+        }).AddTo(targetE);
 
         // Overlay
         var overlay = new PolylineWireframe() { Visible = false };

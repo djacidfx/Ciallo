@@ -123,25 +123,33 @@ public class PolylineSelectHover : InteractiveSessionBase
             }).AddTo(_subs);
         }
 
-        bool showVectorFillBrush = selectedShapes.All(e => e.Has<VectorFillMarkerSetting>());
+        bool showVectorFillBrush = selectedShapes.All(e => e.Has<VectorFillMarkerSetting>() || e.Has<FilledPolygonSetting>());
         if (showVectorFillBrush)
         {
             _vectorFillBrushSwitcher.Visible = true;
-            var firstE = selectedShapes.First().Get<VectorFillMarkerSetting>().BrushE.Value;
-            bool allSame = selectedShapes.Select(e => e.Get<VectorFillMarkerSetting>().BrushE.Value).All(e => e == firstE);
+            var firstE = GetVectorFillBrushE(selectedShapes.First()).Value;
+            bool allSame = selectedShapes.Select(e => GetVectorFillBrushE(e).Value).All(e => e == firstE);
             _vectorFillBrushSwitcher.Select(allSame ? firstE : Entity.Null);
             _vectorFillBrushSwitcher.BrushClicked.Subscribe(brushE =>
             {
                 var cmd = new CommandBuilder();
                 foreach (var shapeE in selectedShapes)
                 {
-                    cmd.SetTarget(shapeE)
-                        .SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, brushE);
+                    if (shapeE.Has<VectorFillMarkerSetting>())
+                        cmd.SetTarget(shapeE).SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, brushE);
+                    else
+                        cmd.SetTarget(shapeE).SetProperty(e => e.Get<FilledPolygonSetting>().BrushE, brushE);
                 }
                 cmd.Commit();
                 _vectorFillBrushSwitcher.Select(brushE);
             }).AddTo(_subs);
         }
+    }
+
+    private static ReactiveProperty<Entity> GetVectorFillBrushE(Entity e)
+    {
+        if (e.Has<VectorFillMarkerSetting>()) return e.Get<VectorFillMarkerSetting>().BrushE;
+        return e.Get<FilledPolygonSetting>().BrushE;
     }
 
     public override void Moving(CursorMotionData data)

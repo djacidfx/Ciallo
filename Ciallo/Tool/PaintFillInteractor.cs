@@ -3,6 +3,7 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
+using Frent;
 using Godot;
 
 namespace Ciallo.Tool;
@@ -16,11 +17,11 @@ public class PaintFillInteractor : InteractiveSessionBase
         AllowIntersection = false,
     };
     private StrokeView _dashPreview;
-    private Color _fillColor;
+    private Entity _fillBrush;
 
     public override void BeforeTransitionSrcEnd(InteractiveSessionBase session)
     {
-        _fillColor = ((PaintFillHover)session).FillColor.Value;
+        _fillBrush = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
     }
 
     public override void Start(CursorButtonData data)
@@ -52,7 +53,7 @@ public class PaintFillInteractor : InteractiveSessionBase
             .NewFilledPolygon()
             .AddToLayerTree(WorkingLayer)
             .SetPolylineGeometry([.._generator.Positions], [.._generator.Radii], [.._generator.Pressures], [.._generator.Tilts])
-            .SetProperty(e => e.Get<FilledPolygonSetting>().Color, _fillColor)
+            .SetProperty(e => e.Get<FilledPolygonSetting>().BrushE, _fillBrush)
             .Commit();
         Clear();
     }

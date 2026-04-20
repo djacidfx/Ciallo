@@ -1,15 +1,13 @@
 ﻿using Ciallo.Geometry;
+using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Ciallo.Widget;
 using Godot;
-using R3;
 
 namespace Ciallo.Tool;
 
 public class PaintFillHover : InteractiveSessionBase
 {
-    public readonly ReactiveProperty<Color> FillColor = new(Colors.Black);
-
     public override void Start(CursorButtonData data)
     {
         Document.Get<WorldBody>().MouseDefaultCursorShape = Control.CursorShape.Cross;
@@ -25,9 +23,13 @@ public class PaintFillHover : InteractiveSessionBase
 
     public override void DrawProperty(PropertyContainer container)
     {
-        container.AddProperty("Fill color", new ColorPickerButton
+        container.AddChild(new Label
         {
-            CustomMinimumSize = new(0, 32),
-        }.BindColor(FillColor));
+            Text = "Fill brush",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+        });
+        var brushPreview = VectorFillBrushPreviewList.New(Document);
+        brushPreview.CustomMinimumSize = new(0, 256);
+        container.AddChild(brushPreview);
     }
 }
