@@ -18,13 +18,13 @@ public class VectorFillHover : InteractiveSessionBase
     public override void Start(CursorButtonData data)
     {
         Document.Get<WorldBody>().MouseDefaultCursorShape = Control.CursorShape.Cross;
-        SetContoursWithQueryResult(_contours, WorkingLayer.Get<OverlayHolder>(),
+        SetContoursWithQueryResult(WorkingLayer.Get<OverlayHolder>(),
             WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
     }
 
     public override void Moving(CursorMotionData data)
     {
-        SetContoursWithQueryResult(_contours, WorkingLayer.Get<OverlayHolder>(),
+        SetContoursWithQueryResult(WorkingLayer.Get<OverlayHolder>(),
             WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
     }
 
@@ -39,42 +39,41 @@ public class VectorFillHover : InteractiveSessionBase
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
 
-    public static void SetContoursWithQueryResult(
-        List<StrokeView> contours, Node parent, Arrangement2D arr, Vector2 point)
+    public void SetContoursWithQueryResult(Node parent, Arrangement2D arr, Vector2 point)
     {
         var faceRid = arr.Query(point);
         if (!faceRid.IsValid)
         {
-            foreach (var sv in contours) sv.Multimesh.InstanceCount = 0;
+            foreach (var sv in _contours) sv.Multimesh.InstanceCount = 0;
             return;
         }
         var polygons = arr.GetFacePolygons(faceRid);
         if (polygons.Count == 0)
         {
-            foreach (var sv in contours) sv.Multimesh.InstanceCount = 0;
+            foreach (var sv in _contours) sv.Multimesh.InstanceCount = 0;
             return;
         }
 
         // Grow
-        while (contours.Count < polygons.Count)
+        while (_contours.Count < polygons.Count)
         {
             var sv = new StrokeView { Material = AutoloadRendering.DashWireframeMaterial };
-            contours.Add(sv);
+            _contours.Add(sv);
             parent.AddChild(sv);
         }
         // Shrink
-        while (contours.Count > polygons.Count)
+        while (_contours.Count > polygons.Count)
         {
-            var sv = contours[^1];
-            contours.RemoveAt(contours.Count - 1);
+            var sv = _contours[^1];
+            _contours.RemoveAt(_contours.Count - 1);
             sv.QueueFree();
         }
 
-        float radius = AppPreference.StrokeWireframeRadius;
+        float radius = AppPreference.StrokeWireframeRadius * 1.5f;
         for (int i = 0; i < polygons.Count; i++)
         {
             var closed = polygons[i].Append(polygons[i][0]).ToArray();
-            contours[i].SetGeometry(closed, radius);
+            _contours[i].SetGeometry(closed, radius);
         }
     }
 
