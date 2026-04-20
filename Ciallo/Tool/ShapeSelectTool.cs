@@ -8,7 +8,7 @@ using Godot;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Select)]
-public class ShapeLayerSelectTool : StateMachineToolBase
+public class ShapeSelectTool : StateMachineToolBase
 {
     public readonly PolylineSelectHover Hover = new();
     public readonly PolylineTransformInteractor Transform = new();
