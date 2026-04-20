@@ -9,6 +9,7 @@ public partial class AutoloadRendering : Node
     public static readonly ShaderMaterial WireframeDotMaterial =
         GD.Load<ShaderMaterial>("res://Rendering/WireframeDotMaterial.tres");
     public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
+    public static readonly Shader EraserShader = GD.Load<Shader>("res://Rendering/StrokeEraser.gdshader");
     public static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
     public static readonly Mesh WireframeDotMesh = GD.Load<Mesh>("res://Rendering/WireframeDotMesh.tres");
     public static StrokeBrushMaterial DashWireframeMaterial;
@@ -26,6 +27,7 @@ public partial class AutoloadRendering : Node
     public override void _Ready()
     {
         StrokeShader.TakeOverPath("");
+        EraserShader.TakeOverPath("");
         DummyMesh.TakeOverPath("");
 
         DashWireframeMaterial = new();

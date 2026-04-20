@@ -67,6 +67,9 @@ public class StrokeBrushSetting
         picker.ColorMode = ColorPicker.ColorModeType.Rgb;
         container.AddProperty("RGB+Flow", colorPickerButton.BindColor(Color));
 
+        var eraserCheck = new CheckBox().BindFlag(ActiveBrushFlags, BrushFlags.Eraser);
+        container.AddProperty("Eraser mode", eraserCheck);
+
         var pp2RadiusCurveEdit = new MappingCurveEdit { MinValue = 0.01f }.BindCurve(Pressure2RadiusCurve);
         var aspectBox = new AspectRatioContainer();
         aspectBox.AddChild(pp2RadiusCurveEdit);
