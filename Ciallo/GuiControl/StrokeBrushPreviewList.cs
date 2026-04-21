@@ -105,7 +105,7 @@ public partial class StrokeBrushPreviewList : Container
         var textureRect = new TextureRect
         {
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
-            StretchMode = TextureRect.StretchModeEnum.KeepAspect,
+            StretchMode = TextureRect.StretchModeEnum.Scale,
             Texture = e.Get<ViewportTexture>(),
             SizeFlagsHorizontal = SizeFlags.ExpandFill,
         };

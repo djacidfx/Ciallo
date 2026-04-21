@@ -75,11 +75,23 @@ public class NewStrokeBrushCmd : CommandBase
             }).AddTo(targetE);
 
         // background
-        var bg = new ColorRect
+        var bg = new HBoxContainer()
         {
             Size = new Vector2(size.X, size.Y),
-            Color = Colors.White,
         };
+        bg.AddThemeConstantOverride("separation", 0);
+        bg.AddChild(new ColorRect()
+        {
+            Color = Colors.White,
+            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+            SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+        });
+        bg.AddChild(new ColorRect()
+        {
+            Color = Colors.DimGray,
+            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+            SizeFlagsVertical = Control.SizeFlags.ExpandFill,
+        });
         viewport.AddChild(bg);
         viewport.AddChild(previewStroke);
 
