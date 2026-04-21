@@ -2,6 +2,7 @@
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
+using Ciallo.Rendering;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -87,14 +88,31 @@ public partial class StrokeBrushPreviewList : Container
 
     private Control CreateBrushPreview(Entity e)
     {
-        var textureRect = new TextureRect()
+        var wrapper = new PanelContainer()
+        {
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+            SizeFlagsVertical = SizeFlags.ExpandFill,
+        };
+
+        var checkerboard = new ColorRect
+        {
+            Material = AutoloadRendering.CheckerboardMaterial,
+            Color = Colors.Transparent,
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
+        };
+        wrapper.AddChild(checkerboard);
+
+        var textureRect = new TextureRect
         {
             ExpandMode = TextureRect.ExpandModeEnum.IgnoreSize,
             StretchMode = TextureRect.StretchModeEnum.KeepAspect,
             Texture = e.Get<ViewportTexture>(),
+            SizeFlagsHorizontal = SizeFlags.ExpandFill,
         };
-        textureRect.QueueFreeWith(e);
-        return textureRect;
+        wrapper.AddChild(textureRect);
+
+        wrapper.QueueFreeWith(e);
+        return wrapper;
     }
 
     public override void _Ready()

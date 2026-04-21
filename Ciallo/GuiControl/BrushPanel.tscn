@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b6xc7pixx1opt" path="res://GuiControl/BrushPanel.cs" id="1_0mb0o"]
 [ext_resource type="Texture2D" uid="uid://dm6dr88emw3ta" path="res://Icon/plus.svg" id="2_8ha6r"]
+[ext_resource type="Material" uid="uid://cnro8325i0qmw" path="res://Rendering/Checkerboard.tres" id="2_kjhpx"]
 [ext_resource type="Texture2D" uid="uid://dvgbavcaytc4e" path="res://Icon/minus.svg" id="3_eaqx8"]
 [ext_resource type="Texture2D" uid="uid://ddgqnm1dvnk6w" path="res://Icon/content-copy.svg" id="4_7s73l"]
 [ext_resource type="Texture2D" uid="uid://dt146sb1jur0" path="res://Icon/replay.svg" id="5_eaqx8"]
@@ -40,22 +41,31 @@ offset_bottom = -49.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="SubViewportContainer" type="SubViewportContainer" parent="VBoxContainer" unique_id=1679712578]
+[node name="MarginContainer2" type="MarginContainer" parent="VBoxContainer" unique_id=191321692]
+layout_mode = 2
+
+[node name="Checkerboard" type="ColorRect" parent="VBoxContainer/MarginContainer2" unique_id=214659695]
+material = ExtResource("2_kjhpx")
+layout_mode = 2
+color = Color(1, 1, 1, 0)
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="VBoxContainer/MarginContainer2" unique_id=1679712578]
 layout_mode = 2
 size_flags_horizontal = 3
 stretch = true
 
-[node name="BrushPreviewViewport" type="SubViewport" parent="VBoxContainer/SubViewportContainer" unique_id=327045762]
+[node name="BrushPreviewViewport" type="SubViewport" parent="VBoxContainer/MarginContainer2/SubViewportContainer" unique_id=327045762]
 unique_name_in_owner = true
 disable_3d = true
+transparent_bg = true
 handle_input_locally = false
 use_hdr_2d = true
 size = Vector2i(704, 2)
 render_target_update_mode = 4
 
-[node name="Camera2D" type="Camera2D" parent="VBoxContainer/SubViewportContainer/BrushPreviewViewport" unique_id=1757944598]
+[node name="Camera2D" type="Camera2D" parent="VBoxContainer/MarginContainer2/SubViewportContainer/BrushPreviewViewport" unique_id=1757944598]
 
-[node name="Background" type="Sprite2D" parent="VBoxContainer/SubViewportContainer/BrushPreviewViewport" unique_id=37787497]
+[node name="Background" type="Sprite2D" parent="VBoxContainer/MarginContainer2/SubViewportContainer/BrushPreviewViewport" unique_id=37787497]
 texture = SubResource("GradientTexture2D_nvm6h")
 
 [node name="MarginContainer" type="MarginContainer" parent="VBoxContainer" unique_id=598424851]

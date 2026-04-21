@@ -42,7 +42,7 @@ public class NewStrokeBrushCmd : CommandBase
         targetE.Add(material);
 
         // preview texture
-        Vector2I size = new(256, 128);
+        Vector2I size = new(256, 96);
         var viewport = new SubViewport()
         {
             RenderTargetUpdateMode = SubViewport.UpdateMode.WhenVisible,
@@ -58,7 +58,7 @@ public class NewStrokeBrushCmd : CommandBase
             Material = material,
         };
         float gv = 16;
-        var previewRect = new Rect2(Vector2.Zero, size).GrowIndividual(-gv, -2 * gv, -gv, -2 * gv);
+        var previewRect = new Rect2(Vector2.Zero, size).GrowIndividual(-gv, -1.5f * gv, -gv, -1.5f * gv);
         _setting.BaseRadius.CombineLatest(_setting.Pressure2RadiusCurve, ValueTuple.Create)
             .Subscribe(combo =>
             {
@@ -69,7 +69,7 @@ public class NewStrokeBrushCmd : CommandBase
                     .Select(i => Mathf.Lerp(-pi / 2, pi / 2, (float)i / (n - 1)))
                     .Select(Mathf.Cos) // pen pressure
                     .Select(x => pts.SampleX(x))
-                    .Select(ratio => ratio * r.SigmoidRemap(5, 32, 8, 32))
+                    .Select(ratio => ratio * r.SigmoidRemap(5, 32, 12, 48))
                     .ToArray();
                 previewStroke.SetGeometry(CreatePreviewGeometry(previewRect, n), radius);
             }).AddTo(targetE);
@@ -78,8 +78,7 @@ public class NewStrokeBrushCmd : CommandBase
         var bg = new ColorRect
         {
             Size = new Vector2(size.X, size.Y),
-            Material = AutoloadRendering.CheckerboardMaterial,
-            Color = Colors.Transparent,
+            Color = Colors.White,
         };
         viewport.AddChild(bg);
         viewport.AddChild(previewStroke);
