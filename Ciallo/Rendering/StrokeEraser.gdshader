@@ -220,8 +220,7 @@ void fragment() {
         	COLOR.a = 1.0 - sqrt(1.0 - COLOR.a);
     	}
 
-		float A = COLOR.a;
-		COLOR = vec4(A);
+		COLOR = vec4(1e-5);
 	}
 	/*----------------------------------------------------------*/
   	if(StrokeType == Stamp){
