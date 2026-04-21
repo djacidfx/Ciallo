@@ -31,7 +31,7 @@ public class StrokeBrushSetting
     [DataMember] public ReactiveProperty<StampFlags> ActiveStampFlags = new();
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
     [DataMember] public ReactiveProperty<ImageTexture> StampTexture = new(null);
-    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> DiskOpacityCurve = new(BezierCurveFactory.EaseInOut(1.0f, 0.0f));
+    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> DiskOpacityCurve = new(BezierCurveFactory.EaseInOut(1.0f, 0.0f)); // hardness curve
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
     [DataMember] public ReactiveProperty<ImageTexture> MaskTexture = new(null);
 
@@ -108,7 +108,7 @@ public class StrokeBrushSetting
 
         var maskDiskFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskDisk);
         var diskOpacityCurveEdit = new MappingCurveEdit().BindCurve(DiskOpacityCurve);
-        container.CreateCheckBoxCombo("Mask disk", maskDiskFlagCheck, diskOpacityCurveEdit).AddToChildOf(stampBox);
+        container.CreateCheckBoxCombo("Hardness curve", maskDiskFlagCheck, diskOpacityCurveEdit).AddToChildOf(stampBox);
 
         var maskTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskTexture);
         var maskTextureEdit = ImageTextureEdit.Instantiate(MaskTexture, ConvertStampImage);
@@ -140,7 +140,7 @@ public class StrokeBrushSetting
 
         // ---------Airbrush----------
         var falloffCurveEdit = new MappingCurveEdit().BindCurve(FalloffCurve);
-        container.AddProperty("Opacity falloff", falloffCurveEdit).VisibleIf(RenderingType, BrushRenderingType.Airbrush);
+        container.AddProperty("Hardness curve", falloffCurveEdit).VisibleIf(RenderingType, BrushRenderingType.Airbrush);
 
         var alphaDensityControl = new SpinSlider
         {
