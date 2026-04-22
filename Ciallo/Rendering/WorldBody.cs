@@ -35,7 +35,7 @@ public partial class WorldBody : BodyHolder
             SetHoveringBody(null);
         }
     } = false;
-    public Control.CursorShape MouseDefaultCursorShape
+    public Control.CursorShape DefaultCursorShape
     {
         get;
         set
@@ -127,13 +127,22 @@ public partial class WorldBody : BodyHolder
 
         return body;
     }
+    
+    public void ForceUpdateCursor()
+    {
+        var body = _hoveringBody.Value;
+        if (body == null) return;
+
+        _cursorSwitcher.MouseDefaultCursorShape = body.MouseDefaultCursorShape;
+        GetViewport()?.UpdateMouseCursorState();
+    }
 
     private void SetHoveringBody(Body value)
     {
         var body = _hoveringBody.Value;
         if (body == value) return;
 
-        _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
+        _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? DefaultCursorShape;
         GetViewport()?.UpdateMouseCursorState();
 
         body?.IsHovered = false;

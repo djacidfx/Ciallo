@@ -27,7 +27,7 @@ public class PolylineSelectTool : StateMachineToolBase
     public readonly PolylineTransformHover TransformHover = new();
 
     public readonly PolylineTransformInteractor Transform = new();
-    public readonly RectSelectPolylineInteractor Select = new();
+    public readonly PolylineRectSelectInteractor Select = new();
 
     protected override void ConfigureStateMachine()
     {

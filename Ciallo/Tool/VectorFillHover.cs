@@ -17,7 +17,7 @@ public class VectorFillHover : InteractiveSessionBase
 
     public override void Start(CursorButtonData data)
     {
-        Document.Get<WorldBody>().MouseDefaultCursorShape = Control.CursorShape.Cross;
+        Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
         SetContoursWithQueryResult(WorkingLayer.Get<OverlayHolder>(),
             WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
     }
@@ -34,7 +34,7 @@ public class VectorFillHover : InteractiveSessionBase
     {
         foreach (var sv in _contours) sv.QueueFree();
         _contours.Clear();
-        Document.Get<WorldBody>().MouseDefaultCursorShape = default;
+        Document.Get<WorldBody>().DefaultCursorShape = default;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
