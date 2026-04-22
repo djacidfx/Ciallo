@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://bexkxr3qvv0qo" path="res://Tool/ToolButtonPanel.cs" id="1_vvphd"]
 [ext_resource type="Texture2D" uid="uid://djmjwmlnccp86" path="res://Icon/cursor-default-outline.svg" id="2_vu0km"]
 [ext_resource type="Texture2D" uid="uid://bayscuh6s0yrc" path="res://Icon/lasso-dash.svg" id="3_ic33f"]
-[ext_resource type="Texture2D" uid="uid://btbyp8rpw5a43" path="res://Icon/vector-cursor.svg" id="3_jovi7"]
 [ext_resource type="Texture2D" uid="uid://cjf7u8mgog5mr" path="res://Icon/brush.svg" id="4_ijdye"]
 [ext_resource type="Texture2D" uid="uid://b4e0ypa7qifd3" path="res://Icon/lasso-fill.svg" id="5_p40eb"]
 [ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icon/format-color-fill.svg" id="6_4b63a"]
@@ -42,16 +41,6 @@ theme_type_variation = &"ToolButton"
 toggle_mode = true
 shortcut = SubResource("Shortcut_wcmo1")
 icon = ExtResource("2_vu0km")
-expand_icon = true
-
-[node name="BezierEdit" type="Button" parent="." unique_id=1714589193]
-custom_minimum_size = Vector2(48, 48)
-layout_mode = 2
-tooltip_text = "[Bezier Edit Tooltip]"
-focus_mode = 0
-theme_type_variation = &"ToolButton"
-toggle_mode = true
-icon = ExtResource("3_jovi7")
 expand_icon = true
 
 [node name="Lasso" type="Button" parent="." unique_id=2047195371]
