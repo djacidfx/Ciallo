@@ -38,7 +38,7 @@ public class PolylineSelectTool : StateMachineToolBase
         Configure(HoverWithoutSelection)
             .PermitDynamic(Press(MouseButton.Left), () =>
             {
-                if (HoverWithoutSelection.CanTranslate)
+                if (HoverWithoutSelection.CanTranslate && !Input.IsKeyPressed(Key.Shift))
                     return Transform;
                 return Select;
             });
@@ -46,7 +46,7 @@ public class PolylineSelectTool : StateMachineToolBase
         Configure(TransformHover)
             .PermitDynamic(Press(MouseButton.Left), () =>
             {
-                if (TransformHover.CanTransform)
+                if (TransformHover.CanTransform && !Input.IsKeyPressed(Key.Shift))
                     return Transform;
                 return Select;
             });

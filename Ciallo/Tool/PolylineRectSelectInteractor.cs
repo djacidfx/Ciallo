@@ -4,6 +4,7 @@ using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
+using ObservableCollections;
 
 namespace Ciallo.Tool;
 
@@ -12,7 +13,22 @@ public class PolylineRectSelectInteractor : InteractiveSessionBase
     private StrokeView _boxSelectionDash;
     private Rect2 _boxSelectionRect;
     private Entity[] _baseSelection;
-    private bool _hasMoved;
+    private ObservableList<Entity> _selectedShapes;
+    private Entity _initialHoveredShape;
+
+    private void ToggleSelectionWireframe(bool visible)
+    {
+        foreach (var e in _selectedShapes)
+            e.Get<PolylineWireframe>().Visible = visible;
+    }
+
+    public override void BeforeTransitionSrcEnd(InteractiveSessionBase src)
+    {
+        if (src is PolylineSelectHover hover)
+        {
+            _initialHoveredShape = hover.CurrHoveredShape;
+        }
+    }
 
     public override void Start(CursorButtonData data)
     {
@@ -21,63 +37,68 @@ public class PolylineRectSelectInteractor : InteractiveSessionBase
         Document.Get<WorldOverlay>().AddChild(_boxSelectionDash);
         _boxSelectionRect.Position = data.WorldPosition;
         _boxSelectionRect.Size = Vector2.Zero;
-        _baseSelection = [..Document.Get<SelectionManager>().SelectedShapes];
-        _hasMoved = false;
+        _selectedShapes = Document.Get<SelectionManager>().SelectedShapes;
+        _baseSelection = [.._selectedShapes];
+        if (!Input.IsKeyPressed(Key.Shift))
+            _selectedShapes.Clear();
+        if (!_initialHoveredShape.IsNull && !_selectedShapes.Remove(_initialHoveredShape))
+            _selectedShapes.Add(_initialHoveredShape);
+        ToggleSelectionWireframe(true);
     }
 
     public override void Moving(CursorMotionData data)
     {
-        // Dash
-        _hasMoved = true;
         _boxSelectionRect.Size = data.WorldPosition - _boxSelectionRect.Position;
         var points = _boxSelectionRect.GetCorners();
         _boxSelectionDash.SetGeometry([..points, points[0]], AppPreference.StrokeWireframeRadius);
 
         // Selection
         var es = Document.Get<WorldBody>().RectQuery(_boxSelectionRect);
-        var selectedShapes = Document.Get<SelectionManager>().SelectedShapes;
+
+        ToggleSelectionWireframe(false);
+
         if (Input.IsKeyPressed(Key.Shift))
         {
             // XOR: base ∆ rectResults
-            selectedShapes.Clear();
+            _selectedShapes.Clear();
             foreach (var e in _baseSelection)
             {
                 if (!es.Contains(e))
-                    selectedShapes.Add(e);
+                    _selectedShapes.Add(e);
             }
             foreach (var e in es)
             {
                 if (Array.IndexOf(_baseSelection, e) < 0)
-                    selectedShapes.Add(e);
+                    _selectedShapes.Add(e);
             }
         }
         else
         {
-            selectedShapes.Clear();
-            selectedShapes.AddRange(es);
+            _selectedShapes.Clear();
+            _selectedShapes.AddRange(es);
         }
+
+        ToggleSelectionWireframe(true);
     }
 
-    public override void End(CursorButtonData data)
-    {
-        if (!_hasMoved && !Input.IsKeyPressed(Key.Shift))
-            Document.Get<SelectionManager>().SelectedShapes.Clear();
-        Clear();
-    }
+    public override void End(CursorButtonData data) => Clear();
 
     public override void Cancel()
     {
-        var selectedShapes = Document.Get<SelectionManager>().SelectedShapes;
-        selectedShapes.Clear();
-        selectedShapes.AddRange(_baseSelection);
+        _selectedShapes.Clear();
+        _selectedShapes.AddRange(_baseSelection);
+
         Clear();
     }
 
     public void Clear()
     {
+        _initialHoveredShape = Entity.Null;
+        ToggleSelectionWireframe(false);
         _boxSelectionDash.QueueFree();
         _boxSelectionDash = null;
         _baseSelection = null;
+        _selectedShapes = null;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => true;

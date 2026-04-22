@@ -90,6 +90,18 @@ public class PolylineSelectHover : InteractiveSessionBase
             return true;
         }
 
+        if (key.IsPressed() && key.Keycode == Key.Shift)
+        {
+            WorkingLayer.Get<BodyHolder>().SetChildrenBodyCursor(Control.CursorShape.Arrow);
+            Document.Get<WorldBody>().ForceUpdateCursor();
+        }
+
+        if (key.IsReleased() && key.Keycode == Key.Shift)
+        {
+            WorkingLayer.Get<BodyHolder>().SetChildrenBodyCursor(Control.CursorShape.Move);
+            Document.Get<WorldBody>().ForceUpdateCursor();
+        }
+
         return false;
     }
 
