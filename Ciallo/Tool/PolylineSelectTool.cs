@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.GuiControl;
@@ -14,30 +15,63 @@ namespace Ciallo.Tool;
 [RegisterTool(ToolButton.Select)]
 public class PolylineSelectTool : StateMachineToolBase
 {
-    public readonly PolylineSelectHover Hover = new();
+    public enum EditMode
+    {
+        Transform,
+        BezierDeform,
+    }
+
+    public ReactiveProperty<EditMode> Mode = new(EditMode.Transform);
+
+    public readonly PolylineSelectHover HoverWithoutSelection = new();
+    public readonly PolylineTransformHover TransformHover = new();
+
     public readonly PolylineTransformInteractor Transform = new();
     public readonly RectSelectPolylineInteractor Select = new();
 
     protected override void ConfigureStateMachine()
     {
-        ConfigureInitial(Hover)
+        Machine.Configure(ToolActive.Instance)
+            .InitialTransitionDynamic(TransToHover)
+            .PermitReentry(Trigger.Refresh);
+
+        Configure(HoverWithoutSelection)
             .PermitDynamic(Press(MouseButton.Left), () =>
             {
-                if (Hover.CanTransform)
+                if (HoverWithoutSelection.CanTranslate)
+                    return Transform;
+                return Select;
+            });
+
+        Configure(TransformHover)
+            .PermitDynamic(Press(MouseButton.Left), () =>
+            {
+                if (TransformHover.CanTransform)
                     return Transform;
                 return Select;
             });
 
         Configure(Transform)
-            .Permit(Release(MouseButton.Left), Hover)
-            .Permit(Press(AppActions.CancelInteraction), Hover)
-            .Permit(Press(AppActions.ConfirmInteraction), Hover);
+            .PermitDynamic(Release(MouseButton.Left), TransToHover)
+            .PermitDynamic(Press(AppActions.CancelInteraction), TransToHover)
+            .PermitDynamic(Press(AppActions.ConfirmInteraction), TransToHover);
 
         Configure(Select)
-            .Permit(Release(MouseButton.Left), Hover)
-            .Permit(Press(AppActions.CancelInteraction), Hover)
-            .Permit(Press(AppActions.ConfirmInteraction), Hover);
+            .PermitDynamic(Release(MouseButton.Left), TransToHover)
+            .PermitDynamic(Press(AppActions.CancelInteraction), TransToHover)
+            .PermitDynamic(Press(AppActions.ConfirmInteraction), TransToHover);
+
+        InteractiveSessionBase TransToHover()
+        {
+            var shapes = Document.Get<SelectionManager>().SelectedShapes;
+            if (shapes.Count <= 0)
+                return HoverWithoutSelection;
+            if (Mode.Value == EditMode.Transform)
+                return TransformHover;
+            throw new NotImplementedException();
+        }
     }
+
 
     public override bool CanHandleLayer(params Entity[] layerEs)
     {
@@ -70,9 +104,6 @@ public class PolylineSelectTool : StateMachineToolBase
 
     public override void DrawProperty(PropertyContainer container)
     {
-        // Session properties
-        base.DrawProperty(container);
-
         var selectionManager = Document.Get<SelectionManager>();
         var selectionButtonGroup = container.CreateHContainer().AddToChildOf(container);
         var selectAllButton = container.CreateButton("Select all").AddToChildOf(selectionButtonGroup);
@@ -82,13 +113,13 @@ public class PolylineSelectTool : StateMachineToolBase
             if (layerE.IsDyingOrDead) return;
             selectionManager.SelectedShapes.Clear();
             selectionManager.SelectedShapes.AddRange(layerE.Get<LayerTreeNode>().Children);
-            ActiveSession.CurrentValue.Refresh();
+            Machine.Fire(Trigger.Refresh);
         };
         var deselectAllButton = container.CreateButton("Deselect").AddToChildOf(selectionButtonGroup);
         deselectAllButton.Pressed += () =>
         {
             selectionManager.SelectedShapes.Clear();
-            ActiveSession.CurrentValue.Refresh();
+            Machine.Fire(Trigger.Refresh);
         };
 
         var selectedShapes = Document.Get<SelectionManager>().SelectedShapes;
@@ -148,6 +179,9 @@ public class PolylineSelectTool : StateMachineToolBase
             cmd.Commit();
             vectorFillBrushSwitcher.Select(brushE);
         }).AddTo(vectorFillBrushSwitcher);
+
+        // Session properties
+        base.DrawProperty(container);
     }
 
     private static ReactiveProperty<Entity> GetVectorFillBrushE(Entity e)

@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -17,29 +15,16 @@ namespace Ciallo.Tool;
 public class PolylineSelectHover : InteractiveSessionBase
 {
     public Entity CurrHoveredShape;
-    public Body RotationBody;
-    public Body[] CornerBodies = [];
-    public bool CanTransform
-    {
-        get
-        {
-            bool shapeHovered = !CurrHoveredShape.IsNull;
-            bool rotationDotHovered = RotationBody?.IsHovered == true;
-            bool cornerDotsHovered = CornerBodies.Any(a => a.IsHovered);
-            return shapeHovered || rotationDotHovered || cornerDotsHovered;
-        }
-    }
+
+    public bool CanTranslate => !CurrHoveredShape.IsNull;
 
     private CompositeDisposable _subs;
-    private TransformOverlayBox _transformBox;
-    private readonly List<Node2D> _wireframes = [];
 
     public readonly ReactiveProperty<float> SimplificationRatio = new(0.25f);
 
     public override void Start(CursorButtonData data)
     {
         _subs = new();
-        var selectionManager = Document.Get<SelectionManager>();
         var worldBody = Document.Get<WorldBody>();
         var layerBody = WorkingLayer.Get<BodyHolder>();
 
@@ -63,43 +48,6 @@ public class PolylineSelectHover : InteractiveSessionBase
                 body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
             CurrHoveredShape = body.SelfEntity;
         }).AddTo(_subs);
-
-        var selectedShapes = selectionManager.SelectedShapes;
-        // Remove prev selected elements (make this project-level operation if duplicated too many times). 
-        var deselect = selectedShapes
-            .Where(e => e.Get<LayerTreeNode>().ParentValue != WorkingLayer).Reverse().ToArray();
-        foreach (var e in deselect)
-            selectedShapes.Remove(e);
-
-        if (selectedShapes.Count <= 0) return;
-
-        // --- Polyline transform
-        var worldOverlay = Document.Get<WorldOverlay>();
-
-        // transform box
-        Rect2 rect = default;
-        foreach (var (i, e) in selectedShapes.Index())
-        {
-            var wire = (Node2D)e.Get<PolylineWireframe>().Duplicate(0); // 0 means avoid duplicating script. Script duplication call constructor.
-            worldOverlay.AddChild(wire);
-            wire.Visible = true;
-            _wireframes.Add(wire);
-
-            // transform box overlay
-            var bound = e.Get<PolylineGeometry>().Positions.Value.GetBoundingBox();
-            rect = i == 0 ? bound : rect.Merge(bound);
-        }
-        if (!rect.IsEqualApprox(default) && !rect.Size.IsZeroApprox())
-        {
-            _transformBox = new TransformOverlayBox(rect.Size, rect.GetCenter());
-            worldOverlay.AddChild(_transformBox);
-
-            // transform cursor bodies
-            Body[] bodies = worldBody.CreateAddTransformAreas(rect.Size, rect.GetCenter());
-            RotationBody = bodies[0];
-            bodies[1].QueueFree();
-            CornerBodies = bodies[2..6];
-        }
     }
 
     public override void Moving(CursorMotionData data)
@@ -111,23 +59,12 @@ public class PolylineSelectHover : InteractiveSessionBase
     public override void Cancel()
     {
         _subs.Dispose();
-
-        // cursor bodies
-        RotationBody?.QueueFree();
-        RotationBody = null;
-        Array.ForEach(CornerBodies, b => b.QueueFree());
-        CornerBodies = [];
-
         WorkingLayer.Get<BodyHolder>().SetChildrenBodyCursor(Control.CursorShape.Arrow);
         Document.Get<WorldBody>().EnableHoverDetection = false;
 
         // overlays
         if (!CurrHoveredShape.IsDyingOrDead)
             CurrHoveredShape.Get<PolylineWireframe>().SetVisible(false);
-        _wireframes.ForEach(node => node.QueueFree());
-        _wireframes.Clear();
-        _transformBox?.QueueFree();
-        _transformBox = null;
 
         CurrHoveredShape = Entity.Null;
     }

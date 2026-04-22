@@ -235,6 +235,17 @@ public abstract partial class StateMachineToolBase : ITool
     #endregion
 }
 
+public static class StateMachineExtension
+{
+    public static StateConfiguration InitialTransitionDynamic(this StateConfiguration cfg, Func<InteractiveSessionBase> destinationStateSelector)
+    {
+        var dummyTrigger = new StateMachineToolBase.Trigger("DummyInitialTransition");
+        cfg.PermitDynamic(dummyTrigger, destinationStateSelector);
+        cfg.OnEntry(() => cfg.Machine.Fire(dummyTrigger));
+        return cfg;
+    }
+}
+
 #region Internal Tool States
 
 public abstract class InternalToolState : InteractiveSessionBase
