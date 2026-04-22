@@ -77,9 +77,9 @@ public class StrokeBrushSetting
 
         var pp2FlowCurveEdit = new MappingCurveEdit().BindCurve(Pressure2FlowCurve);
         var flowCurveFlagCheck = new CheckBox()
-            .BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow)
-            .VisibleIf(RenderingType, type => type != BrushRenderingType.Vanilla);
+            .BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
         container.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit)
+            .VisibleIf(RenderingType, type => type != BrushRenderingType.Vanilla)
             .AddToChildOf(container);
 
         var typeButton = new OptionButton().BindEnum(RenderingType);
