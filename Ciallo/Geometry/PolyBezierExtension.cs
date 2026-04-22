@@ -11,7 +11,7 @@ namespace Ciallo.Geometry;
 /// <summary>
 /// Hold all the pure geometry/math calculations for PolyCubicBezier.
 /// </summary>
-public static class PolyCubicBezierExtension
+public static class PolyBezierExtension
 {
     private static readonly MemoryCache TessCache = new(new MemoryCacheOptions());
 
