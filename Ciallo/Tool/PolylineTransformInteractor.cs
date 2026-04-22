@@ -26,21 +26,21 @@ public class PolylineTransformInteractor : InteractiveSessionBase
     {
         if (session is not PolylineSelectHover hover) return;
 
-        bool shapeHovered = !hover.HoveredShape.IsNull;
+        bool shapeHovered = !hover.CurrHoveredShape.IsNull;
         bool rotationDotHovered = hover.RotationBody?.IsHovered == true;
         bool cornerDotsHovered = hover.CornerBodies.Any(a => a.IsHovered);
 
         var selectionManager = Document.Get<SelectionManager>();
         if (shapeHovered && Input.IsKeyPressed(Key.Shift))
         {
-            var hoverE = hover.HoveredShape;
+            var hoverE = hover.CurrHoveredShape;
             if (!selectionManager.SelectedShapes.Remove(hoverE))
                 selectionManager.SelectedShapes.Add(hoverE);
             _transformType = 0;
         }
         if (shapeHovered)
         {
-            var hoverE = hover.HoveredShape;
+            var hoverE = hover.CurrHoveredShape;
             if (!selectionManager.SelectedShapes.Contains(hoverE))
             {
                 selectionManager.SelectedShapes.Clear();

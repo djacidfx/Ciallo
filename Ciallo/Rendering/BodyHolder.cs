@@ -5,7 +5,7 @@ namespace Ciallo.Rendering;
 
 public partial class BodyHolder : Node2D
 {
-    public void SetAreaCursor(Control.CursorShape shape)
+    public void SetChildrenBodyCursor(Control.CursorShape shape)
     {
         foreach (var child in GetChildren())
         {
@@ -15,7 +15,7 @@ public partial class BodyHolder : Node2D
                     body.MouseDefaultCursorShape = shape;
                     break;
                 case BodyHolder bodyHolder:
-                    bodyHolder.SetAreaCursor(shape);
+                    bodyHolder.SetChildrenBodyCursor(shape);
                     break;
                 default:
                     throw new InvalidOperationException($"Unexpected child of BodyHolder: {child}");

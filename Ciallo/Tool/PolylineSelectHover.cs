@@ -17,14 +17,14 @@ namespace Ciallo.Tool;
 
 public class PolylineSelectHover : InteractiveSessionBase
 {
-    public Entity HoveredShape;
+    public Entity CurrHoveredShape;
     public Body RotationBody;
     public Body[] CornerBodies = [];
     public bool CanTransform
     {
         get
         {
-            bool shapeHovered = !HoveredShape.IsNull;
+            bool shapeHovered = !CurrHoveredShape.IsNull;
             bool rotationDotHovered = RotationBody?.IsHovered == true;
             bool cornerDotsHovered = CornerBodies.Any(a => a.IsHovered);
             return shapeHovered || rotationDotHovered || cornerDotsHovered;
@@ -50,20 +50,21 @@ public class PolylineSelectHover : InteractiveSessionBase
         worldBody.EnableHoverDetection = true;
         worldBody.CursorWorldPosition = data.WorldPosition;
 
-        layerBody.SetAreaCursor(Control.CursorShape.Move);
+        layerBody.SetChildrenBodyCursor(Control.CursorShape.Move);
 
         // --- hover hinter
         Document.Get<WorldBody>().HoveringBody.Subscribe(body =>
         {
-            if (!HoveredShape.IsDyingOrDead) HoveredShape.Get<PolylineWireframe>().SetVisible(false);
+            if (!CurrHoveredShape.IsDyingOrDead)
+                CurrHoveredShape.Get<PolylineWireframe>().SetVisible(false);
             if (body == null)
             {
-                HoveredShape = Entity.Null;
+                CurrHoveredShape = Entity.Null;
                 return;
             }
             if (!body.SelfEntity.IsDyingOrDead)
                 body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
-            HoveredShape = body.SelfEntity;
+            CurrHoveredShape = body.SelfEntity;
         }).AddTo(_subs);
 
         var selectedShapes = selectionManager.SelectedShapes;
@@ -168,18 +169,18 @@ public class PolylineSelectHover : InteractiveSessionBase
         Array.ForEach(CornerBodies, b => b.QueueFree());
         CornerBodies = [];
 
-        WorkingLayer.Get<BodyHolder>().SetAreaCursor(Control.CursorShape.Arrow);
+        WorkingLayer.Get<BodyHolder>().SetChildrenBodyCursor(Control.CursorShape.Arrow);
         Document.Get<WorldBody>().EnableHoverDetection = false;
 
         // overlays
-        if (!HoveredShape.IsDyingOrDead)
-            HoveredShape.Get<PolylineWireframe>().SetVisible(false);
+        if (!CurrHoveredShape.IsDyingOrDead)
+            CurrHoveredShape.Get<PolylineWireframe>().SetVisible(false);
         _wireframes.ForEach(node => node.QueueFree());
         _wireframes.Clear();
         _transformBox?.QueueFree();
         _transformBox = null;
 
-        HoveredShape = Entity.Null;
+        CurrHoveredShape = Entity.Null;
 
         // GUI
         _strokeBrushSwitcher.Visible = false;

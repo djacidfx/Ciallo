@@ -8,7 +8,7 @@ using Godot;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Select)]
-public class ShapeSelectTool : StateMachineToolBase
+public class PolylineSelectTool : StateMachineToolBase
 {
     public readonly PolylineSelectHover Hover = new();
     public readonly PolylineTransformInteractor Transform = new();
@@ -41,7 +41,7 @@ public class ShapeSelectTool : StateMachineToolBase
         var e = layerEs.Single();
         bool isShapeLayer = e.Has<ShapeLayerSetting>();
         bool isVectorFillLayer = e.Has<VectorFillLayerSetting>();
-        return !e.IsDyingOrDead && (isShapeLayer || isVectorFillLayer);
+        return isShapeLayer || isVectorFillLayer;
     }
 
     public override void OnActivated()
