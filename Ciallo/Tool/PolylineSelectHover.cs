@@ -5,7 +5,6 @@ using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
-using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Ciallo.Widget;
 using Frent;
@@ -36,8 +35,6 @@ public class PolylineSelectHover : InteractiveSessionBase
     private readonly List<Node2D> _wireframes = [];
 
     public readonly ReactiveProperty<float> SimplificationRatio = new(0.25f);
-    private StrokeBrushPreviewList _strokeBrushSwitcher;
-    private VectorFillBrushPreviewList _vectorFillBrushSwitcher;
 
     public override void Start(CursorButtonData data)
     {
@@ -103,54 +100,6 @@ public class PolylineSelectHover : InteractiveSessionBase
             bodies[1].QueueFree();
             CornerBodies = bodies[2..6];
         }
-        // --- Brush switcher GUI
-        bool showStrokeBrush = selectedShapes.All(e => e.Has<StrokeSetting>());
-        if (showStrokeBrush)
-        {
-            _strokeBrushSwitcher.Visible = true;
-            var firstE = selectedShapes.First().Get<StrokeSetting>().BrushE.Value;
-            bool allSame = selectedShapes.Select(e => e.Get<StrokeSetting>().BrushE.Value).All(e => e == firstE);
-            _strokeBrushSwitcher.Select(allSame ? firstE : Entity.Null);
-            _strokeBrushSwitcher.BrushClicked.Subscribe(brushE =>
-            {
-                var cmd = new CommandBuilder();
-                foreach (var shapeE in selectedShapes)
-                {
-                    cmd.SetTarget(shapeE)
-                        .SetProperty(e => e.Get<StrokeSetting>().BrushE, brushE);
-                }
-                cmd.Commit();
-                _strokeBrushSwitcher.Select(brushE);
-            }).AddTo(_subs);
-        }
-
-        bool showVectorFillBrush = selectedShapes.All(e => e.Has<VectorFillMarkerSetting>() || e.Has<FilledPolygonSetting>());
-        if (showVectorFillBrush)
-        {
-            _vectorFillBrushSwitcher.Visible = true;
-            var firstE = GetVectorFillBrushE(selectedShapes.First()).Value;
-            bool allSame = selectedShapes.Select(e => GetVectorFillBrushE(e).Value).All(e => e == firstE);
-            _vectorFillBrushSwitcher.Select(allSame ? firstE : Entity.Null);
-            _vectorFillBrushSwitcher.BrushClicked.Subscribe(brushE =>
-            {
-                var cmd = new CommandBuilder();
-                foreach (var shapeE in selectedShapes)
-                {
-                    if (shapeE.Has<VectorFillMarkerSetting>())
-                        cmd.SetTarget(shapeE).SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, brushE);
-                    else
-                        cmd.SetTarget(shapeE).SetProperty(e => e.Get<FilledPolygonSetting>().BrushE, brushE);
-                }
-                cmd.Commit();
-                _vectorFillBrushSwitcher.Select(brushE);
-            }).AddTo(_subs);
-        }
-    }
-
-    private static ReactiveProperty<Entity> GetVectorFillBrushE(Entity e)
-    {
-        if (e.Has<VectorFillMarkerSetting>()) return e.Get<VectorFillMarkerSetting>().BrushE;
-        return e.Get<FilledPolygonSetting>().BrushE;
     }
 
     public override void Moving(CursorMotionData data)
@@ -181,10 +130,6 @@ public class PolylineSelectHover : InteractiveSessionBase
         _transformBox = null;
 
         CurrHoveredShape = Entity.Null;
-
-        // GUI
-        _strokeBrushSwitcher.Visible = false;
-        _vectorFillBrushSwitcher.Visible = false;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data)
@@ -214,45 +159,11 @@ public class PolylineSelectHover : InteractiveSessionBase
     public override void DrawProperty(PropertyContainer container)
     {
         var selectionManager = Document.Get<SelectionManager>();
-        var selectionButtonGroup = container.CreateHContainer().AddToChildOf(container);
-        var selectAllButton = container.CreateButton("Select all").AddToChildOf(selectionButtonGroup);
-        selectAllButton.Pressed += () =>
-        {
-            var layerE = selectionManager.WorkingLayer.Value;
-            if (layerE.IsDyingOrDead) return;
-            selectionManager.SelectedShapes.Clear();
-            selectionManager.SelectedShapes.AddRange(layerE.Get<LayerTreeNode>().Children);
-            Refresh();
-        };
-        var deselectAllButton = container.CreateButton("Deselect").AddToChildOf(selectionButtonGroup);
-        deselectAllButton.Pressed += () =>
-        {
-            selectionManager.SelectedShapes.Clear();
-            Refresh();
-        };
 
         var polylineEditBox = container.CreateBox().AddToChildOf(container)
             .VisibleIf(selectionManager.SelectedShapes.ObserveCountChanged().Prepend(0), count => count > 0);
 
         DrawPolylineGeometryEditingControl();
-        DrawBrushSwitchers();
-
-        void DrawBrushSwitchers()
-        {
-            // Switch selected strokes' brush
-            _strokeBrushSwitcher = StrokeBrushPreviewList.New().AddToChildOf(container);
-            _strokeBrushSwitcher.Visible = false;
-            _strokeBrushSwitcher.CustomMinimumSize = new(0, 256);
-            _strokeBrushSwitcher.Document = Document;
-            _strokeBrushSwitcher.BindBrushes(Document.Get<BrushManager>().StrokeBrushEs);
-
-            // Switch selected vector fill markers' brush
-            _vectorFillBrushSwitcher = VectorFillBrushPreviewList.New().AddToChildOf(container);
-            _vectorFillBrushSwitcher.Visible = false;
-            _vectorFillBrushSwitcher.CustomMinimumSize = new(0, 256);
-            _vectorFillBrushSwitcher.Document = Document;
-            _vectorFillBrushSwitcher.BindBrushes(Document.Get<BrushManager>().VectorFillBrushEs);
-        }
 
         void DrawPolylineGeometryEditingControl()
         {
