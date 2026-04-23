@@ -11,8 +11,8 @@ public class SetPropertyCmd<T> : CommandBase
     private readonly bool _inputOldValue;
     private T _newValue;
     private readonly bool _inputNewValue;
+    private readonly ReactiveProperty<T> _property;
     private readonly Func<Entity, ReactiveProperty<T>> _getProperty;
-
 
     public SetPropertyCmd(Func<Entity, ReactiveProperty<T>> getProperty, T newValue)
     {
@@ -34,19 +34,41 @@ public class SetPropertyCmd<T> : CommandBase
         _getProperty = getProperty;
     }
 
+    public SetPropertyCmd(ReactiveProperty<T> property, T newValue)
+    {
+        _property = property;
+        _newValue = newValue;
+        _inputNewValue = true;
+    }
+
+    public SetPropertyCmd(ReactiveProperty<T> property, T oldValue, T newValue) : this(property, newValue)
+    {
+        _oldValue = oldValue;
+        _inputOldValue = true;
+    }
+
+    public SetPropertyCmd(T oldValue, ReactiveProperty<T> property)
+    {
+        _oldValue = oldValue;
+        _inputOldValue = true;
+        _property = property;
+    }
+    
+    private ReactiveProperty<T> Resolve(Entity targetE) => _property ?? _getProperty(targetE);
+
     public override void BeforeFirstDo(Entity targetE)
     {
-        if (!_inputOldValue) _oldValue = _getProperty(targetE).Value;
-        if (!_inputNewValue) _newValue = _getProperty(targetE).Value;
+        if (!_inputOldValue) _oldValue = Resolve(targetE).Value;
+        if (!_inputNewValue) _newValue = Resolve(targetE).Value;
     }
 
     public override void Do(Entity targetE)
     {
-        _getProperty(targetE).Value = _newValue;
+        Resolve(targetE).Value = _newValue;
     }
 
     public override void Undo(Entity targetE)
     {
-        _getProperty(targetE).Value = _oldValue;
+        Resolve(targetE).Value = _oldValue;
     }
 }
