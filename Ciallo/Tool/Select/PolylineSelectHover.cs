@@ -18,36 +18,35 @@ public class PolylineSelectHover : InteractiveSessionBase
 
     public bool CanTranslate => !CurrHoveredShape.IsNull;
 
-    private CompositeDisposable _subs;
+    protected CompositeDisposable Subs;
 
     public readonly ReactiveProperty<float> SimplificationRatio = new(0.25f);
 
     public override void Start(CursorButtonData data)
     {
-        _subs = new();
+        Subs = new();
         var worldBody = Document.Get<WorldBody>();
         var layerBody = WorkingLayer.Get<BodyHolder>();
 
         // Enable cursor detections on shapes of working layer
         worldBody.EnableHoverDetection = true;
         worldBody.CursorWorldPosition = data.WorldPosition;
-
         layerBody.SetChildrenBodyCursor(Control.CursorShape.Move);
 
         // --- hover hinter
-        Document.Get<WorldBody>().HoveringBody.Subscribe(body =>
+        Document.Get<WorldBody>().HoveringBody.Subscribe(ToggleWireframe).AddTo(Subs);
+    }
+
+    public void ToggleWireframe(Body body)
+    {
+        if (!CurrHoveredShape.IsDyingOrDead) CurrHoveredShape.Get<PolylineWireframe>().SetVisible(false);
+        if (body == null)
         {
-            if (!CurrHoveredShape.IsDyingOrDead)
-                CurrHoveredShape.Get<PolylineWireframe>().SetVisible(false);
-            if (body == null)
-            {
-                CurrHoveredShape = Entity.Null;
-                return;
-            }
-            if (!body.SelfEntity.IsDyingOrDead)
-                body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
-            CurrHoveredShape = body.SelfEntity;
-        }).AddTo(_subs);
+            CurrHoveredShape = Entity.Null;
+            return;
+        }
+        if (!body.SelfEntity.IsDyingOrDead) body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
+        CurrHoveredShape = body.SelfEntity;
     }
 
     public override void Moving(CursorMotionData data)
@@ -58,7 +57,7 @@ public class PolylineSelectHover : InteractiveSessionBase
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
-        _subs.Dispose();
+        Subs.Dispose();
         WorkingLayer.Get<BodyHolder>().SetChildrenBodyCursor(Control.CursorShape.Arrow);
         Document.Get<WorldBody>().EnableHoverDetection = false;
 

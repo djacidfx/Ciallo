@@ -15,7 +15,9 @@ public readonly record struct BezierPoint(
     [Pure] public BezierPoint WithOut(Vector2 newOut) => this with { Out = newOut };
     [Pure] public BezierPoint WithPoint(Vector2 newP) => this with { P = newP };
 
+    // Absolute In
     public Vector2 PIn => P + In;
+    // Absolute Out
     public Vector2 POut => P + Out;
 
     /// <remarks>
