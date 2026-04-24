@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Ciallo.Data;
 using Frent;
 using Frent.Components;
@@ -28,12 +29,6 @@ public partial class Body : StaticBody2D, IInitable, IDestroyable
         InputPickable = true;
     }
 
-    public void AddShapeRid(Rid id)
-    {
-        _shapes.Add(id);
-        PhysicsServer2D.BodyAddShape(GetRid(), id);
-    }
-
     public override void _Notification(int what)
     {
         if (what == NotificationPredelete)
@@ -54,6 +49,8 @@ public partial class Body : StaticBody2D, IInitable, IDestroyable
         _shapes.ForEach(PhysicsServer2D.FreeRid);
         _shapes.Clear();
     }
+
+    #region Set shape
 
     public void SetStrokeShape(IReadOnlyList<Vector2> points, IReadOnlyList<float> radii)
     {
@@ -87,7 +84,8 @@ public partial class Body : StaticBody2D, IInitable, IDestroyable
 
             var shapeRid = PhysicsServer2D.ConvexPolygonShapeCreate();
             PhysicsServer2D.ShapeSetData(shapeRid, vertices);
-            AddShapeRid(shapeRid);
+            _shapes.Add(shapeRid);
+            PhysicsServer2D.BodyAddShape(GetRid(), shapeRid);
         }
     }
 
@@ -100,6 +98,49 @@ public partial class Body : StaticBody2D, IInitable, IDestroyable
             Polygon = [..points],
         });
     }
+
+    public void SetStrokeCenterline(IReadOnlyList<Vector2> points, float radius)
+    {
+        ClearShapes();
+
+        if (points.Count == 1)
+        {
+            var shape = new CollisionShape2D()
+            {
+                Shape = new CircleShape2D { Radius = radius },
+                Position = points[0],
+            };
+            AddChild(shape);
+            return;
+        }
+
+        for (var i = 0; i < points.Count - 1; i++)
+        {
+            var p0 = points[i];
+            var p1 = points[i + 1];
+            if (p0.IsEqualApprox(p1)) continue;
+
+            var shapeRid = PhysicsServer2D.CapsuleShapeCreate();
+            PhysicsServer2D.ShapeSetData(shapeRid, new Vector2((p1 - p0).Length(), radius));
+
+            Transform2D transform = Transform.Rotated((p1 - p0).Angle()).Translated((p0 + p1) / 2);
+            _shapes.Add(shapeRid);
+            PhysicsServer2D.BodyAddShape(GetRid(), shapeRid, transform);
+        }
+    }
+
+    public void UpdateStrokeCenterlineShape(IReadOnlyList<Vector2> points, float radius)
+    {
+        foreach (var (i, rid) in _shapes.Index())
+        {
+            var p0 = points[i];
+            var p1 = points[i + 1];
+            PhysicsServer2D.ShapeSetData(rid, new Vector2((p1 - p0).Length(), radius));
+        }
+    }
+
+    #endregion
+
 
     // Note: If there is a button overlay on world, the Body's mouse entered/exited events won't work.
 
