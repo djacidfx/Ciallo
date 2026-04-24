@@ -21,10 +21,11 @@ public class PolylineSelectTool : StateMachineToolBase
         BezierDeform,
     }
 
-    public ReactiveProperty<EditMode> Mode = new(EditMode.Transform);
+    public ReactiveProperty<EditMode> Mode = new(EditMode.BezierDeform);
 
     public readonly PolylineSelectHover HoverWithoutSelection = new();
     public readonly PolylineTransformHover TransformHover = new();
+    public readonly PolylineBezierDeformHover BezierDeformHover = new();
 
     public readonly PolylineTransformInteractor Transform = new();
     public readonly PolylineRectSelectInteractor Select = new();
@@ -51,6 +52,9 @@ public class PolylineSelectTool : StateMachineToolBase
                 return Select;
             });
 
+        Configure(BezierDeformHover)
+            .PermitDynamic(Press(MouseButton.Left), () => Select);
+
         Configure(Transform)
             .PermitDynamic(Release(MouseButton.Left), TransToHover)
             .PermitDynamic(Press(AppActions.CancelInteraction), TransToHover)
@@ -68,11 +72,12 @@ public class PolylineSelectTool : StateMachineToolBase
                 return HoverWithoutSelection;
             if (Mode.Value == EditMode.Transform)
                 return TransformHover;
+            if (Mode.Value == EditMode.BezierDeform)
+                return BezierDeformHover;
             throw new NotImplementedException();
         }
     }
-
-
+    
     public override bool CanHandleLayer(params Entity[] layerEs)
     {
         if (layerEs.Length != 1) return false;

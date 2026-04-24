@@ -24,7 +24,7 @@ public static partial class Geometry
     /// <param name="projectionStep">Step for projecting points to center curve (0~1 fraction of param domain).</param>
     /// <returns>A list of positions forming the center polyline.</returns>
     public static List<Vector2> ClusterPolylines(
-        List<List<Vector2>> polylines,
+        IReadOnlyList<IReadOnlyList<Vector2>> polylines,
         int centerSampleCount = 64,
         int maxIterations = 5,
         float projectionStep = 1f / 128f)
@@ -33,18 +33,17 @@ public static partial class Geometry
         if (polylines == null || polylines.Count == 0)
             return new List<Vector2>();
 
-        polylines = polylines.Where(s => s != null && s.Count >= 2).ToList();
-        if (polylines.Count == 0)
+        IReadOnlyList<IReadOnlyList<Vector2>> filtered =
+            polylines.Where(s => s != null && s.Count >= 2).ToArray();
+        if (filtered.Count == 0)
             return new List<Vector2>();
 
         // 1. Parameterize each stroke by arc length to get normalized params on [0,1]
         var arcParamsPerStroke = new List<float[]>();
-        var lengthsPerStroke = new List<float>();
-        foreach (var stroke in polylines)
+        foreach (var stroke in filtered)
         {
-            var (sParams, totalLength) = ComputeArcLengthParams(stroke);
+            var sParams = ComputeArcLengthParams(stroke);
             arcParamsPerStroke.Add(sParams);
-            lengthsPerStroke.Add(totalLength);
         }
 
         // 2. Initialize each point's joint parameter t using the arc-length params
@@ -53,20 +52,20 @@ public static partial class Geometry
             .ToList();
 
         // 3. Build the center curve by sampling [0,1] and averaging points with similar t
-        var centerCurve = BuildCenterCurve(polylines, jointParamsPerStroke, centerSampleCount);
+        var centerCurve = BuildCenterCurve(filtered, jointParamsPerStroke, centerSampleCount);
 
         // 4. Iterate: project stroke points onto the center curve and rebuild it
         for (int iter = 0; iter < maxIterations; iter++)
         {
             // 4.1 Find the best t for each point on the current center curve
             ProjectStrokesToCenterCurve(
-                polylines,
+                filtered,
                 centerCurve,
                 jointParamsPerStroke,
                 projectionStep);
 
             // 4.2 Rebuild the center curve using the updated parameters
-            centerCurve = BuildCenterCurve(polylines, jointParamsPerStroke, centerSampleCount);
+            centerCurve = BuildCenterCurve(filtered, jointParamsPerStroke, centerSampleCount);
         }
 
         return centerCurve;
@@ -75,7 +74,7 @@ public static partial class Geometry
     /// <summary>
     /// Parameterize a polyline by arc length, returning normalized s ∈ [0,1] per point plus total length.
     /// </summary>
-    private static (float[] sParams, float totalLength) ComputeArcLengthParams(IReadOnlyList<Vector2> polyline)
+    private static float[] ComputeArcLengthParams(IReadOnlyList<Vector2> polyline)
     {
         int n = polyline.Count;
         var s = new float[n];
@@ -94,14 +93,14 @@ public static partial class Geometry
             // Degenerate case: all points coincide
             for (int i = 0; i < n; i++)
                 s[i] = 0f;
-            return (s, 0f);
+            return s;
         }
 
         float invTotal = 1.0f / totalLen;
         for (int i = 0; i < n; i++)
             s[i] *= invTotal;
 
-        return (s, totalLen);
+        return s;
     }
 
     /// <summary>
@@ -109,7 +108,7 @@ public static partial class Geometry
     /// The algorithm uniformly samples centerSampleCount values on [0,1] and averages nearby points via weights.
     /// </summary>
     private static List<Vector2> BuildCenterCurve(
-        IReadOnlyList<List<Vector2>> strokes,
+        IReadOnlyList<IReadOnlyList<Vector2>> strokes,
         IReadOnlyList<float[]> jointParamsPerStroke,
         int centerSampleCount)
     {
@@ -168,7 +167,7 @@ public static partial class Geometry
     /// Uses local linear parameterization plus a local search.
     /// </summary>
     private static void ProjectStrokesToCenterCurve(
-        IReadOnlyList<List<Vector2>> polylines,
+        IReadOnlyList<IReadOnlyList<Vector2>> polylines,
         IReadOnlyList<Vector2> centerCurve,
         IReadOnlyList<float[]> jointParamsPerStroke,
         float projectionStep)
@@ -177,7 +176,7 @@ public static partial class Geometry
             return;
 
         // Precompute arc lengths and cumulative lengths per segment to map between [0,1] parameters.
-        var (centerS, centerTotalLen) = ComputeArcLengthParams(centerCurve);
+        var centerS = ComputeArcLengthParams(centerCurve);
 
         for (int si = 0; si < polylines.Count; si++)
         {
@@ -225,11 +224,16 @@ public static partial class Geometry
         IReadOnlyList<float> centerS,
         float t)
     {
-        // t is in [0,1]; find the first centerS[idx] >= t
-        int idx = 0;
+        // Binary search for the largest idx where centerS[idx] <= t
         int n = centerCurve.Count;
-        while (idx < n - 1 && centerS[idx + 1] < t)
-            idx++;
+        int lo = 0, hi = n - 2;
+        while (lo < hi)
+        {
+            int mid = (lo + hi + 1) / 2;
+            if (centerS[mid] <= t) lo = mid;
+            else hi = mid - 1;
+        }
+        int idx = lo;
 
         int idxNext = Mathf.Min(idx + 1, n - 1);
 

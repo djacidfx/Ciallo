@@ -15,6 +15,9 @@ public readonly record struct BezierPoint(
     [Pure] public BezierPoint WithOut(Vector2 newOut) => this with { Out = newOut };
     [Pure] public BezierPoint WithPoint(Vector2 newP) => this with { P = newP };
 
+    public Vector2 PIn => P + In;
+    public Vector2 POut => P + Out;
+
     /// <remarks>
     /// Duck style design: As it is computed as a control mode, it's the control mode.
     /// </remarks>
