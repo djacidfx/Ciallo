@@ -9,7 +9,7 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Paint)]
-public class PaintStrokeTool : StateMachineToolBase
+public class PaintStrokeTool : ToolBase
 {
     public readonly ReactiveProperty<Entity> BrushE = new(Entity.Null);
 

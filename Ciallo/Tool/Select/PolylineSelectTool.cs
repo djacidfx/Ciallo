@@ -13,7 +13,7 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Select)]
-public class PolylineSelectTool : StateMachineToolBase
+public class PolylineSelectTool : ToolBase
 {
     public enum EditMode
     {

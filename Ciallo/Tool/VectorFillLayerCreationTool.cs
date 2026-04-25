@@ -10,7 +10,7 @@ using Godot;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.VectorFill)]
-public class VectorFillLayerCreationTool : StateMachineToolBase
+public class VectorFillLayerCreationTool : ToolBase
 {
     public readonly VectorFillLayerCreationHover Hover = new();
     public readonly PaintVectorFillMarkerInteractor Left = new();

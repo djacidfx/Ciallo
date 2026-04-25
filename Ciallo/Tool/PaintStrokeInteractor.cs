@@ -19,7 +19,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
     };
 
-    public static readonly StateMachineToolBase.Trigger PaintEnd = new("PaintEnd");
+    public static readonly ToolBase.Trigger PaintEnd = new("PaintEnd");
 
     public PaintStrokeInteractor()
     {

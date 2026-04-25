@@ -22,7 +22,7 @@ namespace Ciallo.Tool;
 /// </remarks>
 public abstract class InteractiveSessionBase
 {
-    public StateMachineToolBase Tool;
+    public ToolBase Tool;
     public Entity Document { get; set; }
     public Entity[] WorkingLayers;
     public Entity WorkingLayer => WorkingLayers.Single();

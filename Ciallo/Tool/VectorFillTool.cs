@@ -13,7 +13,7 @@ using Array = Godot.Collections.Array;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.VectorFill)]
-public class VectorFillTool : StateMachineToolBase
+public class VectorFillTool : ToolBase
 {
     public readonly VectorFillHover Hover = new();
     public readonly PaintVectorFillMarkerInteractor Left = new();
