@@ -12,6 +12,7 @@ namespace Ciallo.Geometry;
 /// Generate by copilot by referencing the StrokeStrip GitHub repository.
 /// https://github.com/davepagurek/StrokeStrip
 /// Not bad to work with.
+/// 2026 April, Repeatedly gacha with Sonnet 4.6 to get current result.
 /// </remarks>
 public static partial class Geometry
 {
@@ -29,7 +30,6 @@ public static partial class Geometry
         int maxIterations = 5,
         float projectionStep = 1f / 128f)
     {
-        // Boundary cases
         if (polylines == null || polylines.Count == 0)
             return new List<Vector2>();
 
@@ -38,41 +38,174 @@ public static partial class Geometry
         if (filtered.Count == 0)
             return new List<Vector2>();
 
-        // 1. Parameterize each stroke by arc length to get normalized params on [0,1]
-        var arcParamsPerStroke = new List<float[]>();
-        foreach (var stroke in filtered)
-        {
-            var sParams = ComputeArcLengthParams(stroke);
-            arcParamsPerStroke.Add(sParams);
-        }
+        // 0. Orient all polylines so they run in the same general direction.
+        //    The internal point order within each polyline is trusted; only the
+        //    per-stroke direction (flip) is adjusted.
+        var oriented = OrientPolylines(filtered);
 
-        // 2. Initialize each point's joint parameter t using the arc-length params
-        var jointParamsPerStroke = arcParamsPerStroke
-            .Select(s => (float[])s.Clone())
-            .ToList();
+        // Compute the consensus axis once from the now-consistent orientations.
+        var axis = ComputeAxis(oriented);
 
-        // 3. Build the center curve by sampling [0,1] and averaging points with similar t
-        var centerCurve = BuildCenterCurve(filtered, jointParamsPerStroke, centerSampleCount);
+        // 1. Initialise joint parameters by projecting every point onto the cluster's
+        //    mean direction axis and normalising globally to [0, 1].
+        //    Unlike per-stroke arc-length params this correctly assigns sub-ranges to
+        //    sequential (end-to-end) strokes as well as spanning [0,1] for parallel ones.
+        var jointParamsPerStroke = InitJointParamsFromAxisProjection(oriented, axis);
 
-        // 4. Iterate: project stroke points onto the center curve and rebuild it
+        // 2. Build the initial center curve.
+        var centerCurve = BuildCenterCurve(oriented, jointParamsPerStroke, centerSampleCount);
+
+        // 3. Iterate: snap endpoints → reproject → rebuild.
+        //    Snapping BEFORE each projection prevents the inward-drift cascade: the
+        //    Gaussian-smoothed BuildCenterCurve pulls center[0]/center[^1] slightly
+        //    inward; without correction ProjectStrokesToCenterCurve then moves stroke
+        //    endpoint parameters slightly away from 0/1, making the next build worse.
         for (int iter = 0; iter < maxIterations; iter++)
         {
-            // 4.1 Find the best t for each point on the current center curve
-            ProjectStrokesToCenterCurve(
-                filtered,
-                centerCurve,
-                jointParamsPerStroke,
-                projectionStep);
-
-            // 4.2 Rebuild the center curve using the updated parameters
-            centerCurve = BuildCenterCurve(filtered, jointParamsPerStroke, centerSampleCount);
+            SnapCenterCurveEndpoints(oriented, centerCurve, axis);
+            ProjectStrokesToCenterCurve(oriented, centerCurve, jointParamsPerStroke, projectionStep);
+            centerCurve = BuildCenterCurve(oriented, jointParamsPerStroke, centerSampleCount);
         }
+
+        // Final snap on the last rebuilt curve.
+        SnapCenterCurveEndpoints(oriented, centerCurve, axis);
 
         return centerCurve;
     }
 
     /// <summary>
-    /// Parameterize a polyline by arc length, returning normalized s ∈ [0,1] per point plus total length.
+    /// Return a copy of <paramref name="polylines"/> with individual strokes flipped as
+    /// needed so all strokes run in the same general direction.
+    /// Uses iterative length-weighted voting (longer strokes dominate the consensus).
+    /// </summary>
+    private static IReadOnlyList<IReadOnlyList<Vector2>> OrientPolylines(
+        IReadOnlyList<IReadOnlyList<Vector2>> polylines)
+    {
+        var result = polylines.ToArray();
+
+        // Repeat a few times because flipping a stroke changes the mean direction.
+        for (int pass = 0; pass < 3; pass++)
+        {
+            // Length-weighted mean direction (no normalise → longer strokes vote more).
+            Vector2 meanDir = Vector2.Zero;
+            foreach (var s in result)
+                meanDir += s[^1] - s[0];
+
+            if (meanDir.LengthSquared() < 1e-6f) break; // no dominant direction
+
+            bool anyFlipped = false;
+            for (int i = 0; i < result.Length; i++)
+            {
+                if ((result[i][^1] - result[i][0]).Dot(meanDir) < 0f)
+                {
+                    // Build a reversed copy; do not mutate the original list.
+                    var arr = new Vector2[result[i].Count];
+                    for (int k = 0; k < arr.Length; k++)
+                        arr[k] = result[i][result[i].Count - 1 - k];
+                    result[i] = arr;
+                    anyFlipped = true;
+                }
+            }
+
+            if (!anyFlipped) break;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Compute the normalised mean direction axis from a set of consistently-oriented strokes.
+    /// </summary>
+    private static Vector2 ComputeAxis(IReadOnlyList<IReadOnlyList<Vector2>> strokes)
+    {
+        Vector2 axis = Vector2.Zero;
+        foreach (var s in strokes)
+            axis += s[^1] - s[0];
+        if (axis.LengthSquared() < 1e-6f)
+            axis = Vector2.Right;
+        return axis.Normalized();
+    }
+
+    /// <summary>
+    /// Snap center[0] to the stroke endpoint with the minimum projection onto <paramref name="axis"/>,
+    /// and center[^1] to the endpoint with the maximum projection.
+    /// After <see cref="OrientPolylines"/> every stroke satisfies s[^1].Dot(axis) ≥ s[0].Dot(axis),
+    /// so min comes from a stroke's first point and max from a stroke's last point.
+    /// Called before every projection step and after the final rebuild to prevent the
+    /// Gaussian boundary from causing an inward-drift cascade across iterations.
+    /// </summary>
+    private static void SnapCenterCurveEndpoints(
+        IReadOnlyList<IReadOnlyList<Vector2>> strokes,
+        List<Vector2> center,
+        Vector2 axis)
+    {
+        if (center.Count < 2) return;
+
+        Vector2 startSnap = strokes[0][0], endSnap = strokes[0][^1];
+        float minProj = float.MaxValue, maxProj = float.MinValue;
+
+        foreach (var s in strokes)
+        {
+            float projStart = s[0].Dot(axis);
+            float projEnd = s[^1].Dot(axis);
+            if (projStart < minProj)
+            {
+                minProj = projStart;
+                startSnap = s[0];
+            }
+            if (projEnd > maxProj)
+            {
+                maxProj = projEnd;
+                endSnap = s[^1];
+            }
+        }
+
+        center[0] = startSnap;
+        center[^1] = endSnap;
+    }
+
+    /// <summary>
+    /// Initialise joint parameters by projecting every stroke point onto the cluster's
+    /// mean direction axis, then normalising the full range to [0, 1].
+    /// </summary>
+    private static List<float[]> InitJointParamsFromAxisProjection(
+        IReadOnlyList<IReadOnlyList<Vector2>> strokes, Vector2 axis)
+    {
+        // Global projection extent across ALL points of ALL strokes.
+        float globalMin = float.MaxValue, globalMax = float.MinValue;
+        foreach (var s in strokes)
+        foreach (var p in s)
+        {
+            float proj = p.Dot(axis);
+            if (proj < globalMin) globalMin = proj;
+            if (proj > globalMax) globalMax = proj;
+        }
+
+        float range = globalMax - globalMin;
+
+        var jointParams = new List<float[]>(strokes.Count);
+        foreach (var s in strokes)
+        {
+            var tArr = new float[s.Count];
+            if (range < 1e-6f)
+            {
+                // Degenerate: all points coincide on the axis – uniform fallback.
+                for (int i = 0; i < tArr.Length; i++)
+                    tArr[i] = (float)i / Mathf.Max(tArr.Length - 1, 1);
+            }
+            else
+            {
+                for (int i = 0; i < tArr.Length; i++)
+                    tArr[i] = (s[i].Dot(axis) - globalMin) / range;
+            }
+            jointParams.Add(tArr);
+        }
+
+        return jointParams;
+    }
+
+    /// <summary>
+    /// Parameterize a polyline by arc length, returning normalized s ∈ [0,1] per point.
     /// </summary>
     private static float[] ComputeArcLengthParams(IReadOnlyList<Vector2> polyline)
     {
