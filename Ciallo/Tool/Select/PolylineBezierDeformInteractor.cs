@@ -173,7 +173,7 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
         }
 
         // Update wireframe live view
-        PolylineBezierDeformHover.DrawBezierCenterline([..Curve], _wireframeCenterline);
+        PolylineBezierDeformHover.DrawBezierCenterline(Curve, _wireframeCenterline);
         PolylineBezierDeformHover.DrawBezierHandle(Curve, _wireframeHandles);
         PolylineBezierDeformHover.DrawBezierControlPoint(Curve, _wireframeControlPoints);
 

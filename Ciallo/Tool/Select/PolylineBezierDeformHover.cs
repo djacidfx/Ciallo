@@ -115,15 +115,15 @@ public class PolylineBezierDeformHover : PolylineSelectHover
         {
             Material = AutoloadRendering.WireframeMaterial,
         };
-        var (polyline, _) = curve.TessellateWithCache();
+        var (polyline, _) = curve.Tessellate(64);
         update.SetGeometry(polyline, AppPreference.StrokeWireframeRadius);
         return update;
     }
 
-    public static StrokeView[] DrawBezierHandle(IReadOnlyList<BezierPoint> curve, StrokeView[] Update = null)
+    public static StrokeView[] DrawBezierHandle(IReadOnlyList<BezierPoint> curve, StrokeView[] update = null)
     {
         StrokeView[] result;
-        if (Update == null)
+        if (update == null)
         {
             result = new StrokeView[curve.Count];
             for (int i = 0; i < curve.Count; i++)
@@ -131,7 +131,7 @@ public class PolylineBezierDeformHover : PolylineSelectHover
         }
         else
         {
-            result = Update;
+            result = update;
         }
 
         for (int i = 0; i < curve.Count; i++)
