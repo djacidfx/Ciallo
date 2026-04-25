@@ -77,12 +77,15 @@ public class PaintStrokeInteractor : InteractiveSessionBase
             return;
         }
 
-        var sceneTree = (SceneTree)Engine.GetMainLoop();
-        // Must trigger event before _process (Observable.Timer's call location), or cause flickering
-        sceneTree.SignalAsObservable(SceneTree.SignalName.ProcessFrame)
-            .SkipUntil(Observable.Timer(AppPreference.TaperDuration.Value))
-            .Take(1)
-            .Subscribe(_ => Tool.Machine.Fire(PaintEnd));
+        // ObserveOn(BeforeProcess) ensures the callback fires before _Process (where Timer ticks),
+        // so the state machine transition happens before the next render step — no flickering.
+        Observable.Timer(AppPreference.TaperDuration.Value)
+            .ObserveOn(GodotFrameProvider.BeforeProcess)
+            .Subscribe(_ =>
+            {
+                if (Tool.Machine.CanFire(PaintEnd))
+                    Tool.Machine.Fire(PaintEnd);
+            });
 
         IsTaperEnding = true;
         Generator.StartTaperEnding();

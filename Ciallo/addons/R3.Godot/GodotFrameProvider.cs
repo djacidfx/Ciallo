@@ -10,13 +10,15 @@ namespace R3;
 internal enum PlayerLoopTiming
 {
     Process,
-    PhysicsProcess
+    PhysicsProcess,
+    BeforeProcess,
 }
 
 public class GodotFrameProvider : FrameProvider
 {
     public static readonly GodotFrameProvider Process = new GodotFrameProvider(PlayerLoopTiming.Process);
     public static readonly GodotFrameProvider PhysicsProcess = new GodotFrameProvider(PlayerLoopTiming.PhysicsProcess);
+    public static readonly GodotFrameProvider BeforeProcess = new GodotFrameProvider(PlayerLoopTiming.BeforeProcess);
 
     FreeListCore<IFrameRunnerWorkItem> list;
     readonly object gate = new object();
@@ -33,13 +35,14 @@ public class GodotFrameProvider : FrameProvider
 
     public override long GetFrameCount()
     {
-        if (PlayerLoopTiming == PlayerLoopTiming.Process)
+        if (PlayerLoopTiming == PlayerLoopTiming.PhysicsProcess)
         {
-            return (long)Engine.GetProcessFrames();
+            return (long)Engine.GetPhysicsFrames();
         }
         else
         {
-            return (long)Engine.GetPhysicsFrames();
+            // Both Process and BeforeProcess share the same frame counter
+            return (long)Engine.GetProcessFrames();
         }
     }
 

@@ -16,6 +16,20 @@ public partial class FrameProviderDispatcher : Node
 
         ((GodotFrameProvider)GodotFrameProvider.Process).Delta = processDelta;
         ((GodotFrameProvider)GodotFrameProvider.PhysicsProcess).Delta = physicsProcessDelta;
+        // BeforeProcess shares the same delta box as Process; delta is from the previous frame
+        // when ProcessFrame fires, but that is acceptable since BeforeProcess is not used as a TimeProvider.
+        ((GodotFrameProvider)GodotFrameProvider.BeforeProcess).Delta = processDelta;
+        GetTree().ProcessFrame += OnProcessFrame;
+    }
+
+    public override void _ExitTree()
+    {
+        GetTree().ProcessFrame -= OnProcessFrame;
+    }
+
+    void OnProcessFrame()
+    {
+        ((GodotFrameProvider)GodotFrameProvider.BeforeProcess).Run(processDelta.Value);
     }
 
     public override void _Process(double delta)
