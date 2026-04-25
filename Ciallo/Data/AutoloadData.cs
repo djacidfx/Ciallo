@@ -43,7 +43,10 @@ public partial class AutoloadData : Node
                 AppPreference.Language.Value = Preference.SupportedLanguages[idx];
         }
         AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
-        AppPreference.UIScale.Subscribe(scale => GetTree().Root.ContentScaleFactor = scale).AddTo(this);
+        AppPreference.UIScale.Debounce(TimeSpan.FromSeconds(0.75))
+            .ObserveOn(GodotFrameProvider.Process)
+            .Subscribe(scale => GetTree().Root.ContentScaleFactor = Mathf.Clamp(scale, 0.1f, 2.0f))
+            .AddTo(this);
 
         if (preferenceFileExists)
         {

@@ -1,9 +1,9 @@
-[gd_scene load_steps=9 format=3 uid="uid://duv6uwd686wfj"]
+[gd_scene format=3 uid="uid://duv6uwd686wfj"]
 
-[ext_resource type="Script" uid="uid://gt4adx4emf1t" path="res://GuiControl/LanguageItemList.cs" id="1_ad8c8"]
-[ext_resource type="Texture2D" uid="uid://43k5wfcj0bkj" path="res://Icon/ciallo.svg" id="1_xhgsw"]
-[ext_resource type="Script" uid="uid://6yiex6jbsgdt" path="res://GuiControl/RecentDocumentList.cs" id="3_8on0h"]
-[ext_resource type="Script" uid="uid://dldw0lk3es817" path="res://GuiControl/WelcomePanelStart.cs" id="3_w3byx"]
+[ext_resource type="Script" uid="uid://ofhdl5xafe3m" path="res://GuiControl/WelcomePanel.cs" id="1_wp"]
+[ext_resource type="Script" uid="uid://gt4adx4emf1t" path="res://GuiControl/LanguageItemList.cs" id="2_ad8c8"]
+[ext_resource type="Texture2D" uid="uid://43k5wfcj0bkj" path="res://Icon/ciallo.svg" id="3_xhgsw"]
+[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="4_mkktu"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xhgsw"]
 draw_center = false
@@ -18,62 +18,85 @@ action = &"NewDocument"
 [sub_resource type="Shortcut" id="Shortcut_w3byx"]
 events = [SubResource("InputEventAction_8on0h")]
 
-[node name="WelcomePanel" type="PanelContainer"]
+[node name="WelcomePanel" type="PanelContainer" unique_id=593651183]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_xhgsw")
+script = ExtResource("1_wp")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="RootMargin" type="MarginContainer" parent="." unique_id=1982232602]
 layout_mode = 2
 theme_override_constants/margin_top = 100
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="RootVBox" type="VBoxContainer" parent="RootMargin" unique_id=198595572]
 layout_mode = 2
 
-[node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer"]
+[node name="Logo" type="TextureRect" parent="RootMargin/RootVBox" unique_id=861081250]
 custom_minimum_size = Vector2(0, 85)
 layout_mode = 2
-texture = ExtResource("1_xhgsw")
+texture = ExtResource("3_xhgsw")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="RootMargin/RootVBox" unique_id=1667938769]
 layout_mode = 2
 theme_override_constants/separation = 65
 theme_override_styles/separator = SubResource("StyleBoxLine_xhgsw")
 
-[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/VBoxContainer"]
+[node name="ContentMargin" type="MarginContainer" parent="RootMargin/RootVBox" unique_id=398874452]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 40
 theme_override_constants/margin_right = 40
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer"]
+[node name="ContentHBox" type="HBoxContainer" parent="RootMargin/RootVBox/ContentMargin" unique_id=957595307]
 layout_mode = 2
 theme_override_constants/separation = 140
 alignment = 1
 
-[node name="Sponsor" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer"]
+[node name="Sponsor" type="VBoxContainer" parent="RootMargin/RootVBox/ContentMargin/ContentHBox" unique_id=925397011]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Sponsor"]
+[node name="Label" type="Label" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/Sponsor" unique_id=678459219]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Sponsor"
 
-[node name="Language" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer"]
+[node name="SettingsVBox" type="VBoxContainer" parent="RootMargin/RootVBox/ContentMargin/ContentHBox" unique_id=1777358762]
+layout_mode = 2
+theme_override_constants/separation = 50
+
+[node name="UIScale" type="VBoxContainer" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/SettingsVBox" unique_id=1129869665]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/SettingsVBox/UIScale" unique_id=1399864543]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "UI scale"
+
+[node name="SpinSlider" type="HBoxContainer" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/SettingsVBox/UIScale" unique_id=1518739160]
+unique_name_in_owner = true
+layout_mode = 2
+script = ExtResource("4_mkktu")
+MinValue = 0.5
+MaxValue = 1.5
+Value = 1.0
+AllowLesser = true
+metadata/_custom_type_script = "uid://b1dclx7d0dgng"
+
+[node name="Language" type="VBoxContainer" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/SettingsVBox" unique_id=135666036]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Language"]
+[node name="Label" type="Label" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/SettingsVBox/Language" unique_id=1099227767]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Language"
 
-[node name="LanguageList" type="ItemList" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/Language"]
+[node name="LanguageList" type="ItemList" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/SettingsVBox/Language" unique_id=632687295]
 auto_translate_mode = 2
 layout_mode = 2
 allow_search = false
@@ -87,47 +110,45 @@ item_3/text = "日本語"
 item_4/text = "한국어"
 item_5/text = "中文（简体）"
 item_6/text = "中文（繁體）"
-script = ExtResource("1_ad8c8")
+script = ExtResource("2_ad8c8")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer"]
+[node name="ActionsVBox" type="VBoxContainer" parent="RootMargin/RootVBox/ContentMargin/ContentHBox" unique_id=1578427697]
 layout_mode = 2
 theme_override_constants/separation = 50
 
-[node name="Start" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+[node name="Start" type="VBoxContainer" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/ActionsVBox" unique_id=1069120680]
 layout_mode = 2
-script = ExtResource("3_w3byx")
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start"]
+[node name="Label" type="Label" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/ActionsVBox/Start" unique_id=1236227947]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Start"
 
-[node name="Button" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start"]
+[node name="NewDocumentButton" type="Button" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/ActionsVBox/Start" unique_id=1180314754]
+unique_name_in_owner = true
 layout_mode = 2
 shortcut = SubResource("Shortcut_w3byx")
 text = "New document"
 
-[node name="Button2" type="Button" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start"]
+[node name="OpenDocumentButton" type="Button" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/ActionsVBox/Start" unique_id=2138084577]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Open document"
 
-[node name="Recent" type="VBoxContainer" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer"]
+[node name="Recent" type="VBoxContainer" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/ActionsVBox" unique_id=790602740]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Recent"]
+[node name="Label" type="Label" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/ActionsVBox/Recent" unique_id=116779306]
 layout_mode = 2
 theme_override_font_sizes/font_size = 32
 text = "Recent document"
 
-[node name="ItemList" type="ItemList" parent="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Recent"]
+[node name="RecentList" type="ItemList" parent="RootMargin/RootVBox/ContentMargin/ContentHBox/ActionsVBox/Recent" unique_id=718356672]
+unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 tooltip_text = "[Recent Document List Tooltip]"
 allow_search = false
 auto_width = true
 auto_height = true
-script = ExtResource("3_8on0h")
-
-[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start/Button" to="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start" method="OnNewDocumentPressed"]
-[connection signal="pressed" from="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start/Button2" to="MarginContainer/VBoxContainer/MarginContainer/HBoxContainer/VBoxContainer/Start" method="OnOpenDocumentPressed"]
