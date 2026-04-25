@@ -11,14 +11,6 @@
   - After closing Ciallo's window in Rider debug, make sure zero Godot warning messages in the Rider console.
   - Running project in Godot editor seems lacking of necessary check. Must in Rider debug.
 
-### Solo development
-Following guidelines are suitable for solo development or tiny team. May have to be changed in the future.
-
-- Architect and avoid encapsulation
-  - Encapsulation costs efforts and flexibility.
-  - Architect systems and consider each system as a tool.
-    - Tools always need to be fine-tuned, over encapsulation (make some key stuff `private`) makes fine-tune hard to achieve.  
-
 ## Details
 - Global variables or static classes (that need to work with) are named as "App*"
 - No plural forms for class, folder, or namespace names.
