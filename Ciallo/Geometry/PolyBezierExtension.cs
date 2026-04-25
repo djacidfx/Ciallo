@@ -188,6 +188,7 @@ public static class PolyBezierExtension
     // Sample curve segment at index, t in [0,1]
     [Pure] public static Vector2 Sample(this IReadOnlyList<BezierPoint> points, int index, float t)
     {
+        if (Mathf.IsZeroApprox(t)) return points[index].P;
         var p0 = points[index].P;
         var p1 = p0 + points[index].Out;
         var p3 = points[index + 1].P;
