@@ -43,6 +43,7 @@ public partial class AutoloadData : Node
                 AppPreference.Language.Value = Preference.SupportedLanguages[idx];
         }
         AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
+        AppPreference.UIScale.Subscribe(scale => GetTree().Root.ContentScaleFactor = scale).AddTo(this);
 
         if (preferenceFileExists)
         {

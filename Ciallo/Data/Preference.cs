@@ -38,6 +38,8 @@ public class Preference
     [DataMember]
     public ReactiveProperty<string> Language = new("en");
     [DataMember]
+    public ReactiveProperty<float> UIScale = new(1.0f);
+    [DataMember]
     public ObservableList<string> RecentFiles = [];
     [DataMember]
     public ReactiveProperty<ToolButton?> PressedToolButton = new(null);
