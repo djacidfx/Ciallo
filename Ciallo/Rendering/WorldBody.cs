@@ -127,7 +127,7 @@ public partial class WorldBody : BodyHolder
 
         return body;
     }
-    
+
     public void ForceUpdateCursor()
     {
         var body = _hoveringBody.Value;
@@ -199,6 +199,18 @@ public partial class WorldBody : BodyHolder
         return result;
     }
 
+    public Body CreateAddStrokeCenterline(IReadOnlyList<Vector2> polyline, float radius)
+    {
+        var body = new Body();
+        body.SetStrokeCenterline(polyline, radius);
+        AddChild(body);
+        _paintPanel.CameraZoom.Subscribe(v =>
+        {
+            body.UpdateStrokeCenterlineShape(polyline, radius / v);
+        }).AddTo(body);
+        return body;
+    }
+
     public Body[] CreateAddTransformAreas(Vector2 size, Transform2D transform)
     {
         var half = size * 0.5f;
@@ -238,6 +250,7 @@ public partial class WorldBody : BodyHolder
     }
 }
 
+// Note: not implement screen position, world size
 [Flags]
 public enum CursorRectFlags
 {

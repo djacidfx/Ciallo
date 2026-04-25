@@ -27,8 +27,9 @@ public class PolylineSelectTool : StateMachineToolBase
     public readonly PolylineTransformHover TransformHover = new();
     public readonly PolylineBezierDeformHover BezierDeformHover = new();
 
-    public readonly PolylineTransformInteractor Transform = new();
     public readonly PolylineRectSelectInteractor Select = new();
+    public readonly PolylineTransformInteractor Transform = new();
+    public readonly PolylineBezierDeformInteractor BezierDeform = new();
 
     protected override void ConfigureStateMachine()
     {
@@ -53,7 +54,17 @@ public class PolylineSelectTool : StateMachineToolBase
             });
 
         Configure(BezierDeformHover)
-            .PermitDynamic(Press(MouseButton.Left), () => Select);
+            .PermitDynamic(Press(MouseButton.Left), () =>
+            {
+                if (BezierDeformHover.CanDeform && !Input.IsKeyPressed(Key.Shift))
+                    return BezierDeform;
+                return Select;
+            });
+
+        Configure(BezierDeform)
+            .PermitDynamic(Release(MouseButton.Left), TransToHover)
+            .PermitDynamic(Press(AppActions.CancelInteraction), TransToHover)
+            .PermitDynamic(Press(AppActions.ConfirmInteraction), TransToHover);
 
         Configure(Transform)
             .PermitDynamic(Release(MouseButton.Left), TransToHover)
@@ -77,7 +88,7 @@ public class PolylineSelectTool : StateMachineToolBase
             throw new NotImplementedException();
         }
     }
-    
+
     public override bool CanHandleLayer(params Entity[] layerEs)
     {
         if (layerEs.Length != 1) return false;

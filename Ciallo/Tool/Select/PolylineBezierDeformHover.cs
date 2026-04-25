@@ -13,11 +13,29 @@ namespace Ciallo.Tool;
 public class PolylineBezierDeformHover : PolylineSelectHover
 {
     public BezierPoint[] Curve;
-    public float[] PolyTs;
 
     private Node2D _wireframe;
-    private List<Body> _buttons;
+    public Body CenterlineBody;
+    public readonly List<Body[]> PointBodies = [];
+
     protected ObservableList<Entity> SelectedShapes;
+
+    public bool CanDeform
+    {
+        get
+        {
+            if (Curve == null) return false;
+            bool centerlineHovered = CenterlineBody.IsHovered;
+            bool pointHovered = PointBodies.SelectMany(bs => bs).Any(b => b?.IsHovered == true);
+            return centerlineHovered || pointHovered;
+        }
+    }
+
+    public override void BeforeTransitionSrcEnd(InteractiveSessionBase src)
+    {
+        if (src is PolylineBezierDeformInteractor interactor)
+            Curve = interactor.Curve;
+    }
 
     public override void Start(CursorButtonData data)
     {
@@ -33,14 +51,25 @@ public class PolylineBezierDeformHover : PolylineSelectHover
         SelectedShapes.ForEach(e => e.Get<Body>().ProcessMode = Node.ProcessModeEnum.Disabled);
 
         // Data
-        int pointCount = SelectedShapes.Select(e => e.Get<PolylineGeometry>().Count).Sum();
-        if (pointCount <= 1) return;
-        var polylines = SelectedShapes
-            .Select(e => (IReadOnlyList<Vector2>)e.Get<PolylineGeometry>().Positions.Value)
-            .ToList();
-        var fitPoints = Geometry.Geometry.ClusterPolylines(polylines);
-        Curve = fitPoints.FitBezier(2);
-        (_, PolyTs) = Curve.GetClosestPoint(fitPoints);
+        if (Curve == null)
+        {
+            int pointCount = SelectedShapes.Select(e => e.Get<PolylineGeometry>().Count).Sum();
+            if (pointCount <= 1) return;
+            if (SelectedShapes.Count == 1)
+            {
+                // Straight fit
+                Curve = SelectedShapes.Single().Get<PolylineGeometry>().Positions.Value.FitBezier(2);
+            }
+            else
+            {
+                // Cluster polylines first, then fit
+                var polylines = SelectedShapes
+                    .Select(e => (IReadOnlyList<Vector2>)e.Get<PolylineGeometry>().Positions.Value)
+                    .ToList();
+                var fitPoints = Geometry.Geometry.ClusterPolylines(polylines);
+                Curve = fitPoints.FitBezier(2);
+            }
+        }
 
         // Curve wireframe view
         _wireframe = new();
@@ -52,26 +81,30 @@ public class PolylineBezierDeformHover : PolylineSelectHover
         _wireframe.AddChild(DrawBezierControlPoint(Curve));
         Document.Get<WorldOverlay>().AddChild(_wireframe);
 
-        // Cursor
-        Vector2 buttonSize = AppPreference.StrokeDotRadius * 2 * Vector2.One;
-        _buttons = new();
+        // Bodies
+        CenterlineBody = worldBody.CreateAddStrokeCenterline(Curve.TessellateWithCache().polyline, AppPreference.StrokeWireframeRadius * 10);
+        CenterlineBody.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
+
+        Vector2 bodySize = AppPreference.StrokeDotRadius * 2 * Vector2.One;
         for (int i = 0; i < Curve.Length; i++)
         {
+            var pointBodies = new Body[3];
+            PointBodies.Add(pointBodies);
             var pt = Curve[i];
-            var anchorBody = worldBody.CreateAddRectBody(buttonSize, pt.P, CursorRectFlags.ScreenSize);
+            var anchorBody = worldBody.CreateAddRectBody(bodySize, pt.P, CursorRectFlags.ScreenSize);
             anchorBody.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-            _buttons.Add(anchorBody);
+            pointBodies[0] = anchorBody;
             if (i > 0 && !pt.In.IsZeroApprox())
             {
-                var inBody = worldBody.CreateAddRectBody(buttonSize, pt.PIn, CursorRectFlags.ScreenSize);
+                var inBody = worldBody.CreateAddRectBody(bodySize, pt.PIn, CursorRectFlags.ScreenSize);
                 inBody.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-                _buttons.Add(inBody);
+                pointBodies[1] = inBody;
             }
             if (i < Curve.Length - 1 && !pt.Out.IsZeroApprox())
             {
-                var outBody = worldBody.CreateAddRectBody(buttonSize, pt.POut, CursorRectFlags.ScreenSize);
+                var outBody = worldBody.CreateAddRectBody(bodySize, pt.POut, CursorRectFlags.ScreenSize);
                 outBody.MouseDefaultCursorShape = Control.CursorShape.PointingHand;
-                _buttons.Add(outBody);
+                pointBodies[2] = outBody;
             }
         }
     }
@@ -87,20 +120,28 @@ public class PolylineBezierDeformHover : PolylineSelectHover
         return update;
     }
 
-    public static StrokeView[] DrawBezierHandle(IReadOnlyList<BezierPoint> curve)
+    public static StrokeView[] DrawBezierHandle(IReadOnlyList<BezierPoint> curve, StrokeView[] Update = null)
     {
-        var result = new StrokeView[curve.Count];
+        StrokeView[] result;
+        if (Update == null)
+        {
+            result = new StrokeView[curve.Count];
+            for (int i = 0; i < curve.Count; i++)
+                result[i] = new StrokeView { Material = AutoloadRendering.WireframeMaterial };
+        }
+        else
+        {
+            result = Update;
+        }
+
         for (int i = 0; i < curve.Count; i++)
         {
-            result[i] = new StrokeView { Material = AutoloadRendering.WireframeMaterial };
             var pt = curve[i];
-            bool hasIn = i > 0 && !pt.In.IsZeroApprox();
-            bool hasOut = i < curve.Count - 1 && !pt.Out.IsZeroApprox();
             List<Vector2> pts = [];
-            if (hasIn)
+            if (i > 0 && !pt.In.IsZeroApprox())
                 pts.Add(pt.PIn);
             pts.Add(pt.P);
-            if (hasOut)
+            if (i < curve.Count - 1 && !pt.Out.IsZeroApprox())
                 pts.Add(pt.POut);
             result[i].SetGeometry(pts, AppPreference.StrokeWireframeRadius);
         }
@@ -127,11 +168,12 @@ public class PolylineBezierDeformHover : PolylineSelectHover
     public override void Cancel()
     {
         Curve = null;
-        PolyTs = null;
         _wireframe?.QueueFree();
         _wireframe = null;
-        _buttons?.ForEach(b => b.QueueFree());
-        _buttons = null;
+        foreach (var b in PointBodies.SelectMany(b => b)) b?.QueueFree();
+        PointBodies.Clear();
+        CenterlineBody?.QueueFree();
+        CenterlineBody = null;
         SelectedShapes.ForEach(e => e.Get<Body>().ProcessMode = Node.ProcessModeEnum.Inherit);
         base.Cancel();
     }
