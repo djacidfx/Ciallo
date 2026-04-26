@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics.Contracts;
+using System.Linq;
 using System.Runtime.InteropServices;
 using Godot;
 using Microsoft.Extensions.Caching.Memory;
@@ -11,7 +12,7 @@ namespace Ciallo.Geometry;
 /// <summary>
 /// Hold all the pure geometry/math calculations for PolyCubicBezier.
 /// </summary>
-public static class PolyCubicBezierExtension
+public static class PolyBezierExtension
 {
     private static readonly MemoryCache TessCache = new(new MemoryCacheOptions());
 
@@ -187,6 +188,7 @@ public static class PolyCubicBezierExtension
     // Sample curve segment at index, t in [0,1]
     [Pure] public static Vector2 Sample(this IReadOnlyList<BezierPoint> points, int index, float t)
     {
+        if (Mathf.IsZeroApprox(t)) return points[index].P;
         var p0 = points[index].P;
         var p1 = p0 + points[index].Out;
         var p3 = points[index + 1].P;
@@ -231,7 +233,7 @@ public static class PolyCubicBezierExtension
     }
 
     public static (Vector2[] polyline, float[] ts) TessellateWithCache(
-        this ImmutableArray<BezierPoint> points, int subdivisionsPerSegment = 64)
+        this IReadOnlyList<BezierPoint> points, int subdivisionsPerSegment = 64)
     {
         var key = (points, subdivisionsPerSegment);
         return TessCache.GetOrCreate(key, entry =>
@@ -241,9 +243,9 @@ public static class PolyCubicBezierExtension
         })!;
     }
 
-    // --- X-monotone curve sampling (ImmutableArray, uses tessellation cache) ---
+    // --- X-monotone curve sampling (uses tessellation cache) ---
 
-    public static float SampleX(this ImmutableArray<BezierPoint> points, float x)
+    public static float SampleX(this IReadOnlyList<BezierPoint> points, float x)
     {
         var (polyline, _) = points.TessellateWithCache();
         return polyline.SampleX(x);
@@ -252,18 +254,43 @@ public static class PolyCubicBezierExtension
     /// <summary>
     /// Sample the polyline by the given x ordered list from small to large.
     /// </summary>
+    /// <param name="points">The bezier curve points.</param>
     /// <param name="xs">The x values to sample at, must be in ascending order.</param>
-    public static float[] SampleXList(this ImmutableArray<BezierPoint> points, IReadOnlyList<float> xs)
+    public static float[] SampleXList(this IReadOnlyList<BezierPoint> points, IReadOnlyList<float> xs)
     {
         var (polyline, _) = points.TessellateWithCache();
         return polyline.SampleXList(xs);
     }
 
-    public static Vector2 GetClosestPoint(this ImmutableArray<BezierPoint> points, Vector2 p, out float polyT)
+    public static (Vector2[] closestPoints, float[] bezierTs) GetClosestPoint(
+        this IReadOnlyList<BezierPoint> points, IReadOnlyList<Vector2> queryPoints, int missLimit = 4)
+    {
+        var (polyline, cachedTs) = points.TessellateWithCache();
+        var (closestPoints, polylineTs) = polyline.GetClosestPoint(queryPoints, missLimit);
+
+        var bezierTs = new float[queryPoints.Count];
+        for (int i = 0; i < polylineTs.Length; i++)
+        {
+            var (idx, lt) = polylineTs[i].Modf();
+            if (idx >= cachedTs.Length - 1)
+            {
+                bezierTs[i] = cachedTs[^1];
+                closestPoints[i] = polyline[^1];
+            }
+            else
+            {
+                bezierTs[i] = cachedTs[idx] + lt * (cachedTs[idx + 1] - cachedTs[idx]);
+                closestPoints[i] = points.Sample(bezierTs[i]);
+            }
+        }
+        return (closestPoints, bezierTs);
+    }
+
+    public static Vector2 GetClosestPoint(this IReadOnlyList<BezierPoint> points, Vector2 p, out float polyT)
     {
         var (polyline, cachedT) = points.TessellateWithCache();
-        polyline.GetClosestPoint(p, out var rawPolyT);
-        var (idx, lt) = rawPolyT.Modf();
+        polyline.GetClosestPoint(p, out var polylineT);
+        var (idx, lt) = polylineT.Modf();
         if (idx >= cachedT.Length - 1)
         {
             polyT = cachedT[^1];
@@ -271,92 +298,135 @@ public static class PolyCubicBezierExtension
         }
         var deltaT = lt * (cachedT[idx + 1] - cachedT[idx]);
         polyT = cachedT[idx] + deltaT;
-        return ((IReadOnlyList<BezierPoint>)points).Sample(polyT);
+        return points.Sample(polyT);
     }
 
-    // --- ImmutableArray<BezierPoint> mutation helpers (return new array) ---
+    // --- BezierPoint[] mutation helpers ---
 
-    public static ImmutableArray<BezierPoint> WithPointPosition(this ImmutableArray<BezierPoint> points, int index, Vector2 position) => points.SetItem(index, points[index].WithPoint(position));
-
-    public static ImmutableArray<BezierPoint> WithPointIn(this ImmutableArray<BezierPoint> points, int index, Vector2 inHandle) => points.SetItem(index, points[index].WithIn(inHandle));
-
-    public static ImmutableArray<BezierPoint> WithPointInLinearly(this ImmutableArray<BezierPoint> points, int index, Vector2 inHandle)
+    public static BezierPoint[] WithPointPosition(this IReadOnlyList<BezierPoint> points, int index, Vector2 position)
     {
-        var pt = points[index];
-        var angleDelta = inHandle.Angle() - pt.In.Angle();
-        var lengthDelta = inHandle.Length() - pt.In.Length();
-        var newOut = pt.Out.Normalized().Rotated(angleDelta) * (pt.Out.Length() + lengthDelta);
-        return points.SetItem(index, new BezierPoint(pt.P, inHandle, newOut));
+        var result = points.ToArray();
+        result[index] = result[index].WithPoint(position);
+        return result;
     }
 
-    public static ImmutableArray<BezierPoint> WithPointOut(this ImmutableArray<BezierPoint> points, int index, Vector2 outHandle) => points.SetItem(index, points[index].WithOut(outHandle));
-
-    public static ImmutableArray<BezierPoint> WithPointOutLinearly(this ImmutableArray<BezierPoint> points, int index, Vector2 outHandle)
+    public static BezierPoint[] WithPointIn(this IReadOnlyList<BezierPoint> points, int index, Vector2 inHandle)
     {
-        var pt = points[index];
-        var angleDelta = outHandle.Angle() - pt.Out.Angle();
-        var lengthDelta = outHandle.Length() - pt.Out.Length();
-        var newIn = pt.In.Normalized().Rotated(angleDelta) * (pt.In.Length() + lengthDelta);
-        return points.SetItem(index, new BezierPoint(pt.P, newIn, outHandle));
+        var result = points.ToArray();
+        result[index] = result[index].WithIn(inHandle);
+        return result;
     }
 
-    public static ImmutableArray<BezierPoint> WithPointAdded(
-        this ImmutableArray<BezierPoint> points, Vector2 position, Vector2 inHandle, Vector2 outHandle, int at = -1)
+    public static BezierPoint[] WithPointInLinearly(this IReadOnlyList<BezierPoint> points, int index, Vector2 inHandle)
+    {
+        var result = points.ToArray();
+        var pt = result[index];
+        float angleDelta = inHandle.Angle() - pt.In.Angle();
+        float lengthDelta = inHandle.Length() - pt.In.Length();
+        Vector2 newOut = pt.Out.Normalized().Rotated(angleDelta) * (pt.Out.Length() + lengthDelta);
+        result[index] = new BezierPoint(pt.P, inHandle, newOut);
+        return result;
+    }
+
+    public static BezierPoint[] WithPointOut(this IReadOnlyList<BezierPoint> points, int index, Vector2 outHandle)
+    {
+        var result = points.ToArray();
+        result[index] = result[index].WithOut(outHandle);
+        return result;
+    }
+
+    public static BezierPoint[] WithPointOutLinearly(this IReadOnlyList<BezierPoint> points, int index, Vector2 outHandle)
+    {
+        var result = points.ToArray();
+        var pt = result[index];
+        float angleDelta = outHandle.Angle() - pt.Out.Angle();
+        float lengthDelta = outHandle.Length() - pt.Out.Length();
+        Vector2 newIn = pt.In.Normalized().Rotated(angleDelta) * (pt.In.Length() + lengthDelta);
+        result[index] = new BezierPoint(pt.P, newIn, outHandle);
+        return result;
+    }
+
+    public static BezierPoint[] WithPointAdded(
+        this IReadOnlyList<BezierPoint> points, Vector2 position, Vector2 inHandle, Vector2 outHandle, int at = -1)
     {
         var point = new BezierPoint(position, inHandle, outHandle);
-        if (at >= 0 && at < points.Length)
-            return points.Insert(at, point);
-        return points.Add(point);
+        var result = new BezierPoint[points.Count + 1];
+        if (at >= 0 && at < points.Count)
+        {
+            for (int i = 0; i < at; i++) result[i] = points[i];
+            result[at] = point;
+            for (int i = at; i < points.Count; i++) result[i + 1] = points[i];
+        }
+        else
+        {
+            for (int i = 0; i < points.Count; i++) result[i] = points[i];
+            result[points.Count] = point;
+        }
+        return result;
     }
 
-    public static ImmutableArray<BezierPoint> WithPointRemoved(this ImmutableArray<BezierPoint> points, int index) => points.RemoveAt(index);
+    public static BezierPoint[] WithPointRemoved(this IReadOnlyList<BezierPoint> points, int index)
+    {
+        var result = new BezierPoint[points.Count - 1];
+        for (int i = 0; i < index; i++) result[i] = points[i];
+        for (int i = index + 1; i < points.Count; i++) result[i - 1] = points[i];
+        return result;
+    }
 
     /// <summary>
     /// Insert a bezier control point at a fractional polyT without changing the visual shape.
     /// </summary>
-    /// <returns>(new array, index of inserted point) or (original array, -1) if invalid.</returns>
-    public static (ImmutableArray<BezierPoint> result, int insertedIndex) TryInsertPoint(
-        this ImmutableArray<BezierPoint> points, float polyT)
+    /// <returns>(new array, index of inserted point) or (original array copy, -1) if invalid.</returns>
+    public static (BezierPoint[] result, int insertedIndex) TryInsertPoint(
+        this IReadOnlyList<BezierPoint> points, float polyT)
     {
-        if (points.Length < 2 || polyT <= 0f || polyT >= points.Length - 1)
-            return (points, -1);
+        if (points.Count < 2 || polyT <= 0f || polyT >= points.Count - 1)
+            return (points.ToArray(), -1);
         var (idx, t) = polyT.Modf();
-        if (t <= 0f || t >= 1f) return (points, -1);
-        var newList = points.Insert(polyT);
-        return (ImmutableCollectionsMarshal.AsImmutableArray(newList), idx + 1);
+        if (t <= 0f || t >= 1f) return (points.ToArray(), -1);
+        return (points.Insert(polyT), idx + 1);
     }
 
-    public static float GetPointInTangent(this ImmutableArray<BezierPoint> points, int index)
+    public static float GetPointInTangent(this IReadOnlyList<BezierPoint> points, int index)
     {
         var pt = points[index];
         return pt.In.Y / pt.In.X;
     }
 
-    public static float GetPointOutTangent(this ImmutableArray<BezierPoint> points, int index)
+    public static float GetPointOutTangent(this IReadOnlyList<BezierPoint> points, int index)
     {
         var pt = points[index];
         return pt.Out.Y / pt.Out.X;
     }
 
-    public static ImmutableArray<BezierPoint> WithPointInTangent(this ImmutableArray<BezierPoint> points, int index, float tangent)
+    public static BezierPoint[] WithPointInTangent(this IReadOnlyList<BezierPoint> points, int index, float tangent)
     {
-        var pt = points[index];
+        var result = points.ToArray();
+        var pt = result[index];
         var oldHandle = pt.In;
         float length = oldHandle.Length();
-        if (length <= 0f) return points;
+        if (length <= 0f) return result;
         float sign = oldHandle.X != 0f ? MathF.Sign(oldHandle.X) : MathF.Sign(oldHandle.Y);
         var baseDir = new Vector2(1f, tangent).Normalized();
-        return points.SetItem(index, pt.WithIn(baseDir * sign * length));
+        result[index] = pt.WithIn(baseDir * sign * length);
+        return result;
     }
 
-    public static ImmutableArray<BezierPoint> WithPointOutTangent(this ImmutableArray<BezierPoint> points, int index, float tangent)
+    public static BezierPoint[] WithPointOutTangent(this IReadOnlyList<BezierPoint> points, int index, float tangent)
     {
-        var pt = points[index];
+        var result = points.ToArray();
+        var pt = result[index];
         var oldHandle = pt.Out;
         float length = oldHandle.Length();
-        if (length <= 0f) return points;
+        if (length <= 0f) return result;
         float sign = oldHandle.X != 0f ? MathF.Sign(oldHandle.X) : MathF.Sign(oldHandle.Y);
         var baseDir = new Vector2(1f, tangent).Normalized();
-        return points.SetItem(index, pt.WithOut(baseDir * sign * length));
+        result[index] = pt.WithOut(baseDir * sign * length);
+        return result;
+    }
+
+    public static ImmutableArray<BezierPoint> MarshalToImmutable(this BezierPoint[] points)
+    {
+        return ImmutableCollectionsMarshal.AsImmutableArray(points);
     }
 }

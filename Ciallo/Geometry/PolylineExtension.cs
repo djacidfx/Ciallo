@@ -99,6 +99,113 @@ public static class PolylineExtension
     }
 
     /// <summary>
+    /// Batch version of <see cref="GetClosestPoint(IReadOnlyList{Vector2},Vector2,out float)"/>.
+    /// Assumes consecutive query points are spatially adjacent and the polyline has no self-intersections.
+    /// Uses a sliding cursor with a miss tolerance so the total work is O(M+N) amortized.
+    /// Corner cases (e.g. sharp U-turns) may produce slightly wrong results.
+    /// </summary>
+    /// <remarks>Sonnet4.6 gen</remarks>
+    /// <param name="polyline">The reference polyline (no self-intersections).</param>
+    /// <param name="points">Query points; spatially adjacent pairs must be consecutively ordered.</param>
+    /// <param name="missLimit">
+    /// After distance starts increasing, keep probing this many extra segments before giving up.
+    /// Applied symmetrically to both forward and backward directions.
+    /// </param>
+    public static (Vector2[] closestPoints, float[] polyTs) GetClosestPoint(
+        [NotNull] this IReadOnlyList<Vector2> polyline,
+        IReadOnlyList<Vector2> points,
+        int missLimit = 4)
+    {
+        int n = points.Count;
+        var closestPoints = new Vector2[n];
+        var polyTs = new float[n];
+
+        int segCount = polyline.Count - 1; // number of segments
+        if (polyline.Count == 0 || n == 0) return (closestPoints, polyTs);
+        if (polyline.Count == 1)
+        {
+            for (int i = 0; i < n; i++) closestPoints[i] = polyline[0];
+            return (closestPoints, polyTs);
+        }
+
+        // Projects point onto segment [p1,p2], returns dist² and sets localT ∈ [0,1].
+        static float ProjectOntoSegment(Vector2 p1, Vector2 p2, Vector2 point, out float localT)
+        {
+            Vector2 seg = p2 - p1;
+            float lenSq = seg.LengthSquared();
+            if (lenSq < 1e-10f)
+            {
+                localT = 0f;
+                return point.DistanceSquaredTo(p1);
+            }
+            float s = (point - p1).Dot(seg) / lenSq;
+            localT = Math.Clamp(s, 0f, 1f);
+            return point.DistanceSquaredTo(p1 + localT * seg);
+        }
+
+        // Full scan for the first query point to initialise the cursor.
+        float bestDistSq = float.MaxValue;
+        int curSeg = 0;
+        float bestLocalT = 0f;
+        for (int s = 0; s < segCount; s++)
+        {
+            float dSq = ProjectOntoSegment(polyline[s], polyline[s + 1], points[0], out float lt);
+            if (dSq < bestDistSq)
+            {
+                bestDistSq = dSq;
+                curSeg = s;
+                bestLocalT = lt;
+            }
+        }
+        closestPoints[0] = polyline[curSeg] + bestLocalT * (polyline[curSeg + 1] - polyline[curSeg]);
+        polyTs[0] = curSeg + bestLocalT;
+
+        // Slide the cursor for subsequent points.
+        for (int i = 1; i < n; i++)
+        {
+            Vector2 pt = points[i];
+            bestDistSq = ProjectOntoSegment(polyline[curSeg], polyline[curSeg + 1], pt, out bestLocalT);
+            int bestSeg = curSeg;
+
+            // Probe forward
+            int misses = 0;
+            for (int s = curSeg + 1; s < segCount && misses < missLimit; s++)
+            {
+                float dSq = ProjectOntoSegment(polyline[s], polyline[s + 1], pt, out float lt);
+                if (dSq < bestDistSq)
+                {
+                    bestDistSq = dSq;
+                    bestSeg = s;
+                    bestLocalT = lt;
+                    misses = 0;
+                }
+                else misses++;
+            }
+
+            // Probe backward
+            misses = 0;
+            for (int s = curSeg - 1; s >= 0 && misses < missLimit; s--)
+            {
+                float dSq = ProjectOntoSegment(polyline[s], polyline[s + 1], pt, out float lt);
+                if (dSq < bestDistSq)
+                {
+                    bestDistSq = dSq;
+                    bestSeg = s;
+                    bestLocalT = lt;
+                    misses = 0;
+                }
+                else misses++;
+            }
+
+            curSeg = bestSeg;
+            closestPoints[i] = polyline[curSeg] + bestLocalT * (polyline[curSeg + 1] - polyline[curSeg]);
+            polyTs[i] = curSeg + bestLocalT;
+        }
+
+        return (closestPoints, polyTs);
+    }
+
+    /// <summary>
     /// Check if the curve is a monotone in X.
     /// So that each element of the function's domain X maps to a single, well-defined element of its range Y.
     /// </summary>
@@ -444,11 +551,12 @@ public static class PolylineExtension
     /// Turn a polyline into a simple polygon.
     /// A simple polygon is a closed polygon that does not intersect itself (so no overlapping points).
     /// </summary>
+    /// <remarks>Deal closed polygon incorrectly</remarks>
     public static List<Vector2> ToSimplePolygon(this IReadOnlyList<Vector2> polyline)
     {
-        int i = FindFirstSelfIntersection(polyline, out _);
-        if (i == -1) return RemoveDuplicatePoints(polyline);
-        return RemoveDuplicatePoints(polyline.Take(i + 1).ToArray());
+        int i = polyline.FindFirstSelfIntersection(out _);
+        if (i == -1) return polyline.RemoveDuplicatePoints();
+        return polyline.Take(i + 1).ToArray().RemoveDuplicatePoints();
     }
 
     public static List<Vector2> RemoveDuplicatePoints(this IReadOnlyList<Vector2> polyline)

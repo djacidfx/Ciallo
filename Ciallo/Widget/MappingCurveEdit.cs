@@ -108,7 +108,7 @@ public partial class MappingCurveEdit : Control
                 {
                     if (_grabbing == GrabMode.Add)
                     {
-                        _property.Value = Points.WithPointRemoved(_selectedIndex);
+                        _property.Value = Points.WithPointRemoved(_selectedIndex).MarshalToImmutable();
                         SetSelectedIndex(-1);
                     }
                     else
@@ -137,7 +137,7 @@ public partial class MappingCurveEdit : Control
                 // Cancel any ongoing grab operation.
                 if (mouseButton.ButtonIndex is MouseButton.Right && _grabbing == GrabMode.Move)
                 {
-                    _property.Value = Points.WithPointPosition(_selectedIndex, _initialGrabPos);
+                    _property.Value = Points.WithPointPosition(_selectedIndex, _initialGrabPos).MarshalToImmutable();
                     SetSelectedIndex(_initialGrabIndex);
                     _hoveredIndex = GetPointAt(mpos);
                     _grabbing = GrabMode.None;
@@ -160,7 +160,7 @@ public partial class MappingCurveEdit : Control
                         {
                             if (_grabbing == GrabMode.Add)
                             {
-                                _property.Value = Points.WithPointRemoved(pointToRemove);
+                                _property.Value = Points.WithPointRemoved(pointToRemove).MarshalToImmutable();
                                 SetSelectedIndex(-1);
                             }
                             else
@@ -210,7 +210,7 @@ public partial class MappingCurveEdit : Control
                     {
                         int idx = 1;
                         if (newPos.X < p.X) idx = 0;
-                        _property.Value = Points.WithPointAdded(new(newPos.X, p.Y), new(-0.1f, 0), new(0.1f, 0), idx);
+                        _property.Value = Points.WithPointAdded(new(newPos.X, p.Y), new(-0.1f, 0), new(0.1f, 0), idx).MarshalToImmutable();
                         SetSelectedIndex(idx);
                         _grabbing = GrabMode.Add;
                         _initialGrabPos = newPos;
@@ -218,7 +218,7 @@ public partial class MappingCurveEdit : Control
                     else if (p.DistanceTo(newPos) < DomainRange / 83.0f) // Can split
                     {
                         var (newPoints, insertIdx) = Points.TryInsertPoint(t);
-                        _property.Value = newPoints;
+                        _property.Value = newPoints.MarshalToImmutable();
                         SetSelectedIndex(insertIdx);
                         _grabbing = GrabMode.Add;
                         _initialGrabPos = newPos;
@@ -264,7 +264,7 @@ public partial class MappingCurveEdit : Control
                         newPos.X = GetOffsetWithoutCollision(_selectedIndex, newPos.X, mpos.X >= GetViewPos(newPos).X);
                         newPos.Y = Mathf.Clamp(newPos.Y, MinValue, MaxValue);
                         var snapshot = Points;
-                        _property.Value = Points.WithPointPosition(_selectedIndex, newPos);
+                        _property.Value = Points.WithPointPosition(_selectedIndex, newPos).MarshalToImmutable();
                         if (!Points.IsXMonotone()) _property.Value = snapshot;
                     }
                     else
@@ -278,9 +278,9 @@ public partial class MappingCurveEdit : Control
                         if (_selectedTangentIndex == TangentIndex.Left)
                         {
                             if (Input.IsKeyPressed(Key.Alt) || _initialHandleMode == HandleControlMode.Free)
-                                _property.Value = Points.WithPointIn(_selectedIndex, newPos);
+                                _property.Value = Points.WithPointIn(_selectedIndex, newPos).MarshalToImmutable();
                             else
-                                _property.Value = Points.WithPointInLinearly(_selectedIndex, newPos);
+                                _property.Value = Points.WithPointInLinearly(_selectedIndex, newPos).MarshalToImmutable();
 
                             if (!Points.IsXMonotone())
                                 _property.Value = snapshot;
@@ -288,9 +288,9 @@ public partial class MappingCurveEdit : Control
                         else
                         {
                             if (Input.IsKeyPressed(Key.Alt) || _initialHandleMode == HandleControlMode.Free)
-                                _property.Value = Points.WithPointOut(_selectedIndex, newPos);
+                                _property.Value = Points.WithPointOut(_selectedIndex, newPos).MarshalToImmutable();
                             else
-                                _property.Value = Points.WithPointOutLinearly(_selectedIndex, newPos);
+                                _property.Value = Points.WithPointOutLinearly(_selectedIndex, newPos).MarshalToImmutable();
 
                             if (!Points.IsXMonotone())
                                 _property.Value = snapshot;
@@ -413,7 +413,7 @@ public partial class MappingCurveEdit : Control
         else if (newSelectedIndex == index)
             newSelectedIndex = -1;
 
-        _property.Value = Points.WithPointRemoved(index);
+        _property.Value = Points.WithPointRemoved(index).MarshalToImmutable();
         SetSelectedIndex(newSelectedIndex);
     }
 
@@ -425,7 +425,7 @@ public partial class MappingCurveEdit : Control
         if (_initialGrabPos == pos)
             return;
 
-        _property.Value = Points.WithPointPosition(index, pos);
+        _property.Value = Points.WithPointPosition(index, pos).MarshalToImmutable();
         SetSelectedIndex(index);
     }
 
@@ -449,17 +449,17 @@ public partial class MappingCurveEdit : Control
         if (mode == HandleControlMode.LinearEqual)
         {
             if (tangent == TangentIndex.Left)
-                _property.Value = Points.WithPointIn(index, -Points[index].Out);
+                _property.Value = Points.WithPointIn(index, -Points[index].Out).MarshalToImmutable();
             else
-                _property.Value = Points.WithPointOut(index, -Points[index].In);
+                _property.Value = Points.WithPointOut(index, -Points[index].In).MarshalToImmutable();
         }
 
         if (mode == HandleControlMode.Linear)
         {
             if (tangent == TangentIndex.Left)
-                _property.Value = Points.WithPointInTangent(index, Points.GetPointOutTangent(index));
+                _property.Value = Points.WithPointInTangent(index, Points.GetPointOutTangent(index)).MarshalToImmutable();
             else
-                _property.Value = Points.WithPointOutTangent(index, Points.GetPointInTangent(index));
+                _property.Value = Points.WithPointOutTangent(index, Points.GetPointInTangent(index)).MarshalToImmutable();
         }
     }
 

@@ -11,8 +11,8 @@ using Stateless;
 
 namespace Ciallo.Tool;
 
-using StateMachine = StateMachine<InteractiveSessionBase, StateMachineToolBase.Trigger>;
-using StateConfiguration = StateMachine<InteractiveSessionBase, StateMachineToolBase.Trigger>.StateConfiguration;
+using StateMachine = StateMachine<InteractiveSessionBase, ToolBase.Trigger>;
+using StateConfiguration = StateMachine<InteractiveSessionBase, ToolBase.Trigger>.StateConfiguration;
 
 /// <summary>
 /// Create tool with state machine management.
@@ -32,7 +32,7 @@ using StateConfiguration = StateMachine<InteractiveSessionBase, StateMachineTool
 /// Prioity: State machine transit > Route to session
 /// Prioity of trigger: Godot action > Key > Mouse button.
 /// </remarks>
-public abstract partial class StateMachineToolBase : ITool
+public abstract partial class ToolBase : ITool
 {
     public readonly ReactiveProperty<InteractiveSessionBase> ActiveSession = new(ToolInactive.Instance);
     public readonly StateMachine Machine;
@@ -57,7 +57,7 @@ public abstract partial class StateMachineToolBase : ITool
 
     private IDisposable _commandManagerSub;
 
-    protected StateMachineToolBase()
+    protected ToolBase()
     {
         Machine = new(() => ActiveSession.Value, s => ActiveSession.Value = s);
 
@@ -72,6 +72,7 @@ public abstract partial class StateMachineToolBase : ITool
 
     public StateConfiguration Configure(InteractiveSessionBase session)
     {
+        session.Tool = this;
         session.Document = Document;
         return Machine.Configure(session).SubstateOf(ToolActive.Instance)
             .OnEntry(t =>
@@ -232,6 +233,17 @@ public abstract partial class StateMachineToolBase : ITool
     }
 
     #endregion
+}
+
+public static class StateMachineExtension
+{
+    public static StateConfiguration InitialTransitionDynamic(this StateConfiguration cfg, Func<InteractiveSessionBase> destinationStateSelector)
+    {
+        var dummyTrigger = new ToolBase.Trigger("DummyInitialTransition");
+        cfg.PermitDynamic(dummyTrigger, destinationStateSelector);
+        cfg.OnEntry(() => cfg.Machine.Fire(dummyTrigger));
+        return cfg;
+    }
 }
 
 #region Internal Tool States

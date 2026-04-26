@@ -7,7 +7,7 @@ using Godot;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Select)]
-public class ImageLayerSelectTool : StateMachineToolBase
+public class ImageLayerSelectTool : ToolBase
 {
     public readonly ImageLayerSelectHover Hover = new();
     public readonly ImageTransformInteractor Left = new();

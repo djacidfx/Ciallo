@@ -43,9 +43,7 @@ public partial class StrokeBrushEditor : AcceptDialog
             DiskOpacityCurve = workingBrush.Select(s => s?.DiskOpacityCurve).Flatten().AddTo(subs),
             StampRotation = workingBrush.Select(s => s?.StampRotation).Flatten().AddTo(subs),
             MaskTexture = workingBrush.Select(s => s?.MaskTexture).Flatten().AddTo(subs),
-            RotationNoiseOctave = workingBrush.Select(s => s?.RotationNoiseOctave).Flatten().AddTo(subs),
             RotationNoiseAmplitude = workingBrush.Select(s => s?.RotationNoiseAmplitude).Flatten().AddTo(subs),
-            RotationNoiseFrequency = workingBrush.Select(s => s?.RotationNoiseFrequency).Flatten().AddTo(subs),
             // Airbrush
             FalloffCurve = workingBrush.Select(s => s?.FalloffCurve).Flatten().AddTo(subs),
             AlphaDensity = workingBrush.Select(s => s?.AlphaDensity).Flatten().AddTo(subs),

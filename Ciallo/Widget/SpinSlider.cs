@@ -141,8 +141,8 @@ public partial class SpinSlider : HBoxContainer
         };
 
         Slider.Share(SpinBox);
-        AddChild(Slider);
-        AddChild(SpinBox);
+        AddChild(Slider, false, InternalMode.Back);
+        AddChild(SpinBox, false, InternalMode.Back);
 
         Slider.ValueChanged += v => Value = v;
 

@@ -35,7 +35,7 @@ public partial class WorldBody : BodyHolder
             SetHoveringBody(null);
         }
     } = false;
-    public Control.CursorShape MouseDefaultCursorShape
+    public Control.CursorShape DefaultCursorShape
     {
         get;
         set
@@ -128,12 +128,21 @@ public partial class WorldBody : BodyHolder
         return body;
     }
 
+    public void ForceUpdateCursor()
+    {
+        var body = _hoveringBody.Value;
+        if (body == null) return;
+
+        _cursorSwitcher.MouseDefaultCursorShape = body.MouseDefaultCursorShape;
+        GetViewport()?.UpdateMouseCursorState();
+    }
+
     private void SetHoveringBody(Body value)
     {
         var body = _hoveringBody.Value;
         if (body == value) return;
 
-        _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? MouseDefaultCursorShape;
+        _cursorSwitcher.MouseDefaultCursorShape = value?.MouseDefaultCursorShape ?? DefaultCursorShape;
         GetViewport()?.UpdateMouseCursorState();
 
         body?.IsHovered = false;
@@ -190,6 +199,18 @@ public partial class WorldBody : BodyHolder
         return result;
     }
 
+    public Body CreateAddStrokeCenterline(IReadOnlyList<Vector2> polyline, float radius)
+    {
+        var body = new Body();
+        body.SetStrokeCenterline(polyline, radius);
+        AddChild(body);
+        _paintPanel.CameraZoom.Subscribe(v =>
+        {
+            body.UpdateStrokeCenterlineShape(polyline, radius / v);
+        }).AddTo(body);
+        return body;
+    }
+
     public Body[] CreateAddTransformAreas(Vector2 size, Transform2D transform)
     {
         var half = size * 0.5f;
@@ -229,6 +250,7 @@ public partial class WorldBody : BodyHolder
     }
 }
 
+// Note: not implement screen position, world size
 [Flags]
 public enum CursorRectFlags
 {

@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3 uid="uid://bfwvwd77tb7tq"]
+[gd_scene format=3 uid="uid://bfwvwd77tb7tq"]
 
 [ext_resource type="Script" uid="uid://bexkxr3qvv0qo" path="res://Tool/ToolButtonPanel.cs" id="1_vvphd"]
 [ext_resource type="Texture2D" uid="uid://djmjwmlnccp86" path="res://Icon/cursor-default-outline.svg" id="2_vu0km"]
@@ -25,14 +25,14 @@ action = &"ToolPaintFill"
 [sub_resource type="Shortcut" id="Shortcut_nllhf"]
 events = [SubResource("InputEventAction_7agld")]
 
-[node name="ToolButtonPanel" type="HFlowContainer"]
+[node name="ToolButtonPanel" type="HFlowContainer" unique_id=590369079]
 custom_minimum_size = Vector2(30, 0)
 offset_right = 48.0
 offset_bottom = 184.0
 theme_override_constants/v_separation = 20
 script = ExtResource("1_vvphd")
 
-[node name="Select" type="Button" parent="."]
+[node name="Select" type="Button" parent="." unique_id=1485637394]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "Selection"
@@ -43,7 +43,7 @@ shortcut = SubResource("Shortcut_wcmo1")
 icon = ExtResource("2_vu0km")
 expand_icon = true
 
-[node name="Lasso" type="Button" parent="."]
+[node name="Lasso" type="Button" parent="." unique_id=2047195371]
 visible = false
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
@@ -55,7 +55,7 @@ toggle_mode = true
 icon = ExtResource("3_ic33f")
 expand_icon = true
 
-[node name="Paint" type="Button" parent="."]
+[node name="Paint" type="Button" parent="." unique_id=832504255]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "[Paint Brush Tooltip]"
@@ -67,7 +67,7 @@ shortcut = SubResource("Shortcut_7agld")
 icon = ExtResource("4_ijdye")
 expand_icon = true
 
-[node name="PaintFill" type="Button" parent="."]
+[node name="PaintFill" type="Button" parent="." unique_id=685774910]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "[Paint Fill Tooltip]"
@@ -78,7 +78,7 @@ shortcut = SubResource("Shortcut_nllhf")
 icon = ExtResource("5_p40eb")
 expand_icon = true
 
-[node name="VectorFill" type="Button" parent="."]
+[node name="VectorFill" type="Button" parent="." unique_id=2131345254]
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
 tooltip_text = "[Vector Fill Tooltip]"

@@ -115,3 +115,18 @@ Opacity density,Opacity density,不透明度密度,不透明度密度,不透明�
 Select all,Select all,全选,全選,すべて選択,모두 선택,Alles auswählen,Sélectionner tout
 Deselect,Deselect,取消选择,取消選取,選択解除,선택 해제,Abwählen,Désélectionner
 Fill color,Fill color,填充色,填充色,塗りつぶし色,채우기 색상,Füllfarbe,Couleur de remplissage
+[Cannot Tool Layer],⚠️Selected tool cannot be used on the current layer,⚠️所选工具无法在当前图层使用,⚠️選擇的工具無法在當前圖層使用,⚠️選択したツールは現在のレイヤーでは使用できません,⚠️선택한 도구는 현재 레이어에서 사용할 수 없습니다,⚠️Das ausgewählte Werkzeug kann auf der aktuellen Ebene nicht verwendet werden,⚠️L'outil sélectionné ne peut pas être utilisé sur le calque actuel
+[Vector Fill Shape Layer Hint], Click to create a vector fill layer,点击创建一个矢量填充图层,點擊創建一個矢量填充圖層,クリックしてベクターフィルシェイプレイヤーを作成,클릭하여 벡터 채우기 쉐이프 레이어 만들기,Clic pour créer un calque de forme de remplissage vectoriel
+Copy system info,Copy system info,复制系统信息,複製系統資訊,システム情報をコピー,시스템 정보 복사,Systeminformationen kopieren,Copier les informations système
+Report bug,Report bug,报告bug,回報bug,バグを報告,버그 신고,Fehler melden,Signaler un bug
+Fill brush,Fill brush,填充笔刷,填充筆刷,塗りつぶしブラシ,채우기 브러시,Füllpinsel,Pinceau de remplissage
+Marker color,Marker color,标记颜色,標記顏色,マーカーの色,마커 색상,Markierungsfarbe,Couleur du marqueur
+Marker radius,Marker radius,标记半径,標記半徑,マーカー半径,마커 반지름,Markierungsradius,Rayon du marqueur
+Show reference wireframe,Show reference wireframe,显示参考线框,顯示參考線框,参照ワイヤーフレームを表示,참조 와이어프레임 표시,Referenz-Drahtgitter anzeigen,Afficher le fil de référence
+Eraser mode,Eraser mode,橡皮擦模式,橡皮擦模式,消しゴムモード,지우개 모드,Radiergummi-Modus,Mode gomme
+Eraser,eraser,橡皮擦,橡皮擦,消しゴム,지우개,Radiergummi,Gomme
+Soft eraser,Soft eraser,软橡皮擦,軟橡皮擦,ソフト消しゴム,부드러운 지우개,weicher Radiergummi,Gomme douce
+Mapping pen,Mapping pen,丸笔,丸笔,丸ペン,맵핑 펜,Mapping-Stift,Stylo de cartographie
+Hardness curve,Hardness curve,硬度曲线,硬度曲線,硬さの曲線,경도 곡선,Härtekurve,Courbe de dureté
+[Bezier Edit Tooltip],Deforming polylines as if they were a bezier curve,把折线当作贝塞尔曲线变形,把折線當作貝塞爾曲線變形,ベジェ曲線のように折れ線を変形,폴리선을 베지어 곡선처럼 변형,Polylinien verformen, als ob sie
+UI scale,UI scale,界面缩放,界面縮放,UIスケール,UI 스케일,UI-Skala,Échelle de l'interface utilisateur

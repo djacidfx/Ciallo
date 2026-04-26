@@ -10,7 +10,7 @@ using Godot;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.VectorFill)]
-public class VectorFillLayerCreationTool : StateMachineToolBase
+public class VectorFillLayerCreationTool : ToolBase
 {
     public readonly VectorFillLayerCreationHover Hover = new();
     public readonly PaintVectorFillMarkerInteractor Left = new();
@@ -37,7 +37,7 @@ public class VectorFillLayerCreationHover : InteractiveSessionBase
 {
     public override void Start(CursorButtonData data)
     {
-        Document.Get<WorldBody>().MouseDefaultCursorShape = Control.CursorShape.Cross;
+        Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
     }
 
     public override void Moving(CursorMotionData data) { }
@@ -45,7 +45,7 @@ public class VectorFillLayerCreationHover : InteractiveSessionBase
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
-        Document.Get<WorldBody>().MouseDefaultCursorShape = default;
+        Document.Get<WorldBody>().DefaultCursorShape = default;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
@@ -54,7 +54,7 @@ public class VectorFillLayerCreationHover : InteractiveSessionBase
     {
         container.AddChild(new Label
         {
-            Text = "[Create Vector Fill Layer Hint]",
+            Text = "[Vector Fill Shape Layer Hint]".Tr(),
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
         });
     }

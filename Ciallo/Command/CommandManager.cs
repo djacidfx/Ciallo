@@ -1,4 +1,5 @@
 ﻿using Ciallo.Command;
+using Frent.Components;
 using Godot;
 using R3;
 
@@ -8,7 +9,7 @@ namespace Ciallo;
 /// <summary>
 /// Inherits from UndoRedo with extra methods to manage commands.
 /// </summary>
-public partial class CommandManager : UndoRedo
+public partial class CommandManager : UndoRedo, IDestroyable
 {
     private ulong _savedVersion;
     private readonly ReactiveProperty<bool> _documentModified = new(false);
@@ -65,6 +66,11 @@ public partial class CommandManager : UndoRedo
     {
         _savedVersion = GetVersion();
         _documentModified.Value = false;
+    }
+
+    public void Destroy()
+    {
+        Free();
     }
 }
 

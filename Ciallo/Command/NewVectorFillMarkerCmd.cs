@@ -40,7 +40,7 @@ public class NewVectorFillMarkerCmd : CommandBase
             setting.BrushE.Value = default;
 
         // By design, polygons attached to fill markers are views,
-        // Strokes and marker sprites attached are overlay
+        // Strokes and marker sprites attached are overlays.
         // View
         var polygonView = new Polygon2D() { Antialiased = true };
         targetE.AddNode(polygonView);
@@ -51,6 +51,11 @@ public class NewVectorFillMarkerCmd : CommandBase
             .Switch()
             .Subscribe(polygonView.SetColor)
             .AddTo(targetE);
+        setting.BrushE.Subscribe(brushE =>
+        {
+            polygonView.Material = brushE.IsNull ? AutoloadRendering.MissingFillBrushMaterial : null;
+            polygonView.Texture = brushE.IsNull ? AutoloadRendering.DummyTextureForUV : null;
+        }).AddTo(targetE);
 
         // Include both parent change and structure change.
         Observable<Arrangement2D> changeArrObs = layerNode.Parent
@@ -107,7 +112,7 @@ public class NewVectorFillMarkerCmd : CommandBase
             .Subscribe(marker.Sprite.SetModulate)
             .AddTo(targetE);
 
-        polylineGeometry.ObserveShape().Subscribe(v =>
+        polylineGeometry.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
         {
             marker.SetGeometry(v.Item1, v.Item2);
         }).AddTo(targetE);
@@ -116,7 +121,7 @@ public class NewVectorFillMarkerCmd : CommandBase
         var strokeBody = new Body();
         targetE.AddNode(strokeBody);
 
-        polylineGeometry.ObserveShape().Subscribe(v =>
+        polylineGeometry.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
         {
             strokeBody.SetStrokeShape(v.Item1, v.Item2);
         }).AddTo(targetE);

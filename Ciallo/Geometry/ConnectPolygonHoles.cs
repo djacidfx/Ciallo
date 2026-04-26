@@ -22,7 +22,8 @@ public static class ConnectPolygonHoles
 
         for (int h = 1; h < polygonWithHoles.Count; h++)
         {
-            IReadOnlyList<Vector2> hole = polygonWithHoles[h];
+            var hole = polygonWithHoles[h];
+            if (hole.Count == 0) continue;
             merged = ConnectOneHole(merged, hole);
         }
 

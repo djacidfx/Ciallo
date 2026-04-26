@@ -1,10 +1,12 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Ciallo.Widget;
+using Frent;
 using Godot;
 using R3;
 
@@ -14,13 +16,13 @@ public class PaintStrokeHover : InteractiveSessionBase
 {
     public override void Start(CursorButtonData data)
     {
-        Document.Get<WorldBody>().MouseDefaultCursorShape = Control.CursorShape.Cross;
+        Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
     }
     public override void Moving(CursorMotionData data) { }
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
-        Document.Get<WorldBody>().MouseDefaultCursorShape = default;
+        Document.Get<WorldBody>().DefaultCursorShape = default;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
@@ -37,12 +39,12 @@ public class PaintStrokeHover : InteractiveSessionBase
                 CustomMinimumSize = new(256, 32),
                 FitToLongestItem = false,
             }
-            .ObserveObservableList(AppBrushLibrary.BrushSettings, s => s.Name)
-            .BindSelectionIndex(AppBrushLibrary.SelectedIndex);
+            .ObserveObservableList(AppStrokeBrushLibrary.BrushSettings, s => s.Name)
+            .BindSelectionIndex(AppStrokeBrushLibrary.SelectedIndex);
         container.AddProperty("Library brush", brushSelector);
 
-        var radiusView = AppBrushLibrary.SelectedIndex
-            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.BaseRadius)
+        var radiusView = AppStrokeBrushLibrary.SelectedIndex
+            .Select(idx => AppStrokeBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.BaseRadius)
             .Flatten();
         var appBrushRadiusControl = new SpinSlider()
         {
@@ -54,10 +56,10 @@ public class PaintStrokeHover : InteractiveSessionBase
         radiusView.AddTo(appBrushRadiusControl);
 
         container.AddProperty("Radius", appBrushRadiusControl)
-            .VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
+            .VisibleIf(AppStrokeBrushLibrary.SelectedIndex, v => v >= 0);
 
-        var colorView = AppBrushLibrary.SelectedIndex
-            .Select(idx => AppBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color)
+        var colorView = AppStrokeBrushLibrary.SelectedIndex
+            .Select(idx => AppStrokeBrushLibrary.BrushSettings.ElementAtOrDefault(idx)?.Color)
             .Flatten();
         var appBrushColorControl = new ColorPickerButton()
         {
@@ -65,7 +67,7 @@ public class PaintStrokeHover : InteractiveSessionBase
         }.BindColor(colorView);
         colorView.AddTo(appBrushColorControl);
         container.AddProperty("Color", appBrushColorControl)
-            .VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
+            .VisibleIf(AppStrokeBrushLibrary.SelectedIndex, v => v >= 0);
 
         var useBrushButton = new Button()
         {
@@ -74,7 +76,7 @@ public class PaintStrokeHover : InteractiveSessionBase
             CustomMinimumSize = new(0, 32),
             SizeFlagsHorizontal = Control.SizeFlags.Fill
         };
-        useBrushButton.VisibleIf(AppBrushLibrary.SelectedIndex, v => v >= 0);
+        useBrushButton.VisibleIf(AppStrokeBrushLibrary.SelectedIndex, v => v >= 0);
         useBrushButton.Pressed += OnUseBrushPressed;
         var manageButton = new Button()
         {
@@ -117,17 +119,27 @@ public class PaintStrokeHover : InteractiveSessionBase
         }.BindNumber(radius);
         radius.AddTo(radiusControl);
         container.AddProperty("Radius", radiusControl)
-            .VisibleIf(selectionM.WorkingStrokeBrush, e => !e.IsNull);
+            .VisibleIf(selectionM.WorkingStrokeBrush, Entity.IsNotNull);
+
+        var taperTime = AppPreference.TaperDuration.Project(
+            time => time.TotalMilliseconds, TimeSpan.FromMilliseconds);
+        container.AddProperty("Taper end", new SpinSlider()
+            {
+                MinValue = 0,
+                MaxValue = 50,
+                Step = 1,
+            }.BindNumber(taperTime))
+            .VisibleIf(selectionM.WorkingStrokeBrush, Entity.IsNotNull);
     }
 
     private void OnUseBrushPressed()
     {
-        if (!AppBrushLibrary.HasSelection) return;
-        var setting = AppBrushLibrary.SelectedBrushSetting.CurrentValue;
+        if (!AppStrokeBrushLibrary.HasSelection) return;
+        var setting = AppStrokeBrushLibrary.SelectedBrushSetting.CurrentValue;
         new CommandBuilder(Document.World.Create())
             .NewStrokeBrush(setting)
             .SetWorkingStrokeBrush()
             .Commit();
-        AppBrushLibrary.SelectedIndex.Value = -1;
+        AppStrokeBrushLibrary.SelectedIndex.Value = -1;
     }
 }

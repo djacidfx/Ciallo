@@ -69,5 +69,5 @@ size_flags_horizontal = 3
 mouse_filter = 0
 script = ExtResource("5_k4hjg")
 MinRowHeight = 80
-AspectRatio = 2.0
+AspectRatio = 2.667
 metadata/_custom_type_script = "uid://b2pgo2j4ka41x"

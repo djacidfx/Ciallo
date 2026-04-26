@@ -7,7 +7,7 @@ using Godot;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.PaintFill)]
-public class PaintFillTool : StateMachineToolBase
+public class PaintFillTool : ToolBase
 {
     public readonly PaintFillHover Hover = new();
     public readonly PaintFillInteractor Left = new();

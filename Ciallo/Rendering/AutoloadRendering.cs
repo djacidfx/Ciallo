@@ -9,12 +9,13 @@ public partial class AutoloadRendering : Node
     public static readonly ShaderMaterial WireframeDotMaterial =
         GD.Load<ShaderMaterial>("res://Rendering/WireframeDotMaterial.tres");
     public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
+    public static readonly Shader EraserShader = GD.Load<Shader>("res://Rendering/StrokeEraser.gdshader");
     public static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
     public static readonly Mesh WireframeDotMesh = GD.Load<Mesh>("res://Rendering/WireframeDotMesh.tres");
     public static StrokeBrushMaterial DashWireframeMaterial;
     public static StrokeBrushMaterial MissingStrokeBrushMaterial;
 
-    public static readonly ShaderMaterial VectorFillPreviewMaterial = GD.Load<ShaderMaterial>("res://Rendering/FillHint.tres");
+    public static readonly ShaderMaterial MissingFillBrushMaterial = GD.Load<ShaderMaterial>("res://Rendering/FillHint.tres");
     public static readonly NoiseTexture2D DummyTextureForUV = new()
     {
         // Texture for Polygon2D creating UV coordinate, Polygon2D cannot get correct UV coordinate without a texture
@@ -26,10 +27,12 @@ public partial class AutoloadRendering : Node
     public override void _Ready()
     {
         StrokeShader.TakeOverPath("");
+        EraserShader.TakeOverPath("");
         DummyMesh.TakeOverPath("");
 
         DashWireframeMaterial = new();
         DashWireframeMaterial.SetShaderParameter("StrokeType", 0);
+        DashWireframeMaterial.SetShaderParameter("MaterialColor", AppPreference.StrokeWireframeColor);
         DashWireframeMaterial.SetShaderParameter("RadiusMode", 1);
         DashWireframeMaterial.SetShaderParameter("ActiveBrushFlags", (int)BrushFlags.Dash);
         DashWireframeMaterial.SetShaderParameter("DashLength", 10f);

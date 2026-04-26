@@ -2,51 +2,15 @@
 
 ## v0.1 EA plan
 
-V0.1EA focus on showing off Ciallo techniques and developing MVP (minimum viable product) to support flat color drawings. Below are the features to develop, should be as feature-rich as MS paint.
+V0.1EA focus on bulding MVP (minimum viable product) to support flat color drawings, should be as feature-rich as SAI2.
 
-- [x] Document/world manager
-- [x] Export to Godot
-- [x] Export to raster image
-- [x] .Ciallo project file
-- [x] Command undo/redo system
-- [x] Property undo/redo
-  - [ ] Document brushes properties undo/redo
-- [x] Tool system infrastructure
-- [x] Brush tool
-  - [ ] More brushes
-  - [x] More brush parameters
-  - [x] Paint stabilizer
-  - [x] Delete brush
-- [x] Paint fill tool
-- [ ] [Vector fill](https://www.patreon.com/posts/about-vector-143858627)
-  - [x] CGAL C++ code
-- [x] Selection/transform tool
-  - [x] Rect transform
-  - [x] Multi select and transform
-  - [x] Subdivide, simplify and smooth
-  - [ ] Line binding system (Bézier curve only)
-    - [x] Bézier curve geometry
-  - [x] Polyline overlay rendering
-- [x] Layer system
-  - [x] Add, delete
-  - [x] Rename
-  - [x] Reorder
-  - [x] Revert showing order
-  - [ ] Merge
-- [x] Import image as a layer
-- [ ] Localization
-  - [x] Infrastructure (ai translation)
-
-## v0.2 EA plan
-
-V0.2EA focus on supporting semi-painterly style for producing galgame illustrations (Tachie first, CG if possible).
 Plan to follow [pikat](https://www.youtube.com/@pikat)'s feature list:
 
 ![](/.github/PikatFeatureList.png)
 
 - [ ] Lasso tool like lasso on CSP vector layer
 - [ ] Sculpt(liquify) tool like GP
-- Layer
+- Layer operations
   - [ ] Basic modifiers
   - [ ] Folder
   - [ ] Blend modes
@@ -58,26 +22,13 @@ Aim to be able to produce business-level galgame tachies. Notify me if there are
 
 ![](/.github/Ririko.png)
 
-## v1.0 plan
-
-Ciallo is largely inspired by Blender Grease Pencil (GP) 3D stroke.
-Before release v1.0, Ciallo will have 2D copies of every GP's major features.
-
-Beside GP, here is a rough unique feature list:
-
-- Animation system similar to Clip Studio Paint (CSP)
-  - Vector fill integration in depth
-- Lasso tool identical to Photoshop or CSP's for raster image.
-- Polygon gaps detection system (built with 2D game navigation system)
-- Anime style lighting system integrated with Godot's 2D light (need research)
-- Feature-rich GPU brush engine near to [Krita](https://krita.org/en/) and [MyPaint](https://www.mypaint.app/en/) (need research)
 
 # Ciallo Contributing Guide
 
 ## Introduction
 
 This guide is not yet complete.
-The current version seems like Shen's personal book note, but it aims to be a comprehensive guide for developing Ciallo.
+The current version is a note for AI to read, but it aims to be a comprehensive guide for humans interested in developing Ciallo.
 
 After getting a basic idea on Ciallo's code architecture here, you can check AI wiki [deepwiki](https://deepwiki.com/ShenCiao/Ciallo) to get in-depth details on how each system is implemented.
 
@@ -87,21 +38,12 @@ After getting a basic idea on Ciallo's code architecture here, you can check AI 
 
 Ciallo is built on Godot. Building the core part of Ciallo is the same as building a standard Godot C# project:
 
-- Set up Godot 4.5.1 with .Net10. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
+- Set up Godot 4.5.2 with .Net10. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
 - Open the `Ciallo/project.godot` file with your Godot editor, then build and run.
   - Note: Godot will raise annoying errors about autoload before first build, we can safely ignore them.
 - Enable the "Embedded game size stretches..." option in the game run window.
 
 ![](/.github/EnableStretch.png)
-
-### IDE
-
-In theory, you can use any IDE supporting C#. Follow the Godot [guide](https://docs.godotengine.org/en/stable/tutorials/scripting/c_sharp/c_sharp_basics.html#configuring-an-external-editor) to link the Godot editor with your IDE.
-
-However, I suggest using JetBrains [Rider](https://www.jetbrains.com/rider/), which is free since 2024 and offers comprehensive productivity support for Godot scripting.
-
-I'm pretty satisfied with Rider, but also interested in learning if Rider is the best choice.
-So if you also have solid experience in scripting Godot C# with VS Code or Visual Studio, tell me your comparison.
 
 ## Code architecture and third-party libraries
 
@@ -113,7 +55,7 @@ Please contact me if you have suggestions for improvement.
 Ciallo uses the vast majority of Godot features for developing a 2D game, and heavily uses nearly all types of GUI control nodes.
 So every piece of experience you have in 2D game development is helpful, and skills you learn from Ciallo can also be applied your future game development.
 
-You can find all the ui scenes and custom gui nodes in the `NodeControl` or `Widget` folders. (I should have renamed "NodeControl" as "GuiControl" or something else better).
+You can find all the ui scenes and custom gui nodes in the `GuiControl` or `Widget` folders.
 
 ### Component pattern and Frent library
 
@@ -122,14 +64,14 @@ Make sure you understand the component pattern theory [(tutorial)](https://gamep
 and the first page of the frent library [documentation](https://itsbuggingme.github.io/Frent/docs/ecf.html).
 
 I assume you already know about Entity and Component. In Ciallo, for those editable objects like strokes, layers, we create an entity for each object and add necessary components to the entity.
-e.g. add `PolylineGeometry` compoent and `StrokeBrush` compoent to a stroke entity, `PolylineLayerSetting` component to a Polyline layer entity. You can find examples in `Ciallo/Command/New*Cmd.cs` files.
+e.g. add `PolylineGeometry` compoent and `StrokeSetting` compoent to a stroke entity, `PolylineLayerSetting` component to a Polyline layer entity. You can find examples in `Ciallo/Command/New*Cmd.cs` files.
 
-Also see the `AppWorldManager` class. Each user document is stored and managed by a `World` object.
+Also see the `AppDocumentManager` class. Each user document is stored and managed by a `World` object.
 Each `World` object creates an entity that stores "document-level singletons" data.
-e.g. `DocumentSetting` for canvas settings, `LayerTreeManager` for layer data, `CommandManager` for undo redo stack, etc.
+e.g. `DocumentSetting` for canvas settings, `LayerTreeNode` for layer node, `CommandManager` for undo redo stack, etc.
 
 These data should be one per document, so I call them "document-level singletons" and name the entity as `Document`.
-You can find self-explanatory code like `Document.Get<LayerTreeManager>()` to visit the document's layer tree.
+You can find code like `Document.Get<LayerTreeNode>()` to visit the document's layer tree root.
 
 <details>
 <summary>Why using an ECS library?</summary>
@@ -151,19 +93,9 @@ Ciallo as a descendant of Sketchpad may has the same sense of good code design.
 
 </details>
 
-<!--
-<details>
-<summary>Why globalize the Document entity?</summary>
-Though using global variables/singletons is commonly considered a bad practice, it's necessary for Ciallo.
-Ciallo is an interactive graphics program, the interaction between subsystems is necessary by business.
-As the business grows, it's impossible to predefine the accessibility scope of each subsystem.
-So I think this design is reasonable.
-</details>
--->
-
 ### Two-way binding and R3 library
 
-Ciallo heavily uses [R3](https://github.com/Cysharp/R3) library's `ReactiveProperty` implement two-way binding between data and UI.
+Ciallo heavily uses [R3](https://github.com/Cysharp/R3) library's `ReactiveProperty` to replace traditional reflection and implement two-way binding between data and UI.
 You can find code like `colorButton.BindColor(ReactiveProperty<Color> color)` in UI code to intimate WPF's xaml binding behavior.
 
 R3's document is not written for beginners. I put a lot of effort only to take a very basic grasp. Luckily, you don't have to learn too much about R3/ReactiveProgramming to start.
@@ -176,19 +108,6 @@ If you have to understand how I handle dragging mouse input with R3 (reactive pr
 2. Then read [UniRx](https://github.com/neuecc/UniRx) to know the former version of R3.
 3. Reference [ReactiveX operator document](https://reactivex.io/documentation/operators.html) to choose suitable operators.
 4. Make hard guess on the problems to solve.
-
-### MVP pattern
-
-For those elements (strokes, polygons) visible on the canvas. They hold complex data not suitable for two-way binding.
-Ciallo separates related code into the Data(Model), Rendering(View) and Command(Presenter).
-You can find corresponding folders in the project directory.
-
-The architecture can be explained by the [MVP pattern](https://www.geeksforgeeks.org/android/mvp-model-view-presenter-architecture-pattern-in-android-with-example/).
-The command objects manage both data and view.
-As the "Command" name suggests, it also implements the undo/redo system.
-
-Rendering folder has `*View` node types to render actual objects.
-Command folder has `*Cmd` types inheriting from `CommandBase` and implementing `Do`, `Undo` methods. The `CommandBase` internally utilizes Godot [`UndoRedo` object](https://docs.godotengine.org/en/stable/classes/class_undoredo.html).
 
 ### Data serialization and MessagePack
 

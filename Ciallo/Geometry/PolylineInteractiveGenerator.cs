@@ -47,7 +47,7 @@ public class PolylineInteractiveGenerator
 
     public RadiusMode Mode = RadiusMode.Fixed;
     public float FixedRadius = 1f;
-    public Func<CursorMotionData, float> RadiusSampler;
+    public Func<float, float> RadiusSampler;
 
     // Controls if the new points can intersect with existing already generated polyline.
     public bool AllowIntersection = true;
@@ -62,14 +62,22 @@ public class PolylineInteractiveGenerator
     public IReadOnlyList<Vector2> Tilts => _tilts;
 
     private List<CursorMotionData> _previewPointCache = new() { Capacity = 128 }; // Preserve data for analyzing a better interpolation in the future.
-    private List<CursorButtonData> _processedPointCache = [];
-    private List<float> _processedRadiusCache = [];
-    private CursorMotionData _processedPointMotion; // This is motion from previous to last processed point
+    private List<CursorButtonData> _recordedPointCache = [];
+    private List<float> _recordedRadiusCache = [];
+    private CursorMotionData _lastRecordedMotion; // This is motion from previous to last recorded point
 
     private bool _latestPointIsFirstPoint = false;
     private bool _latestPointIsTurningPoint = false;
     private bool _segmentNeedInterpolation = false;
-    private TimeSpan _processInterval = TimeSpan.Zero;
+    private TimeSpan _intervalSinceLastRecord = TimeSpan.Zero;
+
+    // Taper ending state
+    private bool _isTaperEnding = false;
+    private int _taperStartIndex = 0;
+    private float _taperStartPressure = 0f;
+    // Tracks the pressure just before a sudden pressure drop (>= PressureDropThreshold per recorded point).
+    // Used as the taper start pressure so taper always begins from the last "real" pressure.
+    private const float PressureDropThreshold = 0.1f;
 
     // Thresholds about when to process and save sampled points.
     private readonly float _underForwardThreshold = 3f; // in screen pixel
@@ -83,15 +91,15 @@ public class PolylineInteractiveGenerator
 
     public void Start(CursorButtonData data)
     {
-        _processInterval = TimeSpan.Zero;
+        _intervalSinceLastRecord = TimeSpan.Zero;
 
         // Add initial point
         _positions.Add(data.WorldPosition);
         _pressures.Add(data.Pressure); // This always gives 0, since logically, pen is not pressing before a down event. Deal with this in the Update function.
         _tilts.Add(data.Tilt);
-        _radii.Add(CalculateRadius((CursorMotionData)data));
+        _radii.Add(CalculateRadius(data.Pressure));
 
-        _processedPointMotion = (CursorMotionData)data;
+        _lastRecordedMotion = (CursorMotionData)data;
         _latestPointIsFirstPoint = true;
         _latestPointIsTurningPoint = true;
         _segmentNeedInterpolation = false;
@@ -101,12 +109,12 @@ public class PolylineInteractiveGenerator
     // For introducing zero lag.
     public void Update(CursorMotionData data)
     {
-        _processInterval += data.TimeDelta;
+        _intervalSinceLastRecord += data.TimeDelta;
 
         if (!AllowIntersection && CheckSelfIntersection(data.WorldPosition)) return;
 
         _positions.Add(data.WorldPosition);
-        _radii.Add(CalculateRadius(data));
+        _radii.Add(CalculateRadius(data.Pressure));
         _pressures.Add(data.Pressure);
         _tilts.Add(data.Tilt);
 
@@ -114,27 +122,16 @@ public class PolylineInteractiveGenerator
 
         // Since we can only detect pixel coordinate in grid, forward distance less than 3 or 4 pixels gives invalid moving direction and speed.
         // However, one pixel distance is enough to determine if cursor is turning back.
-        // So we use `_underForwardThreshold` for the minimum distance to detect forward movement. and use one pixel distance to detect turning back.
-        bool isTurningBack = data.WorldDelta.Normalized().Dot(_processedPointMotion.WorldDirection) < -1e-5; // When direction is zero vector, Normalized gives zero too.
+        // So we use `_underForwardThreshold` for the minimum distance of forward movement. and use one pixel distance to detect turning back.
+        bool isTurningBack = data.WorldDelta.Normalized().Dot(_lastRecordedMotion.WorldDirection) < -1e-5; // When direction is zero vector, Normalized gives zero too.
         if (isTurningBack && !_latestPointIsTurningPoint)
         {
             // Directly process turning back case.
             RemoveLatestPoints(_previewPointCache.Count);
+            _previewPointCache.Clear();
             // Save the previous event point as the last point.
-            float r = CalculateRadius(data);
-            _positions.Add(data.PrevWorldPosition);
-            _radii.Add(r);
-            _pressures.Add(data.PrevPressure);
-            _tilts.Add(data.PrevTilt);
-
-            // if (_segmentNeedInterpolation) InterpolateLatestSegment();
-            UpdateProcessedPointCache(new CursorButtonData()
-            {
-                WorldPosition = data.PrevWorldPosition,
-                ScreenPosition = data.PrevScreenPosition,
-                Pressure = data.PrevPressure,
-                Tilt = data.PrevTilt,
-            }, r);
+            float r = CalculateRadius(data.Pressure);
+            Record(data.PrevScreenPosition, data.PrevWorldPosition, data.PrevPressure, data.PrevTilt, r);
             _latestPointIsTurningPoint = true;
             _segmentNeedInterpolation = false;
 
@@ -142,24 +139,19 @@ public class PolylineInteractiveGenerator
         }
 
         // Return if not reach distance threshold to determine direction.
-        if (_processedPointMotion.ScreenPosition.DistanceTo(data.ScreenPosition) < _underForwardThreshold) return;
+        if (_lastRecordedMotion.ScreenPosition.DistanceTo(data.ScreenPosition) < _underForwardThreshold) return;
 
-        bool isLarger = _processedPointMotion.ScreenPosition.DistanceTo(data.ScreenPosition) > _overForwardThreshold;
-        bool isPressureChanging = Mathf.Abs(data.Pressure - _processedPointMotion.Pressure) > _pressureDeltaThreshold;
-        bool isWinding = data.ScreenPosition.DistanceToLine(_processedPointMotion.ScreenPosition, _processedPointMotion.ScreenDirection) > _windingOffsetThreshold;
-        bool isOvertime = _processInterval.TotalMilliseconds > _overTimeThreshold;
+        bool isLarger = _lastRecordedMotion.ScreenPosition.DistanceTo(data.ScreenPosition) > _overForwardThreshold;
+        bool isPressureChanging = Mathf.Abs(data.Pressure - _lastRecordedMotion.Pressure) > _pressureDeltaThreshold;
+        bool isWinding = data.ScreenPosition.DistanceToLine(_lastRecordedMotion.ScreenPosition, _lastRecordedMotion.ScreenDirection) > _windingOffsetThreshold;
+        bool isOvertime = _intervalSinceLastRecord.TotalMilliseconds > _overTimeThreshold;
 
-        bool toProcessPoints = isLarger || isWinding || isPressureChanging || isOvertime;
-        if (!toProcessPoints) return;
+        bool toRecord = isLarger || isWinding || isPressureChanging || isOvertime;
+        if (!toRecord) return;
         RemoveLatestPoints(_previewPointCache.Count);
+        _previewPointCache.Clear();
 
-        // Place the point
-        _positions.Add(data.WorldPosition);
-        float radius = CalculateRadius(data);
-        _radii.Add(radius);
-        _pressures.Add(data.Pressure);
-        _tilts.Add(data.Tilt);
-
+        float radius = CalculateRadius(data.Pressure);
         if (_latestPointIsFirstPoint)
         {
             _radii[0] = radius;
@@ -167,14 +159,47 @@ public class PolylineInteractiveGenerator
             _latestPointIsFirstPoint = false;
         }
 
-        UpdateProcessedPointCache(data, radius);
+        Record(data.ScreenPosition, data.WorldPosition, data.Pressure, data.Tilt, radius);
 
         // Post-processing
-        if (_segmentNeedInterpolation) InterpolateLatestSegment();
+        if (_segmentNeedInterpolation)
+            InterpolateLatestSegment();
         _segmentNeedInterpolation = isWinding && !_latestPointIsTurningPoint;
         if (!isWinding) Smooth();
-
         _latestPointIsTurningPoint = false;
+        RedistributeTaper();
+    }
+
+    // Redistribute pressure over all taper points from _taperStartPressure to 0,
+    // weighted by cumulative arc length so pressure decays smoothly regardless of point spacing.
+    // Radii are recalculated from the redistributed pressures.
+    private void RedistributeTaper()
+    {
+        if (!_isTaperEnding) return;
+        int start = _taperStartIndex;
+        int end = _positions.Count - 1;
+        if (end <= start) return;
+
+        // Build cumulative distances from start point.
+        float totalLength = 0f;
+
+        Span<float> cumDist = stackalloc float[end - start + 1];
+        cumDist[0] = 0f;
+        for (int i = start + 1; i <= end; i++)
+        {
+            totalLength += _positions[i].DistanceTo(_positions[i - 1]);
+            cumDist[i - start] = totalLength;
+        }
+
+        if (totalLength < 1e-6f) return;
+
+        for (int i = start; i <= end; i++)
+        {
+            float t = cumDist[i - start] / totalLength;
+            t = t * t * t;
+            _pressures[i] = Mathf.Lerp(_taperStartPressure, 0f, t);
+            _radii[i] = CalculateRadius(_pressures[i]);
+        }
     }
 
     // In place Laplacian
@@ -197,51 +222,80 @@ public class PolylineInteractiveGenerator
         }
     }
 
-    public void End(CursorButtonData data)
+    /// <summary>
+    /// Call when the pen is lifted to begin a taper-ending phase.
+    /// Pressure and radius of all subsequently recorded points decay from the
+    /// second-to-last recorded point's values to 0. Taper ends when <see cref="End"/> is called.
+    /// No-op if there are fewer than 2 recorded points.
+    /// </summary>
+    public void StartTaperEnding()
+    {
+        if (_recordedPointCache.Count < 2) return;
+
+        for (int i = _pressures.Count - 1; i >= 1; i--)
+        {
+            if (_pressures[i - 1] - _pressures[i] <= PressureDropThreshold)
+            {
+                _isTaperEnding = true;
+                _taperStartIndex = i - 1;
+                _taperStartPressure = _pressures[i - 1];
+                if (i - 2 >= 0) // Add a point ugly
+                {
+                    _taperStartIndex = i - 2;
+                    _taperStartPressure = _pressures[i - 2];
+                }
+                break;
+            }
+        }
+    }
+
+    public void End(CursorButtonData _)
     {
         if (_previewPointCache.Count > 0)
         {
             RemoveLatestPoints(_previewPointCache.Count);
-
+            var data = _previewPointCache[^1];
             _positions.Add(data.WorldPosition);
-            float radius = CalculateRadius(_previewPointCache[^1]);
+            float radius = CalculateRadius(data.Pressure);
             _radii.Add(radius);
-            _pressures.Add(_previewPointCache[^1].Pressure);
+            _pressures.Add(data.Pressure);
             _tilts.Add(data.Tilt);
+            RedistributeTaper();
         }
 
         _previewPointCache.Clear();
-        _processedPointCache.Clear();
-        _processedRadiusCache.Clear();
+        _recordedPointCache.Clear();
+        _recordedRadiusCache.Clear();
         _latestPointIsTurningPoint = false;
         _segmentNeedInterpolation = false;
+        _isTaperEnding = false;
     }
 
     public void Clear()
     {
+        _latestPointIsFirstPoint = false;
         _latestPointIsTurningPoint = false;
         _segmentNeedInterpolation = false;
         _positions.Clear();
         _radii.Clear();
         _pressures.Clear();
         _tilts.Clear();
-        _processInterval = TimeSpan.Zero;
+        _intervalSinceLastRecord = TimeSpan.Zero;
         _previewPointCache.Clear();
-        _processedPointCache.Clear();
-        _processedRadiusCache.Clear();
+        _recordedPointCache.Clear();
+        _recordedRadiusCache.Clear();
+        _isTaperEnding = false;
+        _taperStartPressure = 0f;
     }
 
-    private float CalculateRadius(CursorMotionData data)
+    private float CalculateRadius(float pressure)
     {
-        switch (Mode)
+        return Mode switch
         {
-            case RadiusMode.Fixed:
-                return FixedRadius;
-            case RadiusMode.Sampled:
-                return RadiusSampler!(data);
-            default:
-                throw new InvalidOperationException($"Unsupported RadiusMode: {Mode}");
-        }
+            RadiusMode.Fixed => FixedRadius,
+            RadiusMode.Sampled => RadiusSampler!(pressure),
+            _ => throw new InvalidOperationException($"Unsupported RadiusMode: {Mode}")
+        };
     }
 
     private void RemoveLatestPoints(int n)
@@ -256,42 +310,48 @@ public class PolylineInteractiveGenerator
         }
     }
 
-    private void UpdateProcessedPointCache(CursorButtonData data, float r)
+    private void Record(Vector2 screenPosition, Vector2 worldPosition, float pressure, Vector2 tilt, float r)
     {
-        // Motion data
-        _processedPointMotion = new()
-        {
-            ScreenPosition = data.ScreenPosition,
-            WorldPosition = data.WorldPosition,
-            Pressure = data.Pressure,
-            Tilt = data.Tilt,
+        _positions.Add(worldPosition);
+        _radii.Add(r);
+        _pressures.Add(pressure);
+        _tilts.Add(tilt);
 
-            ScreenDelta = data.ScreenPosition - _processedPointMotion.ScreenPosition,
-            WorldDelta = data.WorldPosition - _processedPointMotion.WorldPosition,
-            PressureDelta = data.Pressure - _processedPointMotion.Pressure,
-            TiltDelta = data.Tilt - _processedPointMotion.Tilt,
-            TimeDelta = _processInterval,
+
+        // Motion data
+        _lastRecordedMotion = new()
+        {
+            ScreenPosition = screenPosition,
+            WorldPosition = worldPosition,
+            Pressure = pressure,
+            Tilt = tilt,
+
+            ScreenDelta = screenPosition - _lastRecordedMotion.ScreenPosition,
+            WorldDelta = worldPosition - _lastRecordedMotion.WorldPosition,
+            PressureDelta = pressure - _lastRecordedMotion.Pressure,
+            TiltDelta = tilt - _lastRecordedMotion.Tilt,
+            TimeDelta = _intervalSinceLastRecord,
         };
 
-        // Processed point cache
-        _processedPointCache.Add(data);
-        _processedRadiusCache.Add(r);
-        if (_processedPointCache.Count > 4) _processedPointCache.RemoveAt(0);
-        if (_processedRadiusCache.Count > 4) _processedRadiusCache.RemoveAt(0);
+        // Recorded point cache
+        _recordedPointCache.Add(new CursorButtonData { ScreenPosition = screenPosition, WorldPosition = worldPosition, Pressure = pressure, Tilt = tilt });
+        _recordedRadiusCache.Add(r);
+        if (_recordedPointCache.Count > 4) _recordedPointCache.RemoveAt(0);
+        if (_recordedRadiusCache.Count > 4) _recordedRadiusCache.RemoveAt(0);
 
         // Preview cache and reset interval
         _previewPointCache.Clear();
-        _processInterval = TimeSpan.Zero;
+        _intervalSinceLastRecord = TimeSpan.Zero;
     }
 
     private void InterpolateLatestSegment()
     {
-        if (_processedPointCache.Count < 4) return;
+        if (_recordedPointCache.Count < 4) return;
 
-        var p0 = _processedPointCache[^4].WorldPosition;
-        var p1 = _processedPointCache[^3].WorldPosition;
-        var p2 = _processedPointCache[^2].WorldPosition;
-        var p3 = _processedPointCache[^1].WorldPosition;
+        var p0 = _recordedPointCache[^4].WorldPosition;
+        var p1 = _recordedPointCache[^3].WorldPosition;
+        var p2 = _recordedPointCache[^2].WorldPosition;
+        var p3 = _recordedPointCache[^1].WorldPosition;
 
         // Estimate how many points are needed for smoothness
         var dir01 = p0.DirectionTo(p1);
@@ -307,17 +367,17 @@ public class PolylineInteractiveGenerator
         var newPositions = ts.Select(t =>
             p0.CatmullRomInterpolation(p1, p2, p3, t));
         var newRadii = ts.Select(t =>
-            _processedRadiusCache[^4].CatmullRomInterpolation(_processedRadiusCache[^3],
-                _processedRadiusCache[^2],
-                _processedRadiusCache[^1], t));
+            _recordedRadiusCache[^4].CatmullRomInterpolation(_recordedRadiusCache[^3],
+                _recordedRadiusCache[^2],
+                _recordedRadiusCache[^1], t));
         var newPressures = ts.Select(t =>
-            _processedPointCache[^4].Pressure.CatmullRomInterpolation(_processedPointCache[^3].Pressure,
-                _processedPointCache[^2].Pressure,
-                _processedPointCache[^1].Pressure, t));
+            _recordedPointCache[^4].Pressure.CatmullRomInterpolation(_recordedPointCache[^3].Pressure,
+                _recordedPointCache[^2].Pressure,
+                _recordedPointCache[^1].Pressure, t));
         var newTilts = ts.Select(t =>
-            _processedPointCache[^4].Tilt.CatmullRomInterpolation(_processedPointCache[^3].Tilt,
-                _processedPointCache[^2].Tilt,
-                _processedPointCache[^1].Tilt, t));
+            _recordedPointCache[^4].Tilt.CatmullRomInterpolation(_recordedPointCache[^3].Tilt,
+                _recordedPointCache[^2].Tilt,
+                _recordedPointCache[^1].Tilt, t));
 
         _positions.InsertRange(_positions.Count - 2, newPositions);
         _radii.InsertRange(_radii.Count - 2, newRadii);

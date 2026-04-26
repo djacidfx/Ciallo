@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Runtime.InteropServices;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -12,7 +11,7 @@ namespace Ciallo.Tool;
 
 public class PolylineTransformInteractor : InteractiveSessionBase
 {
-    private int _transformType = -1; // 0: Move, 1: Rotate, 2~5: Scale corners
+    private int _transformType = -1; // 0: Translate, 1: Rotate, 2~5: Scale corners
 
     private Entity[] _processingEs;
     private Vector2[][] _currPolylines;
@@ -25,38 +24,53 @@ public class PolylineTransformInteractor : InteractiveSessionBase
 
     public override void BeforeTransitionSrcEnd(InteractiveSessionBase session)
     {
-        if (session is not PolylineSelectHover hover) return;
-
-        bool shapeHovered = !hover.HoveredShape.IsNull;
-        bool rotationDotHovered = hover.RotationBody?.IsHovered == true;
-        bool cornerDotsHovered = hover.CornerBodies.Any(a => a.IsHovered);
-
-        var selectionManager = Document.Get<SelectionManager>();
-        if (shapeHovered && Input.IsKeyPressed(Key.Shift))
+        var selectedShapes = Document.Get<SelectionManager>().SelectedShapes;
+        if (session is PolylineTransformHover hover)
         {
-            var hoverE = hover.HoveredShape;
-            if (!selectionManager.SelectedShapes.Remove(hoverE))
-                selectionManager.SelectedShapes.Add(hoverE);
-            _transformType = 0;
-        }
-        if (shapeHovered)
-        {
-            var hoverE = hover.HoveredShape;
-            if (!selectionManager.SelectedShapes.Contains(hoverE))
+            bool shapeHovered = !hover.CurrHoveredShape.IsNull;
+            bool rotationDotHovered = hover.RotationBody?.IsHovered == true;
+            bool cornerDotsHovered = hover.CornerBodies.Any(a => a.IsHovered);
+
+            if (shapeHovered && Input.IsKeyPressed(Key.Shift))
             {
-                selectionManager.SelectedShapes.Clear();
-                selectionManager.SelectedShapes.Add(hoverE);
+                var hoverE = hover.CurrHoveredShape;
+                if (!selectedShapes.Remove(hoverE))
+                    selectedShapes.Add(hoverE);
+                _transformType = 0;
+                return;
             }
+            if (shapeHovered)
+            {
+                var hoverE = hover.CurrHoveredShape;
+                if (!selectedShapes.Contains(hoverE))
+                {
+                    selectedShapes.Clear();
+                    selectedShapes.Add(hoverE);
+                }
+                _transformType = 0;
+                return;
+            }
+            if (rotationDotHovered)
+            {
+                _transformType = 1;
+                return;
+            }
+            if (cornerDotsHovered)
+            {
+                _transformType = Array.FindIndex(hover.CornerBodies, a => a.IsHovered) + 2;
+                return;
+            }
+            throw new Exception("Unexpected hover state in PolylineTransformInteractor.BeforeTransitionSrcEnd");
+        }
+
+        if (session is PolylineSelectHover hoverWithoutSelection)
+        {
             _transformType = 0;
+            selectedShapes.Add(hoverWithoutSelection.CurrHoveredShape);
+            return;
         }
-        if (rotationDotHovered)
-        {
-            _transformType = 1;
-        }
-        if (cornerDotsHovered)
-        {
-            _transformType = Array.FindIndex(hover.CornerBodies, a => a.IsHovered) + 2;
-        }
+
+        throw new Exception("Unexpected session type in PolylineTransformInteractor.BeforeTransitionSrcEnd");
     }
 
     public override void Start(CursorButtonData data)
@@ -172,7 +186,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             }
             if (e.Has<FilledPolygonSetting>())
             {
-                e.Get<Polygon2D>().SetPolygon(CollectionsMarshal.AsSpan(_currPolylines[i].ToSimplePolygon()));
+                e.Get<Polygon2D>().SetPolygon(_currPolylines[i]);
             }
         }
     }

@@ -46,7 +46,7 @@ project/assembly_name="Ciallo"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/kenyoni/remove_orphan_uid/plugin.cfg")
+enabled=PackedStringArray("res://addons/godot_mcp/plugin.cfg", "res://addons/kenyoni/remove_orphan_uid/plugin.cfg")
 
 [global_group]
 

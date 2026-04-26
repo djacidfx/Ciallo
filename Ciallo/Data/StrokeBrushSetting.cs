@@ -31,13 +31,11 @@ public class StrokeBrushSetting
     [DataMember] public ReactiveProperty<StampFlags> ActiveStampFlags = new();
     [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
     [DataMember] public ReactiveProperty<ImageTexture> StampTexture = new(null);
-    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> DiskOpacityCurve = new(BezierCurveFactory.EaseInOut(1.0f, 0.0f));
+    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> DiskOpacityCurve = new(BezierCurveFactory.EaseInOut(1.0f, 0.0f)); // hardness curve
     [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
     [DataMember] public ReactiveProperty<ImageTexture> MaskTexture = new(null);
 
-    [DataMember] public ReactiveProperty<int> RotationNoiseOctave = new(1);
     [DataMember] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
-    [DataMember] public ReactiveProperty<float> RotationNoiseFrequency = new(0.01f);
 
     // Airbrush
     [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> FalloffCurve = new(BezierCurveFactory.Linear(1.0f, 0.0f));
@@ -66,9 +64,11 @@ public class StrokeBrushSetting
             CustomMinimumSize = new(0, 32),
         };
         var picker = colorPickerButton.GetPicker();
-        picker.ColorModesVisible = false;
         picker.ColorMode = ColorPicker.ColorModeType.Rgb;
         container.AddProperty("RGB+Flow", colorPickerButton.BindColor(Color));
+
+        var eraserCheck = new CheckBox().BindFlag(ActiveBrushFlags, BrushFlags.Eraser);
+        container.AddProperty("Eraser mode", eraserCheck);
 
         var pp2RadiusCurveEdit = new MappingCurveEdit { MinValue = 0.01f }.BindCurve(Pressure2RadiusCurve);
         var aspectBox = new AspectRatioContainer();
@@ -76,8 +76,11 @@ public class StrokeBrushSetting
         container.AddProperty("Pressure to radius", aspectBox);
 
         var pp2FlowCurveEdit = new MappingCurveEdit().BindCurve(Pressure2FlowCurve);
-        var flowCurveFlagCheck = new CheckBox().BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
-        container.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit).AddToChildOf(container);
+        var flowCurveFlagCheck = new CheckBox()
+            .BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
+        container.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit)
+            .VisibleIf(RenderingType, type => type != BrushRenderingType.Vanilla)
+            .AddToChildOf(container);
 
         var typeButton = new OptionButton().BindEnum(RenderingType);
         container.AddProperty("Rendering type", typeButton);
@@ -105,7 +108,7 @@ public class StrokeBrushSetting
 
         var maskDiskFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskDisk);
         var diskOpacityCurveEdit = new MappingCurveEdit().BindCurve(DiskOpacityCurve);
-        container.CreateCheckBoxCombo("Mask disk", maskDiskFlagCheck, diskOpacityCurveEdit).AddToChildOf(stampBox);
+        container.CreateCheckBoxCombo("Hardness curve", maskDiskFlagCheck, diskOpacityCurveEdit).AddToChildOf(stampBox);
 
         var maskTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskTexture);
         var maskTextureEdit = ImageTextureEdit.Instantiate(MaskTexture, ConvertStampImage);
@@ -126,16 +129,6 @@ public class StrokeBrushSetting
         var rotationNoiseBox = new VBoxContainer();
         container.CreateCheckBoxCombo("Rotation noise", rotationNoiseFlagCheck, rotationNoiseBox).AddToChildOf(stampBox);
 
-        var noiseOctaveControl = new SpinSlider()
-        {
-            MinValue = 1,
-            MaxValue = 8,
-            Step = 1,
-            AllowGreater = true,
-            Rounded = true,
-        }.BindNumber(RotationNoiseOctave);
-        container.CreatePropertyBox("Rotation noise octave", noiseOctaveControl).AddToChildOf(rotationNoiseBox);
-
         var rotationNoiseAmplitudeControl = new SpinSlider
         {
             MinValue = 0.0,
@@ -144,19 +137,10 @@ public class StrokeBrushSetting
         }.BindNumber(RotationNoiseAmplitude);
         container.CreatePropertyBox("Rotation noise amplitude", rotationNoiseAmplitudeControl).AddToChildOf(rotationNoiseBox);
 
-        var rotationNoiseFrequencyControl = new SpinSlider
-        {
-            MinValue = 0.001,
-            MaxValue = 0.5,
-            Step = float.E / 10000,
-            AllowGreater = true,
-            ExpEdit = true,
-        }.BindNumber(RotationNoiseFrequency);
-        container.CreatePropertyBox("Rotation noise frequency", rotationNoiseFrequencyControl).AddToChildOf(rotationNoiseBox);
 
         // ---------Airbrush----------
         var falloffCurveEdit = new MappingCurveEdit().BindCurve(FalloffCurve);
-        container.AddProperty("Opacity falloff", falloffCurveEdit).VisibleIf(RenderingType, BrushRenderingType.Airbrush);
+        container.AddProperty("Hardness curve", falloffCurveEdit).VisibleIf(RenderingType, BrushRenderingType.Airbrush);
 
         var alphaDensityControl = new SpinSlider
         {
@@ -164,6 +148,7 @@ public class StrokeBrushSetting
             MaxValue = 6,
             Step = 0.01,
             ExpEdit = true,
+            AllowGreater = true,
         }.BindNumber(AlphaDensity);
         container.AddProperty("Opacity density", alphaDensityControl).VisibleIf(RenderingType, BrushRenderingType.Airbrush);
     }
@@ -193,11 +178,11 @@ public class StrokeBrushSetting
         return setting;
     }
 
-    public Func<CursorMotionData, float> ToRadiusSampler()
+    public Func<float, float> ToRadiusSampler()
     {
         var baseRadius = BaseRadius.Value;
         var points = Pressure2RadiusCurve.Value; // capture snapshot at sampler creation time
-        return data => baseRadius * points.SampleX(data.Pressure);
+        return pressure => baseRadius * points.SampleX(pressure);
     }
 }
 
@@ -206,6 +191,7 @@ public enum BrushFlags
 {
     Pressure2Flow = 1 << 0,
     Dash = 1 << 1,
+    Eraser = 1 << 2,
 }
 
 [Flags]

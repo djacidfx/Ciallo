@@ -18,6 +18,6 @@ public partial class PaintPanelContainer : Control
     {
         var panel = document.Get<PaintPanel>();
         document.Remove<PaintPanel>();
-        panel.QueueFree();
+        panel.Free();  // Must free instantly not queue free. Otherwise, panel could potentially get a one-frame mouse movement after closing document.
     }
 }

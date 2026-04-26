@@ -85,7 +85,8 @@ public static partial class AppDocumentManager
                 {
                     if (shapeDataE.Has<StrokeSetting>())
                     {
-                        shapeDataE.Get<StrokeSetting>().BrushE.Value = entityMap[shapeDataE.Get<StrokeSetting>().BrushE.Value];
+                        var brushRef = shapeDataE.Get<StrokeSetting>().BrushE;
+                        brushRef.Value = entityMap[brushRef.Value];
                         new CommandBuilder(resultWorld.Create())
                             .NewStroke(shapeDataE)
                             .AddToLayerTree(layerE)
@@ -93,6 +94,8 @@ public static partial class AppDocumentManager
                     }
                     else if (shapeDataE.Has<FilledPolygonSetting>())
                     {
+                        var brushRef = shapeDataE.Get<FilledPolygonSetting>().BrushE;
+                        brushRef.Value = entityMap[brushRef.Value];
                         new CommandBuilder(resultWorld.Create())
                             .NewFilledPolygon(shapeDataE)
                             .AddToLayerTree(layerE)

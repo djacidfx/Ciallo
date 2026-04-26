@@ -38,6 +38,8 @@ public class Preference
     [DataMember]
     public ReactiveProperty<string> Language = new("en");
     [DataMember]
+    public ReactiveProperty<float> UIScale = new(1.0f);
+    [DataMember]
     public ObservableList<string> RecentFiles = [];
     [DataMember]
     public ReactiveProperty<ToolButton?> PressedToolButton = new(null);
@@ -68,16 +70,16 @@ public class Preference
     {
         if (!FileAccess.FileExists(Path))
             return false;
-        using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
-        string content = file.GetAsText();
-
         try
         {
+            using var file = FileAccess.Open(Path, FileAccess.ModeFlags.Read);
+            string content = file.GetAsText();
             JsonConvert.PopulateObject(content, this, JsonOptions);
             return true;
         }
-        catch (Exception)
+        catch (Exception e)
         {
+            GD.PrintRaw($"Failed to load preference: {e}");
             return false;
         }
     }
@@ -98,6 +100,13 @@ public class Preference
 
     [DataMember]
     public ReactiveProperty<bool> ShowVectorFillReferenceLayerWireframe = new(false);
+
+    #endregion
+
+    #region PaintStrokeTool
+
+    [DataMember]
+    public ReactiveProperty<TimeSpan> TaperDuration = new(TimeSpan.FromMilliseconds(10));
 
     #endregion
 }

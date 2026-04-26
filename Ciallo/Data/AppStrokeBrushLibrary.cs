@@ -14,93 +14,13 @@ using FileAccess = Godot.FileAccess;
 
 namespace Ciallo.Data;
 
-public static class AppBrushLibrary
+public static partial class AppStrokeBrushLibrary
 {
     public static ReactiveProperty<int> SelectedIndex;
     public static readonly ObservableList<StrokeBrushSetting> BrushSettings = [];
     public static ReadOnlyReactiveProperty<StrokeBrushSetting> SelectedBrushSetting;
 
     public static bool HasSelection => SelectedBrushSetting?.CurrentValue != null;
-
-    public static List<StrokeBrushSetting> CreateBuiltInBrushes()
-    {
-        List<StrokeBrushSetting> brushes = [];
-        brushes.Add(new()
-        {
-            Name = { Value = "Solid".Tr() },
-            RenderingType = { Value = BrushRenderingType.Vanilla },
-            Labels = { BrushLabel.BuiltIn },
-        });
-
-        brushes.Add(new()
-        {
-            Name = { Value = "High performance".Tr() + " " + "Soft airbrush".Tr() },
-            RenderingType = { Value = BrushRenderingType.Airbrush },
-            BaseRadius = { Value = 12f },
-            Labels = { BrushLabel.BuiltIn },
-            Color = { Value = new(0, 0, 0, 0.4f) },
-            ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow },
-            Pressure2FlowCurve = new(BezierCurveFactory.EaseInOut()),
-            FalloffCurve = new([
-                new(new(0, 1), new(-0.25f, 0), new(0.5f, 0)),
-                new(new(1, 0), new(-0.25f, 0), new(0.25f, 0))
-            ]),
-        });
-
-        brushes.Add(new()
-        {
-            Name = { Value = "High performance".Tr() + " " + "Hard airbrush".Tr() },
-            RenderingType = { Value = BrushRenderingType.Airbrush },
-            BaseRadius = { Value = 12f },
-            Labels = { BrushLabel.BuiltIn },
-            Color = { Value = new(0, 0, 0, 0.9f) },
-            ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow },
-            Pressure2FlowCurve = new(BezierCurveFactory.EaseInOut()),
-            FalloffCurve = new([
-                new(new(0, 1), new(-0.25f, 0), new(0.65f, 0)),
-                new(new(1, 0), new(0, 0.25f), new(0.25f, 0))
-            ]),
-        });
-
-        var dirPath = "res://Rendering/Image/";
-        Image[] images =
-        [
-            GD.Load<Image>(dirPath + "StampPencil.png"),
-            GD.Load<Image>(dirPath + "StampSplatter.png"),
-            GD.Load<Image>(dirPath + "FBMNoise.png")
-        ];
-        foreach (var image in images)
-        {
-            image.GenerateMipmaps();
-        }
-
-        brushes.Add(new()
-        {
-            Name = { Value = "Pencil".Tr() },
-            RenderingType = { Value = BrushRenderingType.Stamp },
-            Labels = { BrushLabel.BuiltIn },
-            Color = { Value = Colors.Black },
-            ActiveStampFlags = { Value = StampFlags.StampTexture | StampFlags.MaskTexture | StampFlags.RotationNoise },
-            StampTexture = { Value = ImageTexture.CreateFromImage(images[0]) },
-            StampInterval = { Value = 0.5f },
-            MaskTexture = { Value = ImageTexture.CreateFromImage(images[2]) },
-            RotationNoiseAmplitude = { Value = 8 * Mathf.Pi },
-            RotationNoiseFrequency = { Value = 0.343234f },
-        });
-
-        brushes.Add(new()
-        {
-            Name = { Value = "Splatter".Tr() },
-            RenderingType = { Value = BrushRenderingType.Stamp },
-            Labels = { BrushLabel.BuiltIn },
-            ActiveStampFlags = { Value = StampFlags.StampTexture | StampFlags.RotationNoise },
-            StampTexture = { Value = ImageTexture.CreateFromImage(images[1]) },
-            RotationNoiseAmplitude = { Value = Mathf.Pi },
-            RotationNoiseFrequency = { Value = 0.5f },
-        });
-
-        return brushes;
-    }
 
     public static void ResetBuiltInBrushes()
     {
@@ -196,20 +116,22 @@ public static class AppBrushLibrary
         BrushSettings.Clear();
         BrushSettings.AddRange(Enumerable.Repeat<StrokeBrushSetting>(null, manifestFileNames.Count));
 
-        foreach (var fn in fileNames)
+        foreach (var name in fileNames)
         {
-            using var file = FileAccess.Open(BrushFolder + fn + ".bin", FileAccess.ModeFlags.Read);
-            var content = file.GetBuffer((long)file.GetLength());
             StrokeBrushSetting strokeBrush;
             try
             {
+                using var file = FileAccess.Open(BrushFolder + name + ".bin", FileAccess.ModeFlags.Read);
+                var content = file.GetBuffer((long)file.GetLength());
                 strokeBrush = MessagePackSerializer.Deserialize<StrokeBrushSetting>(content);
             }
             catch (Exception)
             {
                 continue;
             }
-            var index = manifestFileNames.IndexOf(fn);
+            if (strokeBrush == null)
+                continue;
+            var index = manifestFileNames.IndexOf(name);
             if (index >= 0)
                 BrushSettings[index] = strokeBrush;
             else

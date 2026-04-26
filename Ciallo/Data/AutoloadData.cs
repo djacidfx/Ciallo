@@ -43,6 +43,10 @@ public partial class AutoloadData : Node
                 AppPreference.Language.Value = Preference.SupportedLanguages[idx];
         }
         AppPreference.Language.Subscribe(TranslationServer.SetLocale).AddTo(this);
+        AppPreference.UIScale.Debounce(TimeSpan.FromSeconds(0.75))
+            .ObserveOn(GodotFrameProvider.Process)
+            .Subscribe(scale => GetTree().Root.ContentScaleFactor = Mathf.Clamp(scale, 0.1f, 2.0f))
+            .AddTo(this);
 
         if (preferenceFileExists)
         {
@@ -66,13 +70,13 @@ public partial class AutoloadData : Node
             }
         };
 
-        bool brushFilesExists = AppBrushLibrary.TryLoad();
-        if (!brushFilesExists) AppBrushLibrary.ResetBuiltInBrushes();
+        bool brushFilesExists = AppStrokeBrushLibrary.TryLoad();
+        if (!brushFilesExists) AppStrokeBrushLibrary.ResetBuiltInBrushes();
     }
 
     public override void _Ready()
     {
-        AppBrushLibrary.BindToGui();
+        AppStrokeBrushLibrary.BindToGui();
     }
 
     // ReSharper disable once AsyncVoidMethod
@@ -83,7 +87,7 @@ public partial class AutoloadData : Node
             var result = await AppDocumentManager.UserCloseWorkingDocument();
             if (!result) return;
 
-            AppBrushLibrary.Save();
+            AppStrokeBrushLibrary.Save();
             AppPreference.Save();
             AppDocumentManager.Clear();
             GetTree().Quit();

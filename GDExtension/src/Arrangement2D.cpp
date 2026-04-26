@@ -377,7 +377,11 @@ TypedArray<PackedVector2Array> Arrangement2D::Face2Vector(CGAL::Face_const_handl
 					}
 				}
 			}
-			result.push_back(polygon);
+
+			// Remove consecutive duplicate points caused by float precision loss
+			auto deduped = RemoveConsecutiveOverlappingPoint(polygon);
+			if (!deduped.is_empty())
+				result.push_back(deduped);
 		}
 	}
 	return result;

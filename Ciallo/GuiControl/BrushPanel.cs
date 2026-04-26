@@ -27,7 +27,7 @@ public partial class BrushPanel : AcceptDialog
     public Button Bottom;
     public Container Operators;
 
-    public Viewport BrushPreviewViewport;
+    public SubViewport BrushPreviewViewport;
     public SubViewportContainer BrushPreviewContainer;
     public Camera2D Camera;
     public float PreviewBaseWidth = Single.Pi * (2f + 0.3f); // 2pi + padding blank

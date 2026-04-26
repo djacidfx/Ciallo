@@ -41,16 +41,14 @@ public class PolylineGeometry
     public Observable<(ImmutableArray<Vector2>, ImmutableArray<float>)> ObserveShape()
     {
         return Positions
-            .CombineLatest(Radii, (p, r) => (p, r))
-            .ThrottleLastFrame(1);
+            .CombineLatest(Radii, (p, r) => (p, r));
     }
 
     public Observable<(ImmutableArray<Vector2>, ImmutableArray<float>, ImmutableArray<float>, ImmutableArray<Vector2>)> ObserveAll()
     {
         return Positions
             .CombineLatest(Radii, Pressures, Tilts,
-                (p, r, pr, tt) => (p, r, pr, t: tt))
-            .ThrottleLastFrame(1);
+                (p, r, pr, tt) => (p, r, pr, t: tt));
     }
 
 

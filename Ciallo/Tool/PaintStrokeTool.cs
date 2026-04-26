@@ -9,7 +9,7 @@ using R3;
 namespace Ciallo.Tool;
 
 [RegisterTool(ToolButton.Paint)]
-public class PaintStrokeTool : StateMachineToolBase
+public class PaintStrokeTool : ToolBase
 {
     public readonly ReactiveProperty<Entity> BrushE = new(Entity.Null);
 
@@ -30,18 +30,16 @@ public class PaintStrokeTool : StateMachineToolBase
             }, () =>
             {
                 var brushE = Document.Get<SelectionManager>().WorkingStrokeBrush.Value;
-                return !brushE.IsDyingOrDead || AppBrushLibrary.HasSelection;
+                return !brushE.IsDyingOrDead || AppStrokeBrushLibrary.HasSelection;
             });
 
         Configure(Left)
-            .Permit(Release(MouseButton.Left), Hover)
             .Permit(Press(AppActions.CancelInteraction), Hover)
-            .Permit(Press(AppActions.ConfirmInteraction), Hover);
+            .Permit(PaintStrokeInteractor.PaintEnd, Hover);
 
         Configure(LeftOnFill)
             .Permit(Release(MouseButton.Left), Hover)
-            .Permit(Press(AppActions.CancelInteraction), Hover)
-            .Permit(Press(AppActions.ConfirmInteraction), Hover);
+            .Permit(PaintStrokeInteractor.PaintEnd, Hover);
     }
 
     public override bool CanHandleLayer(params Entity[] layerEs)

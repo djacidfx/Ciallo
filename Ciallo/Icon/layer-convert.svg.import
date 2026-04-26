@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://duv5tca3ukpww"
-path="res://.godot/imported/brush-fill.svg-422971a1c94c557340aec60318c43891.ctex"
+uid="uid://c5018cdyomv64"
+path="res://.godot/imported/layer-convert.svg-2e89012e4caca0b0d69724f0aad0fbb0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icon/brush-fill.svg"
-dest_files=["res://.godot/imported/brush-fill.svg-422971a1c94c557340aec60318c43891.ctex"]
+source_file="res://Icon/layer-convert.svg"
+dest_files=["res://.godot/imported/layer-convert.svg-2e89012e4caca0b0d69724f0aad0fbb0.ctex"]
 
 [params]
 
@@ -23,7 +23,7 @@ compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
 compress/normal_map=0
 compress/channel_pack=0
-mipmaps/generate=true
+mipmaps/generate=false
 mipmaps/limit=-1
 roughness/mode=0
 roughness/src_normal=""

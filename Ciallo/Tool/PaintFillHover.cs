@@ -1,6 +1,9 @@
-﻿using Ciallo.Geometry;
+﻿using Ciallo.Data;
+using Ciallo.Geometry;
+using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Ciallo.Widget;
+using Frent;
 using Godot;
 using R3;
 
@@ -8,26 +11,39 @@ namespace Ciallo.Tool;
 
 public class PaintFillHover : InteractiveSessionBase
 {
-    public readonly ReactiveProperty<Color> FillColor = new(Colors.Black);
-
     public override void Start(CursorButtonData data)
     {
-        Document.Get<WorldBody>().MouseDefaultCursorShape = Control.CursorShape.Cross;
+        Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
     }
 
     public override void Moving(CursorMotionData data) { }
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
-        Document.Get<WorldBody>().MouseDefaultCursorShape = default;
+        Document.Get<WorldBody>().DefaultCursorShape = default;
     }
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
 
     public override void DrawProperty(PropertyContainer container)
     {
-        container.AddProperty("Fill Color", new ColorPickerButton
+        container.AddChild(new Label
         {
-            CustomMinimumSize = new(0, 32),
-        }.BindColor(FillColor));
+            Text = "Fill brush",
+            AutowrapMode = TextServer.AutowrapMode.WordSmart,
+        });
+        var brushPreview = VectorFillBrushPreviewList.New(Document);
+        brushPreview.CustomMinimumSize = new(0, 256);
+        container.AddChild(brushPreview);
+
+        var sm = Document.Get<SelectionManager>();
+
+        var fillColor = sm.WorkingVectorFillBrush
+            .Select(e => e.TryGet<VectorFillBrushSetting>()?.FillColor)
+            .Flatten();
+        container.AddProperty("Fill color",
+            new ColorPickerButton()
+                .BindColor(fillColor)
+                .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
+        );
     }
 }

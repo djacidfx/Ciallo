@@ -29,7 +29,13 @@ public partial class StrokeBrushMaterial : ShaderMaterial
         setting.GapLength.Subscribe(length => SetShaderParameter("GapLength", length)).AddTo(Subs);
         setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("DashForwardSpeed", speed)).AddTo(Subs);
         // Brush-level flags
-        setting.ActiveBrushFlags.Subscribe(value => SetShaderParameter("ActiveBrushFlags", (int)value)).AddTo(Subs);
+        setting.ActiveBrushFlags.Subscribe(value =>
+        {
+            SetShaderParameter("ActiveBrushFlags", (int)value);
+            Shader = value.HasFlag(BrushFlags.Eraser)
+                ? AutoloadRendering.EraserShader
+                : AutoloadRendering.StrokeShader;
+        }).AddTo(Subs);
         ImageTexture pp2FlowTex = null;
         setting.Pressure2FlowCurve.Subscribe(points =>
         {
@@ -58,9 +64,7 @@ public partial class StrokeBrushMaterial : ShaderMaterial
             SetShaderParameter("CoordinateTransform", transform);
         }).AddTo(Subs);
 
-        setting.RotationNoiseOctave.Subscribe(value => SetShaderParameter("RotationNoiseOctave", value)).AddTo(Subs);
         setting.RotationNoiseAmplitude.Subscribe(value => SetShaderParameter("RotationNoiseAmplitude", value)).AddTo(Subs);
-        setting.RotationNoiseFrequency.Subscribe(value => SetShaderParameter("RotationNoiseFrequency", value)).AddTo(Subs);
 
         // Airbrush
         ImageTexture falloffTex = null;

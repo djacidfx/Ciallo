@@ -8,7 +8,7 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public partial class ToolManager : IInitable
+public partial class ToolManager : IInitable, IDestroyable
 {
     public Dictionary<ToolButton, List<ITool>> ToolButtonMap;
     public IEnumerable<ITool> Tools => ToolButtonMap.Values.SelectMany(list => list);
@@ -31,13 +31,22 @@ public partial class ToolManager : IInitable
                     WorkingTool.Value = null;
                     return;
                 }
-                
-                var targetTool = layerE.IsNull ? null 
+
+                var targetTool = layerE.IsNull
+                    ? null
                     : ToolButtonMap[toolButton.Value].FirstOrDefault(t => t.CanHandleLayer(layerE));
                 WorkingTool.Value?.OnDeactivate();
                 targetTool?.OnActivate(layerE);
                 WorkingTool.Value = targetTool;
             }).AddTo(Document);
+    }
+
+    public void Destroy() => DeactivateWorkingTool();
+
+    public void DeactivateWorkingTool()
+    {
+        WorkingTool.Value?.OnDeactivate();
+        WorkingTool.Value = null;
     }
 
     public void ActivatePaintTool()
