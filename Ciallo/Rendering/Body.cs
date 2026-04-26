@@ -118,12 +118,15 @@ public partial class Body : StaticBody2D, IInitable, IDestroyable
         {
             var p0 = points[i];
             var p1 = points[i + 1];
-            if (p0.IsEqualApprox(p1)) continue;
+
 
             var shapeRid = PhysicsServer2D.CapsuleShapeCreate();
-            PhysicsServer2D.ShapeSetData(shapeRid, new Vector2((p1 - p0).Length(), radius));
-
-            Transform2D transform = Transform.Rotated((p1 - p0).Angle()).Translated((p0 + p1) / 2);
+            Transform2D transform = Transform2D.Identity;
+            if (!p0.IsEqualApprox(p1))
+            {
+                PhysicsServer2D.ShapeSetData(shapeRid, new Vector2((p1 - p0).Length(), radius));
+                transform = transform.Rotated((p1 - p0).Angle()).Translated((p0 + p1) / 2);
+            }
             _shapes.Add(shapeRid);
             PhysicsServer2D.BodyAddShape(GetRid(), shapeRid, transform);
         }
