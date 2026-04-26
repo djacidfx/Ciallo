@@ -12,7 +12,8 @@ public class DeleteBrushCmd : CommandBase
     {
         if (targetE.Has<StrokeBrushSetting>())
         {
-            foreach (var strokeE in targetE.World.Query<StrokeSetting>().EnumerateWithEntities())
+            var query = targetE.World.CreateQuery().With<StrokeSetting>().Tagged<ToSerializeTag>().Build();
+            foreach (var strokeE in query.EnumerateWithEntities())
             {
                 if (strokeE.Get<StrokeSetting>().BrushE.Value != targetE) continue;
                 SetNullBrushCmd.SetTarget(strokeE)
@@ -21,11 +22,20 @@ public class DeleteBrushCmd : CommandBase
         }
         else if (targetE.Has<VectorFillBrushSetting>())
         {
-            foreach (var markerE in targetE.World.Query<VectorFillMarkerSetting>().EnumerateWithEntities())
+            var markerQuery = targetE.World.CreateQuery().With<VectorFillMarkerSetting>().Tagged<ToSerializeTag>().Build();
+            foreach (var markerE in markerQuery.EnumerateWithEntities())
             {
                 if (markerE.Get<VectorFillMarkerSetting>().BrushE.Value != targetE) continue;
                 SetNullBrushCmd.SetTarget(markerE)
                     .SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, Entity.Null);
+            }
+
+            var polygonQuery = targetE.World.CreateQuery().With<FilledPolygonSetting>().Tagged<ToSerializeTag>().Build();
+            foreach (var polygonE in polygonQuery.EnumerateWithEntities())
+            {
+                if (polygonE.Get<FilledPolygonSetting>().BrushE.Value != targetE) continue;
+                SetNullBrushCmd.SetTarget(polygonE)
+                    .SetProperty(e => e.Get<FilledPolygonSetting>().BrushE, Entity.Null);
             }
         }
     }
