@@ -31,5 +31,3 @@ dabs_per_basic_radius|75|dabs_per_actual_radius can totally replace this
 dabs_per_second|45|
 radius_by_random|37|
 offset_by_speed|27|
-
-
