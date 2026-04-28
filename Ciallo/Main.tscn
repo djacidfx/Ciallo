@@ -193,6 +193,7 @@ size_flags_vertical = 3
 
 [node name="PaintPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock" unique_id=1684309810 groups=["UncategorizedControl"]]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_constants/margin_left = 0
 theme_override_constants/margin_top = 0
 theme_override_constants/margin_right = 0

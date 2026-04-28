@@ -40,6 +40,9 @@ public class NewShapeLayerCmd : CommandBase
 
         // Others
         ShapeLayerNonDataCreation(targetE);
+
+        // Layer panel
+        targetE.Document.Get<LayerContainer>().Create(targetE);
     }
 
     public override void Do(Entity targetE)
@@ -73,32 +76,27 @@ public class NewShapeLayerCmd : CommandBase
         layerNode.Added.Subscribe(et =>
         {
             // Layer panel
-            document.Get<LayerContainer>().CreateInsert(targetE, et.Index);
-
             OnAdd(et.Value, et.Index);
         }).AddTo(targetE);
 
         layerNode.Removed.Subscribe(_ =>
         {
             OnRemove();
-
-            // Layer panel
-            document.Get<LayerContainer>().RemoveFree(targetE);
         }).AddTo(targetE);
 
         layerNode.Moved.Subscribe(et =>
         {
             OnRemove();
             OnAdd(et.Value, et.NewIndex);
-
-            // Layer panel
-            document.Get<LayerContainer>().Move([et.OldIndex], [et.NewIndex]);
         }).AddTo(targetE);
 
         return;
 
         void OnAdd(Entity parentE, int index)
         {
+            // Layer panel
+            document.Get<LayerContainer>().Insert(targetE, index);
+
             // View
             var worldView = document.Get<WorldView>();
             worldView.InsertNodeAt(view, index);
@@ -113,6 +111,9 @@ public class NewShapeLayerCmd : CommandBase
 
         void OnRemove()
         {
+            // Layer panel
+            document.Get<LayerContainer>().Remove(targetE);
+
             // Body
             bodyHolder.RemoveFromParent();
 

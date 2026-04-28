@@ -69,14 +69,16 @@ public class NewImageLayerCmd : CommandBase
             layerOverlay.UpdateGeometry();
         }).AddTo(targetE);
 
+        // Layer panel
+        targetE.Document.Get<LayerContainer>().Create(targetE);
+
         // Layer tree events
         var events = layerNode.MovedAsAddedRemoved;
 
         events.Added.Subscribe(et =>
         {
-            // Panel
-            var layerContainer = Document.Get<LayerContainer>();
-            layerContainer.CreateInsert(targetE, et.Index);
+            // Layer panel
+            Document.Get<LayerContainer>().Insert(targetE, et.Index);
 
             // View
             var worldView = Document.Get<WorldView>();
@@ -89,14 +91,14 @@ public class NewImageLayerCmd : CommandBase
 
         events.Removed.Subscribe(_ =>
         {
+            // Layer panel
+            Document.Get<LayerContainer>().Remove(targetE);
+
             // Overlay
             layerOverlay.RemoveFromParent();
 
             // View
             sprite.RemoveFromParent();
-
-            // Panel
-            Document.Get<LayerContainer>().RemoveFree(targetE);
         }).AddTo(targetE);
     }
 

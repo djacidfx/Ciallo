@@ -14,29 +14,21 @@ namespace Ciallo.GuiControl;
 /// Manage the layer UI controls. Also hold layer properties.
 /// One instance per document.
 /// </summary>
+[Instantiable]
 public partial class LayerContainer : Container
 {
     private VBoxContainer _rootContainer; // all layers controls are direct children of this container.
-    private Container _layerPropertyContainer;
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 
     private bool _isDragging = false;
     private Control _visibleDropHintLine;
     private Control _mouseHoveringLayer;
 
-    // Manually manage subscriptions since layer blocks need to leave tree, which disposes subscriptions with AddTo.
-    private readonly Dictionary<Entity, CompositeDisposable> _subscriptions = [];
-
-    [OnInstantiate]
-    private void Initialise() { }
-
     public override void _Ready()
     {
         _rootContainer = GetNode<VBoxContainer>("%TreeRoot");
-        _layerPropertyContainer = GetNode<Container>("%LayerPropertyContainer");
         // Free previews in the Godot editor.
         _rootContainer.QueueFreeChildren();
-        _layerPropertyContainer.QueueFreeChildren();
         _workingLayerButtonGroup.Pressed += button =>
         {
             var layerControl = (Control)button.GetOwner();
@@ -46,39 +38,25 @@ public partial class LayerContainer : Container
         };
     }
 
-    public void CreateInsert(Entity layerE, int index)
+    public void Create(Entity layerE)
     {
-        _subscriptions[layerE] = new CompositeDisposable();
-        CreateInsertBlock(layerE, index);
-        CreateAddProperty(layerE);
+        var layerBlock = CreateBlock(layerE);
+        layerE.AddNode(layerBlock);
     }
 
-    public void CreateAddProperty(Entity e)
+    public void Insert(Entity layerE, int index)
     {
-        var property = LayerProperty.Instantiate();
-        _layerPropertyContainer.AddChild(property);
-        property.VisibleIf(AppDocumentManager.WorkingDocument.CurrentValue.Get<SelectionManager>().WorkingLayer, e);
-        e.Add(property);
-
-        property.Opacity
-            .BindNumber(e.Get<CommonLayerSetting>().Opacity)
-            .RegisterUndo(e.Document.Get<CommandManager>());
-    }
-
-    public void CreateInsertBlock(Entity e, int index)
-    {
-        var layerControl = CreateBlock(e);
-        _rootContainer.InsertNodeAt(layerControl, index);
-        e.Add(layerControl);
+        var layerBlock = layerE.Get<LayerBlock>();
+        _rootContainer.InsertNodeAt(layerBlock, index);
     }
 
     private LayerBlock CreateBlock(Entity e)
     {
         var commonSetting = e.Get<CommonLayerSetting>();
-        var subs = _subscriptions[e];
+        var subs = new CompositeDisposable().AddTo(e);
         var cmdM = e.Document.Get<CommandManager>();
 
-        var block = LayerBlock.Instantiate();
+        var block = LayerBlock.New();
         block.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
         block.VisibleButton
             .BindBool(commonSetting.IsVisible, out var sub0)
@@ -147,10 +125,17 @@ public partial class LayerContainer : Container
         _rootContainer.MoveChild(_rootContainer.GetChild(srcIdx), dstIdx);
     }
 
+    public void Remove(Entity layerE)
+    {
+        var layerBlock = layerE.Get<LayerBlock>();
+        if (layerBlock.GetParent() != null)
+            layerBlock.RemoveFromParent(); // necessary to avoid index error
+    }
+
     public void RemoveFree(Entity layerE)
     {
         // Layer block
-        layerE.Get<LayerBlock>().RemoveFromParent(); // necessary to avoid index error
+        Remove(layerE);
         layerE.Get<LayerBlock>().QueueFree();
         layerE.Remove<LayerBlock>();
 
@@ -158,9 +143,6 @@ public partial class LayerContainer : Container
         layerE.Get<LayerProperty>().RemoveFromParent();
         layerE.Get<LayerProperty>().QueueFree();
         layerE.Remove<LayerProperty>();
-
-        _subscriptions[layerE].Dispose();
-        _subscriptions.Remove(layerE);
     }
 
     private void OnDragStart(LayerBlock srcLayer, InputEventMouseMotion motion) { }

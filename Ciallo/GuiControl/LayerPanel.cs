@@ -1,6 +1,7 @@
 using Ciallo.Data;
 using Frent;
 using Godot;
+using R3;
 
 namespace Ciallo.GuiControl;
 
@@ -12,8 +13,7 @@ public partial class LayerPanel : VBoxContainer
 {
     public override void _Ready()
     {
-        Root.LayerContainerPreview.QueueFree();
-        Root.LayerAction.QueueFree();
+        this.QueueFreeChildren();
     }
 
     public void CreateAdd(Entity document)
@@ -21,22 +21,20 @@ public partial class LayerPanel : VBoxContainer
         var layerAction = LayerAction.New(document)
             .VisibleIf(AppDocumentManager.WorkingDocument, document);
         AddChild(layerAction);
-        document.Add(layerAction);
+        document.AddNode(layerAction);
 
-        var layerContainer = LayerContainer.Instantiate()
+        var layerProperty = LayerProperty.New()
+            .VisibleIf(AppDocumentManager.WorkingDocument, document);
+        AddChild(layerProperty);
+        ReactiveProperty<float> opacity = document.Get<SelectionManager>().WorkingLayer
+            .Select(e => e.TryGet<CommonLayerSetting>()?.Opacity).Flatten().AddTo(document);
+        layerProperty.Opacity.BindNumber(opacity);
+
+        var layerContainer = LayerContainer.New()
             .VisibleIf(AppDocumentManager.WorkingDocument, document);
         AddChild(layerContainer);
-        document.Add(layerContainer);
+        document.AddNode(layerContainer);
     }
 
-    public void RemoveFree(Entity document)
-    {
-        var layerContainer = document.Get<LayerContainer>();
-        document.Remove<LayerContainer>();
-        layerContainer.QueueFree();
-
-        var layerAction = document.Get<LayerAction>();
-        document.Remove<LayerAction>();
-        layerAction.QueueFree();
-    }
+    public void RemoveFree(Entity document) { }
 }

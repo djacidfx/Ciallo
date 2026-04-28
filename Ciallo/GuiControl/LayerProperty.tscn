@@ -1,18 +1,19 @@
-[gd_scene load_steps=3 format=3 uid="uid://cdki2k8di20tg"]
+[gd_scene format=3 uid="uid://cdki2k8di20tg"]
 
 [ext_resource type="Script" uid="uid://h8m1n58g888p" path="res://GuiControl/LayerProperty.cs" id="1_3smt2"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="1_jbgsm"]
 
-[node name="LayerProperty" type="HBoxContainer"]
+[node name="LayerProperty" type="HBoxContainer" unique_id=1342039813]
 script = ExtResource("1_3smt2")
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="." unique_id=189620099]
 layout_mode = 2
 text = "Opacity"
 
-[node name="Opacity" type="HBoxContainer" parent="."]
+[node name="Opacity" type="HBoxContainer" parent="." unique_id=1460316986]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 script = ExtResource("1_jbgsm")
 MaxValue = 1.0
 Value = 1.0
