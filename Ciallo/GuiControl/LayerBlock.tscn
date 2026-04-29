@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://bd701bypxjeqj"]
+[gd_scene format=3 uid="uid://bd701bypxjeqj"]
 
 [ext_resource type="Script" uid="uid://di8swh5pm3bu3" path="res://GuiControl/LayerBlock.cs" id="1_m4dr1"]
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="2_jmhjt"]
@@ -19,31 +19,31 @@ corner_radius_bottom_right = 3
 corner_radius_bottom_left = 3
 corner_detail = 5
 
-[node name="LayerBlock" type="VBoxContainer"]
+[node name="LayerBlock" type="VBoxContainer" unique_id=43370559]
 offset_right = 362.0
 offset_bottom = 50.0
 theme_override_constants/separation = 0
 script = ExtResource("1_m4dr1")
 
-[node name="AboveHint" type="HSeparator" parent="."]
+[node name="AboveHint" type="HSeparator" parent="." unique_id=1320822834]
 unique_name_in_owner = true
 visible = false
 z_index = 1
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="Blank" type="Control" parent="."]
+[node name="Blank" type="Control" parent="." unique_id=1490807382]
 custom_minimum_size = Vector2(0, 3)
 layout_mode = 2
 mouse_filter = 1
 
-[node name="Layer" type="HBoxContainer" parent="."]
+[node name="Layer" type="HBoxContainer" parent="." unique_id=52944092]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_jmhjt")
 theme_override_constants/separation = 3
 
-[node name="VisibleButton" type="CheckBox" parent="Layer"]
+[node name="VisibleButton" type="CheckBox" parent="Layer" unique_id=1001123943]
 unique_name_in_owner = true
 layout_mode = 2
 theme_type_variation = &"TextureCheckBox"
@@ -52,7 +52,7 @@ theme_override_icons/unchecked = ExtResource("4_o0vdx")
 button_pressed = true
 action_mode = 0
 
-[node name="WorkingButton" type="CheckBox" parent="Layer"]
+[node name="WorkingButton" type="CheckBox" parent="Layer" unique_id=397494136]
 unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_jmhjt")
@@ -63,7 +63,7 @@ theme_override_icons/radio_checked = ExtResource("5_35tnk")
 theme_override_icons/radio_unchecked = ExtResource("4_o0vdx")
 action_mode = 0
 
-[node name="LabelLineEdit" type="LineEdit" parent="Layer"]
+[node name="LabelLineEdit" type="LineEdit" parent="Layer" unique_id=800426827]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(128, 0)
 layout_mode = 2
@@ -82,10 +82,7 @@ select_all_on_focus = true
 script = ExtResource("6_okj0m")
 metadata/_custom_type_script = "uid://cnkmrjlwncaqf"
 
-[node name="Children" type="VBoxContainer" parent="."]
-layout_mode = 2
-
-[node name="BelowHint" type="HSeparator" parent="."]
+[node name="BelowHint" type="HSeparator" parent="." unique_id=1229193752]
 unique_name_in_owner = true
 visible = false
 z_index = 1

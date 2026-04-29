@@ -14,10 +14,9 @@ namespace Ciallo.GuiControl;
 /// Manage the layer UI controls. Also hold layer properties.
 /// One instance per document.
 /// </summary>
-[Instantiable]
+[SceneTree(root: "Root"), Instantiable]
 public partial class LayerContainer : Container
 {
-    private VBoxContainer _rootContainer; // all layers controls are direct children of this container.
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 
     private bool _isDragging = false;
@@ -26,9 +25,8 @@ public partial class LayerContainer : Container
 
     public override void _Ready()
     {
-        _rootContainer = GetNode<VBoxContainer>("%TreeRoot");
         // Free previews in the Godot editor.
-        _rootContainer.QueueFreeChildren();
+        TreeRoot.QueueFreeChildren();
         _workingLayerButtonGroup.Pressed += button =>
         {
             var layerControl = (Control)button.GetOwner();
@@ -47,7 +45,7 @@ public partial class LayerContainer : Container
     public void Insert(Entity layerE, int index)
     {
         var layerBlock = layerE.Get<LayerBlock>();
-        _rootContainer.InsertNodeAt(layerBlock, index);
+        TreeRoot.InsertNodeAt(layerBlock, index);
     }
 
     private LayerBlock CreateBlock(Entity e)
@@ -122,7 +120,7 @@ public partial class LayerContainer : Container
     {
         int srcIdx = src[0];
         int dstIdx = dst[0];
-        _rootContainer.MoveChild(_rootContainer.GetChild(srcIdx), dstIdx);
+        TreeRoot.MoveChild(TreeRoot.GetChild(srcIdx), dstIdx);
     }
 
     public void Remove(Entity layerE)
@@ -130,19 +128,6 @@ public partial class LayerContainer : Container
         var layerBlock = layerE.Get<LayerBlock>();
         if (layerBlock.GetParent() != null)
             layerBlock.RemoveFromParent(); // necessary to avoid index error
-    }
-
-    public void RemoveFree(Entity layerE)
-    {
-        // Layer block
-        Remove(layerE);
-        layerE.Get<LayerBlock>().QueueFree();
-        layerE.Remove<LayerBlock>();
-
-        // Layer property
-        layerE.Get<LayerProperty>().RemoveFromParent();
-        layerE.Get<LayerProperty>().QueueFree();
-        layerE.Remove<LayerProperty>();
     }
 
     private void OnDragStart(LayerBlock srcLayer, InputEventMouseMotion motion) { }
