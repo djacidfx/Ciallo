@@ -2,8 +2,8 @@
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
 [ext_resource type="Script" uid="uid://co17yxacb7838" path="res://GuiControl/OpenDocumentDialog.cs" id="3_j4qnp"]
-[ext_resource type="PackedScene" uid="uid://bpntrjged60df" path="res://Widget/NewDocumentDialog.tscn" id="3_sc1dx"]
-[ext_resource type="PackedScene" uid="uid://b605gtasdgmsb" path="res://Widget/About.tscn" id="4_fpfj3"]
+[ext_resource type="PackedScene" uid="uid://bpntrjged60df" path="res://GuiControl/NewDocumentDialog.tscn" id="3_sc1dx"]
+[ext_resource type="PackedScene" uid="uid://b605gtasdgmsb" path="res://GuiControl/About.tscn" id="4_fpfj3"]
 [ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icon/star.svg" id="4_kjvhd"]
 [ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://GuiControl/MenuFile.cs" id="5_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://dw0q5mir7loyl" path="res://GuiControl/BrushPanel.tscn" id="5_j4qnp"]
