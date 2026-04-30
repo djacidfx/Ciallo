@@ -26,6 +26,7 @@ public partial class LayerAction : Control
     public override void _Ready()
     {
         Root.NewLayer.Pressed += OnNewShapeLayer;
+        Root.NewFolder.Pressed += OnNewFolderLayer;
         Root.RemoveLayer.Pressed += OnRemoveLayer;
         Root.NewImage.Pressed += OnNewImage;
         Root.ConvertToShape.Pressed += OnConvertToShape;
@@ -35,6 +36,15 @@ public partial class LayerAction : Control
     {
         new CommandBuilder(Document.World.Create())
             .NewShapeLayer()
+            .AddToLayerTree(AppDocumentManager.WorkingDocument.Value)
+            .SetWorkingLayer()
+            .Commit();
+    }
+
+    public void OnNewFolderLayer()
+    {
+        new CommandBuilder(Document.World.Create())
+            .NewFolderLayer()
             .AddToLayerTree(AppDocumentManager.WorkingDocument.Value)
             .SetWorkingLayer()
             .Commit();
