@@ -17,8 +17,7 @@ namespace Ciallo.Tool;
 /// E.g. Stroke drag interactor should not know it's started by dragging left mouse button, or pressing the 'G' key(like Blender)
 /// The tool script implement ITool is responsible for triggering the interactive session according to user input and tool state.
 ///
-/// - Do not reactively change content (like those subscriptions in New*Cmds). Instead, gather necessary states at start() and refresh() on state change.
-/// Avoid a lot of boilerplate code
+/// - Not reactively change content (like those subscriptions in New*Cmds). Instead, gather necessary states at start().
 /// </remarks>
 public abstract class InteractiveSessionBase
 {

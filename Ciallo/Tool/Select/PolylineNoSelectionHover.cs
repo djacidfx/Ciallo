@@ -68,7 +68,7 @@ public class PolylineNoSelectionHover : InteractiveSessionBase
         if (AppActions.CancelInteraction.IsJustPressed)
         {
             Document.Get<SelectionManager>().SelectedShapes.Clear();
-            Refresh(data);
+            Tool.Machine.Fire(ToolBase.Trigger.Refresh);
             return true;
         }
 
@@ -80,6 +80,7 @@ public class PolylineNoSelectionHover : InteractiveSessionBase
                 cmd.SetTarget(e).RemoveFromLayerTree().DeleteShape();
             }
             cmd.Commit();
+            Tool.Machine.Fire(ToolBase.Trigger.Refresh);
             return true;
         }
 
