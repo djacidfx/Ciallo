@@ -24,6 +24,7 @@ public partial class AutoloadGuiControl : Node
             // World view
             var worldView = paintPanel.GetNode<WorldView>("%WorldView");
             document.Add(worldView);
+            document.Add<FolderLayerView>(worldView); // Add component as FolderLayerView
 
             // World overlay
             var worldOverlay = paintPanel.GetNode<WorldOverlay>("%WorldOverlay");
