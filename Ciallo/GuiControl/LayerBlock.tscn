@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://dxxuxp83ybahu" path="res://Widget/TextureCheckBoxBackgound.tres" id="4_o0vdx"]
 [ext_resource type="Texture2D" uid="uid://cfh5fqjqt20ay" path="res://Icon/FixedSize/brush-icon-sized.svg" id="5_35tnk"]
 [ext_resource type="Script" uid="uid://cnkmrjlwncaqf" path="res://Widget/LabelLineEdit.cs" id="6_okj0m"]
+[ext_resource type="Script" uid="uid://d1yjxfpa62cbe" path="res://Widget/Indent.cs" id="7_indent"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qp082"]
 content_margin_left = 4.0
@@ -20,8 +21,8 @@ corner_radius_bottom_left = 3
 corner_detail = 5
 
 [node name="LayerBlock" type="VBoxContainer" unique_id=43370559]
-offset_right = 362.0
-offset_bottom = 50.0
+offset_right = 431.0
+offset_bottom = 285.0
 theme_override_constants/separation = 0
 script = ExtResource("1_m4dr1")
 
@@ -62,6 +63,14 @@ theme_override_icons/unchecked = ExtResource("4_o0vdx")
 theme_override_icons/radio_checked = ExtResource("5_35tnk")
 theme_override_icons/radio_unchecked = ExtResource("4_o0vdx")
 action_mode = 0
+
+[node name="Indent" type="Control" parent="Layer" unique_id=123456789]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(24, 0)
+layout_mode = 2
+script = ExtResource("7_indent")
+Count = 1
+Width = 24
 
 [node name="LabelLineEdit" type="LineEdit" parent="Layer" unique_id=800426827]
 unique_name_in_owner = true
