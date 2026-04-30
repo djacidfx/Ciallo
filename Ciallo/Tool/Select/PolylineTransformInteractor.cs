@@ -63,7 +63,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             throw new Exception("Unexpected hover state in PolylineTransformInteractor.BeforeTransitionSrcEnd");
         }
 
-        if (session is PolylineSelectHover hoverWithoutSelection)
+        if (session is PolylineNoSelectionHover hoverWithoutSelection)
         {
             _transformType = 0;
             selectedShapes.Add(hoverWithoutSelection.CurrHoveredShape);

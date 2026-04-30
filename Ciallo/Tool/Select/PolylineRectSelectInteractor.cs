@@ -24,7 +24,7 @@ public class PolylineRectSelectInteractor : InteractiveSessionBase
 
     public override void BeforeTransitionSrcEnd(InteractiveSessionBase src)
     {
-        if (src is PolylineSelectHover hover)
+        if (src is PolylineNoSelectionHover hover)
         {
             _initialHoveredShape = hover.CurrHoveredShape;
         }

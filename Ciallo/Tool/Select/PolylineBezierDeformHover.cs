@@ -10,7 +10,7 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public class PolylineBezierDeformHover : PolylineSelectHover
+public class PolylineBezierDeformHover : PolylineNoSelectionHover
 {
     public BezierPoint[] Curve;
 

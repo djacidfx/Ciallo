@@ -23,7 +23,7 @@ public class PolylineSelectTool : ToolBase
     public ReactiveProperty<EditMode> Mode = new(EditMode.BezierDeform);
     public readonly ReactiveProperty<float> SimplificationRatio = new(0.25f);
 
-    public readonly PolylineSelectHover HoverWithoutSelection = new();
+    public readonly PolylineNoSelectionHover HoverWithoutSelection = new();
     public readonly PolylineTransformHover TransformHover = new();
     public readonly PolylineBezierDeformHover BezierDeformHover = new();
 

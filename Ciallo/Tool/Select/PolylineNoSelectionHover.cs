@@ -9,7 +9,7 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public class PolylineSelectHover : InteractiveSessionBase
+public class PolylineNoSelectionHover : InteractiveSessionBase
 {
     public Entity CurrHoveredShape;
 
@@ -80,7 +80,6 @@ public class PolylineSelectHover : InteractiveSessionBase
                 cmd.SetTarget(e).RemoveFromLayerTree().DeleteShape();
             }
             cmd.Commit();
-            Refresh(data);
             return true;
         }
 
