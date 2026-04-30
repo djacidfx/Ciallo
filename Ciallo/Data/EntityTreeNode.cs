@@ -165,6 +165,8 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     /// <param name="dstPath">Insertion path.</param>
     public void MoveDescendant(IReadOnlyList<int> srcPath, IReadOnlyList<int> dstPath)
     {
+        if (srcPath.SequenceEqual(dstPath)) return;
+
         // Resolve source
         var srcParentPath = srcPath.SkipLast(1).ToArray();
         var srcParent = GetDescendantNode(srcParentPath);

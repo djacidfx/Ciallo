@@ -41,9 +41,17 @@ public record MoveOrReparentAsExitEnter
         Observable<ChildRemovedEvent> treeExited,
         Observable<ChildMovedEvent> moved)
     {
-        // Order matters, moved trigger exit first
-        Removed = treeExited.Merge(moved.Select(et => new ChildRemovedEvent(et.OldIndex, et.Parent)));
-        Added = treeEntered.Merge(moved.Select(et => new ChildInsertedEvent(et.NewIndex, et.Parent)));
+        // Use dedicated subjects so that Removed always fires before Added
+        // regardless of subscriber registration order.
+        var movedRemoved = new Subject<ChildRemovedEvent>();
+        var movedAdded = new Subject<ChildInsertedEvent>();
+        moved.Subscribe(et =>
+        {
+            movedRemoved.OnNext(new ChildRemovedEvent(et.OldIndex, et.Parent));
+            movedAdded.OnNext(new ChildInsertedEvent(et.NewIndex, et.Parent));
+        });
+        Removed = treeExited.Merge(movedRemoved);
+        Added = treeEntered.Merge(movedAdded);
     }
 
     public readonly Observable<ChildInsertedEvent> Added;
