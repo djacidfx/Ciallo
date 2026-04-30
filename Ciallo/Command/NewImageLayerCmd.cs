@@ -78,7 +78,7 @@ public class NewImageLayerCmd : CommandBase
         events.Added.Subscribe(et =>
         {
             // Layer panel
-            Document.Get<LayerContainer>().Insert(targetE, et.Index);
+            et.Parent.Get<LayerFolderContainer>().InsertNodeAt(targetE.Get<LayerBlock>(), et.Index);
 
             // View
             var folderLayerView = et.Parent.Get<FolderLayerView>();
@@ -92,7 +92,7 @@ public class NewImageLayerCmd : CommandBase
         events.Removed.Subscribe(_ =>
         {
             // Layer panel
-            Document.Get<LayerContainer>().Remove(targetE);
+            targetE.Get<LayerBlock>().RemoveFromParent();
 
             // Overlay
             layerOverlay.RemoveFromParent();

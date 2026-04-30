@@ -34,6 +34,7 @@ public partial class LayerPanel : VBoxContainer
             .VisibleIf(AppDocumentManager.WorkingDocument, document);
         AddChild(layerContainer);
         document.AddNode(layerContainer);
+        document.AddNode(layerContainer.RootContainer);
     }
 
     public void RemoveFree(Entity document) { }

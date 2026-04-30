@@ -6,6 +6,7 @@
 [node name="LayerProperty" type="GridContainer" unique_id=1623447946]
 offset_right = 246.0
 offset_bottom = 58.0
+theme_override_constants/h_separation = 16
 columns = 2
 script = ExtResource("1_3smt2")
 

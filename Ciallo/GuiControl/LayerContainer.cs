@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
@@ -21,7 +20,7 @@ public partial class LayerContainer : Container
 
     private bool _isDragging = false;
     private Control _visibleDropHintLine;
-    private Control _mouseHoveringLayer;
+    private LayerBlock _mouseHoveringLayer;
 
     public override void _Ready()
     {
@@ -29,10 +28,8 @@ public partial class LayerContainer : Container
         RootContainer.QueueFreeChildren();
         _workingLayerButtonGroup.Pressed += button =>
         {
-            var layerControl = (Control)button.GetOwner();
-            var document = AppDocumentManager.WorkingDocument.CurrentValue;
-            var layerE = document.Get<LayerTreeNode>().Children[layerControl.GetIndex()];
-            new CommandBuilder(layerE).SetWorkingLayer().Commit();
+            var layerBlock = (LayerBlock)button.GetOwner();
+            new CommandBuilder(layerBlock.LayerEntity).SetWorkingLayer().Commit();
         };
     }
 
@@ -56,17 +53,6 @@ public partial class LayerContainer : Container
         }
     }
 
-    public void Insert(Entity layerE, Entity parentE, int index)
-    {
-        if (layerE.Has<FolderLayerSetting>())
-        {
-            throw new NotImplementedException();
-        }
-        else
-        {
-            RootContainer.InsertNodeAt(layerE.Get<LayerBlock>(), index);
-        }
-    }
 
     private LayerBlock CreateBlock(Entity e)
     {
@@ -85,7 +71,11 @@ public partial class LayerContainer : Container
         sub1.AddTo(subs);
 
         block.MouseEntered += () => _mouseHoveringLayer = block;
-        block.MouseExited += () => _mouseHoveringLayer = null;
+        block.MouseExited += () =>
+        {
+            if (ReferenceEquals(_mouseHoveringLayer, block))
+                _mouseHoveringLayer = null;
+        };
 
         var guiInput = lineEdit
             .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
@@ -135,19 +125,6 @@ public partial class LayerContainer : Container
         return block;
     }
 
-    public void Move(IReadOnlyList<int> src, IReadOnlyList<int> dst)
-    {
-        int srcIdx = src[0];
-        int dstIdx = dst[0];
-        RootContainer.MoveChild(RootContainer.GetChild(srcIdx), dstIdx);
-    }
-
-    public void Remove(Entity layerE)
-    {
-        var layerBlock = layerE.Get<LayerBlock>();
-        if (layerBlock.GetParent() != null)
-            layerBlock.RemoveFromParent(); // necessary to avoid index error
-    }
 
     private void OnDragStart(LayerBlock srcLayer, InputEventMouseMotion motion) { }
 
@@ -163,7 +140,7 @@ public partial class LayerContainer : Container
         var locPos = _mouseHoveringLayer.GetLocalMousePosition();
         var size = _mouseHoveringLayer.Size;
 
-        var sep = size.Y / 2; // separation on whether the drop target is above or below the hovering layer.
+        var sep = size.Y / 2;
         var hintToShow = _mouseHoveringLayer.GetNode<HSeparator>(locPos.Y < sep ? "%AboveHint" : "%BelowHint");
         if (_visibleDropHintLine == hintToShow) return;
         if (_visibleDropHintLine != null) _visibleDropHintLine.Visible = false;
@@ -185,16 +162,31 @@ public partial class LayerContainer : Container
             return;
         }
 
-        var srcIndex = srcLayer.GetIndex();
-        var dstIndex = _mouseHoveringLayer.GetIndex();
-        if (srcIndex < dstIndex) dstIndex--; // account for the removal of the source layer.
+        var document = AppDocumentManager.WorkingDocument.CurrentValue;
+        var root = document.Get<LayerTreeNode>();
+        var srcPath = root.FindPathTo(srcLayer.LayerEntity);
+        var dstPath = root.FindPathTo(_mouseHoveringLayer.LayerEntity);
+
+        // Only support same-parent drag
+        if (!srcPath.Take(srcPath.Length - 1).SequenceEqual(dstPath.Take(dstPath.Length - 1)))
+        {
+            _mouseHoveringLayer = null;
+            return;
+        }
+
+        int srcIdx = srcPath[^1];
+        int dstIdx = dstPath[^1];
+        if (srcIdx < dstIdx) dstIdx--; // post-removal coordinates
 
         var locPos = _mouseHoveringLayer.GetLocalMousePosition();
         var size = _mouseHoveringLayer.Size;
-        if (locPos.Y <= size.Y / 2) dstIndex++; // insert after the hovering layer.
+        if (locPos.Y <= size.Y / 2) dstIdx++; // insert above hovered layer (reverse order)
 
-        new CommandBuilder(AppDocumentManager.WorkingDocument.CurrentValue)
-            .MoveLayer([srcIndex], [dstIndex]).Commit();
+        var parentPath = srcPath.Take(srcPath.Length - 1).ToArray();
+        var dstFullPath = parentPath.Append(dstIdx).ToArray();
+
+        new CommandBuilder(document)
+            .MoveLayer(srcPath, dstFullPath).Commit();
     }
 
     public void SetWorkingLayerNoSignal(Entity layerE)

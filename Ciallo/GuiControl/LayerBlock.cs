@@ -1,6 +1,24 @@
+using Frent;
+using Frent.Components;
 using Godot;
 
 namespace Ciallo.GuiControl;
 
-[SceneTree, Instantiable]
-public partial class LayerBlock : Container { }
+[SceneTree, Instantiable(init: "")]
+public partial class LayerBlock : Container, IInitable
+{
+    public Entity LayerEntity;
+
+    public override void _EnterTree()
+    {
+        var parentNode = (LayerFolderContainer)GetParent();
+
+        int indentCount = parentNode.Title == this ? parentNode.Level - 1 : parentNode.Level;
+        Indent.Count = indentCount;
+    }
+
+    public void Init(Entity self)
+    {
+        LayerEntity = self;
+    }
+}
