@@ -31,7 +31,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public readonly Subject<ChildInsertedEvent> Added = new();
     public readonly Subject<ChildRemovedEvent> Removed = new();
     public readonly Subject<ChildMovedEvent> Moved = new();
-    public MoveOrReparentAsExitEnter MovedAsAddedRemoved;
+    public readonly MoveOrReparentAsExitEnter MovedAsAddedRemoved;
 
     public int Index => ParentValue.Get<T>()._children.IndexOf(Self);
     public IReadOnlyList<Entity> Children => _children;
@@ -39,10 +39,14 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public bool IsLeaf => _children.Count == 0;
     public bool IsRoot => ParentValue.IsNull;
 
+    public EntityTreeNode()
+    {
+        MovedAsAddedRemoved = new(Added, Removed, Moved);
+    }
+
     public void Init(Entity self)
     {
         Self = self;
-        MovedAsAddedRemoved = new(Added, Removed, Moved);
     }
 
     public void Destroy()

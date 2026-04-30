@@ -51,19 +51,20 @@ public class NewFilledPolygonCmd : CommandBase
             polygonView.Texture = brushE.IsNull ? AutoloadRendering.DummyTextureForUV : null;
         }).AddTo(targetE);
 
-        // Overlay
+        polylineGeometry.Positions.Subscribe(ps =>
+        {
+            polygonView.SetPolygon(ps.AsSpan());
+        }).AddTo(targetE);
+
+        // Overlay & Body
         var overlay = new PolylineWireframe() { Visible = false };
         targetE.AddNode(overlay);
-
-        // Body
         var polygonBody = new Body();
         targetE.AddNode(polygonBody);
-
-        polylineGeometry.Positions.Subscribe(p =>
+        polylineGeometry.Positions.Subscribe(ps =>
         {
-            polygonView.SetPolygon(p.AsSpan());
-            overlay.SetGeometry(p);
-            polygonBody.SetSimplePolygon(p);
+            overlay.SetGeometry(ps);
+            polygonBody.SetSimplePolygon(ps);
         }).AddTo(targetE);
 
         // Layer tree events
