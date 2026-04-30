@@ -2,11 +2,15 @@
 
 [ext_resource type="Script" uid="uid://di8swh5pm3bu3" path="res://GuiControl/LayerBlock.cs" id="1_m4dr1"]
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="2_jmhjt"]
-[ext_resource type="Texture2D" uid="uid://cklq1oyy3bwjg" path="res://Icon/eye.svg" id="3_l4wh0"]
+[ext_resource type="Texture2D" uid="uid://cklq1oyy3bwjg" path="res://Icon/FixedSize/eye.svg" id="3_l4wh0"]
 [ext_resource type="Texture2D" uid="uid://dxxuxp83ybahu" path="res://Widget/TextureCheckBoxBackgound.tres" id="4_o0vdx"]
 [ext_resource type="Texture2D" uid="uid://cfh5fqjqt20ay" path="res://Icon/FixedSize/brush-icon-sized.svg" id="5_35tnk"]
 [ext_resource type="Script" uid="uid://cnkmrjlwncaqf" path="res://Widget/LabelLineEdit.cs" id="6_okj0m"]
+[ext_resource type="Texture2D" uid="uid://tcs0hhsr6evc" path="res://Icon/FixedSize/chevron-down-sized.svg" id="7_f2a0e"]
 [ext_resource type="Script" uid="uid://d1yjxfpa62cbe" path="res://Widget/Indent.cs" id="7_indent"]
+[ext_resource type="Texture2D" uid="uid://moglh1o5lfn" path="res://Icon/FixedSize/chevron-forward.svg" id="8_qhucf"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_f2a0e"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qp082"]
 content_margin_left = 4.0
@@ -39,7 +43,6 @@ layout_mode = 2
 mouse_filter = 1
 
 [node name="Layer" type="HBoxContainer" parent="." unique_id=52944092]
-unique_name_in_owner = true
 layout_mode = 2
 theme = ExtResource("2_jmhjt")
 theme_override_constants/separation = 3
@@ -56,7 +59,6 @@ action_mode = 0
 [node name="WorkingButton" type="CheckBox" parent="Layer" unique_id=397494136]
 unique_name_in_owner = true
 layout_mode = 2
-theme = ExtResource("2_jmhjt")
 theme_type_variation = &"TextureCheckBox"
 theme_override_icons/checked = ExtResource("5_35tnk")
 theme_override_icons/unchecked = ExtResource("4_o0vdx")
@@ -66,11 +68,20 @@ action_mode = 0
 
 [node name="Indent" type="Control" parent="Layer" unique_id=123456789]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(24, 0)
 layout_mode = 2
 script = ExtResource("7_indent")
-Count = 1
-Width = 24
+Width = 42
+BarColor = Color(1, 1, 1, 1)
+
+[node name="DropdownArrow" type="CheckBox" parent="Layer" unique_id=1782953412]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_type_variation = &"TextureCheckBox"
+theme_override_styles/normal = SubResource("StyleBoxEmpty_f2a0e")
+theme_override_icons/checked = ExtResource("7_f2a0e")
+theme_override_icons/unchecked = ExtResource("8_qhucf")
+action_mode = 0
 
 [node name="LabelLineEdit" type="LineEdit" parent="Layer" unique_id=800426827]
 unique_name_in_owner = true

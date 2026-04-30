@@ -11,11 +11,6 @@ namespace Ciallo.Widget;
 [GlobalClass, Tool]
 public partial class FoldableVBoxContainer : Container
 {
-    private Callable _setFoldCallable;
-    public static string FoldSignalName = "fold";
-
-    private bool _folded;
-
     [Export]
     public bool ReverseOrder
     {
@@ -30,13 +25,25 @@ public partial class FoldableVBoxContainer : Container
     } = true;
 
     [Export]
-    public bool Folded
+    public bool IsExpanded
     {
-        get => _folded;
+        get;
         set
         {
-            if (_folded == value) return;
-            _folded = value;
+            if (field == value) return;
+            field = value;
+            UpdateMinimumSize();
+            QueueSort();
+        }
+    } = true;
+
+    [Export]
+    public int Separation
+    {
+        get;
+        set
+        {
+            field = value;
             UpdateMinimumSize();
             QueueSort();
         }
@@ -45,7 +52,6 @@ public partial class FoldableVBoxContainer : Container
     public FoldableVBoxContainer()
     {
         ClipContents = true;
-        _setFoldCallable = Callable.From<bool>(SetFold);
     }
 
     public override void _Ready()
@@ -69,7 +75,6 @@ public partial class FoldableVBoxContainer : Container
 
     /// <summary>
     /// The title Control added as an internal back-node.
-    /// If it emits a "fold" signal (bool), the fold state is driven automatically.
     /// </summary>
     public Control Title
     {
@@ -85,22 +90,18 @@ public partial class FoldableVBoxContainer : Container
             var oldTitle = Title;
             if (oldTitle != null)
             {
-                if (oldTitle.HasSignal(FoldSignalName))
-                    oldTitle.Disconnect(FoldSignalName, _setFoldCallable);
                 RemoveChild(oldTitle);
             }
             if (value == null) return;
             AddChild(value, false, InternalMode.Back);
-            if (value.HasSignal(FoldSignalName))
-                value.Connect(FoldSignalName, _setFoldCallable);
         }
     }
 
-    private void SetFold(bool value) => Folded = value;
+    private void SetExpanded(bool value) => IsExpanded = value;
 
     private void DoLayout()
     {
-        int separation = GetThemeConstant("separation", "VBoxContainer");
+        int separation = Separation;
         var title = Title;
         float containerWidth = Size.X;
 
@@ -114,7 +115,7 @@ public partial class FoldableVBoxContainer : Container
 
         float titleH = title != null ? title.GetCombinedMinimumSize().Y : 0;
 
-        if (_folded)
+        if (!IsExpanded)
         {
             if (title != null)
                 FitChildInRect(title, new Rect2(0, 0, containerWidth, titleH));
@@ -203,7 +204,7 @@ public partial class FoldableVBoxContainer : Container
         if (title != null)
             AddItem(title.GetCombinedMinimumSize());
 
-        if (!_folded)
+        if (IsExpanded)
         {
             foreach (Node child in GetChildren())
             {

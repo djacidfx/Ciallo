@@ -26,7 +26,7 @@ public partial class LayerContainer : Container
     public override void _Ready()
     {
         // Free previews in the Godot editor.
-        TreeRoot.QueueFreeChildren();
+        RootContainer.QueueFreeChildren();
         _workingLayerButtonGroup.Pressed += button =>
         {
             var layerControl = (Control)button.GetOwner();
@@ -40,12 +40,32 @@ public partial class LayerContainer : Container
     {
         var layerBlock = CreateBlock(layerE);
         layerE.AddNode(layerBlock);
+        if (layerE.Has<FolderLayerSetting>())
+        {
+            CheckBox dropdownButton = layerBlock.DropdownArrow;
+            var isExpandedProperty = layerE.Get<FolderLayerSetting>().IsExpanded;
+            dropdownButton.Visible = true;
+            dropdownButton.BindBool(isExpandedProperty, out var sub);
+            sub.AddTo(layerE);
+
+            var container = new LayerFolderContainer();
+            container.Title = layerBlock;
+            container.ObserveIsExpanded(isExpandedProperty, out var sub1);
+            sub1.AddTo(layerE);
+            layerE.AddNode(container);
+        }
     }
 
-    public void Insert(Entity layerE, int index)
+    public void Insert(Entity layerE, Entity parentE, int index)
     {
-        var layerBlock = layerE.Get<LayerBlock>();
-        TreeRoot.InsertNodeAt(layerBlock, index);
+        if (layerE.Has<FolderLayerSetting>())
+        {
+            throw new NotImplementedException();
+        }
+        else
+        {
+            RootContainer.InsertNodeAt(layerE.Get<LayerBlock>(), index);
+        }
     }
 
     private LayerBlock CreateBlock(Entity e)
@@ -57,8 +77,7 @@ public partial class LayerContainer : Container
         var block = LayerBlock.New();
         block.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
         block.VisibleButton
-            .BindBool(commonSetting.IsVisible, out var sub0)
-            .RegisterUndo(cmdM);
+            .BindBool(commonSetting.IsVisible, out var sub0);
         var lineEdit = block.GetNode<LabelLineEdit>("%LabelLineEdit")
             .BindString(commonSetting.Name, out var sub1)
             .RegisterUndo(cmdM);
@@ -120,7 +139,7 @@ public partial class LayerContainer : Container
     {
         int srcIdx = src[0];
         int dstIdx = dst[0];
-        TreeRoot.MoveChild(TreeRoot.GetChild(srcIdx), dstIdx);
+        RootContainer.MoveChild(RootContainer.GetChild(srcIdx), dstIdx);
     }
 
     public void Remove(Entity layerE)

@@ -6,10 +6,11 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class FolderLayerSetting
 {
-    [DataMember] public ReactiveProperty<bool> IsFolded = new(false);
+    [DataMember] public ReactiveProperty<bool> IsExpanded = new(true);
 
-    public FolderLayerSetting Clone() => new()
-    {
-        IsFolded = { Value = IsFolded.Value }
-    };
+    public FolderLayerSetting Clone() =>
+        new()
+        {
+            IsExpanded = { Value = IsExpanded.Value }
+        };
 }

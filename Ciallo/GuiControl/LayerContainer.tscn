@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://dv2pfu81kwfn4"]
 
 [ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://GuiControl/LayerContainer.cs" id="1_aydl8"]
+[ext_resource type="Script" uid="uid://c2ahwcgc6f1da" path="res://GuiControl/LayerFolderContainer.cs" id="2_15uhv"]
 [ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://GuiControl/LayerBlock.tscn" id="3_3l7of"]
-[ext_resource type="Script" uid="uid://bchpb7ywhw4ck" path="res://Widget/ReversibleBoxContainer.cs" id="3_icvmy"]
 
 [node name="LayerCotainer" type="ScrollContainer" unique_id=1533297102]
 offset_right = 593.0
@@ -10,21 +10,20 @@ offset_bottom = 294.0
 size_flags_vertical = 3
 script = ExtResource("1_aydl8")
 
-[node name="TreeRoot" type="BoxContainer" parent="." unique_id=1730384767]
+[node name="RootContainer" type="Container" parent="." unique_id=1575722749]
 unique_name_in_owner = true
+clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-theme_override_constants/separation = 0
-vertical = true
-script = ExtResource("3_icvmy")
-metadata/_custom_type_script = "uid://bchpb7ywhw4ck"
+script = ExtResource("2_15uhv")
+metadata/_custom_type_script = "uid://c2ahwcgc6f1da"
 
-[node name="LayerBlock" parent="TreeRoot" unique_id=1522498181 instance=ExtResource("3_3l7of")]
+[node name="LayerBlock" parent="RootContainer" unique_id=1522498181 instance=ExtResource("3_3l7of")]
 layout_mode = 2
 
-[node name="LayerBlock2" parent="TreeRoot" unique_id=1212838773 instance=ExtResource("3_3l7of")]
+[node name="LayerBlock2" parent="RootContainer" unique_id=1212838773 instance=ExtResource("3_3l7of")]
 layout_mode = 2
 
-[node name="LayerBlock3" parent="TreeRoot" unique_id=923519899 instance=ExtResource("3_3l7of")]
+[node name="LayerBlock3" parent="RootContainer" unique_id=923519899 instance=ExtResource("3_3l7of")]
 layout_mode = 2
