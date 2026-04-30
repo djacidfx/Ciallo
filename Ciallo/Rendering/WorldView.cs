@@ -2,8 +2,13 @@ using Godot;
 
 namespace Ciallo.Rendering;
 
-public partial class WorldView : Node2D
+public partial class WorldView : FolderLayerView
 {
-    //// _Ready() invoke when PackScene and Exporting to godot.
+    // Pitfall: _Ready() invoke when PackScene and Exporting to godot.
     // Should always avoid this.
+}
+
+public partial class FolderLayerView : Node2D
+{
+    
 }

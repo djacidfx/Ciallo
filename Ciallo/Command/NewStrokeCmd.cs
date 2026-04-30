@@ -73,7 +73,7 @@ public class NewStrokeCmd : CommandBase
         var events = layerNode.MovedAsAddedRemoved;
         events.Added.Subscribe(et =>
         {
-            (int index, var layerE) = (et.Index, et.Value);
+            (int index, var layerE) = (et.Index, et.Parent);
 
             // View
             var layerView = layerE.Get<ShapeLayerView>();

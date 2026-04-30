@@ -76,7 +76,7 @@ public class NewShapeLayerCmd : CommandBase
         layerNode.Added.Subscribe(et =>
         {
             // Layer panel
-            OnAdd(et.Value, et.Index);
+            OnAdd(et.Parent, et.Index);
         }).AddTo(targetE);
 
         layerNode.Removed.Subscribe(_ =>
@@ -87,7 +87,7 @@ public class NewShapeLayerCmd : CommandBase
         layerNode.Moved.Subscribe(et =>
         {
             OnRemove();
-            OnAdd(et.Value, et.NewIndex);
+            OnAdd(et.Parent, et.NewIndex);
         }).AddTo(targetE);
 
         return;
@@ -98,9 +98,9 @@ public class NewShapeLayerCmd : CommandBase
             document.Get<LayerContainer>().Insert(targetE, index);
 
             // View
-            var worldView = document.Get<WorldView>();
-            worldView.InsertNodeAt(view, index);
-            view.SetOwner(worldView);
+            var folderLayerView = parentE.Get<FolderLayerView>();
+            folderLayerView.InsertNodeAt(view, index);
+            view.SetOwner(folderLayerView.Owner ?? folderLayerView);
 
             // Overlay
             parentE.Get<OverlayHolder>().InsertNodeAt(overlayHolder, index);

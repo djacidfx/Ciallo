@@ -81,12 +81,12 @@ public class NewImageLayerCmd : CommandBase
             Document.Get<LayerContainer>().Insert(targetE, et.Index);
 
             // View
-            var worldView = Document.Get<WorldView>();
-            worldView.InsertNodeAt(sprite, et.Index);
-            sprite.SetOwner(worldView);
+            var folderLayerView = et.Parent.Get<FolderLayerView>();
+            folderLayerView.InsertNodeAt(sprite, et.Index);
+            sprite.SetOwner(folderLayerView.Owner ?? folderLayerView);
 
             // Overlay
-            et.Value.Get<OverlayHolder>().InsertNodeAt(layerOverlay, et.Index);
+            et.Parent.Get<OverlayHolder>().InsertNodeAt(layerOverlay, et.Index);
         }).AddTo(targetE);
 
         events.Removed.Subscribe(_ =>
