@@ -40,7 +40,8 @@ public class PolylineNoSelectionHover : InteractiveSessionBase
             CurrHoveredShape = Entity.Null;
             return;
         }
-        if (!body.SelfEntity.IsDyingOrDead) body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
+        if (!body.SelfEntity.IsDyingOrDead)
+            body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
         CurrHoveredShape = body.SelfEntity;
     }
 
