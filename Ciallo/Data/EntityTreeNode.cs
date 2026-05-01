@@ -159,6 +159,40 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     }
 
     /// <summary>
+    /// Move a node by entity reference. O(siblings) source-index lookup, O(depth) cycle check — no BFS.
+    /// </summary>
+    public void MoveEntity(Entity srcE, Entity dstParentE, int dstIdx)
+    {
+        var srcNode = srcE.Get<T>();
+        var srcParentE = srcNode.ParentValue;
+        int srcIdx = srcNode.Index; // O(siblings)
+
+        if (srcParentE == dstParentE && srcIdx == dstIdx) return;
+
+        // Cycle check: walk up from dstParentE — O(depth)
+        var cursor = dstParentE;
+        while (!cursor.IsNull)
+        {
+            if (cursor == srcE) throw new InvalidOperationException("Cannot move a node into its own descendant.");
+            cursor = cursor.Get<T>().ParentValue;
+        }
+
+        var srcParent = srcParentE.Get<T>();
+        var dstParent = dstParentE.Get<T>();
+
+        if (ReferenceEquals(srcParent, dstParent))
+        {
+            srcParent.MoveChild(srcIdx, dstIdx);
+            return;
+        }
+
+        srcParent.RemoveChildNoSignal(srcIdx);
+        dstParent.InsertChildNoSignal(dstIdx, srcE);
+        var mutation = new TreeMutationEvent(TreeMutationKind.Move, srcE, srcParentE, srcIdx, dstParentE, dstIdx);
+        PublishLocalMutation(mutation);
+    }
+
+    /// <summary>
     /// Move a descendant node to another position. Post-removal coordinates.
     /// </summary>
     /// <param name="srcPath">Which to move.</param>

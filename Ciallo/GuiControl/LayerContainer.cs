@@ -13,6 +13,11 @@ namespace Ciallo.GuiControl;
 /// Manage the layer UI controls. Also hold layer properties.
 /// One instance per document.
 /// </summary>
+/// <remarks>
+/// Design of node hierarchy:
+/// Godot's nodes hierarchy is entirely identical to layer Entity's LayerTreeNode Component hierarchy.
+/// Prefer use Godot's node hierarchy to get index here. It is cached and O(1) operation.
+/// </remarks>
 [SceneTree(root: "Root"), Instantiable]
 public partial class LayerContainer : Container
 {
@@ -53,7 +58,6 @@ public partial class LayerContainer : Container
         }
     }
 
-
     private LayerBlock CreateBlock(Entity e)
     {
         var commonSetting = e.Get<CommonLayerSetting>();
@@ -70,7 +74,11 @@ public partial class LayerContainer : Container
         sub0.AddTo(subs);
         sub1.AddTo(subs);
 
-        block.MouseEntered += () => _mouseHoveringLayer = block;
+        block.MouseEntered += () =>
+        {
+            if (!ReferenceEquals(_mouseHoveringLayer, block))
+                _mouseHoveringLayer = block;
+        };
         block.MouseExited += () =>
         {
             if (ReferenceEquals(_mouseHoveringLayer, block))
@@ -150,12 +158,10 @@ public partial class LayerContainer : Container
 
     private void OnDragEnd(LayerBlock srcLayer, InputEventMouseButton button)
     {
-        // Note: Layers is shown in reversed order, so the index logic is inverted.
-        // Drag hint
+        // Drag hint cleanup
         if (_visibleDropHintLine != null) _visibleDropHintLine.Visible = false;
         _visibleDropHintLine = null;
 
-        // Move layer
         if (_mouseHoveringLayer == null || ReferenceEquals(_mouseHoveringLayer, srcLayer))
         {
             _mouseHoveringLayer = null;
@@ -163,30 +169,49 @@ public partial class LayerContainer : Container
         }
 
         var document = AppDocumentManager.WorkingDocument.CurrentValue;
-        var root = document.Get<LayerTreeNode>();
-        var srcPath = root.FindPathTo(srcLayer.LayerEntity);
-        var dstPath = root.FindPathTo(_mouseHoveringLayer.LayerEntity);
+        var srcE = srcLayer.LayerEntity;
+        var hoverBlock = _mouseHoveringLayer;
+        _mouseHoveringLayer = null;
 
-        // Only support same-parent drag
-        if (!srcPath.Take(srcPath.Length - 1).SequenceEqual(dstPath.Take(dstPath.Length - 1)))
+        var hoverE = hoverBlock.LayerEntity;
+        var hoverNode = hoverE.Get<LayerTreeNode>();
+        var locPos = hoverBlock.GetLocalMousePosition();
+        var size = hoverBlock.Size;
+
+        // Guard: silently ignore if hoverE is srcE itself or a descendant of srcE
+        var cursor = hoverE;
+        while (!cursor.IsNull)
         {
-            _mouseHoveringLayer = null;
+            if (cursor == srcE) return;
+            cursor = cursor.Get<LayerTreeNode>().ParentValue;
+        }
+
+        // Folder's child placement
+        // lower 2/3 → insert as last child (visual top)
+        if (hoverBlock.IsFolder && locPos.Y > size.Y / 3f)
+        {
+            new CommandBuilder(document).MoveLayer(srcE, hoverE, hoverNode.Children.Count).Commit();
             return;
         }
 
-        int srcIdx = srcPath[^1];
-        int dstIdx = dstPath[^1];
-        if (srcIdx < dstIdx) dstIdx--; // post-removal coordinates
+        // Sibling placement
+        // Layers shown in reversed order: upper part of block = higher index = above in screen
+        // Non-folder: upper half → above, lower half → below
+        // Folder top 1/3: always insert above (top of block is closest to what's above in screen)
+        var dstParentE = hoverNode.ParentValue;
+        int hoverIdx = hoverNode.Index;
+        bool insertAbove = hoverBlock.IsFolder || locPos.Y <= size.Y / 2f;
+        int desiredFinalIdx = insertAbove ? hoverIdx + 1 : hoverIdx;
 
-        var locPos = _mouseHoveringLayer.GetLocalMousePosition();
-        var size = _mouseHoveringLayer.Size;
-        if (locPos.Y <= size.Y / 2) dstIdx++; // insert above hovered layer (reverse order)
-
-        var parentPath = srcPath.Take(srcPath.Length - 1).ToArray();
-        var dstFullPath = parentPath.Append(dstIdx).ToArray();
+        // Convert to post-removal coordinates when src and dst share the same parent
+        int dstIdx = desiredFinalIdx;
+        var srcNode = srcE.Get<LayerTreeNode>();
+        if (srcNode.ParentValue == dstParentE && srcNode.Index < desiredFinalIdx)
+            dstIdx--;
 
         new CommandBuilder(document)
-            .MoveLayer(srcPath, dstFullPath).Commit();
+            .MoveLayer(srcE, dstParentE, dstIdx)
+            .Commit();
     }
 
     public void SetWorkingLayerNoSignal(Entity layerE)

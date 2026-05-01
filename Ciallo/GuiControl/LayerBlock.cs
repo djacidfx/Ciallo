@@ -9,6 +9,8 @@ public partial class LayerBlock : Container, IInitable
 {
     public Entity LayerEntity;
 
+    public bool IsFolder => DropdownArrow.Visible;
+
     public override void _EnterTree()
     {
         var parentNode = (LayerFolderContainer)GetParent();

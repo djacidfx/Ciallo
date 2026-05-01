@@ -40,6 +40,7 @@ layout_mode = 2
 theme_override_constants/separation = 0
 
 [node name="Blank" type="Control" parent="." unique_id=1490807382]
+editor_description = "Set blank here but not set container \"seperation\" theme because LayerBlock is used to recieve mouse events, let it cover a blank area intentionally. See LayerBlock's parent code for more detail."
 custom_minimum_size = Vector2(0, 3)
 layout_mode = 2
 mouse_filter = 1
