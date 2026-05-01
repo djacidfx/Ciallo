@@ -61,14 +61,32 @@ public static partial class AppDocumentManager
 
         entityMap.Add(dataDocument, resultDocument); // documents are root layers
 
-        foreach (var layerDataE in dataTreeRoot.Children)
+        LoadChildren(dataDocument, resultDocument);
+
+        void LoadChildren(Entity dataParentE, Entity resultParentE)
         {
-            if (layerDataE.Has<ImageLayerSetting>())
+            foreach (var layerDataE in dataParentE.Get<LayerTreeNode>().Children)
+                LoadLayer(layerDataE, resultParentE);
+        }
+
+        void LoadLayer(Entity layerDataE, Entity resultParentE)
+        {
+            if (layerDataE.Has<FolderLayerSetting>())
+            {
+                var layerE = resultWorld.Create();
+                new CommandBuilder(layerE)
+                    .NewFolderLayer(layerDataE)
+                    .AddToLayerTree(resultParentE)
+                    .Do();
+                entityMap.Add(layerDataE, layerE);
+                LoadChildren(layerDataE, layerE);
+            }
+            else if (layerDataE.Has<ImageLayerSetting>())
             {
                 var layerE = resultWorld.Create();
                 new CommandBuilder(layerE)
                     .NewImageLayer(layerDataE)
-                    .AddToLayerTree(resultDocument)
+                    .AddToLayerTree(resultParentE)
                     .Do();
                 entityMap.Add(layerDataE, layerE);
             }
@@ -77,7 +95,7 @@ public static partial class AppDocumentManager
                 var layerE = resultWorld.Create();
                 new CommandBuilder(layerE)
                     .NewShapeLayer(layerDataE)
-                    .AddToLayerTree(resultDocument)
+                    .AddToLayerTree(resultParentE)
                     .Do();
                 entityMap.Add(layerDataE, layerE);
 
@@ -108,7 +126,7 @@ public static partial class AppDocumentManager
                 var layerE = resultWorld.Create();
                 new CommandBuilder(layerE)
                     .NewVectorFillLayer(layerDataE)
-                    .AddToLayerTree(resultDocument)
+                    .AddToLayerTree(resultParentE)
                     .Do();
                 entityMap.Add(layerDataE, layerE);
 
