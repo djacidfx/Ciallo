@@ -34,18 +34,20 @@ public partial class LayerAction : Control
 
     public void OnNewShapeLayer()
     {
+        var (parentE, index) = GetNewLayerInsertPosition();
         new CommandBuilder(Document.World.Create())
             .NewShapeLayer()
-            .AddToLayerTree(AppDocumentManager.WorkingDocument.Value)
+            .AddToLayerTree(parentE, index)
             .SetWorkingLayer()
             .Commit();
     }
 
     public void OnNewFolderLayer()
     {
+        var (parentE, index) = GetNewLayerInsertPosition();
         new CommandBuilder(Document.World.Create())
             .NewFolderLayer()
-            .AddToLayerTree(AppDocumentManager.WorkingDocument.Value)
+            .AddToLayerTree(parentE, index)
             .SetWorkingLayer()
             .Commit();
     }
@@ -88,9 +90,10 @@ public partial class LayerAction : Control
             return;
         }
         if (image == null) return;
+        var (parentE, index) = GetNewLayerInsertPosition();
         new CommandBuilder(Document.World.Create())
             .NewImageLayer(image)
-            .AddToLayerTree(AppDocumentManager.WorkingDocument.Value)
+            .AddToLayerTree(parentE, index)
             .Commit();
     }
 
@@ -165,5 +168,23 @@ public partial class LayerAction : Control
                 .SetPolylineGeometry(positions, ones, ones, zeros)
                 .SetProperty(e => e.Get<FilledPolygonSetting>().BrushE, brushE);
         }
+    }
+
+    /// <summary>
+    /// Returns the parent entity and insertion index for a new layer based on the current working layer.
+    /// Folder working layer → last child (visual top). Regular layer → sibling above. No selection → append to root.
+    /// </summary>
+    private (Entity parentE, int index) GetNewLayerInsertPosition()
+    {
+        var workingLayerE = Document.Get<SelectionManager>().WorkingLayer.Value;
+        if (workingLayerE.IsNull || workingLayerE.IsDocument)
+            return (AppDocumentManager.WorkingDocument.Value, -1);
+
+        if (workingLayerE.Has<FolderLayerSetting>())
+            return (workingLayerE, -1); // -1 resolves to Children.Count = last child = visual top
+
+        // Regular layer: insert as sibling just above in screen (higher index in reversed display)
+        var layerNode = workingLayerE.Get<LayerTreeNode>();
+        return (layerNode.ParentValue, layerNode.Index + 1);
     }
 }
