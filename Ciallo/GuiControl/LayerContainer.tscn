@@ -1,13 +1,18 @@
-[gd_scene format=3 uid="uid://dv2pfu81kwfn4"]
+[gd_scene format=3 uid="uid://cewp0nvok0fy7"]
 
 [ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://GuiControl/LayerContainer.cs" id="1_aydl8"]
 [ext_resource type="Script" uid="uid://c2ahwcgc6f1da" path="res://GuiControl/LayerFolderContainer.cs" id="2_15uhv"]
 [ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://GuiControl/LayerBlock.tscn" id="3_3l7of"]
+[ext_resource type="Script" uid="uid://bdjd4la8oswpt" path="res://Widget/StrokeRect.cs" id="4_4h4vt"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4h4vt"]
+bg_color = Color(0, 0, 0, 0.74509805)
 
 [node name="LayerCotainer" type="ScrollContainer" unique_id=1533297102]
 offset_right = 593.0
 offset_bottom = 294.0
 size_flags_vertical = 3
+mouse_filter = 2
 script = ExtResource("1_aydl8")
 
 [node name="RootContainer" type="Container" parent="." unique_id=1575722749]
@@ -27,3 +32,24 @@ layout_mode = 2
 
 [node name="LayerBlock3" parent="RootContainer" unique_id=923519899 instance=ExtResource("3_3l7of")]
 layout_mode = 2
+
+[node name="DropHinter" type="Control" parent="." unique_id=1927663369]
+unique_name_in_owner = true
+visible = false
+top_level = true
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("4_4h4vt")
+Color = Color(1, 1, 0.64705884, 1)
+Width = 5.0
+metadata/_custom_type_script = "uid://bdjd4la8oswpt"
+
+[node name="DragLabel" type="Label" parent="." unique_id=1354153089]
+unique_name_in_owner = true
+visible = false
+top_level = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84227896, 0.8422791, 0.842279, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_4h4vt")
+text = "Dragged layer name"

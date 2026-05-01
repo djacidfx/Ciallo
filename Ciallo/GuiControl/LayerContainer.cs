@@ -24,13 +24,14 @@ public partial class LayerContainer : Container
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 
     private bool _isDragging = false;
-    private Control _visibleDropHintLine;
     private LayerBlock _mouseHoveringLayer;
 
     public override void _Ready()
     {
         // Free previews in the Godot editor.
         RootContainer.QueueFreeChildren();
+        DropHinter.MouseFilter = MouseFilterEnum.Ignore;
+
         _workingLayerButtonGroup.Pressed += button =>
         {
             var layerBlock = (LayerBlock)button.GetOwner();
@@ -76,8 +77,7 @@ public partial class LayerContainer : Container
 
         block.MouseEntered += () =>
         {
-            if (!ReferenceEquals(_mouseHoveringLayer, block))
-                _mouseHoveringLayer = block;
+            _mouseHoveringLayer = block;
         };
         block.MouseExited += () =>
         {
@@ -133,46 +133,30 @@ public partial class LayerContainer : Container
         return block;
     }
 
+    private enum DropKind { Silent, FolderChild, Sibling }
 
-    private void OnDragStart(LayerBlock srcLayer, InputEventMouseMotion motion) { }
+    // HoverBlock  : visual block being hovered over
+    // DstE        : FolderChild → folder entity; Sibling → parent entity of insertion point
+    // DstIdx      : post-removal index passed to MoveLayer
+    // InsertAbove : Sibling only — true = line drawn at top edge of hoverBlock in screen space
+    private readonly record struct DropTarget(
+        DropKind Kind,
+        LayerBlock HoverBlock,
+        Entity DstE,
+        int DstIdx,
+        bool InsertAbove = false);
 
-    private void OnDragging(LayerBlock _, InputEventMouseMotion e)
+    /// <summary>
+    /// Classify the current drag operation against <paramref name="srcLayer"/>.
+    /// Returns <see cref="DropKind.Silent"/> when the move should be ignored.
+    /// </summary>
+    private DropTarget ClassifyDrop(LayerBlock srcLayer)
     {
-        if (_mouseHoveringLayer == null)
-        {
-            _visibleDropHintLine?.SetVisible(false);
-            _visibleDropHintLine = null;
-            return;
-        }
-
-        var locPos = _mouseHoveringLayer.GetLocalMousePosition();
-        var size = _mouseHoveringLayer.Size;
-
-        var sep = size.Y / 2;
-        var hintToShow = _mouseHoveringLayer.GetNode<HSeparator>(locPos.Y < sep ? "%AboveHint" : "%BelowHint");
-        if (_visibleDropHintLine == hintToShow) return;
-        if (_visibleDropHintLine != null) _visibleDropHintLine.Visible = false;
-        hintToShow.Visible = true;
-        _visibleDropHintLine = hintToShow;
-    }
-
-    private void OnDragEnd(LayerBlock srcLayer, InputEventMouseButton button)
-    {
-        // Drag hint cleanup
-        if (_visibleDropHintLine != null) _visibleDropHintLine.Visible = false;
-        _visibleDropHintLine = null;
-
         if (_mouseHoveringLayer == null || ReferenceEquals(_mouseHoveringLayer, srcLayer))
-        {
-            _mouseHoveringLayer = null;
-            return;
-        }
+            return new(DropKind.Silent, null, default, -1);
 
-        var document = AppDocumentManager.WorkingDocument.CurrentValue;
         var srcE = srcLayer.LayerEntity;
         var hoverBlock = _mouseHoveringLayer;
-        _mouseHoveringLayer = null;
-
         var hoverE = hoverBlock.LayerEntity;
         var hoverNode = hoverE.Get<LayerTreeNode>();
         var locPos = hoverBlock.GetLocalMousePosition();
@@ -182,36 +166,90 @@ public partial class LayerContainer : Container
         var cursor = hoverE;
         while (!cursor.IsNull)
         {
-            if (cursor == srcE) return;
+            if (cursor == srcE) return new(DropKind.Silent, null, default, -1);
             cursor = cursor.Get<LayerTreeNode>().ParentValue;
         }
 
-        // Folder's child placement
-        // lower 2/3 → insert as last child (visual top)
+        // Folder child placement: lower 2/3 of the folder block
         if (hoverBlock.IsFolder && locPos.Y > size.Y / 3f)
         {
-            new CommandBuilder(document).MoveLayer(srcE, hoverE, hoverNode.Children.Count).Commit();
-            return;
+            int dstIdx = hoverNode.Children.Count;
+            // Post-removal adjustment: srcE already a direct child → MoveChild needs dstIdx < Count
+            var srcNode = srcE.Get<LayerTreeNode>();
+            if (srcNode.ParentValue == hoverE && srcNode.Index < dstIdx)
+                dstIdx--;
+            return new(DropKind.FolderChild, hoverBlock, hoverE, dstIdx);
         }
 
         // Sibling placement
-        // Layers shown in reversed order: upper part of block = higher index = above in screen
-        // Non-folder: upper half → above, lower half → below
-        // Folder top 1/3: always insert above (top of block is closest to what's above in screen)
+        // Layers shown in reversed order: upper half of block = higher index = visually above
         var dstParentE = hoverNode.ParentValue;
         int hoverIdx = hoverNode.Index;
         bool insertAbove = hoverBlock.IsFolder || locPos.Y <= size.Y / 2f;
         int desiredFinalIdx = insertAbove ? hoverIdx + 1 : hoverIdx;
 
-        // Convert to post-removal coordinates when src and dst share the same parent
-        int dstIdx = desiredFinalIdx;
-        var srcNode = srcE.Get<LayerTreeNode>();
-        if (srcNode.ParentValue == dstParentE && srcNode.Index < desiredFinalIdx)
-            dstIdx--;
+        int siblingDstIdx = desiredFinalIdx;
+        var srcNodeSibling = srcE.Get<LayerTreeNode>();
+        if (srcNodeSibling.ParentValue == dstParentE && srcNodeSibling.Index < desiredFinalIdx)
+            siblingDstIdx--;
 
-        new CommandBuilder(document)
-            .MoveLayer(srcE, dstParentE, dstIdx)
-            .Commit();
+        return new(DropKind.Sibling, hoverBlock, dstParentE, siblingDstIdx, insertAbove);
+    }
+
+    private void OnDragStart(LayerBlock srcLayer, InputEventMouseMotion motion)
+    {
+        DragLabel.Text = srcLayer.LayerEntity.Get<CommonLayerSetting>().Name.Value;
+        DragLabel.GlobalPosition = motion.GlobalPosition + new Vector2(16f, -8f);
+        DragLabel.Visible = true;
+    }
+
+    private void OnDragging(LayerBlock srcLayer, InputEventMouseMotion motion)
+    {
+        DragLabel.GlobalPosition = motion.GlobalPosition + new Vector2(16f, -8f);
+
+        var drop = ClassifyDrop(srcLayer);
+
+        if (drop.Kind == DropKind.Silent)
+        {
+            DropHinter.Visible = false;
+            return;
+        }
+
+        if (drop.Kind == DropKind.FolderChild)
+        {
+            DropHinter.GlobalPosition = drop.HoverBlock.GlobalPosition;
+            DropHinter.Size = drop.HoverBlock.Size;
+            DropHinter.Visible = true;
+            return;
+        }
+
+        // Sibling: horizontal line at the insertion edge, respecting indent
+        var hoverBlock = drop.HoverBlock;
+        float lineGlobalY = drop.InsertAbove
+            ? hoverBlock.GlobalPosition.Y
+            : hoverBlock.GlobalPosition.Y + hoverBlock.Size.Y;
+        var indent = hoverBlock.Indent;
+        float indentOffset = indent.Count * indent.Width;
+        DropHinter.GlobalPosition = new Vector2(
+            hoverBlock.GlobalPosition.X + indentOffset,
+            lineGlobalY - DropHinter.Width / 2f);
+        DropHinter.Size = new Vector2(hoverBlock.Size.X - indentOffset, DropHinter.Width);
+        DropHinter.Visible = true;
+    }
+
+    private void OnDragEnd(LayerBlock srcLayer, InputEventMouseButton button)
+    {
+        DropHinter.Visible = false;
+        DragLabel.Visible = false;
+
+        var drop = ClassifyDrop(srcLayer);
+        _mouseHoveringLayer = null;
+
+        if (drop.Kind == DropKind.Silent) return;
+
+        var document = AppDocumentManager.WorkingDocument.CurrentValue;
+        var srcE = srcLayer.LayerEntity;
+        new CommandBuilder(document).MoveLayer(srcE, drop.DstE, drop.DstIdx).Commit();
     }
 
     public void SetWorkingLayerNoSignal(Entity layerE)

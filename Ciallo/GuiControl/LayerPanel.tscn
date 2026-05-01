@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://di0e1em6fxdc2" path="res://GuiControl/LayerPanel.cs" id="1_nug42"]
 [ext_resource type="PackedScene" uid="uid://ckykoq4my4eok" path="res://GuiControl/LayerAction.tscn" id="2_r5bgq"]
 [ext_resource type="PackedScene" uid="uid://cdki2k8di20tg" path="res://GuiControl/LayerProperty.tscn" id="3_mjvju"]
-[ext_resource type="PackedScene" uid="uid://dv2pfu81kwfn4" path="res://GuiControl/LayerContainer.tscn" id="6_4cr57"]
+[ext_resource type="PackedScene" uid="uid://cewp0nvok0fy7" path="res://GuiControl/LayerContainer.tscn" id="6_4cr57"]
 
 [node name="LayerPanel" type="VBoxContainer" unique_id=1116289153 groups=["UncategorizedControl"]]
 offset_right = 478.0

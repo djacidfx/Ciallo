@@ -32,13 +32,6 @@ offset_bottom = 285.0
 theme_override_constants/separation = 0
 script = ExtResource("1_m4dr1")
 
-[node name="AboveHint" type="HSeparator" parent="." unique_id=1320822834]
-unique_name_in_owner = true
-visible = false
-z_index = 1
-layout_mode = 2
-theme_override_constants/separation = 0
-
 [node name="Blank" type="Control" parent="." unique_id=1490807382]
 editor_description = "Set blank here but not set container \"seperation\" theme because LayerBlock is used to recieve mouse events, let it cover a blank area intentionally. See LayerBlock's parent code for more detail."
 custom_minimum_size = Vector2(0, 3)
@@ -106,10 +99,3 @@ middle_mouse_paste_enabled = false
 select_all_on_focus = true
 script = ExtResource("6_okj0m")
 metadata/_custom_type_script = "uid://cnkmrjlwncaqf"
-
-[node name="BelowHint" type="HSeparator" parent="." unique_id=1229193752]
-unique_name_in_owner = true
-visible = false
-z_index = 1
-layout_mode = 2
-theme_override_constants/separation = 0
