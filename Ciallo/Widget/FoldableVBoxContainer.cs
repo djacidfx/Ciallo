@@ -150,31 +150,26 @@ public partial class FoldableVBoxContainer : Container
                 heights[i] += extraSpace * (children[i].SizeFlagsStretchRatio / totalStretch);
         }
 
-        // Step 3: position children according to ReverseOrder.
+        // Step 3: title is always at the top; ReverseOrder only affects content order.
+        float contentOffset = 0;
+        if (title != null)
+        {
+            FitChildInRect(title, new Rect2(0, 0, containerWidth, titleH));
+            contentOffset = titleH + titleSep;
+        }
+
         if (ReverseOrder)
         {
-            // Content starts at y=0 in reverse order; title goes below all content.
-            float offset = 0;
+            float offset = contentOffset;
             for (int i = children.Count - 1; i >= 0; i--)
             {
                 FitChildInRect(children[i], new Rect2(0, offset, containerWidth, heights[i]));
-                offset += heights[i] + separation;
-            }
-            if (title != null)
-            {
-                float titleY = children.Count > 0 ? offset : 0;
-                FitChildInRect(title, new Rect2(0, titleY, containerWidth, titleH));
+                offset += heights[i] + (i > 0 ? separation : 0);
             }
         }
         else
         {
-            // Title at top, content below.
-            float offset = 0;
-            if (title != null)
-            {
-                FitChildInRect(title, new Rect2(0, 0, containerWidth, titleH));
-                offset = titleH + titleSep;
-            }
+            float offset = contentOffset;
             for (int i = 0; i < children.Count; i++)
             {
                 FitChildInRect(children[i], new Rect2(0, offset, containerWidth, heights[i]));
