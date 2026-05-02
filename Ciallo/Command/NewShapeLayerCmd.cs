@@ -39,7 +39,10 @@ public class NewShapeLayerCmd : CommandBase
         targetE.Add(shapeLayerSetting);
 
         // Others
-        ShapeLayerNonDataCreation(targetE);
+        CreateNonDataComponents(targetE);
+
+        // Layer panel
+        targetE.Document.Get<LayerContainer>().Create(targetE);
     }
 
     public override void Do(Entity targetE)
@@ -52,14 +55,13 @@ public class NewShapeLayerCmd : CommandBase
         targetE.Detach<ToSerializeTag>();
     }
 
-    public static void ShapeLayerNonDataCreation(Entity targetE)
+    public static void CreateNonDataComponents(Entity targetE)
     {
         var layerNode = targetE.Get<LayerTreeNode>();
         // View
-        var document = targetE.Document;
-        var view = new ShapeLayerView();
-        view.ObserveLayerSetting(targetE.Get<CommonLayerSetting>()).AddTo(targetE);
-        targetE.AddNode(view);
+        var shapeLayerView = new ShapeLayerView();
+        shapeLayerView.ObserveLayerSetting(targetE.Get<CommonLayerSetting>()).AddTo(targetE);
+        targetE.AddNode(shapeLayerView);
 
         // Overlay
         var overlayHolder = new OverlayHolder();
@@ -70,39 +72,21 @@ public class NewShapeLayerCmd : CommandBase
         targetE.AddNode(bodyHolder);
 
         // Layer tree events
-        layerNode.Added.Subscribe(et =>
-        {
-            // Layer panel
-            document.Get<LayerContainer>().CreateInsert(targetE, et.Index);
-
-            OnAdd(et.Value, et.Index);
-        }).AddTo(targetE);
-
-        layerNode.Removed.Subscribe(_ =>
-        {
-            OnRemove();
-
-            // Layer panel
-            document.Get<LayerContainer>().RemoveFree(targetE);
-        }).AddTo(targetE);
-
-        layerNode.Moved.Subscribe(et =>
-        {
-            OnRemove();
-            OnAdd(et.Value, et.NewIndex);
-
-            // Layer panel
-            document.Get<LayerContainer>().Move([et.OldIndex], [et.NewIndex]);
-        }).AddTo(targetE);
+        var events = layerNode.MovedAsAddedRemoved;
+        events.Added.Subscribe(et => InsertIntoParent(et.Parent, et.Index)).AddTo(targetE);
+        events.Removed.Subscribe(_ => DetachFromParent()).AddTo(targetE);
 
         return;
 
-        void OnAdd(Entity parentE, int index)
+        void InsertIntoParent(Entity parentE, int index)
         {
+            // Layer panel
+            parentE.Get<LayerFolderContainer>().InsertNodeAt(targetE.Get<LayerBlock>(), index);
+
             // View
-            var worldView = document.Get<WorldView>();
-            worldView.InsertNodeAt(view, index);
-            view.SetOwner(worldView);
+            var folderLayerView = parentE.Get<FolderLayerView>();
+            folderLayerView.InsertNodeAt(shapeLayerView, index);
+            shapeLayerView.SetOwner(folderLayerView.Owner ?? folderLayerView);
 
             // Overlay
             parentE.Get<OverlayHolder>().InsertNodeAt(overlayHolder, index);
@@ -111,8 +95,11 @@ public class NewShapeLayerCmd : CommandBase
             parentE.Get<BodyHolder>().InsertNodeAt(bodyHolder, index);
         }
 
-        void OnRemove()
+        void DetachFromParent()
         {
+            // Layer panel
+            targetE.Get<LayerBlock>().RemoveFromParent();
+
             // Body
             bodyHolder.RemoveFromParent();
 
@@ -120,7 +107,7 @@ public class NewShapeLayerCmd : CommandBase
             overlayHolder.RemoveFromParent();
 
             // View
-            view.RemoveFromParent();
+            shapeLayerView.RemoveFromParent();
         }
     }
 }

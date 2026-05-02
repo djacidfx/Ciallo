@@ -9,7 +9,7 @@ using R3;
 
 namespace Ciallo.Tool;
 
-public class PolylineSelectHover : InteractiveSessionBase
+public class PolylineNoSelectionHover : InteractiveSessionBase
 {
     public Entity CurrHoveredShape;
 
@@ -40,7 +40,8 @@ public class PolylineSelectHover : InteractiveSessionBase
             CurrHoveredShape = Entity.Null;
             return;
         }
-        if (!body.SelfEntity.IsDyingOrDead) body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
+        if (!body.SelfEntity.IsDyingOrDead)
+            body.SelfEntity.Get<PolylineWireframe>().SetVisible(true);
         CurrHoveredShape = body.SelfEntity;
     }
 
@@ -68,7 +69,7 @@ public class PolylineSelectHover : InteractiveSessionBase
         if (AppActions.CancelInteraction.IsJustPressed)
         {
             Document.Get<SelectionManager>().SelectedShapes.Clear();
-            Refresh(data);
+            Tool.Machine.Fire(ToolBase.Trigger.Refresh);
             return true;
         }
 
@@ -80,7 +81,7 @@ public class PolylineSelectHover : InteractiveSessionBase
                 cmd.SetTarget(e).RemoveFromLayerTree().DeleteShape();
             }
             cmd.Commit();
-            Refresh(data);
+            Tool.Machine.Fire(ToolBase.Trigger.Refresh);
             return true;
         }
 

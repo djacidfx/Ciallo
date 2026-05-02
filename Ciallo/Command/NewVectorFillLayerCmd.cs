@@ -51,7 +51,7 @@ public class NewVectorFillLayerCmd : CommandBase
         targetE.Add(helper);
 
         // Others
-        NewShapeLayerCmd.ShapeLayerNonDataCreation(targetE);
+        NewShapeLayerCmd.CreateNonDataComponents(targetE);
 
         // Overlay extra
         var overlayHolder = targetE.Get<OverlayHolder>();

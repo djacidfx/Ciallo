@@ -24,23 +24,35 @@ public class DeleteLayerCmd : CommandBase
         if (!node.IsLeaf)
         {
             _deleteChildrenCmd = new CommandBuilder();
-
-            foreach (var shapeE in node.Children.AsEnumerable().Reverse())
+            bool targetIsFolder = targetE.Has<FolderLayerSetting>();
+            foreach (var childE in node.Children.AsEnumerable().Reverse())
             {
-                _deleteChildrenCmd.SetTarget(shapeE)
-                    .RemoveFromLayerTree()
-                    .DeleteShape();
-                _deletedEntities.Add(shapeE);
+                // By design, a folder layer can only contain layers, other layers can only contain shapes
+                _deleteChildrenCmd.SetTarget(childE)
+                    .RemoveFromLayerTree();
+                if (targetIsFolder)
+                    _deleteChildrenCmd.DeleteLayer();
+                else _deleteChildrenCmd.DeleteShape();
+
+                CollectAllDescendants(childE, _deletedEntities);
             }
         }
         _deletedEntities.Add(targetE);
+    }
+
+    // Post-order: children before the node itself, matching OnDeletedAsUndo deletion order.
+    private static void CollectAllDescendants(Entity e, List<Entity> list)
+    {
+        foreach (var childE in e.Get<LayerTreeNode>().Children)
+            CollectAllDescendants(childE, list);
+        list.Add(e);
     }
 
     public override void Do(Entity targetE)
     {
         // If vector fill layer
         targetE.TryGet<ArrangementSynchronizationHelper>()?.Unsubscribe();
-        
+
         // Delete children
         _deleteChildrenCmd?.Do();
 

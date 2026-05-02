@@ -28,10 +28,10 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     private readonly Subject<TreeMutationEvent> _mutations = new(); // include events from descendants
 
     /// Self events emitted after current node has been added/Removed
-    public readonly Subject<CollectionAddEvent<Entity>> Added = new(); // CollectionAddEvent pass Index, Parent entity
-    public readonly Subject<CollectionRemoveEvent<Entity>> Removed = new();
-    public readonly Subject<CollectionMoveEvent<Entity>> Moved = new(); // srcIndex, dstIndex, Parent entity
-    public MoveOrReparentAsExitEnter MovedAsAddedRemoved;
+    public readonly Subject<ChildInsertedEvent> Added = new();
+    public readonly Subject<ChildRemovedEvent> Removed = new();
+    public readonly Subject<ChildMovedEvent> Moved = new();
+    public readonly MoveOrReparentAsExitEnter MovedAsAddedRemoved;
 
     public int Index => ParentValue.Get<T>()._children.IndexOf(Self);
     public IReadOnlyList<Entity> Children => _children;
@@ -39,10 +39,14 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public bool IsLeaf => _children.Count == 0;
     public bool IsRoot => ParentValue.IsNull;
 
+    public EntityTreeNode()
+    {
+        MovedAsAddedRemoved = new(Added, Removed, Moved);
+    }
+
     public void Init(Entity self)
     {
         Self = self;
-        MovedAsAddedRemoved = new(Added, Removed, Moved);
     }
 
     public void Destroy()
@@ -155,12 +159,48 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     }
 
     /// <summary>
+    /// Move a node by entity reference. O(siblings) source-index lookup, O(depth) cycle check — no BFS.
+    /// </summary>
+    public void MoveEntity(Entity srcE, Entity dstParentE, int dstIdx)
+    {
+        var srcNode = srcE.Get<T>();
+        var srcParentE = srcNode.ParentValue;
+        int srcIdx = srcNode.Index; // O(siblings)
+
+        if (srcParentE == dstParentE && srcIdx == dstIdx) return;
+
+        // Cycle check: walk up from dstParentE — O(depth)
+        var cursor = dstParentE;
+        while (!cursor.IsNull)
+        {
+            if (cursor == srcE) throw new InvalidOperationException("Cannot move a node into its own descendant.");
+            cursor = cursor.Get<T>().ParentValue;
+        }
+
+        var srcParent = srcParentE.Get<T>();
+        var dstParent = dstParentE.Get<T>();
+
+        if (ReferenceEquals(srcParent, dstParent))
+        {
+            srcParent.MoveChild(srcIdx, dstIdx);
+            return;
+        }
+
+        srcParent.RemoveChildNoSignal(srcIdx);
+        dstParent.InsertChildNoSignal(dstIdx, srcE);
+        var mutation = new TreeMutationEvent(TreeMutationKind.Move, srcE, srcParentE, srcIdx, dstParentE, dstIdx);
+        PublishLocalMutation(mutation);
+    }
+
+    /// <summary>
     /// Move a descendant node to another position. Post-removal coordinates.
     /// </summary>
     /// <param name="srcPath">Which to move.</param>
     /// <param name="dstPath">Insertion path.</param>
     public void MoveDescendant(IReadOnlyList<int> srcPath, IReadOnlyList<int> dstPath)
     {
+        if (srcPath.SequenceEqual(dstPath)) return;
+
         // Resolve source
         var srcParentPath = srcPath.SkipLast(1).ToArray();
         var srcParent = GetDescendantNode(srcParentPath);

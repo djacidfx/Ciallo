@@ -6,7 +6,7 @@ namespace Ciallo;
 
 public static class BindCheckButton
 {
-    private static void BindBool(this BaseButton button, ReactiveProperty<bool> property, out CompositeDisposable subs)
+    public static void BindBool(this BaseButton button, ReactiveProperty<bool> property, out CompositeDisposable subs)
     {
         if (!button.ToggleMode) throw new ArgumentException("Button must be in toggle mode", nameof(button));
         subs = new CompositeDisposable();

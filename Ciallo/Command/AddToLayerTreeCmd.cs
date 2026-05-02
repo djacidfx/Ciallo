@@ -21,16 +21,15 @@ public class AddToLayerTreeCmd : CommandBase
             _index = _parentE.Get<LayerTreeNode>().Children.Count + _index + 1;
     }
 
-    public override void Do(Entity strokeE)
+    public override void Do(Entity targetE)
     {
-        // Data
-        _parentE.Get<LayerTreeNode>().InsertChild(_index, strokeE);
+        _parentE.Get<LayerTreeNode>().InsertChild(_index, targetE);
     }
 
-    public override void Undo(Entity strokeE)
+    public override void Undo(Entity targetE)
     {
         // Selection manager
-        Document.Get<SelectionManager>().SelectedShapes.Remove(strokeE);
+        Document.Get<SelectionManager>().SelectedShapes.Remove(targetE);
 
         _parentE.Get<LayerTreeNode>().RemoveChild(_index);
     }

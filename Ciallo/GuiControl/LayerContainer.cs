@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
@@ -14,83 +13,82 @@ namespace Ciallo.GuiControl;
 /// Manage the layer UI controls. Also hold layer properties.
 /// One instance per document.
 /// </summary>
+/// <remarks>
+/// Design of node hierarchy:
+/// - Root is a "implicit folder"
+/// - Godot's nodes hierarchy is entirely identical to layer Entity's LayerTreeNode Component hierarchy.
+/// Prefer use Godot's node hierarchy to get index here. It is cached and O(1) operation.
+/// </remarks>
+[SceneTree(root: "Root"), Instantiable]
 public partial class LayerContainer : Container
 {
-    private VBoxContainer _rootContainer; // all layers controls are direct children of this container.
-    private Container _layerPropertyContainer;
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 
     private bool _isDragging = false;
-    private Control _visibleDropHintLine;
-    private Control _mouseHoveringLayer;
-
-    // Manually manage subscriptions since layer blocks need to leave tree, which disposes subscriptions with AddTo.
-    private readonly Dictionary<Entity, CompositeDisposable> _subscriptions = [];
-
-    [OnInstantiate]
-    private void Initialise() { }
+    private LayerBlock _mouseHoveringLayer;
 
     public override void _Ready()
     {
-        _rootContainer = GetNode<VBoxContainer>("%TreeRoot");
-        _layerPropertyContainer = GetNode<Container>("%LayerPropertyContainer");
         // Free previews in the Godot editor.
-        _rootContainer.QueueFreeChildren();
-        _layerPropertyContainer.QueueFreeChildren();
+        RootContainer.QueueFreeChildren();
+        DropHinter.MouseFilter = MouseFilterEnum.Ignore;
+
         _workingLayerButtonGroup.Pressed += button =>
         {
-            var layerControl = (Control)button.GetOwner();
-            var document = AppDocumentManager.WorkingDocument.CurrentValue;
-            var layerE = document.Get<LayerTreeNode>().Children[layerControl.GetIndex()];
-            new CommandBuilder(layerE).SetWorkingLayer().Commit();
+            var layerBlock = (LayerBlock)button.GetOwner();
+            new CommandBuilder(layerBlock.LayerEntity).SetWorkingLayer().Commit();
         };
     }
 
-    public void CreateInsert(Entity layerE, int index)
+    public void Create(Entity layerE)
     {
-        _subscriptions[layerE] = new CompositeDisposable();
-        CreateInsertBlock(layerE, index);
-        CreateAddProperty(layerE);
-    }
+        var layerBlock = CreateBlock(layerE);
+        layerE.AddNode(layerBlock);
+        if (layerE.Has<FolderLayerSetting>())
+        {
+            var dropdownButton = layerBlock.DropdownArrow;
+            var isExpandedProperty = layerE.Get<FolderLayerSetting>().IsExpanded;
+            dropdownButton.Visible = true;
+            dropdownButton.BindBool(isExpandedProperty, out var sub);
+            sub.AddTo(layerE);
 
-    public void CreateAddProperty(Entity e)
-    {
-        var property = LayerProperty.Instantiate();
-        _layerPropertyContainer.AddChild(property);
-        property.VisibleIf(AppDocumentManager.WorkingDocument.CurrentValue.Get<SelectionManager>().WorkingLayer, e);
-        e.Add(property);
-
-        property.Opacity
-            .BindNumber(e.Get<CommonLayerSetting>().Opacity)
-            .RegisterUndo(e.Document.Get<CommandManager>());
-    }
-
-    public void CreateInsertBlock(Entity e, int index)
-    {
-        var layerControl = CreateBlock(e);
-        _rootContainer.InsertNodeAt(layerControl, index);
-        e.Add(layerControl);
+            var container = new LayerFolderContainer();
+            container.Title = layerBlock;
+            container.ObserveIsExpanded(isExpandedProperty, out var sub1);
+            sub1.AddTo(layerE);
+            layerE.AddNode(container);
+        }
+        else
+        {
+            layerBlock.DropdownArrow.Visible = false;
+        }
     }
 
     private LayerBlock CreateBlock(Entity e)
     {
         var commonSetting = e.Get<CommonLayerSetting>();
-        var subs = _subscriptions[e];
+        var subs = new CompositeDisposable().AddTo(e);
         var cmdM = e.Document.Get<CommandManager>();
 
-        var block = LayerBlock.Instantiate();
+        var block = LayerBlock.New();
         block.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
         block.VisibleButton
-            .BindBool(commonSetting.IsVisible, out var sub0)
-            .RegisterUndo(cmdM);
+            .BindBool(commonSetting.IsVisible, out var sub0);
         var lineEdit = block.GetNode<LabelLineEdit>("%LabelLineEdit")
             .BindString(commonSetting.Name, out var sub1)
             .RegisterUndo(cmdM);
         sub0.AddTo(subs);
         sub1.AddTo(subs);
 
-        block.MouseEntered += () => _mouseHoveringLayer = block;
-        block.MouseExited += () => _mouseHoveringLayer = null;
+        block.MouseEntered += () =>
+        {
+            _mouseHoveringLayer = block;
+        };
+        block.MouseExited += () =>
+        {
+            if (ReferenceEquals(_mouseHoveringLayer, block))
+                _mouseHoveringLayer = null;
+        };
 
         var guiInput = lineEdit
             .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
@@ -140,75 +138,155 @@ public partial class LayerContainer : Container
         return block;
     }
 
-    public void Move(IReadOnlyList<int> src, IReadOnlyList<int> dst)
-    {
-        int srcIdx = src[0];
-        int dstIdx = dst[0];
-        _rootContainer.MoveChild(_rootContainer.GetChild(srcIdx), dstIdx);
-    }
+    private enum DropKind { Silent, FolderChild, Sibling }
 
-    public void RemoveFree(Entity layerE)
-    {
-        // Layer block
-        layerE.Get<LayerBlock>().RemoveFromParent(); // necessary to avoid index error
-        layerE.Get<LayerBlock>().QueueFree();
-        layerE.Remove<LayerBlock>();
+    // DstE    : FolderChild → folder entity (or document root); Sibling → parent entity
+    // DstIdx  : raw (pre-removal) insertion index; post-removal adjustment is done in MoveLayerCmd
+    private readonly record struct DropTarget(
+        DropKind Kind,
+        Entity DstE,
+        int DstIdx);
 
-        // Layer property
-        layerE.Get<LayerProperty>().RemoveFromParent();
-        layerE.Get<LayerProperty>().QueueFree();
-        layerE.Remove<LayerProperty>();
-
-        _subscriptions[layerE].Dispose();
-        _subscriptions.Remove(layerE);
-    }
-
-    private void OnDragStart(LayerBlock srcLayer, InputEventMouseMotion motion) { }
-
-    private void OnDragging(LayerBlock _, InputEventMouseMotion e)
+    /// <summary>
+    /// Classify the current drag operation against <paramref name="srcLayer"/>.
+    /// Returns <see cref="DropKind.Silent"/> when the move should be ignored.
+    /// Return pre-removal index
+    /// </summary>
+    private DropTarget ClassifyDrop(LayerBlock srcLayer)
     {
         if (_mouseHoveringLayer == null)
         {
-            _visibleDropHintLine?.SetVisible(false);
-            _visibleDropHintLine = null;
+            // Mouse inside the container but not over any block → child 0 of document root (visual bottom)
+            if (this.GetGlobalRect().HasPoint(GetViewport().GetMousePosition()))
+            {
+                var docE = AppDocumentManager.WorkingDocument.CurrentValue;
+                return new(DropKind.FolderChild, docE, 0);
+            }
+            return new(DropKind.Silent, default, -1);
+        }
+
+        if (ReferenceEquals(_mouseHoveringLayer, srcLayer))
+            return new(DropKind.Silent, default, -1);
+
+        var srcE = srcLayer.LayerEntity;
+        var hoverBlock = _mouseHoveringLayer;
+        var hoverE = hoverBlock.LayerEntity;
+        var hoverNode = hoverE.Get<LayerTreeNode>();
+        var locPos = hoverBlock.GetLocalMousePosition();
+        var size = hoverBlock.Size;
+
+        // Guard: silently ignore if hoverE is srcE itself or a descendant of srcE
+        var cursor = hoverE;
+        while (!cursor.IsNull)
+        {
+            if (cursor == srcE) return new(DropKind.Silent, default, -1);
+            cursor = cursor.Get<LayerTreeNode>().ParentValue;
+        }
+
+        // Folder child placement: lower 2/3 of the folder block
+        if (hoverBlock.IsFolder && locPos.Y > size.Y / 3f)
+            return new(DropKind.FolderChild, hoverE, hoverNode.Children.Count);
+
+        // Sibling placement — store raw desiredFinalIdx; post-removal adjustment is in MoveLayerCmd
+        // Layers shown in reversed order: upper half of block = higher index = visually above
+        var dstParentE = hoverNode.ParentValue;
+        int hoverIdx = hoverNode.Index;
+        int desiredFinalIdx = (hoverBlock.IsFolder || locPos.Y <= size.Y / 2f) ? hoverIdx + 1 : hoverIdx;
+
+        return new(DropKind.Sibling, dstParentE, desiredFinalIdx);
+    }
+
+    private void OnDragStart(LayerBlock srcLayer, InputEventMouseMotion motion)
+    {
+        DragLabel.Text = srcLayer.LayerEntity.Get<CommonLayerSetting>().Name.Value;
+        DragLabel.GlobalPosition = motion.GlobalPosition + new Vector2(16f, -8f);
+        DragLabel.Visible = true;
+    }
+
+    private void OnDragging(LayerBlock srcLayer, InputEventMouseMotion motion)
+    {
+        DragLabel.GlobalPosition = motion.GlobalPosition + new Vector2(16f, -8f);
+
+        var drop = ClassifyDrop(srcLayer);
+
+        if (drop.Kind == DropKind.Silent)
+        {
+            DropHinter.Visible = false;
             return;
         }
 
-        var locPos = _mouseHoveringLayer.GetLocalMousePosition();
-        var size = _mouseHoveringLayer.Size;
+        if (drop.Kind == DropKind.FolderChild)
+        {
+            if (!drop.DstE.IsDocument)
+            {
+                // Border framing the LabelLineEdit of the target folder block
+                var labelLineEdit = drop.DstE.Get<LayerBlock>().LabelLineEdit;
+                DropHinter.GlobalPosition = labelLineEdit.GlobalPosition;
+                DropHinter.Size = labelLineEdit.Size;
+            }
+            else
+            {
+                // Root: line at the bottom edge, starting at DropdownArrow X of the bottommost child
+                var refBlock = drop.DstE.Get<LayerTreeNode>().Children[0].Get<LayerBlock>();
+                float startX = refBlock.DropdownArrow.GlobalPosition.X;
+                float lineY = RootContainer.GlobalPosition.Y + RootContainer.Size.Y;
+                DropHinter.GlobalPosition = new Vector2(startX, lineY - DropHinter.Width / 2f);
+                DropHinter.Size = new Vector2(refBlock.GlobalPosition.X + refBlock.Size.X - startX, DropHinter.Width);
+            }
+            DropHinter.Visible = true;
+            return;
+        }
 
-        var sep = size.Y / 2; // separation on whether the drop target is above or below the hovering layer.
-        var hintToShow = _mouseHoveringLayer.GetNode<HSeparator>(locPos.Y < sep ? "%AboveHint" : "%BelowHint");
-        if (_visibleDropHintLine == hintToShow) return;
-        if (_visibleDropHintLine != null) _visibleDropHintLine.Visible = false;
-        hintToShow.Visible = true;
-        _visibleDropHintLine = hintToShow;
+        // Sibling: horizontal line at the insertion boundary
+        {
+            var dstChildren = drop.DstE.Get<LayerTreeNode>().Children;
+            int dstIdx = drop.DstIdx;
+
+            // DstIdx < Count → line at the bottom of Children[dstIdx] (the item being pushed down)
+            // DstIdx == Count → line at the top of the topmost child (insert above all)
+            LayerBlock refBlock;
+            float lineGlobalY;
+            if (dstIdx < dstChildren.Count)
+            {
+                refBlock = dstChildren[dstIdx].Get<LayerBlock>();
+                lineGlobalY = refBlock.GlobalPosition.Y + refBlock.Size.Y;
+            }
+            else
+            {
+                refBlock = dstChildren[^1].Get<LayerBlock>();
+                lineGlobalY = refBlock.GlobalPosition.Y;
+            }
+
+            // X start: LabelLineEdit of the parent folder; DropdownArrow of refBlock for document root
+            float startX = !drop.DstE.IsDocument
+                ? drop.DstE.Get<LayerBlock>().LabelLineEdit.GlobalPosition.X
+                : refBlock.DropdownArrow.GlobalPosition.X;
+            DropHinter.GlobalPosition = new Vector2(startX, lineGlobalY - DropHinter.Width / 2f);
+            DropHinter.Size = new Vector2(refBlock.GlobalPosition.X + refBlock.Size.X - startX, DropHinter.Width);
+            DropHinter.Visible = true;
+        }
     }
 
     private void OnDragEnd(LayerBlock srcLayer, InputEventMouseButton button)
     {
-        // Note: Layers is shown in reversed order, so the index logic is inverted.
-        // Drag hint
-        if (_visibleDropHintLine != null) _visibleDropHintLine.Visible = false;
-        _visibleDropHintLine = null;
+        DropHinter.Visible = false;
+        DragLabel.Visible = false;
 
-        // Move layer
-        if (_mouseHoveringLayer == null || ReferenceEquals(_mouseHoveringLayer, srcLayer))
-        {
-            _mouseHoveringLayer = null;
-            return;
-        }
+        var drop = ClassifyDrop(srcLayer);
+        _mouseHoveringLayer = null;
 
-        var srcIndex = srcLayer.GetIndex();
-        var dstIndex = _mouseHoveringLayer.GetIndex();
-        if (srcIndex < dstIndex) dstIndex--; // account for the removal of the source layer.
+        if (drop.Kind == DropKind.Silent) return;
 
-        var locPos = _mouseHoveringLayer.GetLocalMousePosition();
-        var size = _mouseHoveringLayer.Size;
-        if (locPos.Y <= size.Y / 2) dstIndex++; // insert after the hovering layer.
+        var document = AppDocumentManager.WorkingDocument.CurrentValue;
+        var srcE = srcLayer.LayerEntity;
 
-        new CommandBuilder(AppDocumentManager.WorkingDocument.CurrentValue)
-            .MoveLayer([srcIndex], [dstIndex]).Commit();
+        // Convert raw DstIdx to post-removal index expected by MoveLayer
+        int dstIdx = drop.DstIdx;
+        var srcNode = srcE.Get<LayerTreeNode>();
+        if (srcNode.ParentValue == drop.DstE && srcNode.Index < dstIdx)
+            dstIdx--;
+
+        new CommandBuilder(document).MoveLayer(srcE, drop.DstE, dstIdx).Commit();
     }
 
     public void SetWorkingLayerNoSignal(Entity layerE)

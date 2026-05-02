@@ -1,5 +1,4 @@
 ﻿using Frent;
-using ObservableCollections;
 using R3;
 
 namespace Ciallo.Data;
@@ -26,18 +25,35 @@ public enum TreeMutationKind
     Move,
 }
 
+/// <summary>Fired on a child entity when it is inserted into a parent.</summary>
+public readonly record struct ChildInsertedEvent(int Index, Entity Parent);
+
+/// <summary>Fired on a child entity when it is removed from its parent.</summary>
+public readonly record struct ChildRemovedEvent(int Index, Entity Parent);
+
+/// <summary>Fired on a child entity when it is moved within (or across) parents.</summary>
+public readonly record struct ChildMovedEvent(int OldIndex, int NewIndex, Entity Parent);
+
 public record MoveOrReparentAsExitEnter
 {
     public MoveOrReparentAsExitEnter(
-        Observable<CollectionAddEvent<Entity>> treeEntered,
-        Observable<CollectionRemoveEvent<Entity>> treeExited,
-        Observable<CollectionMoveEvent<Entity>> moved)
+        Observable<ChildInsertedEvent> treeEntered,
+        Observable<ChildRemovedEvent> treeExited,
+        Observable<ChildMovedEvent> moved)
     {
-        // Order matters, moved trigger exit first
-        Removed = treeExited.Merge(moved.Select(et => new CollectionRemoveEvent<Entity>(et.OldIndex, et.Value)));
-        Added = treeEntered.Merge(moved.Select(et => new CollectionAddEvent<Entity>(et.NewIndex, et.Value)));
+        // Use dedicated subjects so that Removed always fires before Added
+        // regardless of subscriber registration order.
+        var movedRemoved = new Subject<ChildRemovedEvent>();
+        var movedAdded = new Subject<ChildInsertedEvent>();
+        moved.Subscribe(et =>
+        {
+            movedRemoved.OnNext(new ChildRemovedEvent(et.OldIndex, et.Parent));
+            movedAdded.OnNext(new ChildInsertedEvent(et.NewIndex, et.Parent));
+        });
+        Removed = treeExited.Merge(movedRemoved);
+        Added = treeEntered.Merge(movedAdded);
     }
 
-    public readonly Observable<CollectionAddEvent<Entity>> Added;
-    public readonly Observable<CollectionRemoveEvent<Entity>> Removed;
+    public readonly Observable<ChildInsertedEvent> Added;
+    public readonly Observable<ChildRemovedEvent> Removed;
 }

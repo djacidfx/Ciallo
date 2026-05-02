@@ -8,7 +8,7 @@ using Godot;
 
 namespace Ciallo.Tool;
 
-public class PolylineTransformHover : PolylineSelectHover
+public class PolylineTransformHover : PolylineNoSelectionHover
 {
     public Body RotationBody;
     public Body[] CornerBodies = [];

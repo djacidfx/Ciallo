@@ -69,34 +69,36 @@ public class NewImageLayerCmd : CommandBase
             layerOverlay.UpdateGeometry();
         }).AddTo(targetE);
 
+        // Layer panel
+        targetE.Document.Get<LayerContainer>().Create(targetE);
+
         // Layer tree events
         var events = layerNode.MovedAsAddedRemoved;
 
         events.Added.Subscribe(et =>
         {
-            // Panel
-            var layerContainer = Document.Get<LayerContainer>();
-            layerContainer.CreateInsert(targetE, et.Index);
+            // Layer panel
+            et.Parent.Get<LayerFolderContainer>().InsertNodeAt(targetE.Get<LayerBlock>(), et.Index);
 
             // View
-            var worldView = Document.Get<WorldView>();
-            worldView.InsertNodeAt(sprite, et.Index);
-            sprite.SetOwner(worldView);
+            var folderLayerView = et.Parent.Get<FolderLayerView>();
+            folderLayerView.InsertNodeAt(sprite, et.Index);
+            sprite.SetOwner(folderLayerView.Owner ?? folderLayerView);
 
             // Overlay
-            et.Value.Get<OverlayHolder>().InsertNodeAt(layerOverlay, et.Index);
+            et.Parent.Get<OverlayHolder>().InsertNodeAt(layerOverlay, et.Index);
         }).AddTo(targetE);
 
         events.Removed.Subscribe(_ =>
         {
+            // Layer panel
+            targetE.Get<LayerBlock>().RemoveFromParent();
+
             // Overlay
             layerOverlay.RemoveFromParent();
 
             // View
             sprite.RemoveFromParent();
-
-            // Panel
-            Document.Get<LayerContainer>().RemoveFree(targetE);
         }).AddTo(targetE);
     }
 

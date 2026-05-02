@@ -5,12 +5,11 @@ using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
-using ObservableCollections;
 using R3;
 
 namespace Ciallo.Tool;
 
-public class PolylineBezierDeformHover : PolylineSelectHover
+public class PolylineBezierDeformHover : PolylineNoSelectionHover
 {
     public BezierPoint[] Curve;
 
@@ -18,7 +17,7 @@ public class PolylineBezierDeformHover : PolylineSelectHover
     public Body CenterlineBody;
     public readonly List<Body[]> PointBodies = [];
 
-    protected ObservableList<Entity> SelectedShapes;
+    protected List<Entity> SelectedShapes = [];
 
     public bool CanDeform
     {
@@ -41,7 +40,7 @@ public class PolylineBezierDeformHover : PolylineSelectHover
     {
         Subs = new();
         var worldBody = Document.Get<WorldBody>();
-        SelectedShapes = Document.Get<SelectionManager>().SelectedShapes;
+        SelectedShapes.AddRange(Document.Get<SelectionManager>().SelectedShapes);
 
         // Enable cursor detections
         worldBody.EnableHoverDetection = true;
@@ -175,6 +174,7 @@ public class PolylineBezierDeformHover : PolylineSelectHover
         CenterlineBody?.QueueFree();
         CenterlineBody = null;
         SelectedShapes.ForEach(e => e.Get<Body>().ProcessMode = Node.ProcessModeEnum.Inherit);
+        SelectedShapes.Clear();
         base.Cancel();
     }
 }
