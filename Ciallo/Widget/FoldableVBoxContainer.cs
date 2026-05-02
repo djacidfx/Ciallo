@@ -180,7 +180,7 @@ public partial class FoldableVBoxContainer : Container
 
     public override Vector2 _GetMinimumSize()
     {
-        int separation = GetThemeConstant("separation", "VBoxContainer");
+        int separation = Separation;
         var title = Title;
 
         float width = 0;
