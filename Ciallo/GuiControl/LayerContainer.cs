@@ -15,7 +15,8 @@ namespace Ciallo.GuiControl;
 /// </summary>
 /// <remarks>
 /// Design of node hierarchy:
-/// Godot's nodes hierarchy is entirely identical to layer Entity's LayerTreeNode Component hierarchy.
+/// - Root is a "implicit folder"
+/// - Godot's nodes hierarchy is entirely identical to layer Entity's LayerTreeNode Component hierarchy.
 /// Prefer use Godot's node hierarchy to get index here. It is cached and O(1) operation.
 /// </remarks>
 [SceneTree(root: "Root"), Instantiable]
@@ -45,7 +46,7 @@ public partial class LayerContainer : Container
         layerE.AddNode(layerBlock);
         if (layerE.Has<FolderLayerSetting>())
         {
-            CheckBox dropdownButton = layerBlock.DropdownArrow;
+            var dropdownButton = layerBlock.DropdownArrow;
             var isExpandedProperty = layerE.Get<FolderLayerSetting>().IsExpanded;
             dropdownButton.Visible = true;
             dropdownButton.BindBool(isExpandedProperty, out var sub);
@@ -56,6 +57,10 @@ public partial class LayerContainer : Container
             container.ObserveIsExpanded(isExpandedProperty, out var sub1);
             sub1.AddTo(layerE);
             layerE.AddNode(container);
+        }
+        else
+        {
+            layerBlock.DropdownArrow.Visible = false;
         }
     }
 
@@ -152,7 +157,22 @@ public partial class LayerContainer : Container
     /// </summary>
     private DropTarget ClassifyDrop(LayerBlock srcLayer)
     {
-        if (_mouseHoveringLayer == null || ReferenceEquals(_mouseHoveringLayer, srcLayer))
+        if (_mouseHoveringLayer == null)
+        {
+            // Mouse inside the container but not over any block → child 0 of document root (visual bottom)
+            if (RootContainer.GetGlobalRect().HasPoint(GetViewport().GetMousePosition()))
+            {
+                var docE = AppDocumentManager.WorkingDocument.CurrentValue;
+                int dstIdx = 0;
+                var srcNode = srcLayer.LayerEntity.Get<LayerTreeNode>();
+                if (srcNode.ParentValue == docE && srcNode.Index < dstIdx)
+                    dstIdx--;
+                return new(DropKind.FolderChild, null, docE, dstIdx);
+            }
+            return new(DropKind.Silent, null, default, -1);
+        }
+
+        if (ReferenceEquals(_mouseHoveringLayer, srcLayer))
             return new(DropKind.Silent, null, default, -1);
 
         var srcE = srcLayer.LayerEntity;
@@ -217,24 +237,39 @@ public partial class LayerContainer : Container
 
         if (drop.Kind == DropKind.FolderChild)
         {
-            DropHinter.GlobalPosition = drop.HoverBlock.GlobalPosition;
-            DropHinter.Size = drop.HoverBlock.Size;
+            if (drop.HoverBlock != null)
+            {
+                // Draw StrokeRect border framing the whole folder block
+                DropHinter.GlobalPosition = drop.HoverBlock.GlobalPosition;
+                DropHinter.Size = drop.HoverBlock.Size;
+            }
+            else
+            {
+                // Root folder: line at the bottom edge of RootContainer (visual bottom = child 0)
+                float lineY = RootContainer.GlobalPosition.Y + RootContainer.Size.Y;
+                DropHinter.GlobalPosition = new Vector2(
+                    RootContainer.GlobalPosition.X,
+                    lineY - DropHinter.Width / 2f);
+                DropHinter.Size = new Vector2(RootContainer.Size.X, DropHinter.Width);
+            }
             DropHinter.Visible = true;
             return;
         }
 
         // Sibling: horizontal line at the insertion edge, respecting indent
-        var hoverBlock = drop.HoverBlock;
-        float lineGlobalY = drop.InsertAbove
-            ? hoverBlock.GlobalPosition.Y
-            : hoverBlock.GlobalPosition.Y + hoverBlock.Size.Y;
-        var indent = hoverBlock.Indent;
-        float indentOffset = indent.Count * indent.Width;
-        DropHinter.GlobalPosition = new Vector2(
-            hoverBlock.GlobalPosition.X + indentOffset,
-            lineGlobalY - DropHinter.Width / 2f);
-        DropHinter.Size = new Vector2(hoverBlock.Size.X - indentOffset, DropHinter.Width);
-        DropHinter.Visible = true;
+        {
+            var hoverBlock = drop.HoverBlock;
+            float lineGlobalY = drop.InsertAbove
+                ? hoverBlock.GlobalPosition.Y
+                : hoverBlock.GlobalPosition.Y + hoverBlock.Size.Y;
+            var indent = hoverBlock.Indent;
+            float indentOffset = indent.Count * indent.Width;
+            DropHinter.GlobalPosition = new Vector2(
+                hoverBlock.GlobalPosition.X + indentOffset,
+                lineGlobalY - DropHinter.Width / 2f);
+            DropHinter.Size = new Vector2(hoverBlock.Size.X - indentOffset, DropHinter.Width);
+            DropHinter.Visible = true;
+        }
     }
 
     private void OnDragEnd(LayerBlock srcLayer, InputEventMouseButton button)
