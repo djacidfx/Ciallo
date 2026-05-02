@@ -28,6 +28,11 @@ public partial class LayerFolderContainer : FoldableVBoxContainer
         }
     }
 
+    public override void _ExitTree()
+    {
+        Level = -1;
+    }
+
     public LayerFolderContainer ObserveIsExpanded(ReactiveProperty<bool> property, out IDisposable sub)
     {
         sub = property.Subscribe(v => IsExpanded = v);

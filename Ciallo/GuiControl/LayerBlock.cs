@@ -14,9 +14,13 @@ public partial class LayerBlock : Container, IInitable
     public override void _EnterTree()
     {
         var parentNode = (LayerFolderContainer)GetParent();
-
         int indentLevelCount = parentNode.Title == this ? parentNode.Level - 1 : parentNode.Level;
         Indent.Count = indentLevelCount;
+    }
+
+    public override void _ExitTree()
+    {
+        Indent.Count = 0;
     }
 
     public void Init(Entity self)
