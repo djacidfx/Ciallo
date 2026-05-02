@@ -24,17 +24,15 @@ public class DeleteLayerCmd : CommandBase
         if (!node.IsLeaf)
         {
             _deleteChildrenCmd = new CommandBuilder();
-
+            bool targetIsFolder = targetE.Has<FolderLayerSetting>();
             foreach (var childE in node.Children.AsEnumerable().Reverse())
             {
-                if (childE.Has<FolderLayerSetting>())
-                    _deleteChildrenCmd.SetTarget(childE)
-                        .RemoveFromLayerTree()
-                        .DeleteLayer();
-                else
-                    _deleteChildrenCmd.SetTarget(childE)
-                        .RemoveFromLayerTree()
-                        .DeleteShape();
+                // By design, a folder layer can only contain layers, other layers can only contain shapes
+                _deleteChildrenCmd.SetTarget(childE)
+                    .RemoveFromLayerTree();
+                if (targetIsFolder)
+                    _deleteChildrenCmd.DeleteLayer();
+                else _deleteChildrenCmd.DeleteShape();
 
                 CollectAllDescendants(childE, _deletedEntities);
             }
@@ -54,7 +52,7 @@ public class DeleteLayerCmd : CommandBase
     {
         // If vector fill layer
         targetE.TryGet<ArrangementSynchronizationHelper>()?.Unsubscribe();
-        
+
         // Delete children
         _deleteChildrenCmd?.Do();
 
