@@ -20,7 +20,6 @@ unique_name_in_owner = true
 clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 3
 script = ExtResource("2_15uhv")
 metadata/_custom_type_script = "uid://c2ahwcgc6f1da"
 

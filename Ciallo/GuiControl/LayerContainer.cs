@@ -140,40 +140,33 @@ public partial class LayerContainer : Container
 
     private enum DropKind { Silent, FolderChild, Sibling }
 
-    // HoverBlock  : visual block being hovered over
-    // DstE        : FolderChild → folder entity; Sibling → parent entity of insertion point
-    // DstIdx      : post-removal index passed to MoveLayer
-    // InsertAbove : Sibling only — true = line drawn at top edge of hoverBlock in screen space
+    // DstE    : FolderChild → folder entity (or document root); Sibling → parent entity
+    // DstIdx  : raw (pre-removal) insertion index; post-removal adjustment is done in MoveLayerCmd
     private readonly record struct DropTarget(
         DropKind Kind,
-        LayerBlock HoverBlock,
         Entity DstE,
-        int DstIdx,
-        bool InsertAbove = false);
+        int DstIdx);
 
     /// <summary>
     /// Classify the current drag operation against <paramref name="srcLayer"/>.
     /// Returns <see cref="DropKind.Silent"/> when the move should be ignored.
+    /// Return pre-removal index
     /// </summary>
     private DropTarget ClassifyDrop(LayerBlock srcLayer)
     {
         if (_mouseHoveringLayer == null)
         {
             // Mouse inside the container but not over any block → child 0 of document root (visual bottom)
-            if (RootContainer.GetGlobalRect().HasPoint(GetViewport().GetMousePosition()))
+            if (this.GetGlobalRect().HasPoint(GetViewport().GetMousePosition()))
             {
                 var docE = AppDocumentManager.WorkingDocument.CurrentValue;
-                int dstIdx = 0;
-                var srcNode = srcLayer.LayerEntity.Get<LayerTreeNode>();
-                if (srcNode.ParentValue == docE && srcNode.Index < dstIdx)
-                    dstIdx--;
-                return new(DropKind.FolderChild, null, docE, dstIdx);
+                return new(DropKind.FolderChild, docE, 0);
             }
-            return new(DropKind.Silent, null, default, -1);
+            return new(DropKind.Silent, default, -1);
         }
 
         if (ReferenceEquals(_mouseHoveringLayer, srcLayer))
-            return new(DropKind.Silent, null, default, -1);
+            return new(DropKind.Silent, default, -1);
 
         var srcE = srcLayer.LayerEntity;
         var hoverBlock = _mouseHoveringLayer;
@@ -186,34 +179,21 @@ public partial class LayerContainer : Container
         var cursor = hoverE;
         while (!cursor.IsNull)
         {
-            if (cursor == srcE) return new(DropKind.Silent, null, default, -1);
+            if (cursor == srcE) return new(DropKind.Silent, default, -1);
             cursor = cursor.Get<LayerTreeNode>().ParentValue;
         }
 
         // Folder child placement: lower 2/3 of the folder block
         if (hoverBlock.IsFolder && locPos.Y > size.Y / 3f)
-        {
-            int dstIdx = hoverNode.Children.Count;
-            // Post-removal adjustment: srcE already a direct child → MoveChild needs dstIdx < Count
-            var srcNode = srcE.Get<LayerTreeNode>();
-            if (srcNode.ParentValue == hoverE && srcNode.Index < dstIdx)
-                dstIdx--;
-            return new(DropKind.FolderChild, hoverBlock, hoverE, dstIdx);
-        }
+            return new(DropKind.FolderChild, hoverE, hoverNode.Children.Count);
 
-        // Sibling placement
+        // Sibling placement — store raw desiredFinalIdx; post-removal adjustment is in MoveLayerCmd
         // Layers shown in reversed order: upper half of block = higher index = visually above
         var dstParentE = hoverNode.ParentValue;
         int hoverIdx = hoverNode.Index;
-        bool insertAbove = hoverBlock.IsFolder || locPos.Y <= size.Y / 2f;
-        int desiredFinalIdx = insertAbove ? hoverIdx + 1 : hoverIdx;
+        int desiredFinalIdx = (hoverBlock.IsFolder || locPos.Y <= size.Y / 2f) ? hoverIdx + 1 : hoverIdx;
 
-        int siblingDstIdx = desiredFinalIdx;
-        var srcNodeSibling = srcE.Get<LayerTreeNode>();
-        if (srcNodeSibling.ParentValue == dstParentE && srcNodeSibling.Index < desiredFinalIdx)
-            siblingDstIdx--;
-
-        return new(DropKind.Sibling, hoverBlock, dstParentE, siblingDstIdx, insertAbove);
+        return new(DropKind.Sibling, dstParentE, desiredFinalIdx);
     }
 
     private void OnDragStart(LayerBlock srcLayer, InputEventMouseMotion motion)
@@ -237,37 +217,52 @@ public partial class LayerContainer : Container
 
         if (drop.Kind == DropKind.FolderChild)
         {
-            if (drop.HoverBlock != null)
+            if (!drop.DstE.IsDocument)
             {
-                // Draw StrokeRect border framing the whole folder block
-                DropHinter.GlobalPosition = drop.HoverBlock.GlobalPosition;
-                DropHinter.Size = drop.HoverBlock.Size;
+                // Border framing the LabelLineEdit of the target folder block
+                var labelLineEdit = drop.DstE.Get<LayerBlock>().LabelLineEdit;
+                DropHinter.GlobalPosition = labelLineEdit.GlobalPosition;
+                DropHinter.Size = labelLineEdit.Size;
             }
             else
             {
-                // Root folder: line at the bottom edge of RootContainer (visual bottom = child 0)
+                // Root: line at the bottom edge, starting at DropdownArrow X of the bottommost child
+                var refBlock = drop.DstE.Get<LayerTreeNode>().Children[0].Get<LayerBlock>();
+                float startX = refBlock.DropdownArrow.GlobalPosition.X;
                 float lineY = RootContainer.GlobalPosition.Y + RootContainer.Size.Y;
-                DropHinter.GlobalPosition = new Vector2(
-                    RootContainer.GlobalPosition.X,
-                    lineY - DropHinter.Width / 2f);
-                DropHinter.Size = new Vector2(RootContainer.Size.X, DropHinter.Width);
+                DropHinter.GlobalPosition = new Vector2(startX, lineY - DropHinter.Width / 2f);
+                DropHinter.Size = new Vector2(refBlock.GlobalPosition.X + refBlock.Size.X - startX, DropHinter.Width);
             }
             DropHinter.Visible = true;
             return;
         }
 
-        // Sibling: horizontal line at the insertion edge, respecting indent
+        // Sibling: horizontal line at the insertion boundary
         {
-            var hoverBlock = drop.HoverBlock;
-            float lineGlobalY = drop.InsertAbove
-                ? hoverBlock.GlobalPosition.Y
-                : hoverBlock.GlobalPosition.Y + hoverBlock.Size.Y;
-            var indent = hoverBlock.Indent;
-            float indentOffset = indent.Count * indent.Width;
-            DropHinter.GlobalPosition = new Vector2(
-                hoverBlock.GlobalPosition.X + indentOffset,
-                lineGlobalY - DropHinter.Width / 2f);
-            DropHinter.Size = new Vector2(hoverBlock.Size.X - indentOffset, DropHinter.Width);
+            var dstChildren = drop.DstE.Get<LayerTreeNode>().Children;
+            int dstIdx = drop.DstIdx;
+
+            // DstIdx < Count → line at the bottom of Children[dstIdx] (the item being pushed down)
+            // DstIdx == Count → line at the top of the topmost child (insert above all)
+            LayerBlock refBlock;
+            float lineGlobalY;
+            if (dstIdx < dstChildren.Count)
+            {
+                refBlock = dstChildren[dstIdx].Get<LayerBlock>();
+                lineGlobalY = refBlock.GlobalPosition.Y + refBlock.Size.Y;
+            }
+            else
+            {
+                refBlock = dstChildren[^1].Get<LayerBlock>();
+                lineGlobalY = refBlock.GlobalPosition.Y;
+            }
+
+            // X start: LabelLineEdit of the parent folder; DropdownArrow of refBlock for document root
+            float startX = !drop.DstE.IsDocument
+                ? drop.DstE.Get<LayerBlock>().LabelLineEdit.GlobalPosition.X
+                : refBlock.DropdownArrow.GlobalPosition.X;
+            DropHinter.GlobalPosition = new Vector2(startX, lineGlobalY - DropHinter.Width / 2f);
+            DropHinter.Size = new Vector2(refBlock.GlobalPosition.X + refBlock.Size.X - startX, DropHinter.Width);
             DropHinter.Visible = true;
         }
     }
@@ -284,7 +279,14 @@ public partial class LayerContainer : Container
 
         var document = AppDocumentManager.WorkingDocument.CurrentValue;
         var srcE = srcLayer.LayerEntity;
-        new CommandBuilder(document).MoveLayer(srcE, drop.DstE, drop.DstIdx).Commit();
+
+        // Convert raw DstIdx to post-removal index expected by MoveLayer
+        int dstIdx = drop.DstIdx;
+        var srcNode = srcE.Get<LayerTreeNode>();
+        if (srcNode.ParentValue == drop.DstE && srcNode.Index < dstIdx)
+            dstIdx--;
+
+        new CommandBuilder(document).MoveLayer(srcE, drop.DstE, dstIdx).Commit();
     }
 
     public void SetWorkingLayerNoSignal(Entity layerE)
