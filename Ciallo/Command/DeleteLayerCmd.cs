@@ -25,15 +25,29 @@ public class DeleteLayerCmd : CommandBase
         {
             _deleteChildrenCmd = new CommandBuilder();
 
-            foreach (var shapeE in node.Children.AsEnumerable().Reverse())
+            foreach (var childE in node.Children.AsEnumerable().Reverse())
             {
-                _deleteChildrenCmd.SetTarget(shapeE)
-                    .RemoveFromLayerTree()
-                    .DeleteShape();
-                _deletedEntities.Add(shapeE);
+                if (childE.Has<FolderLayerSetting>())
+                    _deleteChildrenCmd.SetTarget(childE)
+                        .RemoveFromLayerTree()
+                        .DeleteLayer();
+                else
+                    _deleteChildrenCmd.SetTarget(childE)
+                        .RemoveFromLayerTree()
+                        .DeleteShape();
+
+                CollectAllDescendants(childE, _deletedEntities);
             }
         }
         _deletedEntities.Add(targetE);
+    }
+
+    // Post-order: children before the node itself, matching OnDeletedAsUndo deletion order.
+    private static void CollectAllDescendants(Entity e, List<Entity> list)
+    {
+        foreach (var childE in e.Get<LayerTreeNode>().Children)
+            CollectAllDescendants(childE, list);
+        list.Add(e);
     }
 
     public override void Do(Entity targetE)
