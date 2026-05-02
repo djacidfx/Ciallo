@@ -64,7 +64,7 @@ public partial class Indent : Control
         for (int i = 0; i < Count; i++)
         {
             float x = i * Width + Width / 2f;
-            DrawLine(new Vector2(x, 0), new Vector2(x, Size.Y), BarColor, BarWidth);
+            DrawDashedLine(new Vector2(x, 0), new Vector2(x, Size.Y), BarColor, BarWidth, 4);
         }
     }
 

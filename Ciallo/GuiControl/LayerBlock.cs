@@ -15,8 +15,8 @@ public partial class LayerBlock : Container, IInitable
     {
         var parentNode = (LayerFolderContainer)GetParent();
 
-        int indentCount = parentNode.Title == this ? parentNode.Level - 1 : parentNode.Level;
-        Indent.Count = indentCount;
+        int indentLevelCount = parentNode.Title == this ? parentNode.Level - 1 : parentNode.Level;
+        Indent.Count = indentLevelCount;
     }
 
     public void Init(Entity self)

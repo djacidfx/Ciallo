@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://moglh1o5lfn"
-path="res://.godot/imported/chevron-forward.svg-94eed66bef143e0aa92d218d715ab61c.ctex"
+uid="uid://k84vnagoi87c"
+path="res://.godot/imported/chevron-forward-sized.svg-0fb05cab9bf9f2e046bc7ccb42f15de6.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icon/FixedSize/chevron-forward.svg"
-dest_files=["res://.godot/imported/chevron-forward.svg-94eed66bef143e0aa92d218d715ab61c.ctex"]
+source_file="res://Icon/FixedSize/chevron-forward-sized.svg"
+dest_files=["res://.godot/imported/chevron-forward-sized.svg-0fb05cab9bf9f2e046bc7ccb42f15de6.ctex"]
 
 [params]
 
@@ -38,6 +38,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
-svg/scale=1.767
+svg/scale=1.0
 editor/scale_with_editor_scale=false
 editor/convert_colors_with_editor_theme=false

@@ -15,10 +15,6 @@ vertical = true
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rfn4m"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4as0w"]
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yhag5"]
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yhag5"]
 content_margin_left = 4.0
 content_margin_top = 4.0
@@ -44,28 +40,14 @@ corner_radius_bottom_left = 3
 corner_detail = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8s18r"]
-content_margin_left = 4.0
-content_margin_top = 4.0
-content_margin_right = 4.0
-content_margin_bottom = 4.0
 bg_color = Color(0.1, 0.1, 0.1, 0.6)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
-corner_detail = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4as0w"]
-content_margin_left = 4.0
-content_margin_top = 4.0
-content_margin_right = 4.0
-content_margin_bottom = 4.0
 bg_color = Color(0.1, 0.1, 0.1, 0.6)
-corner_radius_top_left = 3
-corner_radius_top_right = 3
-corner_radius_bottom_right = 3
-corner_radius_bottom_left = 3
-corner_detail = 5
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4as0w"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yhag5"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_voest"]
 bg_color = Color(0.101961, 0.101961, 0.101961, 0.6)
@@ -96,13 +78,13 @@ HSplitContainer/constants/separation = 6
 HSplitContainer/styles/split_bar_background = SubResource("StyleBoxLine_4as0w")
 ItemList/colors/guide_color = Color(0, 0, 0, 0)
 ItemList/styles/focus = SubResource("StyleBoxEmpty_rfn4m")
+LayerBlockButton/base_type = &"CheckBox"
+LayerBlockButton/styles/disabled = SubResource("StyleBoxFlat_yhag5")
+LayerBlockButton/styles/hover = SubResource("StyleBoxFlat_rfn4m")
+LayerBlockButton/styles/normal = SubResource("StyleBoxFlat_8s18r")
+LayerBlockButton/styles/pressed = SubResource("StyleBoxFlat_4as0w")
 LineEdit/styles/focus = SubResource("StyleBoxEmpty_4as0w")
 TabBar/styles/tab_focus = SubResource("StyleBoxEmpty_yhag5")
-TextureCheckBox/base_type = &"CheckBox"
-TextureCheckBox/styles/disabled = SubResource("StyleBoxFlat_yhag5")
-TextureCheckBox/styles/hover = SubResource("StyleBoxFlat_rfn4m")
-TextureCheckBox/styles/normal = SubResource("StyleBoxFlat_8s18r")
-TextureCheckBox/styles/pressed = SubResource("StyleBoxFlat_4as0w")
 ToolButton/base_type = &"Button"
 ToolButton/styles/focus = null
 ToolButton/styles/hover = SubResource("StyleBoxFlat_voest")
