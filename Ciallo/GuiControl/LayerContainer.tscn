@@ -12,7 +12,7 @@ bg_color = Color(0, 0, 0, 0.74509805)
 offset_right = 593.0
 offset_bottom = 294.0
 size_flags_vertical = 3
-mouse_filter = 2
+mouse_filter = 0
 script = ExtResource("1_aydl8")
 
 [node name="RootContainer" type="Container" parent="." unique_id=1575722749]

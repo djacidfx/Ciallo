@@ -20,12 +20,17 @@ namespace Ciallo.GuiControl;
 /// Prefer use Godot's node hierarchy to get index here. It is cached and O(1) operation.
 /// </remarks>
 [SceneTree(root: "Root"), Instantiable]
-public partial class LayerContainer : Container
+public partial class LayerContainer : ScrollContainer
 {
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 
     private bool _isDragging = false;
     private LayerBlock _mouseHoveringLayer;
+    private float _scrollSpeed = 0f;
+    private float _scrollAccum = 0f;
+
+    private const float ScrollZone = 50f; // px from edge that triggers scroll
+    private const float MaxScrollSpeed = 280f; // px per second at full speed
 
     public override void _Ready()
     {
@@ -38,6 +43,18 @@ public partial class LayerContainer : Container
             var layerBlock = (LayerBlock)button.GetOwner();
             new CommandBuilder(layerBlock.LayerEntity).SetWorkingLayer().Commit();
         };
+    }
+
+    public override void _Process(double delta)
+    {
+        if (!_isDragging || _scrollSpeed == 0f) return;
+        _scrollAccum += _scrollSpeed * (float)delta;
+        int step = (int)_scrollAccum;
+        if (step != 0)
+        {
+            ScrollVertical += step;
+            _scrollAccum -= step;
+        }
     }
 
     public void Create(Entity layerE)
@@ -198,6 +215,7 @@ public partial class LayerContainer : Container
 
     private void OnDragStart(LayerBlock srcLayer, InputEventMouseMotion motion)
     {
+        _scrollAccum = 0f;
         DragLabel.Text = srcLayer.LayerEntity.Get<CommonLayerSetting>().Name.Value;
         DragLabel.GlobalPosition = motion.GlobalPosition + new Vector2(16f, -8f);
         DragLabel.Visible = true;
@@ -206,6 +224,17 @@ public partial class LayerContainer : Container
     private void OnDragging(LayerBlock srcLayer, InputEventMouseMotion motion)
     {
         DragLabel.GlobalPosition = motion.GlobalPosition + new Vector2(16f, -8f);
+
+        var rect = GetGlobalRect();
+        float mouseY = motion.GlobalPosition.Y;
+        float distFromTop = mouseY - rect.Position.Y;
+        float distFromBottom = rect.End.Y - mouseY;
+        if (distFromTop < ScrollZone)
+            _scrollSpeed = -MaxScrollSpeed * (1f - distFromTop / ScrollZone);
+        else if (distFromBottom < ScrollZone)
+            _scrollSpeed = MaxScrollSpeed * (1f - distFromBottom / ScrollZone);
+        else
+            _scrollSpeed = 0f;
 
         var drop = ClassifyDrop(srcLayer);
 
@@ -271,6 +300,8 @@ public partial class LayerContainer : Container
     {
         DropHinter.Visible = false;
         DragLabel.Visible = false;
+        _scrollSpeed = 0f;
+        _scrollAccum = 0f;
 
         var drop = ClassifyDrop(srcLayer);
         _mouseHoveringLayer = null;
