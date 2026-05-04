@@ -11,10 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://k84vnagoi87c" path="res://Icon/FixedSize/chevron-forward-sized.svg" id="8_qhucf"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qp082"]
-content_margin_left = 4.0
-content_margin_top = 4.0
-content_margin_right = 4.0
-content_margin_bottom = 4.0
+content_margin_left = 10.0
 bg_color = Color(0.1, 0.1, 0.1, 0.6)
 
 [node name="LayerBlock" type="VBoxContainer" unique_id=43370559]
@@ -93,5 +90,6 @@ editable = false
 clear_button_enabled = true
 middle_mouse_paste_enabled = false
 select_all_on_focus = true
+caret_blink = true
 script = ExtResource("6_okj0m")
 metadata/_custom_type_script = "uid://cnkmrjlwncaqf"
