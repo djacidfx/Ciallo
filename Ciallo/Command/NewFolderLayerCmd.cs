@@ -2,7 +2,6 @@
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
-using Godot;
 using R3;
 
 namespace Ciallo.Command;
@@ -45,7 +44,7 @@ public class NewFolderLayerCmd : CommandBase
         targetE.AddNode(overlayHolder);
 
         // Body
-        var bodyHolder = new BodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
+        var bodyHolder = new BodyHolder();
         targetE.AddNode(bodyHolder);
 
         // Layer panel
