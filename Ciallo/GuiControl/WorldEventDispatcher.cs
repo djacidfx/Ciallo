@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics;
 using Ciallo.Geometry;
 using Ciallo.Tool;
@@ -24,6 +25,11 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
     private Stopwatch _timer;
 
+    // ------------ Touch gesture state -------------
+    private readonly Dictionary<int, Vector2> _activeTouches = new();
+    private bool _isTouchDragging;
+    private int _maxTouchCount;
+
     public Entity Document;
     private ToolManager ToolManager => Document.Get<ToolManager>();
 
@@ -43,6 +49,9 @@ public partial class WorldEventDispatcher : SubViewportContainer
         if (!Document.IsAlive) return; // This check prevents errors when the document is closed.
         // The container is queued for deletion but the Document entity is freed immediately, which can cause this method to be called on a disposed entity.
 
+        if (HandleTouchGesture(e)) return;
+        // Suppress emulated mouse events while 2+ fingers are active.
+        if (Input.EmulateMouseFromTouch && _activeTouches.Count >= 2) return;
         // ------------ Tool events handling -------------
         if (e is InputEventKey key)
         {
@@ -50,6 +59,7 @@ public partial class WorldEventDispatcher : SubViewportContainer
         }
         // Following code only deal with cursor events.
         // Note: Godot treats stylus pen input as mouse input.
+
         if (e is not InputEventMouse mouseEvent) return;
 
         // ------------ Canvas navigation handling -------------
@@ -159,6 +169,94 @@ public partial class WorldEventDispatcher : SubViewportContainer
         _timer.Restart();
         _prevScreenPos = screenPos;
         _prevWorldPos = worldPos;
+    }
+
+    /// <summary>
+    /// Handles InputEventScreenTouch and InputEventScreenDrag for multi-touch gestures.
+    /// Returns true when the event is consumed and mouse processing should be skipped.
+    /// Gesture rules:
+    ///   - 2-finger tap (no drag) → Undo
+    ///   - 3-finger tap (no drag) → Redo
+    ///   - 2-finger drag (never exceeded 2 fingers) → pan + pinch-zoom around centroid
+    ///   - Adding a 3rd finger mid-drag cancels pan/zoom; all gestures ignored until all fingers lift.
+    /// </summary>
+    private bool HandleTouchGesture(InputEvent e)
+    {
+        if (e is InputEventScreenTouch touch)
+        {
+            if (touch.Pressed)
+            {
+                _activeTouches[touch.Index] = touch.Position;
+                if (_activeTouches.Count > _maxTouchCount)
+                    _maxTouchCount = _activeTouches.Count;
+            }
+            else
+            {
+                // Trigger tap gesture on last finger release
+                if (_activeTouches.Count == 1 && !_isTouchDragging)
+                {
+                    var cmdM = Document.Get<CommandManager>();
+                    switch (_maxTouchCount)
+                    {
+                        case 2: cmdM.Undo(); break;
+                        case 3: cmdM.Redo(); break;
+                    }
+                }
+                _activeTouches.Remove(touch.Index);
+                if (_activeTouches.Count == 0)
+                {
+                    _maxTouchCount = 0;
+                    _isTouchDragging = false;
+                }
+            }
+            return true;
+        }
+
+        if (e is InputEventScreenDrag drag)
+        {
+            _isTouchDragging = true;
+            // Only do pan/zoom for exactly 2 fingers that never exceeded 2.
+            if (_activeTouches.Count == 2 && _maxTouchCount == 2)
+            {
+                // Find the stationary finger's position.
+                Vector2 otherPos = Vector2.Zero;
+                foreach (var (idx, pos) in _activeTouches)
+                    if (idx != drag.Index)
+                        otherPos = pos;
+
+                var prevThisPos = _activeTouches[drag.Index];
+                var prevCentroid = (prevThisPos + otherPos) * 0.5f;
+                var prevDist = prevThisPos.DistanceTo(otherPos);
+
+                _activeTouches[drag.Index] = drag.Position;
+
+                var newCentroid = (drag.Position + otherPos) * 0.5f;
+                var newDist = drag.Position.DistanceTo(otherPos);
+
+                // Pitfall: same as mouse pan — GetViewportTransform() is stale until end of frame.
+                var invT = _camera.GetViewportTransform().AffineInverse();
+                var panel = (PaintPanel)Owner;
+
+                // Pan: follow centroid movement in world space.
+                panel.CameraOffset.Value -= invT * newCentroid - invT * prevCentroid;
+
+                // Zoom around new centroid: keep the world point under it fixed.
+                if (prevDist > 1f)
+                {
+                    var zoomRatio = newDist / prevDist;
+                    var worldUnderCentroid = invT * newCentroid;
+                    panel.CameraOffset.Value += (worldUnderCentroid - panel.CameraOffset.Value) * (1f - 1f / zoomRatio);
+                    panel.CameraZoom.Value *= zoomRatio;
+                }
+            }
+            else
+            {
+                _activeTouches[drag.Index] = drag.Position;
+            }
+            return true;
+        }
+
+        return false;
     }
 
     private void DispatchKey(InputEventKey key)
