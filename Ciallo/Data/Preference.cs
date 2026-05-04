@@ -52,7 +52,7 @@ public class Preference
     public float StrokeDotRadius = 12f;
 
     [DataMember]
-    public ReactiveProperty<ImmutableArray<BezierPoint>> PenPressureRemapCurve = new(BezierCurveFactory.EaseInOut());
+    public ReactiveProperty<ImmutableArray<BezierPoint>> PenPressureRemapCurve = new(BezierCurveFactory.Linear());
 
     #region Save Load Json
 

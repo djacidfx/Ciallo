@@ -32,10 +32,10 @@ public partial class MenuEdit : PopupMenu
             if (item.Value != null) SetItemShortcut(i, item.Value.Shortcut);
         }
 
-        IndexPressed += id => OnIndexPressed((int)id);
+        IndexPressed += id => OnMenuButtonPressed((int)id);
     }
 
-    public static void OnIndexPressed(int id)
+    public static void OnMenuButtonPressed(int id)
     {
         if (AppDocumentManager.WorkingDocument.Value.IsNull) return;
         var cmdM = AppDocumentManager.WorkingDocument.CurrentValue.Get<CommandManager>();
