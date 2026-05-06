@@ -27,8 +27,11 @@ public partial class LayerPanel : VBoxContainer
             .VisibleIf(AppDocumentManager.WorkingDocument, document);
         AddChild(layerProperty);
         ReactiveProperty<float> opacity = document.Get<SelectionManager>().WorkingLayer
-            .Select(e => e.TryGet<CommonLayerSetting>()?.Opacity).Flatten().AddTo(document);
-        layerProperty.Opacity.BindNumber(opacity).RegisterUndo(document.Get<CommandManager>());
+            .Select(e => e.TryGet<CommonLayerSetting>()?.Opacity)
+            .Flatten().AddTo(document);
+        layerProperty.Opacity.BindNumber(opacity)
+            .RegisterUndo(document.Get<CommandManager>())
+            .EditableIf(document.Get<SelectionManager>().WorkingLayer, e => !e.TryHas<FolderLayerSetting>());
 
         var layerContainer = LayerContainer.New()
             .VisibleIf(AppDocumentManager.WorkingDocument, document);
