@@ -23,7 +23,7 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _minValue = value;
-            if (IsInstanceValid(Slider)) Slider.MinValue = value;
+            Slider.MinValue = value;
         }
     }
 
@@ -34,7 +34,7 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _maxValue = value;
-            if (IsInstanceValid(Slider)) Slider.MaxValue = value;
+            Slider.MaxValue = value;
         }
     }
 
@@ -48,7 +48,7 @@ public partial class SpinSlider : HBoxContainer
             if (_value == value) return;
             var oldValue = _value;
             _value = value;
-            if (IsInstanceValid(Slider)) Slider.SetValueNoSignal(value);
+            Slider.SetValueNoSignal(value);
             EmitSignalValueChanged(oldValue, value);
         }
     }
@@ -60,7 +60,7 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _step = value;
-            if (IsInstanceValid(Slider)) Slider.Step = value;
+            Slider.Step = value;
         }
     }
 
@@ -71,7 +71,7 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _expEdit = value;
-            if (IsInstanceValid(Slider)) Slider.ExpEdit = value;
+            Slider.ExpEdit = value;
         }
     }
 
@@ -82,7 +82,7 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _allowLesser = value;
-            if (IsInstanceValid(Slider)) Slider.AllowLesser = value;
+            Slider.AllowLesser = value;
         }
     }
 
@@ -93,7 +93,7 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _allowGreater = value;
-            if (IsInstanceValid(Slider)) Slider.AllowGreater = value;
+            Slider.AllowGreater = value;
         }
     }
 
@@ -104,14 +104,25 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             _rounded = value;
-            if (IsInstanceValid(Slider)) Slider.Rounded = value;
-            if (IsInstanceValid(SpinBox)) SpinBox.Rounded = value;
+            Slider.Rounded = value;
+            SpinBox.Rounded = value;
         }
     }
 
+    [Export] public bool Editable
+    {
+        get;
+        set
+        {
+            field = value;
+            Slider.Editable = value;
+            SpinBox.Editable = value;
+        }
+    } = true;
+
     #endregion
 
-    public override void _Ready()
+    public SpinSlider()
     {
         Slider = new()
         {
@@ -161,8 +172,7 @@ public partial class SpinSlider : HBoxContainer
     public void SetValueNoSignal(double value)
     {
         _value = value;
-        if (IsInstanceValid(Slider))
-            Slider.SetValueNoSignal(value);
+        Slider.SetValueNoSignal(value);
     }
 
     public SpinSlider RegisterUndo(CommandManager manager)

@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
 using Ciallo.Widget;
 using Godot;
 using R3;
@@ -66,6 +68,25 @@ public static class BindRange
         {
             BindNumber(spinSlider, property, out var subs);
             subs.AddTo(spinSlider);
+            return spinSlider;
+        }
+        
+        public SpinSlider EditableIf<T>(Observable<T> property, Predicate<T> predicate, out IDisposable sub)
+        {
+            sub = property.Subscribe(value => spinSlider.Editable = predicate(value));
+            return spinSlider;
+        }
+
+        public SpinSlider EditableIf<T>(Observable<T> property, Predicate<T> predicate)
+        {
+            spinSlider.EditableIf(property, predicate, out var sub);
+            sub.AddTo(spinSlider);
+            return spinSlider;
+        }
+
+        public SpinSlider EditableIf<T>(Observable<T> property, T value)
+        {
+            spinSlider.EditableIf(property, v => EqualityComparer<T>.Default.Equals(v, value));
             return spinSlider;
         }
     }
