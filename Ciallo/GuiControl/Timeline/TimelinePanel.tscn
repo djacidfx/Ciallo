@@ -1,0 +1,73 @@
+[gd_scene format=3 uid="uid://cetiftxidiijh"]
+
+[ext_resource type="Script" uid="uid://cxqj4d3nf2ly7" path="res://GuiControl/Timeline/TimelinePanel.cs" id="1_pn4au"]
+
+[node name="TimelinePanel" type="VBoxContainer" unique_id=2020419585]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_pn4au")
+
+[node name="TimelineAction" type="HFlowContainer" parent="." unique_id=1136267303]
+layout_mode = 2
+
+[node name="Backward" type="Button" parent="TimelineAction" unique_id=355157019]
+layout_mode = 2
+text = "<"
+
+[node name="Forward" type="Button" parent="TimelineAction" unique_id=1199935148]
+layout_mode = 2
+text = ">"
+
+[node name="TimelineMainArea" type="VSplitContainer" parent="." unique_id=1938019838]
+layout_mode = 2
+size_flags_vertical = 3
+split_offsets = PackedInt32Array(48, 1033)
+dragging_enabled = false
+split_offset = 48
+
+[node name="HSplitContainer" type="HSplitContainer" parent="TimelineMainArea" unique_id=233143306]
+layout_mode = 2
+
+[node name="UpperLeftBlank" type="Control" parent="TimelineMainArea/HSplitContainer" unique_id=180570200]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+mouse_filter = 1
+
+[node name="TimelineRuler" type="Control" parent="TimelineMainArea/HSplitContainer" unique_id=309100903]
+custom_minimum_size = Vector2(0, 48)
+layout_mode = 2
+
+[node name="TrackVScroll" type="ScrollContainer" parent="TimelineMainArea" unique_id=1535641868]
+layout_mode = 2
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 4
+
+[node name="HSplitContainer2" type="HSplitContainer" parent="TimelineMainArea/TrackVScroll" unique_id=1702651316]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="TrackHeaderList" type="ScrollContainer" parent="TimelineMainArea/TrackVScroll/HSplitContainer2" unique_id=559583512]
+custom_minimum_size = Vector2(48, 0)
+layout_mode = 2
+horizontal_scroll_mode = 4
+vertical_scroll_mode = 0
+
+[node name="TrackArea" type="MarginContainer" parent="TimelineMainArea/TrackVScroll/HSplitContainer2" unique_id=1557906742]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Playhead" type="Control" parent="TimelineMainArea/TrackVScroll/HSplitContainer2/TrackArea" unique_id=205874701]
+top_level = true
+layout_mode = 2
+
+[node name="BackgroundGrid" type="Control" parent="TimelineMainArea/TrackVScroll/HSplitContainer2/TrackArea" unique_id=526660374]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ZoomableHScroll" type="Control" parent="TimelineMainArea/TrackVScroll/HSplitContainer2/TrackArea" unique_id=1928835408]
+layout_mode = 2
+size_flags_horizontal = 3

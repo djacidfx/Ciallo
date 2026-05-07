@@ -40,6 +40,7 @@ public static partial class AppDocumentManager
 
         document.Add(settings);
         document.Add(new LayerTreeNode()); // Document entity is layer tree root
+        document.Add(new TimelineSetting());
         // Add managers
         document.Add(new SelectionManager());
         document.Add(new CommandManager());
