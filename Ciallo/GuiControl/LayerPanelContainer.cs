@@ -2,7 +2,7 @@ using Godot;
 
 namespace Ciallo.GuiControl;
 
-public partial class PaintPanelContainer : Control
+public partial class LayerPanelContainer : MarginContainer
 {
     public override void _Ready()
     {

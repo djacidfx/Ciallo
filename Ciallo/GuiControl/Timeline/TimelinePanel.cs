@@ -2,7 +2,7 @@ using System;
 using Godot;
 using R3;
 
-namespace Ciallo.GuiControl.Timeline;
+namespace Ciallo.GuiControl;
 
 /// <summary>
 /// Timeline panel

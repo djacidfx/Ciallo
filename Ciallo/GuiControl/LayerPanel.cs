@@ -1,5 +1,6 @@
 using Ciallo.Data;
 using Frent;
+using Frent.Components;
 using Godot;
 using R3;
 
@@ -8,37 +9,22 @@ namespace Ciallo.GuiControl;
 /// <summary>
 /// Show layers, toggle LayerTree scenes' visibility according to current working document
 /// </summary>
-[SceneTree(root: "Root")]
-public partial class LayerPanel : VBoxContainer
+[SceneTree, Instantiable(init: "Initialize")]
+public partial class LayerPanel : VBoxContainer, IInitable
 {
-    public override void _Ready()
-    {
-        this.QueueFreeChildren();
-    }
+    public Entity Document;
 
-    public void CreateAdd(Entity document)
+    public void Init(Entity document)
     {
-        var layerAction = LayerAction.New(document)
-            .VisibleIf(AppDocumentManager.WorkingDocument, document);
-        AddChild(layerAction);
-        document.AddNode(layerAction);
+        Document = document;
 
-        var layerProperty = LayerProperty.New()
-            .VisibleIf(AppDocumentManager.WorkingDocument, document);
-        AddChild(layerProperty);
-        ReactiveProperty<float> opacity = document.Get<SelectionManager>().WorkingLayer
+        var opacity = Document.Get<SelectionManager>().WorkingLayer
             .Select(e => e.TryGet<CommonLayerSetting>()?.Opacity)
-            .Flatten().AddTo(document);
-        layerProperty.Opacity.BindNumber(opacity)
-            .RegisterUndo(document.Get<CommandManager>())
-            .EditableIf(document.Get<SelectionManager>().WorkingLayer, e => !e.TryHas<FolderLayerSetting>());
-
-        var layerContainer = LayerContainer.New()
-            .VisibleIf(AppDocumentManager.WorkingDocument, document);
-        AddChild(layerContainer);
-        document.AddNode(layerContainer);
-        document.AddNode(layerContainer.RootContainer);
+            .Flatten().AddTo(Document);
+        LayerProperty.Opacity.BindNumber(opacity)
+            .RegisterUndo(Document.Get<CommandManager>())
+            .EditableIf(Document.Get<SelectionManager>().WorkingLayer, e => !e.TryHas<FolderLayerSetting>());
+        Document.Add(LayerContainer);
+        Document.Add(LayerContainer.RootContainer);
     }
-
-    public void RemoveFree(Entity document) { }
 }
