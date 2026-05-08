@@ -1,18 +1,85 @@
-using System;
+using Ciallo.Data;
 using Godot;
 using R3;
 
 namespace Ciallo.GuiControl;
 
 /// <summary>
-/// Timeline panel
+/// Timeline panel — owns the shared zoom / scroll state and wires all sub-controls.
+/// Call <see cref="BindTimeline"/> first, then <see cref="BindPlayhead"/>.
 /// </summary>
-[Instantiable]
-public partial class TimelinePanel : Control
+[SceneTree, Instantiable]
+public partial class TimelinePanel : VBoxContainer
 {
-    public TimelinePanel BindPlayhead(ReactiveProperty<int> property)
+    // Reactive state forwarded from the document's TimelineSetting
+    public ReactiveProperty<float> PixelsPerFrame => _setting.PixelsPerFrame;
+    public ReactiveProperty<float> ScrollOffsetPixels => _setting.ScrollOffsetPixels;
+
+    private TimelineSetting _setting;
+
+    private ZoomableHScrollBar _zoomScrollBar;
+    private TimelineRuler _ruler;
+    private BackgroundGrid _bgGrid;
+    private Playhead _playhead;
+    private PlaybackBar _startBar;
+    private PlaybackBar _endBar;
+    private SpinBox _frameRateSpinBox;
+    private HSplitContainer _hSplitRuler;
+    private HSplitContainer _hSplitTrack;
+
+    public override void _Ready()
     {
-        throw new NotImplementedException();
+        _zoomScrollBar = GetNode<ZoomableHScrollBar>("%ZoomableHScrollBar");
+        _ruler = GetNode<TimelineRuler>("%TimelineRuler");
+        _bgGrid = GetNode<BackgroundGrid>("%BackgroundGrid");
+        _playhead = GetNode<Playhead>("%Playhead");
+        _startBar = GetNode<PlaybackBar>("%PlaybackStartBar");
+        _endBar = GetNode<PlaybackBar>("%PlaybackEndBar");
+        _frameRateSpinBox = GetNode<SpinBox>("%FrameRateSpinBox");
+        _hSplitRuler = GetNode<HSplitContainer>("%HSplitContainer");
+        _hSplitTrack = GetNode<HSplitContainer>("%HSplitContainer2");
+
+        // Keep the ruler-row and track-row dividers in lockstep.
+        // HSplitContainer2 has dragging_enabled = false, so only the ruler splitter
+        // is interactive; we mirror its position down to the track row.
+        _hSplitRuler.Dragged += offset => _hSplitTrack.SplitOffsets = [(int)offset];
+    }
+
+    /// <summary>
+    /// Wire the document's <see cref="TimelineSetting"/> into all sub-controls.
+    /// Must be called once after this panel is added to the tree, before <see cref="BindPlayhead"/>.
+    /// </summary>
+    public TimelinePanel BindTimeline(TimelineSetting setting)
+    {
+        _setting = setting;
+
+        _zoomScrollBar.Setup(setting);
+        _ruler.Setup(setting.PixelsPerFrame, setting.ScrollOffsetPixels);
+        _ruler.BindPlaybackRange(setting.PlaybackStart, setting.PlaybackEnd);
+        _bgGrid.Setup(setting.PixelsPerFrame, setting.ScrollOffsetPixels);
+
+        // Start bar: green line at left edge of PlaybackStart
+        _startBar.Bind(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackStart, _bgGrid);
+
+        // End bar: red line at left edge of PlaybackEnd (exclusive boundary)
+        _endBar.LineColor = new Color(0.9f, 0.25f, 0.25f, 0.9f);
+        _endBar.Bind(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackEnd, _bgGrid);
+
+        // FrameRate SpinBox
+        _frameRateSpinBox.Value = setting.FrameRate.Value;
+        setting.FrameRate.Subscribe(v => _frameRateSpinBox.Value = v).AddTo(this);
+        _frameRateSpinBox.ValueChanged += v => setting.FrameRate.Value = (float)v;
+
+        return this;
+    }
+
+    /// <summary>
+    /// Bind the external current-frame property. Call after <see cref="BindTimeline"/>.
+    /// </summary>
+    public TimelinePanel BindPlayhead(ReactiveProperty<int> currentFrame)
+    {
+        _ruler.BindCurrentFrame(currentFrame);
+        _playhead.Bind(_setting.PixelsPerFrame, _setting.ScrollOffsetPixels, currentFrame, _bgGrid);
         return this;
     }
 }

@@ -39,8 +39,11 @@ public partial class AutoloadGuiControl : Node
 
             // Timeline panel
             var timelinePanel = TimelinePanel.New();
-            // GetTree().GetNodesInGroup("UncategorizedControl")
-            //     .OfType<TimelinePanelContainer>().Single().AddChild(timelinePanel);
+            GetTree().GetNodesInGroup("UncategorizedControl")
+                .OfType<TimelinePanelContainer>().Single().AddChild(timelinePanel);
+            timelinePanel
+                .BindTimeline(document.Get<TimelineSetting>())
+                .BindPlayhead(document.Get<SelectionManager>().CurrentFrame);
             document.AddNode(timelinePanel);
 
             // SubViewport holder (a dummy node for debugging efficiently)
