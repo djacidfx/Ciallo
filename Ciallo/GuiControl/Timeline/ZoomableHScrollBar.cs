@@ -27,12 +27,6 @@ public partial class ZoomableHScrollBar : Control
     /// </summary>
     [Export] public float MaxScrollFrames { get; set; } = 512f;
 
-    /// <summary>
-    /// Extra frames appended after <c>PlaybackEnd</c> so users can scroll a bit beyond the range.
-    /// Also the minimum virtual frame count in editor preview.
-    /// </summary>
-    [Export] public float MinScrollFrames { get; set; } = 24f;
-
     /// <summary>Enforced minimum thumb pixel width so the bar stays grabbable.</summary>
     [Export] public float MinThumbWidth { get; set; } = 24f;
 
@@ -58,6 +52,8 @@ public partial class ZoomableHScrollBar : Control
     private enum DragMode { None, Scroll, ZoomLeft, ZoomRight }
 
     private DragMode _dragMode = DragMode.None;
+    private float _dragStartOffset;
+    private (float Start, float Range) _dragStartVirtualBounds; // virtual-space bounds at drag begin
     private float _dragStartX;
     private float _dragStartL;
     private float _dragStartR;
@@ -83,33 +79,43 @@ public partial class ZoomableHScrollBar : Control
         _playbackStartFrame = setting.PlaybackStart.Value;
         _playbackEndFrame = setting.PlaybackEnd.Value;
 
-        setting.PixelsPerFrame.Subscribe(v => { _ppf = v; QueueRedraw(); }).AddTo(this);
-        setting.ScrollOffsetPixels.Subscribe(v => { _scrollOffset = v; QueueRedraw(); }).AddTo(this);
-        setting.PlaybackStart.Subscribe(v => { _playbackStartFrame = v; QueueRedraw(); }).AddTo(this);
-        setting.PlaybackEnd.Subscribe(v => { _playbackEndFrame = v; QueueRedraw(); }).AddTo(this);
+        setting.PixelsPerFrame.Subscribe(v =>
+        {
+            _ppf = v;
+            QueueRedraw();
+        }).AddTo(this);
+        setting.ScrollOffsetPixels.Subscribe(v =>
+        {
+            _scrollOffset = v;
+            QueueRedraw();
+        }).AddTo(this);
+        setting.PlaybackStart.Subscribe(v =>
+        {
+            _playbackStartFrame = v;
+            QueueRedraw();
+        }).AddTo(this);
+        setting.PlaybackEnd.Subscribe(v =>
+        {
+            _playbackEndFrame = v;
+            QueueRedraw();
+        }).AddTo(this);
     }
 
     // ── Virtual frame span ───────────────────────────────────────────────────
 
     /// <summary>
-    /// Computes the total virtual frame span for the scrollbar.
-    /// Extends past <c>PlaybackEnd</c> by a comfortable buffer so users can scroll beyond.
+    /// Returns the virtual timeline bounds: the leftmost frame and total frame span.
+    /// The virtual space always covers [PlaybackStart, PlaybackEnd] plus whatever is
+    /// currently visible, anchored so frame 0 is always included.
     /// </summary>
-    private float ComputeEffectiveMaxFrames()
+    private (float Start, float Range) ComputeVirtualBounds()
     {
-        if (_setting == null) return MaxScrollFrames;
+        if (_setting == null) return (0f, MaxScrollFrames);
 
-        int range = _playbackEndFrame - _playbackStartFrame;
-        // buffer: at least MinScrollFrames, or half the playback range — whichever is larger
-        float buffer = Mathf.Max(MinScrollFrames, range * 0.5f);
-        float dynamic = _playbackEndFrame + buffer;
-
-        // Also extend if the user has already scrolled or zoomed past this point
-        float visibleFrames = Size.X / Mathf.Max(_ppf, 0.001f);
-        float rightEdge = _scrollOffset / Mathf.Max(_ppf, 0.001f) + visibleFrames;
-        dynamic = Mathf.Max(dynamic, rightEdge + visibleFrames * 0.2f);
-
-        return dynamic;
+        float scrollOffsetFrame = _scrollOffset / _ppf;
+        float startFrame = Mathf.Min(Mathf.Min(_playbackStartFrame, scrollOffsetFrame), 0f);
+        float endFrame = Mathf.Max(Mathf.Max(_playbackEndFrame, scrollOffsetFrame + Size.X / _ppf), 0f);
+        return (startFrame, endFrame - startFrame);
     }
 
     // ── Thumb geometry ───────────────────────────────────────────────────────
@@ -119,10 +125,11 @@ public partial class ZoomableHScrollBar : Control
         float w = Size.X;
         if (w <= 0f) return (0f, MinThumbWidth);
 
-        float maxFrames = ComputeEffectiveMaxFrames();
-        float virtualWidth = maxFrames * _ppf;
-        float thumbW = Mathf.Max(MinThumbWidth, w * w / virtualWidth);
-        float thumbL = _scrollOffset / virtualWidth * w;
+        var (virtualStart, range) = ComputeVirtualBounds();
+        float virtualWidth = range * _ppf;
+        float thumbW = Mathf.Clamp(w * w / virtualWidth, MinThumbWidth, w);
+        // Thumb position is relative to the virtual-space left edge, not absolute scroll=0.
+        float thumbL = (_scrollOffset - virtualStart * _ppf) / virtualWidth * w;
         thumbL = Mathf.Clamp(thumbL, 0f, w - thumbW);
         return (thumbL, thumbL + thumbW);
     }
@@ -156,6 +163,8 @@ public partial class ZoomableHScrollBar : Control
                 var (l, r) = GetDisplayThumb();
                 float x = btn.Position.X;
 
+                _dragStartOffset = _scrollOffset;
+                _dragStartVirtualBounds = ComputeVirtualBounds();
                 _dragStartX = x;
                 _dragStartL = l;
                 _dragStartR = r;
@@ -187,21 +196,46 @@ public partial class ZoomableHScrollBar : Control
             {
                 case DragMode.Scroll:
                 {
-                    float thumbW = _dragStartR - _dragStartL;
-                    float newL = Mathf.Clamp(_dragStartL + dx, 0f, w - thumbW);
-                    ApplyThumb(newL, newL + thumbW);
+                    if (_setting != null)
+                    {
+                        _setting.ScrollOffsetPixels.Value = _dragStartOffset + dx;
+                    }
+                    else
+                    {
+                        _scrollOffset = _dragStartOffset + dx;
+                        QueueRedraw();
+                    }
                     break;
                 }
                 case DragMode.ZoomLeft:
                 {
-                    float newL = Mathf.Clamp(_dragStartL + dx, 0f, _dragStartR - MinThumbWidth);
-                    ApplyThumb(newL, _dragStartR);
+                    // Anchor: endFrame stays fixed; left handle moves freely (no boundary clamp).
+                    if (_dragStartR <= 0f) break;
+                    var (vs, range) = _dragStartVirtualBounds;
+                    float newL = _dragStartL + dx; // unclamped — zoom continues past control edge
+                    // frame = pixelPos * range / w + vs
+                    float endFrame = _dragStartR * range / w + vs;
+                    float newStartFrame = newL * range / w + vs;
+                    float newSpan = endFrame - newStartFrame;
+                    if (newSpan <= 0f) break;
+                    float newPpf = Mathf.Clamp(w / newSpan, MinPixelsPerFrame, MaxPixelsPerFrame);
+                    // Keep endFrame anchored: scrollOffset = endFrame * ppf - w
+                    ApplyZoom(newPpf, endFrame * newPpf - w);
                     break;
                 }
                 case DragMode.ZoomRight:
                 {
-                    float newR = Mathf.Clamp(_dragStartR + dx, _dragStartL + MinThumbWidth, w);
-                    ApplyThumb(_dragStartL, newR);
+                    // Anchor: startFrame stays fixed; right handle moves freely.
+                    if (_dragStartR <= 0f) break;
+                    var (vs, range) = _dragStartVirtualBounds;
+                    float newR = _dragStartR + dx; // unclamped
+                    float startFrame = _dragStartL * range / w + vs;
+                    float newEndFrame = newR * range / w + vs;
+                    float newSpan = newEndFrame - startFrame;
+                    if (newSpan <= 0f) break;
+                    float newPpf = Mathf.Clamp(w / newSpan, MinPixelsPerFrame, MaxPixelsPerFrame);
+                    // Keep startFrame anchored: scrollOffset = startFrame * ppf
+                    ApplyZoom(newPpf, startFrame * newPpf);
                     break;
                 }
             }
@@ -210,18 +244,10 @@ public partial class ZoomableHScrollBar : Control
         }
     }
 
-    // ── Thumb → reactive state ───────────────────────────────────────────────
+    // ── Helpers ──────────────────────────────────────────────────────────────
 
-    private void ApplyThumb(float l, float r)
+    private void ApplyZoom(float ppf, float scrollOffset)
     {
-        float w = Size.X;
-        float thumbW = r - l;
-        float maxFrames = ComputeEffectiveMaxFrames();
-
-        float ppf = Mathf.Clamp(w * w / (thumbW * maxFrames), MinPixelsPerFrame, MaxPixelsPerFrame);
-        float virtualWidth = maxFrames * ppf;
-        float scrollOffset = Mathf.Max(0f, l / w * virtualWidth);
-
         if (_setting != null)
         {
             _setting.PixelsPerFrame.Value = ppf;
