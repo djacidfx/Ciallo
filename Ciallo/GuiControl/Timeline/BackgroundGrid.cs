@@ -24,7 +24,7 @@ public partial class BackgroundGrid : Control
 
     // ── Setup ────────────────────────────────────────────────────────────────
 
-    public void Setup(ReactiveProperty<float> pixelsPerFrame, ReactiveProperty<float> scrollOffset)
+    public void Observe(ReactiveProperty<float> pixelsPerFrame, ReactiveProperty<float> scrollOffset)
     {
         pixelsPerFrame.Subscribe(v => { _pixelsPerFrame = v; QueueRedraw(); }).AddTo(this);
         scrollOffset.Subscribe(v => { _scrollOffset = v; QueueRedraw(); }).AddTo(this);

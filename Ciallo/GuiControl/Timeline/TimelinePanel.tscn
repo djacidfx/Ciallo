@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://cetiftxidiijh"]
 
+[ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_0ndmv"]
 [ext_resource type="Script" uid="uid://cxqj4d3nf2ly7" path="res://GuiControl/Timeline/TimelinePanel.cs" id="1_pn4au"]
 [ext_resource type="Script" uid="uid://de3wjfml6rs3i" path="res://GuiControl/Timeline/TimelineRuler.cs" id="2_ruler"]
 [ext_resource type="Script" uid="uid://7ta5s4vfyhln" path="res://GuiControl/Timeline/BackgroundGrid.cs" id="3_bgrid"]
@@ -7,12 +8,16 @@
 [ext_resource type="Script" uid="uid://dkn2veamvchhh" path="res://GuiControl/Timeline/Playhead.cs" id="5_playhead"]
 [ext_resource type="Script" uid="uid://dobrheel0y42t" path="res://GuiControl/Timeline/PlaybackBar.cs" id="6_pbbar"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nqb4g"]
+
 [node name="TimelinePanel" type="VBoxContainer" unique_id=2020419585]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("1_0ndmv")
+theme_override_constants/separation = 16
 script = ExtResource("1_pn4au")
 
 [node name="TimelineAction" type="HFlowContainer" parent="." unique_id=1136267303]
@@ -28,10 +33,11 @@ text = ">"
 
 [node name="FrameRateSpinBox" type="SpinBox" parent="TimelineAction" unique_id=321567893]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 0)
 layout_mode = 2
 min_value = 1.0
 max_value = 120.0
-step = 0.001
+step = 0.1
 value = 24.0
 suffix = "fps"
 
@@ -47,13 +53,13 @@ unique_name_in_owner = true
 layout_mode = 2
 
 [node name="UpperLeftBlank" type="Control" parent="TimelineMainArea/HSplitContainer" unique_id=180570200]
-custom_minimum_size = Vector2(48, 48)
+custom_minimum_size = Vector2(48, 0)
 layout_mode = 2
 mouse_filter = 1
 
 [node name="TimelineRuler" type="Control" parent="TimelineMainArea/HSplitContainer" unique_id=309100903]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 48)
+custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("2_ruler")
@@ -69,6 +75,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_styles/split_bar_background = SubResource("StyleBoxEmpty_nqb4g")
 dragging_enabled = false
 
 [node name="TrackHeaderList" type="ScrollContainer" parent="TimelineMainArea/TrackVScroll/HSplitContainer2" unique_id=559583512]
@@ -88,6 +95,7 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
 script = ExtResource("3_bgrid")
+MajorColumnInterval = 10
 metadata/_custom_type_script = "uid://7ta5s4vfyhln"
 
 [node name="ZoomableHScrollBar" type="Control" parent="TimelineMainArea/TrackVScroll/HSplitContainer2/TrackArea" unique_id=1928835408]

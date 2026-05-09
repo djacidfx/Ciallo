@@ -27,7 +27,7 @@ public partial class Playhead : Control
     /// <summary>
     /// Wire reactive sources. <paramref name="anchor"/> is the control whose rect the playhead spans.
     /// </summary>
-    public void Bind(
+    public void Observe(
         ReactiveProperty<float> pixelsPerFrame,
         ReactiveProperty<float> scrollOffset,
         ReactiveProperty<int> currentFrame,

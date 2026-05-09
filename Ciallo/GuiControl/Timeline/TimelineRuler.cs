@@ -5,50 +5,174 @@ namespace Ciallo.GuiControl;
 
 /// <summary>
 /// Draws frame-number ruler ticks and draggable playback-range handles.
-/// <list type="bullet">
-///   <item>Click / drag on the ruler body → moves the playhead (clamped to [start, end)).</item>
-///   <item>Drag the <b>green start handle</b> (left-leaning triangle) → changes PlaybackStart.</item>
-///   <item>Drag the <b>red end handle</b> (right-leaning triangle) → changes PlaybackEnd.</item>
-/// </list>
-/// All mutations enforce: 1 ≤ start &lt; end, playhead ∈ [start, end).
 /// </summary>
 [Tool, GlobalClass]
 public partial class TimelineRuler : Control
 {
-    // ── Tunable exports ──────────────────────────────────────────────────────
-    [Export] public Color TickColor { get; set; } = new Color(0.65f, 0.65f, 0.65f);
-    [Export] public Color LabelColor { get; set; } = new Color(0.9f, 0.9f, 0.9f);
-    [Export] public Color PlayheadTickColor { get; set; } = new Color(1f, 0.65f, 0f);
-    [Export] public Color PlaybackStartColor { get; set; } = new Color(0.25f, 0.85f, 0.25f, 0.9f);
-    [Export] public Color PlaybackEndColor { get; set; } = new Color(0.9f, 0.25f, 0.25f, 0.9f);
-    [Export] public Color OutOfRangeOverlay { get; set; } = new Color(0f, 0f, 0f, 0.22f);
-    [Export] public int MajorTickHeight { get; set; } = 16;
-    [Export] public int MinorTickHeight { get; set; } = 6;
-    [Export] public int LabelFontSize { get; set; } = 11;
+    #region Export
+
+    [Export]
+    public Color PlayheadTickColor
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = new Color(1f, 0.65f, 0f);
+
+    [Export]
+    public Color PlaybackStartColor
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = new Color(0.25f, 0.85f, 0.25f, 0.9f);
+
+    [Export]
+    public Color PlaybackEndColor
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = new Color(0.9f, 0.25f, 0.25f, 0.9f);
+
+    [Export]
+    public Color OutOfRangeOverlay
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = new Color(0f, 0f, 0f, 0.22f);
+
+    [Export]
+    public int MajorTickHeight
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = 16;
+
+    [Export]
+    public int MinorTickHeight
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = 6;
+
     /// <summary>Minimum pixel gap between displayed labels.</summary>
-    [Export] public float MinLabelSpacingPx { get; set; } = 40f;
+    [Export]
+    public float MinLabelSpacingPx
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = 40f;
+
     /// <summary>Minimum pixel gap between tick marks.</summary>
-    [Export] public float MinTickSpacingPx { get; set; } = 8f;
+    [Export]
+    public float MinTickSpacingPx
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = 8f;
+
     /// <summary>Width and height of the triangular drag handle drawn at the ruler top.</summary>
-    [Export] public float HandleSize { get; set; } = 10f;
+    [Export]
+    public float HandleSize
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = 10f;
+
+    [Export] public Color TickColor
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = new Color(0.65f, 0.65f, 0.65f);
+
+    /// <summary>Pixel height of the seconds band drawn above the frame-tick band.</summary>
+    [Export]
+    public float SecondsBandHeight
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = 18f;
+
+    #endregion
+
+    public int LabelFontSize => GetThemeFontSize("font_size", "Label");
+    public Color LabelColor => GetThemeColor("font_color", "Label");
 
     // ── Private state ────────────────────────────────────────────────────────
     private float _pixelsPerFrame = 20f;
     private float _scrollOffset;
+    private float _fps = 24f;
     private ReactiveProperty<int> _currentFrame;
     private ReactiveProperty<int> _playbackStart;
     private ReactiveProperty<int> _playbackEnd;
 
     private enum DragMode { None, Frame, StartHandle, EndHandle }
+
     private DragMode _dragMode = DragMode.None;
 
-    // ── Setup ────────────────────────────────────────────────────────────────
+    #region Setup
 
     /// <summary>Call once from TimelinePanel to wire zoom / scroll.</summary>
-    public void Setup(ReactiveProperty<float> pixelsPerFrame, ReactiveProperty<float> scrollOffset)
+    public void Observe(ReactiveProperty<float> pixelsPerFrame, ReactiveProperty<float> scrollOffset,
+        ReactiveProperty<float> fps)
     {
-        pixelsPerFrame.Subscribe(v => { _pixelsPerFrame = v; QueueRedraw(); }).AddTo(this);
-        scrollOffset.Subscribe(v => { _scrollOffset = v; QueueRedraw(); }).AddTo(this);
+        pixelsPerFrame.Subscribe(v =>
+        {
+            _pixelsPerFrame = v;
+            QueueRedraw();
+        }).AddTo(this);
+        scrollOffset.Subscribe(v =>
+        {
+            _scrollOffset = v;
+            QueueRedraw();
+        }).AddTo(this);
+        fps.Subscribe(v =>
+        {
+            _fps = v;
+            QueueRedraw();
+        }).AddTo(this);
         Resized += QueueRedraw;
     }
 
@@ -68,6 +192,8 @@ public partial class TimelineRuler : Control
         playbackEnd.Subscribe(_ => QueueRedraw()).AddTo(this);
     }
 
+    #endregion
+    
     // ── Coordinate helpers ───────────────────────────────────────────────────
 
     /// <summary>Ruler-local pixel X of a frame's left edge.</summary>
@@ -108,33 +234,67 @@ public partial class TimelineRuler : Control
         float w = Size.X;
         float h = Size.Y;
 
-        // ── Out-of-range overlay ─────────────────────────────────────────────
+        // ── Out-of-range overlay (full height) ──────────────────────────────
         if (_playbackStart != null && _playbackEnd != null)
         {
             float sx = FrameToX(_playbackStart.Value);
             float ex = FrameToX(_playbackEnd.Value);
 
-            // Overlay before start
             if (sx > 0f)
                 DrawRect(new Rect2(0f, 0f, Mathf.Min(sx, w), h), OutOfRangeOverlay);
 
-            // Overlay after end
             float clampedEx = Mathf.Max(0f, ex);
             if (clampedEx < w)
                 DrawRect(new Rect2(clampedEx, 0f, w - clampedEx, h), OutOfRangeOverlay);
         }
 
-        // ── Ticks & labels ───────────────────────────────────────────────────
+        var font = GetThemeDefaultFont();
+        int startFrame = Mathf.Max(1, (int)(_scrollOffset / _pixelsPerFrame));
+        int endFrame   = (int)((_scrollOffset + w) / _pixelsPerFrame) + 3;
+
+        // ── Seconds band (top) ───────────────────────────────────────────────
+        // Band occupies y ∈ [0, SecondsBandHeight); frame band is below.
+        if (_fps > 0f)
+        {
+            float pxPerSecond = _pixelsPerFrame * _fps;
+
+            // Find the smallest step (in whole seconds) so labels don't overlap.
+            int secondStep = 1;
+            if (pxPerSecond > 0f)
+                while (pxPerSecond * secondStep < MinLabelSpacingPx) secondStep++;
+
+            int startSecond = Mathf.Max(0, (int)(_scrollOffset / pxPerSecond));
+            int endSecond   = (int)((_scrollOffset + w) / pxPerSecond) + 2;
+
+            // Separator line between the two bands
+            DrawLine(new Vector2(0f, SecondsBandHeight), new Vector2(w, SecondsBandHeight),
+                TickColor with { A = 0.4f });
+
+            for (int s = startSecond; s <= endSecond; s++)
+            {
+                if (s % secondStep != 0) continue;
+
+                // frame for second s: frame 1 = 0 s, frame (s*Fps+1) = s seconds
+                float x = FrameToX((int)(s * _fps) + 1);
+                if (x < -pxPerSecond || x > w + pxPerSecond) continue;
+
+                DrawLine(new Vector2(x, 0f), new Vector2(x, SecondsBandHeight), TickColor);
+                DrawString(font, new Vector2(x + 2f, SecondsBandHeight - 2f),
+                    $"{s}s", HorizontalAlignment.Left, -1, LabelFontSize, LabelColor);
+            }
+        }
+
+        // ── Frame ticks & labels (bottom band) ──────────────────────────────
+        // Minor-tick step: smallest interval keeping ticks ≥ MinTickSpacingPx apart.
         int tickStep = 1;
         while (_pixelsPerFrame * tickStep < MinTickSpacingPx) tickStep *= tickStep < 5 ? 5 : 2;
 
-        int labelStep = tickStep;
-        while (_pixelsPerFrame * labelStep < MinLabelSpacingPx) labelStep += tickStep;
+        // Major ticks every 5 frames (or next multiple of 5 that covers tickStep).
+        int majorStep = 5;
+        while (majorStep < tickStep) majorStep += 5;
 
-        int startFrame = Mathf.Max(1, (int)(_scrollOffset / _pixelsPerFrame));
-        int endFrame = (int)((_scrollOffset + w) / _pixelsPerFrame) + 3;
-
-        var font = GetThemeDefaultFont();
+        // Labels only when the major-tick pixel gap is roomy enough.
+        bool showFrameLabels = _pixelsPerFrame * majorStep >= MinLabelSpacingPx;
 
         for (int frame = startFrame; frame <= endFrame; frame++)
         {
@@ -144,11 +304,11 @@ public partial class TimelineRuler : Control
             float x = FrameToX(frame);
             if (x < -_pixelsPerFrame || x > w + _pixelsPerFrame) continue;
 
-            bool isMajor = frame == 1 || frame % labelStep == 0;
-            float tickH = isMajor ? MajorTickHeight : MinorTickHeight;
+            bool isMajor = frame == 1 || frame % majorStep == 0;
+            float tickH  = isMajor ? MajorTickHeight : MinorTickHeight;
             DrawLine(new Vector2(x, h - tickH), new Vector2(x, h), TickColor);
 
-            if (isMajor)
+            if (isMajor && showFrameLabels)
                 DrawString(font, new Vector2(x + 2f, h - tickH - 2f),
                     frame.ToString(), HorizontalAlignment.Left, -1, LabelFontSize, LabelColor);
         }
@@ -171,7 +331,6 @@ public partial class TimelineRuler : Control
             float sx = FrameToX(_playbackStart.Value);
             if (sx >= -HandleSize && sx <= w + HandleSize)
             {
-                // Vertical boundary line
                 DrawLine(new Vector2(sx, 0f), new Vector2(sx, h), PlaybackStartColor, 1.5f);
 
                 // Left-leaning handle: right-angle triangle, right edge at sx, body extends LEFT
@@ -189,7 +348,6 @@ public partial class TimelineRuler : Control
             float ex = FrameToX(_playbackEnd.Value);
             if (ex >= -HandleSize && ex <= w + HandleSize)
             {
-                // Vertical boundary line
                 DrawLine(new Vector2(ex, 0f), new Vector2(ex, h), PlaybackEndColor, 1.5f);
 
                 // Right-leaning handle: right-angle triangle, left edge at ex, body extends RIGHT

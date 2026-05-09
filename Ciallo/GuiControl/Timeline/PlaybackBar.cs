@@ -24,11 +24,7 @@ public partial class PlaybackBar : Control
 
     /// <summary>
     /// Wire reactive sources.  The bar is drawn at the left edge of <paramref name="frame"/>
-    /// (i.e. between frame <c>frame-1</c> and frame <c>frame</c>), which maps naturally to
-    /// both the inclusive start and the exclusive end of a [start, end) playback range.
-    /// <paramref name="anchor"/> is the control whose global rect the bar spans vertically.
-    /// </summary>
-    public void Bind(
+    public void Observe(
         ReactiveProperty<float> pixelsPerFrame,
         ReactiveProperty<float> scrollOffset,
         ReactiveProperty<int> frame,
@@ -36,9 +32,21 @@ public partial class PlaybackBar : Control
     {
         _anchor = anchor;
 
-        pixelsPerFrame.Subscribe(v => { _ppf = v; UpdateTransform(); }).AddTo(this);
-        scrollOffset.Subscribe(v => { _scrollOffset = v; UpdateTransform(); }).AddTo(this);
-        frame.Subscribe(v => { _frame = v; UpdateTransform(); }).AddTo(this);
+        pixelsPerFrame.Subscribe(v =>
+        {
+            _ppf = v;
+            UpdateTransform();
+        }).AddTo(this);
+        scrollOffset.Subscribe(v =>
+        {
+            _scrollOffset = v;
+            UpdateTransform();
+        }).AddTo(this);
+        frame.Subscribe(v =>
+        {
+            _frame = v;
+            UpdateTransform();
+        }).AddTo(this);
         anchor.ItemRectChanged += UpdateTransform;
     }
 
@@ -51,7 +59,7 @@ public partial class PlaybackBar : Control
         // Left edge of _frame: (frame - 1) * ppf - scrollOffset relative to anchor
         float x = _anchor.GlobalPosition.X + (_frame - 1) * _ppf - _scrollOffset;
 
-        // Centre the control on the line so the drawn line sits exactly at the boundary
+        // Center the control on the line so the drawn line sits exactly at the boundary
         GlobalPosition = new Vector2(x - Size.X * 0.5f, _anchor.GlobalPosition.Y);
         Size = new Vector2(LineWidth + 4f, _anchor.Size.Y);
         QueueRedraw();
@@ -65,4 +73,3 @@ public partial class PlaybackBar : Control
         DrawLine(new Vector2(cx, 0f), new Vector2(cx, Size.Y), LineColor, LineWidth);
     }
 }
-

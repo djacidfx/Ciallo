@@ -11,12 +11,6 @@ namespace Ciallo.GuiControl;
 [SceneTree, Instantiable]
 public partial class TimelinePanel : VBoxContainer
 {
-    // Reactive state forwarded from the document's TimelineSetting
-    public ReactiveProperty<float> PixelsPerFrame => _setting.PixelsPerFrame;
-    public ReactiveProperty<float> ScrollOffsetPixels => _setting.ScrollOffsetPixels;
-
-    private TimelineSetting _setting;
-
     private ZoomableHScrollBar _zoomScrollBar;
     private TimelineRuler _ruler;
     private BackgroundGrid _bgGrid;
@@ -49,37 +43,28 @@ public partial class TimelinePanel : VBoxContainer
     /// Wire the document's <see cref="TimelineSetting"/> into all sub-controls.
     /// Must be called once after this panel is added to the tree, before <see cref="BindPlayhead"/>.
     /// </summary>
-    public TimelinePanel BindTimeline(TimelineSetting setting)
+    public TimelinePanel BindTimeline(TimelineSetting setting, ReactiveProperty<int> currentFrame)
     {
-        _setting = setting;
-
         _zoomScrollBar.Setup(setting);
-        _ruler.Setup(setting.PixelsPerFrame, setting.ScrollOffsetPixels);
+        
+        _ruler.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.FrameRate);
         _ruler.BindPlaybackRange(setting.PlaybackStart, setting.PlaybackEnd);
-        _bgGrid.Setup(setting.PixelsPerFrame, setting.ScrollOffsetPixels);
+        _ruler.BindCurrentFrame(currentFrame);
+        
+        _bgGrid.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels);
 
         // Start bar: green line at left edge of PlaybackStart
-        _startBar.Bind(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackStart, _bgGrid);
+        _startBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackStart, _bgGrid);
 
         // End bar: red line at left edge of PlaybackEnd (exclusive boundary)
         _endBar.LineColor = new Color(0.9f, 0.25f, 0.25f, 0.9f);
-        _endBar.Bind(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackEnd, _bgGrid);
+        _endBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackEnd, _bgGrid);
 
         // FrameRate SpinBox
-        _frameRateSpinBox.Value = setting.FrameRate.Value;
-        setting.FrameRate.Subscribe(v => _frameRateSpinBox.Value = v).AddTo(this);
-        _frameRateSpinBox.ValueChanged += v => setting.FrameRate.Value = (float)v;
+        _frameRateSpinBox.BindNumber(setting.FrameRate);
+        
+        _playhead.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, currentFrame, _bgGrid);
 
-        return this;
-    }
-
-    /// <summary>
-    /// Bind the external current-frame property. Call after <see cref="BindTimeline"/>.
-    /// </summary>
-    public TimelinePanel BindPlayhead(ReactiveProperty<int> currentFrame)
-    {
-        _ruler.BindCurrentFrame(currentFrame);
-        _playhead.Bind(_setting.PixelsPerFrame, _setting.ScrollOffsetPixels, currentFrame, _bgGrid);
         return this;
     }
 }
