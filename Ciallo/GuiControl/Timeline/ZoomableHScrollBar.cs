@@ -19,13 +19,8 @@ public partial class ZoomableHScrollBar : Control
     // ── Tunable exports ──────────────────────────────────────────────────────
     [Export] public float MinPixelsPerFrame { get; set; } = 4f;
     [Export] public float MaxPixelsPerFrame { get; set; } = 128f;
-    [Export] public float DefaultPixelsPerFrame { get; set; } = 20f;
+    [Export] public float DefaultPixelsPerFrame { get; set; } = 32f;
 
-    /// <summary>
-    /// Static fallback total frame span used in editor / before <see cref="Setup"/> is called.
-    /// At runtime this value acts as a minimum — the actual span is derived from PlaybackEnd.
-    /// </summary>
-    [Export] public float MaxScrollFrames { get; set; } = 512f;
 
     /// <summary>Enforced minimum thumb pixel width so the bar stays grabbable.</summary>
     [Export] public float MinThumbWidth { get; set; } = 24f;
@@ -55,8 +50,8 @@ public partial class ZoomableHScrollBar : Control
     // Local cache — updated by subscriptions, also used by [Tool] editor preview
     private float _ppf;
     private float _scrollOffset;
-    private int _playbackStartFrame = 1;
-    private int _playbackEndFrame = 25;
+    private int _playbackStart = 0;
+    private int _playbackEnd = 24;
 
     // ── Drag state ───────────────────────────────────────────────────────────
     private enum DragMode { None, Scroll, ZoomLeft, ZoomRight }
@@ -91,8 +86,8 @@ public partial class ZoomableHScrollBar : Control
 
         _ppf = setting.PixelsPerFrame.Value;
         _scrollOffset = setting.ScrollOffsetPixels.Value;
-        _playbackStartFrame = setting.PlaybackStart.Value;
-        _playbackEndFrame = setting.PlaybackEnd.Value;
+        _playbackStart = setting.PlaybackStart.Value;
+        _playbackEnd = setting.PlaybackEnd.Value;
 
         setting.PixelsPerFrame.Subscribe(v =>
         {
@@ -106,12 +101,12 @@ public partial class ZoomableHScrollBar : Control
         }).AddTo(this);
         setting.PlaybackStart.Subscribe(v =>
         {
-            _playbackStartFrame = v;
+            _playbackStart = v;
             QueueRedraw();
         }).AddTo(this);
         setting.PlaybackEnd.Subscribe(v =>
         {
-            _playbackEndFrame = v;
+            _playbackEnd = v;
             QueueRedraw();
         }).AddTo(this);
     }
@@ -124,11 +119,11 @@ public partial class ZoomableHScrollBar : Control
     /// </summary>
     private (float Start, float Range) ComputeVirtualBounds()
     {
-        if (_setting == null) return (0f, MaxScrollFrames);
+        if (_setting == null) return (0f, Size.X / _ppf);
 
         float scrollOffsetFrame = _scrollOffset / _ppf;
-        float startFrame = Mathf.Min(_playbackStartFrame, scrollOffsetFrame);
-        float endFrame = Mathf.Max(_playbackEndFrame, scrollOffsetFrame + Size.X / _ppf);
+        float startFrame = Mathf.Min(_playbackStart, scrollOffsetFrame);
+        float endFrame = Mathf.Max(_playbackEnd, scrollOffsetFrame + Size.X / _ppf);
         return (startFrame, endFrame - startFrame);
     }
 
