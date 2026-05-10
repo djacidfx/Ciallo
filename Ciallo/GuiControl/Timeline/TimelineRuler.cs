@@ -137,6 +137,7 @@ public partial class TimelineRuler : Control
     private enum DragMode { None, Frame, StartHandle, EndHandle }
 
     private DragMode _dragMode = DragMode.None;
+    private int? _hoverFrame;
 
     public int LabelFontSize;
     public Color LabelColor;
@@ -144,18 +145,21 @@ public partial class TimelineRuler : Control
     public Color OutOfPlaybackBackgroundColor;
     public Color OutOfPlaybackLabelColor;
     public Color OutOfPlaybackTickColor;
+    public Color HintDotColor;
 
     public override void _Ready()
     {
-        var styleBoxNormal = (StyleBoxFlat)GetThemeStylebox("normal", "Button");
-        PlaybackBackgroundColor = styleBoxNormal.BgColor;
-        var styleBoxDisabled = (StyleBoxFlat)GetThemeStylebox("disabled", "Button");
-        OutOfPlaybackBackgroundColor = styleBoxDisabled.BgColor;
+        StyleBoxFlat styleBox;
+        styleBox = (StyleBoxFlat)GetThemeStylebox("normal", "Button");
+        PlaybackBackgroundColor = styleBox.BgColor;
+        styleBox = (StyleBoxFlat)GetThemeStylebox("disabled", "Button");
+        OutOfPlaybackBackgroundColor = styleBox.BgColor;
         LabelColor = GetThemeColor("font_color", "Label");
-        LabelFontSize = GetThemeFontSize("font_size", "Label");
-
+        LabelFontSize = (int)(0.8 * GetThemeFontSize("font_size", "Label"));
         OutOfPlaybackLabelColor = GetThemeColor("font_disabled_color", "Button");
         OutOfPlaybackTickColor = OutOfPlaybackLabelColor with { A = 0.5f };
+        styleBox = (StyleBoxFlat)GetThemeStylebox("hover", "Button");
+        HintDotColor = styleBox.BgColor;
     }
 
     #region Setup
@@ -361,6 +365,24 @@ public partial class TimelineRuler : Control
                     PlayheadTickColor with { A = 0.4f });
             }
         }
+
+        // ── Hover hint ───────────────────────────────────────────────────────
+        if (_hoverFrame != null && _dragMode == DragMode.None)
+        {
+            // Center of the hovered frame's pixel slot
+            float hx = FrameToX(_hoverFrame.Value) + _pixelsPerFrame * 0.5f;
+
+            // Dot vertically centered within the minor-tick height
+            float dotY = h - MinorTickHeight * 0.5f;
+            DrawCircle(new Vector2(hx, dotY), 6f, HintDotColor);
+
+            // Frame label in the seconds band, centered on the same X as the dot.
+            // Display _hoverFrame + 1: the region left of tick N belongs to "frame N" (1-based).
+            string hoverLabel = (_hoverFrame.Value + 1).ToString();
+            float labelW = font.GetStringSize(hoverLabel, HorizontalAlignment.Left, -1, LabelFontSize).X;
+            DrawString(font, new Vector2(hx - labelW * 0.5f, SecondsBandHeight - 2f),
+                hoverLabel, HorizontalAlignment.Left, -1, LabelFontSize, LabelColor);
+        }
     }
 
     // ── Input ─────────────────────────────────────────────────────────────────
@@ -389,19 +411,33 @@ public partial class TimelineRuler : Control
                 _dragMode = DragMode.None;
             }
         }
-        else if (@event is InputEventMouseMotion motion && _dragMode != DragMode.None)
+        else if (@event is InputEventMouseMotion motion)
         {
-            switch (_dragMode)
+            _hoverFrame = XToFrame(motion.Position.X);
+            QueueRedraw();
+            if (_dragMode != DragMode.None)
             {
-                case DragMode.Frame: SetFrameFromX(motion.Position.X); break;
-                case DragMode.StartHandle: SetStartFromX(motion.Position.X); break;
-                case DragMode.EndHandle: SetEndFromX(motion.Position.X); break;
+                switch (_dragMode)
+                {
+                    case DragMode.Frame: SetFrameFromX(motion.Position.X); break;
+                    case DragMode.StartHandle: SetStartFromX(motion.Position.X); break;
+                    case DragMode.EndHandle: SetEndFromX(motion.Position.X); break;
+                }
+                AcceptEvent();
             }
-            AcceptEvent();
         }
     }
 
     // ── Cursor ────────────────────────────────────────────────────────────────
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationMouseExit)
+        {
+            _hoverFrame = null;
+            QueueRedraw();
+        }
+    }
 
     public override int _GetCursorShape(Vector2 atPosition)
     {
