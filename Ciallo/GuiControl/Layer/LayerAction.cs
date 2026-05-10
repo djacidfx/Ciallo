@@ -12,7 +12,7 @@ namespace Ciallo.GuiControl;
 [SceneTree(root: "Root"), Instantiable]
 public partial class LayerAction : Control
 {
-    public Entity Document;
+    private Entity Document { get; set; }
 
     public void Init(Entity document)
     {

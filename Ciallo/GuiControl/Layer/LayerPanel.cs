@@ -22,5 +22,6 @@ public partial class LayerPanel : VBoxContainer, IInitable
             .EditableIf(document.Get<SelectionManager>().WorkingLayer, e => !e.TryHas<FolderLayerSetting>());
         document.Add(LayerContainer);
         document.Add(LayerContainer.RootContainer);
+        LayerAction.Init(document);
     }
 }
