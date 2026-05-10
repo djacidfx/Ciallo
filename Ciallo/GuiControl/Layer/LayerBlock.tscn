@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://bd701bypxjeqj"]
 
-[ext_resource type="Script" uid="uid://di8swh5pm3bu3" path="res://GuiControl/LayerBlock.cs" id="1_m4dr1"]
+[ext_resource type="Script" uid="uid://di8swh5pm3bu3" path="res://GuiControl/Layer/LayerBlock.cs" id="1_m4dr1"]
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="2_jmhjt"]
 [ext_resource type="Texture2D" uid="uid://cklq1oyy3bwjg" path="res://Icon/FixedSize/eye.svg" id="3_l4wh0"]
 [ext_resource type="Texture2D" uid="uid://dxxuxp83ybahu" path="res://Widget/TextureCheckBoxBackgound.tres" id="4_o0vdx"]

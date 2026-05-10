@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://cewp0nvok0fy7"]
 
-[ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://GuiControl/LayerContainer.cs" id="1_aydl8"]
-[ext_resource type="Script" uid="uid://c2ahwcgc6f1da" path="res://GuiControl/LayerFolderContainer.cs" id="2_15uhv"]
-[ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://GuiControl/LayerBlock.tscn" id="3_3l7of"]
+[ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://GuiControl/Layer/LayerContainer.cs" id="1_aydl8"]
+[ext_resource type="Script" uid="uid://c2ahwcgc6f1da" path="res://GuiControl/Layer/LayerFolderContainer.cs" id="2_15uhv"]
+[ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://GuiControl/Layer/LayerBlock.tscn" id="3_3l7of"]
 [ext_resource type="Script" uid="uid://bdjd4la8oswpt" path="res://Widget/StrokeRect.cs" id="4_4h4vt"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4h4vt"]

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://ckykoq4my4eok"]
 
-[ext_resource type="Script" uid="uid://crbythwxpbjg3" path="res://GuiControl/LayerAction.cs" id="1_qp7qr"]
+[ext_resource type="Script" uid="uid://crbythwxpbjg3" path="res://GuiControl/Layer/LayerAction.cs" id="1_qp7qr"]
 [ext_resource type="Texture2D" uid="uid://tugksq2pg442" path="res://Icon/layers-plus.svg" id="2_rh62m"]
 [ext_resource type="Texture2D" uid="uid://c6pduk2ad1t3i" path="res://Icon/layers-minus.svg" id="3_7h52i"]
 [ext_resource type="Texture2D" uid="uid://dfoj5v33yirlw" path="res://Icon/folder-plus.svg" id="4_7h52i"]

@@ -20,9 +20,9 @@
 [ext_resource type="Script" uid="uid://dqewxa0t2mptr" path="res://GuiControl/ToolButtonPanelContainer.cs" id="13_kjvhd"]
 [ext_resource type="Script" uid="uid://b7mwe7nmkxh5d" path="res://GuiControl/PaintPanelContainer.cs" id="16_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://GuiControl/WelcomePanel.tscn" id="16_fpfj3"]
-[ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://GuiControl/LayerPanel.tscn" id="16_kjvhd"]
-[ext_resource type="Script" uid="uid://bc538pxjigcuv" path="res://GuiControl/LayerPanelContainer.cs" id="19_3b0ty"]
-[ext_resource type="Script" uid="uid://b4x3guxbl2wmb" path="res://TimelinePanelContainer.cs" id="23_bg4s2"]
+[ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://GuiControl/Layer/LayerPanel.tscn" id="16_kjvhd"]
+[ext_resource type="Script" uid="uid://bc538pxjigcuv" path="res://GuiControl/Layer/LayerPanelContainer.cs" id="19_3b0ty"]
+[ext_resource type="Script" path="res://GuiControl/Timeline/TimelinePanelContainer.cs" id="23_hhcpw"]
 [ext_resource type="PackedScene" uid="uid://cetiftxidiijh" path="res://GuiControl/Timeline/TimelinePanel.tscn" id="24_hhcpw"]
 
 [node name="Main" type="Panel" unique_id=1926960144]
@@ -214,7 +214,7 @@ script = ExtResource("16_5tuhn")
 [node name="TimelinePanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplitContainer" unique_id=1659802599 groups=["UncategorizedControl"]]
 layout_mode = 2
 size_flags_vertical = 3
-script = ExtResource("23_bg4s2")
+script = ExtResource("23_hhcpw")
 
 [node name="TimelinePanel" parent="MainGui/MarginContainer/UIBlock/VSplitContainer/TimelinePanelContainer" unique_id=2020419585 instance=ExtResource("24_hhcpw")]
 layout_mode = 2

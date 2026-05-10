@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://cdki2k8di20tg"]
 
-[ext_resource type="Script" uid="uid://h8m1n58g888p" path="res://GuiControl/LayerProperty.cs" id="1_3smt2"]
+[ext_resource type="Script" uid="uid://h8m1n58g888p" path="res://GuiControl/Layer/LayerProperty.cs" id="1_3smt2"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="1_jbgsm"]
 
 [node name="LayerProperty" type="GridContainer" unique_id=1623447946]
