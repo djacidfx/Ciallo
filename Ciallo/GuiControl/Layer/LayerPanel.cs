@@ -12,19 +12,15 @@ namespace Ciallo.GuiControl;
 [SceneTree, Instantiable(init: "Initialize")]
 public partial class LayerPanel : VBoxContainer, IInitable
 {
-    public Entity Document;
-
     public void Init(Entity document)
     {
-        Document = document;
-
-        var opacity = Document.Get<SelectionManager>().WorkingLayer
+        var opacity = document.Get<SelectionManager>().WorkingLayer
             .Select(e => e.TryGet<CommonLayerSetting>()?.Opacity)
-            .Flatten().AddTo(Document);
+            .Flatten().AddTo(document);
         LayerProperty.Opacity.BindNumber(opacity)
-            .RegisterUndo(Document.Get<CommandManager>())
-            .EditableIf(Document.Get<SelectionManager>().WorkingLayer, e => !e.TryHas<FolderLayerSetting>());
-        Document.Add(LayerContainer);
-        Document.Add(LayerContainer.RootContainer);
+            .RegisterUndo(document.Get<CommandManager>())
+            .EditableIf(document.Get<SelectionManager>().WorkingLayer, e => !e.TryHas<FolderLayerSetting>());
+        document.Add(LayerContainer);
+        document.Add(LayerContainer.RootContainer);
     }
 }
