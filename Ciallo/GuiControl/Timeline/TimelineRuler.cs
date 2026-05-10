@@ -224,8 +224,9 @@ public partial class TimelineRuler : Control
     {
         if (_playbackStart == null) return false;
         float startX = FrameToX(_playbackStart.Value);
-        return pos.X >= startX - HandleSize - HandleHitTolerance && pos.X <= startX + HandleHitTolerance
-                                                                 && pos.Y >= 0f && pos.Y <= HandleSize + HandleHitTolerance * 2f;
+        return pos.X >= startX - HandleSize - HandleHitTolerance &&
+               pos.X <= startX + HandleHitTolerance &&
+               pos.Y >= 0f && pos.Y <= Size.Y;
     }
 
     /// <summary>
@@ -235,8 +236,9 @@ public partial class TimelineRuler : Control
     {
         if (_playbackEnd == null) return false;
         float endX = FrameToX(_playbackEnd.Value);
-        return pos.X >= endX - HandleHitTolerance && pos.X <= endX + HandleSize + HandleHitTolerance
-                                                  && pos.Y >= 0f && pos.Y <= HandleSize + HandleHitTolerance * 2f;
+        return pos.X >= endX - HandleHitTolerance &&
+               pos.X <= endX + HandleSize + HandleHitTolerance &&
+               pos.Y >= 0f && pos.Y <= Size.Y;
     }
 
     // ── Drawing ──────────────────────────────────────────────────────────────
