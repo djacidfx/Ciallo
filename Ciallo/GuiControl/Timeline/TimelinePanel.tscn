@@ -39,6 +39,7 @@ min_value = 1.0
 max_value = 120.0
 step = 0.1
 value = 24.0
+alignment = 2
 suffix = "fps"
 
 [node name="TimelineMainArea" type="VSplitContainer" parent="." unique_id=1938019838]
@@ -51,6 +52,7 @@ split_offset = 48
 [node name="HSplitContainer" type="HSplitContainer" parent="TimelineMainArea" unique_id=233143306]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_constants/separation = 12
 
 [node name="UpperLeftBlank" type="Control" parent="TimelineMainArea/HSplitContainer" unique_id=180570200]
 custom_minimum_size = Vector2(48, 0)
@@ -59,6 +61,7 @@ mouse_filter = 1
 
 [node name="TimelineRuler" type="Control" parent="TimelineMainArea/HSplitContainer" unique_id=309100903]
 unique_name_in_owner = true
+clip_contents = true
 custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -75,6 +78,7 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_constants/separation = 12
 theme_override_styles/split_bar_background = SubResource("StyleBoxEmpty_nqb4g")
 dragging_enabled = false
 
@@ -95,15 +99,16 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
 script = ExtResource("3_bgrid")
-MajorColumnInterval = 10
 metadata/_custom_type_script = "uid://7ta5s4vfyhln"
 
 [node name="ZoomableHScrollBar" type="Control" parent="TimelineMainArea/TrackVScroll/HSplitContainer2/TrackArea" unique_id=1928835408]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
-size_flags_horizontal = 3
+size_flags_stretch_ratio = 0.5
 script = ExtResource("4_lw6jv")
+MaxScrollFrames = 100.0
+ScrollZoneWidthRatio = 0.5
 
 [node name="Playhead" type="Control" parent="TimelineMainArea/TrackVScroll/HSplitContainer2/TrackArea" unique_id=205874701]
 unique_name_in_owner = true

@@ -34,8 +34,6 @@ public partial class TimelinePanel : VBoxContainer
         _hSplitTrack = GetNode<HSplitContainer>("%HSplitContainer2");
 
         // Keep the ruler-row and track-row dividers in lockstep.
-        // HSplitContainer2 has dragging_enabled = false, so only the ruler splitter
-        // is interactive; we mirror its position down to the track row.
         _hSplitRuler.Dragged += offset => _hSplitTrack.SplitOffsets = [(int)offset];
     }
 
@@ -46,24 +44,26 @@ public partial class TimelinePanel : VBoxContainer
     public TimelinePanel BindTimeline(TimelineSetting setting, ReactiveProperty<int> currentFrame)
     {
         _zoomScrollBar.Setup(setting);
-        
+
         _ruler.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.FrameRate);
         _ruler.BindPlaybackRange(setting.PlaybackStart, setting.PlaybackEnd);
         _ruler.BindCurrentFrame(currentFrame);
-        
+
         _bgGrid.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels);
 
-        // Start bar: green line at left edge of PlaybackStart
-        _startBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackStart, _bgGrid);
+        // Start bar: green line + left-handle at PlaybackStart frame
+        _startBar.IsStart = true;
+        _startBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackStart, _bgGrid, _ruler);
 
-        // End bar: red line at left edge of PlaybackEnd (exclusive boundary)
+        // End bar: red line + right-handle at PlaybackEnd frame
+        _endBar.IsStart = false;
         _endBar.LineColor = new Color(0.9f, 0.25f, 0.25f, 0.9f);
-        _endBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackEnd, _bgGrid);
+        _endBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackEnd, _bgGrid, _ruler);
+
+        _playhead.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, currentFrame, _bgGrid);
 
         // FrameRate SpinBox
         _frameRateSpinBox.BindNumber(setting.FrameRate);
-        
-        _playhead.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, currentFrame, _bgGrid);
 
         return this;
     }

@@ -35,9 +35,21 @@ public partial class Playhead : Control
     {
         _anchor = anchor;
 
-        pixelsPerFrame.Subscribe(v => { _pixelsPerFrame = v; UpdateTransform(); }).AddTo(this);
-        scrollOffset.Subscribe(v => { _scrollOffset = v; UpdateTransform(); }).AddTo(this);
-        currentFrame.Subscribe(v => { _currentFrame = v; UpdateTransform(); }).AddTo(this);
+        pixelsPerFrame.Subscribe(v =>
+        {
+            _pixelsPerFrame = v;
+            UpdateTransform();
+        }).AddTo(this);
+        scrollOffset.Subscribe(v =>
+        {
+            _scrollOffset = v;
+            UpdateTransform();
+        }).AddTo(this);
+        currentFrame.Subscribe(v =>
+        {
+            _currentFrame = v;
+            UpdateTransform();
+        }).AddTo(this);
 
         anchor.ItemRectChanged += UpdateTransform; // covers resize + global move
     }
@@ -48,9 +60,8 @@ public partial class Playhead : Control
     {
         if (_anchor == null) return;
 
-        float x = _anchor.GlobalPosition.X
-                  + (_currentFrame - 1) * _pixelsPerFrame
-                  - _scrollOffset;
+        // Frame 0 is at virtual x = 0, matching TimelineRuler's coordinate origin.
+        float x = _anchor.GlobalPosition.X + _currentFrame * _pixelsPerFrame - _scrollOffset;
 
         GlobalPosition = new Vector2(x, _anchor.GlobalPosition.Y);
         Size = new Vector2(_pixelsPerFrame, _anchor.Size.Y);
@@ -66,4 +77,3 @@ public partial class Playhead : Control
         DrawRect(rect, BorderColor, false, BorderWidth);
     }
 }
-

@@ -173,7 +173,6 @@ public partial class TimelineRuler : Control
             _fps = v;
             QueueRedraw();
         }).AddTo(this);
-        Resized += QueueRedraw;
     }
 
     /// <summary>Wire the current-frame property (called from TimelinePanel.BindPlayhead).</summary>
@@ -193,14 +192,14 @@ public partial class TimelineRuler : Control
     }
 
     #endregion
-    
+
     // ── Coordinate helpers ───────────────────────────────────────────────────
 
-    /// <summary>Ruler-local pixel X of a frame's left edge.</summary>
-    private float FrameToX(int frame) => (frame - 1) * _pixelsPerFrame - _scrollOffset;
+    /// <summary>Ruler-local pixel X of a frame's left edge. Frame 0 is the virtual origin.</summary>
+    private float FrameToX(int frame) => frame * _pixelsPerFrame - _scrollOffset;
 
-    /// <summary>Frame index whose left edge is at or before ruler-local X.</summary>
-    private int XToFrame(float x) => Mathf.Max(1, (int)((x + _scrollOffset) / _pixelsPerFrame) + 1);
+    /// <summary>Frame index whose left edge is at or before ruler-local X. May return 0 or negative.</summary>
+    private int XToFrame(float x) => (int)((x + _scrollOffset) / _pixelsPerFrame);
 
     // ── Handle hit-tests ─────────────────────────────────────────────────────
 
@@ -249,8 +248,9 @@ public partial class TimelineRuler : Control
         }
 
         var font = GetThemeDefaultFont();
-        int startFrame = Mathf.Max(1, (int)(_scrollOffset / _pixelsPerFrame));
-        int endFrame   = (int)((_scrollOffset + w) / _pixelsPerFrame) + 3;
+        // Frame 0 is at virtual x=0; include a 1-frame buffer left of the view.
+        int startFrame = (int)(_scrollOffset / _pixelsPerFrame) - 1;
+        int endFrame = (int)((_scrollOffset + w) / _pixelsPerFrame) + 2;
 
         // ── Seconds band (top) ───────────────────────────────────────────────
         // Band occupies y ∈ [0, SecondsBandHeight); frame band is below.
@@ -261,10 +261,11 @@ public partial class TimelineRuler : Control
             // Find the smallest step (in whole seconds) so labels don't overlap.
             int secondStep = 1;
             if (pxPerSecond > 0f)
-                while (pxPerSecond * secondStep < MinLabelSpacingPx) secondStep++;
+                while (pxPerSecond * secondStep < MinLabelSpacingPx)
+                    secondStep++;
 
             int startSecond = Mathf.Max(0, (int)(_scrollOffset / pxPerSecond));
-            int endSecond   = (int)((_scrollOffset + w) / pxPerSecond) + 2;
+            int endSecond = (int)((_scrollOffset + w) / pxPerSecond) + 2;
 
             // Separator line between the two bands
             DrawLine(new Vector2(0f, SecondsBandHeight), new Vector2(w, SecondsBandHeight),
@@ -274,8 +275,8 @@ public partial class TimelineRuler : Control
             {
                 if (s % secondStep != 0) continue;
 
-                // frame for second s: frame 1 = 0 s, frame (s*Fps+1) = s seconds
-                float x = FrameToX((int)(s * _fps) + 1);
+                // frame for second s: frame 0 = 0 s, frame (s*Fps) = s seconds
+                float x = FrameToX((int)(s * _fps));
                 if (x < -pxPerSecond || x > w + pxPerSecond) continue;
 
                 DrawLine(new Vector2(x, 0f), new Vector2(x, SecondsBandHeight), TickColor);
@@ -304,11 +305,12 @@ public partial class TimelineRuler : Control
             float x = FrameToX(frame);
             if (x < -_pixelsPerFrame || x > w + _pixelsPerFrame) continue;
 
-            bool isMajor = frame == 1 || frame % majorStep == 0;
-            float tickH  = isMajor ? MajorTickHeight : MinorTickHeight;
+            bool isMajor = frame == 0 || frame % majorStep == 0;
+            float tickH = isMajor ? MajorTickHeight : MinorTickHeight;
             DrawLine(new Vector2(x, h - tickH), new Vector2(x, h), TickColor);
 
-            if (isMajor && showFrameLabels)
+            // Frame 0 has no visible label — numbering goes …-2, -1, (silent 0), 1, 2…
+            if (isMajor && showFrameLabels && frame != 0)
                 DrawString(font, new Vector2(x + 2f, h - tickH - 2f),
                     frame.ToString(), HorizontalAlignment.Left, -1, LabelFontSize, LabelColor);
         }
@@ -322,41 +324,6 @@ public partial class TimelineRuler : Control
                 DrawLine(new Vector2(px, 0f), new Vector2(px, h), PlayheadTickColor, 2f);
                 DrawLine(new Vector2(px + _pixelsPerFrame, 0f), new Vector2(px + _pixelsPerFrame, h),
                     PlayheadTickColor with { A = 0.4f });
-            }
-        }
-
-        // ── Playback-range lines and handles ─────────────────────────────────
-        if (_playbackStart != null)
-        {
-            float sx = FrameToX(_playbackStart.Value);
-            if (sx >= -HandleSize && sx <= w + HandleSize)
-            {
-                DrawLine(new Vector2(sx, 0f), new Vector2(sx, h), PlaybackStartColor, 1.5f);
-
-                // Left-leaning handle: right-angle triangle, right edge at sx, body extends LEFT
-                //   (sx-W, 0) ──── (sx, 0)
-                //                  |
-                //              (sx, H)
-                DrawColoredPolygon(
-                    new[] { new Vector2(sx - HandleSize, 0f), new Vector2(sx, 0f), new Vector2(sx, HandleSize) },
-                    PlaybackStartColor);
-            }
-        }
-
-        if (_playbackEnd != null)
-        {
-            float ex = FrameToX(_playbackEnd.Value);
-            if (ex >= -HandleSize && ex <= w + HandleSize)
-            {
-                DrawLine(new Vector2(ex, 0f), new Vector2(ex, h), PlaybackEndColor, 1.5f);
-
-                // Right-leaning handle: right-angle triangle, left edge at ex, body extends RIGHT
-                //   (ex, 0) ──── (ex+W, 0)
-                //   |
-                //   (ex, H)
-                DrawColoredPolygon(
-                    new[] { new Vector2(ex, 0f), new Vector2(ex + HandleSize, 0f), new Vector2(ex, HandleSize) },
-                    PlaybackEndColor);
             }
         }
     }
@@ -418,7 +385,7 @@ public partial class TimelineRuler : Control
     /// </summary>
     private void SetStartFromX(float localX)
     {
-        int newStart = Mathf.Clamp(XToFrame(localX), 1, _playbackEnd.Value - 1);
+        int newStart = Mathf.Min(XToFrame(localX), _playbackEnd.Value - 1);
         _playbackStart.Value = newStart;
         if (_currentFrame != null && _currentFrame.Value < newStart)
             _currentFrame.Value = newStart;

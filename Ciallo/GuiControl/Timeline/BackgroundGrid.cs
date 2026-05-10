@@ -26,9 +26,16 @@ public partial class BackgroundGrid : Control
 
     public void Observe(ReactiveProperty<float> pixelsPerFrame, ReactiveProperty<float> scrollOffset)
     {
-        pixelsPerFrame.Subscribe(v => { _pixelsPerFrame = v; QueueRedraw(); }).AddTo(this);
-        scrollOffset.Subscribe(v => { _scrollOffset = v; QueueRedraw(); }).AddTo(this);
-        Resized += QueueRedraw;
+        pixelsPerFrame.Subscribe(v =>
+        {
+            _pixelsPerFrame = v;
+            QueueRedraw();
+        }).AddTo(this);
+        scrollOffset.Subscribe(v =>
+        {
+            _scrollOffset = v;
+            QueueRedraw();
+        }).AddTo(this);
     }
 
     // ── Draw ─────────────────────────────────────────────────────────────────
@@ -44,17 +51,18 @@ public partial class BackgroundGrid : Control
         int step = 1;
         while (_pixelsPerFrame * step < MinColumnSpacingPx) step *= step < 5 ? 5 : 2;
 
-        int startFrame = Mathf.Max(1, (int)(_scrollOffset / _pixelsPerFrame));
+        // Frame 0 is at virtual x = 0, matching TimelineRuler's coordinate origin.
+        int startFrame = (int)(_scrollOffset / _pixelsPerFrame) - 1;
         int endFrame = (int)((_scrollOffset + w) / _pixelsPerFrame) + 2;
 
         for (int frame = startFrame; frame <= endFrame; frame++)
         {
-            if (frame != 1 && frame % step != 0) continue;
+            if (frame != 0 && frame % step != 0) continue;
 
-            float x = (frame - 1) * _pixelsPerFrame - _scrollOffset;
+            float x = frame * _pixelsPerFrame - _scrollOffset;
             if (x < -_pixelsPerFrame || x > w + _pixelsPerFrame) continue;
 
-            bool isMajor = frame == 1 || frame % (step * MajorColumnInterval) == 0;
+            bool isMajor = frame == 0 || frame % (step * MajorColumnInterval) == 0;
             DrawLine(new Vector2(x, 0f), new Vector2(x, h),
                 isMajor ? MajorColumnLineColor : ColumnLineColor);
         }
