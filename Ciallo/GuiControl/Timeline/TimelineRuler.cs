@@ -45,17 +45,6 @@ public partial class TimelineRuler : Control
     } = new Color(0.9f, 0.25f, 0.25f, 0.9f);
 
     [Export]
-    public Color OutOfRangeOverlay
-    {
-        get;
-        set
-        {
-            field = value;
-            QueueRedraw();
-        }
-    } = new Color(0f, 0f, 0f, 0.22f);
-
-    [Export]
     public int MajorTickHeight
     {
         get;
@@ -137,9 +126,6 @@ public partial class TimelineRuler : Control
 
     #endregion
 
-    public int LabelFontSize => GetThemeFontSize("font_size", "Label");
-    public Color LabelColor => GetThemeColor("font_color", "Label");
-
     // ── Private state ────────────────────────────────────────────────────────
     private float _pixelsPerFrame = 20f;
     private float _scrollOffset;
@@ -151,6 +137,26 @@ public partial class TimelineRuler : Control
     private enum DragMode { None, Frame, StartHandle, EndHandle }
 
     private DragMode _dragMode = DragMode.None;
+
+    public int LabelFontSize;
+    public Color LabelColor;
+    public Color PlaybackBackgroundColor;
+    public Color OutOfPlaybackBackgroundColor;
+    public Color OutOfPlaybackLabelColor;
+    public Color OutOfPlaybackTickColor;
+
+    public override void _Ready()
+    {
+        var styleBoxNormal = (StyleBoxFlat)GetThemeStylebox("normal", "Button");
+        PlaybackBackgroundColor = styleBoxNormal.BgColor;
+        var styleBoxDisabled = (StyleBoxFlat)GetThemeStylebox("disabled", "Button");
+        OutOfPlaybackBackgroundColor = styleBoxDisabled.BgColor;
+        LabelColor = GetThemeColor("font_color", "Label");
+        LabelFontSize = GetThemeFontSize("font_size", "Label");
+
+        OutOfPlaybackLabelColor = GetThemeColor("font_disabled_color", "Button");
+        OutOfPlaybackTickColor = OutOfPlaybackLabelColor with { A = 0.5f };
+    }
 
     #region Setup
 
@@ -203,25 +209,30 @@ public partial class TimelineRuler : Control
 
     // ── Handle hit-tests ─────────────────────────────────────────────────────
 
+    /// <summary>Horizontal pixel tolerance added on each side of a handle's bounding box.</summary>
+    private const float HandleHitTolerance = 2f;
+
     /// <summary>
     /// Start handle: right-angle triangle, right vertical edge at startX, body to the LEFT.
     /// Hit zone covers the triangle bounding box with a small horizontal tolerance.
     /// </summary>
-    private bool HitStartHandle(Vector2 p)
+    private bool HitStartHandle(Vector2 pos)
     {
         if (_playbackStart == null) return false;
-        float sx = FrameToX(_playbackStart.Value);
-        return p.X >= sx - HandleSize - 2f && p.X <= sx + 2f && p.Y >= 0f && p.Y <= HandleSize + 4f;
+        float startX = FrameToX(_playbackStart.Value);
+        return pos.X >= startX - HandleSize - HandleHitTolerance && pos.X <= startX + HandleHitTolerance
+                                                                 && pos.Y >= 0f && pos.Y <= HandleSize + HandleHitTolerance * 2f;
     }
 
     /// <summary>
     /// End handle: right-angle triangle, left vertical edge at endX, body to the RIGHT.
     /// </summary>
-    private bool HitEndHandle(Vector2 p)
+    private bool HitEndHandle(Vector2 pos)
     {
         if (_playbackEnd == null) return false;
-        float ex = FrameToX(_playbackEnd.Value);
-        return p.X >= ex - 2f && p.X <= ex + HandleSize + 2f && p.Y >= 0f && p.Y <= HandleSize + 4f;
+        float endX = FrameToX(_playbackEnd.Value);
+        return pos.X >= endX - HandleHitTolerance && pos.X <= endX + HandleSize + HandleHitTolerance
+                                                  && pos.Y >= 0f && pos.Y <= HandleSize + HandleHitTolerance * 2f;
     }
 
     // ── Drawing ──────────────────────────────────────────────────────────────
@@ -233,18 +244,30 @@ public partial class TimelineRuler : Control
         float w = Size.X;
         float h = Size.Y;
 
-        // ── Out-of-range overlay (full height) ──────────────────────────────
+        // ── Background ────────────────────────────────────────────────────────
         if (_playbackStart != null && _playbackEnd != null)
         {
-            float sx = FrameToX(_playbackStart.Value);
-            float ex = FrameToX(_playbackEnd.Value);
+            float startX = FrameToX(_playbackStart.Value);
+            float endX = FrameToX(_playbackEnd.Value);
 
-            if (sx > 0f)
-                DrawRect(new Rect2(0f, 0f, Mathf.Min(sx, w), h), OutOfRangeOverlay);
+            // Out-of-range left
+            if (startX > 0f)
+                DrawRect(new Rect2(0f, 0f, Mathf.Min(startX, w), h), OutOfPlaybackBackgroundColor);
 
-            float clampedEx = Mathf.Max(0f, ex);
-            if (clampedEx < w)
-                DrawRect(new Rect2(clampedEx, 0f, w - clampedEx, h), OutOfRangeOverlay);
+            // In-range
+            float clampedStart = Mathf.Clamp(startX, 0f, w);
+            float clampedEnd = Mathf.Clamp(endX, 0f, w);
+            if (clampedEnd > clampedStart)
+                DrawRect(new Rect2(clampedStart, 0f, clampedEnd - clampedStart, h), PlaybackBackgroundColor);
+
+            // Out-of-range right
+            float rightStart = Mathf.Max(0f, endX);
+            if (rightStart < w)
+                DrawRect(new Rect2(rightStart, 0f, w - rightStart, h), OutOfPlaybackBackgroundColor);
+        }
+        else
+        {
+            DrawRect(new Rect2(0f, 0f, w, h), OutOfPlaybackBackgroundColor);
         }
 
         var font = GetThemeDefaultFont();
@@ -279,9 +302,15 @@ public partial class TimelineRuler : Control
                 float x = FrameToX((int)(s * _fps));
                 if (x < -pxPerSecond || x > w + pxPerSecond) continue;
 
-                DrawLine(new Vector2(x, 0f), new Vector2(x, SecondsBandHeight), TickColor);
+                int secondFrame = (int)(s * _fps);
+                bool inRange = _playbackStart != null && _playbackEnd != null
+                                                      && secondFrame >= _playbackStart.Value && secondFrame < _playbackEnd.Value;
+                Color secTickColor = inRange ? TickColor : OutOfPlaybackTickColor;
+                Color secLabelColor = inRange ? LabelColor : OutOfPlaybackLabelColor;
+
+                DrawLine(new Vector2(x, 0f), new Vector2(x, SecondsBandHeight), secTickColor);
                 DrawString(font, new Vector2(x + 2f, SecondsBandHeight - 2f),
-                    $"{s}s", HorizontalAlignment.Left, -1, LabelFontSize, LabelColor);
+                    $"{s}s", HorizontalAlignment.Left, -1, LabelFontSize, secLabelColor);
             }
         }
 
@@ -307,12 +336,18 @@ public partial class TimelineRuler : Control
 
             bool isMajor = frame == 0 || frame % majorStep == 0;
             float tickH = isMajor ? MajorTickHeight : MinorTickHeight;
-            DrawLine(new Vector2(x, h - tickH), new Vector2(x, h), TickColor);
+
+            bool inRange = _playbackStart != null && _playbackEnd != null
+                                                  && frame >= _playbackStart.Value && frame < _playbackEnd.Value;
+            Color frameTickColor = inRange ? TickColor : OutOfPlaybackTickColor;
+            Color frameLabelColor = inRange ? LabelColor : OutOfPlaybackLabelColor;
+
+            DrawLine(new Vector2(x, h - tickH), new Vector2(x, h), frameTickColor);
 
             // Frame 0 has no visible label — numbering goes …-2, -1, (silent 0), 1, 2…
             if (isMajor && showFrameLabels && frame != 0)
                 DrawString(font, new Vector2(x + 2f, h - tickH - 2f),
-                    frame.ToString(), HorizontalAlignment.Left, -1, LabelFontSize, LabelColor);
+                    frame.ToString(), HorizontalAlignment.Left, -1, LabelFontSize, frameLabelColor);
         }
 
         // ── Playhead highlight ───────────────────────────────────────────────
@@ -366,7 +401,22 @@ public partial class TimelineRuler : Control
         }
     }
 
-    // ── Mutation helpers with constraints ────────────────────────────────────
+    // ── Cursor ────────────────────────────────────────────────────────────────
+
+    public override int _GetCursorShape(Vector2 atPosition)
+    {
+        if (HitStartHandle(atPosition) || HitEndHandle(atPosition))
+            return (int)CursorShape.Hsize;
+        if (_currentFrame != null && _playbackStart != null && _playbackEnd != null)
+        {
+            int frame = XToFrame(atPosition.X);
+            if (frame >= _playbackStart.Value && frame < _playbackEnd.Value)
+                return (int)CursorShape.PointingHand;
+        }
+        return (int)CursorShape.Arrow;
+    }
+
+    // ── Mutation helpers with constraints ────────────────────────────────
 
     /// <summary>
     /// Set playhead from ruler-local X, clamped to [PlaybackStart, PlaybackEnd).

@@ -66,6 +66,7 @@ custom_minimum_size = Vector2(0, 72)
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("2_ruler")
+OutOfRangeOverlay = Color(0, 0, 0, 0)
 metadata/_custom_type_script = "uid://de3wjfml6rs3i"
 
 [node name="TrackVScroll" type="ScrollContainer" parent="TimelineMainArea" unique_id=1535641868]

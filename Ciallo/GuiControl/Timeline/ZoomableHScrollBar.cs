@@ -30,9 +30,6 @@ public partial class ZoomableHScrollBar : Control
     /// <summary>Enforced minimum thumb pixel width so the bar stays grabbable.</summary>
     [Export] public float MinThumbWidth { get; set; } = 24f;
 
-    /// <summary>Width of each end grab zone in pixels.</summary>
-    [Export] public float GrabZoneWidth { get; set; } = 8f;
-
     [Export(PropertyHint.Range, "0, 1.0, 0.01")]
     public float ScrollZoneWidthRatio
     {
@@ -49,6 +46,8 @@ public partial class ZoomableHScrollBar : Control
     [Export] public Color ThumbColor { get; set; } = new Color(0.38f, 0.38f, 0.38f);
     [Export] public Color ThumbActiveColor { get; set; } = new Color(0.52f, 0.52f, 0.52f);
     [Export] public Color GrabHandleColor { get; set; } = new Color(0.62f, 0.62f, 0.62f);
+
+    public float GrabZoneWidth { get; set; } = 12f;
 
     // ── Reactive state (owned by TimelineSetting) ────────────────────────────
     private TimelineSetting _setting;
@@ -268,5 +267,18 @@ public partial class ZoomableHScrollBar : Control
             _scrollOffset = scrollOffset;
             QueueRedraw();
         }
+    }
+
+    public override int _GetCursorShape(Vector2 atPosition)
+    {
+        var (thumbLeft, thumbRight) = GetDisplayThumb();
+        float trackLocalX = atPosition.X - ScrollZoneOffset;
+
+        if (trackLocalX >= thumbLeft && trackLocalX < thumbLeft + GrabZoneWidth)
+            return (int)CursorShape.Hsize;
+        if (trackLocalX > thumbRight - GrabZoneWidth && trackLocalX <= thumbRight)
+            return (int)CursorShape.Hsize;
+
+        return (int)CursorShape.Arrow;
     }
 }
