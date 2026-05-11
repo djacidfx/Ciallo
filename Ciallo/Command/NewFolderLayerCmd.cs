@@ -57,7 +57,7 @@ public class NewFolderLayerCmd : CommandBase
         {
             var parentE = et.Parent;
             // Layer panel
-            parentE.Get<LayerFolderContainer>().InsertNodeAt(targetE.Get<LayerFolderContainer>(), et.Index);
+            parentE.Get<LayerWrapper>().InsertNodeAt(targetE.Get<LayerWrapper>(), et.Index);
 
             // View
             var parentView = parentE.Get<FolderLayerView>();
@@ -74,7 +74,7 @@ public class NewFolderLayerCmd : CommandBase
         events.Removed.Subscribe(_ =>
         {
             // Layer panel
-            targetE.Get<LayerFolderContainer>().RemoveFromParent();
+            targetE.Get<LayerWrapper>().RemoveFromParent();
 
             // Body
             bodyHolder.RemoveFromParent();

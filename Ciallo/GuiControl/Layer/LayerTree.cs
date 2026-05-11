@@ -10,13 +10,12 @@ using R3;
 namespace Ciallo.GuiControl;
 
 /// <summary>
-/// Manage the layer UI controls. Also hold layer properties.
-/// One instance per document.
+/// Manage the layer UI controls.
 /// </summary>
 /// <remarks>
 /// Design of node hierarchy:
 /// - Root is a "implicit folder"
-/// - Godot's nodes hierarchy is entirely identical to layer Entity's LayerTreeNode Component hierarchy.
+/// - Layer wrapper's (FoldableVBoxContainer) hierarchy is entirely identical to LayerTreeNode Component hierarchy.
 /// Prefer use Godot's node hierarchy to get index here. It is cached and O(1) operation.
 /// </remarks>
 [SceneTree(root: "Root"), Instantiable]
@@ -60,20 +59,19 @@ public partial class LayerTree : ScrollContainer
     public void Create(Entity layerE)
     {
         var layerBlock = CreateBlock(layerE);
+        var wrapper = new LayerWrapper();
+        wrapper.Title = layerBlock;
         layerE.AddNode(layerBlock);
+        layerE.AddNode(wrapper);
+
         if (layerE.Has<FolderLayerSetting>())
         {
-            var dropdownButton = layerBlock.DropdownArrow;
+            layerBlock.DropdownArrow.Visible = true;
             var isExpandedProperty = layerE.Get<FolderLayerSetting>().IsExpanded;
-            dropdownButton.Visible = true;
-            dropdownButton.BindBool(isExpandedProperty, out var sub);
+            layerBlock.DropdownArrow.BindBool(isExpandedProperty, out var sub);
             sub.AddTo(layerE);
-
-            var container = new LayerFolderContainer();
-            container.Title = layerBlock;
-            container.ObserveIsExpanded(isExpandedProperty, out var sub1);
+            wrapper.ObserveIsExpanded(isExpandedProperty, out var sub1);
             sub1.AddTo(layerE);
-            layerE.AddNode(container);
         }
         else
         {
@@ -200,9 +198,19 @@ public partial class LayerTree : ScrollContainer
             cursor = cursor.Get<LayerTreeNode>().ParentValue;
         }
 
+        // Guard: if the dragged block is a CelFolder and the hover location already has a
+        // CelFolder ancestor, both FolderChild and Sibling placements would nest CelFolders.
+        if (draggedBlock.IsCelFolder && hoverBlock.Wrapper.IsBeingCeled)
+            return new(DropKind.None, default, -1);
+
         // Folder child placement: lower 2/3 of the folder block
         if (hoverBlock.IsFolder && localPos.Y > size.Y / 3f)
+        {
+            // Guard: dropping a CelFolder directly into another CelFolder would nest them.
+            if (draggedBlock.IsCelFolder && hoverBlock.IsCelFolder)
+                return new(DropKind.None, default, -1);
             return new(DropKind.FolderChild, hoverEntity, hoverTreeNode.Children.Count);
+        }
 
         // Sibling placement — store raw insertIndex; post-removal adjustment is in MoveLayerCmd
         // Layers shown in reversed order: upper half of block = higher index = visually above

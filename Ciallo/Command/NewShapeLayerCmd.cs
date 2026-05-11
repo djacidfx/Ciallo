@@ -81,7 +81,7 @@ public class NewShapeLayerCmd : CommandBase
         void InsertIntoParent(Entity parentE, int index)
         {
             // Layer panel
-            parentE.Get<LayerFolderContainer>().InsertNodeAt(targetE.Get<LayerBlock>(), index);
+            parentE.Get<LayerWrapper>().InsertNodeAt(targetE.Get<LayerWrapper>(), index);
 
             // View
             var folderLayerView = parentE.Get<FolderLayerView>();
@@ -98,7 +98,7 @@ public class NewShapeLayerCmd : CommandBase
         void DetachFromParent()
         {
             // Layer panel
-            targetE.Get<LayerBlock>().RemoveFromParent();
+            targetE.Get<LayerWrapper>().RemoveFromParent();
 
             // Body
             bodyHolder.RemoveFromParent();

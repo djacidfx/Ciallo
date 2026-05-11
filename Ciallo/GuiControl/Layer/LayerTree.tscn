@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cewp0nvok0fy7"]
 
 [ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://GuiControl/Layer/LayerTree.cs" id="1_va2b4"]
-[ext_resource type="Script" uid="uid://c2ahwcgc6f1da" path="res://GuiControl/Layer/LayerFolderContainer.cs" id="2_5retc"]
+[ext_resource type="Script" uid="uid://c2ahwcgc6f1da" path="res://GuiControl/Layer/LayerWrapper.cs" id="2_5retc"]
 [ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://GuiControl/Layer/LayerBlock.tscn" id="3_ysmpr"]
 [ext_resource type="Script" uid="uid://bdjd4la8oswpt" path="res://Widget/StrokeRect.cs" id="4_54v1c"]
 

@@ -15,13 +15,13 @@ public class FolderLayerSetting
     /// By design, cel folder cannot be nested in any hierarchy, but can freely contain or be contained by regular folders
     /// which means at any path from root(document enitity) to leaf, there must be at most one cel folder.
     /// </remarks>
-    [DataMember] public ReactiveProperty<bool> IsCelFolder = new(false);
-    public bool IsCel => IsCelFolder.Value;
+    [DataMember] public bool IsCelFolder = false; // By design cannot be changed by user, so not reactive
+    public bool IsCel => IsCelFolder;
 
     public FolderLayerSetting Clone() =>
         new()
         {
             IsExpanded = { Value = IsExpanded.Value },
-            IsCelFolder = { Value = IsCelFolder.Value }
+            IsCelFolder = IsCelFolder,
         };
 }
