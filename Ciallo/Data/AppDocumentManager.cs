@@ -40,7 +40,7 @@ public static partial class AppDocumentManager
 
         document.Add(settings);
         document.Add(new LayerTreeNode()); // Document entity is layer tree root
-        document.Add(new FolderLayerSetting()); // Document entity is also a folder layer without animation
+        document.Add(new FolderLayerSetting()); // Document entity is also a folder layer
         document.Add(new TimelineSetting());
         // Add managers
         document.Add(new SelectionManager());
