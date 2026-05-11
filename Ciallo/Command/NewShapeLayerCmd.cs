@@ -42,7 +42,7 @@ public class NewShapeLayerCmd : CommandBase
         CreateNonDataComponents(targetE);
 
         // Layer panel
-        targetE.Document.Get<LayerContainer>().Create(targetE);
+        targetE.Document.Get<LayerTree>().Create(targetE);
     }
 
     public override void Do(Entity targetE)

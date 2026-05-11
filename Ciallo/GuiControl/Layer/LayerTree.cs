@@ -20,7 +20,7 @@ namespace Ciallo.GuiControl;
 /// Prefer use Godot's node hierarchy to get index here. It is cached and O(1) operation.
 /// </remarks>
 [SceneTree(root: "Root"), Instantiable]
-public partial class LayerContainer : ScrollContainer
+public partial class LayerTree : ScrollContainer
 {
     private readonly ButtonGroup _workingLayerButtonGroup = new();
 

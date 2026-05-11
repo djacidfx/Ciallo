@@ -48,7 +48,7 @@ public class NewFolderLayerCmd : CommandBase
         targetE.AddNode(bodyHolder);
 
         // Layer panel
-        targetE.Document.Get<LayerContainer>().Create(targetE);
+        targetE.Document.Get<LayerTree>().Create(targetE);
 
         // Layer tree events
         var events = layerNode.MovedAsAddedRemoved;

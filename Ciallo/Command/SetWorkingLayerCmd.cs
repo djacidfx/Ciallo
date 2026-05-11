@@ -22,14 +22,14 @@ public class SetWorkingLayerCmd : CommandBase
         sm.WorkingLayer.Value = newLayerE;
 
         // Layer panel
-        var layerContainer = Document.Get<LayerContainer>();
+        var layerContainer = Document.Get<LayerTree>();
         layerContainer.SetWorkingLayerNoSignal(newLayerE);
     }
 
     public override void Undo(Entity newLayerE)
     {
         // Layer panel
-        var layerContainer = Document.Get<LayerContainer>();
+        var layerContainer = Document.Get<LayerTree>();
         layerContainer.SetWorkingLayerNoSignal(OldLayerE);
 
         // Selection manager

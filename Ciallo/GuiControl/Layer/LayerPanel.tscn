@@ -3,10 +3,10 @@
 [ext_resource type="Script" uid="uid://di0e1em6fxdc2" path="res://GuiControl/Layer/LayerPanel.cs" id="1_nug42"]
 [ext_resource type="PackedScene" uid="uid://ckykoq4my4eok" path="res://GuiControl/Layer/LayerAction.tscn" id="2_r5bgq"]
 [ext_resource type="PackedScene" uid="uid://cdki2k8di20tg" path="res://GuiControl/Layer/LayerProperty.tscn" id="3_mjvju"]
-[ext_resource type="PackedScene" uid="uid://cewp0nvok0fy7" path="res://GuiControl/Layer/LayerContainer.tscn" id="6_4cr57"]
+[ext_resource type="PackedScene" uid="uid://cewp0nvok0fy7" path="res://GuiControl/Layer/LayerTree.tscn" id="6_4cr57"]
 
 [node name="LayerPanel" type="VBoxContainer" unique_id=1116289153]
-offset_right = 478.0
+offset_right = 373.0
 offset_bottom = 294.0
 theme_override_constants/separation = 5
 script = ExtResource("1_nug42")
@@ -19,6 +19,6 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="LayerContainer" parent="." unique_id=1036907500 instance=ExtResource("6_4cr57")]
+[node name="LayerTree" parent="." unique_id=1036907500 instance=ExtResource("6_4cr57")]
 unique_name_in_owner = true
 layout_mode = 2

@@ -1,35 +1,35 @@
 [gd_scene format=3 uid="uid://cewp0nvok0fy7"]
 
-[ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://GuiControl/Layer/LayerContainer.cs" id="1_aydl8"]
-[ext_resource type="Script" uid="uid://c2ahwcgc6f1da" path="res://GuiControl/Layer/LayerFolderContainer.cs" id="2_15uhv"]
-[ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://GuiControl/Layer/LayerBlock.tscn" id="3_3l7of"]
-[ext_resource type="Script" uid="uid://bdjd4la8oswpt" path="res://Widget/StrokeRect.cs" id="4_4h4vt"]
+[ext_resource type="Script" uid="uid://c38c0p57dxvmg" path="res://GuiControl/Layer/LayerTree.cs" id="1_va2b4"]
+[ext_resource type="Script" uid="uid://c2ahwcgc6f1da" path="res://GuiControl/Layer/LayerFolderContainer.cs" id="2_5retc"]
+[ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://GuiControl/Layer/LayerBlock.tscn" id="3_ysmpr"]
+[ext_resource type="Script" uid="uid://bdjd4la8oswpt" path="res://Widget/StrokeRect.cs" id="4_54v1c"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4h4vt"]
 bg_color = Color(0, 0, 0, 0.74509805)
 
-[node name="LayerCotainer" type="ScrollContainer" unique_id=1533297102]
+[node name="LayerTree" type="ScrollContainer" unique_id=1533297102]
 offset_right = 593.0
 offset_bottom = 294.0
 size_flags_vertical = 3
 mouse_filter = 0
-script = ExtResource("1_aydl8")
+script = ExtResource("1_va2b4")
 
 [node name="RootContainer" type="Container" parent="." unique_id=1575722749]
 unique_name_in_owner = true
 clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
-script = ExtResource("2_15uhv")
+script = ExtResource("2_5retc")
 metadata/_custom_type_script = "uid://c2ahwcgc6f1da"
 
-[node name="LayerBlock" parent="RootContainer" unique_id=1522498181 instance=ExtResource("3_3l7of")]
+[node name="LayerBlock" parent="RootContainer" unique_id=1522498181 instance=ExtResource("3_ysmpr")]
 layout_mode = 2
 
-[node name="LayerBlock2" parent="RootContainer" unique_id=1212838773 instance=ExtResource("3_3l7of")]
+[node name="LayerBlock2" parent="RootContainer" unique_id=1212838773 instance=ExtResource("3_ysmpr")]
 layout_mode = 2
 
-[node name="LayerBlock3" parent="RootContainer" unique_id=923519899 instance=ExtResource("3_3l7of")]
+[node name="LayerBlock3" parent="RootContainer" unique_id=923519899 instance=ExtResource("3_ysmpr")]
 layout_mode = 2
 
 [node name="DropHinter" type="Control" parent="." unique_id=1927663369]
@@ -38,7 +38,7 @@ visible = false
 top_level = true
 layout_mode = 2
 mouse_filter = 2
-script = ExtResource("4_4h4vt")
+script = ExtResource("4_54v1c")
 Color = Color(1, 1, 0.64705884, 1)
 Width = 5.0
 metadata/_custom_type_script = "uid://bdjd4la8oswpt"
