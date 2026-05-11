@@ -34,7 +34,7 @@ public static class BindOptionButton
         /// <param name="subs"></param>
         /// <typeparam name="T">Use `ToString()` as item string.</typeparam>
         public OptionButton BindValue<T>(IReadOnlyList<T> items,
-            ReactiveProperty<T> property, Func<T, string> toString, out CompositeDisposable subs)
+            ReactiveProperty<T> property, Func<T, string> toString, CompositeDisposable subs)
         {
             if (button.AllowReselect) throw new ArgumentException("AllowReselect must be false.");
             button.Clear();
@@ -42,8 +42,7 @@ public static class BindOptionButton
                 button.AddItem(toString(item));
 
             // Bind
-            subs = new();
-            property.Subscribe(value => button.Selected = items.IndexOf<T>(value)).AddTo(subs);
+            property.Subscribe(value => button.Selected = items.IndexOf(value)).AddTo(subs);
             button.OnItemSelectedAsObservable().Subscribe(index =>
             {
                 if (index != -1) property.Value = items[(int)index];
@@ -55,7 +54,8 @@ public static class BindOptionButton
             ReactiveProperty<T> property, Func<T, string> toString = null)
         {
             toString ??= v => v.ToString();
-            BindValue(button, items, property, toString, out var subs);
+            var subs = new CompositeDisposable();
+            BindValue(button, items, property, toString, subs);
             subs.AddTo(button);
             return button;
         }

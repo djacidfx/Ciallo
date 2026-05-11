@@ -7,9 +7,8 @@ public static class BindLineEdit
 {
     extension(LineEdit lineEdit)
     {
-        public LineEdit BindString(ReactiveProperty<string> property, out CompositeDisposable subs)
+        public LineEdit BindString(ReactiveProperty<string> property, CompositeDisposable subs)
         {
-            subs = new();
             property.Subscribe(value =>
             {
                 // `lineEdit.Text = value` makes the control reset its cursor. Must manually check to get correct input behavior.
@@ -23,7 +22,8 @@ public static class BindLineEdit
         }
         public LineEdit BindString(ReactiveProperty<string> property)
         {
-            BindString(lineEdit, property, out var subs);
+            var subs = new CompositeDisposable();
+            BindString(lineEdit, property, subs);
             subs.AddTo(lineEdit);
             return lineEdit;
         }
