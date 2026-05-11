@@ -1,0 +1,39 @@
+[gd_scene format=3 uid="uid://6wtrxdc617ci"]
+
+[ext_resource type="Texture2D" uid="uid://dp1yrwx67e0hq" path="res://Icon/folder-animation-plus.svg" id="1_56l7e"]
+[ext_resource type="Script" uid="uid://dmwhitm5mjnxh" path="res://GuiControl/Timeline/TimelineAction.cs" id="1_ytrn4"]
+
+[node name="TimelineAction" type="HFlowContainer" unique_id=1607254887]
+offset_right = 1044.0
+offset_bottom = 31.0
+script = ExtResource("1_ytrn4")
+
+[node name="AddCelFolder" type="Button" parent="." unique_id=1723767805]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+theme_type_variation = &"ToolButton"
+icon = ExtResource("1_56l7e")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Backward" type="Button" parent="." unique_id=1837789255]
+unique_name_in_owner = true
+layout_mode = 2
+text = "<"
+
+[node name="Forward" type="Button" parent="." unique_id=1521646872]
+unique_name_in_owner = true
+layout_mode = 2
+text = ">"
+
+[node name="FrameRate" type="SpinBox" parent="." unique_id=720721336]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(128, 0)
+layout_mode = 2
+min_value = 1.0
+max_value = 120.0
+step = 0.1
+value = 24.0
+alignment = 2
+suffix = "fps"

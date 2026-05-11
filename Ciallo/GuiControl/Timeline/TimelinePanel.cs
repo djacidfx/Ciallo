@@ -17,7 +17,6 @@ public partial class TimelinePanel : VBoxContainer
     private Playhead _playhead;
     private PlaybackBar _startBar;
     private PlaybackBar _endBar;
-    private SpinBox _frameRateSpinBox;
     private HSplitContainer _hSplitRuler;
     private HSplitContainer _hSplitTrack;
 
@@ -29,7 +28,6 @@ public partial class TimelinePanel : VBoxContainer
         _playhead = GetNode<Playhead>("%Playhead");
         _startBar = GetNode<PlaybackBar>("%PlaybackStartBar");
         _endBar = GetNode<PlaybackBar>("%PlaybackEndBar");
-        _frameRateSpinBox = GetNode<SpinBox>("%FrameRateSpinBox");
         _hSplitRuler = GetNode<HSplitContainer>("%HSplitContainer");
         _hSplitTrack = GetNode<HSplitContainer>("%HSplitContainer2");
 
@@ -62,8 +60,7 @@ public partial class TimelinePanel : VBoxContainer
 
         _playhead.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, currentFrame, _bgGrid);
 
-        // FrameRate SpinBox
-        _frameRateSpinBox.BindNumber(setting.FrameRate);
+        TimelineAction.FrameRate.BindNumber(setting.FrameRate);
 
         return this;
     }
