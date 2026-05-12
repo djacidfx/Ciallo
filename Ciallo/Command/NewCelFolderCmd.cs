@@ -10,7 +10,7 @@ public class NewCelFolderCmd : NewFolderLayerCmd
     {
         CreateData(targetE);
         targetE.Get<CommonLayerSetting>().Name.Value = "Cel folder".Tr();
-        targetE.Get<FolderLayerSetting>().IsCelFolder = true;
+        targetE.Get<FolderLayerSetting>().IsCel = true;
         CreateOther(targetE);
     }
 }

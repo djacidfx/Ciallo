@@ -25,7 +25,7 @@ public partial class TrackHeaderTree : LayerTreeBase
     /// <summary>
     /// Hides the dropdown arrow on CelFolders: their children are shown in timeline track rows,
     /// </summary>
-    protected override bool ShouldShowDropdownArrow(Entity e) => e.Has<FolderLayerSetting>() && !e.Get<FolderLayerSetting>().IsCelFolder;
+    protected override bool ShouldShowDropdownArrow(Entity e) => e.Has<FolderLayerSetting>() && !e.Get<FolderLayerSetting>().IsCel;
 
     /// <summary>
     /// Creates a <see cref="TrackHeaderWrapper"/> + <see cref="TrackHeaderBlock"/> for

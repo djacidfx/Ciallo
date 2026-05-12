@@ -2,6 +2,7 @@
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
+using Godot;
 using R3;
 
 namespace Ciallo.Command;
@@ -88,6 +89,22 @@ public class NewFolderLayerCmd : CommandBase
             // View
             folderLayerView.RemoveFromParent();
         }).AddTo(targetE);
+
+        // Timeline CelTrack
+        if (targetE.Get<FolderLayerSetting>().IsCel)
+        {
+            var document = targetE.Document;
+            var bgGrid = document.Get<BackgroundGrid>();
+            var trackArea = document.Get<VBoxContainer>();
+            var vscroll = document.Get<ScrollContainer>();
+            var setting = document.Get<TimelineSetting>();
+            var headerBlock = targetE.Get<TrackHeaderBlock>();
+
+            var celTrack = new CelTrack();
+            trackArea.AddChild(celTrack);
+            targetE.AddNode(celTrack);
+            celTrack.Observe(setting, targetE, headerBlock, bgGrid, vscroll);
+        }
     }
 
     public void CreateData(Entity targetE)

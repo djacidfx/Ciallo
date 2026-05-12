@@ -20,6 +20,8 @@ public partial class TimelinePanel : VBoxContainer
     private PlaybackBar _endBar;
     private HSplitContainer _hSplitRuler;
     private HSplitContainer _hSplitTrack;
+    private VBoxContainer _trackArea;
+    private ScrollContainer _trackVScroll;
 
     public override void _Ready()
     {
@@ -31,6 +33,8 @@ public partial class TimelinePanel : VBoxContainer
         _endBar = GetNode<PlaybackBar>("%PlaybackEndBar");
         _hSplitRuler = GetNode<HSplitContainer>("%HSplitContainer");
         _hSplitTrack = GetNode<HSplitContainer>("%HSplitContainer2");
+        _trackArea = GetNode<VBoxContainer>("%TrackArea");
+        _trackVScroll = GetNode<ScrollContainer>("%TrackVScroll");
 
         // Keep the ruler-row and track-row dividers in lockstep.
         _hSplitRuler.Dragged += offset => _hSplitTrack.SplitOffsets = [(int)offset];
@@ -67,13 +71,18 @@ public partial class TimelinePanel : VBoxContainer
     }
 
     /// <summary>
-    /// Registers <see cref="TrackHeaderTree"/> and its root container as Frent components
-    /// on <paramref name="document"/>, mirroring how <see cref="LayerPanel"/> registers
-    /// <see cref="LayerTree"/>. Must be called once after this panel is added to the tree.
+    /// Registers <see cref="TrackHeaderTree"/>, its root container, <see cref="BackgroundGrid"/>,
+    /// <see cref="VBoxContainer">TrackArea</see>, and the vertical <see cref="ScrollContainer"/>
+    /// as Frent components on <paramref name="document"/> so that layer commands can
+    /// create and position <see cref="CelTrack"/> nodes at runtime.
+    /// Must be called once after this panel is added to the tree.
     /// </summary>
     public void InitTrackHeader(Entity document)
     {
         document.Add(TrackHeaderTree);
         document.Add(TrackHeaderTree.RootContainer);
+        document.Add(_bgGrid);
+        document.Add(_trackArea);
+        document.Add(_trackVScroll);
     }
 }
