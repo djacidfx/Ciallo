@@ -1,5 +1,4 @@
-﻿using System;
-using Ciallo.Widget;
+﻿using Ciallo.Widget;
 using Godot;
 using R3;
 
@@ -7,10 +6,9 @@ namespace Ciallo.GuiControl;
 
 /// <summary>
 /// Wraps every layer's <see cref="LayerBlock"/> (as the <see cref="FoldableVBoxContainer.Title"/>)
-/// and holds its child layers as content nodes.
 /// One instance per layer entity; hierarchy mirrors <see cref="Data.LayerTreeNode"/> hierarchy.
 /// </summary>
-[GlobalClass, Tool]
+[Tool]
 public partial class LayerWrapper : FoldableVBoxContainer
 {
     public int Level = -1;
@@ -21,6 +19,12 @@ public partial class LayerWrapper : FoldableVBoxContainer
     /// Propagated transitively on <see cref="_EnterTree"/> via the parent wrapper's Title block.
     /// </summary>
     public bool IsBeingCeled;
+    public LayerBlock Block => Title as LayerBlock;
+
+    public LayerWrapper()
+    {
+        ReverseOrder = true;
+    }
 
     public override void _EnterTree()
     {
@@ -44,10 +48,22 @@ public partial class LayerWrapper : FoldableVBoxContainer
         IsBeingCeled = false;
     }
 
-    public LayerWrapper ObserveIsExpanded(ReactiveProperty<bool> property, out IDisposable sub)
+    /// <summary>
+    /// Returns true if this layer or any layer in its Godot-node subtree is a CelFolder.
+    /// Walks the <see cref="LayerWrapper"/> children directly — no entity component lookups.
+    /// </summary>
+    public bool HasCelFolderInSubtree()
     {
-        sub = property.Subscribe(v => IsExpanded = v);
+        if ((Title as LayerBlock)?.IsCelFolder == true) return true;
+        foreach (Node child in GetChildren())
+            if (child is LayerWrapper w && w.HasCelFolderInSubtree())
+                return true;
+        return false;
+    }
+
+    public LayerWrapper ObserveIsExpanded(ReactiveProperty<bool> property, CompositeDisposable subs)
+    {
+        property.Subscribe(v => IsExpanded = v).AddTo(subs);
         return this;
     }
 }
-

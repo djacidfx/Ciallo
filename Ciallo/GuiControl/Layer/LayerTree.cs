@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
-using Ciallo.Widget;
 using Frent;
 using Godot;
 using R3;
@@ -16,7 +15,6 @@ namespace Ciallo.GuiControl;
 /// Design of node hierarchy:
 /// - Root is a "implicit folder"
 /// - Layer wrapper's (FoldableVBoxContainer) hierarchy is entirely identical to LayerTreeNode Component hierarchy.
-/// Prefer use Godot's node hierarchy to get index here. It is cached and O(1) operation.
 /// </remarks>
 [SceneTree(root: "Root"), Instantiable]
 public partial class LayerTree : ScrollContainer
@@ -27,6 +25,11 @@ public partial class LayerTree : ScrollContainer
     private LayerBlock _hoveredBlock;
     private float _scrollSpeed = 0f;
     private float _scrollAccum = 0f;
+    /// <summary>
+    /// Cached once per drag in <see cref="OnDragStart"/>.
+    /// True when the dragged layer's subtree contains a CelFolder.
+    /// </summary>
+    private bool _draggedSubtreeHasCelFolder;
 
     private const float ScrollZone = 50f; // px from edge that triggers scroll
     private const float MaxScrollSpeed = 280f; // px per second at full speed
@@ -58,42 +61,29 @@ public partial class LayerTree : ScrollContainer
 
     public void Create(Entity layerE)
     {
-        var layerBlock = CreateBlock(layerE);
         var wrapper = new LayerWrapper();
-        wrapper.Title = layerBlock;
-        layerE.AddNode(layerBlock);
+        wrapper.Title = LayerBlock.New();
+        layerE.Add(wrapper.Block);
         layerE.AddNode(wrapper);
 
-        if (layerE.Has<FolderLayerSetting>())
-        {
-            layerBlock.DropdownArrow.Visible = true;
-            var isExpandedProperty = layerE.Get<FolderLayerSetting>().IsExpanded;
-            layerBlock.DropdownArrow.BindBool(isExpandedProperty, out var sub);
-            sub.AddTo(layerE);
-            wrapper.ObserveIsExpanded(isExpandedProperty, out var sub1);
-            sub1.AddTo(layerE);
-        }
-        else
-        {
-            layerBlock.DropdownArrow.Visible = false;
-        }
+        InitBlock(layerE);
     }
 
-    private LayerBlock CreateBlock(Entity e)
+    private void InitBlock(Entity e)
     {
         var commonSetting = e.Get<CommonLayerSetting>();
-        var subs = new CompositeDisposable().AddTo(e);
         var cmdM = e.Document.Get<CommandManager>();
 
-        var block = LayerBlock.New();
+        var subs = new CompositeDisposable();
+        subs.AddTo(e);
+
+        var wrapper = e.Get<LayerWrapper>();
+        var block = wrapper.Block;
         block.WorkingButton.ButtonGroup = _workingLayerButtonGroup;
-        block.VisibleButton
-            .BindBool(commonSetting.IsVisible, out var sub0);
-        var lineEdit = block.GetNode<LabelLineEdit>("%LabelLineEdit")
-            .BindString(commonSetting.Name, out var sub1)
+        block.VisibleButton.BindBool(commonSetting.IsVisible, subs);
+        var lineEdit = block.LabelLineEdit
+            .BindString(commonSetting.Name, subs)
             .RegisterUndo(cmdM);
-        sub0.AddTo(subs);
-        sub1.AddTo(subs);
 
         block.MouseEntered += () =>
         {
@@ -104,6 +94,18 @@ public partial class LayerTree : ScrollContainer
             if (ReferenceEquals(_hoveredBlock, block))
                 _hoveredBlock = null;
         };
+
+        if (e.Has<FolderLayerSetting>())
+        {
+            block.DropdownArrow.Visible = true;
+            var property = e.Get<FolderLayerSetting>().IsExpanded;
+            block.DropdownArrow.BindBool(property, subs);
+            e.Get<LayerWrapper>().ObserveIsExpanded(property, subs);
+        }
+        else
+        {
+            block.DropdownArrow.Visible = false;
+        }
 
         var guiInput = lineEdit
             .SignalAsObservable<InputEvent>(Control.SignalName.GuiInput)
@@ -118,7 +120,7 @@ public partial class LayerTree : ScrollContainer
             .Chunk(TimeSpan.FromMilliseconds(200))
             .Where(xs => xs.Length == 2 && xs.First().IsPressed() && xs.Last().IsReleased())
             .Select(xs => xs.First());
-        singleClickObs.Subscribe(_ => block.WorkingButton.SetPressed(true)).AddTo(subs);
+        singleClickObs.Subscribe(_ => block.WorkingButton.SetPressed(true)).AddTo(e);
 
         // Drag
         var mouseState = leftMouse.ToReadOnlyReactiveProperty();
@@ -134,13 +136,13 @@ public partial class LayerTree : ScrollContainer
         {
             _isDragging = true;
             OnDragStart(block, motion);
-        }).AddTo(subs);
+        }).AddTo(e);
 
         var dragging = guiInput
             .Where(_ => _isDragging)
             .OfType<InputEvent, InputEventMouseMotion>()
             .Where(motion => motion.ButtonMask == MouseButtonMask.Left);
-        dragging.Subscribe(motion => OnDragging(block, motion)).AddTo(subs);
+        dragging.Subscribe(motion => OnDragging(block, motion)).AddTo(e);
 
         var dragEnd = leftMouse
             .Where(button => _isDragging && button.IsReleased());
@@ -148,19 +150,16 @@ public partial class LayerTree : ScrollContainer
         {
             _isDragging = false;
             OnDragEnd(block, button);
-        }).AddTo(subs);
-
-        return block;
+        }).AddTo(e);
     }
 
     private enum DropKind { None, FolderChild, Sibling }
 
-    // ParentEntity : FolderChild → the folder (or document root) to insert into; Sibling → the shared parent
     // InsertIndex  : raw (pre-removal) insertion index; post-removal adjustment is done in MoveLayerCmd
     private readonly record struct DropTarget(
-        DropKind Kind,
-        Entity ParentEntity,
-        int InsertIndex);
+        DropKind Kind = DropKind.None,
+        Entity ParentEntity = default,
+        int InsertIndex = -1);
 
     /// <summary>
     /// Classify the current drag operation against <paramref name="draggedBlock"/>.
@@ -177,11 +176,11 @@ public partial class LayerTree : ScrollContainer
                 var docE = AppDocumentManager.WorkingDocument.CurrentValue;
                 return new(DropKind.FolderChild, docE, 0);
             }
-            return new(DropKind.None, default, -1);
+            return default;
         }
 
         if (ReferenceEquals(_hoveredBlock, draggedBlock))
-            return new(DropKind.None, default, -1);
+            return default;
 
         var draggedEntity = draggedBlock.LayerEntity;
         var hoverBlock = _hoveredBlock;
@@ -198,18 +197,18 @@ public partial class LayerTree : ScrollContainer
             cursor = cursor.Get<LayerTreeNode>().ParentValue;
         }
 
-        // Guard: if the dragged block is a CelFolder and the hover location already has a
-        // CelFolder ancestor, both FolderChild and Sibling placements would nest CelFolders.
-        if (draggedBlock.IsCelFolder && hoverBlock.Wrapper.IsBeingCeled)
-            return new(DropKind.None, default, -1);
+        // Guard: if the dragged subtree contains a CelFolder and the hover location is already inside a
+        // celed region, both FolderChild and Sibling placements would nest CelFolders.
+        if (_draggedSubtreeHasCelFolder && hoverBlock.Wrapper.IsBeingCeled)
+            return default;
 
         // Folder child placement: lower 2/3 of the folder block
         if (hoverBlock.IsFolder && localPos.Y > size.Y / 3f)
         {
-            // Guard: dropping a CelFolder directly into another CelFolder would nest them.
-            if (draggedBlock.IsCelFolder && hoverBlock.IsCelFolder)
-                return new(DropKind.None, default, -1);
-            return new(DropKind.FolderChild, hoverEntity, hoverTreeNode.Children.Count);
+            // Guard: dropping a subtree containing a CelFolder directly into a CelFolder would nest them.
+            if (_draggedSubtreeHasCelFolder && hoverBlock.IsCelFolder)
+                return default;
+            return new(DropKind.FolderChild, hoverEntity, 0);
         }
 
         // Sibling placement — store raw insertIndex; post-removal adjustment is in MoveLayerCmd
@@ -224,6 +223,7 @@ public partial class LayerTree : ScrollContainer
     private void OnDragStart(LayerBlock draggedBlock, InputEventMouseMotion motion)
     {
         _scrollAccum = 0f;
+        _draggedSubtreeHasCelFolder = draggedBlock.Wrapper.HasCelFolderInSubtree();
         DragLabel.Text = draggedBlock.LayerEntity.Get<CommonLayerSetting>().Name.Value;
         DragLabel.GlobalPosition = motion.GlobalPosition + new Vector2(16f, -8f);
         DragLabel.Visible = true;
