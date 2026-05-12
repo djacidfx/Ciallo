@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://GuiControl/Timeline/ZoomableHScrollBar.cs" id="4_lw6jv"]
 [ext_resource type="Script" uid="uid://dkn2veamvchhh" path="res://GuiControl/Timeline/Playhead.cs" id="5_playhead"]
 [ext_resource type="Script" uid="uid://dobrheel0y42t" path="res://GuiControl/Timeline/PlaybackBar.cs" id="6_pbbar"]
+[ext_resource type="PackedScene" uid="uid://da5c27ts8w1f6" path="res://GuiControl/Timeline/TrackHeaderTree.tscn" id="7_thtree"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nqb4g"]
 
@@ -69,11 +70,9 @@ split_offsets = PackedInt32Array(256)
 dragging_enabled = false
 split_offset = 256
 
-[node name="TrackHeaderList" type="ScrollContainer" parent="TimelineMainArea/TrackVScroll/HSplitContainer2" unique_id=559583512]
-custom_minimum_size = Vector2(48, 0)
+[node name="TrackHeaderTree" parent="TimelineMainArea/TrackVScroll/HSplitContainer2" unique_id=1847391024 instance=ExtResource("7_thtree")]
+unique_name_in_owner = true
 layout_mode = 2
-horizontal_scroll_mode = 4
-vertical_scroll_mode = 0
 
 [node name="TrackArea" type="VBoxContainer" parent="TimelineMainArea/TrackVScroll/HSplitContainer2" unique_id=1557906742]
 layout_mode = 2

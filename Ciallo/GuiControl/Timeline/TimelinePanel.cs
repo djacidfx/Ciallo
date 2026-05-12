@@ -1,4 +1,5 @@
 using Ciallo.Data;
+using Frent;
 using Godot;
 using R3;
 
@@ -63,5 +64,16 @@ public partial class TimelinePanel : VBoxContainer
         TimelineAction.FrameRate.BindNumber(setting.FrameRate);
 
         return this;
+    }
+
+    /// <summary>
+    /// Registers <see cref="TrackHeaderTree"/> and its root container as Frent components
+    /// on <paramref name="document"/>, mirroring how <see cref="LayerPanel"/> registers
+    /// <see cref="LayerTree"/>. Must be called once after this panel is added to the tree.
+    /// </summary>
+    public void InitTrackHeader(Entity document)
+    {
+        document.Add(TrackHeaderTree);
+        document.Add(TrackHeaderTree.RootContainer);
     }
 }

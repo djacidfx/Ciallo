@@ -20,19 +20,14 @@ public class NewFolderLayerCmd : CommandBase
 
     public override void BeforeFirstDo(Entity targetE)
     {
-        // Data
-        var layerNode = new LayerTreeNode();
-        targetE.Add(layerNode);
+        CreateData(targetE);
+        CreateOther(targetE);
+    }
 
-        var commonSetting = CopyE.IsNull
-            ? new CommonLayerSetting { Name = { Value = "Folder".Tr() } }
-            : CopyE.Get<CommonLayerSetting>().Clone();
-        targetE.Add(commonSetting);
-
-        var folderLayerSetting = CopyE.IsNull
-            ? new FolderLayerSetting()
-            : CopyE.Get<FolderLayerSetting>().Clone();
-        targetE.Add(folderLayerSetting);
+    public void CreateOther(Entity targetE)
+    {
+        var commonSetting = targetE.Get<CommonLayerSetting>();
+        var layerNode = targetE.Get<LayerTreeNode>();
 
         // View
         var folderLayerView = new FolderLayerView();
@@ -49,6 +44,8 @@ public class NewFolderLayerCmd : CommandBase
 
         // Layer panel
         targetE.Document.Get<LayerTree>().Create(targetE);
+        // Timeline track header
+        targetE.Document.Get<TrackHeaderTree>().Create(targetE);
 
         // Layer tree events
         var events = layerNode.MovedAsAddedRemoved;
@@ -58,6 +55,9 @@ public class NewFolderLayerCmd : CommandBase
             var parentE = et.Parent;
             // Layer panel
             parentE.Get<LayerWrapper>().InsertNodeAt(targetE.Get<LayerWrapper>(), et.Index);
+
+            // Timeline track header
+            parentE.Get<TrackHeaderWrapper>().InsertNodeAt(targetE.Get<TrackHeaderWrapper>(), et.Index);
 
             // View
             var parentView = parentE.Get<FolderLayerView>();
@@ -76,6 +76,9 @@ public class NewFolderLayerCmd : CommandBase
             // Layer panel
             targetE.Get<LayerWrapper>().RemoveFromParent();
 
+            // Timeline track header
+            targetE.Get<TrackHeaderWrapper>().RemoveFromParent();
+
             // Body
             bodyHolder.RemoveFromParent();
 
@@ -85,6 +88,22 @@ public class NewFolderLayerCmd : CommandBase
             // View
             folderLayerView.RemoveFromParent();
         }).AddTo(targetE);
+    }
+
+    public void CreateData(Entity targetE)
+    {
+        var layerNode = new LayerTreeNode();
+        targetE.Add(layerNode);
+
+        var commonSetting = CopyE.IsNull
+            ? new CommonLayerSetting { Name = { Value = "Folder".Tr() } }
+            : CopyE.Get<CommonLayerSetting>().Clone();
+        targetE.Add(commonSetting);
+
+        var folderLayerSetting = CopyE.IsNull
+            ? new FolderLayerSetting()
+            : CopyE.Get<FolderLayerSetting>().Clone();
+        targetE.Add(folderLayerSetting);
     }
 
     public override void Do(Entity targetE)

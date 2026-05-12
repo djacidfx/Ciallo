@@ -8,8 +8,9 @@ public class NewCelFolderCmd : NewFolderLayerCmd
 {
     public override void BeforeFirstDo(Entity targetE)
     {
-        base.BeforeFirstDo(targetE);
+        CreateData(targetE);
+        targetE.Get<CommonLayerSetting>().Name.Value = "Cel folder".Tr();
         targetE.Get<FolderLayerSetting>().IsCelFolder = true;
-        targetE.Get<CommonLayerSetting>().Name.Value = "Animation folder".Tr();
+        CreateOther(targetE);
     }
 }
