@@ -49,7 +49,8 @@ public partial class ZoomableHScrollBar : Control
 
     // Local cache — updated by subscriptions, also used by [Tool] editor preview
     private float _ppf;
-    private float _scrollOffset;
+    private float _scrollOffsetFrame; // canonical scroll position in frames (mirrors TimelineSetting.ScrollOffsetFrame)
+    private float _scrollOffset; // derived pixel cache = _scrollOffsetFrame * _ppf, used for all geometry
     private int _playbackStart = 0;
     private int _playbackEnd = 24;
 
@@ -57,7 +58,7 @@ public partial class ZoomableHScrollBar : Control
     private enum DragMode { None, Scroll, ZoomLeft, ZoomRight }
 
     private DragMode _dragMode = DragMode.None;
-    private float _dragScrollOffset; // scroll offset (pixels) frozen at drag start
+    private float _dragScrollOffset; // scroll offset in pixels frozen at drag start
     private (float Start, float Range) _dragVirtualBounds; // virtual timeline bounds (frames) frozen at drag start
     private float _dragMouseX; // mouse X (screen pixels) at drag start
     private float _dragThumbLeft; // thumb left edge (track pixels) at drag start
@@ -85,18 +86,21 @@ public partial class ZoomableHScrollBar : Control
         _setting = setting;
 
         _ppf = setting.PixelsPerFrame.Value;
-        _scrollOffset = setting.ScrollOffsetPixels.Value;
+        _scrollOffsetFrame = setting.ScrollOffsetFrame.Value;
+        _scrollOffset = _scrollOffsetFrame * _ppf;
         _playbackStart = setting.PlaybackStart.Value;
         _playbackEnd = setting.PlaybackEnd.Value;
 
         setting.PixelsPerFrame.Subscribe(v =>
         {
             _ppf = v;
+            _scrollOffset = _scrollOffsetFrame * v; // recompute pixel cache when zoom changes
             QueueRedraw();
         }).AddTo(this);
-        setting.ScrollOffsetPixels.Subscribe(v =>
+        setting.ScrollOffsetFrame.Subscribe(v =>
         {
-            _scrollOffset = v;
+            _scrollOffsetFrame = v;
+            _scrollOffset = v * _ppf;
             QueueRedraw();
         }).AddTo(this);
         setting.PlaybackStart.Subscribe(v =>
@@ -211,7 +215,7 @@ public partial class ZoomableHScrollBar : Control
                 {
                     float newScrollOffset = _dragScrollOffset + mouseDx * virtualRangePx / trackPx;
                     if (_setting != null)
-                        _setting.ScrollOffsetPixels.Value = newScrollOffset;
+                        _setting.ScrollOffsetFrame.Value = newScrollOffset / _ppf;
                     else
                     {
                         _scrollOffset = newScrollOffset;
@@ -254,7 +258,7 @@ public partial class ZoomableHScrollBar : Control
         if (_setting != null)
         {
             _setting.PixelsPerFrame.Value = ppf;
-            _setting.ScrollOffsetPixels.Value = scrollOffset;
+            _setting.ScrollOffsetFrame.Value = scrollOffset / ppf;
         }
         else
         {

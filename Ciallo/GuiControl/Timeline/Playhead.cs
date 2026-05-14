@@ -29,22 +29,19 @@ public partial class Playhead : Control
     /// </summary>
     public void Observe(
         ReactiveProperty<float> pixelsPerFrame,
-        ReactiveProperty<float> scrollOffset,
+        ReactiveProperty<float> scrollOffsetFrame,
         ReactiveProperty<int> currentFrame,
         Control anchor)
     {
         _anchor = anchor;
 
-        pixelsPerFrame.Subscribe(v =>
-        {
-            _pixelsPerFrame = v;
-            UpdateTransform();
-        }).AddTo(this);
-        scrollOffset.Subscribe(v =>
-        {
-            _scrollOffset = v;
-            UpdateTransform();
-        }).AddTo(this);
+        pixelsPerFrame.CombineLatest(scrollOffsetFrame, (ppf, sof) => (ppf, sof * ppf))
+            .Subscribe(t =>
+            {
+                _pixelsPerFrame = t.ppf;
+                _scrollOffset = t.Item2;
+                UpdateTransform();
+            }).AddTo(this);
         currentFrame.Subscribe(v =>
         {
             _currentFrame = v;

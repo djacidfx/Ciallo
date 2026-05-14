@@ -43,7 +43,7 @@ public partial class PlaybackBar : Control
     /// </summary>
     public void Observe(
         ReactiveProperty<float> pixelsPerFrame,
-        ReactiveProperty<float> scrollOffset,
+        ReactiveProperty<float> scrollOffsetFrame,
         ReactiveProperty<int> frame,
         Control gridAnchor,
         Control rulerAnchor)
@@ -51,16 +51,13 @@ public partial class PlaybackBar : Control
         _gridAnchor = gridAnchor;
         _rulerAnchor = rulerAnchor;
 
-        pixelsPerFrame.Subscribe(v =>
-        {
-            _ppf = v;
-            UpdateTransform();
-        }).AddTo(this);
-        scrollOffset.Subscribe(v =>
-        {
-            _scrollOffset = v;
-            UpdateTransform();
-        }).AddTo(this);
+        pixelsPerFrame.CombineLatest(scrollOffsetFrame, (ppf, sof) => (ppf, sof * ppf))
+            .Subscribe(t =>
+            {
+                _ppf = t.ppf;
+                _scrollOffset = t.Item2;
+                UpdateTransform();
+            }).AddTo(this);
         frame.Subscribe(v =>
         {
             _frame = v;

@@ -20,8 +20,6 @@ public partial class TimelinePanel : VBoxContainer
     private PlaybackBar _endBar;
     private HSplitContainer _hSplitRuler;
     private HSplitContainer _hSplitTrack;
-    private VBoxContainer _trackArea;
-    private ScrollContainer _trackVScroll;
 
     public override void _Ready()
     {
@@ -33,8 +31,6 @@ public partial class TimelinePanel : VBoxContainer
         _endBar = GetNode<PlaybackBar>("%PlaybackEndBar");
         _hSplitRuler = GetNode<HSplitContainer>("%HSplitContainer");
         _hSplitTrack = GetNode<HSplitContainer>("%HSplitContainer2");
-        _trackArea = GetNode<VBoxContainer>("%TrackArea");
-        _trackVScroll = GetNode<ScrollContainer>("%TrackVScroll");
 
         // Keep the ruler-row and track-row dividers in lockstep.
         _hSplitRuler.Dragged += offset => _hSplitTrack.SplitOffsets = [(int)offset];
@@ -48,22 +44,22 @@ public partial class TimelinePanel : VBoxContainer
     {
         _zoomScrollBar.Setup(setting);
 
-        _ruler.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.FrameRate);
+        _ruler.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, setting.FrameRate);
         _ruler.BindPlaybackRange(setting.PlaybackStart, setting.PlaybackEnd);
         _ruler.BindCurrentFrame(currentFrame);
 
-        _bgGrid.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels);
+        _bgGrid.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame);
 
         // Start bar: green line + left-handle at PlaybackStart frame
         _startBar.IsStart = true;
-        _startBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackStart, _bgGrid, _ruler);
+        _startBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, setting.PlaybackStart, _bgGrid, _ruler);
 
         // End bar: red line + right-handle at PlaybackEnd frame
         _endBar.IsStart = false;
         _endBar.LineColor = new Color(0.9f, 0.25f, 0.25f, 0.9f);
-        _endBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, setting.PlaybackEnd, _bgGrid, _ruler);
+        _endBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, setting.PlaybackEnd, _bgGrid, _ruler);
 
-        _playhead.Observe(setting.PixelsPerFrame, setting.ScrollOffsetPixels, currentFrame, _bgGrid);
+        _playhead.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, currentFrame, _bgGrid);
 
         TimelineAction.FrameRate.BindNumber(setting.FrameRate);
 
@@ -82,7 +78,5 @@ public partial class TimelinePanel : VBoxContainer
         document.Add(TrackHeaderTree);
         document.Add(TrackHeaderTree.RootContainer);
         document.Add(_bgGrid);
-        document.Add(_trackArea);
-        document.Add(_trackVScroll);
     }
 }

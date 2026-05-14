@@ -27,20 +27,19 @@ public partial class CelTrack : Control
     // ── State ─────────────────────────────────────────────────────────────────
     private float _ppf;
     private float _scrollOffset;
-    private FolderLayerSetting _folderSetting;
+    private ObservableDictionary<int, Entity> _exposures;
     private TrackHeaderBlock _headerBlock;
     private Control _anchor; // BackgroundGrid – defines x-origin and width
     private ScrollContainer _vscroll; // TrackVScroll – fires Scrolled when tree scrolls
 
     // ── Theme ─────────────────────────────────────────────────────────────────
-    private Color _barColor;
-    private Color _labelColor;
-    private Color _arrowColor;
-    private Font _labelFont;
-    private int _labelFontSize;
+    public Color BarColor;
+    public Color LabelColor;
+    public Color ArrowColor;
+    public Font LabelFont;
+    public int LabelFontSize;
 
     // ── Delegates stored for unsubscription ───────────────────────────────────
-    private NotifyCollectionChangedEventHandler<KeyValuePair<int, Entity>> _onExposuresChanged;
     private Range.ValueChangedEventHandler _onVScrollChanged;
 
     // ── Constructor ───────────────────────────────────────────────────────────
@@ -48,18 +47,18 @@ public partial class CelTrack : Control
     public CelTrack()
     {
         TopLevel = true;
-        MouseFilter = MouseFilterEnum.Ignore;
+        MouseFilter = MouseFilterEnum.Pass;
     }
 
     // ── Theme init ────────────────────────────────────────────────────────────
 
     private void InitTheme()
     {
-        _barColor = GetThemeColor("font_color", "Label") with { A = 0.65f };
-        _labelColor = GetThemeColor("font_color", "Label");
-        _arrowColor = _labelColor with { A = 0.4f };
-        _labelFont = GetThemeFont("font", "Label");
-        _labelFontSize = (int)(GetThemeFontSize("font_size", "Label") * 0.8f);
+        BarColor = GetThemeColor("font_color", "Label") with { A = 0.65f };
+        LabelColor = GetThemeColor("font_color", "Label");
+        ArrowColor = LabelColor with { A = 0.4f };
+        LabelFont = GetThemeFont("font", "Label");
+        LabelFontSize = (int)(GetThemeFontSize("font_size", "Label") * 0.8f);
     }
 
     public override void _EnterTree() => InitTheme();
@@ -73,50 +72,12 @@ public partial class CelTrack : Control
         }
     }
 
-    // ── Observe ───────────────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Wire this track to its data sources.  Must be called once after the node is added to the scene.
-    /// </summary>
-    public void Observe(
-        TimelineSetting setting,
-        Entity celFolderE,
-        TrackHeaderBlock headerBlock,
-        Control anchor,
-        ScrollContainer vscroll)
+    public void Bind(ObservableDictionary<int, Entity> exposures, CompositeDisposable subs)
     {
-        _folderSetting = celFolderE.Get<FolderLayerSetting>();
-        _headerBlock = headerBlock;
-        _anchor = anchor;
-        _vscroll = vscroll;
-
-        // Zoom / scroll
-        setting.PixelsPerFrame.Subscribe(v =>
-        {
-            _ppf = v;
-            QueueRedraw();
-        }).AddTo(this);
-        setting.ScrollOffsetPixels.Subscribe(v =>
-        {
-            _scrollOffset = v;
-            QueueRedraw();
-        }).AddTo(this);
-
-        // Exposure changes
-        _onExposuresChanged = OnExposuresChanged;
-        _folderSetting.Exposures.CollectionChanged += _onExposuresChanged;
-
-        // Position / size sync
-        _anchor.ItemRectChanged += UpdateLayout;
-        _headerBlock.ItemRectChanged += UpdateLayout;
-        _headerBlock.VisibilityChanged += UpdateLayout;
-        _onVScrollChanged = _ => UpdateLayout();
-        _vscroll.GetVScrollBar().ValueChanged += _onVScrollChanged;
-
-        UpdateLayout();
+        // Two-way binding on Exposures:
+        _exposures = exposures;
+        exposures.ObserveChanged().Subscribe(_ => QueueRedraw()).AddTo(subs);
     }
-
-    private void OnExposuresChanged(in NotifyCollectionChangedEventArgs<KeyValuePair<int, Entity>> _) => QueueRedraw();
 
     // ── Layout sync ───────────────────────────────────────────────────────────
 
@@ -136,7 +97,6 @@ public partial class CelTrack : Control
 
     public override void _ExitTree()
     {
-        _folderSetting?.Exposures?.CollectionChanged -= _onExposuresChanged;
         _anchor?.ItemRectChanged -= UpdateLayout;
         if (_headerBlock != null)
         {
@@ -150,7 +110,7 @@ public partial class CelTrack : Control
 
     public override void _Draw()
     {
-        if (_ppf <= 0f || _folderSetting?.Exposures == null) return;
+        if (_ppf <= 0f || _exposures == null) return;
 
         float h = Size.Y;
         float w = Size.X;
@@ -158,12 +118,12 @@ public partial class CelTrack : Control
         float barW = _ppf * BarWidthRatio;
 
         var frames = new List<int>();
-        foreach (var kv in _folderSetting.Exposures)
+        foreach (var kv in _exposures)
             frames.Add(kv.Key);
         frames.Sort();
 
         // ── Outer border ─────────────────────────────────────────────────────
-        DrawRect(new Rect2(0f, 0f, w, h), Colors.Black, filled: false, width: 10f);
+        DrawRect(new Rect2(0f, 0f, w, h), Colors.Black, filled: false, width: 1f);
 
         for (int i = 0; i < frames.Count; i++)
         {
@@ -173,23 +133,20 @@ public partial class CelTrack : Control
             // ── Boundary bar ─────────────────────────────────────────────────
             var barRect = new Rect2(x, 0f, barW, h);
             if (barRect.End.X > 0f && barRect.Position.X < w)
-                DrawRect(barRect, _barColor);
+                DrawRect(barRect, BarColor);
 
             // ── Layer name label ──────────────────────────────────────────────
-            var layerE = _folderSetting.Exposures[frame];
-            if (!layerE.IsNull && layerE.Has<CommonLayerSetting>())
-            {
-                string name = layerE.Get<CommonLayerSetting>().Name.Value;
-                float labelX = x + barW + LabelPad;
-                float labelEnd = (i + 1 < frames.Count)
-                    ? frames[i + 1] * _ppf - _scrollOffset - ArrowHeadLength - LabelPad
-                    : w;
-                float maxW = labelEnd - labelX;
+            var layerE = _exposures[frame];
+            string name = layerE.Get<CommonLayerSetting>().Name.Value;
+            float labelX = x + barW + LabelPad;
+            float labelEnd = (i + 1 < frames.Count)
+                ? frames[i + 1] * _ppf - _scrollOffset - ArrowHeadLength - LabelPad
+                : w;
+            float maxW = labelEnd - labelX;
 
-                if (maxW > 0f && labelX < w)
-                    DrawString(_labelFont, new Vector2(labelX, midY + _labelFontSize * 0.35f),
-                        name, HorizontalAlignment.Left, maxW, _labelFontSize, _labelColor);
-            }
+            if (maxW > 0f && labelX < w)
+                DrawString(LabelFont, new Vector2(labelX, midY + LabelFontSize * 0.35f),
+                    name, HorizontalAlignment.Left, maxW, LabelFontSize, LabelColor);
 
             // ── Arrow to next bar ─────────────────────────────────────────────
             if (i + 1 >= frames.Count) continue;
@@ -201,16 +158,13 @@ public partial class CelTrack : Control
             if (tipX - shaftStart <= ArrowHeadLength) continue; // gap too narrow
 
             // Shaft line
-            DrawLine(
-                new Vector2(shaftStart, midY),
-                new Vector2(tipX - ArrowHeadLength, midY),
-                _arrowColor);
+            DrawLine(new(shaftStart, midY), new(tipX - ArrowHeadLength, midY), ArrowColor);
 
             // Arrowhead (triangle pointing right)
             Vector2 tip = new(tipX, midY);
             Vector2 p1 = new(tipX - ArrowHeadLength, midY - ArrowHeadHalfWidth);
             Vector2 p2 = new(tipX - ArrowHeadLength, midY + ArrowHeadHalfWidth);
-            DrawColoredPolygon([tip, p1, p2], _arrowColor);
+            DrawColoredPolygon([tip, p1, p2], ArrowColor);
         }
     }
 
@@ -218,15 +172,15 @@ public partial class CelTrack : Control
 
     public override int _GetCursorShape(Vector2 atPosition)
     {
-        if (_ppf <= 0f || _folderSetting?.Exposures == null)
+        if (_ppf <= 0f || _exposures == null)
             return (int)CursorShape.Arrow;
 
         float barW = _ppf * BarWidthRatio;
-        foreach (var kv in _folderSetting.Exposures)
+        foreach (var kv in _exposures)
         {
             float x = kv.Key * _ppf - _scrollOffset;
             if (atPosition.X >= x && atPosition.X < x + barW)
-                return (int)CursorShape.Hsize;
+                return (int)CursorShape.PointingHand;
         }
 
         return (int)CursorShape.Arrow;

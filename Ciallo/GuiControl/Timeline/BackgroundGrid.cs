@@ -5,9 +5,8 @@ namespace Ciallo.GuiControl;
 
 /// <summary>
 /// Draws the background column grid in the track area.
-/// TODO: implement row-based grid once track rows are defined.
 /// </summary>
-[Tool, GlobalClass]
+[Tool]
 public partial class BackgroundGrid : Control
 {
     // ── Tunable exports ──────────────────────────────────────────────────────
@@ -24,18 +23,16 @@ public partial class BackgroundGrid : Control
 
     // ── Setup ────────────────────────────────────────────────────────────────
 
-    public void Observe(ReactiveProperty<float> pixelsPerFrame, ReactiveProperty<float> scrollOffset)
+    public void Observe(ReactiveProperty<float> pixelsPerFrame, ReactiveProperty<float> scrollOffsetFrame)
     {
-        pixelsPerFrame.Subscribe(v =>
-        {
-            _pixelsPerFrame = v;
-            QueueRedraw();
-        }).AddTo(this);
-        scrollOffset.Subscribe(v =>
-        {
-            _scrollOffset = v;
-            QueueRedraw();
-        }).AddTo(this);
+        // Recompute both caches together so _scrollOffset (pixels) is always in sync with _pixelsPerFrame.
+        pixelsPerFrame.CombineLatest(scrollOffsetFrame, (ppf, sof) => (ppf, sof * ppf))
+            .Subscribe(t =>
+            {
+                _pixelsPerFrame = t.ppf;
+                _scrollOffset = t.Item2;
+                QueueRedraw();
+            }).AddTo(this);
     }
 
     // ── Draw ─────────────────────────────────────────────────────────────────

@@ -14,5 +14,11 @@ public class TimelineSetting
     [DataMember] public ObservableHashSet<int> OnionSkinFrames = new([-1, 1]);
 
     public ReactiveProperty<float> PixelsPerFrame = new(20f);
-    public ReactiveProperty<float> ScrollOffsetPixels = new(0f);
+
+    /// <summary>
+    /// Horizontal scroll position expressed in <b>frames</b> (not pixels).
+    /// A value of 2.5 means frame 2.5 is at the left edge of the visible area.
+    /// Use <c>ScrollOffsetFrame * PixelsPerFrame</c> to convert to pixel offset where needed.
+    /// </summary>
+    public ReactiveProperty<float> ScrollOffsetFrame = new(-10f);
 }

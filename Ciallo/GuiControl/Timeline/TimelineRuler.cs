@@ -165,19 +165,16 @@ public partial class TimelineRuler : Control
     #region Setup
 
     /// <summary>Call once from TimelinePanel to wire zoom / scroll.</summary>
-    public void Observe(ReactiveProperty<float> pixelsPerFrame, ReactiveProperty<float> scrollOffset,
+    public void Observe(ReactiveProperty<float> pixelsPerFrame, ReactiveProperty<float> scrollOffsetFrame,
         ReactiveProperty<float> fps)
     {
-        pixelsPerFrame.Subscribe(v =>
-        {
-            _pixelsPerFrame = v;
-            QueueRedraw();
-        }).AddTo(this);
-        scrollOffset.Subscribe(v =>
-        {
-            _scrollOffset = v;
-            QueueRedraw();
-        }).AddTo(this);
+        pixelsPerFrame.CombineLatest(scrollOffsetFrame, (ppf, sof) => (ppf, sof * ppf))
+            .Subscribe(t =>
+            {
+                _pixelsPerFrame = t.ppf;
+                _scrollOffset = t.Item2;
+                QueueRedraw();
+            }).AddTo(this);
         fps.Subscribe(v =>
         {
             _fps = v;
