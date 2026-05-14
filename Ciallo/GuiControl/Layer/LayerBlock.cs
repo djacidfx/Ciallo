@@ -10,7 +10,7 @@ public partial class LayerBlock : Container, IInitable
 {
     public Entity LayerEntity;
 
-    public bool IsFolder => DropdownArrow.Visible;
+    public bool IsFolder => LayerEntity.Has<FolderLayerSetting>();
 
     /// <summary>
     /// True when this block represents a CelFolder layer.
@@ -20,7 +20,7 @@ public partial class LayerBlock : Container, IInitable
     public bool IsCelFolder => LayerEntity.TryGet<FolderLayerSetting>()?.IsCel ?? false;
 
     /// <summary>The <see cref="LayerWrapper"/> that owns this block as its Title.</summary>
-    public LayerWrapper Wrapper => (LayerWrapper)GetParent();
+    public virtual LayerWrapper Wrapper => (LayerWrapper)GetParent();
 
     public override void _EnterTree()
     {

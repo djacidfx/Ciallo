@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://dix0v3s32ffhp"]
+
+[ext_resource type="Script" uid="uid://btracktree1cs" path="res://GuiControl/Timeline/TrackTree.cs" id="1_va2b4"]
+[ext_resource type="Script" uid="uid://btrackrowwr1cs" path="res://GuiControl/Timeline/TrackRowWrapper.cs" id="2_5retc"]
+[ext_resource type="Script" uid="uid://bdjd4la8oswpt" path="res://Widget/StrokeRect.cs" id="4_54v1c"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4h4vt"]
+bg_color = Color(0, 0, 0, 0.74509805)
+
+[node name="TrackTree" type="ScrollContainer" unique_id=1533297103]
+offset_right = 593.0
+offset_bottom = 294.0
+size_flags_vertical = 3
+mouse_filter = 0
+script = ExtResource("1_va2b4")
+
+[node name="RootContainer" type="Container" parent="." unique_id=1575722750]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("2_5retc")
+metadata/_custom_type_script = "uid://btrackrowwr1cs"
+
+[node name="DropHinter" type="Control" parent="." unique_id=1927663370]
+unique_name_in_owner = true
+visible = false
+top_level = true
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("4_54v1c")
+Color = Color(1, 1, 0.64705884, 1)
+Width = 5.0
+metadata/_custom_type_script = "uid://bdjd4la8oswpt"
+
+[node name="DragLabel" type="Label" parent="." unique_id=1354153090]
+unique_name_in_owner = true
+visible = false
+top_level = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.84227896, 0.8422791, 0.842279, 1)
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_4h4vt")
+text = "Dragged layer name"

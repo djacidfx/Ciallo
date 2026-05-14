@@ -8,9 +8,14 @@
 [ext_resource type="Script" path="res://GuiControl/Timeline/ZoomableHScrollBar.cs" id="4_lw6jv"]
 [ext_resource type="Script" uid="uid://dkn2veamvchhh" path="res://GuiControl/Timeline/Playhead.cs" id="5_playhead"]
 [ext_resource type="Script" uid="uid://dobrheel0y42t" path="res://GuiControl/Timeline/PlaybackBar.cs" id="6_pbbar"]
-[ext_resource type="PackedScene" uid="uid://da5c27ts8w1f6" path="res://GuiControl/Timeline/TrackHeaderTree.tscn" id="7_thtree"]
+[ext_resource type="PackedScene" uid="uid://dix0v3s32ffhp" path="res://GuiControl/Timeline/TrackTree.tscn" id="7_trtree"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nqb4g"]
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_nrybc"]
+color = Color(0.3995956, 0.3995956, 0.39959556, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nrybc"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_apt30"]
 
 [node name="TimelinePanel" type="VBoxContainer" unique_id=2020419585]
 anchors_preset = 15
@@ -29,75 +34,88 @@ layout_mode = 2
 [node name="TimelineMainArea" type="VSplitContainer" parent="." unique_id=1938019838]
 layout_mode = 2
 size_flags_vertical = 3
-split_offsets = PackedInt32Array(48, 1033)
-dragging_enabled = false
-split_offset = 48
+theme_override_constants/separation = 0
+theme_override_constants/minimum_grab_thickness = 0
+theme_override_constants/autohide = 1
+theme_override_styles/split_bar_background = SubResource("StyleBoxLine_nrybc")
 
-[node name="HSplitContainer" type="HSplitContainer" parent="TimelineMainArea" unique_id=233143306]
+[node name="HSplitRuler" type="HSplitContainer" parent="TimelineMainArea" unique_id=233143306]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 12
 split_offsets = PackedInt32Array(256)
 split_offset = 256
 
-[node name="UpperLeftBlank" type="Control" parent="TimelineMainArea/HSplitContainer" unique_id=180570200]
+[node name="UpperLeftBlank" type="Control" parent="TimelineMainArea/HSplitRuler" unique_id=180570200]
 custom_minimum_size = Vector2(48, 0)
 layout_mode = 2
 mouse_filter = 1
 
-[node name="TimelineRuler" type="Control" parent="TimelineMainArea/HSplitContainer" unique_id=309100903]
+[node name="TimelineRuler" type="Control" parent="TimelineMainArea/HSplitRuler" unique_id=309100903]
 unique_name_in_owner = true
 clip_contents = true
-custom_minimum_size = Vector2(0, 72)
+custom_minimum_size = Vector2(0, 54)
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("2_ruler")
 metadata/_custom_type_script = "uid://de3wjfml6rs3i"
 
-[node name="TrackVScroll" type="ScrollContainer" parent="TimelineMainArea" unique_id=1535641868]
-unique_name_in_owner = true
+[node name="MarginContainer" type="MarginContainer" parent="TimelineMainArea" unique_id=1942512944]
 layout_mode = 2
-horizontal_scroll_mode = 0
-vertical_scroll_mode = 4
-
-[node name="HSplitContainer2" type="HSplitContainer" parent="TimelineMainArea/TrackVScroll" unique_id=1702651316]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
 size_flags_vertical = 3
+
+[node name="HSplitBgGrid" type="HSplitContainer" parent="TimelineMainArea/MarginContainer" unique_id=108006388]
+unique_name_in_owner = true
+layout_mode = 2
 theme_override_constants/separation = 12
-theme_override_styles/split_bar_background = SubResource("StyleBoxEmpty_nqb4g")
+theme_override_styles/split_bar_background = SubResource("StyleBoxEmpty_nrybc")
 split_offsets = PackedInt32Array(256)
-dragging_enabled = false
 split_offset = 256
 
-[node name="TrackHeaderTree" parent="TimelineMainArea/TrackVScroll/HSplitContainer2" unique_id=1847391024 instance=ExtResource("7_thtree")]
-unique_name_in_owner = true
+[node name="TrackHeadPad" type="Control" parent="TimelineMainArea/MarginContainer/HSplitBgGrid" unique_id=1436785674]
 layout_mode = 2
 
-[node name="TrackArea" type="VBoxContainer" parent="TimelineMainArea/TrackVScroll/HSplitContainer2" unique_id=1557906742]
+[node name="BackgroundGrid" type="Control" parent="TimelineMainArea/MarginContainer/HSplitBgGrid" unique_id=526660374]
 unique_name_in_owner = true
+clip_contents = true
 layout_mode = 2
-size_flags_horizontal = 3
-
-[node name="BackgroundGrid" type="Control" parent="TimelineMainArea/TrackVScroll/HSplitContainer2/TrackArea" unique_id=526660374]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 3
 mouse_filter = 2
 script = ExtResource("3_bgrid")
 metadata/_custom_type_script = "uid://7ta5s4vfyhln"
 
-[node name="ZoomableHScrollBar" type="Control" parent="TimelineMainArea/TrackVScroll/HSplitContainer2/TrackArea" unique_id=1928835408]
+[node name="VBoxContainer" type="VBoxContainer" parent="TimelineMainArea/MarginContainer" unique_id=1702651317]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="TrackTree" parent="TimelineMainArea/MarginContainer/VBoxContainer" unique_id=1369726923 instance=ExtResource("7_trtree")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="HSplitScrollBar" type="HSplitContainer" parent="TimelineMainArea/MarginContainer/VBoxContainer" unique_id=1702651318]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+theme_override_styles/split_bar_background = SubResource("StyleBoxEmpty_apt30")
+split_offsets = PackedInt32Array(256)
+dragging_enabled = false
+split_offset = 256
+
+[node name="ScrollSplitLeft" type="Control" parent="TimelineMainArea/MarginContainer/VBoxContainer/HSplitScrollBar" unique_id=1702651319]
+custom_minimum_size = Vector2(48, 0)
+layout_mode = 2
+
+[node name="ZoomableHScrollBar" type="Control" parent="TimelineMainArea/MarginContainer/VBoxContainer/HSplitScrollBar" unique_id=1928835408]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
-size_flags_stretch_ratio = 0.5
+size_flags_horizontal = 3
 script = ExtResource("4_lw6jv")
 ScrollZoneWidthRatio = 0.5
 
-[node name="Playhead" type="Control" parent="TimelineMainArea/TrackVScroll/HSplitContainer2/TrackArea" unique_id=205874701]
+[node name="Playhead" type="Control" parent="TimelineMainArea/MarginContainer" unique_id=205874701]
 unique_name_in_owner = true
 top_level = true
 layout_mode = 2
@@ -105,14 +123,14 @@ mouse_filter = 2
 script = ExtResource("5_playhead")
 metadata/_custom_type_script = "uid://dkn2veamvchhh"
 
-[node name="PlaybackStartBar" type="Control" parent="TimelineMainArea/TrackVScroll/HSplitContainer2/TrackArea" unique_id=650213917]
+[node name="PlaybackStartBar" type="Control" parent="TimelineMainArea/MarginContainer" unique_id=650213917]
 unique_name_in_owner = true
 top_level = true
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("6_pbbar")
 
-[node name="PlaybackEndBar" type="Control" parent="TimelineMainArea/TrackVScroll/HSplitContainer2/TrackArea" unique_id=897634521]
+[node name="PlaybackEndBar" type="Control" parent="TimelineMainArea/MarginContainer" unique_id=897634521]
 unique_name_in_owner = true
 top_level = true
 layout_mode = 2

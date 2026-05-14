@@ -1,6 +1,5 @@
 ﻿using Ciallo.Widget;
 using Godot;
-using R3;
 
 namespace Ciallo.GuiControl;
 
@@ -19,7 +18,7 @@ public partial class LayerWrapper : FoldableVBoxContainer
     /// Propagated transitively on <see cref="_EnterTree"/> via the parent wrapper's Title block.
     /// </summary>
     public bool IsBeingCeled;
-    public LayerBlock Block => Title as LayerBlock;
+    public virtual LayerBlock Block => Title as LayerBlock;
 
     public LayerWrapper()
     {
@@ -37,8 +36,7 @@ public partial class LayerWrapper : FoldableVBoxContainer
         {
             Level = parent.Level + 1;
             // Propagate transitively: celed if any ancestor is a CelFolder.
-            // parent.Title is the LayerBlock of the parent layer.
-            IsBeingCeled = parent.IsBeingCeled || (parent.Title is LayerBlock lb && lb.IsCelFolder);
+            IsBeingCeled = parent.IsBeingCeled || parent.Block?.IsCelFolder == true;
         }
     }
 
@@ -54,16 +52,10 @@ public partial class LayerWrapper : FoldableVBoxContainer
     /// </summary>
     public bool HasCelFolderInSubtree()
     {
-        if ((Title as LayerBlock)?.IsCelFolder == true) return true;
+        if (Block?.IsCelFolder == true) return true;
         foreach (Node child in GetChildren())
             if (child is LayerWrapper w && w.HasCelFolderInSubtree())
                 return true;
         return false;
-    }
-
-    public LayerWrapper ObserveIsExpanded(ReactiveProperty<bool> property, CompositeDisposable subs)
-    {
-        property.Subscribe(v => IsExpanded = v).AddTo(subs);
-        return this;
     }
 }

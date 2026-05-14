@@ -74,11 +74,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
     /// <summary>Returns the <see cref="LayerBlock"/> component stored on <paramref name="e"/>.</summary>
     protected abstract LayerBlock GetBlock(Entity e);
 
-    /// <summary>
-    /// Whether the dropdown arrow should be shown for <paramref name="e"/>.
-    /// Default: show for any folder layer. TrackHeaderTree overrides to hide it for CelFolders
-    /// (their children are rendered as timeline tracks, not as header rows).
-    /// </summary>
+    /// <summary>Whether the dropdown arrow should be shown for <paramref name="e"/>.</summary>
     protected virtual bool ShouldShowDropdownArrow(Entity e) => e.Has<FolderLayerSetting>();
 
     // ── Block initialisation ────────────────────────────────────────────────

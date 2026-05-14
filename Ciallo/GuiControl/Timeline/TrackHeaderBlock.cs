@@ -9,4 +9,13 @@ namespace Ciallo.GuiControl;
 /// and a <see cref="TrackHeaderBlock"/> (Timeline header) as separate Frent components.
 /// </summary>
 [Instantiable(init: "")]
-public partial class TrackHeaderBlock : LayerBlock;
+public partial class TrackHeaderBlock : LayerBlock
+{
+    /// <summary>
+    /// Set by <see cref="TrackTree.Create"/> before the node enters the scene tree.
+    /// Avoids fragile scene-depth navigation.
+    /// </summary>
+    internal LayerWrapper OwningWrapper;
+
+    public override LayerWrapper Wrapper => OwningWrapper;
+}

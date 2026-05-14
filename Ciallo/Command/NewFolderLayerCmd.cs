@@ -2,7 +2,6 @@
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
-using Godot;
 using R3;
 
 namespace Ciallo.Command;
@@ -29,6 +28,7 @@ public class NewFolderLayerCmd : CommandBase
     {
         var commonSetting = targetE.Get<CommonLayerSetting>();
         var layerNode = targetE.Get<LayerTreeNode>();
+        var folderSetting = targetE.Get<FolderLayerSetting>();
 
         // View
         var folderLayerView = new FolderLayerView();
@@ -45,8 +45,8 @@ public class NewFolderLayerCmd : CommandBase
 
         // Layer panel
         targetE.Document.Get<LayerTree>().Create(targetE);
-        // Timeline track header
-        targetE.Document.Get<TrackHeaderTree>().Create(targetE);
+        // Timeline track (creates CelTrack for CelFolders automatically)
+        targetE.Document.Get<TrackTree>().Create(targetE);
 
         // Layer tree events
         var events = layerNode.MovedAsAddedRemoved;
@@ -57,8 +57,8 @@ public class NewFolderLayerCmd : CommandBase
             // Layer panel
             parentE.Get<LayerWrapper>().InsertNodeAt(targetE.Get<LayerWrapper>(), et.Index);
 
-            // Timeline track header
-            parentE.Get<TrackHeaderWrapper>().InsertNodeAt(targetE.Get<TrackHeaderWrapper>(), et.Index);
+            // Timeline track
+            parentE.Get<TrackRowWrapper>().InsertNodeAt(targetE.Get<TrackRowWrapper>(), et.Index);
 
             // View
             var parentView = parentE.Get<FolderLayerView>();
@@ -77,8 +77,8 @@ public class NewFolderLayerCmd : CommandBase
             // Layer panel
             targetE.Get<LayerWrapper>().RemoveFromParent();
 
-            // Timeline track header
-            targetE.Get<TrackHeaderWrapper>().RemoveFromParent();
+            // Timeline track
+            targetE.Get<TrackRowWrapper>().RemoveFromParent();
 
             // Body
             bodyHolder.RemoveFromParent();
@@ -89,22 +89,6 @@ public class NewFolderLayerCmd : CommandBase
             // View
             folderLayerView.RemoveFromParent();
         }).AddTo(targetE);
-
-        // Timeline CelTrack
-        if (targetE.Get<FolderLayerSetting>().IsCel)
-        {
-            var document = targetE.Document;
-            var bgGrid = document.Get<BackgroundGrid>();
-            var trackArea = document.Get<VBoxContainer>();
-            var vscroll = document.Get<ScrollContainer>();
-            var setting = document.Get<TimelineSetting>();
-            var headerBlock = targetE.Get<TrackHeaderBlock>();
-
-            var celTrack = new CelTrack();
-            trackArea.AddChild(celTrack);
-            targetE.AddNode(celTrack);
-            celTrack.Observe(setting, targetE, headerBlock, bgGrid, vscroll);
-        }
     }
 
     public void CreateData(Entity targetE)

@@ -22,7 +22,7 @@
 [ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://GuiControl/WelcomePanel.tscn" id="16_fpfj3"]
 [ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://GuiControl/Layer/LayerPanel.tscn" id="16_kjvhd"]
 [ext_resource type="Script" uid="uid://bc538pxjigcuv" path="res://GuiControl/Layer/LayerPanelContainer.cs" id="19_3b0ty"]
-[ext_resource type="Script" path="res://GuiControl/Timeline/TimelinePanelContainer.cs" id="23_hhcpw"]
+[ext_resource type="Script" uid="uid://b4x3guxbl2wmb" path="res://GuiControl/Timeline/TimelinePanelContainer.cs" id="23_hhcpw"]
 [ext_resource type="PackedScene" uid="uid://cetiftxidiijh" path="res://GuiControl/Timeline/TimelinePanel.tscn" id="24_hhcpw"]
 
 [node name="Main" type="Panel" unique_id=1926960144]

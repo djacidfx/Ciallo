@@ -8,12 +8,15 @@ using R3;
 namespace Ciallo.GuiControl;
 
 /// <summary>
-/// Draws the dope-sheet exposure track for one CelFolder in the Timeline's TrackArea.
+/// Draws the dope-sheet exposure track for one CelFolder in the right panel of its
+/// <see cref="TrackRow"/> inside <see cref="TrackTree"/>.
 /// <list type="bullet">
-///   <item>Has <c>TopLevel = true</c> — floats over the BackgroundGrid, positioned to match its <see cref="TrackHeaderBlock"/>.</item>
-///   <item>For every exposure key a boundary bar is drawn; consecutive bars are linked by a line + arrowhead.</item>
+///   <item>Lives as a normal (non-TopLevel) child of the <see cref="TrackRow"/> HSplitContainer
+///         and fills the right panel via <see cref="SizeFlags.ExpandFill"/>.</item>
+///   <item>For every exposure key a boundary bar is drawn; consecutive bars are linked by
+///         a line + arrowhead.</item>
 /// </list>
-/// Call <see cref="Observe"/> once after adding to the scene.
+/// Call <see cref="Observe"/> and <see cref="Bind"/> once after adding to the scene.
 /// </summary>
 [GlobalClass]
 public partial class CelTrack : Control
@@ -28,9 +31,6 @@ public partial class CelTrack : Control
     private float _ppf;
     private float _scrollOffset;
     private ObservableDictionary<int, Entity> _exposures;
-    private TrackHeaderBlock _headerBlock;
-    private Control _anchor; // BackgroundGrid – defines x-origin and width
-    private ScrollContainer _vscroll; // TrackVScroll – fires Scrolled when tree scrolls
 
     // ── Theme ─────────────────────────────────────────────────────────────────
     public Color BarColor;
@@ -39,15 +39,14 @@ public partial class CelTrack : Control
     public Font LabelFont;
     public int LabelFontSize;
 
-    // ── Delegates stored for unsubscription ───────────────────────────────────
-    private Range.ValueChangedEventHandler _onVScrollChanged;
-
     // ── Constructor ───────────────────────────────────────────────────────────
 
     public CelTrack()
     {
-        TopLevel = true;
         MouseFilter = MouseFilterEnum.Pass;
+        ClipContents = true;
+        SizeFlagsHorizontal = SizeFlags.ExpandFill;
+        SizeFlagsVertical = SizeFlags.ExpandFill;
     }
 
     // ── Theme init ────────────────────────────────────────────────────────────
@@ -72,38 +71,26 @@ public partial class CelTrack : Control
         }
     }
 
+    // ── Setup ─────────────────────────────────────────────────────────────────
+
+    public void Observe(
+        ReactiveProperty<float> pixelsPerFrame,
+        ReactiveProperty<float> scrollOffsetFrame,
+        CompositeDisposable subs)
+    {
+        pixelsPerFrame.CombineLatest(scrollOffsetFrame, (ppf, sof) => (ppf, sof * ppf))
+            .Subscribe(t =>
+            {
+                _ppf = t.ppf;
+                _scrollOffset = t.Item2;
+                QueueRedraw();
+            }).AddTo(subs);
+    }
+
     public void Bind(ObservableDictionary<int, Entity> exposures, CompositeDisposable subs)
     {
-        // Two-way binding on Exposures:
         _exposures = exposures;
         exposures.ObserveChanged().Subscribe(_ => QueueRedraw()).AddTo(subs);
-    }
-
-    // ── Layout sync ───────────────────────────────────────────────────────────
-
-    private void UpdateLayout()
-    {
-        Visible = _headerBlock.IsVisibleInTree();
-        if (!Visible) return;
-
-        var anchorRect = _anchor.GetGlobalRect();
-        var headerRect = _headerBlock.GetGlobalRect();
-        GlobalPosition = new Vector2(anchorRect.Position.X, headerRect.Position.Y);
-        Size = new Vector2(anchorRect.Size.X, headerRect.Size.Y);
-        QueueRedraw();
-    }
-
-    // ── Cleanup ───────────────────────────────────────────────────────────────
-
-    public override void _ExitTree()
-    {
-        _anchor?.ItemRectChanged -= UpdateLayout;
-        if (_headerBlock != null)
-        {
-            _headerBlock.ItemRectChanged -= UpdateLayout;
-            _headerBlock.VisibilityChanged -= UpdateLayout;
-        }
-        _vscroll?.GetVScrollBar()?.ValueChanged -= _onVScrollChanged;
     }
 
     // ── Drawing ───────────────────────────────────────────────────────────────

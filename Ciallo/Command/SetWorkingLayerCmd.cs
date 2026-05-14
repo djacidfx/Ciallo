@@ -26,13 +26,13 @@ public class SetWorkingLayerCmd : CommandBase
         layerTree.SetWorkingLayerNoSignal(newLayerE);
 
         // Timeline panel
-        var trackTree = Document.Get<TrackHeaderTree>();
+        var trackTree = Document.Get<TrackTree>();
         trackTree.SetWorkingLayerNoSignal(newLayerE);
     }
 
     public override void Undo(Entity newLayerE)
     {
-        var trackTree = Document.Get<TrackHeaderTree>();
+        var trackTree = Document.Get<TrackTree>();
         trackTree.SetWorkingLayerNoSignal(OldLayerE);
 
         // Layer panel

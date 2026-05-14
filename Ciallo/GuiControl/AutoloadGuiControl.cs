@@ -42,7 +42,7 @@ public partial class AutoloadGuiControl : Node
             GetTree().GetNodesInGroup("UncategorizedControl")
                 .OfType<TimelinePanelContainer>().Single().AddChild(timelinePanel);
             timelinePanel.BindTimeline(document.Get<TimelineSetting>(), document.Get<SelectionManager>().CurrentFrame);
-            timelinePanel.InitTrackHeader(document);
+            timelinePanel.InitTrackTree(document);
             timelinePanel.TimelineAction.Document = document;
             document.AddNode(timelinePanel);
 

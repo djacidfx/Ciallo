@@ -44,8 +44,8 @@ public class NewShapeLayerCmd : CommandBase
         // Layer panel
         targetE.Document.Get<LayerTree>().Create(targetE);
 
-        // Timeline track header
-        targetE.Document.Get<TrackHeaderTree>().Create(targetE);
+        // Timeline track
+        targetE.Document.Get<TrackTree>().Create(targetE);
     }
 
     public override void Do(Entity targetE)
@@ -86,8 +86,8 @@ public class NewShapeLayerCmd : CommandBase
             // Layer panel
             parentE.Get<LayerWrapper>().InsertNodeAt(targetE.Get<LayerWrapper>(), index);
 
-            // Timeline track header
-            parentE.Get<TrackHeaderWrapper>().InsertNodeAt(targetE.Get<TrackHeaderWrapper>(), index);
+            // Timeline track
+            parentE.Get<TrackRowWrapper>().InsertNodeAt(targetE.Get<TrackRowWrapper>(), index);
 
             // View
             var folderLayerView = parentE.Get<FolderLayerView>();
@@ -106,8 +106,8 @@ public class NewShapeLayerCmd : CommandBase
             // Layer panel
             targetE.Get<LayerWrapper>().RemoveFromParent();
 
-            // Timeline track header
-            targetE.Get<TrackHeaderWrapper>().RemoveFromParent();
+            // Timeline track
+            targetE.Get<TrackRowWrapper>().RemoveFromParent();
 
             // Body
             bodyHolder.RemoveFromParent();

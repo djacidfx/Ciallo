@@ -7,7 +7,7 @@ namespace Ciallo.GuiControl;
 
 /// <summary>
 /// Timeline panel — owns the shared zoom / scroll state and wires all sub-controls.
-/// Call <see cref="BindTimeline"/> first, then <see cref="BindPlayhead"/>.
+/// Call <see cref="BindTimeline"/> first, then <see cref="InitTrackTree"/>.
 /// </summary>
 [SceneTree, Instantiable]
 public partial class TimelinePanel : VBoxContainer
@@ -19,7 +19,9 @@ public partial class TimelinePanel : VBoxContainer
     private PlaybackBar _startBar;
     private PlaybackBar _endBar;
     private HSplitContainer _hSplitRuler;
-    private HSplitContainer _hSplitTrack;
+    private TrackTree _trackTree;
+    private HSplitContainer _hSplitScroll;
+    private HSplitContainer _hSplitBgGrid;
 
     public override void _Ready()
     {
@@ -29,16 +31,34 @@ public partial class TimelinePanel : VBoxContainer
         _playhead = GetNode<Playhead>("%Playhead");
         _startBar = GetNode<PlaybackBar>("%PlaybackStartBar");
         _endBar = GetNode<PlaybackBar>("%PlaybackEndBar");
-        _hSplitRuler = GetNode<HSplitContainer>("%HSplitContainer");
-        _hSplitTrack = GetNode<HSplitContainer>("%HSplitContainer2");
+        _hSplitRuler = GetNode<HSplitContainer>("%HSplitRuler");
+        _trackTree = GetNode<TrackTree>("%TrackTree");
+        _hSplitScroll = GetNode<HSplitContainer>("%HSplitScrollBar");
+        _hSplitBgGrid = GetNode<HSplitContainer>("%HSplitBgGrid");
 
-        // Keep the ruler-row and track-row dividers in lockstep.
-        _hSplitRuler.Dragged += offset => _hSplitTrack.SplitOffsets = [(int)offset];
+        // Keep all track-row splits, the scrollbar spacer, and the BackgroundGrid in lockstep.
+        _hSplitRuler.Dragged += offset =>
+        {
+            _trackTree.SplitOffset = (int)offset;
+            _hSplitScroll.SplitOffsets = [(int)offset];
+            _hSplitBgGrid.SplitOffsets = [(int)offset];
+            UpdateBackgroundGridTransform();
+        };
+
+        // Also update BackgroundGrid when the TrackTree is resized.
+        _trackTree.ItemRectChanged += UpdateBackgroundGridTransform;
+    }
+
+    private void UpdateBackgroundGridTransform()
+    {
+        int splitOffset = _hSplitRuler.SplitOffsets[0];
+        _bgGrid.GlobalPosition = _trackTree.GlobalPosition + new Vector2(splitOffset, 0f);
+        _bgGrid.Size = new Vector2(Mathf.Max(0f, _trackTree.Size.X - splitOffset), _trackTree.Size.Y);
     }
 
     /// <summary>
     /// Wire the document's <see cref="TimelineSetting"/> into all sub-controls.
-    /// Must be called once after this panel is added to the tree, before <see cref="BindPlayhead"/>.
+    /// Must be called once after this panel is added to the tree, before <see cref="InitTrackTree"/>.
     /// </summary>
     public TimelinePanel BindTimeline(TimelineSetting setting, ReactiveProperty<int> currentFrame)
     {
@@ -67,16 +87,15 @@ public partial class TimelinePanel : VBoxContainer
     }
 
     /// <summary>
-    /// Registers <see cref="TrackHeaderTree"/>, its root container, <see cref="BackgroundGrid"/>,
-    /// <see cref="VBoxContainer">TrackArea</see>, and the vertical <see cref="ScrollContainer"/>
+    /// Registers <see cref="TrackTree"/>, its root wrapper, and <see cref="BackgroundGrid"/>
     /// as Frent components on <paramref name="document"/> so that layer commands can
-    /// create and position <see cref="CelTrack"/> nodes at runtime.
-    /// Must be called once after this panel is added to the tree.
+    /// create and position track rows at runtime.
+    /// Must be called once after <see cref="BindTimeline"/> and after the panel is added to the tree.
     /// </summary>
-    public void InitTrackHeader(Entity document)
+    public void InitTrackTree(Entity document)
     {
-        document.Add(TrackHeaderTree);
-        document.Add(TrackHeaderTree.RootContainer);
+        document.Add(_trackTree);
+        document.Add(_trackTree.RootWrapper);
         document.Add(_bgGrid);
     }
 }
