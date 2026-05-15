@@ -36,31 +36,25 @@ public static partial class AppDocumentManager
     public static void CopyWorldByData(Entity dataDocument)
     {
         Dictionary<Entity, Entity> entityMap = new() { { Entity.Null, Entity.Null } };
-        // Load brushes
+
         var resultDocument = Create(dataDocument.Get<DocumentSetting>());
-        var resultWorld = resultDocument.World;
+        entityMap.Add(dataDocument, resultDocument);
         WorkingDocument.Value = resultDocument;
+        // Pre-create all result entities upfront (mirrors Serialize's Tagged<ToSerializeTag> query)
+        var dataWorld = dataDocument.World;
+        var resultWorld = resultDocument.World;
+        foreach (var dataE in dataWorld.CreateQuery().Build().EnumerateWithEntities())
+            entityMap.TryAdd(dataE, resultWorld.Create());
+
+        // Load brushes
         var loadBrushCmd = new CommandBuilder();
         foreach (var strokeBrushDataE in dataDocument.Get<BrushManager>().StrokeBrushEs)
-        {
-            var setting = strokeBrushDataE.Get<StrokeBrushSetting>();
-            var brushE = resultWorld.Create();
-            loadBrushCmd.SetTarget(brushE).NewStrokeBrush(strokeBrushDataE);
-            entityMap.Add(strokeBrushDataE, brushE);
-        }
+            loadBrushCmd.SetTarget(entityMap[strokeBrushDataE]).NewStrokeBrush(strokeBrushDataE);
         foreach (var vectorFillBrushDataE in dataDocument.Get<BrushManager>().VectorFillBrushEs)
-        {
-            var brushE = resultWorld.Create();
-            loadBrushCmd.SetTarget(brushE).NewVectorFillBrush(vectorFillBrushDataE);
-            entityMap.Add(vectorFillBrushDataE, brushE);
-        }
+            loadBrushCmd.SetTarget(entityMap[vectorFillBrushDataE]).NewVectorFillBrush(vectorFillBrushDataE);
         loadBrushCmd.Do();
 
         // Load layers and strokes
-        var dataTreeRoot = dataDocument.Get<LayerTreeNode>();
-
-        entityMap.Add(dataDocument, resultDocument); // documents are root layers
-
         LoadChildren(dataDocument, resultDocument);
 
         void LoadChildren(Entity dataParentE, Entity resultParentE)
@@ -71,33 +65,37 @@ public static partial class AppDocumentManager
 
         void LoadLayer(Entity layerDataE, Entity resultParentE)
         {
+            var layerResultE = entityMap[layerDataE];
             if (layerDataE.Has<FolderLayerSetting>())
             {
-                var layerE = resultWorld.Create();
-                new CommandBuilder(layerE)
+                if (layerDataE.Get<FolderLayerSetting>().IsCel)
+                {
+                    var dataExposures = layerDataE.Get<FolderLayerSetting>().Exposures;
+                    foreach (var (frame, exposedE) in dataExposures.ToArray())
+                    {
+                        dataExposures[frame] = entityMap[exposedE];
+                    }
+                }
+
+                new CommandBuilder(layerResultE)
                     .NewFolderLayer(layerDataE)
                     .AddToLayerTree(resultParentE)
                     .Do();
-                entityMap.Add(layerDataE, layerE);
-                LoadChildren(layerDataE, layerE);
+                LoadChildren(layerDataE, layerResultE);
             }
             else if (layerDataE.Has<ImageLayerSetting>())
             {
-                var layerE = resultWorld.Create();
-                new CommandBuilder(layerE)
+                new CommandBuilder(layerResultE)
                     .NewImageLayer(layerDataE)
                     .AddToLayerTree(resultParentE)
                     .Do();
-                entityMap.Add(layerDataE, layerE);
             }
             else if (layerDataE.Has<ShapeLayerSetting>())
             {
-                var layerE = resultWorld.Create();
-                new CommandBuilder(layerE)
+                new CommandBuilder(layerResultE)
                     .NewShapeLayer(layerDataE)
                     .AddToLayerTree(resultParentE)
                     .Do();
-                entityMap.Add(layerDataE, layerE);
 
                 foreach (var shapeDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
@@ -105,39 +103,36 @@ public static partial class AppDocumentManager
                     {
                         var brushRef = shapeDataE.Get<StrokeSetting>().BrushE;
                         brushRef.Value = entityMap[brushRef.Value];
-                        new CommandBuilder(resultWorld.Create())
+                        new CommandBuilder(entityMap[shapeDataE])
                             .NewStroke(shapeDataE)
-                            .AddToLayerTree(layerE)
+                            .AddToLayerTree(layerResultE)
                             .Do();
                     }
                     else if (shapeDataE.Has<FilledPolygonSetting>())
                     {
                         var brushRef = shapeDataE.Get<FilledPolygonSetting>().BrushE;
                         brushRef.Value = entityMap[brushRef.Value];
-                        new CommandBuilder(resultWorld.Create())
+                        new CommandBuilder(entityMap[shapeDataE])
                             .NewFilledPolygon(shapeDataE)
-                            .AddToLayerTree(layerE)
+                            .AddToLayerTree(layerResultE)
                             .Do();
                     }
                 }
             }
             else if (layerDataE.Has<VectorFillLayerSetting>())
             {
-                var layerE = resultWorld.Create();
-                new CommandBuilder(layerE)
+                new CommandBuilder(layerResultE)
                     .NewVectorFillLayer(layerDataE)
                     .AddToLayerTree(resultParentE)
                     .Do();
-                entityMap.Add(layerDataE, layerE);
 
                 foreach (var markerDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
                     markerDataE.Get<VectorFillMarkerSetting>().BrushE.Value =
                         entityMap[markerDataE.Get<VectorFillMarkerSetting>().BrushE.Value];
-                    var markerE = resultWorld.Create();
-                    new CommandBuilder(markerE)
+                    new CommandBuilder(entityMap[markerDataE])
                         .NewVectorFillMarker(markerDataE)
-                        .AddToLayerTree(layerE)
+                        .AddToLayerTree(layerResultE)
                         .Do();
                 }
             }

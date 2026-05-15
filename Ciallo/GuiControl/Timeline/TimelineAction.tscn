@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://dp1yrwx67e0hq" path="res://Icon/folder-animation-plus.svg" id="1_56l7e"]
 [ext_resource type="Script" uid="uid://dmwhitm5mjnxh" path="res://GuiControl/Timeline/TimelineAction.cs" id="1_ytrn4"]
+[ext_resource type="Texture2D" uid="uid://tugksq2pg442" path="res://Icon/layers-plus.svg" id="2_05m82"]
 
 [node name="TimelineAction" type="HFlowContainer" unique_id=1607254887]
 offset_right = 1044.0
@@ -12,8 +13,19 @@ script = ExtResource("1_ytrn4")
 unique_name_in_owner = true
 custom_minimum_size = Vector2(36, 0)
 layout_mode = 2
+tooltip_text = "New animation folder"
 theme_type_variation = &"ToolButton"
 icon = ExtResource("1_56l7e")
+icon_alignment = 1
+expand_icon = true
+
+[node name="NewAnimationCel" type="Button" parent="." unique_id=1723767806]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+tooltip_text = "New animation cel"
+theme_type_variation = &"ToolButton"
+icon = ExtResource("2_05m82")
 icon_alignment = 1
 expand_icon = true
 
