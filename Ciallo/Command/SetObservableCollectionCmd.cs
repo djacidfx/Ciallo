@@ -144,6 +144,84 @@ public class SetObservableDictionary<TKey, TValue> : SetObservableCollectionBase
     }
 }
 
+public class SetObservableSortedDictionary<TKey, TValue> : SetObservableCollectionBase<ObservableSortedDictionary<TKey, TValue>>
+    where TKey : notnull
+{
+    public readonly List<CollectionChangedEvent<KeyValuePair<TKey, TValue>>> CollectionHistory = [];
+
+    public SetObservableSortedDictionary(
+        Func<Entity, ObservableSortedDictionary<TKey, TValue>> getCollection,
+        Action<ObservableSortedDictionary<TKey, TValue>> action
+    ) : base(getCollection, action) { }
+
+    public override void Do(Entity targetE)
+    {
+        using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
+        Action(Collection);
+    }
+
+    public override void Undo(Entity targetE)
+    {
+        var reversedHistory = CollectionHistory.AsEnumerable().Reverse();
+        foreach (var et in reversedHistory)
+        {
+            switch (et.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    Collection.Remove(et.NewItem.Key);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    Collection.Add(et.OldItem.Key, et.OldItem.Value);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    Collection[et.NewItem.Key] = et.OldItem.Value;
+                    break;
+                default:
+                    throw new NotSupportedException($"Undo is not supported for action {et.Action}");
+            }
+        }
+    }
+}
+
+public class SetObservableSortedList<TKey, TValue> : SetObservableCollectionBase<ObservableSortedList<TKey, TValue>>
+    where TKey : struct
+{
+    public readonly List<CollectionChangedEvent<KeyValuePair<TKey, TValue>>> CollectionHistory = [];
+
+    public SetObservableSortedList(
+        Func<Entity, ObservableSortedList<TKey, TValue>> getCollection,
+        Action<ObservableSortedList<TKey, TValue>> action
+    ) : base(getCollection, action) { }
+
+    public override void Do(Entity targetE)
+    {
+        using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
+        Action(Collection);
+    }
+
+    public override void Undo(Entity targetE)
+    {
+        var reversedHistory = CollectionHistory.AsEnumerable().Reverse();
+        foreach (var et in reversedHistory)
+        {
+            switch (et.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    Collection.Remove(et.NewItem.Key);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    Collection.Add(et.OldItem.Key, et.OldItem.Value);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    Collection[et.NewItem.Key] = et.OldItem.Value;
+                    break;
+                default:
+                    throw new NotSupportedException($"Undo is not supported for action {et.Action}");
+            }
+        }
+    }
+}
+
 public partial class CommandBuilder
 {
     public CommandBuilder SetObservableCollection<T>(
@@ -169,6 +247,26 @@ public partial class CommandBuilder
         Action<ObservableDictionary<TKey, TValue>> action)
     {
         var cmd = new SetObservableDictionary<TKey, TValue>(getCollection, action) { TargetE = TargetE };
+        Commands.Add(cmd);
+        return this;
+    }
+
+    public CommandBuilder SetObservableCollection<TKey, TValue>(
+        Func<Entity, ObservableSortedDictionary<TKey, TValue>> getCollection,
+        Action<ObservableSortedDictionary<TKey, TValue>> action)
+        where TKey : notnull
+    {
+        var cmd = new SetObservableSortedDictionary<TKey, TValue>(getCollection, action) { TargetE = TargetE };
+        Commands.Add(cmd);
+        return this;
+    }
+
+    public CommandBuilder SetObservableCollection<TKey, TValue>(
+        Func<Entity, ObservableSortedList<TKey, TValue>> getCollection,
+        Action<ObservableSortedList<TKey, TValue>> action)
+        where TKey : struct
+    {
+        var cmd = new SetObservableSortedList<TKey, TValue>(getCollection, action) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }

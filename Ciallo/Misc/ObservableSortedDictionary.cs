@@ -1,4 +1,5 @@
 ﻿// Shen is not capable to maintain this, just pray Mr. sonnet 4.6 is all-knowing
+
 #nullable enable
 using System.Collections;
 using System.Collections.Generic;
@@ -63,34 +64,52 @@ public partial class ObservableSortedDictionary<TKey, TValue> : IDictionary<TKey
 
     ICollection<TKey> IDictionary<TKey, TValue>.Keys
     {
-        get { lock (SyncRoot) return _dictionary.Keys; }
+        get
+        {
+            lock (SyncRoot) return _dictionary.Keys;
+        }
     }
 
     ICollection<TValue> IDictionary<TKey, TValue>.Values
     {
-        get { lock (SyncRoot) return _dictionary.Values; }
+        get
+        {
+            lock (SyncRoot) return _dictionary.Values;
+        }
     }
 
     public int Count
     {
-        get { lock (SyncRoot) return _dictionary.Count; }
+        get
+        {
+            lock (SyncRoot) return _dictionary.Count;
+        }
     }
 
     public bool IsReadOnly => false;
 
     IEnumerable<TKey> IReadOnlyDictionary<TKey, TValue>.Keys
     {
-        get { lock (SyncRoot) return _dictionary.Keys; }
+        get
+        {
+            lock (SyncRoot) return _dictionary.Keys;
+        }
     }
 
     IEnumerable<TValue> IReadOnlyDictionary<TKey, TValue>.Values
     {
-        get { lock (SyncRoot) return _dictionary.Values; }
+        get
+        {
+            lock (SyncRoot) return _dictionary.Values;
+        }
     }
 
     public IComparer<TKey> Comparer
     {
-        get { lock (SyncRoot) return _dictionary.Comparer; }
+        get
+        {
+            lock (SyncRoot) return _dictionary.Comparer;
+        }
     }
 
     public void Add(TKey key, TValue value)
@@ -136,9 +155,8 @@ public partial class ObservableSortedDictionary<TKey, TValue> : IDictionary<TKey
     {
         lock (SyncRoot)
         {
-            if (_dictionary.TryGetValue(key, out var value))
+            if (_dictionary.Remove(key, out var value))
             {
-                _dictionary.Remove(key);
                 CollectionChanged?.Invoke(NotifyCollectionChangedEventArgs<KeyValuePair<TKey, TValue>>.Remove(
                     new KeyValuePair<TKey, TValue>(key, value), -1));
                 return true;
