@@ -42,18 +42,7 @@ public partial class TimelinePanel : VBoxContainer
             _trackTree.SplitOffset = (int)offset;
             _hSplitScroll.SplitOffsets = [(int)offset];
             _hSplitBgGrid.SplitOffsets = [(int)offset];
-            UpdateBackgroundGridTransform();
         };
-
-        // Also update BackgroundGrid when the TrackTree is resized.
-        _trackTree.ItemRectChanged += UpdateBackgroundGridTransform;
-    }
-
-    private void UpdateBackgroundGridTransform()
-    {
-        int splitOffset = _hSplitRuler.SplitOffsets[0];
-        _bgGrid.GlobalPosition = _trackTree.GlobalPosition + new Vector2(splitOffset, 0f);
-        _bgGrid.Size = new Vector2(Mathf.Max(0f, _trackTree.Size.X - splitOffset), _trackTree.Size.Y);
     }
 
     /// <summary>
