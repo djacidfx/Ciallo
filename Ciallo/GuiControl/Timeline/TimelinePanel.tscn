@@ -38,6 +38,8 @@ theme_override_constants/separation = 0
 theme_override_constants/minimum_grab_thickness = 0
 theme_override_constants/autohide = 1
 theme_override_styles/split_bar_background = SubResource("StyleBoxLine_nrybc")
+dragging_enabled = false
+dragger_visibility = 2
 
 [node name="HSplitRuler" type="HSplitContainer" parent="TimelineMainArea" unique_id=233143306]
 unique_name_in_owner = true
@@ -72,7 +74,7 @@ theme_override_styles/split_bar_background = SubResource("StyleBoxEmpty_nrybc")
 split_offsets = PackedInt32Array(256)
 split_offset = 256
 
-[node name="TrackHeadPad" type="Control" parent="TimelineMainArea/MarginContainer/HSplitBgGrid" unique_id=1436785674]
+[node name="TrackHeaderPad" type="Control" parent="TimelineMainArea/MarginContainer/HSplitBgGrid" unique_id=1436785674]
 layout_mode = 2
 
 [node name="BackgroundGrid" type="Control" parent="TimelineMainArea/MarginContainer/HSplitBgGrid" unique_id=526660374]
@@ -103,7 +105,7 @@ split_offsets = PackedInt32Array(256)
 dragging_enabled = false
 split_offset = 256
 
-[node name="ScrollSplitLeft" type="Control" parent="TimelineMainArea/MarginContainer/VBoxContainer/HSplitScrollBar" unique_id=1702651319]
+[node name="TrackHeaderPad" type="Control" parent="TimelineMainArea/MarginContainer/VBoxContainer/HSplitScrollBar" unique_id=1702651319]
 custom_minimum_size = Vector2(48, 0)
 layout_mode = 2
 

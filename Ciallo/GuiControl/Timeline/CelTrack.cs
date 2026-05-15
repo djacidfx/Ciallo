@@ -22,10 +22,12 @@ namespace Ciallo.GuiControl;
 public partial class CelTrack : Control
 {
     // ── Tunable ──────────────────────────────────────────────────────────────
-    private const float BarWidthRatio = 0.5f; // bar width = ppf * ratio
-    private const float ArrowHeadLength = 7f;
-    private const float ArrowHeadHalfWidth = 4f;
-    private const float LabelPad = 3f;
+    public float BarWidthRatio = 0.5f; // bar width = ppf * ratio
+    public float MaxBarWidth = 16f;
+    public float BarWidth => Mathf.Min(_ppf * BarWidthRatio, MaxBarWidth);
+    public float ArrowHeadLength = 7f;
+    public float ArrowHeadHalfWidth = 4f;
+    public float LabelPad = 3f;
 
     // ── State ─────────────────────────────────────────────────────────────────
     private float _ppf;
@@ -53,11 +55,12 @@ public partial class CelTrack : Control
 
     private void InitTheme()
     {
-        BarColor = GetThemeColor("font_color", "Label") with { A = 0.65f };
-        LabelColor = GetThemeColor("font_color", "Label");
+        var normalStyleBox = (StyleBoxFlat)GetThemeStylebox("normal", "Button");
+        BarColor = normalStyleBox.BgColor;
+        LabelColor = GetThemeColor("font_color", "Button");
         ArrowColor = LabelColor with { A = 0.4f };
-        LabelFont = GetThemeFont("font", "Label");
-        LabelFontSize = (int)(GetThemeFontSize("font_size", "Label") * 0.8f);
+        LabelFont = GetThemeFont("font", "Button");
+        LabelFontSize = (int)(GetThemeFontSize("font_size", "Button") * 0.8f);
     }
 
     public override void _EnterTree() => InitTheme();
@@ -102,7 +105,7 @@ public partial class CelTrack : Control
         float h = Size.Y;
         float w = Size.X;
         float midY = h * 0.5f;
-        float barW = _ppf * BarWidthRatio;
+        float barW = BarWidth;
 
         var frames = new List<int>();
         foreach (var kv in _exposures)
@@ -155,14 +158,16 @@ public partial class CelTrack : Control
         }
     }
 
-    // ── Cursor ────────────────────────────────────────────────────────────────
+    // ── Input ────────────────────────────────────────────────────────────────
+
+    public override void _GuiInput(InputEvent @event) { }
 
     public override int _GetCursorShape(Vector2 atPosition)
     {
         if (_ppf <= 0f || _exposures == null)
             return (int)CursorShape.Arrow;
 
-        float barW = _ppf * BarWidthRatio;
+        float barW = BarWidth;
         foreach (var kv in _exposures)
         {
             float x = kv.Key * _ppf - _scrollOffset;

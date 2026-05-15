@@ -18,4 +18,10 @@ public partial class TrackRow : HSplitContainer
     /// The cel track in the right panel, or <c>null</c> for non-CelFolder layers.
     /// </summary>
     public CelTrack CelTrack { get; set; }
+
+    public TrackRow()
+    {
+        // Hard coded HSplitRuler's separation.
+        AddThemeConstantOverride("separation", 12);
+    }
 }
