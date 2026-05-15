@@ -31,12 +31,12 @@ public class FolderLayerSetting
     /// Keys represent the starting frame of a drawing; 
     /// Values represent the layer to be displayed until the next key is encountered.
     /// </summary>
-    [DataMember] public ObservableDictionary<int, Entity> Exposures = null;
+    [DataMember] public ObservableSortedList<int, Entity> Exposures = null;
 
     public FolderLayerSetting Clone() =>
         new()
         {
             IsExpanded = { Value = IsExpanded.Value },
-            Exposures = Exposures is null ? null : [..Exposures],
+            Exposures = Exposures is null ? null : [.. Exposures],
         };
 }

@@ -32,7 +32,7 @@ public partial class CelTrack : Control
     // ── State ─────────────────────────────────────────────────────────────────
     private float _ppf;
     private float _scrollOffset;
-    private ObservableDictionary<int, Entity> _exposures;
+    private ObservableSortedList<int, Entity> _exposures;
 
     // ── Theme ─────────────────────────────────────────────────────────────────
     public Color BarColor;
@@ -90,7 +90,7 @@ public partial class CelTrack : Control
             }).AddTo(subs);
     }
 
-    public void Bind(ObservableDictionary<int, Entity> exposures, CompositeDisposable subs)
+    public void Bind(ObservableSortedList<int, Entity> exposures, CompositeDisposable subs)
     {
         _exposures = exposures;
         exposures.ObserveChanged().Subscribe(_ => QueueRedraw()).AddTo(subs);
@@ -110,7 +110,6 @@ public partial class CelTrack : Control
         var frames = new List<int>();
         foreach (var kv in _exposures)
             frames.Add(kv.Key);
-        frames.Sort();
 
         // ── Outer border ─────────────────────────────────────────────────────
         DrawRect(new Rect2(0f, 0f, w, h), Colors.Black, filled: false, width: 1f);
