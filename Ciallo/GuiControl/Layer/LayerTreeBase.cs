@@ -50,7 +50,9 @@ public abstract partial class LayerTreeBase : ScrollContainer
         WorkingLayerButtonGroup.Pressed += button =>
         {
             var block = (LayerBlock)button.GetOwner();
-            new CommandBuilder(block.LayerEntity).SetWorkingLayer().Commit();
+            new CommandBuilder(block.LayerEntity)
+            .SetWorkingLayer()
+            .Commit(mergeMode: MergeMode.ForceMergeLatest);
         };
     }
 
