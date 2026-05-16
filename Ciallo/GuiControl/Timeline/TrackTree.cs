@@ -72,7 +72,16 @@ public partial class TrackTree : LayerTreeBase
         trackRow.SplitOffsets = [_splitOffset];
         trackRow.SizeFlagsHorizontal = SizeFlags.ExpandFill;
 
-        trackRow.AddChild(headerBlock);
+        var scrollContainer = new ScrollContainer
+        {
+            SizeFlagsHorizontal = SizeFlags.Fill,
+            ClipContents = false,
+            HorizontalScrollMode = ScrollMode.ShowNever,
+            VerticalScrollMode = ScrollMode.Disabled,
+        };
+
+        scrollContainer.AddChild(headerBlock);
+        trackRow.AddChild(scrollContainer);
         trackRow.HeaderBlock = headerBlock;
         headerBlock.OwningWrapper = wrapper;
 
