@@ -28,7 +28,7 @@ public partial class TimelineAction : Container
         var folder = Document.World.Create();
         var workingLayer = Document.Get<SelectionManager>().WorkingLayer.Value;
         // Trace from workingLayer to its ancestors
-        // If we find an animation folder, parent is the folder's parent
+        // If we find an cel folder, parent is the folder's parent
         // If never find one, parent is the first encountered folder layer without animation
         var cursor = workingLayer.IsNull ? Document : workingLayer;
         Entity firstNonAnimFolder = Entity.Null;
@@ -58,6 +58,9 @@ public partial class TimelineAction : Container
             .Commit();
     }
 
+    /// <summary>
+    /// Rules: TODO
+    /// </summary>
     private void OnNewAnimationCel()
     {
         var celFolder = FindOwningCelFolder(Document.Get<SelectionManager>().WorkingLayer.Value);
