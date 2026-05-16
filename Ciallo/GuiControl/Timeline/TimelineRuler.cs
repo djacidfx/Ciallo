@@ -102,7 +102,8 @@ public partial class TimelineRuler : Control
         }
     } = 10f;
 
-    [Export] public Color TickColor
+    [Export]
+    public Color TickColor
     {
         get;
         set
@@ -340,8 +341,7 @@ public partial class TimelineRuler : Control
             bool isMajor = frame == 0 || frame % majorStep == 0;
             float tickH = isMajor ? MajorTickHeight : MinorTickHeight;
 
-            bool inRange = _playbackStart != null && _playbackEnd != null
-                                                  && frame >= _playbackStart.Value && frame < _playbackEnd.Value;
+            bool inRange = _playbackStart != null && _playbackEnd != null && frame >= _playbackStart.Value && frame < _playbackEnd.Value;
             Color frameTickColor = inRange ? TickColor : OutOfPlaybackTickColor;
             Color frameLabelColor = inRange ? LabelColor : OutOfPlaybackLabelColor;
 
@@ -350,7 +350,7 @@ public partial class TimelineRuler : Control
             // Frame 0 has no visible label — numbering goes …-2, -1, (silent 0), 1, 2…
             if (isMajor && showFrameLabels && frame != 0)
                 DrawString(font, new Vector2(x + 2f, h - tickH - 2f),
-                    frame.ToString(), HorizontalAlignment.Left, -1, LabelFontSize, frameLabelColor);
+                        frame.ToString(), HorizontalAlignment.Left, -1, LabelFontSize, frameLabelColor);
         }
 
         // ── Playhead highlight ───────────────────────────────────────────────
@@ -400,7 +400,7 @@ public partial class TimelineRuler : Control
                 else if (_currentFrame != null)
                 {
                     _dragMode = DragMode.Frame;
-                    SetFrameFromX(btn.Position.X);
+                    _currentFrame.Value = FrameFromX(btn.Position.X);
                 }
 
                 if (_dragMode != DragMode.None) AcceptEvent();
@@ -418,9 +418,21 @@ public partial class TimelineRuler : Control
             {
                 switch (_dragMode)
                 {
-                    case DragMode.Frame: SetFrameFromX(motion.Position.X); break;
-                    case DragMode.StartHandle: SetStartFromX(motion.Position.X); break;
-                    case DragMode.EndHandle: SetEndFromX(motion.Position.X); break;
+                    case DragMode.Frame:
+                        _currentFrame.Value = FrameFromX(motion.Position.X);
+                        break;
+                    case DragMode.StartHandle:
+                        int newStart = StartFromX(motion.Position.X);
+                        _playbackStart.Value = newStart;
+                        if (_currentFrame?.Value < newStart)
+                            _currentFrame.Value = newStart;
+                        break;
+                    case DragMode.EndHandle:
+                        int newEnd = EndFromX(motion.Position.X);
+                        _playbackEnd.Value = newEnd;
+                        if (_currentFrame?.Value >= newEnd)
+                            _currentFrame.Value = newEnd - 1;
+                        break;
                 }
                 AcceptEvent();
             }
@@ -454,37 +466,25 @@ public partial class TimelineRuler : Control
     // ── Mutation helpers with constraints ────────────────────────────────
 
     /// <summary>
-    /// Set playhead from ruler-local X, clamped to [PlaybackStart, PlaybackEnd).
+    /// Compute playhead frame from ruler-local X, clamped to [PlaybackStart, PlaybackEnd).
     /// </summary>
-    private void SetFrameFromX(float localX)
+    private int FrameFromX(float localX)
     {
         int frame = XToFrame(localX);
         if (_playbackStart != null)
             frame = Mathf.Clamp(frame, _playbackStart.Value, _playbackEnd.Value - 1);
-        _currentFrame.Value = frame;
+        return frame;
     }
 
     /// <summary>
-    /// Drag PlaybackStart: clamped to [1, PlaybackEnd-1].
-    /// Pushes playhead forward if it would fall below the new start.
+    /// Compute new PlaybackStart from ruler-local X, clamped to [0, PlaybackEnd-1].
     /// </summary>
-    private void SetStartFromX(float localX)
-    {
-        int newStart = Mathf.Min(XToFrame(localX), _playbackEnd.Value - 1);
-        _playbackStart.Value = newStart;
-        if (_currentFrame != null && _currentFrame.Value < newStart)
-            _currentFrame.Value = newStart;
-    }
+    private int StartFromX(float localX) =>
+        Mathf.Min(XToFrame(localX), _playbackEnd.Value - 1);
 
     /// <summary>
-    /// Drag PlaybackEnd: clamped to [PlaybackStart+1, ∞).
-    /// Pulls playhead back if it would land on or past the new end.
+    /// Compute new PlaybackEnd from ruler-local X, clamped to [PlaybackStart+1, ∞).
     /// </summary>
-    private void SetEndFromX(float localX)
-    {
-        int newEnd = Mathf.Max(XToFrame(localX), _playbackStart.Value + 1);
-        _playbackEnd.Value = newEnd;
-        if (_currentFrame != null && _currentFrame.Value >= newEnd)
-            _currentFrame.Value = newEnd - 1;
-    }
+    private int EndFromX(float localX) =>
+        Mathf.Max(XToFrame(localX), _playbackStart.Value + 1);
 }
