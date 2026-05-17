@@ -10,7 +10,7 @@ namespace Ciallo.Tool;
 
 public partial class ToolManager : IInitable, IDestroyable
 {
-    public Dictionary<ToolButton, List<ITool>> ToolButtonMap;
+    public Dictionary<ToolButton, List<ITool>> ToolButtonMap; // Init by source generation
     public IEnumerable<ITool> Tools => ToolButtonMap.Values.SelectMany(list => list);
     public ReactiveProperty<ToolButton?> PressedToolButton => AppPreference.PressedToolButton;
     public ReactiveProperty<ITool> WorkingTool = new(null);
@@ -21,20 +21,15 @@ public partial class ToolManager : IInitable, IDestroyable
         Document = self;
         ToolButtonMap = InitializeToolButtonMap(self);
         var workingLayer = Document.Get<SelectionManager>().WorkingLayer;
+        // Switch tool
         workingLayer.CombineLatest(PressedToolButton, ValueTuple.Create)
-            .DelayFrame(1)
+            .DebounceFrame(1) // Assume activating tool is costly, so debounce it to avoid activating multiple tools in one frame.
             .Subscribe(tuple =>
             {
                 var (layerE, toolButton) = tuple;
-                if (toolButton == null)
-                {
-                    WorkingTool.Value = null;
-                    return;
-                }
 
-                var targetTool = layerE.IsNull
-                    ? null
-                    : ToolButtonMap[toolButton.Value].FirstOrDefault(t => t.CanHandleLayer(layerE));
+                var targetTool = layerE.IsNull || toolButton == null ? null :
+                    ToolButtonMap[toolButton.Value].FirstOrDefault(t => t.CanHandleLayer(layerE));
                 WorkingTool.Value?.OnDeactivate();
                 targetTool?.OnActivate(layerE);
                 WorkingTool.Value = targetTool;
