@@ -140,6 +140,8 @@ public partial class TimelineRuler : Control
     private DragMode _dragMode = DragMode.None;
     private int? _hoverFrame;
 
+    #region Theme
+
     public int LabelFontSize;
     public Color LabelColor;
     public Color PlaybackBackgroundColor;
@@ -148,7 +150,7 @@ public partial class TimelineRuler : Control
     public Color OutOfPlaybackTickColor;
     public Color HintDotColor;
 
-    public override void _Ready()
+    public void InitTheme()
     {
         StyleBoxFlat styleBox;
         styleBox = (StyleBoxFlat)GetThemeStylebox("normal", "Button");
@@ -161,6 +163,25 @@ public partial class TimelineRuler : Control
         OutOfPlaybackTickColor = OutOfPlaybackLabelColor with { A = 0.5f };
         styleBox = (StyleBoxFlat)GetThemeStylebox("hover", "Button");
         HintDotColor = styleBox.BgColor;
+    }
+
+    #endregion
+
+    public override void _Ready()
+    {
+        InitTheme();
+    }
+
+    public override void _Notification(int what)
+    {
+        if (what == NotificationThemeChanged)
+            InitTheme();
+
+        if (what == NotificationMouseExit)
+        {
+            _hoverFrame = null;
+            QueueRedraw();
+        }
     }
 
     #region Setup

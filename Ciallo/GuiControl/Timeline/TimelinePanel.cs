@@ -7,7 +7,6 @@ namespace Ciallo.GuiControl;
 
 /// <summary>
 /// Timeline panel — owns the shared zoom / scroll state and wires all sub-controls.
-/// Call <see cref="BindTimeline"/> first, then <see cref="InitTrackTree"/>.
 /// </summary>
 [SceneTree, Instantiable]
 public partial class TimelinePanel : VBoxContainer
