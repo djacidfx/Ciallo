@@ -17,7 +17,7 @@ public static partial class AppDocumentManager
 {
     // Pitfall: If serialize an empty class without any [DataMember], then add a new [DataMember] later version and deserialize it back.
     // MessagePack will throw error without any useful information.
-    public static readonly HashSet<Type> ToSerializeTypes = [..GetToSerializeTypes()];
+    public static readonly HashSet<Type> ToSerializeTypes = [.. GetToSerializeTypes()];
     public static readonly HashSet<Type> ToSerializeTags = ToSerializeTypes.Where(t => t.IsTag()).ToHashSet();
     public static readonly HashSet<Type> ToSerializeComponents = ToSerializeTypes.Except(ToSerializeTags).ToHashSet();
 
@@ -138,7 +138,7 @@ public static partial class AppDocumentManager
             }
         }
 
-        // Entity reference remap
+        // Vector fil reference layers remap
         foreach (var dataE in dataDocument.World.Query<VectorFillLayerSetting>().EnumerateWithEntities())
         {
             var resultE = entityMap[dataE];
@@ -158,8 +158,14 @@ public static partial class AppDocumentManager
         var dataVectorFillBrushE = dataSm.WorkingVectorFillBrush.Value;
         if (!dataVectorFillBrushE.IsNull)
             loadSelectionCmd.SetTarget(resultDocument)
-                .SetProperty(e => e.Get<SelectionManager>().WorkingVectorFillBrush, entityMap[dataVectorFillBrushE])
-                .Do();
+                .SetProperty(e => e.Get<SelectionManager>().WorkingVectorFillBrush, entityMap[dataVectorFillBrushE]);
+        loadSelectionCmd.SetTarget(resultDocument)
+            .SetProperty(e => e.Get<SelectionManager>().CurrentFrame, dataSm.CurrentFrame.Value);
+
+        loadSelectionCmd.Do();
+
+        // Load timeline setting
+        resultDocument.Get<TimelineSetting>().CopyFrom(dataDocument.Get<TimelineSetting>());
     }
 
     public static void SaveWorkingDocument()
@@ -232,7 +238,7 @@ public static partial class AppDocumentManager
     {
         List<List<Type>> ecData = [];
         var query = world.CreateQuery().Tagged<ToSerializeTag>().Build();
-        List<Entity> entities = [world.Document(), ..query.EnumerateWithEntities()];
+        List<Entity> entities = [world.Document(), .. query.EnumerateWithEntities()];
         foreach (var e in entities)
         {
             List<Type> types = [];

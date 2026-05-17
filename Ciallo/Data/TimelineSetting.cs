@@ -21,4 +21,16 @@ public class TimelineSetting
     /// Use <c>ScrollOffsetFrame * PixelsPerFrame</c> to convert to pixel offset where needed.
     /// </summary>
     public ReactiveProperty<float> ScrollOffsetFrame = new(-10f);
+
+    public void CopyFrom(TimelineSetting other)
+    {
+        PlaybackStart.Value = other.PlaybackStart.Value;
+        PlaybackEnd.Value = other.PlaybackEnd.Value;
+        FrameRate.Value = other.FrameRate.Value;
+        OnionSkinFrames.Clear();
+        foreach (var frame in other.OnionSkinFrames)
+            OnionSkinFrames.Add(frame);
+        PixelsPerFrame.Value = other.PixelsPerFrame.Value;
+        ScrollOffsetFrame.Value = other.ScrollOffsetFrame.Value;
+    }
 }
