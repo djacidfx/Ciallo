@@ -1,4 +1,6 @@
-﻿using Godot;
+﻿using Ciallo.Command;
+using Ciallo.Data;
+using Godot;
 using R3;
 
 namespace Ciallo.GuiControl;
@@ -6,7 +8,7 @@ namespace Ciallo.GuiControl;
 /// <summary>
 /// Draws frame-number ruler ticks and draggable playback-range handles.
 /// </summary>
-[Tool, GlobalClass]
+[Tool]
 public partial class TimelineRuler : Control
 {
     #region Export
@@ -139,6 +141,9 @@ public partial class TimelineRuler : Control
 
     private DragMode _dragMode = DragMode.None;
     private int? _hoverFrame;
+    private int _frameAtDragStart;
+    private int _playbackStartAtDragStart;
+    private int _playbackEndAtDragStart;
 
     #region Theme
 
@@ -415,12 +420,21 @@ public partial class TimelineRuler : Control
             {
                 // Priority: handles first, then playhead
                 if (HitStartHandle(btn.Position))
+                {
                     _dragMode = DragMode.StartHandle;
+                    _playbackStartAtDragStart = _playbackStart.Value;
+                    _frameAtDragStart = _currentFrame?.Value ?? 0;
+                }
                 else if (HitEndHandle(btn.Position))
+                {
                     _dragMode = DragMode.EndHandle;
+                    _playbackEndAtDragStart = _playbackEnd.Value;
+                    _frameAtDragStart = _currentFrame?.Value ?? 0;
+                }
                 else if (_currentFrame != null)
                 {
                     _dragMode = DragMode.Frame;
+                    _frameAtDragStart = _currentFrame.Value;
                     _currentFrame.Value = FrameFromX(btn.Position.X);
                 }
 
@@ -428,6 +442,28 @@ public partial class TimelineRuler : Control
             }
             else
             {
+                if (_dragMode == DragMode.Frame)
+                {
+                    new CommandBuilder(AppDocumentManager.WorkingDocument.Value)
+                        .SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value)
+                        .CommitToLatest(execute: false);
+                }
+                else if (_dragMode == DragMode.StartHandle)
+                {
+                    var cmd = new CommandBuilder(AppDocumentManager.WorkingDocument.Value)
+                        .SetProperty(_playbackStart, _playbackStartAtDragStart, _playbackStart.Value);
+                    if (_currentFrame != null && _currentFrame.Value != _frameAtDragStart)
+                        cmd.SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
+                    cmd.CommitToLatest(execute: false);
+                }
+                else if (_dragMode == DragMode.EndHandle)
+                {
+                    var cmd = new CommandBuilder(AppDocumentManager.WorkingDocument.Value)
+                        .SetProperty(_playbackEnd, _playbackEndAtDragStart, _playbackEnd.Value);
+                    if (_currentFrame != null && _currentFrame.Value != _frameAtDragStart)
+                        cmd.SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
+                    cmd.CommitToLatest(execute: false);
+                }
                 _dragMode = DragMode.None;
             }
         }
@@ -461,15 +497,6 @@ public partial class TimelineRuler : Control
     }
 
     // ── Cursor ────────────────────────────────────────────────────────────────
-
-    public override void _Notification(int what)
-    {
-        if (what == NotificationMouseExit)
-        {
-            _hoverFrame = null;
-            QueueRedraw();
-        }
-    }
 
     public override int _GetCursorShape(Vector2 atPosition)
     {
