@@ -43,6 +43,8 @@ public class Preference
     public ObservableList<string> RecentFiles = [];
     [DataMember]
     public ReactiveProperty<ToolButton?> PressedToolButton = new(null);
+    [DataMember]
+    public ReactiveProperty<int> CommandHistoryLimit = new(50);
 
     [DataMember]
     public Color StrokeWireframeColor = Colors.Orange;

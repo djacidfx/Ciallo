@@ -52,7 +52,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
             var block = (LayerBlock)button.GetOwner();
             new CommandBuilder(block.LayerEntity)
             .SetWorkingLayer()
-            .Commit(mergeMode: MergeMode.ForceMergeLatest);
+            .CommitToLatest();
         };
     }
 
@@ -92,7 +92,9 @@ public abstract partial class LayerTreeBase : ScrollContainer
         var wrapper = GetWrapper(e);
         var block = GetBlock(e);
         block.WorkingButton.ButtonGroup = WorkingLayerButtonGroup;
-        block.VisibleButton.BindBool(commonSetting.IsVisible, subs);
+        block.VisibleButton
+            .BindBool(commonSetting.IsVisible, subs)
+            .RegisterUndo(cmdM, true);
         var lineEdit = block.LabelLineEdit
             .BindString(commonSetting.Name, subs)
             .RegisterUndo(cmdM);
@@ -108,7 +110,9 @@ public abstract partial class LayerTreeBase : ScrollContainer
         {
             block.DropdownArrow.Visible = true;
             var property = e.Get<FolderLayerSetting>().IsExpanded;
-            block.DropdownArrow.BindBool(property, subs);
+            block.DropdownArrow
+                .BindBool(property, subs)
+                .RegisterUndo(cmdM, true);
             wrapper.ObserveIsExpanded(property, subs);
         }
         else

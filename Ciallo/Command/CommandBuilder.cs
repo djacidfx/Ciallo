@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
 using Frent;
-using Godot;
 
 namespace Ciallo.Command;
 
@@ -30,38 +29,37 @@ public partial class CommandBuilder
         return this;
     }
 
-    public void Commit(bool execute = true, MergeMode mergeMode = MergeMode.Disable)
+    public void Commit(bool execute = true)
     {
         if (Commands.Count == 0) return;
-        if (TargetE.IsNull) throw new InvalidOperationException("TargetE is not set in CommandBuilder.");
-        var document = TargetE.Document;
-        var cm = document.Get<CommandManager>();
-
-        // Add Do/Undo Reference methods, order matters:
-        var objects = Commands.Select(c => new CommandWrapperObject(c)).ToArray();
-
-        UndoRedo.MergeMode mode = mergeMode switch
-        {
-            MergeMode.Disable => UndoRedo.MergeMode.Disable,
-            MergeMode.ForceMergeLatest => UndoRedo.MergeMode.All,
-            MergeMode.MergeEnd => UndoRedo.MergeMode.Ends,
-            _ => throw new ArgumentOutOfRangeException(nameof(mergeMode), mergeMode, null)
-        };
-
-        string actionName = ActionName;
-        if (mergeMode == MergeMode.ForceMergeLatest)
-        {
-            string name = cm.GetCurrentActionName();
-            if (!string.IsNullOrEmpty(name))
-                actionName = name;
-        }
-
-        cm.CreateAction(actionName, mode);
-        foreach (var obj in objects) cm.AddDo(obj);
-        foreach (var obj in objects.AsEnumerable().Reverse()) cm.AddUndo(obj);
-        cm.CommitAction(execute);
-
+        var cm = GetCommandManager();
+        cm.Commit(ActionName, Commands, execute);
         Commands.Clear();
+    }
+
+    // Sequential value commit. Repeated calls with the same generated segment key keep
+    // the original undo endpoint and replace only the redo endpoint.
+    public void CommitSequence(bool execute = true)
+    {
+        if (Commands.Count == 0) return;
+        var cm = GetCommandManager();
+        cm.CommitSequence(ActionName, Commands, execute);
+        Commands.Clear();
+    }
+
+    // Attach to latest undoable action.
+    public void CommitToLatest(bool execute = true)
+    {
+        if (Commands.Count == 0) return;
+        var cm = GetCommandManager();
+        cm.CommitToLatest(ActionName, Commands, execute);
+        Commands.Clear();
+    }
+
+    private CommandManager GetCommandManager()
+    {
+        if (TargetE.IsNull) throw new InvalidOperationException("TargetE is not set in CommandBuilder.");
+        return TargetE.Document.Get<CommandManager>();
     }
 
     public void Do()
