@@ -30,8 +30,22 @@ public class NewFolderLayerCmd : CommandBase
         var layerNode = targetE.Get<LayerTreeNode>();
         var folderSetting = targetE.Get<FolderLayerSetting>();
 
+        CompositeDisposable subs = new();
+        subs.AddTo(targetE);
+        FolderLayerView folderLayerView;
         // View
-        var folderLayerView = new FolderLayerView();
+        if (folderSetting.IsCel)
+        {
+            var celFolderView = new CelFolderView();
+            var currentFrame = Document.Get<SelectionManager>().CurrentFrame;
+            celFolderView.Observe(folderSetting.Exposures, currentFrame, subs);
+            folderLayerView = celFolderView;
+        }
+        else
+        {
+            folderLayerView = new FolderLayerView();
+        }
+
         targetE.AddNode(folderLayerView);
         commonSetting.IsVisible.Subscribe(folderLayerView.SetVisible).AddTo(targetE);
 
