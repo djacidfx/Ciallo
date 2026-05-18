@@ -23,9 +23,17 @@ public abstract class SetObservableCollectionBase<TCollection> : CommandBase
         Action = action;
     }
 
+    protected SetObservableCollectionBase(
+        TCollection collection,
+        Action<TCollection> action)
+    {
+        Collection = collection;
+        Action = action;
+    }
+
     public override void BeforeFirstDo(Entity targetE)
     {
-        Collection = GetCollection(targetE);
+        if (GetCollection != null) Collection = GetCollection(targetE);
     }
 }
 
@@ -38,8 +46,14 @@ public class SetObservableList<T> : SetObservableCollectionBase<ObservableList<T
         Action<ObservableList<T>> action
     ) : base(getCollection, action) { }
 
+    public SetObservableList(
+        ObservableList<T> collection,
+        Action<ObservableList<T>> action
+    ) : base(collection, action) { }
+
     public override void Do(Entity targetE)
     {
+        CollectionHistory.Clear();
         using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
         Action(Collection);
     }
@@ -80,8 +94,14 @@ public class SetObservableHashSet<T> : SetObservableCollectionBase<ObservableHas
         Action<ObservableHashSet<T>> action
     ) : base(getCollection, action) { }
 
+    public SetObservableHashSet(
+        ObservableHashSet<T> collection,
+        Action<ObservableHashSet<T>> action
+    ) : base(collection, action) { }
+
     public override void Do(Entity targetE)
     {
+        CollectionHistory.Clear();
         using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
         Action(Collection);
     }
@@ -115,8 +135,14 @@ public class SetObservableDictionary<TKey, TValue> : SetObservableCollectionBase
         Action<ObservableDictionary<TKey, TValue>> action
     ) : base(getCollection, action) { }
 
+    public SetObservableDictionary(
+        ObservableDictionary<TKey, TValue> collection,
+        Action<ObservableDictionary<TKey, TValue>> action
+    ) : base(collection, action) { }
+
     public override void Do(Entity targetE)
     {
+        CollectionHistory.Clear();
         using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
         Action(Collection);
     }
@@ -154,8 +180,14 @@ public class SetObservableSortedDictionary<TKey, TValue> : SetObservableCollecti
         Action<ObservableSortedDictionary<TKey, TValue>> action
     ) : base(getCollection, action) { }
 
+    public SetObservableSortedDictionary(
+        ObservableSortedDictionary<TKey, TValue> collection,
+        Action<ObservableSortedDictionary<TKey, TValue>> action
+    ) : base(collection, action) { }
+
     public override void Do(Entity targetE)
     {
+        CollectionHistory.Clear();
         using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
         Action(Collection);
     }
@@ -193,8 +225,14 @@ public class SetObservableSortedList<TKey, TValue> : SetObservableCollectionBase
         Action<ObservableSortedList<TKey, TValue>> action
     ) : base(getCollection, action) { }
 
+    public SetObservableSortedList(
+        ObservableSortedList<TKey, TValue> collection,
+        Action<ObservableSortedList<TKey, TValue>> action
+    ) : base(collection, action) { }
+
     public override void Do(Entity targetE)
     {
+        CollectionHistory.Clear();
         using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
         Action(Collection);
     }
@@ -234,10 +272,28 @@ public partial class CommandBuilder
     }
 
     public CommandBuilder SetObservableCollection<T>(
+        ObservableList<T> collection,
+        Action<ObservableList<T>> action)
+    {
+        var cmd = new SetObservableList<T>(collection, action) { TargetE = TargetE };
+        Commands.Add(cmd);
+        return this;
+    }
+
+    public CommandBuilder SetObservableCollection<T>(
         Func<Entity, ObservableHashSet<T>> getCollection,
         Action<ObservableHashSet<T>> action)
     {
         var cmd = new SetObservableHashSet<T>(getCollection, action) { TargetE = TargetE };
+        Commands.Add(cmd);
+        return this;
+    }
+
+    public CommandBuilder SetObservableCollection<T>(
+        ObservableHashSet<T> collection,
+        Action<ObservableHashSet<T>> action)
+    {
+        var cmd = new SetObservableHashSet<T>(collection, action) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
@@ -247,6 +303,15 @@ public partial class CommandBuilder
         Action<ObservableDictionary<TKey, TValue>> action)
     {
         var cmd = new SetObservableDictionary<TKey, TValue>(getCollection, action) { TargetE = TargetE };
+        Commands.Add(cmd);
+        return this;
+    }
+
+    public CommandBuilder SetObservableCollection<TKey, TValue>(
+        ObservableDictionary<TKey, TValue> collection,
+        Action<ObservableDictionary<TKey, TValue>> action)
+    {
+        var cmd = new SetObservableDictionary<TKey, TValue>(collection, action) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
@@ -262,11 +327,31 @@ public partial class CommandBuilder
     }
 
     public CommandBuilder SetObservableCollection<TKey, TValue>(
+        ObservableSortedDictionary<TKey, TValue> collection,
+        Action<ObservableSortedDictionary<TKey, TValue>> action)
+        where TKey : notnull
+    {
+        var cmd = new SetObservableSortedDictionary<TKey, TValue>(collection, action) { TargetE = TargetE };
+        Commands.Add(cmd);
+        return this;
+    }
+
+    public CommandBuilder SetObservableCollection<TKey, TValue>(
         Func<Entity, ObservableSortedList<TKey, TValue>> getCollection,
         Action<ObservableSortedList<TKey, TValue>> action)
         where TKey : struct
     {
         var cmd = new SetObservableSortedList<TKey, TValue>(getCollection, action) { TargetE = TargetE };
+        Commands.Add(cmd);
+        return this;
+    }
+
+    public CommandBuilder SetObservableCollection<TKey, TValue>(
+        ObservableSortedList<TKey, TValue> collection,
+        Action<ObservableSortedList<TKey, TValue>> action)
+        where TKey : struct
+    {
+        var cmd = new SetObservableSortedList<TKey, TValue>(collection, action) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }

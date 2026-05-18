@@ -95,7 +95,8 @@ public partial class TrackTree : LayerTreeBase
             var celTrack = new CelTrack();
             var timeSetting = layerE.Document.Get<TimelineSetting>();
             celTrack.Observe(timeSetting.PixelsPerFrame, timeSetting.ScrollOffsetFrame, timeSetting.PlaybackStart, timeSetting.PlaybackEnd, subs);
-            celTrack.Bind(folderSetting.Exposures, subs);
+            var currentFrame = layerE.Document.Get<SelectionManager>().CurrentFrame;
+            celTrack.Bind(layerE, folderSetting.Exposures, currentFrame, subs);
             trackRow.AddChild(celTrack);
             trackRow.CelTrack = celTrack;
             layerE.Add(celTrack);

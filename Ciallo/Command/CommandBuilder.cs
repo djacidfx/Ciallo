@@ -17,7 +17,7 @@ public partial class CommandBuilder
         TargetE = targetE;
     }
 
-    public CommandBuilder(string name, Entity targetE)
+    public CommandBuilder(string name, Entity targetE = default)
     {
         ActionName = name;
         TargetE = targetE;
@@ -58,7 +58,8 @@ public partial class CommandBuilder
 
     private CommandManager GetCommandManager()
     {
-        if (TargetE.IsNull) throw new InvalidOperationException("TargetE is not set in CommandBuilder.");
+        if (TargetE.IsNull)
+            TargetE = AppDocumentManager.WorkingDocument.Value;
         return TargetE.Document.Get<CommandManager>();
     }
 

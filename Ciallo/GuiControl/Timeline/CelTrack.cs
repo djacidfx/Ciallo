@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Ciallo.Command;
 using Ciallo.Data;
 using Frent;
 using Godot;
@@ -13,7 +14,7 @@ namespace Ciallo.GuiControl;
 /// <list type="bullet">
 ///   <item>Lives as a normal (non-TopLevel) child of the <see cref="TrackRow"/> HSplitContainer
 ///         and fills the right panel via <see cref="SizeFlags.ExpandFill"/>.</item>
-///   <item>For every exposure key a boundary bar is drawn; consecutive bars are linked by
+///   <item>For every exposure key a cell bar is drawn; consecutive bars are linked by
 ///         a line + arrowhead.</item>
 /// </list>
 /// Call <see cref="Observe"/> and <see cref="Bind"/> once after adding to the scene.
@@ -37,8 +38,17 @@ public partial class CelTrack : Control
     private ObservableSortedList<int, Entity> _exposures;
 
     // ── Interaction state ─────────────────────────────────────────────────────
-    private int _hoveredFrame = -1; // -1 = none
-    private int _pressedFrame = -1; // -1 = none
+    private const float DragThreshold = 3f;
+    private int _hoveredFrame = -1;   // -1 = none
+    private int _pressedFrame = -1;   // -1 = none
+    private float _dragStartX;
+    private bool _isDragging;
+    private int _dragSourceFrame = -1; // frame key being dragged
+    private int _dragTargetFrame = -1; // current drop target frame
+
+    // ── Entity references (set by Bind) ───────────────────────────────────────
+    private Entity _celFolderEntity;
+    private ReactiveProperty<int> _currentFrame;
 
     // ── Theme ─────────────────────────────────────────────────────────────────
     public Color BarNormalColor;
@@ -119,8 +129,14 @@ public partial class CelTrack : Control
         }).AddTo(subs);
     }
 
-    public void Bind(ObservableSortedList<int, Entity> exposures, CompositeDisposable subs)
+    public void Bind(
+        Entity celFolderEntity,
+        ObservableSortedList<int, Entity> exposures,
+        ReactiveProperty<int> currentFrame,
+        CompositeDisposable subs)
     {
+        _celFolderEntity = celFolderEntity;
+        _currentFrame = currentFrame;
         _exposures = exposures;
         exposures.ObserveChanged().Subscribe(_ => QueueRedraw()).AddTo(subs);
     }
@@ -176,9 +192,15 @@ public partial class CelTrack : Control
             var barRect = new Rect2(x, 0f, barW, h);
             if (barRect.End.X > 0f && barRect.Position.X < w)
             {
-                Color barColor = frame == _pressedFrame ? BarPressedColor
-                               : frame == _hoveredFrame ? BarHoverColor
-                               : BarNormalColor;
+                Color barColor;
+                if (_isDragging && frame == _dragSourceFrame)
+                    barColor = BarNormalColor with { A = 0.35f }; // ghost while dragging
+                else if (frame == _pressedFrame)
+                    barColor = BarPressedColor;
+                else if (frame == _hoveredFrame)
+                    barColor = BarHoverColor;
+                else
+                    barColor = BarNormalColor;
                 DrawRect(barRect, barColor);
             }
 
@@ -232,7 +254,26 @@ public partial class CelTrack : Control
             Vector2 p2 = new(tipX - ArrowHeadLength, midY + ArrowHeadHalfWidth);
             DrawColoredPolygon([tip, p1, p2], ArrowColor);
         }
+
+        // ── Drag preview ──────────────────────────────────────────────────────
+        if (_isDragging && _dragTargetFrame >= 0 && _dragTargetFrame != _dragSourceFrame)
+        {
+            float targetX = _dragTargetFrame * _ppf - _scrollOffset;
+            bool isValid = !_exposures.ContainsKey(_dragTargetFrame);
+            Color previewColor = isValid
+                ? BarHoverColor with { A = 0.85f }
+                : new Color(0.9f, 0.25f, 0.25f, 0.6f);
+            DrawRect(new Rect2(targetX, 0f, barW, h), previewColor);
+            DrawRect(new Rect2(targetX, 0f, barW, h), isValid ? LabelColor : Colors.Red,
+                filled: false, width: 1f);
+        }
     }
+
+    // ── Coordinate helper ────────────────────────────────────────────────────
+
+    /// <summary>Converts a pixel X position (local) to the nearest integer frame index.</summary>
+    private int PositionToFrame(float posX) =>
+        _ppf > 0f ? Mathf.RoundToInt((posX + _scrollOffset) / _ppf) : 0;
 
     // ── Input ────────────────────────────────────────────────────────────────
 
@@ -260,6 +301,25 @@ public partial class CelTrack : Control
                 _hoveredFrame = newHovered;
                 QueueRedraw();
             }
+
+            // Drag: activate once threshold is exceeded, then track target frame
+            if (_pressedFrame >= 0)
+            {
+                if (!_isDragging && Mathf.Abs(motion.Position.X - _dragStartX) > DragThreshold)
+                {
+                    _isDragging = true;
+                    _dragSourceFrame = _pressedFrame;
+                }
+                if (_isDragging)
+                {
+                    int newTarget = PositionToFrame(motion.Position.X);
+                    if (newTarget != _dragTargetFrame)
+                    {
+                        _dragTargetFrame = newTarget;
+                        QueueRedraw();
+                    }
+                }
+            }
         }
         else if (@event is InputEventMouseButton btn && btn.ButtonIndex == MouseButton.Left)
         {
@@ -269,11 +329,45 @@ public partial class CelTrack : Control
                 if (f >= 0)
                 {
                     _pressedFrame = f;
+                    _dragStartX = btn.Position.X;
+                    _isDragging = false;
+                    _dragSourceFrame = -1;
+                    _dragTargetFrame = -1;
                     QueueRedraw();
                 }
             }
-            else
+            else // released
             {
+                if (_isDragging)
+                {
+                    // Commit the move if the target is valid (not occupied by another key)
+                    if (_dragTargetFrame >= 0
+                        && _dragTargetFrame != _dragSourceFrame
+                        && !_exposures.ContainsKey(_dragTargetFrame))
+                    {
+                        int src = _dragSourceFrame;
+                        int tgt = _dragTargetFrame;
+                        new CommandBuilder("Move Cel Exposure")
+                            .SetObservableCollection(_exposures,
+                                exposures =>
+                                {
+                                    var value = exposures[src];
+                                    exposures.Remove(src);
+                                    exposures.Add(tgt, value);
+                                })
+                            .Commit();
+                    }
+                    _isDragging = false;
+                    _dragSourceFrame = -1;
+                    _dragTargetFrame = -1;
+                }
+                else if (_pressedFrame >= 0)
+                {
+                    // Click (no drag): set the playhead to this frame
+                    if (_currentFrame != null)
+                        _currentFrame.Value = _pressedFrame;
+                }
+
                 if (_pressedFrame >= 0)
                 {
                     _pressedFrame = -1;

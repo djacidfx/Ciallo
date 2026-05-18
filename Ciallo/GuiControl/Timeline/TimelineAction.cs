@@ -19,8 +19,8 @@ public partial class TimelineAction : Container
     public void Init(Entity document)
     {
         Document = document;
-        var workingLayer = document.Get<SelectionManager>().WorkingLayer;
-        NewAnimationCel.VisibleIf(workingLayer, HasOwningCelFolder).AddTo(document);
+        var sm = document.Get<SelectionManager>();
+        NewAnimationCel.VisibleIf(sm.WorkingCelFolder, e => !e.IsNull).AddTo(document);
     }
 
     private void OnAddCelFolder()
@@ -63,7 +63,7 @@ public partial class TimelineAction : Container
     /// </summary>
     private void OnNewAnimationCel()
     {
-        var celFolder = FindOwningCelFolder(Document.Get<SelectionManager>().WorkingLayer.Value);
+        var celFolder = Document.Get<SelectionManager>().WorkingCelFolder.CurrentValue;
         if (celFolder.IsNull) return;
 
         int frame = GetNewAnimationCelFrame(celFolder);
@@ -90,24 +90,5 @@ public partial class TimelineAction : Container
             frame++;
 
         return frame;
-    }
-
-    private static bool HasOwningCelFolder(Entity layer) => !FindOwningCelFolder(layer).IsNull;
-
-    private static Entity FindOwningCelFolder(Entity layer)
-    {
-        var cursor = layer;
-        while (!cursor.IsNull)
-        {
-            if (cursor.TryGet<FolderLayerSetting>()?.IsCel == true)
-                return cursor;
-
-            if (cursor.IsDocument)
-                break;
-
-            cursor = cursor.Get<LayerTreeNode>().ParentValue;
-        }
-
-        return Entity.Null;
     }
 }
