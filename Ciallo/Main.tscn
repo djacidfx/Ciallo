@@ -25,6 +25,8 @@
 [ext_resource type="Script" uid="uid://b4x3guxbl2wmb" path="res://GuiControl/Timeline/TimelinePanelContainer.cs" id="23_hhcpw"]
 [ext_resource type="PackedScene" uid="uid://cetiftxidiijh" path="res://GuiControl/Timeline/TimelinePanel.tscn" id="24_hhcpw"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hhcpw"]
+
 [node name="Main" type="Panel" unique_id=1926960144]
 texture_filter = 2
 anchors_preset = 15
@@ -35,6 +37,7 @@ grow_vertical = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 theme = ExtResource("1_j4qnp")
+theme_override_styles/panel = SubResource("StyleBoxEmpty_hhcpw")
 
 [node name="Dialog" type="Control" parent="." unique_id=317513807]
 anchors_preset = 0
