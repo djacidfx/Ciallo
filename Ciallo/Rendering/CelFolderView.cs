@@ -41,13 +41,10 @@ public partial class CelFolderView : FolderLayerView
         }
     }
 
-    public void Observe(ObservableSortedList<int, Entity> exposures, ReactiveProperty<int> currentFrame, CompositeDisposable subs)
+    public void Observe(Observable<Entity> currentExposedCel, CompositeDisposable subs)
     {
         // Can safely assume when exposures change, view nodes are already children of this node, so we can just update their visibility.
-        exposures.ObserveChanged().PrependDefault()
-            .CombineLatest(currentFrame, (_, currentFrame) => exposures.FloorIndex(currentFrame))
-            .Select(idx => idx >= 0 ? exposures.GetValueAtIndex(idx) : Entity.Null)
-            .Subscribe(e =>
+        currentExposedCel.Subscribe(e =>
             {
                 DisplayingLayerView = e.IsNull ? null : GetLayerView(e);
             }).AddTo(subs);

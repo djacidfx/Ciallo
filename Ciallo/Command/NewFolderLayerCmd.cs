@@ -10,10 +10,12 @@ namespace Ciallo.Command;
 public class NewFolderLayerCmd : CommandBase
 {
     public readonly Entity CopyE;
+    private readonly bool _isCel;
 
-    public NewFolderLayerCmd(Entity copyE = default)
+    public NewFolderLayerCmd(Entity copyE = default, bool isCel = false)
     {
         CopyE = copyE;
+        _isCel = isCel;
     }
 
     public override void OnDeletedAsDo() => TargetE.Delete();
@@ -38,7 +40,7 @@ public class NewFolderLayerCmd : CommandBase
         {
             var celFolderView = new CelFolderView();
             var currentFrame = Document.Get<SelectionManager>().CurrentFrame;
-            celFolderView.Observe(folderSetting.Exposures, currentFrame, subs);
+            celFolderView.Observe(folderSetting.CurrentExposedCel, subs);
             folderLayerView = celFolderView;
         }
         else
@@ -109,15 +111,19 @@ public class NewFolderLayerCmd : CommandBase
     {
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
+        var isCel = CopyE.IsNull ? _isCel : CopyE.Get<FolderLayerSetting>().IsCel;
 
         var commonSetting = CopyE.IsNull
-            ? new CommonLayerSetting { Name = { Value = "Folder".Tr() } }
+            ? new CommonLayerSetting { Name = { Value = (isCel ? "Cel folder" : "Folder").Tr() } }
             : CopyE.Get<CommonLayerSetting>().Clone();
         targetE.Add(commonSetting);
 
         var folderLayerSetting = CopyE.IsNull
             ? new FolderLayerSetting()
             : CopyE.Get<FolderLayerSetting>().Clone();
+        folderLayerSetting.IsCel = isCel;
+        if (folderLayerSetting.IsCel)
+            folderLayerSetting.ObserveCurrentFrame(Document.Get<SelectionManager>().CurrentFrame);
         targetE.Add(folderLayerSetting);
     }
 
@@ -129,5 +135,16 @@ public class NewFolderLayerCmd : CommandBase
     public override void Undo(Entity targetE)
     {
         targetE.Detach<ToSerializeTag>();
+    }
+}
+
+
+public partial class CommandBuilder
+{
+    public CommandBuilder NewCelFolder()
+    {
+        var cmd = new NewFolderLayerCmd(isCel: true) { TargetE = TargetE };
+        Commands.Add(cmd);
+        return this;
     }
 }
