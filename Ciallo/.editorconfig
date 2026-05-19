@@ -180,3 +180,7 @@ tab_width = 4
 indent_style = space
 indent_size = 4
 tab_width = 4
+
+[addons/**/*.cs]
+dotnet_analyzer_diagnostic.severity = none
+dotnet_diagnostic.IDE1006.severity = none

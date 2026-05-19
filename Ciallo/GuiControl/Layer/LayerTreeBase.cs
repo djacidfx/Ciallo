@@ -50,9 +50,16 @@ public abstract partial class LayerTreeBase : ScrollContainer
         WorkingLayerButtonGroup.Pressed += button =>
         {
             var block = (LayerBlock)button.GetOwner();
-            new CommandBuilder(block.LayerEntity)
-            .SetWorkingLayer()
-            .CommitToLatest();
+            var document = block.LayerEntity.Document;
+            var selectionManager = document.Get<SelectionManager>();
+            int oldFrame = selectionManager.CurrentFrame.Value;
+            int newFrame = selectionManager.ComputeFrameForSwitchingWorkingLayer(block.LayerEntity);
+
+            var cmd = new CommandBuilder(block.LayerEntity);
+            if (newFrame != oldFrame)
+                cmd.SetProperty(selectionManager.CurrentFrame, oldFrame, newFrame);
+            cmd.SetWorkingLayer()
+                .CommitToLatest();
         };
     }
 

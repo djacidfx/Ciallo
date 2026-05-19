@@ -1,5 +1,6 @@
 ﻿using Ciallo.Command;
 using Ciallo.Data;
+using Frent;
 using Godot;
 using R3;
 
@@ -136,6 +137,7 @@ public partial class TimelineRuler : Control
     private ReactiveProperty<int> _currentFrame;
     private ReactiveProperty<int> _playbackStart;
     private ReactiveProperty<int> _playbackEnd;
+    private SelectionManager _selectionManager;
 
     private enum DragMode { None, Frame, StartHandle, EndHandle }
 
@@ -209,20 +211,26 @@ public partial class TimelineRuler : Control
         }).AddTo(this);
     }
 
-    /// <summary>Wire the current-frame property (called from TimelinePanel.BindPlayhead).</summary>
+    /// <summary>Wire the current-frame property.</summary>
     public void BindCurrentFrame(ReactiveProperty<int> currentFrame)
     {
         _currentFrame = currentFrame;
         currentFrame.Subscribe(_ => QueueRedraw()).AddTo(this);
     }
 
-    /// <summary>Wire playback-range properties (called from TimelinePanel.BindTimeline).</summary>
+    /// <summary>Wire playback-range properties.</summary>
     public void BindPlaybackRange(ReactiveProperty<int> playbackStart, ReactiveProperty<int> playbackEnd)
     {
         _playbackStart = playbackStart;
         _playbackEnd = playbackEnd;
         playbackStart.Subscribe(_ => QueueRedraw()).AddTo(this);
         playbackEnd.Subscribe(_ => QueueRedraw()).AddTo(this);
+    }
+
+    /// <summary>Wire the selection manager for working-layer switching on frame change.</summary>
+    public void BindSelectionManager(SelectionManager sm)
+    {
+        _selectionManager = sm;
     }
 
     #endregion
@@ -444,25 +452,41 @@ public partial class TimelineRuler : Control
             {
                 if (_dragMode == DragMode.Frame)
                 {
-                    new CommandBuilder(AppDocumentManager.WorkingDocument.Value)
-                        .SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value)
-                        .CommitToLatest(execute: false);
+                    var cmd = new CommandBuilder()
+                        .SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
+                    if (_currentFrame.Value != _frameAtDragStart)
+                    {
+                        var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_frameAtDragStart, _currentFrame.Value);
+                        if (!newWorkingLayer.IsNull)
+                            cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
+                    }
+                    cmd.CommitToLatest();
                 }
                 else if (_dragMode == DragMode.StartHandle)
                 {
-                    var cmd = new CommandBuilder(AppDocumentManager.WorkingDocument.Value)
+                    var cmd = new CommandBuilder()
                         .SetProperty(_playbackStart, _playbackStartAtDragStart, _playbackStart.Value);
                     if (_currentFrame != null && _currentFrame.Value != _frameAtDragStart)
+                    {
                         cmd.SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
-                    cmd.CommitToLatest(execute: false);
+                        var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_frameAtDragStart, _currentFrame.Value);
+                        if (!newWorkingLayer.IsNull)
+                            cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
+                    }
+                    cmd.CommitToLatest();
                 }
                 else if (_dragMode == DragMode.EndHandle)
                 {
-                    var cmd = new CommandBuilder(AppDocumentManager.WorkingDocument.Value)
+                    var cmd = new CommandBuilder()
                         .SetProperty(_playbackEnd, _playbackEndAtDragStart, _playbackEnd.Value);
                     if (_currentFrame != null && _currentFrame.Value != _frameAtDragStart)
+                    {
                         cmd.SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
-                    cmd.CommitToLatest(execute: false);
+                        var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_frameAtDragStart, _currentFrame.Value);
+                        if (!newWorkingLayer.IsNull)
+                            cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
+                    }
+                    cmd.CommitToLatest();
                 }
                 _dragMode = DragMode.None;
             }
@@ -535,4 +559,10 @@ public partial class TimelineRuler : Control
     /// </summary>
     private int EndFromX(float localX) =>
         Mathf.Max(XToFrame(localX), _playbackStart.Value + 1);
+
+    // ── Working-layer switch on frame change ─────────────────────────────────
+
+    /// <summary>Delegates to <see cref="SelectionManager.ComputeWorkingLayerForSwitchingFrame"/>.</summary>
+    private Entity GetNewWorkingLayerAfterFrameChange(int oldFrame, int newFrame) =>
+        _selectionManager?.ComputeWorkingLayerForSwitchingFrame(oldFrame, newFrame) ?? Entity.Null;
 }

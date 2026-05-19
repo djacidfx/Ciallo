@@ -95,8 +95,8 @@ public partial class TrackTree : LayerTreeBase
             var celTrack = new CelTrack();
             var timeSetting = layerE.Document.Get<TimelineSetting>();
             celTrack.Observe(timeSetting.PixelsPerFrame, timeSetting.ScrollOffsetFrame, timeSetting.PlaybackStart, timeSetting.PlaybackEnd, subs);
-            var currentFrame = layerE.Document.Get<SelectionManager>().CurrentFrame;
-            celTrack.Bind(layerE, folderSetting.Exposures, currentFrame, subs);
+            var selectionManager = layerE.Document.Get<SelectionManager>();
+            celTrack.Bind(layerE, folderSetting.Exposures, selectionManager, subs);
             trackRow.AddChild(celTrack);
             trackRow.CelTrack = celTrack;
             layerE.Add(celTrack);
@@ -104,8 +104,10 @@ public partial class TrackTree : LayerTreeBase
         else
         {
             // Empty placeholder keeps the HSplitContainer's right panel present.
-            var placeholder = new Control();
-            placeholder.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+            var placeholder = new Control
+            {
+                SizeFlagsHorizontal = SizeFlags.ExpandFill
+            };
             trackRow.AddChild(placeholder);
         }
 

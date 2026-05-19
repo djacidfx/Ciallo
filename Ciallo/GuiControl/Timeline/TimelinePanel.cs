@@ -85,5 +85,6 @@ public partial class TimelinePanel : VBoxContainer
         document.Add(_trackTree);
         document.Add(_trackTree.RootWrapper);
         document.Add(_bgGrid);
+        _ruler.BindSelectionManager(document.Get<SelectionManager>());
     }
 }

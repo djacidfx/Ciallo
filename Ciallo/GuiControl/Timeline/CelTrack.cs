@@ -26,6 +26,7 @@ public partial class CelTrack : Control
     public float BarWidthRatio = 0.5f; // bar width = ppf * ratio
     public float MaxBarWidth = 16f;
     public float BarWidth => Mathf.Min(_ppf * BarWidthRatio, MaxBarWidth);
+
     public float ArrowHeadLength = 7f;
     public float ArrowHeadHalfWidth = 4f;
     public float LabelPad = 3f;
@@ -48,7 +49,8 @@ public partial class CelTrack : Control
 
     // ── Entity references (set by Bind) ───────────────────────────────────────
     private Entity _celFolderEntity;
-    private ReactiveProperty<int> _currentFrame;
+    private SelectionManager _selectionManager;
+    public ReactiveProperty<int> CurrentFrame => _selectionManager.CurrentFrame;
 
     // ── Theme ─────────────────────────────────────────────────────────────────
     public Color BarNormalColor;
@@ -132,11 +134,11 @@ public partial class CelTrack : Control
     public void Bind(
         Entity celFolderEntity,
         ObservableSortedList<int, Entity> exposures,
-        ReactiveProperty<int> currentFrame,
+        SelectionManager sm,
         CompositeDisposable subs)
     {
         _celFolderEntity = celFolderEntity;
-        _currentFrame = currentFrame;
+        _selectionManager = sm;
         _exposures = exposures;
         exposures.ObserveChanged().Subscribe(_ => QueueRedraw()).AddTo(subs);
     }
@@ -363,9 +365,20 @@ public partial class CelTrack : Control
                 }
                 else if (_pressedFrame >= 0)
                 {
-                    // Click (no drag): set the playhead to this frame
-                    if (_currentFrame != null)
-                        _currentFrame.Value = _pressedFrame;
+                    // Click (no drag): set the playhead to this frame and switch working layer if needed.
+                    if (CurrentFrame != null)
+                    {
+                        int oldFrame = CurrentFrame.Value;
+                        var cmd = new CommandBuilder(_celFolderEntity)
+                            .SetProperty(CurrentFrame, oldFrame, _pressedFrame);
+                        if (_selectionManager != null)
+                        {
+                            var newWorkingLayer = _selectionManager.ComputeWorkingLayerForSwitchingFrame(oldFrame, _pressedFrame);
+                            if (!newWorkingLayer.IsNull)
+                                cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
+                        }
+                        cmd.CommitToLatest();
+                    }
                 }
 
                 if (_pressedFrame >= 0)
