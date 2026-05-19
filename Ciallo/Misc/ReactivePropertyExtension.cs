@@ -77,3 +77,14 @@ public class FloatComparer<T> : IEqualityComparer<T> where T : IFloatingPoint<T>
         return obj.GetHashCode();
     }
 }
+
+public static class R3OperatorExtension
+{
+    /// <summary>
+    /// Prepend a T default value to the observable. Works indentical to Prepend(or StartWith) operator but doesn't require its given value.
+    /// </summary>
+    public static Observable<T> PrependDefault<T>(this Observable<T> source)
+    {
+        return source.Prepend(default(T));
+    }
+}

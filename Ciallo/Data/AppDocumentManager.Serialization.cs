@@ -55,9 +55,9 @@ public static partial class AppDocumentManager
         loadBrushCmd.Do();
 
         // Load layers and strokes
-        LoadChildren(dataDocument, resultDocument);
+        LoadChildrenLayer(dataDocument, resultDocument);
 
-        void LoadChildren(Entity dataParentE, Entity resultParentE)
+        void LoadChildrenLayer(Entity dataParentE, Entity resultParentE)
         {
             foreach (var layerDataE in dataParentE.Get<LayerTreeNode>().Children)
                 LoadLayer(layerDataE, resultParentE);
@@ -66,6 +66,7 @@ public static partial class AppDocumentManager
         void LoadLayer(Entity layerDataE, Entity resultParentE)
         {
             var layerResultE = entityMap[layerDataE];
+            var cachedExposures = new SortedList<int, Entity>();
             if (layerDataE.Has<FolderLayerSetting>())
             {
                 if (layerDataE.Get<FolderLayerSetting>().IsCel)
@@ -73,15 +74,21 @@ public static partial class AppDocumentManager
                     var dataExposures = layerDataE.Get<FolderLayerSetting>().Exposures;
                     foreach (var (frame, exposedE) in dataExposures.ToArray())
                     {
-                        dataExposures[frame] = entityMap[exposedE];
+                        cachedExposures[frame] = entityMap[exposedE];
                     }
+                    dataExposures.Clear();
                 }
 
                 new CommandBuilder(layerResultE)
                     .NewFolderLayer(layerDataE)
                     .AddToLayerTree(resultParentE)
                     .Do();
-                LoadChildren(layerDataE, layerResultE);
+                LoadChildrenLayer(layerDataE, layerResultE);
+                // Post set exposures to avoid unready entity components added to timeline.
+                foreach (var (frame, exposedE) in cachedExposures)
+                {
+                    layerResultE.Get<FolderLayerSetting>().Exposures[frame] = exposedE;
+                }
             }
             else if (layerDataE.Has<ImageLayerSetting>())
             {

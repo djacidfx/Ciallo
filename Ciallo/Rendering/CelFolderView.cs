@@ -1,4 +1,3 @@
-using Ciallo.Data;
 using Frent;
 using Godot;
 using ObservableCollections;
@@ -45,9 +44,9 @@ public partial class CelFolderView : FolderLayerView
     public void Observe(ObservableSortedList<int, Entity> exposures, ReactiveProperty<int> currentFrame, CompositeDisposable subs)
     {
         // Can safely assume when exposures change, view nodes are already children of this node, so we can just update their visibility.
-        exposures.ObserveChanged().ToReadOnlyReactiveProperty()
-            .CombineLatest(currentFrame, (_, currentFrame) => exposures.FloorKey(currentFrame))
-            .Select(key => key.HasValue ? exposures[key.Value] : Entity.Null)
+        exposures.ObserveChanged().PrependDefault()
+            .CombineLatest(currentFrame, (_, currentFrame) => exposures.FloorIndex(currentFrame))
+            .Select(idx => idx >= 0 ? exposures.GetValueAtIndex(idx) : Entity.Null)
             .Subscribe(e =>
             {
                 DisplayingLayerView = e.IsNull ? null : GetLayerView(e);

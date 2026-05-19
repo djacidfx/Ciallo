@@ -32,6 +32,15 @@ public class FolderLayerSetting
     /// Values represent the layer to be displayed until the next key is encountered.
     /// </summary>
     [DataMember] public ObservableSortedList<int, Entity> Exposures = null;
+    public ReadOnlyReactiveProperty<Entity> CurrentExposure { get; private set; }
+
+    public void ObserveCurrentFrame(ReactiveProperty<int> currentFrame, CompositeDisposable subs)
+    {
+        CurrentExposure = Exposures.ObserveChanged().PrependDefault()
+            .CombineLatest(currentFrame, (_, currentFrame) => Exposures.FloorIndex(currentFrame))
+            .Select(idx => idx >= 0 ? Exposures.GetValueAtIndex(idx) : Entity.Null)
+            .ToReadOnlyReactiveProperty();
+    }
 
     public FolderLayerSetting Clone() =>
         new()
