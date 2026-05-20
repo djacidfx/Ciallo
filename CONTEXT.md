@@ -16,8 +16,8 @@ Command history is a document-level record of undoable user changes.
 
 ### Undoable Action
 
-An undoable action is one user-facing history entry that can be undone or redone as a unit.
+An undoable action is one user-facing history entry that can be undone or redone as a unit. One undoable action may stay open long enough to gather multiple related command segments before the next action begins.
 
 ### Command Segment
 
-A command segment is one ordered part of an undoable action.
+A command segment is one ordered part of an undoable action. Related gestures may contribute multiple ordered command segments to the same undoable action.

@@ -14,6 +14,8 @@ public partial class CommandManager
 {
     private readonly List<HistoryAction> _undoStack = [];
     private readonly List<HistoryAction> _redoStack = [];
+    private HistoryAction _openSequenceAction;
+    private HistoryAction _closedOpenSequenceAction;
     private long _currentVersion;
     private long _savedVersion;
     private readonly ReactiveProperty<bool> _documentModified = new(false);
@@ -35,6 +37,7 @@ public partial class CommandManager
         if (commands.Count == 0) return;
         var segment = PrepareSegment(actionName, commands, execute);
         if (segment == null) return;
+        CloseOpenSequence();
         ClearRedoStack();
         AddSeparateAction(actionName, segment);
         TrimUndoStack();
@@ -54,9 +57,10 @@ public partial class CommandManager
         var segment = PrepareSegment(actionName, commands, execute);
         if (segment == null) return;
 
+        CloseOpenSequence();
         ClearRedoStack();
 
-        if (TryResolveLatestAction(out var targetAction) && targetAction.TryEndpointCompressTail(segment))
+        if (TryResolveReusableLatestAction(out var targetAction) && targetAction.TryEndpointCompressTail(segment))
         {
             BumpVersion(targetAction);
         }
@@ -77,8 +81,9 @@ public partial class CommandManager
         if (commands.Count == 0) return;
         var segment = PrepareSegment(actionName, commands, execute);
         if (segment == null) return;
+        CloseOpenSequence();
         ClearRedoStack();
-        if (TryResolveLatestAction(out var targetAction))
+        if (TryResolveReusableLatestAction(out var targetAction))
         {
             targetAction.Append(segment);
             BumpVersion(targetAction);
@@ -87,6 +92,32 @@ public partial class CommandManager
         {
             AddSeparateAction(actionName, segment);
         }
+        TrimUndoStack();
+    }
+
+    /// <summary>
+    /// Creates a new undoable action on the first call, then keeps appending later segments
+    /// to that same action until another history-writing entrypoint starts a different action.
+    /// </summary>
+    public void CommitOpenSequence(string actionName, List<ICommand> commands, bool execute = true)
+    {
+        if (commands.Count == 0) return;
+
+        var segment = PrepareSegment(actionName, commands, execute);
+        if (segment == null) return;
+
+        ClearRedoStack();
+
+        if (TryResolveOpenSequenceAction(out var targetAction))
+        {
+            targetAction.Append(segment);
+            BumpVersion(targetAction);
+        }
+        else
+        {
+            _openSequenceAction = AddSeparateAction(actionName, segment);
+        }
+
         TrimUndoStack();
     }
 
@@ -108,10 +139,19 @@ public partial class CommandManager
         CommitToLatest(actionName, [command], execute);
     }
 
+    public void CommitOpenSequence(
+        string actionName,
+        ICommand command,
+        bool execute = true)
+    {
+        CommitOpenSequence(actionName, [command], execute);
+    }
+
     public void Undo()
     {
         if (!HasUndo) return;
 
+        CloseOpenSequence();
         var action = PopLast(_undoStack);
         action.Undo();
         _redoStack.Add(action);
@@ -125,6 +165,7 @@ public partial class CommandManager
     {
         if (!HasRedo) return;
 
+        CloseOpenSequence();
         var action = PopLast(_redoStack);
         action.Do();
         _undoStack.Add(action);
@@ -161,10 +202,32 @@ public partial class CommandManager
         return true;
     }
 
-    private void AddSeparateAction(string actionName, HistorySegment segment)
+    private bool TryResolveReusableLatestAction(out HistoryAction action)
     {
-        _undoStack.Add(new HistoryAction(actionName, segment, _currentVersion, NextVersion()));
+        if (TryResolveLatestAction(out action) && !ReferenceEquals(action, _closedOpenSequenceAction))
+            return true;
+
+        action = null;
+        return false;
+    }
+
+    private bool TryResolveOpenSequenceAction(out HistoryAction action)
+    {
+        if (_openSequenceAction != null && TryResolveLatestAction(out action) && ReferenceEquals(action, _openSequenceAction))
+            return true;
+
+        _openSequenceAction = null;
+        action = null;
+        return false;
+    }
+
+    private HistoryAction AddSeparateAction(string actionName, HistorySegment segment)
+    {
+        var action = new HistoryAction(actionName, segment, _currentVersion, NextVersion());
+        _undoStack.Add(action);
+        _closedOpenSequenceAction = null;
         UpdateDocumentModified();
+        return action;
     }
 
     private void BumpVersion(HistoryAction action)
@@ -177,6 +240,10 @@ public partial class CommandManager
 
     private void ClearRedoStack()
     {
+        if (_redoStack.Contains(_openSequenceAction))
+            _openSequenceAction = null;
+        if (_redoStack.Contains(_closedOpenSequenceAction))
+            _closedOpenSequenceAction = null;
         foreach (var action in _redoStack)
             action.OnDeletedAsDo();
         _redoStack.Clear();
@@ -189,8 +256,19 @@ public partial class CommandManager
         {
             var action = _undoStack[0];
             _undoStack.RemoveAt(0);
+            if (ReferenceEquals(action, _openSequenceAction))
+                _openSequenceAction = null;
+            if (ReferenceEquals(action, _closedOpenSequenceAction))
+                _closedOpenSequenceAction = null;
             action.OnDeletedAsUndo();
         }
+    }
+
+    private void CloseOpenSequence()
+    {
+        if (_openSequenceAction != null)
+            _closedOpenSequenceAction = _openSequenceAction;
+        _openSequenceAction = null;
     }
 
     private void UpdateDocumentModified()

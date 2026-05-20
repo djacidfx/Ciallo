@@ -460,7 +460,7 @@ public partial class TimelineRuler : Control
                         if (!newWorkingLayer.IsNull)
                             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
                     }
-                    cmd.CommitToLatest();
+                    cmd.CommitOpenSequence();
                 }
                 else if (_dragMode == DragMode.StartHandle)
                 {
@@ -473,7 +473,7 @@ public partial class TimelineRuler : Control
                         if (!newWorkingLayer.IsNull)
                             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
                     }
-                    cmd.CommitToLatest();
+                    cmd.CommitOpenSequence();
                 }
                 else if (_dragMode == DragMode.EndHandle)
                 {
@@ -486,7 +486,7 @@ public partial class TimelineRuler : Control
                         if (!newWorkingLayer.IsNull)
                             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
                     }
-                    cmd.CommitToLatest();
+                    cmd.CommitOpenSequence();
                 }
                 _dragMode = DragMode.None;
             }

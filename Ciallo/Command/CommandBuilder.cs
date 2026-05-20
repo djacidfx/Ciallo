@@ -47,6 +47,16 @@ public partial class CommandBuilder
         Commands.Clear();
     }
 
+    // Create one action on first commit, then keep appending later segments until
+    // another history-writing entrypoint starts a different action.
+    public void CommitOpenSequence(bool execute = true)
+    {
+        if (Commands.Count == 0) return;
+        var cm = GetCommandManager();
+        cm.CommitOpenSequence(ActionName, Commands, execute);
+        Commands.Clear();
+    }
+
     // Attach to latest undoable action.
     public void CommitToLatest(bool execute = true)
     {
