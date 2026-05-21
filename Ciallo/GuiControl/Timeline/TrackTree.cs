@@ -26,6 +26,7 @@ public partial class TrackTree : LayerTreeBase
 
     protected override LayerWrapper GetWrapper(Entity e) => e.Get<TrackRowWrapper>();
     protected override LayerBlock GetBlock(Entity e) => e.Get<TrackHeaderBlock>();
+    protected override bool ShouldShowTimelineLayerActions => true;
 
     /// <summary>Exposes the root wrapper so <see cref="TimelinePanel"/> can register it on the document entity.</summary>
     public TrackRowWrapper RootWrapper => (TrackRowWrapper)RootContainer;

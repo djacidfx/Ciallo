@@ -37,15 +37,18 @@ public abstract partial class LayerTreeBase : ScrollContainer
     private Container _root;
     private StrokeRect _hinter;
     private Label _label;
+    private LayerRightClickMenu _rightClickMenu;
 
     protected void InitBase()
     {
         _root = GetNode<Container>("%RootContainer");
         _hinter = GetNode<StrokeRect>("%DropHinter");
         _label = GetNode<Label>("%DragLabel");
+        _rightClickMenu = GetNode<LayerRightClickMenu>("%LayerRightClickMenu");
 
         _root.QueueFreeChildren();
         _hinter.MouseFilter = MouseFilterEnum.Ignore;
+        _rightClickMenu.PopupHide += HideContextTargetHinter;
 
         WorkingLayerButtonGroup.Pressed += button =>
         {
@@ -85,6 +88,9 @@ public abstract partial class LayerTreeBase : ScrollContainer
 
     /// <summary>Whether the dropdown arrow should be shown for <paramref name="e"/>.</summary>
     protected virtual bool ShouldShowDropdownArrow(Entity e) => e.Has<FolderLayerSetting>();
+
+    /// <summary>Whether this tree exposes timeline-only layer actions.</summary>
+    protected virtual bool ShouldShowTimelineLayerActions => false;
 
     // ── Block initialisation ────────────────────────────────────────────────
 
@@ -136,6 +142,15 @@ public abstract partial class LayerTreeBase : ScrollContainer
         var leftMouse = guiInput
             .OfType<InputEvent, InputEventMouseButton>()
             .Where(button => button.ButtonIndex == MouseButton.Left);
+        var rightMouse = guiInput
+            .OfType<InputEvent, InputEventMouseButton>()
+            .Where(button => button.ButtonIndex == MouseButton.Right && button.IsPressed());
+        rightMouse.Subscribe(button =>
+        {
+            lineEdit.AcceptEvent();
+            ShowContextTargetHinter(lineEdit);
+            _rightClickMenu.Show(block.LayerEntity, ShouldShowTimelineLayerActions, button.GlobalPosition);
+        }).AddTo(e);
 
         // Single click without dragging or double click
         var singleClickObs = leftMouse
@@ -327,12 +342,51 @@ public abstract partial class LayerTreeBase : ScrollContainer
 
         int insertIndex = dropTarget.InsertIndex;
         var draggedTreeNode = draggedEntity.Get<LayerTreeNode>();
-        if (draggedTreeNode.ParentValue == dropTarget.ParentEntity && draggedTreeNode.Index < insertIndex)
+        var oldParentE = draggedTreeNode.ParentValue;
+        var newParentE = dropTarget.ParentEntity;
+        if (oldParentE == newParentE && draggedTreeNode.Index < insertIndex)
             insertIndex--;
 
-        new CommandBuilder(document)
-            .MoveLayer(draggedEntity, dropTarget.ParentEntity, insertIndex)
-            .Commit();
+        var cmd = new CommandBuilder(document);
+
+        int[] exposureFrames = [];
+        if (oldParentE != newParentE && oldParentE.TryGet<FolderLayerSetting>()?.IsCel == true)
+        {
+            exposureFrames = oldParentE.Get<FolderLayerSetting>().Exposures
+                .Where(pair => pair.Value == draggedEntity)
+                .Select(pair => pair.Key)
+                .ToArray();
+
+            if (exposureFrames.Length > 0)
+                cmd.SetTarget(oldParentE)
+                    .SetObservableCollection(
+                        e => e.Get<FolderLayerSetting>().Exposures,
+                        exposures =>
+                        {
+                            foreach (int frame in exposureFrames)
+                                exposures.Remove(frame);
+                        });
+        }
+
+        cmd.SetTarget(document)
+            .MoveLayer(draggedEntity, newParentE, insertIndex);
+
+        if (exposureFrames.Length > 0 && newParentE.TryGet<FolderLayerSetting>()?.IsCel == true)
+        {
+            cmd.SetTarget(newParentE)
+                .SetObservableCollection(
+                    e => e.Get<FolderLayerSetting>().Exposures,
+                    exposures =>
+                    {
+                        foreach (int frame in exposureFrames)
+                        {
+                            if (!exposures.ContainsKey(frame))
+                                exposures.Add(frame, draggedEntity);
+                        }
+                    });
+        }
+
+        cmd.Commit();
     }
 
     public void SetWorkingLayerNoSignal(Entity layerE)
@@ -342,5 +396,18 @@ public abstract partial class LayerTreeBase : ScrollContainer
         var block = GetBlock(layerE);
         // Warning note: button group will not be updated by SetPressedNoSignal.
         block.WorkingButton.SetPressedNoSignal(true);
+    }
+
+    private void ShowContextTargetHinter(Control target)
+    {
+        _hinter.GlobalPosition = target.GlobalPosition;
+        _hinter.Size = target.Size;
+        _hinter.Visible = true;
+    }
+
+    private void HideContextTargetHinter()
+    {
+        if (!IsDragging)
+            _hinter.Visible = false;
     }
 }

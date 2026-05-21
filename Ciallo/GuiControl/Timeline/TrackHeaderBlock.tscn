@@ -87,6 +87,7 @@ theme_override_font_sizes/font_size = 22
 theme_override_styles/read_only = SubResource("StyleBoxFlat_qp082")
 placeholder_text = "Double click to rename"
 editable = false
+context_menu_enabled = false
 clear_button_enabled = true
 middle_mouse_paste_enabled = false
 select_all_on_focus = true

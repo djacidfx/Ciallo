@@ -40,7 +40,7 @@ public class NewFolderLayerCmd : CommandBase
         {
             var celFolderView = new CelFolderView();
             var currentFrame = Document.Get<SelectionManager>().CurrentFrame;
-            celFolderView.Observe(folderSetting.CurrentExposedCel, subs);
+            celFolderView.Observe(folderSetting.CurrentExposedCel, layerNode, subs);
             folderLayerView = celFolderView;
         }
         else

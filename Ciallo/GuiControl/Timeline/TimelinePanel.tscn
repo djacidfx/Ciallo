@@ -2,13 +2,13 @@
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_0ndmv"]
 [ext_resource type="Script" uid="uid://cxqj4d3nf2ly7" path="res://GuiControl/Timeline/TimelinePanel.cs" id="1_pn4au"]
-[ext_resource type="Script" path="res://GuiControl/Timeline/CelTrackRightClickMenu.cs" id="7_ctrcm"]
 [ext_resource type="Script" uid="uid://de3wjfml6rs3i" path="res://GuiControl/Timeline/TimelineRuler.cs" id="2_ruler"]
 [ext_resource type="Script" uid="uid://7ta5s4vfyhln" path="res://GuiControl/Timeline/BackgroundGrid.cs" id="3_bgrid"]
 [ext_resource type="PackedScene" uid="uid://6wtrxdc617ci" path="res://GuiControl/Timeline/TimelineAction.tscn" id="3_nqb4g"]
 [ext_resource type="Script" path="res://GuiControl/Timeline/ZoomableHScrollBar.cs" id="4_lw6jv"]
 [ext_resource type="Script" uid="uid://dkn2veamvchhh" path="res://GuiControl/Timeline/Playhead.cs" id="5_playhead"]
 [ext_resource type="Script" uid="uid://dobrheel0y42t" path="res://GuiControl/Timeline/PlaybackBar.cs" id="6_pbbar"]
+[ext_resource type="Script" uid="uid://be8hf2vpukxor" path="res://GuiControl/Timeline/CelTrackRightClickMenu.cs" id="7_ctrcm"]
 [ext_resource type="PackedScene" uid="uid://dix0v3s32ffhp" path="res://GuiControl/Timeline/TrackTree.tscn" id="7_trtree"]
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_nrybc"]

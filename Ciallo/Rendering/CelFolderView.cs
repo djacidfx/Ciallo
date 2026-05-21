@@ -3,6 +3,7 @@ using Godot;
 using ObservableCollections;
 using R3;
 using System;
+using Ciallo.Data;
 
 namespace Ciallo.Rendering;
 
@@ -21,33 +22,26 @@ public partial class CelFolderView : FolderLayerView
 
     public CelFolderView()
     {
-        ChildEnteredTree += OnChildEnteredTree;
-        ChildExitingTree += OnChildExitingTree;
     }
 
-    private void OnChildEnteredTree(Node node)
+    public void Observe(Observable<Entity> currentExposedCel, LayerTreeNode layerNode, CompositeDisposable subs)
     {
-        var n = (Node2D)node;
-        HideNode(n);
-    }
-
-    private void OnChildExitingTree(Node node)
-    {
-        var n = (Node2D)node;
-        ShowNode(n);
-        if (DisplayingLayerView == n)
+        layerNode.ObserveAddChild().Subscribe(et =>
         {
-            DisplayingLayerView = null;
-        }
-    }
+            HideNode(GetLayerView(et.Value));
+        }).AddTo(subs);
 
-    public void Observe(Observable<Entity> currentExposedCel, CompositeDisposable subs)
-    {
         // Can safely assume when exposures change, view nodes are already children of this node, so we can just update their visibility.
         currentExposedCel.Subscribe(e =>
             {
                 DisplayingLayerView = e.IsNull ? null : GetLayerView(e);
             }).AddTo(subs);
+
+        layerNode.ObserveRemoveChild().Subscribe(et =>
+        {
+            HideNode(GetLayerView(et.Value));
+        }).AddTo(subs);
+
     }
 
     public void HideNode(Node2D node) => node?.VisibilityLayer = 0;

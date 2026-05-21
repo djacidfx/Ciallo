@@ -68,6 +68,7 @@ public partial class LayerAction : Control
         var cmd = new CommandBuilder(nextLayerE)
             .SetWorkingLayer();
 
+        // Any layer's parent must be a folder layer.
         if (currentLayerParentE.Get<FolderLayerSetting>().IsCel == true)
         {
             cmd.SetTarget(currentLayerParentE)

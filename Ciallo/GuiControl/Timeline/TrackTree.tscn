@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://btracktree1cs" path="res://GuiControl/Timeline/TrackTree.cs" id="1_va2b4"]
 [ext_resource type="Script" uid="uid://btrackrowwr1cs" path="res://GuiControl/Timeline/TrackRowWrapper.cs" id="2_5retc"]
 [ext_resource type="Script" uid="uid://bdjd4la8oswpt" path="res://Widget/StrokeRect.cs" id="4_54v1c"]
+[ext_resource type="Script" path="res://GuiControl/Layer/LayerRightClickMenu.cs" id="5_lrcm"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4h4vt"]
 bg_color = Color(0, 0, 0, 0.74509805)
@@ -42,3 +43,7 @@ theme_override_colors/font_color = Color(0.84227896, 0.8422791, 0.842279, 1)
 theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("StyleBoxFlat_4h4vt")
 text = "Dragged layer name"
+
+[node name="LayerRightClickMenu" type="PopupMenu" parent="." unique_id=100000003]
+unique_name_in_owner = true
+script = ExtResource("5_lrcm")
