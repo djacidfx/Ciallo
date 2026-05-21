@@ -21,6 +21,7 @@ public partial class TimelinePanel : VBoxContainer
     private TrackTree _trackTree;
     private HSplitContainer _hSplitScroll;
     private HSplitContainer _hSplitBgGrid;
+    private CelTrackRightClickMenu _celTrackRightClickMenu;
 
     public override void _Ready()
     {
@@ -34,6 +35,8 @@ public partial class TimelinePanel : VBoxContainer
         _trackTree = GetNode<TrackTree>("%TrackTree");
         _hSplitScroll = GetNode<HSplitContainer>("%HSplitScrollBar");
         _hSplitBgGrid = GetNode<HSplitContainer>("%HSplitBgGrid");
+        _celTrackRightClickMenu = GetNode<CelTrackRightClickMenu>("%CelTrackRightClickMenu");
+        _trackTree.RightClickMenu = _celTrackRightClickMenu;
 
         // Keep all track-row splits, the scrollbar spacer, and the BackgroundGrid in lockstep.
         _hSplitRuler.Dragged += offset =>
@@ -86,5 +89,6 @@ public partial class TimelinePanel : VBoxContainer
         document.Add(_trackTree.RootWrapper);
         document.Add(_bgGrid);
         _ruler.BindSelectionManager(document.Get<SelectionManager>());
+        _celTrackRightClickMenu.InitDocument(document);
     }
 }

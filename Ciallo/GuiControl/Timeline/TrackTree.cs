@@ -30,6 +30,9 @@ public partial class TrackTree : LayerTreeBase
     /// <summary>Exposes the root wrapper so <see cref="TimelinePanel"/> can register it on the document entity.</summary>
     public TrackRowWrapper RootWrapper => (TrackRowWrapper)RootContainer;
 
+    /// <summary>Shared right-click menu for all <see cref="CelTrack"/> instances. Set by <see cref="TimelinePanel"/>.</summary>
+    public CelTrackRightClickMenu RightClickMenu { get; set; }
+
     /// <summary>
     /// The split offset (in pixels) shared by all <see cref="TrackRow"/> instances in this tree.
     /// Set this whenever HSplitRuler is dragged.
@@ -97,6 +100,7 @@ public partial class TrackTree : LayerTreeBase
             celTrack.Observe(timeSetting.PixelsPerFrame, timeSetting.ScrollOffsetFrame, timeSetting.PlaybackStart, timeSetting.PlaybackEnd, subs);
             var selectionManager = layerE.Document.Get<SelectionManager>();
             celTrack.Bind(layerE, folderSetting.Exposures, selectionManager, subs);
+            celTrack.RightClickMenu = RightClickMenu;
             trackRow.AddChild(celTrack);
             trackRow.CelTrack = celTrack;
             layerE.Add(celTrack);

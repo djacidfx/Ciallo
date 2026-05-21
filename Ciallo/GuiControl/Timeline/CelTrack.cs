@@ -47,10 +47,16 @@ public partial class CelTrack : Control
     private int _dragSourceFrame = -1; // frame key being dragged
     private int _dragTargetFrame = -1; // current drop target frame
 
+    // ── Right-click indicator ─────────────────────────────────────────────────
+    private int _rightClickIndicatorFrame = -1; // frame whose left edge shows the indicator line
+
     // ── Entity references (set by Bind) ───────────────────────────────────────
     private Entity _celFolderEntity;
     private SelectionManager _selectionManager;
     public ReactiveProperty<int> CurrentFrame => _selectionManager.CurrentFrame;
+
+    // ── Right-click menu ──────────────────────────────────────────────────────
+    public CelTrackRightClickMenu RightClickMenu { get; set; }
 
     // ── Theme ─────────────────────────────────────────────────────────────────
     public Color BarNormalColor;
@@ -257,6 +263,15 @@ public partial class CelTrack : Control
             DrawColoredPolygon([tip, p1, p2], ArrowColor);
         }
 
+        // ── Right-click indicator line ────────────────────────────────────────
+        if (_rightClickIndicatorFrame >= 0)
+        {
+            float ix = _rightClickIndicatorFrame * _ppf - _scrollOffset;
+            if (ix >= 0f && ix <= w)
+                DrawLine(new Vector2(ix, 0f), new Vector2(ix, h),
+                    new Color(1f, 1f, 1f, 0.75f), width: 1f);
+        }
+
         // ── Drag preview ──────────────────────────────────────────────────────
         if (_isDragging && _dragTargetFrame >= 0 && _dragTargetFrame != _dragSourceFrame)
         {
@@ -276,6 +291,10 @@ public partial class CelTrack : Control
     /// <summary>Converts a pixel X position (local) to the nearest integer frame index.</summary>
     private int PositionToFrame(float posX) =>
         _ppf > 0f ? Mathf.RoundToInt((posX + _scrollOffset) / _ppf) : 0;
+
+    /// <summary>Converts a pixel X position (local) to the frame index by flooring (used for right-click target).</summary>
+    private int PositionToFrameFloor(float posX) =>
+        _ppf > 0f ? Mathf.FloorToInt((posX + _scrollOffset) / _ppf) : 0;
 
     // ── Input ────────────────────────────────────────────────────────────────
 
@@ -323,15 +342,27 @@ public partial class CelTrack : Control
                 }
             }
         }
-        else if (@event is InputEventMouseButton btn && btn.ButtonIndex == MouseButton.Left)
+        else if (@event is InputEventMouseButton btn && btn.ButtonIndex == MouseButton.Right && btn.Pressed)
         {
-            if (btn.Pressed)
+            int frame = PositionToFrameFloor(btn.Position.X);
+            _rightClickIndicatorFrame = frame;
+            QueueRedraw();
+            if (RightClickMenu != null)
             {
-                int f = FrameAt(btn.Position.X);
+                RightClickMenu.PopupHide += OnMenuClosed;
+                RightClickMenu.Show(_celFolderEntity, frame, btn.GlobalPosition);
+            }
+            AcceptEvent();
+        }
+        else if (@event is InputEventMouseButton lbtn && lbtn.ButtonIndex == MouseButton.Left)
+        {
+            if (lbtn.Pressed)
+            {
+                int f = FrameAt(lbtn.Position.X);
                 if (f >= 0)
                 {
                     _pressedFrame = f;
-                    _dragStartX = btn.Position.X;
+                    _dragStartX = lbtn.Position.X;
                     _isDragging = false;
                     _dragSourceFrame = -1;
                     _dragTargetFrame = -1;
@@ -388,6 +419,14 @@ public partial class CelTrack : Control
                 }
             }
         }
+    }
+
+    private void OnMenuClosed()
+    {
+        if (RightClickMenu != null)
+            RightClickMenu.PopupHide -= OnMenuClosed;
+        _rightClickIndicatorFrame = -1;
+        QueueRedraw();
     }
 
     public override int _GetCursorShape(Vector2 atPosition) =>

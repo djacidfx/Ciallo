@@ -30,9 +30,6 @@ public partial class TimelineAction : Container
     {
         var folder = Document.World.Create();
         var workingLayer = Document.Get<SelectionManager>().WorkingLayer.Value;
-        // Trace from workingLayer to its ancestors
-        // If we find an cel folder, parent is the folder's parent
-        // If never find one, parent is the first encountered folder layer without animation
         var cursor = workingLayer.IsNull ? Document : workingLayer;
         Entity firstNonAnimFolder = Entity.Null;
         Entity animFolderParent = Entity.Null;
@@ -66,7 +63,8 @@ public partial class TimelineAction : Container
         var celFolder = Document.Get<SelectionManager>().WorkingCelFolder.CurrentValue;
         if (celFolder.IsNull) return;
 
-        (int frame, string name) = GetNewAnimationCelFrameName(celFolder);
+        int currentFrame = Document.Get<SelectionManager>().CurrentFrame.Value;
+        (int frame, string name) = GetNewAnimationCelFrameName(celFolder, currentFrame);
         var cel = Document.World.Create();
 
         new CommandBuilder(cel)
@@ -83,27 +81,13 @@ public partial class TimelineAction : Container
             .Commit();
     }
 
-
     /// <summary>
     /// Picks a frame and cel name for a new cel in <paramref name="celFolder"/>.
-    /// Cel names use "number + optional lowercase suffix", e.g. "1", "2", "4a".
-    ///
-    /// Frame selection:
-    /// - If the current frame has no exposure key, insert there.
-    /// - If the current frame is occupied, preserve the nearby exposure rhythm to choose a candidate frame.
-    /// - If that candidate is also occupied, use the nearest non-negative unoccupied frame; ties prefer the earlier frame.
-    ///
-    /// Name selection:
-    /// - If there is no parseable neighboring cel label, use the first unused numeric name from "1".
-    /// - If only the previous label is parseable, use the first unused numeric name after it.
-    /// - If only the next label is parseable, use the first unused numeric name before it, allowing "0".
-    /// - If both labels are parseable and leave a numeric gap, use the first unused numeric name after the previous label.
-    /// - If both labels are adjacent numbers, use the first unused suffixed name under the previous number, from "a" through "z".
     /// </summary>
-    public (int, string) GetNewAnimationCelFrameName(Entity celFolder)
+    public static (int, string) GetNewAnimationCelFrameName(Entity celFolder, int currentFrame)
     {
         var exposures = celFolder.Get<FolderLayerSetting>().Exposures;
-        int frame = Document.Get<SelectionManager>().CurrentFrame.Value;
+        int frame = currentFrame;
         var usedNames = GetUsedCelNames(celFolder);
 
         if (exposures == null || exposures.Count == 0)
@@ -115,7 +99,7 @@ public partial class TimelineAction : Container
         return (frame, GetNewAnimationCelName(exposures, frame, usedNames));
     }
 
-    private static int FindRhythmicUnoccupiedFrame(ObservableSortedList<int, Entity> exposures, int currentFrame)
+    internal static int FindRhythmicUnoccupiedFrame(ObservableSortedList<int, Entity> exposures, int currentFrame)
     {
         int currentIndex = exposures.FloorIndex(currentFrame);
         int candidate;
@@ -138,7 +122,7 @@ public partial class TimelineAction : Container
         return FindNearestUnoccupiedFrame(exposures, candidate);
     }
 
-    private static int FindNearestUnoccupiedFrame(ObservableSortedList<int, Entity> exposures, int candidate)
+    internal static int FindNearestUnoccupiedFrame(ObservableSortedList<int, Entity> exposures, int candidate)
     {
         if (candidate < 0)
             candidate = 0;
@@ -157,7 +141,7 @@ public partial class TimelineAction : Container
         }
     }
 
-    private static string GetNewAnimationCelName(
+    internal static string GetNewAnimationCelName(
         ObservableSortedList<int, Entity> exposures,
         int frame,
         HashSet<string> usedNames)
@@ -181,7 +165,7 @@ public partial class TimelineAction : Container
         return MakeUniqueNumericName(prevNumber + 1, usedNames);
     }
 
-    private static bool TryGetCelLabelNumber(
+    internal static bool TryGetCelLabelNumber(
         ObservableSortedList<int, Entity> exposures,
         int index,
         out int number)
@@ -196,7 +180,7 @@ public partial class TimelineAction : Container
         return TryParseCelLabel(cel.Get<CommonLayerSetting>().Name.Value, out number, out char suffix);
     }
 
-    private static bool TryParseCelLabel(string label, out int number, out char suffix)
+    internal static bool TryParseCelLabel(string label, out int number, out char suffix)
     {
         number = 0;
         suffix = '\0';
@@ -218,7 +202,7 @@ public partial class TimelineAction : Container
         return int.TryParse(label[..digitCount], out number);
     }
 
-    private static HashSet<string> GetUsedCelNames(Entity celFolder)
+    internal static HashSet<string> GetUsedCelNames(Entity celFolder)
     {
         var usedNames = new HashSet<string>();
         foreach (var cel in celFolder.Get<LayerTreeNode>().Children)
@@ -234,7 +218,7 @@ public partial class TimelineAction : Container
         return usedNames;
     }
 
-    private static string MakeUniqueNumericName(int baseNumber, HashSet<string> usedNames)
+    internal static string MakeUniqueNumericName(int baseNumber, HashSet<string> usedNames)
     {
         for (int number = baseNumber; ; number++)
         {
@@ -247,7 +231,7 @@ public partial class TimelineAction : Container
         }
     }
 
-    private static string MakeUniqueSuffixedName(int number, HashSet<string> usedNames)
+    internal static string MakeUniqueSuffixedName(int number, HashSet<string> usedNames)
     {
         for (char suffix = 'a'; suffix <= 'z'; suffix++)
         {
@@ -261,7 +245,7 @@ public partial class TimelineAction : Container
             : MakeUniqueNumericName(number + 1, usedNames);
     }
 
-    private static string MakeUniqueFallbackName(int number, HashSet<string> usedNames)
+    internal static string MakeUniqueFallbackName(int number, HashSet<string> usedNames)
     {
         for (int i = 1; ; i++)
         {

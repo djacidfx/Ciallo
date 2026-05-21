@@ -2,6 +2,7 @@
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_0ndmv"]
 [ext_resource type="Script" uid="uid://cxqj4d3nf2ly7" path="res://GuiControl/Timeline/TimelinePanel.cs" id="1_pn4au"]
+[ext_resource type="Script" path="res://GuiControl/Timeline/CelTrackRightClickMenu.cs" id="7_ctrcm"]
 [ext_resource type="Script" uid="uid://de3wjfml6rs3i" path="res://GuiControl/Timeline/TimelineRuler.cs" id="2_ruler"]
 [ext_resource type="Script" uid="uid://7ta5s4vfyhln" path="res://GuiControl/Timeline/BackgroundGrid.cs" id="3_bgrid"]
 [ext_resource type="PackedScene" uid="uid://6wtrxdc617ci" path="res://GuiControl/Timeline/TimelineAction.tscn" id="3_nqb4g"]
@@ -140,3 +141,7 @@ layout_mode = 2
 mouse_filter = 2
 script = ExtResource("6_pbbar")
 LineColor = Color(0.9, 0.25, 0.25, 0.9)
+
+[node name="CelTrackRightClickMenu" type="PopupMenu" parent="." unique_id=100000001]
+unique_name_in_owner = true
+script = ExtResource("7_ctrcm")
