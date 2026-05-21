@@ -6,6 +6,7 @@ using Ciallo.Data;
 using Ciallo.Geometry;
 using Frent;
 using Godot;
+using R3;
 
 namespace Ciallo.GuiControl;
 
@@ -18,9 +19,9 @@ public partial class LayerAction : Control
     {
         Document = document;
         var sm = Document.Get<SelectionManager>();
-        Root.ConvertToShape
-            .VisibleIf(sm.WorkingLayer, e => e.TryHas<VectorFillLayerSetting>())
-            .AddTo(Document);
+        var subs = new CompositeDisposable();
+        Root.ConvertToShape.VisibleIf(sm.WorkingLayer, e => e.TryHas<VectorFillLayerSetting>(), subs);
+        subs.AddTo(Document);
     }
 
     public override void _Ready()

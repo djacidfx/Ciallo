@@ -23,7 +23,7 @@ public partial class AutoloadGuiControl : Node
             var paintPanel = PaintPanel.New();
             GetTree().GetNodesInGroup("UncategorizedControl")
                 .OfType<PaintPanelContainer>().Single().AddChild(paintPanel);
-            document.Add(paintPanel);
+            document.AddNode(paintPanel);
 
             var worldView = paintPanel.GetNode<WorldView>("%WorldView");
             document.Add(worldView);
@@ -62,8 +62,10 @@ public partial class AutoloadGuiControl : Node
         AppDocumentManager.LoadedDocuments.ObserveRemove().Select(et => et.Value).Subscribe(document =>
         {
             // View, overlay... are the children of paint panel
-            // Must free instantly not queue free. Otherwise, panel could potentially get a one-frame mouse movement after closing document.
-            document.Get<PaintPanel>().Free();
+            // Must queue free to avoid subscriptions access disposed nodes.
+            // Disable process since panel could potentially get a one-frame mouse movement after closing document.
+            document.Get<PaintPanel>().SetProcessInput(false);
+            document.Get<TimelinePanel>().SetProcessInput(false);
         }).AddTo(this);
     }
 }

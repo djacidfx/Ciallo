@@ -5,6 +5,7 @@ using Ciallo.Data;
 using Frent;
 using Godot;
 using ObservableCollections;
+using R3;
 
 namespace Ciallo.GuiControl;
 
@@ -23,7 +24,9 @@ public partial class TimelineAction : Container
     {
         Document = document;
         var sm = document.Get<SelectionManager>();
-        NewAnimationCel.VisibleIf(sm.WorkingCelFolder, e => !e.IsNull).AddTo(document);
+        var subs = new CompositeDisposable();
+        NewAnimationCel.VisibleIf(sm.WorkingCelFolder, e => !e.IsNull, subs);
+        subs.AddTo(document);
     }
 
     private void OnAddCelFolder()
