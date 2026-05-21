@@ -18,7 +18,7 @@ public partial class LayerWrapper : FoldableVBoxContainer
     /// Propagated transitively on <see cref="_EnterTree"/> via the parent wrapper's Title block.
     /// </summary>
     public bool IsBeingCeled;
-    public virtual LayerBlock Block => Title as LayerBlock;
+    public virtual ILayerBlock Block => Title as ILayerBlock;
 
     public LayerWrapper()
     {

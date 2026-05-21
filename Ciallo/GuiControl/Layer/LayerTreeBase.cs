@@ -21,7 +21,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
     protected readonly ButtonGroup WorkingLayerButtonGroup = new();
 
     protected bool IsDragging;
-    protected LayerBlock HoveredBlock;
+    protected ILayerBlock HoveredBlock;
     protected float ScrollSpeed;
     protected float ScrollAccum;
     /// <summary>
@@ -52,7 +52,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
 
         WorkingLayerButtonGroup.Pressed += button =>
         {
-            var block = (LayerBlock)button.GetOwner();
+            var block = (ILayerBlock)button.GetOwner();
             var document = block.LayerEntity.Document;
             var selectionManager = document.Get<SelectionManager>();
             int oldFrame = selectionManager.CurrentFrame.Value;
@@ -83,8 +83,8 @@ public abstract partial class LayerTreeBase : ScrollContainer
     /// <summary>Returns the <see cref="LayerWrapper"/> component stored on <paramref name="e"/>.</summary>
     protected abstract LayerWrapper GetWrapper(Entity e);
 
-    /// <summary>Returns the <see cref="LayerBlock"/> component stored on <paramref name="e"/>.</summary>
-    protected abstract LayerBlock GetBlock(Entity e);
+    /// <summary>Returns the layer header block component stored on <paramref name="e"/>.</summary>
+    protected abstract ILayerBlock GetBlock(Entity e);
 
     /// <summary>Whether the dropdown arrow should be shown for <paramref name="e"/>.</summary>
     protected virtual bool ShouldShowDropdownArrow(Entity e) => e.Has<FolderLayerSetting>();
@@ -112,8 +112,8 @@ public abstract partial class LayerTreeBase : ScrollContainer
             .BindString(commonSetting.Name, subs)
             .RegisterUndo(cmdM);
 
-        block.MouseEntered += () => HoveredBlock = block;
-        block.MouseExited += () =>
+        block.Node.MouseEntered += () => HoveredBlock = block;
+        block.Node.MouseExited += () =>
         {
             if (ReferenceEquals(HoveredBlock, block))
                 HoveredBlock = null;
@@ -198,7 +198,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
         Entity ParentEntity = default,
         int InsertIndex = -1);
 
-    private DropTarget ClassifyDrop(LayerBlock draggedBlock)
+    private DropTarget ClassifyDrop(ILayerBlock draggedBlock)
     {
         if (HoveredBlock == null)
         {
@@ -217,8 +217,8 @@ public abstract partial class LayerTreeBase : ScrollContainer
         var hoverBlock = HoveredBlock;
         var hoverEntity = hoverBlock.LayerEntity;
         var hoverTreeNode = hoverEntity.Get<LayerTreeNode>();
-        var localPos = hoverBlock.GetLocalMousePosition();
-        var size = hoverBlock.Size;
+        var localPos = hoverBlock.Node.GetLocalMousePosition();
+        var size = hoverBlock.Node.Size;
 
         var cursor = hoverEntity;
         while (!cursor.IsNull)
@@ -246,7 +246,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
 
     // ── Drag handlers ───────────────────────────────────────────────────────
 
-    private void OnDragStart(LayerBlock draggedBlock, InputEventMouseMotion motion)
+    private void OnDragStart(ILayerBlock draggedBlock, InputEventMouseMotion motion)
     {
         ScrollAccum = 0f;
         DraggedSubtreeHasCelFolder = draggedBlock.Wrapper.HasCelFolderInSubtree();
@@ -255,7 +255,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
         _label.Visible = true;
     }
 
-    private void OnDragging(LayerBlock draggedBlock, InputEventMouseMotion motion)
+    private void OnDragging(ILayerBlock draggedBlock, InputEventMouseMotion motion)
     {
         _label.GlobalPosition = motion.GlobalPosition + new Vector2(16f, -8f);
 
@@ -292,7 +292,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
                 float startX = refBlock.DropdownArrow.GlobalPosition.X;
                 float lineY = _root.GlobalPosition.Y + _root.Size.Y;
                 _hinter.GlobalPosition = new Vector2(startX, lineY - _hinter.Width / 2f);
-                _hinter.Size = new Vector2(refBlock.GlobalPosition.X + refBlock.Size.X - startX, _hinter.Width);
+                _hinter.Size = new Vector2(refBlock.Node.GlobalPosition.X + refBlock.Node.Size.X - startX, _hinter.Width);
             }
             _hinter.Visible = true;
             return;
@@ -303,29 +303,29 @@ public abstract partial class LayerTreeBase : ScrollContainer
             var parentChildren = dropTarget.ParentEntity.Get<LayerTreeNode>().Children;
             int insertIndex = dropTarget.InsertIndex;
 
-            LayerBlock refBlock;
+            ILayerBlock refBlock;
             float lineGlobalY;
             if (insertIndex < parentChildren.Count)
             {
                 refBlock = GetBlock(parentChildren[insertIndex]);
-                lineGlobalY = refBlock.GlobalPosition.Y + refBlock.Size.Y;
+                lineGlobalY = refBlock.Node.GlobalPosition.Y + refBlock.Node.Size.Y;
             }
             else
             {
                 refBlock = GetBlock(parentChildren[^1]);
-                lineGlobalY = refBlock.GlobalPosition.Y;
+                lineGlobalY = refBlock.Node.GlobalPosition.Y;
             }
 
             float startX = !dropTarget.ParentEntity.IsDocument
                 ? GetBlock(dropTarget.ParentEntity).LabelLineEdit.GlobalPosition.X
                 : refBlock.DropdownArrow.GlobalPosition.X;
             _hinter.GlobalPosition = new Vector2(startX, lineGlobalY - _hinter.Width / 2f);
-            _hinter.Size = new Vector2(refBlock.GlobalPosition.X + refBlock.Size.X - startX, _hinter.Width);
+            _hinter.Size = new Vector2(refBlock.Node.GlobalPosition.X + refBlock.Node.Size.X - startX, _hinter.Width);
             _hinter.Visible = true;
         }
     }
 
-    private void OnDragEnd(LayerBlock draggedBlock, InputEventMouseButton button)
+    private void OnDragEnd(ILayerBlock draggedBlock, InputEventMouseButton button)
     {
         _hinter.Visible = false;
         _label.Visible = false;

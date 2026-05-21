@@ -25,7 +25,9 @@ public partial class TrackTree : LayerTreeBase
     }
 
     protected override LayerWrapper GetWrapper(Entity e) => e.Get<TrackRowWrapper>();
-    protected override LayerBlock GetBlock(Entity e) => e.Get<TrackHeaderBlock>();
+    protected override ILayerBlock GetBlock(Entity e) => e.Get<TrackHeaderBlock>();
+    protected override bool ShouldShowDropdownArrow(Entity e) =>
+        e.TryGet<FolderLayerSetting>() is { IsCel: false };
     protected override bool ShouldShowTimelineLayerActions => true;
 
     /// <summary>Exposes the root wrapper so <see cref="TimelinePanel"/> can register it on the document entity.</summary>
@@ -117,7 +119,7 @@ public partial class TrackTree : LayerTreeBase
         }
 
         wrapper.Title = trackRow;
-        layerE.Add((TrackHeaderBlock)headerBlock);
+        layerE.Add(headerBlock);
         layerE.AddNode(wrapper);
 
         InitBlock(layerE);

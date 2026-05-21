@@ -6,9 +6,9 @@ using Godot;
 namespace Ciallo.GuiControl;
 
 [SceneTree, Instantiable(init: "")]
-public partial class LayerBlock : Container, IInitable
+public partial class LayerBlock : Container, IInitable, ILayerBlock
 {
-    public Entity LayerEntity;
+    public Entity LayerEntity { get; private set; }
 
     public bool IsFolder => LayerEntity.Has<FolderLayerSetting>();
 
@@ -21,6 +21,7 @@ public partial class LayerBlock : Container, IInitable
 
     /// <summary>The <see cref="LayerWrapper"/> that owns this block as its Title.</summary>
     public virtual LayerWrapper Wrapper => (LayerWrapper)GetParent();
+    public Container Node => this;
 
     public override void _EnterTree()
     {

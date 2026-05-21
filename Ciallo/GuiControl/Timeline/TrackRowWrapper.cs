@@ -11,5 +11,7 @@ namespace Ciallo.GuiControl;
 public partial class TrackRowWrapper : LayerWrapper
 {
     /// <summary>The header block extracted from the <see cref="TrackRow"/> title.</summary>
-    public override TrackHeaderBlock Block => (Title as TrackRow)?.HeaderBlock;
+    public override ILayerBlock Block => (Title as TrackRow)?.HeaderBlock;
+
+    public TrackHeaderBlock HeaderBlock => (Title as TrackRow)?.HeaderBlock;
 }

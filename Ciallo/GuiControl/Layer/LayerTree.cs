@@ -21,13 +21,14 @@ public partial class LayerTree : LayerTreeBase
     }
 
     protected override LayerWrapper GetWrapper(Entity e) => e.Get<LayerWrapper>();
-    protected override LayerBlock GetBlock(Entity e) => e.Get<LayerBlock>();
+    protected override ILayerBlock GetBlock(Entity e) => e.Get<LayerBlock>();
 
     public void Create(Entity layerE)
     {
         var wrapper = new LayerWrapper();
-        wrapper.Title = LayerBlock.New();
-        layerE.Add(wrapper.Block);
+        var block = LayerBlock.New();
+        wrapper.Title = block;
+        layerE.Add(block);
         layerE.AddNode(wrapper);
 
         InitBlock(layerE);
