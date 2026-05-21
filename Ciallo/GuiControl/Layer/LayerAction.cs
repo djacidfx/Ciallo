@@ -59,14 +59,31 @@ public partial class LayerAction : Control
         if (currentLayerE.IsNull) return;
 
         var workingLayerE = document.Get<SelectionManager>().WorkingLayer.Value;
+        var currentLayerParentE = currentLayerE.Get<LayerTreeNode>().ParentValue;
         var root = document.Get<LayerTreeNode>();
         var workingLayerPath = root.FindPathTo(workingLayerE);
         var nextLayerPath = root.GetNextFocusPathAfterDeletion(workingLayerPath);
         var nextLayerE = nextLayerPath.IsEmpty ? document : root.GetDescendant(nextLayerPath);
 
-        new CommandBuilder(nextLayerE)
-            .SetWorkingLayer()
-            .SetTarget(currentLayerE)
+        var cmd = new CommandBuilder(nextLayerE)
+            .SetWorkingLayer();
+
+        if (currentLayerParentE.Get<FolderLayerSetting>().IsCel == true)
+        {
+            cmd.SetTarget(currentLayerParentE)
+                .SetObservableCollection(
+                    e => e.Get<FolderLayerSetting>().Exposures,
+                    exposures =>
+                    {
+                        foreach (var (frame, celE) in exposures.ToArray())
+                        {
+                            if (celE == currentLayerE)
+                                exposures.Remove(frame);
+                        }
+                    });
+        }
+
+        cmd.SetTarget(currentLayerE)
             .RemoveFromLayerTree()
             .DeleteLayer()
             .Commit();
@@ -157,10 +174,10 @@ public partial class LayerAction : Control
         void AddFilledPolygon(CommandBuilder builder, Entity targetLayerE,
             IReadOnlyList<Vector2> polygon, Entity brushE)
         {
-            ImmutableArray<Vector2> positions = [..polygon, polygon[0]];
+            ImmutableArray<Vector2> positions = [.. polygon, polygon[0]];
             int n = positions.Length;
-            ImmutableArray<float> ones = [..Enumerable.Repeat(1.0f, n)];
-            ImmutableArray<Vector2> zeros = [..Enumerable.Repeat(Vector2.Zero, n)];
+            ImmutableArray<float> ones = [.. Enumerable.Repeat(1.0f, n)];
+            ImmutableArray<Vector2> zeros = [.. Enumerable.Repeat(Vector2.Zero, n)];
 
             builder.SetTarget(targetLayerE.World.Create())
                 .NewFilledPolygon()
