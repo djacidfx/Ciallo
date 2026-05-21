@@ -11,7 +11,7 @@ A cel is a drawable layer inside a cel folder. A cel represents artwork that can
 A cel folder is a folder layer whose children are cels. Cel folders do not nest inside other cel folders.
 
 ### Folder layer
-Any layer's parent must be a folder layer. The document entity is a folder layer entity. 
+Any layer's parent must be a folder layer. The document entity is a folder layer entity.
 
 ### Exposure
 

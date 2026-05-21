@@ -11,39 +11,16 @@ namespace Ciallo.GuiControl;
 [SceneTree, Instantiable]
 public partial class TimelinePanel : VBoxContainer
 {
-    private ZoomableHScrollBar _zoomScrollBar;
-    private TimelineRuler _ruler;
-    private BackgroundGrid _bgGrid;
-    private Playhead _playhead;
-    private PlaybackBar _startBar;
-    private PlaybackBar _endBar;
-    private HSplitContainer _hSplitRuler;
-    private TrackTree _trackTree;
-    private HSplitContainer _hSplitScroll;
-    private HSplitContainer _hSplitBgGrid;
-    private CelTrackRightClickMenu _celTrackRightClickMenu;
-
     public override void _Ready()
     {
-        _zoomScrollBar = GetNode<ZoomableHScrollBar>("%ZoomableHScrollBar");
-        _ruler = GetNode<TimelineRuler>("%TimelineRuler");
-        _bgGrid = GetNode<BackgroundGrid>("%BackgroundGrid");
-        _playhead = GetNode<Playhead>("%Playhead");
-        _startBar = GetNode<PlaybackBar>("%PlaybackStartBar");
-        _endBar = GetNode<PlaybackBar>("%PlaybackEndBar");
-        _hSplitRuler = GetNode<HSplitContainer>("%HSplitRuler");
-        _trackTree = GetNode<TrackTree>("%TrackTree");
-        _hSplitScroll = GetNode<HSplitContainer>("%HSplitScrollBar");
-        _hSplitBgGrid = GetNode<HSplitContainer>("%HSplitBgGrid");
-        _celTrackRightClickMenu = GetNode<CelTrackRightClickMenu>("%CelTrackRightClickMenu");
-        _trackTree.RightClickMenu = _celTrackRightClickMenu;
+        TrackTree.RightClickMenu = CelTrackRightClickMenu;
 
         // Keep all track-row splits, the scrollbar spacer, and the BackgroundGrid in lockstep.
-        _hSplitRuler.Dragged += offset =>
+        HSplitRuler.Dragged += offset =>
         {
-            _trackTree.SplitOffset = (int)offset;
-            _hSplitScroll.SplitOffsets = [(int)offset];
-            _hSplitBgGrid.SplitOffsets = [(int)offset];
+            TrackTree.SplitOffset = (int)offset;
+            HSplitScrollBar.SplitOffsets = [(int)offset];
+            HSplitBgGrid.SplitOffsets = [(int)offset];
         };
     }
 
@@ -53,24 +30,24 @@ public partial class TimelinePanel : VBoxContainer
     /// </summary>
     public TimelinePanel BindTimeline(TimelineSetting setting, ReactiveProperty<int> currentFrame)
     {
-        _zoomScrollBar.Setup(setting);
+        ZoomableHScrollBar.Setup(setting);
 
-        _ruler.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, setting.FrameRate);
-        _ruler.BindPlaybackRange(setting.PlaybackStart, setting.PlaybackEnd);
-        _ruler.BindCurrentFrame(currentFrame);
+        TimelineRuler.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, setting.FrameRate);
+        TimelineRuler.BindPlaybackRange(setting.PlaybackStart, setting.PlaybackEnd);
+        TimelineRuler.BindCurrentFrame(currentFrame);
 
-        _bgGrid.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame);
+        BackgroundGrid.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame);
+        BackgroundGrid.BindPlaybackRange(setting.PlaybackStart, setting.PlaybackEnd);
 
         // Start bar: green line + left-handle at PlaybackStart frame
-        _startBar.IsStart = true;
-        _startBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, setting.PlaybackStart, _bgGrid, _ruler);
+        PlaybackStartBar.IsStart = true;
+        PlaybackStartBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, setting.PlaybackStart);
 
         // End bar: red line + right-handle at PlaybackEnd frame
-        _endBar.IsStart = false;
-        _endBar.LineColor = new Color(0.9f, 0.25f, 0.25f, 0.9f);
-        _endBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, setting.PlaybackEnd, _bgGrid, _ruler);
+        PlaybackEndBar.IsStart = false;
+        PlaybackEndBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, setting.PlaybackEnd);
 
-        _playhead.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, currentFrame, _bgGrid);
+        Playhead.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, currentFrame);
 
         TimelineAction.FrameRate.BindNumber(setting.FrameRate);
 
@@ -85,10 +62,10 @@ public partial class TimelinePanel : VBoxContainer
     /// </summary>
     public void InitTrackTree(Entity document)
     {
-        document.Add(_trackTree);
-        document.Add(_trackTree.RootWrapper);
-        document.Add(_bgGrid);
-        _ruler.BindSelectionManager(document.Get<SelectionManager>());
-        _celTrackRightClickMenu.InitDocument(document);
+        document.Add(TrackTree);
+        document.Add(TrackTree.RootWrapper);
+        document.Add(BackgroundGrid);
+        TimelineRuler.BindSelectionManager(document.Get<SelectionManager>());
+        CelTrackRightClickMenu.InitDocument(document);
     }
 }

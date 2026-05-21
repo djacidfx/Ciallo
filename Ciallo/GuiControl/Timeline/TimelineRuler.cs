@@ -12,40 +12,12 @@ namespace Ciallo.GuiControl;
 [Tool]
 public partial class TimelineRuler : Control
 {
+    private const float EditorPreviewPixelsPerFrame = 32f;
+    private const float EditorPreviewScrollOffsetFrame = -5f;
+    private const int EditorPreviewPlaybackStart = 0;
+    private const int EditorPreviewPlaybackEnd = 24;
+
     #region Export
-
-    [Export]
-    public Color PlayheadTickColor
-    {
-        get;
-        set
-        {
-            field = value;
-            QueueRedraw();
-        }
-    } = new Color(1f, 0.65f, 0f);
-
-    [Export]
-    public Color PlaybackStartColor
-    {
-        get;
-        set
-        {
-            field = value;
-            QueueRedraw();
-        }
-    } = new Color(0.25f, 0.85f, 0.25f, 0.9f);
-
-    [Export]
-    public Color PlaybackEndColor
-    {
-        get;
-        set
-        {
-            field = value;
-            QueueRedraw();
-        }
-    } = new Color(0.9f, 0.25f, 0.25f, 0.9f);
 
     [Export]
     public int MajorTickHeight
@@ -92,18 +64,6 @@ public partial class TimelineRuler : Control
             QueueRedraw();
         }
     } = 8f;
-
-    /// <summary>Width and height of the triangular drag handle drawn at the ruler top.</summary>
-    [Export]
-    public float HandleSize
-    {
-        get;
-        set
-        {
-            field = value;
-            QueueRedraw();
-        }
-    } = 10f;
 
     [Export]
     public Color TickColor
@@ -176,6 +136,11 @@ public partial class TimelineRuler : Control
 
     public override void _Ready()
     {
+        if (Engine.IsEditorHint())
+        {
+            _pixelsPerFrame = EditorPreviewPixelsPerFrame;
+            _scrollOffset = EditorPreviewScrollOffsetFrame * EditorPreviewPixelsPerFrame;
+        }
         InitTheme();
     }
 
@@ -215,7 +180,6 @@ public partial class TimelineRuler : Control
     public void BindCurrentFrame(ReactiveProperty<int> currentFrame)
     {
         _currentFrame = currentFrame;
-        currentFrame.Subscribe(_ => QueueRedraw()).AddTo(this);
     }
 
     /// <summary>Wire playback-range properties.</summary>
@@ -241,7 +205,30 @@ public partial class TimelineRuler : Control
     private float FrameToX(int frame) => frame * _pixelsPerFrame - _scrollOffset;
 
     /// <summary>Frame index whose left edge is at or before ruler-local X. May return 0 or negative.</summary>
-    private int XToFrame(float x) => (int)((x + _scrollOffset) / _pixelsPerFrame);
+    private int XToFrame(float x) => Mathf.FloorToInt((x + _scrollOffset) / _pixelsPerFrame);
+
+    private static string FormatFrameLabel(int frame) => frame < 0 ? frame.ToString() : (frame + 1).ToString();
+
+    private bool TryGetPlaybackRange(out int playbackStart, out int playbackEnd)
+    {
+        if (_playbackStart != null && _playbackEnd != null)
+        {
+            playbackStart = _playbackStart.Value;
+            playbackEnd = _playbackEnd.Value;
+            return true;
+        }
+
+        if (Engine.IsEditorHint())
+        {
+            playbackStart = EditorPreviewPlaybackStart;
+            playbackEnd = EditorPreviewPlaybackEnd;
+            return true;
+        }
+
+        playbackStart = 0;
+        playbackEnd = 0;
+        return false;
+    }
 
     // ── Handle hit-tests ─────────────────────────────────────────────────────
 
@@ -256,7 +243,7 @@ public partial class TimelineRuler : Control
     {
         if (_playbackStart == null) return false;
         float startX = FrameToX(_playbackStart.Value);
-        return pos.X >= startX - HandleSize - HandleHitTolerance &&
+        return pos.X >= startX - Size.Y - HandleHitTolerance &&
                pos.X <= startX + HandleHitTolerance &&
                pos.Y >= 0f && pos.Y <= Size.Y;
     }
@@ -269,7 +256,7 @@ public partial class TimelineRuler : Control
         if (_playbackEnd == null) return false;
         float endX = FrameToX(_playbackEnd.Value);
         return pos.X >= endX - HandleHitTolerance &&
-               pos.X <= endX + HandleSize + HandleHitTolerance &&
+               pos.X <= endX + Size.Y + HandleHitTolerance &&
                pos.Y >= 0f && pos.Y <= Size.Y;
     }
 
@@ -283,10 +270,11 @@ public partial class TimelineRuler : Control
         float h = Size.Y;
 
         // ── Background ────────────────────────────────────────────────────────
-        if (_playbackStart != null && _playbackEnd != null)
+        bool hasPlaybackRange = TryGetPlaybackRange(out int playbackStart, out int playbackEnd);
+        if (hasPlaybackRange)
         {
-            float startX = FrameToX(_playbackStart.Value);
-            float endX = FrameToX(_playbackEnd.Value);
+            float startX = FrameToX(playbackStart);
+            float endX = FrameToX(playbackEnd);
 
             // Out-of-range left
             if (startX > 0f)
@@ -341,8 +329,7 @@ public partial class TimelineRuler : Control
                 if (x < -pxPerSecond || x > w + pxPerSecond) continue;
 
                 int secondFrame = (int)(s * _fps);
-                bool inRange = _playbackStart != null && _playbackEnd != null
-                                                      && secondFrame >= _playbackStart.Value && secondFrame < _playbackEnd.Value;
+                bool inRange = hasPlaybackRange && secondFrame >= playbackStart && secondFrame < playbackEnd;
                 Color secTickColor = inRange ? TickColor : OutOfPlaybackTickColor;
                 Color secLabelColor = inRange ? LabelColor : OutOfPlaybackLabelColor;
 
@@ -375,7 +362,7 @@ public partial class TimelineRuler : Control
             bool isMajor = frame == 0 || frame % majorStep == 0;
             float tickH = isMajor ? MajorTickHeight : MinorTickHeight;
 
-            bool inRange = _playbackStart != null && _playbackEnd != null && frame >= _playbackStart.Value && frame < _playbackEnd.Value;
+            bool inRange = hasPlaybackRange && frame >= playbackStart && frame < playbackEnd;
             Color frameTickColor = inRange ? TickColor : OutOfPlaybackTickColor;
             Color frameLabelColor = inRange ? LabelColor : OutOfPlaybackLabelColor;
 
@@ -387,20 +374,8 @@ public partial class TimelineRuler : Control
                         frame.ToString(), HorizontalAlignment.Left, -1, LabelFontSize, frameLabelColor);
         }
 
-        // ── Playhead highlight ───────────────────────────────────────────────
-        if (_currentFrame != null)
-        {
-            float px = FrameToX(_currentFrame.Value);
-            if (px >= -_pixelsPerFrame && px <= w + _pixelsPerFrame)
-            {
-                DrawLine(new Vector2(px, 0f), new Vector2(px, h), PlayheadTickColor, 2f);
-                DrawLine(new Vector2(px + _pixelsPerFrame, 0f), new Vector2(px + _pixelsPerFrame, h),
-                    PlayheadTickColor with { A = 0.4f });
-            }
-        }
-
-        // ── Hover hint ───────────────────────────────────────────────────────
-        if (_hoverFrame != null && _dragMode == DragMode.None)
+        // ── Hover / drag hint ────────────────────────────────────────────────
+        if (_hoverFrame != null)
         {
             // Center of the hovered frame's pixel slot
             float hx = FrameToX(_hoverFrame.Value) + _pixelsPerFrame * 0.5f;
@@ -410,8 +385,7 @@ public partial class TimelineRuler : Control
             DrawCircle(new Vector2(hx, dotY), 6f, HintDotColor);
 
             // Frame label in the seconds band, centered on the same X as the dot.
-            // Display _hoverFrame + 1: the region left of tick N belongs to "frame N" (1-based).
-            string hoverLabel = (_hoverFrame.Value + 1).ToString();
+            string hoverLabel = FormatFrameLabel(_hoverFrame.Value);
             float labelW = font.GetStringSize(hoverLabel, HorizontalAlignment.Left, -1, LabelFontSize).X;
             DrawString(font, new Vector2(hx - labelW * 0.5f, SecondsBandHeight - 2f),
                 hoverLabel, HorizontalAlignment.Left, -1, LabelFontSize, LabelColor);

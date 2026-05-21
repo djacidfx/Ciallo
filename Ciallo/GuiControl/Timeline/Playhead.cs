@@ -4,37 +4,63 @@ using R3;
 namespace Ciallo.GuiControl;
 
 /// <summary>
-/// Block-shaped playhead that covers one full frame column.
+/// Block-shaped playhead that covers one full frame column across the ruler and grid.
 /// Has top_level = true so it floats over other controls.
 /// Position and size are updated reactively from PixelsPerFrame / ScrollOffset / CurrentFrame.
 /// </summary>
-[Tool, GlobalClass]
+[Tool]
 public partial class Playhead : Control
 {
-    // ── Tunable exports ──────────────────────────────────────────────────────
-    [Export] public Color FillColor { get; set; } = new Color(1f, 0.65f, 0f, 0.35f);
-    [Export] public Color BorderColor { get; set; } = new Color(1f, 0.65f, 0f, 0.85f);
-    [Export] public float BorderWidth { get; set; } = 1.5f;
+    private const float EditorPreviewPixelsPerFrame = 32f;
+    private const float EditorPreviewScrollOffsetFrame = -5f;
+    private const int EditorPreviewCurrentFrame = 1;
 
-    // ── Private state ─────────────────────────────────────────────────────────
+    // ── Tunable exports ──────────────────────────────────────────────────────
+    [Export]
+    public Color BorderColor
+    {
+        get; set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    }
+    [Export]
+    public float BorderWidth
+    {
+        get; set
+        {
+            field = value;
+            QueueRedraw();
+        }
+    } = 1.5f;
+
+    [Export] public Control GridAnchor { get; set; }
+    [Export] public Control RulerAnchor { get; set; }
+
+    // Private state.
     private float _pixelsPerFrame = 20f;
     private float _scrollOffset;
     private int _currentFrame = 1;
-    private Control _anchor; // BackgroundGrid — defines the painted area bounds
 
-    // ── Bind ─────────────────────────────────────────────────────────────────
+    public override void _Ready()
+    {
+        if (GridAnchor != null)
+            GridAnchor.ItemRectChanged += UpdateTransform;
+        if (RulerAnchor != null)
+            RulerAnchor.ItemRectChanged += UpdateTransform;
 
-    /// <summary>
-    /// Wire reactive sources. <paramref name="anchor"/> is the control whose rect the playhead spans.
-    /// </summary>
+        UpdateTransform();
+    }
+
+    // Bind.
+
+    /// <summary>Wire reactive sources.</summary>
     public void Observe(
         ReactiveProperty<float> pixelsPerFrame,
         ReactiveProperty<float> scrollOffsetFrame,
-        ReactiveProperty<int> currentFrame,
-        Control anchor)
+        ReactiveProperty<int> currentFrame)
     {
-        _anchor = anchor;
-
         pixelsPerFrame.CombineLatest(scrollOffsetFrame, (ppf, sof) => (ppf, sof * ppf))
             .Subscribe(t =>
             {
@@ -47,30 +73,58 @@ public partial class Playhead : Control
             _currentFrame = v;
             UpdateTransform();
         }).AddTo(this);
-
-        anchor.ItemRectChanged += UpdateTransform; // covers resize + global move
     }
 
-    // ── Transform ────────────────────────────────────────────────────────────
+    // Transform.
 
     private void UpdateTransform()
     {
-        if (_anchor == null) return;
+        if (GridAnchor == null || RulerAnchor == null)
+            return;
 
+        if (Engine.IsEditorHint())
+        {
+            UpdateEditorPreviewTransform();
+            return;
+        }
+
+        ApplyTransform(GridAnchor, RulerAnchor, _currentFrame, _pixelsPerFrame, _scrollOffset);
+    }
+
+    private void UpdateEditorPreviewTransform()
+    {
+        if (GridAnchor == null || RulerAnchor == null) return;
+
+        ApplyTransform(
+            GridAnchor,
+            RulerAnchor,
+            EditorPreviewCurrentFrame,
+            EditorPreviewPixelsPerFrame,
+            EditorPreviewScrollOffsetFrame * EditorPreviewPixelsPerFrame);
+    }
+
+    private void ApplyTransform(Control gridAnchor, Control rulerAnchor, int frame, float pixelsPerFrame, float scrollOffset)
+    {
         // Frame 0 is at virtual x = 0, matching TimelineRuler's coordinate origin.
-        float x = _anchor.GlobalPosition.X + _currentFrame * _pixelsPerFrame - _scrollOffset;
+        float x = gridAnchor.GlobalPosition.X + frame * pixelsPerFrame - scrollOffset;
+        float topY = rulerAnchor.GlobalPosition.Y;
+        float totalH = rulerAnchor.Size.Y + gridAnchor.Size.Y;
 
-        GlobalPosition = new Vector2(x, _anchor.GlobalPosition.Y);
-        Size = new Vector2(_pixelsPerFrame, _anchor.Size.Y);
+        GlobalPosition = new Vector2(x, topY);
+        Size = new Vector2(pixelsPerFrame, totalH);
         QueueRedraw();
     }
 
-    // ── Draw ─────────────────────────────────────────────────────────────────
+    // Draw.
 
     public override void _Draw()
     {
-        var rect = new Rect2(Vector2.Zero, Size);
-        DrawRect(rect, FillColor);
-        DrawRect(rect, BorderColor, false, BorderWidth);
+        float rulerHeight = RulerAnchor?.Size.Y ?? 0f;
+
+        DrawLine(new Vector2(0f, 0f), new Vector2(0f, rulerHeight), BorderColor, BorderWidth);
+        DrawLine(new Vector2(Size.X, 0f), new Vector2(Size.X, rulerHeight), BorderColor, BorderWidth);
+
+        var gridRect = new Rect2(new Vector2(0f, rulerHeight), new Vector2(Size.X, Size.Y - rulerHeight));
+        DrawRect(gridRect, BorderColor, false, BorderWidth);
     }
 }
