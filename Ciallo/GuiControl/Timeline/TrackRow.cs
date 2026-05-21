@@ -21,7 +21,9 @@ public partial class TrackRow : HSplitContainer
 
     public TrackRow()
     {
-        // Hard coded HSplitRuler's separation.
+        // Hard coded separation value from HSplitRuler's separation.
         AddThemeConstantOverride("separation", 12);
+
+        AddThemeStyleboxOverride("split_bar_background", new StyleBoxEmpty());
     }
 }
