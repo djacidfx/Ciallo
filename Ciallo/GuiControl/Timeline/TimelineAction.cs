@@ -18,7 +18,7 @@ public partial class TimelineAction : Container
     private Texture2D _playIcon;
     private Texture2D _stopIcon;
     private bool _isPlaying;
-    private bool _loopPlayback;
+    private int _frameAtPlaybackStart;
     private double _playbackAccumulator;
 
     public override void _Ready()
@@ -34,7 +34,6 @@ public partial class TimelineAction : Container
         PlayStop.Pressed += TogglePlayback;
         NextFrame.Pressed += () => NavigateRelative(1);
         GoToEnd.Pressed += () => NavigateToFrame(GetPlaybackLastFrame());
-        LoopPlay.Toggled += pressed => _loopPlayback = pressed;
     }
 
     public void Init(Entity document)
@@ -44,6 +43,9 @@ public partial class TimelineAction : Container
         _timelineSetting = document.Get<TimelineSetting>();
         var subs = new CompositeDisposable();
         NewAnimationCel.VisibleIf(_selectionManager.WorkingCelFolder, e => !e.IsNull, subs);
+        BindCheckButton.BindBool(LoopPlay, _timelineSetting.LoopPlaybackEnabled, subs);
+        BindCheckButton.BindBool(OnionSkin, _timelineSetting.OnionSkinEnabled, subs);
+        FrameRate.BindNumber(_timelineSetting.FrameRate);
         subs.AddTo(document);
     }
 
@@ -102,6 +104,7 @@ public partial class TimelineAction : Container
         if (frame >= GetPlaybackLastFrame())
             frame = GetPlaybackStart();
 
+        _frameAtPlaybackStart = frame;
         SetFrameDirect(frame);
         SetPlaying(true);
     }
@@ -113,7 +116,7 @@ public partial class TimelineAction : Container
 
         if (currentFrame >= lastFrame)
         {
-            if (_loopPlayback)
+            if (_timelineSetting.LoopPlaybackEnabled.Value)
             {
                 SetFrameDirect(GetPlaybackStart());
                 return;
@@ -126,19 +129,13 @@ public partial class TimelineAction : Container
 
         int nextFrame = currentFrame + 1;
         SetFrameDirect(nextFrame);
-        if (!_loopPlayback && nextFrame >= lastFrame)
+        if (!_timelineSetting.LoopPlaybackEnabled.Value && nextFrame >= lastFrame)
             SetPlaying(false);
     }
 
     private void SetFrameDirect(int newFrame)
     {
-        int oldFrame = _selectionManager.CurrentFrame.Value;
-        if (oldFrame == newFrame) return;
-
         _selectionManager.CurrentFrame.Value = newFrame;
-        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForSwitchingFrame(oldFrame, newFrame);
-        if (!newWorkingLayer.IsNull)
-            _selectionManager.WorkingLayer.Value = newWorkingLayer;
     }
 
     private int ClampPlaybackFrame(int frame) =>
@@ -155,11 +152,25 @@ public partial class TimelineAction : Container
 
     private void SetPlaying(bool playing)
     {
+        bool wasPlaying = _isPlaying;
         _isPlaying = playing;
         _playbackAccumulator = 0.0;
         PlayStop.Icon = playing ? _stopIcon : _playIcon;
         PlayStop.TooltipText = playing ? "Stop playback" : "Play";
         SetProcess(playing);
+
+        if (wasPlaying && !playing)
+            SwitchWorkingLayerAfterPlayback();
+    }
+
+    private void SwitchWorkingLayerAfterPlayback()
+    {
+        if (_selectionManager == null) return;
+
+        int currentFrame = _selectionManager.CurrentFrame.Value;
+        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForSwitchingFrame(_frameAtPlaybackStart, currentFrame);
+        if (!newWorkingLayer.IsNull)
+            new CommandBuilder(newWorkingLayer).SetWorkingLayer().Do();
     }
 
     private void OnAddCelFolder()

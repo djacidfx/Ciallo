@@ -13,6 +13,8 @@ public class TimelineSetting
     [DataMember] public ReactiveProperty<int> PlaybackStart = new(0);
     [DataMember] public ReactiveProperty<int> PlaybackEnd = new(24);
     [DataMember] public ReactiveProperty<float> FrameRate = new(24);
+    [DataMember] public ReactiveProperty<bool> LoopPlaybackEnabled = new(false);
+    [DataMember] public ReactiveProperty<bool> OnionSkinEnabled = new(false);
     [DataMember] public ReactiveProperty<ImmutableArray<int>> OnionSkinFrames = new([-1, 1]);
 
     public ReactiveProperty<float> PixelsPerFrame = new(32f);
@@ -29,6 +31,8 @@ public class TimelineSetting
         PlaybackStart.Value = other.PlaybackStart.Value;
         PlaybackEnd.Value = other.PlaybackEnd.Value;
         FrameRate.Value = other.FrameRate.Value;
+        LoopPlaybackEnabled.Value = other.LoopPlaybackEnabled.Value;
+        OnionSkinEnabled.Value = other.OnionSkinEnabled.Value;
         OnionSkinFrames.Value = other.OnionSkinFrames.Value;
         PixelsPerFrame.Value = other.PixelsPerFrame.Value;
         ScrollOffsetFrame.Value = other.ScrollOffsetFrame.Value;

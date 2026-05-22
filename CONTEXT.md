@@ -17,6 +17,10 @@ Any layer's parent must be a folder layer. The document entity is a folder layer
 
 An exposure is a timeline assignment that says which cel is shown from a frame until the next exposure on the same cel folder.
 
+### Onion Skin
+
+Onion skin is a timeline viewing mode that shows nearby cel frames around the current frame as drawing references.
+
 ### Command History
 
 Command history is a document-level record of undoable user changes.

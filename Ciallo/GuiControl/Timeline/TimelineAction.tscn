@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://6fwtxd5kofc4" path="res://Icon/step-forward.svg" id="6_stepforward"]
 [ext_resource type="Texture2D" uid="uid://bvwa5e8cypnnx" path="res://Icon/page-last.svg" id="7_pagelast"]
 [ext_resource type="Texture2D" uid="uid://bj88q5o4x80ck" path="res://Icon/repeat.svg" id="8_repeat"]
+[ext_resource type="Texture2D" uid="uid://btuke6715q4xi" path="res://Icon/onionskin.svg" id="11_pdp5i"]
 
 [node name="TimelineAction" type="HFlowContainer" unique_id=1607254887]
 offset_right = 1044.0
@@ -108,6 +109,17 @@ tooltip_text = "Loop playback"
 theme_type_variation = &"ToolButton"
 toggle_mode = true
 icon = ExtResource("8_repeat")
+icon_alignment = 1
+expand_icon = true
+
+[node name="OnionSkin" type="Button" parent="." unique_id=864298771]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+tooltip_text = "Onion skin"
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+icon = ExtResource("11_pdp5i")
 icon_alignment = 1
 expand_icon = true
 
