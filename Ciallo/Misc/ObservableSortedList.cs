@@ -30,38 +30,18 @@ public class ObservableSortedList<TKey, TValue> :
     /// Returns the 0-based index of <paramref name="key"/>, or the bitwise complement of the
     /// insertion point if not found — same semantics as <see cref="Array.BinarySearch"/>.
     /// </summary>
-    private int BinarySearch(TKey key)
-    {
-        IList<TKey> keys = _list.Keys;
-        IComparer<TKey> comparer = _list.Comparer;
-        int lo = 0, hi = keys.Count - 1;
-        while (lo <= hi)
-        {
-            int mid = lo + ((hi - lo) >> 1);
-            int cmp = comparer.Compare(keys[mid], key);
-            if (cmp == 0) return mid;
-            if (cmp < 0) lo = mid + 1;
-            else hi = mid - 1;
-        }
-        return ~lo;
-    }
+    public int BinarySearchIndex(TKey key) => _list.BinarySearchIndex(key);
 
     /// <summary>Returns the index of the largest key ≤ <paramref name="key"/>, or <c>-1</c> if none exists.</summary>
     public int FloorIndex(TKey key)
     {
-        int idx = BinarySearch(key);
-        if (idx >= 0) return idx;
-        int ins = ~idx;
-        return ins > 0 ? ins - 1 : -1;
+        return _list.FloorIndex(key);
     }
 
     /// <summary>Returns the index of the smallest key ≥ <paramref name="key"/>, or <c>-1</c> if none exists.</summary>
     public int CeilingIndex(TKey key)
     {
-        int idx = BinarySearch(key);
-        if (idx >= 0) return idx;
-        int ins = ~idx;
-        return ins < _list.Count ? ins : -1;
+        return _list.CeilingIndex(key);
     }
 
     /// <summary>
@@ -70,15 +50,14 @@ public class ObservableSortedList<TKey, TValue> :
     /// </summary>
     public int FindNearestIndex(TKey key)
     {
-        int fi = FloorIndex(key);
-        return fi >= 0 ? fi : CeilingIndex(key);
+        return _list.FindNearestIndex(key);
     }
 
     /// <summary>Returns the key at the specified index.</summary>
-    public TKey GetKeyAtIndex(int index) => _list.Keys[index];
+    public TKey GetKeyAtIndex(int index) => _list.GetKeyAtIndex(index);
 
     /// <summary>Returns the value at the specified index.</summary>
-    public TValue GetValueAtIndex(int index) => _list.Values[index];
+    public TValue GetValueAtIndex(int index) => _list.GetValueAtIndex(index);
 
     // ── IDictionary<TKey, TValue> ─────────────────────────────────────────────
 
