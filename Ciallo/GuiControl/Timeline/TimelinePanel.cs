@@ -24,11 +24,20 @@ public partial class TimelinePanel : VBoxContainer
         };
     }
 
+    public void Init(Entity document)
+    {
+        var setting = document.Get<TimelineSetting>();
+        var selectionManager = document.Get<SelectionManager>();
+
+        BindTimeline(setting, selectionManager.CurrentFrame);
+        InitTrackTree(document, selectionManager);
+        TimelineAction.Init(document);
+    }
+
     /// <summary>
     /// Wire the document's <see cref="TimelineSetting"/> into all sub-controls.
-    /// Must be called once after this panel is added to the tree, before <see cref="InitTrackTree"/>.
     /// </summary>
-    public TimelinePanel BindTimeline(TimelineSetting setting, ReactiveProperty<int> currentFrame)
+    private void BindTimeline(TimelineSetting setting, ReactiveProperty<int> currentFrame)
     {
         ZoomableHScrollBar.Setup(setting);
 
@@ -49,24 +58,19 @@ public partial class TimelinePanel : VBoxContainer
         PlaybackEndBar.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, setting.PlaybackEnd);
 
         Playhead.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, currentFrame);
-
-        TimelineAction.FrameRate.BindNumber(setting.FrameRate);
-
-        return this;
     }
 
     /// <summary>
     /// Registers <see cref="TrackTree"/>, its root wrapper, and <see cref="BackgroundGrid"/>
     /// as Frent components on <paramref name="document"/> so that layer commands can
     /// create and position track rows at runtime.
-    /// Must be called once after <see cref="BindTimeline"/> and after the panel is added to the tree.
     /// </summary>
-    public void InitTrackTree(Entity document)
+    private void InitTrackTree(Entity document, SelectionManager selectionManager)
     {
         document.Add(TrackTree);
         document.Add(TrackTree.RootWrapper);
         document.Add(BackgroundGrid);
-        TimelineRuler.BindSelectionManager(document.Get<SelectionManager>());
+        TimelineRuler.BindSelectionManager(selectionManager);
         CelTrackRightClickMenu.InitDocument(document);
     }
 }
