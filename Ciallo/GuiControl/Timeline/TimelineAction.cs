@@ -13,20 +13,153 @@ namespace Ciallo.GuiControl;
 public partial class TimelineAction : Container
 {
     public Entity Document;
+    private SelectionManager _selectionManager;
+    private TimelineSetting _timelineSetting;
+    private Texture2D _playIcon;
+    private Texture2D _stopIcon;
+    private bool _isPlaying;
+    private bool _loopPlayback;
+    private double _playbackAccumulator;
 
     public override void _Ready()
     {
+        SetProcess(false);
+        _playIcon = PlayStop.Icon;
+        _stopIcon = GD.Load<Texture2D>("res://Icon/stop.svg");
+
         AddCelFolder.Pressed += OnAddCelFolder;
         NewAnimationCel.Pressed += OnNewAnimationCel;
+        GoToStart.Pressed += () => NavigateToFrame(GetPlaybackStart());
+        PreviousFrame.Pressed += () => NavigateRelative(-1);
+        PlayStop.Pressed += TogglePlayback;
+        NextFrame.Pressed += () => NavigateRelative(1);
+        GoToEnd.Pressed += () => NavigateToFrame(GetPlaybackLastFrame());
+        LoopPlay.Toggled += pressed => _loopPlayback = pressed;
     }
 
     public void Init(Entity document)
     {
         Document = document;
-        var sm = document.Get<SelectionManager>();
+        _selectionManager = document.Get<SelectionManager>();
+        _timelineSetting = document.Get<TimelineSetting>();
         var subs = new CompositeDisposable();
-        NewAnimationCel.VisibleIf(sm.WorkingCelFolder, e => !e.IsNull, subs);
+        NewAnimationCel.VisibleIf(_selectionManager.WorkingCelFolder, e => !e.IsNull, subs);
         subs.AddTo(document);
+    }
+
+    private void NavigateRelative(int frameOffset)
+    {
+        if (_selectionManager == null) return;
+        NavigateToFrame(_selectionManager.CurrentFrame.Value + frameOffset);
+    }
+
+    public override void _Process(double delta)
+    {
+        if (!_isPlaying || _selectionManager == null || _timelineSetting == null) return;
+
+        _playbackAccumulator += delta * Mathf.Max(_timelineSetting.FrameRate.Value, 1f);
+        while (_playbackAccumulator >= 1.0 && _isPlaying)
+        {
+            _playbackAccumulator -= 1.0;
+            AdvancePlaybackFrame();
+        }
+    }
+
+    private void NavigateToFrame(int targetFrame)
+    {
+        if (_selectionManager == null) return;
+
+        int oldFrame = _selectionManager.CurrentFrame.Value;
+        int newFrame = ClampPlaybackFrame(targetFrame);
+        if (oldFrame == newFrame) return;
+
+        var cmd = new CommandBuilder()
+            .SetProperty(_selectionManager.CurrentFrame, oldFrame, newFrame);
+
+        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForSwitchingFrame(oldFrame, newFrame);
+        if (!newWorkingLayer.IsNull)
+            cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
+
+        cmd.CommitOpenSequence();
+    }
+
+    private void TogglePlayback()
+    {
+        if (_isPlaying)
+        {
+            SetPlaying(false);
+            return;
+        }
+
+        StartPlayback();
+    }
+
+    private void StartPlayback()
+    {
+        if (_selectionManager == null || _timelineSetting == null) return;
+
+        int frame = ClampPlaybackFrame(_selectionManager.CurrentFrame.Value);
+        if (frame >= GetPlaybackLastFrame())
+            frame = GetPlaybackStart();
+
+        SetFrameDirect(frame);
+        SetPlaying(true);
+    }
+
+    private void AdvancePlaybackFrame()
+    {
+        int currentFrame = ClampPlaybackFrame(_selectionManager.CurrentFrame.Value);
+        int lastFrame = GetPlaybackLastFrame();
+
+        if (currentFrame >= lastFrame)
+        {
+            if (_loopPlayback)
+            {
+                SetFrameDirect(GetPlaybackStart());
+                return;
+            }
+
+            SetFrameDirect(lastFrame);
+            SetPlaying(false);
+            return;
+        }
+
+        int nextFrame = currentFrame + 1;
+        SetFrameDirect(nextFrame);
+        if (!_loopPlayback && nextFrame >= lastFrame)
+            SetPlaying(false);
+    }
+
+    private void SetFrameDirect(int newFrame)
+    {
+        int oldFrame = _selectionManager.CurrentFrame.Value;
+        if (oldFrame == newFrame) return;
+
+        _selectionManager.CurrentFrame.Value = newFrame;
+        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForSwitchingFrame(oldFrame, newFrame);
+        if (!newWorkingLayer.IsNull)
+            _selectionManager.WorkingLayer.Value = newWorkingLayer;
+    }
+
+    private int ClampPlaybackFrame(int frame) =>
+        Mathf.Clamp(frame, GetPlaybackStart(), GetPlaybackLastFrame());
+
+    private int GetPlaybackStart() => _timelineSetting?.PlaybackStart.Value ?? 0;
+
+    private int GetPlaybackLastFrame()
+    {
+        if (_timelineSetting == null) return 0;
+        int start = _timelineSetting.PlaybackStart.Value;
+        return Mathf.Max(start, _timelineSetting.PlaybackEnd.Value - 1);
+    }
+
+    private void SetPlaying(bool playing)
+    {
+        _isPlaying = playing;
+        _playbackAccumulator = 0.0;
+        PlayStop.Icon = playing ? _stopIcon : _playIcon;
+        PlayStop.TooltipText = playing ? "Stop playback" : "Play";
+        SetProcess(playing);
     }
 
     private void OnAddCelFolder()
@@ -130,16 +263,18 @@ public partial class TimelineAction : Container
         if (candidate < 0)
             candidate = 0;
 
-        for (int distance = 0; ; distance++)
+        int floorIndex = exposures.FloorIndex(candidate);
+        if (floorIndex < 0 || exposures.GetKeyAtIndex(floorIndex) != candidate)
+            return candidate;
+
+        for (int distance = 1; ; distance++)
         {
             int earlier = candidate - distance;
             if (earlier >= 0 && !exposures.ContainsKey(earlier))
                 return earlier;
 
-            if (distance == 0) continue;
-
             int later = candidate + distance;
-            if (!exposures.ContainsKey(later))
+            if (later <= int.MaxValue && !exposures.ContainsKey(later))
                 return later;
         }
     }

@@ -1,13 +1,26 @@
 [gd_scene format=3 uid="uid://6wtrxdc617ci"]
 
 [ext_resource type="Texture2D" uid="uid://dp1yrwx67e0hq" path="res://Icon/folder-animation-plus.svg" id="1_56l7e"]
+[ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_rpdfa"]
 [ext_resource type="Script" uid="uid://dmwhitm5mjnxh" path="res://GuiControl/Timeline/TimelineAction.cs" id="1_ytrn4"]
 [ext_resource type="Texture2D" uid="uid://tugksq2pg442" path="res://Icon/layers-plus.svg" id="2_05m82"]
+[ext_resource type="Texture2D" uid="uid://b7175lr85yahh" path="res://Icon/page-first.svg" id="3_pagefirst"]
+[ext_resource type="Texture2D" uid="uid://dfay6r5d5i3tj" path="res://Icon/step-backward.svg" id="4_stepback"]
+[ext_resource type="Texture2D" uid="uid://xaifqg8wuwrh" path="res://Icon/play.svg" id="5_play"]
+[ext_resource type="Texture2D" uid="uid://6fwtxd5kofc4" path="res://Icon/step-forward.svg" id="6_stepforward"]
+[ext_resource type="Texture2D" uid="uid://bvwa5e8cypnnx" path="res://Icon/page-last.svg" id="7_pagelast"]
+[ext_resource type="Texture2D" uid="uid://bj88q5o4x80ck" path="res://Icon/repeat.svg" id="8_repeat"]
 
 [node name="TimelineAction" type="HFlowContainer" unique_id=1607254887]
 offset_right = 1044.0
 offset_bottom = 31.0
+theme = ExtResource("1_rpdfa")
+theme_override_constants/h_separation = 12
 script = ExtResource("1_ytrn4")
+
+[node name="Blank2" type="Control" parent="." unique_id=140412166]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
 
 [node name="AddCelFolder" type="Button" parent="." unique_id=1723767805]
 unique_name_in_owner = true
@@ -29,15 +42,74 @@ icon = ExtResource("2_05m82")
 icon_alignment = 1
 expand_icon = true
 
-[node name="Backward" type="Button" parent="." unique_id=1837789255]
-unique_name_in_owner = true
+[node name="Blank" type="Control" parent="." unique_id=100602917]
+custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
-text = "<"
 
-[node name="Forward" type="Button" parent="." unique_id=1521646872]
+[node name="GoToStart" type="Button" parent="." unique_id=1837789255]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 0)
 layout_mode = 2
-text = ">"
+tooltip_text = "Go to playback start"
+theme_type_variation = &"ToolButton"
+icon = ExtResource("3_pagefirst")
+icon_alignment = 1
+expand_icon = true
+
+[node name="PreviousFrame" type="Button" parent="." unique_id=1521646872]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+tooltip_text = "Previous frame"
+theme_type_variation = &"ToolButton"
+icon = ExtResource("4_stepback")
+icon_alignment = 1
+expand_icon = true
+
+[node name="PlayStop" type="Button" parent="." unique_id=1837789256]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+tooltip_text = "Play"
+theme_type_variation = &"ToolButton"
+icon = ExtResource("5_play")
+icon_alignment = 1
+expand_icon = true
+
+[node name="NextFrame" type="Button" parent="." unique_id=1521646873]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+tooltip_text = "Next frame"
+theme_type_variation = &"ToolButton"
+icon = ExtResource("6_stepforward")
+icon_alignment = 1
+expand_icon = true
+
+[node name="GoToEnd" type="Button" parent="." unique_id=1837789257]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+tooltip_text = "Go to playback end"
+theme_type_variation = &"ToolButton"
+icon = ExtResource("7_pagelast")
+icon_alignment = 1
+expand_icon = true
+
+[node name="Blank3" type="Control" parent="." unique_id=1440464577]
+custom_minimum_size = Vector2(64, 0)
+layout_mode = 2
+
+[node name="LoopPlay" type="Button" parent="." unique_id=1837789258]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+tooltip_text = "Loop playback"
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+icon = ExtResource("8_repeat")
+icon_alignment = 1
+expand_icon = true
 
 [node name="FrameRate" type="SpinBox" parent="." unique_id=720721336]
 unique_name_in_owner = true
