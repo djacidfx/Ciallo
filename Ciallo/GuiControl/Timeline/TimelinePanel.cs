@@ -35,6 +35,7 @@ public partial class TimelinePanel : VBoxContainer
         TimelineRuler.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame, setting.FrameRate);
         TimelineRuler.BindPlaybackRange(setting.PlaybackStart, setting.PlaybackEnd);
         TimelineRuler.BindCurrentFrame(currentFrame);
+        TimelineRuler.BindPlayhead(Playhead);
 
         BackgroundGrid.Observe(setting.PixelsPerFrame, setting.ScrollOffsetFrame);
         BackgroundGrid.BindPlaybackRange(setting.PlaybackStart, setting.PlaybackEnd);

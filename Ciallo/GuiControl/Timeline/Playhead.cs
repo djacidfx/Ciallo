@@ -6,7 +6,8 @@ namespace Ciallo.GuiControl;
 /// <summary>
 /// Block-shaped playhead that covers one full frame column across the ruler and grid.
 /// Has top_level = true so it floats over other controls.
-/// Position and size are updated reactively from PixelsPerFrame / ScrollOffset / CurrentFrame.
+/// Position and size are updated reactively from PixelsPerFrame / ScrollOffset / CurrentFrame,
+/// with an optional center-anchored visual preview while the ruler is being dragged.
 /// </summary>
 [Tool]
 public partial class Playhead : Control
@@ -42,6 +43,7 @@ public partial class Playhead : Control
     private float _pixelsPerFrame = 20f;
     private float _scrollOffset;
     private int _currentFrame = 1;
+    private float? _previewCenterRulerX;
 
     public override void _Ready()
     {
@@ -77,6 +79,22 @@ public partial class Playhead : Control
 
     // Transform.
 
+    /// <summary>
+    /// Move the playhead visually so its center sits at the given ruler-local X without changing CurrentFrame.
+    /// </summary>
+    public void PreviewAtRulerCenterX(float centerX)
+    {
+        _previewCenterRulerX = centerX;
+        UpdateTransform();
+    }
+
+    /// <summary>Return the playhead to its CurrentFrame-driven position.</summary>
+    public void ClearPreview()
+    {
+        _previewCenterRulerX = null;
+        UpdateTransform();
+    }
+
     private void UpdateTransform()
     {
         if (GridAnchor == null || RulerAnchor == null)
@@ -88,7 +106,7 @@ public partial class Playhead : Control
             return;
         }
 
-        ApplyTransform(GridAnchor, RulerAnchor, _currentFrame, _pixelsPerFrame, _scrollOffset);
+        ApplyTransform(GridAnchor, RulerAnchor, _currentFrame, _pixelsPerFrame, _scrollOffset, _previewCenterRulerX);
     }
 
     private void UpdateEditorPreviewTransform()
@@ -103,10 +121,19 @@ public partial class Playhead : Control
             EditorPreviewScrollOffsetFrame * EditorPreviewPixelsPerFrame);
     }
 
-    private void ApplyTransform(Control gridAnchor, Control rulerAnchor, int frame, float pixelsPerFrame, float scrollOffset)
+    private void ApplyTransform(
+        Control gridAnchor,
+        Control rulerAnchor,
+        int frame,
+        float pixelsPerFrame,
+        float scrollOffset,
+        float? previewCenterRulerX = null)
     {
         // Frame 0 is at virtual x = 0, matching TimelineRuler's coordinate origin.
-        float x = gridAnchor.GlobalPosition.X + frame * pixelsPerFrame - scrollOffset;
+        float localX = previewCenterRulerX.HasValue
+            ? previewCenterRulerX.Value - pixelsPerFrame * 0.5f
+            : frame * pixelsPerFrame - scrollOffset;
+        float x = gridAnchor.GlobalPosition.X + localX;
         float topY = rulerAnchor.GlobalPosition.Y;
         float totalH = rulerAnchor.Size.Y + gridAnchor.Size.Y;
 

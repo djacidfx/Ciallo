@@ -98,11 +98,14 @@ public partial class TimelineRuler : Control
     private ReactiveProperty<int> _playbackStart;
     private ReactiveProperty<int> _playbackEnd;
     private SelectionManager _selectionManager;
+    private Playhead _playhead;
 
-    private enum DragMode { None, Frame, StartHandle, EndHandle }
+    private enum DragMode { None, PendingFrame, Frame, StartHandle, EndHandle }
 
+    private const float DragStartDistance = 3f;
     private DragMode _dragMode = DragMode.None;
     private int? _hoverFrame;
+    private Vector2 _dragStartPosition;
     private int _frameAtDragStart;
     private int _playbackStartAtDragStart;
     private int _playbackEndAtDragStart;
@@ -195,6 +198,12 @@ public partial class TimelineRuler : Control
     public void BindSelectionManager(SelectionManager sm)
     {
         _selectionManager = sm;
+    }
+
+    /// <summary>Wire the playhead so frame dragging can preview continuous visual motion.</summary>
+    public void BindPlayhead(Playhead playhead)
+    {
+        _playhead = playhead;
     }
 
     #endregion
@@ -415,26 +424,23 @@ public partial class TimelineRuler : Control
                 }
                 else if (_currentFrame != null)
                 {
-                    _dragMode = DragMode.Frame;
+                    _dragMode = DragMode.PendingFrame;
+                    _dragStartPosition = btn.Position;
                     _frameAtDragStart = _currentFrame.Value;
-                    _currentFrame.Value = FrameFromX(btn.Position.X);
                 }
 
                 if (_dragMode != DragMode.None) AcceptEvent();
             }
             else
             {
-                if (_dragMode == DragMode.Frame)
+                if (_dragMode == DragMode.PendingFrame)
                 {
-                    var cmd = new CommandBuilder()
-                        .SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
-                    if (_currentFrame.Value != _frameAtDragStart)
-                    {
-                        var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_frameAtDragStart, _currentFrame.Value);
-                        if (!newWorkingLayer.IsNull)
-                            cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
-                    }
-                    cmd.CommitOpenSequence();
+                    CommitFrameChange(FrameFromX(btn.Position.X));
+                }
+                else if (_dragMode == DragMode.Frame)
+                {
+                    CommitFrameChange(_currentFrame.Value);
+                    _playhead?.ClearPreview();
                 }
                 else if (_dragMode == DragMode.StartHandle)
                 {
@@ -473,7 +479,16 @@ public partial class TimelineRuler : Control
             {
                 switch (_dragMode)
                 {
+                    case DragMode.PendingFrame:
+                        if (motion.Position.DistanceTo(_dragStartPosition) >= DragStartDistance)
+                        {
+                            _dragMode = DragMode.Frame;
+                            _playhead?.PreviewAtRulerCenterX(DragPreviewCenterXFromX(motion.Position.X));
+                            _currentFrame.Value = FrameFromX(motion.Position.X);
+                        }
+                        break;
                     case DragMode.Frame:
+                        _playhead?.PreviewAtRulerCenterX(DragPreviewCenterXFromX(motion.Position.X));
                         _currentFrame.Value = FrameFromX(motion.Position.X);
                         break;
                     case DragMode.StartHandle:
@@ -520,6 +535,33 @@ public partial class TimelineRuler : Control
         if (_playbackStart != null)
             frame = Mathf.Clamp(frame, _playbackStart.Value, _playbackEnd.Value - 1);
         return frame;
+    }
+
+    private float DragPreviewCenterXFromX(float localX)
+    {
+        if (_playbackStart == null || _playbackEnd == null)
+            return localX;
+
+        float halfFrameWidth = _pixelsPerFrame * 0.5f;
+        float minX = FrameToX(_playbackStart.Value) + halfFrameWidth;
+        float maxX = FrameToX(_playbackEnd.Value - 1) + halfFrameWidth;
+        return Mathf.Clamp(localX, minX, maxX);
+    }
+
+    private void CommitFrameChange(int newFrame)
+    {
+        if (_currentFrame.Value != newFrame)
+            _currentFrame.Value = newFrame;
+
+        var cmd = new CommandBuilder()
+            .SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
+        if (_currentFrame.Value != _frameAtDragStart)
+        {
+            var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_frameAtDragStart, _currentFrame.Value);
+            if (!newWorkingLayer.IsNull)
+                cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
+        }
+        cmd.CommitToLatest();
     }
 
     /// <summary>
