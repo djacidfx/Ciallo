@@ -17,9 +17,10 @@ public partial class TimelineAction : Container
     private TimelineSetting _timelineSetting;
     private Texture2D _playIcon;
     private Texture2D _stopIcon;
-    private bool _isPlaying;
+    private readonly ReactiveProperty<bool> _isPlaying = new(false);
     private int _frameAtPlaybackStart;
     private double _playbackAccumulator;
+    public ReadOnlyReactiveProperty<bool> IsPlaying => _isPlaying;
 
     public override void _Ready()
     {
@@ -57,10 +58,10 @@ public partial class TimelineAction : Container
 
     public override void _Process(double delta)
     {
-        if (!_isPlaying || _selectionManager == null || _timelineSetting == null) return;
+        if (!_isPlaying.Value || _selectionManager == null || _timelineSetting == null) return;
 
         _playbackAccumulator += delta * Mathf.Max(_timelineSetting.FrameRate.Value, 1f);
-        while (_playbackAccumulator >= 1.0 && _isPlaying)
+        while (_playbackAccumulator >= 1.0 && _isPlaying.Value)
         {
             _playbackAccumulator -= 1.0;
             AdvancePlaybackFrame();
@@ -87,7 +88,7 @@ public partial class TimelineAction : Container
 
     private void TogglePlayback()
     {
-        if (_isPlaying)
+        if (_isPlaying.Value)
         {
             SetPlaying(false);
             return;
@@ -105,8 +106,8 @@ public partial class TimelineAction : Container
             frame = GetPlaybackStart();
 
         _frameAtPlaybackStart = frame;
-        SetFrameDirect(frame);
         SetPlaying(true);
+        SetFrameDirect(frame);
     }
 
     private void AdvancePlaybackFrame()
@@ -152,15 +153,15 @@ public partial class TimelineAction : Container
 
     private void SetPlaying(bool playing)
     {
-        bool wasPlaying = _isPlaying;
-        _isPlaying = playing;
+        bool wasPlaying = _isPlaying.Value;
+        if (wasPlaying && !playing)
+            SwitchWorkingLayerAfterPlayback();
+
+        _isPlaying.Value = playing;
         _playbackAccumulator = 0.0;
         PlayStop.Icon = playing ? _stopIcon : _playIcon;
         PlayStop.TooltipText = playing ? "Stop playback" : "Play";
         SetProcess(playing);
-
-        if (wasPlaying && !playing)
-            SwitchWorkingLayerAfterPlayback();
     }
 
     private void SwitchWorkingLayerAfterPlayback()

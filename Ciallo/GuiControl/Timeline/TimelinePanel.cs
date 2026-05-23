@@ -1,4 +1,5 @@
 using Ciallo.Data;
+using Ciallo.Tool;
 using Frent;
 using Godot;
 using R3;
@@ -11,6 +12,8 @@ namespace Ciallo.GuiControl;
 [SceneTree, Instantiable]
 public partial class TimelinePanel : VBoxContainer
 {
+    public ReadOnlyReactiveProperty<bool> IsTimelineRolling { get; private set; }
+
     public override void _Ready()
     {
         TrackTree.RightClickMenu = CelTrackRightClickMenu;
@@ -22,6 +25,10 @@ public partial class TimelinePanel : VBoxContainer
             HSplitScrollBar.SplitOffsets = [(int)offset];
             HSplitBgGrid.SplitOffsets = [(int)offset];
         };
+
+        IsTimelineRolling = TimelineAction.IsPlaying
+            .CombineLatest(TimelineRuler.IsScrubbing, (playing, scrubbing) => playing || scrubbing)
+            .ToReadOnlyReactiveProperty();
     }
 
     public void Init(Entity document)

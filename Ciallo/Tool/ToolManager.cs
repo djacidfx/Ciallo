@@ -15,6 +15,7 @@ public partial class ToolManager : IInitable, IDestroyable
     public ReactiveProperty<ToolButton?> PressedToolButton => AppPreference.PressedToolButton;
     public ReactiveProperty<ITool> WorkingTool = new(null);
     public Entity Document;
+    private readonly ReactiveProperty<bool> _isTimelineRolling = new(false);
 
     public void Init(Entity self)
     {
@@ -22,18 +23,25 @@ public partial class ToolManager : IInitable, IDestroyable
         ToolButtonMap = InitializeToolButtonMap(self);
         var workingLayer = Document.Get<SelectionManager>().WorkingLayer;
         // Switch tool
-        workingLayer.CombineLatest(PressedToolButton, ValueTuple.Create)
-            .DebounceFrame(1) // Assume activating tool is costly, so debounce it to avoid activating multiple tools in one frame.
+        _isTimelineRolling
+            .CombineLatest(workingLayer, ValueTuple.Create)
+            .CombineLatest(PressedToolButton, ValueTuple.Create)
             .Subscribe(tuple =>
             {
-                var (layerE, toolButton) = tuple;
-
-                var targetTool = layerE.IsNull || toolButton == null ? null :
-                    ToolButtonMap[toolButton.Value].FirstOrDefault(t => t.CanHandleLayer(layerE));
-                WorkingTool.Value?.OnDeactivate();
-                targetTool?.OnActivate(layerE);
-                WorkingTool.Value = targetTool;
+                var (isTimelineRolling, layerE) = tuple.Item1;
+                var toolButton = tuple.Item2;
+                var targetTool = isTimelineRolling ? null : ResolveTool(layerE, toolButton);
+                SwitchWorkingTool(targetTool, layerE);
             }).AddTo(Document);
+    }
+
+    public void BindTimelineRolling(Observable<bool> isTimelineRolling)
+    {
+        isTimelineRolling.Subscribe(rolling =>
+        {
+            if (_isTimelineRolling.Value == rolling) return;
+            _isTimelineRolling.Value = rolling;
+        }).AddTo(Document);
     }
 
     public void Destroy() => DeactivateWorkingTool();
@@ -47,5 +55,17 @@ public partial class ToolManager : IInitable, IDestroyable
     public void ActivatePaintTool()
     {
         PressedToolButton.Value = ToolButton.Paint;
+    }
+
+    private ITool ResolveTool(Entity layerE, ToolButton? toolButton) =>
+        layerE.IsNull || toolButton == null
+            ? null
+            : ToolButtonMap[toolButton.Value].FirstOrDefault(t => t.CanHandleLayer(layerE));
+
+    private void SwitchWorkingTool(ITool targetTool, Entity layerE)
+    {
+        WorkingTool.Value?.OnDeactivate();
+        targetTool?.OnActivate(layerE);
+        WorkingTool.Value = targetTool;
     }
 }

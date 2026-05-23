@@ -99,6 +99,8 @@ public partial class TimelineRuler : Control
     private ReactiveProperty<int> _playbackEnd;
     private SelectionManager _selectionManager;
     private Playhead _playhead;
+    private readonly ReactiveProperty<bool> _isScrubbing = new(false);
+    public ReadOnlyReactiveProperty<bool> IsScrubbing => _isScrubbing;
 
     private enum DragMode { None, PendingFrame, Frame, StartHandle, EndHandle }
 
@@ -441,6 +443,7 @@ public partial class TimelineRuler : Control
                 {
                     CommitFrameChange(_currentFrame.Value);
                     _playhead?.ClearPreview();
+                    _isScrubbing.Value = false;
                 }
                 else if (_dragMode == DragMode.StartHandle)
                 {
@@ -483,6 +486,7 @@ public partial class TimelineRuler : Control
                         if (motion.Position.DistanceTo(_dragStartPosition) >= DragStartDistance)
                         {
                             _dragMode = DragMode.Frame;
+                            _isScrubbing.Value = true;
                             _playhead?.PreviewAtRulerCenterX(DragPreviewCenterXFromX(motion.Position.X));
                             _currentFrame.Value = FrameFromX(motion.Position.X);
                         }
