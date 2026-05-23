@@ -43,7 +43,7 @@ public partial class AutoloadGuiControl : Node
             GetTree().GetNodesInGroup("UncategorizedControl")
                 .OfType<TimelinePanelContainer>().Single().AddChild(timelinePanel);
             document.AddNode(timelinePanel);
-            document.Get<ToolManager>().BindTimelineRolling(timelinePanel.IsTimelineRolling);
+            document.Get<ToolManager>().ObserveTimelineRolling(timelinePanel.IsTimelineRolling);
 
             // SubViewport holder (a dummy node for debugging efficiently)
             var subViewportHolder = new SubViewportHolder();

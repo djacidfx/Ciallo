@@ -49,16 +49,27 @@ bg_color = Color(0.1, 0.1, 0.1, 0.6)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yhag5"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_voest"]
-bg_color = Color(0.101961, 0.101961, 0.101961, 0.6)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u23kh"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0.8745098)
 corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
-expand_margin_left = 5.0
-expand_margin_top = 5.0
-expand_margin_right = 5.0
-expand_margin_bottom = 5.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ogfsw"]
+content_margin_left = 4.0
+content_margin_top = 4.0
+content_margin_right = 4.0
+content_margin_bottom = 4.0
+bg_color = Color(0, 0, 0, 0.85882354)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t6ki5"]
 bg_color = Color(1, 1, 1, 0)
@@ -85,8 +96,8 @@ LayerBlockButton/styles/pressed = SubResource("StyleBoxFlat_4as0w")
 LineEdit/styles/focus = SubResource("StyleBoxEmpty_4as0w")
 TabBar/styles/tab_focus = SubResource("StyleBoxEmpty_yhag5")
 ToolButton/base_type = &"Button"
-ToolButton/styles/focus = null
-ToolButton/styles/hover = SubResource("StyleBoxFlat_voest")
+ToolButton/styles/hover = SubResource("StyleBoxFlat_u23kh")
+ToolButton/styles/hover_pressed = SubResource("StyleBoxFlat_ogfsw")
 ToolButton/styles/normal = SubResource("StyleBoxFlat_t6ki5")
 VSplitContainer/constants/separation = 6
 VSplitContainer/styles/split_bar_background = SubResource("StyleBoxLine_yhag5")

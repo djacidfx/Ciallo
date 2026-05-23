@@ -35,7 +35,7 @@ public partial class ToolManager : IInitable, IDestroyable
             }).AddTo(Document);
     }
 
-    public void BindTimelineRolling(Observable<bool> isTimelineRolling)
+    public void ObserveTimelineRolling(Observable<bool> isTimelineRolling)
     {
         isTimelineRolling.Subscribe(rolling =>
         {
