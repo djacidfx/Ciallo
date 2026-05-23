@@ -61,9 +61,7 @@ public partial class TimelinePanel : VBoxContainer
     }
 
     /// <summary>
-    /// Registers <see cref="TrackTree"/>, its root wrapper, and <see cref="BackgroundGrid"/>
-    /// as Frent components on <paramref name="document"/> so that layer commands can
-    /// create and position track rows at runtime.
+    /// Registers <see cref="TrackTree"/>
     /// </summary>
     private void InitTrackTree(Entity document, SelectionManager selectionManager)
     {

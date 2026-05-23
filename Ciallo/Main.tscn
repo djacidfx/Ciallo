@@ -190,8 +190,8 @@ layout_mode = 2
 
 [node name="LayerPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit" unique_id=840531377 groups=["UncategorizedControl"]]
 layout_mode = 2
-theme_override_constants/margin_top = 15
-theme_override_constants/margin_right = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
 script = ExtResource("19_3b0ty")
 
 [node name="LayerPanelPreview" parent="MainGui/MarginContainer/UIBlock/VSplit/LayerPanelContainer" unique_id=1083993257 instance=ExtResource("16_kjvhd")]

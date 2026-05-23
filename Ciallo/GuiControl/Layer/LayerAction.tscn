@@ -10,7 +10,7 @@
 [node name="LayerAction" type="HFlowContainer" unique_id=1292664685]
 offset_right = 258.0
 offset_bottom = 36.0
-theme_override_constants/h_separation = 5
+theme_override_constants/h_separation = 8
 script = ExtResource("1_qp7qr")
 
 [node name="FileDialog" type="FileDialog" parent="." unique_id=146062056]

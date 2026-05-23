@@ -20,7 +20,7 @@ theme_override_constants/h_separation = 12
 script = ExtResource("1_ytrn4")
 
 [node name="Blank2" type="Control" parent="." unique_id=140412166]
-custom_minimum_size = Vector2(64, 0)
+custom_minimum_size = Vector2(32, 0)
 layout_mode = 2
 
 [node name="AddCelFolder" type="Button" parent="." unique_id=1723767805]

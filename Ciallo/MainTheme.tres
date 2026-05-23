@@ -62,7 +62,6 @@ expand_margin_bottom = 5.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t6ki5"]
 bg_color = Color(1, 1, 1, 0)
-draw_center = false
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_yhag5"]
 color = Color(0.101961, 0.101961, 0.101961, 0.6)

@@ -119,18 +119,6 @@ size_flags_horizontal = 3
 script = ExtResource("4_lw6jv")
 ScrollZoneWidthRatio = 0.5
 
-[node name="Playhead" type="Control" parent="TimelineMainArea/TrackArea" unique_id=205874701 node_paths=PackedStringArray("GridAnchor", "RulerAnchor")]
-unique_name_in_owner = true
-top_level = true
-layout_mode = 2
-mouse_filter = 2
-script = ExtResource("5_playhead")
-BorderColor = Color(0.81014097, 0.65571487, 0.41672376, 0.8509804)
-BorderWidth = 2.0
-GridAnchor = NodePath("../HSplitBgGrid/BackgroundGrid")
-RulerAnchor = NodePath("../../HSplitRuler/TimelineRuler")
-metadata/_custom_type_script = "uid://dkn2veamvchhh"
-
 [node name="PlaybackStartBar" type="Control" parent="TimelineMainArea/TrackArea" unique_id=650213917 node_paths=PackedStringArray("GridAnchor", "RulerAnchor")]
 unique_name_in_owner = true
 top_level = true
@@ -153,6 +141,18 @@ LineColor = Color(1, 1, 1, 0.0627451)
 IsStart = false
 GridAnchor = NodePath("../HSplitBgGrid/BackgroundGrid")
 RulerAnchor = NodePath("../../HSplitRuler/TimelineRuler")
+
+[node name="Playhead" type="Control" parent="TimelineMainArea/TrackArea" unique_id=205874701 node_paths=PackedStringArray("GridAnchor", "RulerAnchor")]
+unique_name_in_owner = true
+top_level = true
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("5_playhead")
+BorderColor = Color(0.81014097, 0.65571487, 0.41672376, 0.8509804)
+BorderWidth = 2.0
+GridAnchor = NodePath("../HSplitBgGrid/BackgroundGrid")
+RulerAnchor = NodePath("../../HSplitRuler/TimelineRuler")
+metadata/_custom_type_script = "uid://dkn2veamvchhh"
 
 [node name="CelTrackRightClickMenu" type="PopupMenu" parent="." unique_id=100000001]
 unique_name_in_owner = true
