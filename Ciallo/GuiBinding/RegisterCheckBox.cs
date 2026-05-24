@@ -3,7 +3,7 @@
 namespace Ciallo;
 
 /// <summary>
-/// Register a Godot range control to command history.
+/// Register a Godot checkBox or checkBox-like button to command history.
 /// </summary>
 public static class RegisterCheckBox
 {

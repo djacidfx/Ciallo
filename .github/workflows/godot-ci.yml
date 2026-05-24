@@ -1,10 +1,6 @@
 name: "godot-ci export"
 on:
-  push:
-    branches:
-      - disable-ci
-    paths:
-      - "./Ciallo/**"
+  workflow_dispatch:
 
 env:
   GODOT_VERSION: 4.7.stable.mono
