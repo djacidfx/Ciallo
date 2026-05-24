@@ -19,7 +19,7 @@ namespace Ciallo.GuiControl;
 /// </list>
 /// Call <see cref="Observe"/> and <see cref="Bind"/> once after adding to the scene.
 /// </summary>
-[GlobalClass]
+[Tool]
 public partial class CelTrack : Control
 {
     // ── Tunable ──────────────────────────────────────────────────────────────
@@ -37,6 +37,7 @@ public partial class CelTrack : Control
     private int _playbackStart;
     private int _playbackEnd;
     private ObservableSortedList<int, Entity> _exposures;
+    private bool _isSelected;
 
     // ── Interaction state ─────────────────────────────────────────────────────
     private const float DragThreshold = 3f;
@@ -66,6 +67,7 @@ public partial class CelTrack : Control
     public Color ArrowColor;
     public Font LabelFont;
     public int LabelFontSize;
+    public Color HintSelectedColor = new(207 / 255f, 167 / 255f, 106 / 255f, 1f); // hardcoded orange idencial to palyhead color.
 
     // ── Constructor ───────────────────────────────────────────────────────────
 
@@ -146,7 +148,16 @@ public partial class CelTrack : Control
         _celFolderEntity = celFolderEntity;
         _selectionManager = sm;
         _exposures = exposures;
+        _isSelected = sm.WorkingCelFolder.CurrentValue == _celFolderEntity;
         exposures.ObserveChanged().Subscribe(_ => QueueRedraw()).AddTo(subs);
+        sm.WorkingCelFolder.Subscribe(workingCelFolder =>
+        {
+            bool isSelected = workingCelFolder == _celFolderEntity;
+            if (isSelected == _isSelected) return;
+
+            _isSelected = isSelected;
+            QueueRedraw();
+        }).AddTo(subs);
     }
 
     // ── Drawing ───────────────────────────────────────────────────────────────
@@ -163,9 +174,6 @@ public partial class CelTrack : Control
         var frames = new List<int>();
         foreach (var kv in _exposures)
             frames.Add(kv.Key);
-
-        // ── Outer border ─────────────────────────────────────────────────────
-        DrawRect(new Rect2(0f, 0f, w, h), Colors.Black, filled: false, width: 1f);
 
         float playbackStartX = _playbackStart * _ppf - _scrollOffset;
         float playbackEndX = _playbackEnd * _ppf - _scrollOffset;
@@ -283,6 +291,13 @@ public partial class CelTrack : Control
             DrawRect(new Rect2(targetX, 0f, barW, h), previewColor);
             DrawRect(new Rect2(targetX, 0f, barW, h), isValid ? LabelColor : Colors.Red,
                 filled: false, width: 1f);
+        }
+
+        if (_isSelected)
+        {
+            float width = 2.0f;
+            DrawLine(new Vector2(0f, width), new Vector2(w, width), HintSelectedColor, width: width);
+            DrawLine(new Vector2(0f, h - width / 2), new Vector2(w, h - width / 2), HintSelectedColor, width: width);
         }
     }
 

@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://dix0v3s32ffhp"]
 
 [ext_resource type="Script" uid="uid://btracktree1cs" path="res://GuiControl/Timeline/TrackTree.cs" id="1_va2b4"]
-[ext_resource type="Script" uid="uid://btrackrowwr1cs" path="res://GuiControl/Timeline/TrackRowWrapper.cs" id="2_5retc"]
+[ext_resource type="Script" uid="uid://dix0v1qnk5nhu" path="res://GuiControl/Timeline/TrackRowWrapper.cs" id="2_5retc"]
 [ext_resource type="Script" uid="uid://bdjd4la8oswpt" path="res://Widget/StrokeRect.cs" id="4_54v1c"]
-[ext_resource type="Script" path="res://GuiControl/Layer/LayerRightClickMenu.cs" id="5_lrcm"]
+[ext_resource type="Script" uid="uid://b2kcp261ds55u" path="res://GuiControl/Layer/LayerRightClickMenu.cs" id="5_lrcm"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4h4vt"]
 bg_color = Color(0, 0, 0, 0.74509805)
@@ -17,7 +17,6 @@ script = ExtResource("1_va2b4")
 
 [node name="RootContainer" type="Container" parent="." unique_id=1575722750]
 unique_name_in_owner = true
-clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("2_5retc")

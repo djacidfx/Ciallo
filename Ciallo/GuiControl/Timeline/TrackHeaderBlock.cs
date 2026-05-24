@@ -36,7 +36,8 @@ public partial class TrackHeaderBlock : Container, IInitable, ILayerBlock
 
     public override void _EnterTree()
     {
-        Indent.Count = Wrapper.Level - 1;
+        if (Wrapper != null)
+            Indent.Count = Wrapper.Level - 1;
     }
 
     public override void _ExitTree()

@@ -4,8 +4,7 @@ using R3;
 namespace Ciallo.GuiControl;
 
 /// <summary>
-/// Block-shaped playhead that covers one full frame column across the ruler and grid.
-/// Has top_level = true so it floats over other controls.
+/// Playhead has top_level = true so it floats over other controls.
 /// Position and size are updated reactively from PixelsPerFrame / ScrollOffset / CurrentFrame,
 /// with an optional center-anchored visual preview while the ruler is being dragged.
 /// </summary>
@@ -146,12 +145,7 @@ public partial class Playhead : Control
 
     public override void _Draw()
     {
-        float rulerHeight = RulerAnchor?.Size.Y ?? 0f;
-
-        DrawLine(new Vector2(0f, 0f), new Vector2(0f, rulerHeight), BorderColor, BorderWidth);
-        DrawLine(new Vector2(Size.X, 0f), new Vector2(Size.X, rulerHeight), BorderColor, BorderWidth);
-
-        var gridRect = new Rect2(new Vector2(0f, rulerHeight), new Vector2(Size.X, Size.Y - rulerHeight));
-        DrawRect(gridRect, BorderColor, false, BorderWidth);
+        DrawLine(new Vector2(0f, 0f), new Vector2(0f, Size.Y), BorderColor, BorderWidth);
+        DrawLine(new Vector2(Size.X, 0f), new Vector2(Size.X, Size.Y), BorderColor, BorderWidth);
     }
 }

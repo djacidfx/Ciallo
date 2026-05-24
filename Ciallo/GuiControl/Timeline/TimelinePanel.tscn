@@ -11,9 +11,6 @@
 [ext_resource type="Script" uid="uid://be8hf2vpukxor" path="res://GuiControl/Timeline/CelTrackRightClickMenu.cs" id="7_ctrcm"]
 [ext_resource type="PackedScene" uid="uid://dix0v3s32ffhp" path="res://GuiControl/Timeline/TrackTree.tscn" id="7_trtree"]
 
-[sub_resource type="StyleBoxLine" id="StyleBoxLine_nrybc"]
-color = Color(0.3995956, 0.3995956, 0.39959556, 1)
-
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oeyx3"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nrybc"]
@@ -34,20 +31,14 @@ script = ExtResource("1_pn4au")
 unique_name_in_owner = true
 layout_mode = 2
 
-[node name="TimelineMainArea" type="VSplitContainer" parent="." unique_id=1938019838]
+[node name="TimelineMainArea" type="VBoxContainer" parent="." unique_id=609701276]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/separation = 0
-theme_override_constants/minimum_grab_thickness = 0
-theme_override_constants/autohide = 1
-theme_override_styles/split_bar_background = SubResource("StyleBoxLine_nrybc")
-dragging_enabled = false
-dragger_visibility = 2
+theme_override_constants/separation = 1
 
 [node name="HSplitRuler" type="HSplitContainer" parent="TimelineMainArea" unique_id=233143306]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 12
 split_offsets = PackedInt32Array(256)
 split_offset = 256
 
@@ -66,12 +57,12 @@ metadata/_custom_type_script = "uid://de3wjfml6rs3i"
 
 [node name="TrackArea" type="PanelContainer" parent="TimelineMainArea" unique_id=1812537386]
 layout_mode = 2
+size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxEmpty_oeyx3")
 
 [node name="HSplitBgGrid" type="HSplitContainer" parent="TimelineMainArea/TrackArea" unique_id=108006388]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 12
 theme_override_styles/split_bar_background = SubResource("StyleBoxEmpty_nrybc")
 split_offsets = PackedInt32Array(256)
 split_offset = 256
@@ -101,7 +92,6 @@ layout_mode = 2
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 12
 theme_override_styles/split_bar_background = SubResource("StyleBoxEmpty_apt30")
 split_offsets = PackedInt32Array(256)
 dragging_enabled = false

@@ -72,54 +72,19 @@ public partial class TrackTree : LayerTreeBase
     public void Create(Entity layerE)
     {
         var wrapper = new TrackRowWrapper();
-        var trackRow = new TrackRow();
-        var headerBlock = TrackHeaderBlock.New();
-
-        trackRow.DraggingEnabled = false;
-        trackRow.SplitOffsets = [_splitOffset];
-        trackRow.SizeFlagsHorizontal = SizeFlags.ExpandFill;
-
-        var scrollContainer = new ScrollContainer
-        {
-            SizeFlagsHorizontal = SizeFlags.Fill,
-            ClipContents = false,
-            HorizontalScrollMode = ScrollMode.ShowNever,
-            VerticalScrollMode = ScrollMode.Disabled,
-        };
-
-        scrollContainer.AddChild(headerBlock);
-        trackRow.AddChild(scrollContainer);
-        trackRow.HeaderBlock = headerBlock;
-        headerBlock.OwningWrapper = wrapper;
+        var trackRow = TrackRow.New();
+        trackRow.Configure(_splitOffset, wrapper);
 
         var folderSetting = layerE.TryGet<FolderLayerSetting>();
         if (folderSetting?.IsCel == true)
         {
             var subs = new CompositeDisposable();
             subs.AddTo(layerE);
-
-            var celTrack = new CelTrack();
-            var timeSetting = layerE.Document.Get<TimelineSetting>();
-            celTrack.Observe(timeSetting.PixelsPerFrame, timeSetting.ScrollOffsetFrame, timeSetting.PlaybackStart, timeSetting.PlaybackEnd, subs);
-            var selectionManager = layerE.Document.Get<SelectionManager>();
-            celTrack.Bind(layerE, folderSetting.Exposures, selectionManager, subs);
-            celTrack.RightClickMenu = RightClickMenu;
-            trackRow.AddChild(celTrack);
-            trackRow.CelTrack = celTrack;
-            layerE.Add(celTrack);
-        }
-        else
-        {
-            // Empty placeholder keeps the HSplitContainer's right panel present.
-            var placeholder = new Control
-            {
-                SizeFlagsHorizontal = SizeFlags.ExpandFill
-            };
-            trackRow.AddChild(placeholder);
+            trackRow.EnableCelTrack(layerE, RightClickMenu, subs);
         }
 
         wrapper.Title = trackRow;
-        layerE.Add(headerBlock);
+        layerE.Add(trackRow.HeaderBlock);
         layerE.AddNode(wrapper);
 
         InitBlock(layerE);
