@@ -362,11 +362,8 @@ public partial class CelTrack : Control
             int frame = PositionToFrameFloor(btn.Position.X);
             _rightClickIndicatorFrame = frame;
             QueueRedraw();
-            if (RightClickMenu != null)
-            {
-                RightClickMenu.PopupHide += OnMenuClosed;
-                RightClickMenu.Show(_celFolderEntity, frame, btn.GlobalPosition);
-            }
+            RightClickMenu.PopupHide += OnMenuClosed;
+            RightClickMenu.Show(_celFolderEntity, frame, btn.GlobalPosition);
             AcceptEvent();
         }
         else if (@event is InputEventMouseButton lbtn && lbtn.ButtonIndex == MouseButton.Left)
@@ -438,8 +435,7 @@ public partial class CelTrack : Control
 
     private void OnMenuClosed()
     {
-        if (RightClickMenu != null)
-            RightClickMenu.PopupHide -= OnMenuClosed;
+        RightClickMenu.PopupHide -= OnMenuClosed;
         _rightClickIndicatorFrame = -1;
         QueueRedraw();
     }

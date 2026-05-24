@@ -11,7 +11,7 @@ public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
     public static int LayerCreationId = 1;
 
     /// <summary>
-    /// Assume the given node is focused and going to be deleted, return the path to the next node that should have focus.
+    /// Assume the given node at path is focused and going to be deleted, return the path to the next node that should have focus.
     /// e.g. Used at deletion of working layer to determine the new working layer.
     /// </summary>
     /// <param name="path">The given node path.</param>
@@ -39,17 +39,17 @@ public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
         if (idx + 1 < childCount)
         {
             parentPath.Add(idx + 1);
-            return [..parentPath];
+            return [.. parentPath];
         }
 
         // Previous sibling
         if (idx - 1 >= 0)
         {
             parentPath.Add(idx - 1);
-            return [..parentPath];
+            return [.. parentPath];
         }
 
         // Fallback to parent
-        return [..parentPath];
+        return [.. parentPath];
     }
 }
