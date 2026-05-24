@@ -32,6 +32,8 @@ public partial class CelTrackRightClickMenu : PopupMenu
     // ── Menu item IDs ─────────────────────────────────────────────────────────
     private const int IdNewAnimationCel = 0;
     private const int IdDeleteCel = 1;
+    private const int IdInsertFrame = 2;
+    private const int IdDeleteFrame = 3;
     private const int CelListIdBase = 100;
 
     // ── Init ─────────────────────────────────────────────────────────────────
@@ -110,6 +112,10 @@ public partial class CelTrackRightClickMenu : PopupMenu
             AddSeparator();
             AddItem("Delete Cel", IdDeleteCel);
         }
+
+        AddSeparator();
+        AddItem("Insert Frame", IdInsertFrame);
+        AddItem("Delete Frame", IdDeleteFrame);
     }
 
     // ── Event handler ─────────────────────────────────────────────────────────
@@ -124,6 +130,12 @@ public partial class CelTrackRightClickMenu : PopupMenu
                 break;
             case IdDeleteCel:
                 ActionDeleteCel();
+                break;
+            case IdInsertFrame:
+                ActionInsertFrame();
+                break;
+            case IdDeleteFrame:
+                ActionDeleteFrame();
                 break;
             default:
                 if (intId >= CelListIdBase)
@@ -179,12 +191,13 @@ public partial class CelTrackRightClickMenu : PopupMenu
     {
         var exposures = _celFolderEntity.Get<FolderLayerSetting>().Exposures;
         int frame = _rightClickedFrame;
-        string label = _onCel ? "Replace Cel" : "Insert Cel";
+        bool onCel = _onCel;
+        string label = onCel ? "Replace Cel" : "Insert Cel";
 
         new CommandBuilder(label)
             .SetObservableCollection(exposures, exp =>
             {
-                if (_onCel && exp.ContainsKey(frame))
+                if (onCel && exp.ContainsKey(frame))
                     exp.Remove(frame);
                 exp.Add(frame, celEntity);
             })
@@ -199,6 +212,34 @@ public partial class CelTrackRightClickMenu : PopupMenu
 
         new CommandBuilder("Delete Cel")
             .SetObservableCollection(exposures, exp => exp.Remove(frame))
+            .Commit();
+    }
+
+    private void ActionInsertFrame()
+    {
+        const int frameCount = 1;
+        int frame = _rightClickedFrame;
+        var exposures = _celFolderEntity.Get<FolderLayerSetting>().Exposures;
+        if (!TimelineFrameRetiming.InsertFramesWouldChange(exposures, frame, frameCount))
+            return;
+
+        new CommandBuilder("Insert Frame")
+            .SetObservableCollection(exposures,
+                exp => TimelineFrameRetiming.InsertFrames(exp, frame, frameCount))
+            .Commit();
+    }
+
+    private void ActionDeleteFrame()
+    {
+        const int frameCount = 1;
+        int frame = _rightClickedFrame;
+        var exposures = _celFolderEntity.Get<FolderLayerSetting>().Exposures;
+        if (!TimelineFrameRetiming.DeleteFramesWouldChange(exposures, frame, frameCount))
+            return;
+
+        new CommandBuilder("Delete Frame")
+            .SetObservableCollection(exposures,
+                exp => TimelineFrameRetiming.DeleteFrames(exp, frame, frameCount))
             .Commit();
     }
 }

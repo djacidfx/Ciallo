@@ -88,6 +88,8 @@ public partial class TimelineRuler : Control
         }
     } = 18f;
 
+    [Export] public TimelineRulerRightClickMenu RightClickMenu { get; set; }
+
     #endregion
 
     // ── Private state ────────────────────────────────────────────────────────
@@ -111,6 +113,7 @@ public partial class TimelineRuler : Control
     private int _frameAtDragStart;
     private int _playbackStartAtDragStart;
     private int _playbackEndAtDragStart;
+    private int? _rightClickIndicatorFrame;
 
     #region Theme
 
@@ -401,13 +404,31 @@ public partial class TimelineRuler : Control
             DrawString(font, new Vector2(hx - labelW * 0.5f, SecondsBandHeight - 2f),
                 hoverLabel, HorizontalAlignment.Left, -1, LabelFontSize, LabelColor);
         }
+
+        if (_rightClickIndicatorFrame != null)
+        {
+            float ix = FrameToX(_rightClickIndicatorFrame.Value);
+            if (ix >= 0f && ix <= w)
+                DrawLine(new Vector2(ix, 0f), new Vector2(ix, h),
+                    new Color(1f, 1f, 1f, 0.75f), width: 1f);
+        }
     }
 
     // ── Input ─────────────────────────────────────────────────────────────────
 
     public override void _GuiInput(InputEvent @event)
     {
-        if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left } btn)
+        if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Right, Pressed: true } rightBtn)
+        {
+            if (RightClickMenu == null) return;
+
+            _rightClickIndicatorFrame = XToFrame(rightBtn.Position.X);
+            QueueRedraw();
+            RightClickMenu.PopupHide += OnRightClickMenuClosed;
+            RightClickMenu.Show(_rightClickIndicatorFrame.Value, rightBtn.GlobalPosition);
+            AcceptEvent();
+        }
+        else if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left } btn)
         {
             if (btn.Pressed)
             {
@@ -511,6 +532,13 @@ public partial class TimelineRuler : Control
                 AcceptEvent();
             }
         }
+    }
+
+    private void OnRightClickMenuClosed()
+    {
+        RightClickMenu.PopupHide -= OnRightClickMenuClosed;
+        _rightClickIndicatorFrame = null;
+        QueueRedraw();
     }
 
     // ── Cursor ────────────────────────────────────────────────────────────────
