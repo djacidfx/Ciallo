@@ -4,7 +4,8 @@ using Godot;
 [Tool, GlobalClass]
 public partial class ReversibleBoxContainer : BoxContainer
 {
-    [Export] public bool ReverseOrder
+    [Export]
+    public bool ReverseOrder
     {
         get;
         set
@@ -19,11 +20,11 @@ public partial class ReversibleBoxContainer : BoxContainer
     {
         // Always call base so BoxContainer handles sizing, theming, and other notifications.
         base._Notification(what);
-        if (what == NotificationSortChildren) _resort();
+        if (what == NotificationSortChildren) Resort();
     }
 
     // Virtual so subclasses can override layout while still triggering it via _Notification.
-    protected virtual void _resort()
+    protected virtual void Resort()
     {
         // When not reversing, BoxContainer's base layout (called above) already handled it.
         if (!ReverseOrder) return;

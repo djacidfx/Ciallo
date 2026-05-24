@@ -1,0 +1,44 @@
+[gd_scene format=3 uid="uid://byv57m68lgbfs"]
+
+[ext_resource type="Script" uid="uid://btrackrow1cs0" path="res://GuiControl/Timeline/TrackRow.cs" id="1_trackrow"]
+[ext_resource type="PackedScene" uid="uid://b628y6pr5vwg2" path="res://GuiControl/Timeline/TrackHeaderBlock.tscn" id="2_header"]
+[ext_resource type="Script" uid="uid://bupgc7o0s5vq7" path="res://GuiControl/Timeline/CelTrack.cs" id="3_celtrack"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kfqj1"]
+
+[node name="TrackRow" type="HSplitContainer" unique_id=412199115]
+editor_description = "Offset is modified in code"
+size_flags_horizontal = 3
+theme_override_styles/split_bar_background = SubResource("StyleBoxEmpty_kfqj1")
+script = ExtResource("1_trackrow")
+
+[node name="HeaderScroll" type="ScrollContainer" parent="." unique_id=1691801472]
+clip_contents = false
+layout_mode = 2
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 0
+
+[node name="HeaderBlock" parent="HeaderScroll" unique_id=1745171663 instance=ExtResource("2_header")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TimelinePanel" type="Control" parent="." unique_id=2116993851]
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="CelTrack" type="Control" parent="TimelinePanel" unique_id=1672063200]
+unique_name_in_owner = true
+visible = false
+clip_contents = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+mouse_filter = 1
+script = ExtResource("3_celtrack")

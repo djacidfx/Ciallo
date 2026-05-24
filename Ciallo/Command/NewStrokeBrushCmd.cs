@@ -69,7 +69,7 @@ public class NewStrokeBrushCmd : CommandBase
                     .Select(i => Mathf.Lerp(-pi / 2, pi / 2, (float)i / (n - 1)))
                     .Select(Mathf.Cos) // pen pressure
                     .Select(x => pts.SampleX(x))
-                    .Select(ratio => ratio * r.SigmoidRemap(5, 32, 12, 48))
+                    .Select(ratio => ratio * r.SigmoidRemap(1, 12, 1, 36))
                     .ToArray();
                 previewStroke.SetGeometry(CreatePreviewGeometry(previewRect, n), radius);
             }).AddTo(targetE);

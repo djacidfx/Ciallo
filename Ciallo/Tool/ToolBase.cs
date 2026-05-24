@@ -102,7 +102,7 @@ public abstract partial class ToolBase : ITool
 
     private IDisposable ObserveCommandManager(Entity document)
     {
-        return document.Get<CommandManager>().UndoRedoExecuted.Subscribe(_ =>
+        return document.Get<CommandManager>().HistoryNavigated.Subscribe(_ =>
         {
             if (Machine.CanFire(Trigger.Refresh))
                 Machine.Fire(Trigger.Refresh);

@@ -8,15 +8,16 @@ namespace Ciallo;
 
 public static class GodotControlExtension
 {
-    public static TControl VisibleIf<TControl, T>(this TControl control, Observable<T> property, Predicate<T> predicate, out IDisposable sub) where TControl : Control
+    public static TControl VisibleIf<TControl, T>(this TControl control, Observable<T> property, Predicate<T> predicate, CompositeDisposable disposables) where TControl : Control
     {
-        sub = property.Subscribe(value => control.Visible = predicate(value));
+        var sub = property.Subscribe(value => control.Visible = predicate(value));
+        disposables.Add(sub);
         return control;
     }
 
     public static TControl VisibleIf<TControl, T>(this TControl control, Observable<T> property, Predicate<T> predicate) where TControl : Control
     {
-        control.VisibleIf(property, predicate, out var sub);
+        var sub = property.Subscribe(value => control.Visible = predicate(value));
         sub.AddTo(control);
         return control;
     }

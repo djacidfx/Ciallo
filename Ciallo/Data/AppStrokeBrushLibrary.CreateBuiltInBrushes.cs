@@ -11,7 +11,7 @@ public static partial class AppStrokeBrushLibrary
         List<StrokeBrushSetting> brushes = [];
         brushes.Add(new()
         {
-            Name = { Value = "Solid".Tr() + "G-pen".Tr() },
+            Name = { Value = $"{"Solid".Tr()} {"G-pen".Tr()}" },
             RenderingType = { Value = BrushRenderingType.Vanilla },
             Pressure2RadiusCurve = { Value = BezierCurveFactory.GPenCurve(0.2f, 1.0f) },
             Labels = { BrushLabel.BuiltIn },

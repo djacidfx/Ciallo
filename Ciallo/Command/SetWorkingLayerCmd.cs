@@ -22,15 +22,22 @@ public class SetWorkingLayerCmd : CommandBase
         sm.WorkingLayer.Value = newLayerE;
 
         // Layer panel
-        var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.SetWorkingLayerNoSignal(newLayerE);
+        var layerTree = Document.Get<LayerTree>();
+        layerTree.SetWorkingLayerNoSignal(newLayerE);
+
+        // Timeline panel
+        var trackTree = Document.Get<TrackTree>();
+        trackTree.SetWorkingLayerNoSignal(newLayerE);
     }
 
     public override void Undo(Entity newLayerE)
     {
+        var trackTree = Document.Get<TrackTree>();
+        trackTree.SetWorkingLayerNoSignal(OldLayerE);
+
         // Layer panel
-        var layerContainer = Document.Get<LayerContainer>();
-        layerContainer.SetWorkingLayerNoSignal(OldLayerE);
+        var layerTree = Document.Get<LayerTree>();
+        layerTree.SetWorkingLayerNoSignal(OldLayerE);
 
         // Selection manager
         var sm = Document.Get<SelectionManager>();

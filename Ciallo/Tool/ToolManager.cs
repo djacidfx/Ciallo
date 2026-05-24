@@ -10,35 +10,38 @@ namespace Ciallo.Tool;
 
 public partial class ToolManager : IInitable, IDestroyable
 {
-    public Dictionary<ToolButton, List<ITool>> ToolButtonMap;
+    public Dictionary<ToolButton, List<ITool>> ToolButtonMap; // Init by source generation
     public IEnumerable<ITool> Tools => ToolButtonMap.Values.SelectMany(list => list);
     public ReactiveProperty<ToolButton?> PressedToolButton => AppPreference.PressedToolButton;
     public ReactiveProperty<ITool> WorkingTool = new(null);
     public Entity Document;
+    private readonly ReactiveProperty<bool> _isTimelineRolling = new(false);
 
     public void Init(Entity self)
     {
         Document = self;
         ToolButtonMap = InitializeToolButtonMap(self);
         var workingLayer = Document.Get<SelectionManager>().WorkingLayer;
-        workingLayer.CombineLatest(PressedToolButton, ValueTuple.Create)
-            .DelayFrame(1)
+        // Switch tool
+        _isTimelineRolling
+            .CombineLatest(workingLayer, ValueTuple.Create)
+            .CombineLatest(PressedToolButton, ValueTuple.Create)
             .Subscribe(tuple =>
             {
-                var (layerE, toolButton) = tuple;
-                if (toolButton == null)
-                {
-                    WorkingTool.Value = null;
-                    return;
-                }
-
-                var targetTool = layerE.IsNull
-                    ? null
-                    : ToolButtonMap[toolButton.Value].FirstOrDefault(t => t.CanHandleLayer(layerE));
-                WorkingTool.Value?.OnDeactivate();
-                targetTool?.OnActivate(layerE);
-                WorkingTool.Value = targetTool;
+                var (isTimelineRolling, layerE) = tuple.Item1;
+                var toolButton = tuple.Item2;
+                var targetTool = isTimelineRolling ? null : ResolveTool(layerE, toolButton);
+                SwitchWorkingTool(targetTool, layerE);
             }).AddTo(Document);
+    }
+
+    public void ObserveTimelineRolling(Observable<bool> isTimelineRolling)
+    {
+        isTimelineRolling.Subscribe(rolling =>
+        {
+            if (_isTimelineRolling.Value == rolling) return;
+            _isTimelineRolling.Value = rolling;
+        }).AddTo(Document);
     }
 
     public void Destroy() => DeactivateWorkingTool();
@@ -52,5 +55,17 @@ public partial class ToolManager : IInitable, IDestroyable
     public void ActivatePaintTool()
     {
         PressedToolButton.Value = ToolButton.Paint;
+    }
+
+    private ITool ResolveTool(Entity layerE, ToolButton? toolButton) =>
+        layerE.IsNull || toolButton == null
+            ? null
+            : ToolButtonMap[toolButton.Value].FirstOrDefault(t => t.CanHandleLayer(layerE));
+
+    private void SwitchWorkingTool(ITool targetTool, Entity layerE)
+    {
+        WorkingTool.Value?.OnDeactivate();
+        targetTool?.OnActivate(layerE);
+        WorkingTool.Value = targetTool;
     }
 }

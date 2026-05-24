@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Godot;
+using R3;
 
 namespace Ciallo.Widget;
 
@@ -210,5 +211,11 @@ public partial class FoldableVBoxContainer : Container
 
 
         return new Vector2(width, height);
+    }
+
+    public FoldableVBoxContainer ObserveIsExpanded(ReactiveProperty<bool> property, CompositeDisposable subs)
+    {
+        property.Subscribe(v => IsExpanded = v).AddTo(subs);
+        return this;
     }
 }

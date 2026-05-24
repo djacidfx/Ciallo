@@ -3,7 +3,7 @@
 namespace Ciallo;
 
 /// <summary>
-/// Register a ColorPickerButton to UndoRedo system. 
+/// Register a ColorPickerButton to command history.
 /// </summary>
 public static class RegisterColorPicker
 {
@@ -22,25 +22,24 @@ public static class RegisterColorPicker
             }
 
             var oldColor = recordedColor;
-            manager.CreateAction("Change color picker " + control.GetInstanceId(), UndoRedo.MergeMode.Ends);
-            // Block error messages on passing CustomCallable with lambda
-            Engine.PrintErrorMessages = false;
-            manager.AddDoMethod(Callable.From(() =>
-            {
-                innerChange = true;
-                control.Color = newColor;
-                control.EmitSignal(ColorPickerButton.SignalName.ColorChanged, newColor);
-                recordedColor = newColor;
-            }));
-            manager.AddUndoMethod(Callable.From(() =>
-            {
-                innerChange = true;
-                control.Color = oldColor;
-                control.EmitSignal(ColorPickerButton.SignalName.ColorChanged, oldColor);
-                recordedColor = oldColor;
-            }));
-            Engine.PrintErrorMessages = true;
-            manager.CommitAction(false);
+            manager.CommitSequence(
+                "Change color picker " + control.Name,
+                new DelegateCommand(
+                    () =>
+                    {
+                        innerChange = true;
+                        control.Color = newColor;
+                        control.EmitSignal(ColorPickerButton.SignalName.ColorChanged, newColor);
+                        recordedColor = newColor;
+                    },
+                    () =>
+                    {
+                        innerChange = true;
+                        control.Color = oldColor;
+                        control.EmitSignal(ColorPickerButton.SignalName.ColorChanged, oldColor);
+                        recordedColor = oldColor;
+                    }),
+                execute: false);
             recordedColor = newColor;
         };
         return control;

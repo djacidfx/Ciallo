@@ -1,0 +1,148 @@
+[gd_scene format=3 uid="uid://cetiftxidiijh"]
+
+[ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_0ndmv"]
+[ext_resource type="Script" uid="uid://cxqj4d3nf2ly7" path="res://GuiControl/Timeline/TimelinePanel.cs" id="1_pn4au"]
+[ext_resource type="Script" uid="uid://de3wjfml6rs3i" path="res://GuiControl/Timeline/TimelineRuler.cs" id="2_ruler"]
+[ext_resource type="Script" uid="uid://7ta5s4vfyhln" path="res://GuiControl/Timeline/BackgroundGrid.cs" id="3_bgrid"]
+[ext_resource type="PackedScene" uid="uid://6wtrxdc617ci" path="res://GuiControl/Timeline/TimelineAction.tscn" id="3_nqb4g"]
+[ext_resource type="Script" path="res://GuiControl/Timeline/ZoomableHScrollBar.cs" id="4_lw6jv"]
+[ext_resource type="Script" uid="uid://dkn2veamvchhh" path="res://GuiControl/Timeline/Playhead.cs" id="5_playhead"]
+[ext_resource type="Script" uid="uid://dobrheel0y42t" path="res://GuiControl/Timeline/PlaybackBar.cs" id="6_pbbar"]
+[ext_resource type="Script" uid="uid://be8hf2vpukxor" path="res://GuiControl/Timeline/CelTrackRightClickMenu.cs" id="7_ctrcm"]
+[ext_resource type="PackedScene" uid="uid://dix0v3s32ffhp" path="res://GuiControl/Timeline/TrackTree.tscn" id="7_trtree"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_oeyx3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_nrybc"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_apt30"]
+
+[node name="TimelinePanel" type="VBoxContainer" unique_id=2020419585]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_0ndmv")
+theme_override_constants/separation = 16
+script = ExtResource("1_pn4au")
+
+[node name="TimelineAction" parent="." unique_id=1607254887 instance=ExtResource("3_nqb4g")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TimelineMainArea" type="VBoxContainer" parent="." unique_id=609701276]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 1
+
+[node name="HSplitRuler" type="HSplitContainer" parent="TimelineMainArea" unique_id=233143306]
+unique_name_in_owner = true
+layout_mode = 2
+split_offsets = PackedInt32Array(256)
+split_offset = 256
+
+[node name="UpperLeftBlank" type="Control" parent="TimelineMainArea/HSplitRuler" unique_id=180570200]
+layout_mode = 2
+mouse_filter = 1
+
+[node name="TimelineRuler" type="Control" parent="TimelineMainArea/HSplitRuler" unique_id=309100903]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(0, 54)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("2_ruler")
+metadata/_custom_type_script = "uid://de3wjfml6rs3i"
+
+[node name="TrackArea" type="PanelContainer" parent="TimelineMainArea" unique_id=1812537386]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxEmpty_oeyx3")
+
+[node name="HSplitBgGrid" type="HSplitContainer" parent="TimelineMainArea/TrackArea" unique_id=108006388]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/split_bar_background = SubResource("StyleBoxEmpty_nrybc")
+split_offsets = PackedInt32Array(256)
+split_offset = 256
+
+[node name="TrackHeaderPad" type="Control" parent="TimelineMainArea/TrackArea/HSplitBgGrid" unique_id=1436785674]
+layout_mode = 2
+
+[node name="BackgroundGrid" type="Control" parent="TimelineMainArea/TrackArea/HSplitBgGrid" unique_id=526660374]
+unique_name_in_owner = true
+clip_contents = true
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("3_bgrid")
+metadata/_custom_type_script = "uid://7ta5s4vfyhln"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="TimelineMainArea/TrackArea" unique_id=1702651317]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="TrackTree" parent="TimelineMainArea/TrackArea/VBoxContainer" unique_id=1369726923 instance=ExtResource("7_trtree")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="HSplitScrollBar" type="HSplitContainer" parent="TimelineMainArea/TrackArea/VBoxContainer" unique_id=1702651318]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/split_bar_background = SubResource("StyleBoxEmpty_apt30")
+split_offsets = PackedInt32Array(256)
+dragging_enabled = false
+split_offset = 256
+
+[node name="TrackHeaderPad" type="Control" parent="TimelineMainArea/TrackArea/VBoxContainer/HSplitScrollBar" unique_id=1702651319]
+custom_minimum_size = Vector2(48, 0)
+layout_mode = 2
+
+[node name="ZoomableHScrollBar" type="Control" parent="TimelineMainArea/TrackArea/VBoxContainer/HSplitScrollBar" unique_id=1928835408]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 24)
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("4_lw6jv")
+ScrollZoneWidthRatio = 0.5
+
+[node name="PlaybackStartBar" type="Control" parent="TimelineMainArea/TrackArea" unique_id=650213917 node_paths=PackedStringArray("GridAnchor", "RulerAnchor")]
+unique_name_in_owner = true
+top_level = true
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("6_pbbar")
+HandleColor = Color(0.20784314, 0.20784314, 0.20784314, 1)
+LineColor = Color(1, 1, 1, 0.0627451)
+GridAnchor = NodePath("../HSplitBgGrid/BackgroundGrid")
+RulerAnchor = NodePath("../../HSplitRuler/TimelineRuler")
+
+[node name="PlaybackEndBar" type="Control" parent="TimelineMainArea/TrackArea" unique_id=897634521 node_paths=PackedStringArray("GridAnchor", "RulerAnchor")]
+unique_name_in_owner = true
+top_level = true
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("6_pbbar")
+HandleColor = Color(0.20784314, 0.20784314, 0.20784314, 1)
+LineColor = Color(1, 1, 1, 0.0627451)
+IsStart = false
+GridAnchor = NodePath("../HSplitBgGrid/BackgroundGrid")
+RulerAnchor = NodePath("../../HSplitRuler/TimelineRuler")
+
+[node name="Playhead" type="Control" parent="TimelineMainArea/TrackArea" unique_id=205874701 node_paths=PackedStringArray("GridAnchor", "RulerAnchor")]
+unique_name_in_owner = true
+top_level = true
+layout_mode = 2
+mouse_filter = 2
+script = ExtResource("5_playhead")
+BorderColor = Color(0.8117647, 0.654902, 0.41568628, 1)
+GridAnchor = NodePath("../HSplitBgGrid/BackgroundGrid")
+RulerAnchor = NodePath("../../HSplitRuler/TimelineRuler")
+metadata/_custom_type_script = "uid://dkn2veamvchhh"
+
+[node name="CelTrackRightClickMenu" type="PopupMenu" parent="." unique_id=100000001]
+unique_name_in_owner = true
+script = ExtResource("7_ctrcm")

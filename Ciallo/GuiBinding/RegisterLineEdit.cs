@@ -3,7 +3,7 @@
 namespace Ciallo;
 
 /// <summary>
-/// Register a LineEdit to UndoRedo system. 
+/// Register a LineEdit to command history.
 /// </summary>
 public static class RegisterLineEdit
 {
@@ -22,25 +22,24 @@ public static class RegisterLineEdit
             }
 
             var oldText = recordedText;
-            manager.CreateAction("Change line edit " + control.GetInstanceId(), UndoRedo.MergeMode.Ends);
-            // Block error messages on passing CustomCallable with lambda
-            Engine.PrintErrorMessages = false;
-            manager.AddDoMethod(Callable.From(() =>
-            {
-                innerChange = true;
-                control.Text = newText;
-                control.EmitSignal(LineEdit.SignalName.TextSubmitted, newText);
-                recordedText = newText;
-            }));
-            manager.AddUndoMethod(Callable.From(() =>
-            {
-                innerChange = true;
-                control.Text = oldText;
-                control.EmitSignal(LineEdit.SignalName.TextSubmitted, oldText);
-                recordedText = oldText;
-            }));
-            Engine.PrintErrorMessages = true;
-            manager.CommitAction(false);
+            manager.CommitSequence(
+                "Change line edit " + control.Name,
+                new DelegateCommand(
+                    () =>
+                    {
+                        innerChange = true;
+                        control.Text = newText;
+                        control.EmitSignal(LineEdit.SignalName.TextSubmitted, newText);
+                        recordedText = newText;
+                    },
+                    () =>
+                    {
+                        innerChange = true;
+                        control.Text = oldText;
+                        control.EmitSignal(LineEdit.SignalName.TextSubmitted, oldText);
+                        recordedText = oldText;
+                    }),
+                execute: false);
             recordedText = newText;
         };
         return control;

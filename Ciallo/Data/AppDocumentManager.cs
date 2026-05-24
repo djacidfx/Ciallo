@@ -40,6 +40,8 @@ public static partial class AppDocumentManager
 
         document.Add(settings);
         document.Add(new LayerTreeNode()); // Document entity is layer tree root
+        document.Add(new FolderLayerSetting()); // Document entity is also a folder layer
+        document.Add(new TimelineSetting());
         // Add managers
         document.Add(new SelectionManager());
         document.Add(new CommandManager());
@@ -71,6 +73,7 @@ public static partial class AppDocumentManager
             .NewShapeLayer()
             .AddToLayerTree(document)
             .SetWorkingLayer();
+
         // Vector fill brushes
         Color[] colors = [Colors.PaleTurquoise, Colors.LightGreen, Colors.LemonChiffon, Colors.LightPink];
         for (int i = 0; i < colors.Length; i++)
@@ -78,13 +81,13 @@ public static partial class AppDocumentManager
             string path = $"res://Rendering/Image/Bullseye{i}.svg";
             var img = GD.Load<Image>(path);
             var tex = ImageTexture.CreateFromImage(img);
-            var entity = document.World.Create();
-            cmd.SetTarget(entity)
+            var brush = document.World.Create();
+            cmd.SetTarget(brush)
                 .NewVectorFillBrush()
                 .SetProperty(e => e.Get<VectorFillBrushSetting>().MarkerTexture, tex)
                 .SetProperty(e => e.Get<VectorFillBrushSetting>().FillColor, colors[i]);
             if (i == 0)
-                cmd.SetProperty(e => e.Document.Get<SelectionManager>().WorkingVectorFillBrush, entity);
+                cmd.SetProperty(e => e.Document.Get<SelectionManager>().WorkingVectorFillBrush, brush);
         }
         cmd.Do();
 

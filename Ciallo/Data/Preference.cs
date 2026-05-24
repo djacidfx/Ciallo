@@ -43,6 +43,8 @@ public class Preference
     public ObservableList<string> RecentFiles = [];
     [DataMember]
     public ReactiveProperty<ToolButton?> PressedToolButton = new(null);
+    [DataMember]
+    public ReactiveProperty<int> CommandHistoryLimit = new(50);
 
     [DataMember]
     public Color StrokeWireframeColor = Colors.Orange;
@@ -52,7 +54,7 @@ public class Preference
     public float StrokeDotRadius = 12f;
 
     [DataMember]
-    public ReactiveProperty<ImmutableArray<BezierPoint>> PenPressureRemapCurve = new(BezierCurveFactory.EaseInOut());
+    public ReactiveProperty<ImmutableArray<BezierPoint>> PenPressureRemapCurve = new(BezierCurveFactory.Linear());
 
     #region Save Load Json
 

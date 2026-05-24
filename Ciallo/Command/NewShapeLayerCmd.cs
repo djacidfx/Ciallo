@@ -42,7 +42,10 @@ public class NewShapeLayerCmd : CommandBase
         CreateNonDataComponents(targetE);
 
         // Layer panel
-        targetE.Document.Get<LayerContainer>().Create(targetE);
+        targetE.Document.Get<LayerTree>().Create(targetE);
+
+        // Timeline track
+        targetE.Document.Get<TrackTree>().Create(targetE);
     }
 
     public override void Do(Entity targetE)
@@ -81,7 +84,10 @@ public class NewShapeLayerCmd : CommandBase
         void InsertIntoParent(Entity parentE, int index)
         {
             // Layer panel
-            parentE.Get<LayerFolderContainer>().InsertNodeAt(targetE.Get<LayerBlock>(), index);
+            parentE.Get<LayerWrapper>().InsertNodeAt(targetE.Get<LayerWrapper>(), index);
+
+            // Timeline track
+            parentE.Get<TrackRowWrapper>().InsertNodeAt(targetE.Get<TrackRowWrapper>(), index);
 
             // View
             var folderLayerView = parentE.Get<FolderLayerView>();
@@ -98,7 +104,10 @@ public class NewShapeLayerCmd : CommandBase
         void DetachFromParent()
         {
             // Layer panel
-            targetE.Get<LayerBlock>().RemoveFromParent();
+            targetE.Get<LayerWrapper>().RemoveFromParent();
+
+            // Timeline track
+            targetE.Get<TrackRowWrapper>().RemoveFromParent();
 
             // Body
             bodyHolder.RemoveFromParent();

@@ -2,7 +2,6 @@
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
-using Godot;
 using R3;
 
 namespace Ciallo.Command;
@@ -11,32 +10,44 @@ namespace Ciallo.Command;
 public class NewFolderLayerCmd : CommandBase
 {
     public readonly Entity CopyE;
+    private readonly bool _isCel;
 
-    public NewFolderLayerCmd(Entity copyE = default)
+    public NewFolderLayerCmd(Entity copyE = default, bool isCel = false)
     {
         CopyE = copyE;
+        _isCel = isCel;
     }
 
     public override void OnDeletedAsDo() => TargetE.Delete();
 
     public override void BeforeFirstDo(Entity targetE)
     {
-        // Data
-        var layerNode = new LayerTreeNode();
-        targetE.Add(layerNode);
+        CreateData(targetE);
+        CreateOther(targetE);
+    }
 
-        var commonSetting = CopyE.IsNull
-            ? new CommonLayerSetting { Name = { Value = "Folder".Tr() } }
-            : CopyE.Get<CommonLayerSetting>().Clone();
-        targetE.Add(commonSetting);
+    public void CreateOther(Entity targetE)
+    {
+        var commonSetting = targetE.Get<CommonLayerSetting>();
+        var layerNode = targetE.Get<LayerTreeNode>();
+        var folderSetting = targetE.Get<FolderLayerSetting>();
 
-        var folderLayerSetting = CopyE.IsNull
-            ? new FolderLayerSetting()
-            : CopyE.Get<FolderLayerSetting>().Clone();
-        targetE.Add(folderLayerSetting);
-
+        CompositeDisposable subs = new();
+        subs.AddTo(targetE);
+        FolderLayerView folderLayerView;
         // View
-        var folderLayerView = new FolderLayerView();
+        if (folderSetting.IsCel)
+        {
+            var celFolderView = new CelFolderView();
+            var currentFrame = Document.Get<SelectionManager>().CurrentFrame;
+            celFolderView.Observe(folderSetting.CurrentExposedCel, layerNode, subs);
+            folderLayerView = celFolderView;
+        }
+        else
+        {
+            folderLayerView = new FolderLayerView();
+        }
+
         targetE.AddNode(folderLayerView);
         commonSetting.IsVisible.Subscribe(folderLayerView.SetVisible).AddTo(targetE);
 
@@ -45,11 +56,13 @@ public class NewFolderLayerCmd : CommandBase
         targetE.AddNode(overlayHolder);
 
         // Body
-        var bodyHolder = new BodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
+        var bodyHolder = new BodyHolder();
         targetE.AddNode(bodyHolder);
 
         // Layer panel
-        targetE.Document.Get<LayerContainer>().Create(targetE);
+        targetE.Document.Get<LayerTree>().Create(targetE);
+        // Timeline track (creates CelTrack for CelFolders automatically)
+        targetE.Document.Get<TrackTree>().Create(targetE);
 
         // Layer tree events
         var events = layerNode.MovedAsAddedRemoved;
@@ -58,7 +71,10 @@ public class NewFolderLayerCmd : CommandBase
         {
             var parentE = et.Parent;
             // Layer panel
-            parentE.Get<LayerFolderContainer>().InsertNodeAt(targetE.Get<LayerFolderContainer>(), et.Index);
+            parentE.Get<LayerWrapper>().InsertNodeAt(targetE.Get<LayerWrapper>(), et.Index);
+
+            // Timeline track
+            parentE.Get<TrackRowWrapper>().InsertNodeAt(targetE.Get<TrackRowWrapper>(), et.Index);
 
             // View
             var parentView = parentE.Get<FolderLayerView>();
@@ -75,7 +91,10 @@ public class NewFolderLayerCmd : CommandBase
         events.Removed.Subscribe(_ =>
         {
             // Layer panel
-            targetE.Get<LayerFolderContainer>().RemoveFromParent();
+            targetE.Get<LayerWrapper>().RemoveFromParent();
+
+            // Timeline track
+            targetE.Get<TrackRowWrapper>().RemoveFromParent();
 
             // Body
             bodyHolder.RemoveFromParent();
@@ -88,6 +107,26 @@ public class NewFolderLayerCmd : CommandBase
         }).AddTo(targetE);
     }
 
+    public void CreateData(Entity targetE)
+    {
+        var layerNode = new LayerTreeNode();
+        targetE.Add(layerNode);
+        var isCel = CopyE.IsNull ? _isCel : CopyE.Get<FolderLayerSetting>().IsCel;
+
+        var commonSetting = CopyE.IsNull
+            ? new CommonLayerSetting { Name = { Value = (isCel ? "Cel folder" : "Folder").Tr() } }
+            : CopyE.Get<CommonLayerSetting>().Clone();
+        targetE.Add(commonSetting);
+
+        var folderLayerSetting = CopyE.IsNull
+            ? new FolderLayerSetting()
+            : CopyE.Get<FolderLayerSetting>().Clone();
+        folderLayerSetting.IsCel = isCel;
+        if (folderLayerSetting.IsCel)
+            folderLayerSetting.ObserveCurrentFrame(Document.Get<SelectionManager>().CurrentFrame);
+        targetE.Add(folderLayerSetting);
+    }
+
     public override void Do(Entity targetE)
     {
         targetE.Tag<ToSerializeTag>();
@@ -96,5 +135,16 @@ public class NewFolderLayerCmd : CommandBase
     public override void Undo(Entity targetE)
     {
         targetE.Detach<ToSerializeTag>();
+    }
+}
+
+
+public partial class CommandBuilder
+{
+    public CommandBuilder NewCelFolder()
+    {
+        var cmd = new NewFolderLayerCmd(isCel: true) { TargetE = TargetE };
+        Commands.Add(cmd);
+        return this;
     }
 }

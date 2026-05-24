@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using Ciallo.Data;
 using Ciallo.Rendering;
+using Ciallo.Tool;
 using Godot;
 using ObservableCollections;
 using R3;
@@ -13,28 +14,36 @@ public partial class AutoloadGuiControl : Node
     {
         AppDocumentManager.LoadedDocuments.ObserveAdd().Select(et => et.Value).Subscribe(document =>
         {
-            // Layer tree control
-            var layerPanel = GetTree().GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
-            layerPanel.CreateAdd(document);
+            // Layer tree panel
+            var layerPanel = LayerPanel.New();
+            GetTree().GetNodesInGroup("UncategorizedControl")
+                .OfType<LayerPanelContainer>().Single().AddChild(layerPanel);
+            document.AddNode(layerPanel);
 
             // Paint panel
-            var paintPanelContainer = GetTree().GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().Single();
-            var paintPanel = paintPanelContainer.CreateAddPaintPanel(document);
+            var paintPanel = PaintPanel.New();
+            GetTree().GetNodesInGroup("UncategorizedControl")
+                .OfType<PaintPanelContainer>().Single().AddChild(paintPanel);
+            document.AddNode(paintPanel);
 
-            // World view
             var worldView = paintPanel.GetNode<WorldView>("%WorldView");
             document.Add(worldView);
             document.Add<FolderLayerView>(worldView); // Add component as FolderLayerView
 
-            // World overlay
             var worldOverlay = paintPanel.GetNode<WorldOverlay>("%WorldOverlay");
             document.Add(worldOverlay);
             document.Add<OverlayHolder>(worldOverlay);
 
-            // World body
             var worldBody = paintPanel.GetNode<WorldBody>("%WorldBody");
             document.Add(worldBody);
             document.Add<BodyHolder>(worldBody);
+
+            // Timeline panel
+            var timelinePanel = TimelinePanel.New(document);
+            GetTree().GetNodesInGroup("UncategorizedControl")
+                .OfType<TimelinePanelContainer>().Single().AddChild(timelinePanel);
+            document.AddNode(timelinePanel);
+            document.Get<ToolManager>().ObserveTimelineRolling(timelinePanel.IsTimelineRolling);
 
             // SubViewport holder (a dummy node for debugging efficiently)
             var subViewportHolder = new SubViewportHolder();
@@ -52,14 +61,10 @@ public partial class AutoloadGuiControl : Node
         AppDocumentManager.LoadedDocuments.ObserveRemove().Select(et => et.Value).Subscribe(document =>
         {
             // View, overlay... are the children of paint panel
-
-            // Paint panel
-            var paintPanelContainer = GetTree().GetNodesInGroup("UncategorizedControl").OfType<PaintPanelContainer>().Single();
-            paintPanelContainer.RemoveFreePaintPanel(document);
-
-            // Layer tree control
-            var layerPanel = GetTree().GetNodesInGroup("UncategorizedControl").OfType<LayerPanel>().Single();
-            layerPanel.RemoveFree(document);
+            // Must queue free to avoid subscriptions access disposed nodes.
+            // Disable process since panel could potentially get a one-frame mouse movement after closing document.
+            document.Get<PaintPanel>().SetProcessInput(false);
+            document.Get<TimelinePanel>().SetProcessInput(false);
         }).AddTo(this);
     }
 }

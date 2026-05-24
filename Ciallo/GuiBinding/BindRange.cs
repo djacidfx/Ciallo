@@ -1,4 +1,6 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Collections.Generic;
+using System.Numerics;
 using Ciallo.Widget;
 using Godot;
 using R3;
@@ -10,11 +12,10 @@ public static class BindRange
 {
     private static Range BindNumber<T>(Range rangeControl,
         ReactiveProperty<T> property,
-        out CompositeDisposable subs) where T : INumber<T>
+        CompositeDisposable subs) where T : INumber<T>
     {
         // Note: After subscribing to a ReactiveProperty, the callback will be invoked immediately with the current value.
         // Use skip(1) to ignore the first value if needed.
-        subs = new();
         property.Subscribe(value => rangeControl.SetValue(double.CreateChecked(value))).AddTo(subs);
         rangeControl.OnValueChangedAsObservable()
             .Subscribe(value => property.Value = T.CreateChecked(value)).AddTo(subs);
@@ -23,28 +24,32 @@ public static class BindRange
 
     public static Range BindNumber<T>(this Range rangeControl, ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindNumber(rangeControl, property, out var subs);
+        var subs = new CompositeDisposable();
+        BindNumber(rangeControl, property, subs);
         subs.AddTo(rangeControl);
         return rangeControl;
     }
 
     public static HSlider BindNumber<T>(this HSlider slider, ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindNumber((Range)slider, property, out var subs);
+        var subs = new CompositeDisposable();
+        BindNumber((Range)slider, property, subs);
         subs.AddTo(slider);
         return slider;
     }
 
     public static VSlider BindNumber<T>(this VSlider slider, ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindNumber((Range)slider, property, out var subs);
+        var subs = new CompositeDisposable();
+        BindNumber((Range)slider, property, subs);
         subs.AddTo(slider);
         return slider;
     }
 
     public static SpinBox BindNumber<T>(this SpinBox spinBox, ReactiveProperty<T> property) where T : INumber<T>
     {
-        BindNumber((Range)spinBox, property, out var subs);
+        var subs = new CompositeDisposable();
+        BindNumber((Range)spinBox, property, subs);
         subs.AddTo(spinBox);
         return spinBox;
     }
@@ -52,9 +57,8 @@ public static class BindRange
     extension(SpinSlider spinSlider)
     {
         public SpinSlider BindNumber<T>(ReactiveProperty<T> property,
-            out CompositeDisposable subs) where T : INumber<T>
+            CompositeDisposable subs) where T : INumber<T>
         {
-            subs = new();
             property.Subscribe(value => spinSlider.SetValueNoSignal(double.CreateChecked<T>(value))).AddTo(subs);
             spinSlider.SignalAsObservable<double, double>(SpinSlider.SignalName.ValueChanged)
                 .Subscribe(v => property.Value = T.CreateChecked(v.Item2))
@@ -64,8 +68,29 @@ public static class BindRange
 
         public SpinSlider BindNumber<T>(ReactiveProperty<T> property) where T : INumber<T>
         {
-            BindNumber(spinSlider, property, out var subs);
+            var subs = new CompositeDisposable();
+            BindNumber(spinSlider, property, subs);
             subs.AddTo(spinSlider);
+            return spinSlider;
+        }
+        
+        public SpinSlider EditableIf<T>(Observable<T> property, Predicate<T> predicate, CompositeDisposable subs)
+        {
+            property.Subscribe(value => spinSlider.Editable = predicate(value)).AddTo(subs);
+            return spinSlider;
+        }
+
+        public SpinSlider EditableIf<T>(Observable<T> property, Predicate<T> predicate)
+        {
+            var subs = new CompositeDisposable();
+            spinSlider.EditableIf(property, predicate, subs);
+            subs.AddTo(spinSlider);
+            return spinSlider;
+        }
+
+        public SpinSlider EditableIf<T>(Observable<T> property, T value)
+        {
+            spinSlider.EditableIf(property, v => EqualityComparer<T>.Default.Equals(v, value));
             return spinSlider;
         }
     }

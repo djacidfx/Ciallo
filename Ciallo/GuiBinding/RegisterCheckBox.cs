@@ -3,11 +3,11 @@
 namespace Ciallo;
 
 /// <summary>
-/// Register a Godot range control to UndoRedo system. 
+/// Register a Godot checkBox or checkBox-like button to command history.
 /// </summary>
 public static class RegisterCheckBox
 {
-    public static CheckBox RegisterUndo(this CheckBox control, CommandManager manager)
+    public static T RegisterUndo<T>(this T control, CommandManager manager, bool shouldAppendCommit = false) where T : Button
     {
         if (manager == null)
             return control;
@@ -15,26 +15,33 @@ public static class RegisterCheckBox
         bool innerChange = false;
         control.Toggled += toggleOn =>
         {
+            bool shouldCommitToLatest = shouldAppendCommit;
             if (innerChange)
             {
                 innerChange = false;
                 return;
             }
-            manager.CreateAction("Toggle checkbox " + control.Name);
-            // Block error messages on passing CustomCallable with lambda
-            Engine.PrintErrorMessages = false;
-            manager.AddDoMethod(Callable.From(() =>
+            string actionName = "Toggle checkbox " + control.Name;
+            var cmd = new DelegateCommand(
+                () =>
+                {
+                    innerChange = true;
+                    control.SetPressed(toggleOn);
+                },
+                () =>
+                {
+                    innerChange = true;
+                    control.SetPressed(!toggleOn);
+                });
+
+            if (shouldCommitToLatest)
             {
-                innerChange = true;
-                control.SetPressed(toggleOn);
-            }));
-            manager.AddUndoMethod(Callable.From(() =>
+                manager.CommitToLatest(actionName, cmd, execute: false);
+            }
+            else
             {
-                innerChange = true;
-                control.SetPressed(!toggleOn);
-            }));
-            Engine.PrintErrorMessages = true;
-            manager.CommitAction(false);
+                manager.Commit(actionName, cmd, execute: false);
+            }
         };
         return control;
     }

@@ -5,14 +5,14 @@
 [ext_resource type="PackedScene" uid="uid://bpntrjged60df" path="res://GuiControl/NewDocumentDialog.tscn" id="3_sc1dx"]
 [ext_resource type="PackedScene" uid="uid://b605gtasdgmsb" path="res://GuiControl/About.tscn" id="4_fpfj3"]
 [ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icon/star.svg" id="4_kjvhd"]
-[ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://GuiControl/MenuFile.cs" id="5_5tuhn"]
+[ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://GuiControl/Menu/MenuFile.cs" id="5_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://dw0q5mir7loyl" path="res://GuiControl/BrushPanel.tscn" id="5_j4qnp"]
-[ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://GuiControl/MenuEdit.cs" id="6_2gh4u"]
+[ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://GuiControl/Menu/MenuEdit.cs" id="6_2gh4u"]
 [ext_resource type="Script" uid="uid://desmnb4wwk1h0" path="res://GuiControl/ExportGodotScene.cs" id="6_fpfj3"]
 [ext_resource type="PackedScene" uid="uid://b5mma1lfqwdf1" path="res://GuiControl/ExportImage.tscn" id="6_sc1dx"]
 [ext_resource type="Script" uid="uid://bsu2387oxsudi" path="res://GuiControl/SaveChangeDialog.cs" id="8_5tuhn"]
-[ext_resource type="Script" uid="uid://cwjtb7r01fcf7" path="res://GuiControl/MenuWindow.cs" id="8_c2ibq"]
-[ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://GuiControl/MenuHelp.cs" id="8_sc1dx"]
+[ext_resource type="Script" uid="uid://cwjtb7r01fcf7" path="res://GuiControl/Menu/MenuWindow.cs" id="8_c2ibq"]
+[ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://GuiControl/Menu/MenuHelp.cs" id="8_sc1dx"]
 [ext_resource type="Script" uid="uid://dt8ylkob7fe5w" path="res://GuiControl/YesNoDialog.cs" id="9_2gh4u"]
 [ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://Tool/ToolButtonPanel.tscn" id="9_5vvyt"]
 [ext_resource type="PackedScene" uid="uid://cbe5uqtdiejke" path="res://GuiControl/ToolPropertyPanel.tscn" id="10_c6i3y"]
@@ -20,7 +20,13 @@
 [ext_resource type="Script" uid="uid://dqewxa0t2mptr" path="res://GuiControl/ToolButtonPanelContainer.cs" id="13_kjvhd"]
 [ext_resource type="Script" uid="uid://b7mwe7nmkxh5d" path="res://GuiControl/PaintPanelContainer.cs" id="16_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://GuiControl/WelcomePanel.tscn" id="16_fpfj3"]
-[ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://GuiControl/LayerPanel.tscn" id="16_kjvhd"]
+[ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://GuiControl/Layer/LayerPanel.tscn" id="16_kjvhd"]
+[ext_resource type="Script" uid="uid://bc538pxjigcuv" path="res://GuiControl/Layer/LayerPanelContainer.cs" id="19_3b0ty"]
+[ext_resource type="Script" uid="uid://b4x3guxbl2wmb" path="res://GuiControl/Timeline/TimelinePanelContainer.cs" id="23_hhcpw"]
+[ext_resource type="PackedScene" uid="uid://cetiftxidiijh" path="res://GuiControl/Timeline/TimelinePanel.tscn" id="24_hhcpw"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hhcpw"]
+bg_color = Color(0.234608, 0.23460817, 0.23460811, 1)
 
 [node name="Main" type="Panel" unique_id=1926960144]
 texture_filter = 2
@@ -32,6 +38,7 @@ grow_vertical = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
 theme = ExtResource("1_j4qnp")
+theme_override_styles/panel = SubResource("StyleBoxFlat_hhcpw")
 
 [node name="Dialog" type="Control" parent="." unique_id=317513807]
 anchors_preset = 0
@@ -182,23 +189,36 @@ layout_mode = 2
 [node name="ToolPropertyPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer" unique_id=1992566448 instance=ExtResource("10_c6i3y")]
 layout_mode = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit" unique_id=840531377]
+[node name="LayerPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit" unique_id=840531377 groups=["UncategorizedControl"]]
 layout_mode = 2
-theme_override_constants/margin_top = 15
-theme_override_constants/margin_right = 10
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 6
+script = ExtResource("19_3b0ty")
 
-[node name="LayerPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/MarginContainer" unique_id=1083993257 instance=ExtResource("16_kjvhd")]
+[node name="LayerPanelPreview" parent="MainGui/MarginContainer/UIBlock/VSplit/LayerPanelContainer" unique_id=1083993257 instance=ExtResource("16_kjvhd")]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="PaintPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock" unique_id=1684309810 groups=["UncategorizedControl"]]
+[node name="VSplitContainer" type="VSplitContainer" parent="MainGui/MarginContainer/UIBlock" unique_id=619523970]
+layout_mode = 2
+split_offsets = PackedInt32Array(265)
+split_offset = 265
+
+[node name="WelcomePanel" parent="MainGui/MarginContainer/UIBlock/VSplitContainer" unique_id=1492248500 groups=["UncategorizedControl"] instance=ExtResource("16_fpfj3")]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/margin_left = 0
-theme_override_constants/margin_top = 0
-theme_override_constants/margin_right = 0
-theme_override_constants/margin_bottom = 0
+mouse_filter = 1
+
+[node name="PaintPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplitContainer/WelcomePanel" unique_id=1684309810 groups=["UncategorizedControl"]]
+layout_mode = 2
+size_flags_vertical = 3
+mouse_filter = 2
 script = ExtResource("16_5tuhn")
 
-[node name="WelcomePanel" parent="MainGui/MarginContainer/UIBlock/PaintPanelContainer" unique_id=1492248500 instance=ExtResource("16_fpfj3")]
+[node name="TimelinePanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplitContainer" unique_id=1659802599 groups=["UncategorizedControl"]]
+layout_mode = 2
+size_flags_vertical = 3
+script = ExtResource("23_hhcpw")
+
+[node name="TimelinePanel" parent="MainGui/MarginContainer/UIBlock/VSplitContainer/TimelinePanelContainer" unique_id=2020419585 instance=ExtResource("24_hhcpw")]
 layout_mode = 2

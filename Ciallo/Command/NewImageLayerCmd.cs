@@ -70,7 +70,10 @@ public class NewImageLayerCmd : CommandBase
         }).AddTo(targetE);
 
         // Layer panel
-        targetE.Document.Get<LayerContainer>().Create(targetE);
+        targetE.Document.Get<LayerTree>().Create(targetE);
+
+        // Timeline track
+        targetE.Document.Get<TrackTree>().Create(targetE);
 
         // Layer tree events
         var events = layerNode.MovedAsAddedRemoved;
@@ -78,7 +81,10 @@ public class NewImageLayerCmd : CommandBase
         events.Added.Subscribe(et =>
         {
             // Layer panel
-            et.Parent.Get<LayerFolderContainer>().InsertNodeAt(targetE.Get<LayerBlock>(), et.Index);
+            et.Parent.Get<LayerWrapper>().InsertNodeAt(targetE.Get<LayerWrapper>(), et.Index);
+
+            // Timeline track
+            et.Parent.Get<TrackRowWrapper>().InsertNodeAt(targetE.Get<TrackRowWrapper>(), et.Index);
 
             // View
             var folderLayerView = et.Parent.Get<FolderLayerView>();
@@ -92,7 +98,10 @@ public class NewImageLayerCmd : CommandBase
         events.Removed.Subscribe(_ =>
         {
             // Layer panel
-            targetE.Get<LayerBlock>().RemoveFromParent();
+            targetE.Get<LayerWrapper>().RemoveFromParent();
+
+            // Timeline track
+            targetE.Get<TrackRowWrapper>().RemoveFromParent();
 
             // Overlay
             layerOverlay.RemoveFromParent();

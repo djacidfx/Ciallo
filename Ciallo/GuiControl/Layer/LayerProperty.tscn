@@ -1,0 +1,33 @@
+[gd_scene format=3 uid="uid://cdki2k8di20tg"]
+
+[ext_resource type="Script" uid="uid://h8m1n58g888p" path="res://GuiControl/Layer/LayerProperty.cs" id="1_3smt2"]
+[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="1_jbgsm"]
+
+[node name="LayerProperty" type="GridContainer" unique_id=1623447946]
+offset_right = 246.0
+offset_bottom = 58.0
+theme_override_constants/h_separation = 16
+columns = 2
+script = ExtResource("1_3smt2")
+
+[node name="Label" type="Label" parent="." unique_id=189620099]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Opacity"
+
+[node name="Opacity" type="HBoxContainer" parent="." unique_id=1460316986]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("1_jbgsm")
+MaxValue = 1.0
+Value = 1.0
+metadata/_custom_type_script = "uid://b1dclx7d0dgng"
+
+[node name="Label2" type="Label" parent="." unique_id=268284363]
+layout_mode = 2
+text = "Layer mark"
+
+[node name="ColorPickerButton" type="ColorPickerButton" parent="." unique_id=2067385133]
+layout_mode = 2
+size_flags_horizontal = 3

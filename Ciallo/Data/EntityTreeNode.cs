@@ -275,7 +275,20 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     {
         var node = target.Get<T>();
         BreadthFirstSearch((T)this, node, out var path);
-        return [..path];
+        return [.. path];
+    }
+
+    /// <summary>
+    /// Enumerates all ancestor entities from parent up to the root, excluding the current node.
+    /// </summary>
+    public IEnumerable<Entity> EnumerateAncestors()
+    {
+        var cursor = ParentValue;
+        while (!cursor.IsNull && cursor.IsAlive)
+        {
+            yield return cursor;
+            cursor = cursor.Get<T>().ParentValue;
+        }
     }
 
     #endregion

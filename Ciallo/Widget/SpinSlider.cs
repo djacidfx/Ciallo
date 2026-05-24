@@ -17,29 +17,32 @@ public partial class SpinSlider : HBoxContainer
     #region Export
 
     private double _minValue = 0.0;
-    [Export] public double MinValue
+    [Export]
+    public double MinValue
     {
         get => _minValue;
         set
         {
             _minValue = value;
-            if (IsInstanceValid(Slider)) Slider.MinValue = value;
+            Slider.MinValue = value;
         }
     }
 
     private double _maxValue = 100.0;
-    [Export] public double MaxValue
+    [Export]
+    public double MaxValue
     {
         get => _maxValue;
         set
         {
             _maxValue = value;
-            if (IsInstanceValid(Slider)) Slider.MaxValue = value;
+            Slider.MaxValue = value;
         }
     }
 
     private double _value = 0.0;
-    [Export] public double Value
+    [Export]
+    public double Value
     {
         get => _value;
         set
@@ -48,70 +51,87 @@ public partial class SpinSlider : HBoxContainer
             if (_value == value) return;
             var oldValue = _value;
             _value = value;
-            if (IsInstanceValid(Slider)) Slider.SetValueNoSignal(value);
+            Slider.SetValueNoSignal(value);
             EmitSignalValueChanged(oldValue, value);
         }
     }
 
     private double _step = 0.01;
-    [Export] public double Step
+    [Export]
+    public double Step
     {
         get => _step;
         set
         {
             _step = value;
-            if (IsInstanceValid(Slider)) Slider.Step = value;
+            Slider.Step = value;
         }
     }
 
     private bool _expEdit = false;
-    [Export] public bool ExpEdit
+    [Export]
+    public bool ExpEdit
     {
         get => _expEdit;
         set
         {
             _expEdit = value;
-            if (IsInstanceValid(Slider)) Slider.ExpEdit = value;
+            Slider.ExpEdit = value;
         }
     }
 
     private bool _allowLesser = false;
-    [Export] public bool AllowLesser
+    [Export]
+    public bool AllowLesser
     {
         get => _allowLesser;
         set
         {
             _allowLesser = value;
-            if (IsInstanceValid(Slider)) Slider.AllowLesser = value;
+            Slider.AllowLesser = value;
         }
     }
 
     private bool _allowGreater = false;
-    [Export] public bool AllowGreater
+    [Export]
+    public bool AllowGreater
     {
         get => _allowGreater;
         set
         {
             _allowGreater = value;
-            if (IsInstanceValid(Slider)) Slider.AllowGreater = value;
+            Slider.AllowGreater = value;
         }
     }
 
     private bool _rounded = false;
-    [Export] public bool Rounded
+    [Export]
+    public bool Rounded
     {
         get => _rounded;
         set
         {
             _rounded = value;
-            if (IsInstanceValid(Slider)) Slider.Rounded = value;
-            if (IsInstanceValid(SpinBox)) SpinBox.Rounded = value;
+            Slider.Rounded = value;
+            SpinBox.Rounded = value;
         }
     }
 
+    [Export]
+    public bool Editable
+    {
+        get;
+        set
+        {
+            field = value;
+            Slider.Editable = value;
+            SpinBox.Editable = value;
+        }
+    } = true;
+
     #endregion
 
-    public override void _Ready()
+    public SpinSlider()
     {
         Slider = new()
         {
@@ -161,8 +181,7 @@ public partial class SpinSlider : HBoxContainer
     public void SetValueNoSignal(double value)
     {
         _value = value;
-        if (IsInstanceValid(Slider))
-            Slider.SetValueNoSignal(value);
+        Slider.SetValueNoSignal(value);
     }
 
     public SpinSlider RegisterUndo(CommandManager manager)
@@ -176,20 +195,20 @@ public partial class SpinSlider : HBoxContainer
                 innerChange = false;
                 return;
             }
-            manager.CreateAction("Change value of SpinSlider " + GetInstanceId(), UndoRedo.MergeMode.Ends);
-            Engine.PrintErrorMessages = false;
-            manager.AddDoMethod(Callable.From(() =>
-            {
-                innerChange = true;
-                Value = newValue;
-            }));
-            manager.AddUndoMethod(Callable.From(() =>
-            {
-                innerChange = true;
-                Value = oldValue;
-            }));
-            Engine.PrintErrorMessages = true;
-            manager.CommitAction(false);
+            manager.CommitSequence(
+                "Change value of SpinSlider " + GetInstanceId(),
+                new DelegateCommand(
+                    () =>
+                    {
+                        innerChange = true;
+                        Value = newValue;
+                    },
+                    () =>
+                    {
+                        innerChange = true;
+                        Value = oldValue;
+                    }),
+                execute: false);
         };
         return this;
     }

@@ -5,6 +5,7 @@
 .idea/
 .claude/
 .vscode
+*.lscache
 
 #----------------------------------------------------------------------
 # copied from https://gist.github.com/drch-/00d98ab2b93b930f55e0f7c62abc4af2.js

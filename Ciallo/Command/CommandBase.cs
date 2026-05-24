@@ -1,4 +1,5 @@
-﻿using Ciallo.Data;
+﻿using System;
+using Ciallo.Data;
 using Frent;
 using Godot;
 using Godot.Collections;
@@ -12,7 +13,7 @@ public abstract class CommandBase : ICommand
     public Entity TargetE { protected get; set; }
     public World WorkingWorld => TargetE.World;
     public Entity Document => WorkingWorld.Document();
-    public virtual string Name => GetType().Name.Humanize();
+    public virtual string ClassName => GetType().Name.Humanize();
     public SceneTree SceneTree => (SceneTree)Engine.GetMainLoop();
 
     public Array<Node> GetNodesInGroup(StringName group) => SceneTree.GetNodesInGroup(group);
@@ -38,21 +39,8 @@ public abstract class CommandBase : ICommand
 
     public void Undo() => Undo(TargetE);
 
-    public void Commit(bool execute = true)
-    {
-        var cm = Document.Get<CommandManager>();
-
-        // Add Do/Undo Reference methods, order matters:
-        var obj = new CommandWrapperObject(this);
-
-        cm.CreateAction(Name);
-        cm.AddDo(obj);
-        cm.AddUndo(obj);
-        cm.CommitAction(execute);
-    }
-
     public override string ToString()
     {
-        return $"{Name}";
+        return $"{ClassName}";
     }
 }
