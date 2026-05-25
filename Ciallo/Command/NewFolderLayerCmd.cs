@@ -123,7 +123,7 @@ public class NewFolderLayerCmd : CommandBase
             : CopyE.Get<FolderLayerSetting>().Clone();
         folderLayerSetting.IsCel = isCel;
         if (folderLayerSetting.IsCel)
-            folderLayerSetting.ObserveCurrentFrame(Document.Get<SelectionManager>().CurrentFrame);
+            folderLayerSetting.InitCurrentExposedCel(Document.Get<SelectionManager>().CurrentFrame);
         targetE.Add(folderLayerSetting);
     }
 

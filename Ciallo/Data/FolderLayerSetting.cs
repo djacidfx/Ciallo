@@ -1,4 +1,5 @@
 ﻿using System.Runtime.Serialization;
+using System.Collections.Immutable;
 using Frent;
 using ObservableCollections;
 using R3;
@@ -33,8 +34,7 @@ public class FolderLayerSetting
     /// </summary>
     [DataMember] public ObservableSortedList<int, Entity> Exposures = null;
     public ReadOnlyReactiveProperty<Entity> CurrentExposedCel { get; private set; }
-
-    public void ObserveCurrentFrame(ReactiveProperty<int> currentFrame)
+    public void InitCurrentExposedCel(ReactiveProperty<int> currentFrame)
     {
         CurrentExposedCel = Exposures.ObserveChanged().PrependDefault()
             .CombineLatest(currentFrame, (_, currentFrame) => Exposures.FloorIndex(currentFrame))
@@ -42,10 +42,21 @@ public class FolderLayerSetting
             .ToReadOnlyReactiveProperty();
     }
 
+    /// <summary>
+    /// After rolling the timeline, the working layer under the exposed cel is determined by this path.
+    /// This is runtime preference state and is not serialized.
+    /// 
+    /// The path is relative to the exposed cel root; an empty path means the exposed cel itself.
+    /// Invalid path indexes are resolved to the nearest preorder node without mutating this preference.
+    /// The default [-1, -1] prefers the last child of the last child/folder under the exposed cel.
+    /// </summary>
+    public ReactiveProperty<ImmutableArray<int>> PreferredWorkingLayerPathOnRollingFrame = new([-1, -1]);
+
     public FolderLayerSetting Clone() =>
         new()
         {
             IsExpanded = { Value = IsExpanded.Value },
             Exposures = Exposures is null ? null : [.. Exposures],
+            PreferredWorkingLayerPathOnRollingFrame = { Value = PreferredWorkingLayerPathOnRollingFrame.Value },
         };
 }
