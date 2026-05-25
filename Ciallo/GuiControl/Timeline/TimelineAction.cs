@@ -270,22 +270,19 @@ public partial class TimelineAction : Container
 
     internal static int FindNearestUnoccupiedFrame(ObservableSortedList<int, Entity> exposures, int candidate)
     {
-        if (candidate < 0)
-            candidate = 0;
-
         int floorIndex = exposures.FloorIndex(candidate);
         if (floorIndex < 0 || exposures.GetKeyAtIndex(floorIndex) != candidate)
             return candidate;
 
         for (int distance = 1; ; distance++)
         {
-            int earlier = candidate - distance;
-            if (earlier >= 0 && !exposures.ContainsKey(earlier))
-                return earlier;
+            long earlier = (long)candidate - distance;
+            if (earlier >= int.MinValue && !exposures.ContainsKey((int)earlier))
+                return (int)earlier;
 
-            int later = candidate + distance;
-            if (later <= int.MaxValue && !exposures.ContainsKey(later))
-                return later;
+            long later = (long)candidate + distance;
+            if (later <= int.MaxValue && !exposures.ContainsKey((int)later))
+                return (int)later;
         }
     }
 

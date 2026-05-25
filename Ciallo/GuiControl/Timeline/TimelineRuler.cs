@@ -216,10 +216,10 @@ public partial class TimelineRuler : Control
     // ── Coordinate helpers ───────────────────────────────────────────────────
 
     /// <summary>Ruler-local pixel X of a frame's left edge. Frame 0 is the virtual origin.</summary>
-    private float FrameToX(int frame) => frame * _pixelsPerFrame - _scrollOffset;
+    private float FrameToX(int frame) => TimelineFrameGeometry.FrameToX(frame, _pixelsPerFrame, _scrollOffset);
 
     /// <summary>Frame index whose left edge is at or before ruler-local X. May return 0 or negative.</summary>
-    private int XToFrame(float x) => Mathf.FloorToInt((x + _scrollOffset) / _pixelsPerFrame);
+    private int XToFrame(float x) => TimelineFrameGeometry.XToFrameFloor(x, _pixelsPerFrame, _scrollOffset);
 
     private static string FormatFrameLabel(int frame) => frame < 0 ? frame.ToString() : (frame + 1).ToString();
 
@@ -250,7 +250,6 @@ public partial class TimelineRuler : Control
     private const float HandleHitTolerance = 2f;
 
     /// <summary>
-    /// Start handle: right-angle triangle, right vertical edge at startX, body to the LEFT.
     /// Hit zone covers the triangle bounding box with a small horizontal tolerance.
     /// </summary>
     private bool HitStartHandle(Vector2 pos)
@@ -262,9 +261,6 @@ public partial class TimelineRuler : Control
                pos.Y >= 0f && pos.Y <= Size.Y;
     }
 
-    /// <summary>
-    /// End handle: right-angle triangle, left vertical edge at endX, body to the RIGHT.
-    /// </summary>
     private bool HitEndHandle(Vector2 pos)
     {
         if (_playbackEnd == null) return false;
@@ -312,8 +308,9 @@ public partial class TimelineRuler : Control
 
         var font = GetThemeDefaultFont();
         // Frame 0 is at virtual x=0; include a 1-frame buffer left of the view.
-        int startFrame = (int)(_scrollOffset / _pixelsPerFrame) - 1;
-        int endFrame = (int)((_scrollOffset + w) / _pixelsPerFrame) + 2;
+        var visibleFrames = TimelineFrameGeometry.VisibleFrameRange(w, _pixelsPerFrame, _scrollOffset);
+        int startFrame = visibleFrames.Start;
+        int endFrame = visibleFrames.End;
 
         // ── Seconds band (top) ───────────────────────────────────────────────
         // Band occupies y ∈ [0, SecondsBandHeight); frame band is below.
@@ -327,8 +324,8 @@ public partial class TimelineRuler : Control
                 while (pxPerSecond * secondStep < MinLabelSpacingPx)
                     secondStep++;
 
-            int startSecond = Mathf.Max(0, (int)(_scrollOffset / pxPerSecond));
-            int endSecond = (int)((_scrollOffset + w) / pxPerSecond) + 2;
+            int startSecond = Mathf.FloorToInt(_scrollOffset / pxPerSecond) - 1;
+            int endSecond = Mathf.FloorToInt((_scrollOffset + w) / pxPerSecond) + 2;
 
             // Separator line between the two bands
             DrawLine(new Vector2(0f, SecondsBandHeight), new Vector2(w, SecondsBandHeight),
@@ -385,7 +382,7 @@ public partial class TimelineRuler : Control
             // Frame 0 has no visible label — numbering goes …-2, -1, (silent 0), 1, 2…
             if (isMajor && showFrameLabels && frame != 0)
                 DrawString(font, new Vector2(x + 2f, h - tickH - 2f),
-                        frame.ToString(), HorizontalAlignment.Left, -1, LabelFontSize, frameLabelColor);
+                        FormatFrameLabel(frame), HorizontalAlignment.Left, -1, LabelFontSize, frameLabelColor);
         }
 
         // ── Hover / drag hint ────────────────────────────────────────────────

@@ -41,15 +41,15 @@ public partial class CelTrack : Control
 
     // ── Interaction state ─────────────────────────────────────────────────────
     private const float DragThreshold = 3f;
-    private int _hoveredFrame = -1;   // -1 = none
-    private int _pressedFrame = -1;   // -1 = none
+    private int? _hoveredFrame;
+    private int? _pressedFrame;
     private float _dragStartX;
     private bool _isDragging;
-    private int _dragSourceFrame = -1; // frame key being dragged
-    private int _dragTargetFrame = -1; // current drop target frame
+    private int? _dragSourceFrame;
+    private int? _dragTargetFrame;
 
     // ── Right-click indicator ─────────────────────────────────────────────────
-    private int _rightClickIndicatorFrame = -1; // frame whose left edge shows the indicator line
+    private int? _rightClickIndicatorFrame;
 
     // ── Entity references (set by Bind) ───────────────────────────────────────
     private Entity _celFolderEntity;
@@ -106,7 +106,7 @@ public partial class CelTrack : Control
         }
         else if (what == NotificationMouseExit)
         {
-            _hoveredFrame = -1;
+            _hoveredFrame = null;
             QueueRedraw();
         }
     }
@@ -175,19 +175,19 @@ public partial class CelTrack : Control
         foreach (var kv in _exposures)
             frames.Add(kv.Key);
 
-        float playbackStartX = _playbackStart * _ppf - _scrollOffset;
-        float playbackEndX = _playbackEnd * _ppf - _scrollOffset;
+        float playbackStartX = FrameToX(_playbackStart);
+        float playbackEndX = FrameToX(_playbackEnd);
 
         // ── Arrow from playbackStart to first in-range frame ──────────────────
-        int firstInRange = -1;
+        int? firstInRange = null;
         foreach (int f in frames)
             if (f >= _playbackStart && f < _playbackEnd) { firstInRange = f; break; }
 
         bool hasFramesBefore = frames.Count > 0 && frames[0] < _playbackStart;
-        if (hasFramesBefore && firstInRange >= 0)
+        if (hasFramesBefore && firstInRange.HasValue)
         {
             float shaftStart = playbackStartX;
-            float firstX = firstInRange * _ppf - _scrollOffset;
+            float firstX = FrameToX(firstInRange.Value);
             float tipX = Mathf.Min(firstX, w + ArrowHeadLength);
             if (tipX - shaftStart > ArrowHeadLength)
             {
@@ -202,7 +202,7 @@ public partial class CelTrack : Control
         for (int i = 0; i < frames.Count; i++)
         {
             int frame = frames[i];
-            float x = frame * _ppf - _scrollOffset;
+            float x = FrameToX(frame);
 
             // ── Cel drag bar
             var barRect = new Rect2(x, 0f, barW, h);
@@ -225,9 +225,9 @@ public partial class CelTrack : Control
             string name = layerE.Get<CommonLayerSetting>().Name.Value;
             float labelX = x + barW + LabelPad;
             // Label end: next frame's bar (any range), except last in-range frame uses playbackEndX
-            int nextAny = (i + 1 < frames.Count) ? frames[i + 1] : -1;
-            float labelEnd = (nextAny >= 0)
-                ? nextAny * _ppf - _scrollOffset - ArrowHeadLength - LabelPad
+            int? nextAny = i + 1 < frames.Count ? frames[i + 1] : null;
+            float labelEnd = nextAny.HasValue
+                ? FrameToX(nextAny.Value) - ArrowHeadLength - LabelPad
                 : w;
             float maxW = labelEnd - labelX;
             if (maxW > 0f && labelX < w)
@@ -237,7 +237,7 @@ public partial class CelTrack : Control
             if (frame < _playbackStart || frame >= _playbackEnd) continue; // skip arrows for out-of-range frames
 
             // Next frame within playback range (or none)
-            int nextInRange = -1;
+            int? nextInRange = null;
             for (int j = i + 1; j < frames.Count; j++)
             {
                 if (frames[j] >= _playbackStart && frames[j] < _playbackEnd) { nextInRange = frames[j]; break; }
@@ -247,10 +247,10 @@ public partial class CelTrack : Control
             float shaftStart = x + barW;
             float tipX;
 
-            if (nextInRange >= 0)
+            if (nextInRange.HasValue)
             {
                 // Arrow points toward next bar
-                float nextX = nextInRange * _ppf - _scrollOffset;
+                float nextX = FrameToX(nextInRange.Value);
                 tipX = Mathf.Min(nextX, w + ArrowHeadLength);
             }
             else
@@ -272,19 +272,20 @@ public partial class CelTrack : Control
         }
 
         // ── Right-click indicator line ────────────────────────────────────────
-        if (_rightClickIndicatorFrame >= 0)
+        if (_rightClickIndicatorFrame.HasValue)
         {
-            float ix = _rightClickIndicatorFrame * _ppf - _scrollOffset;
+            float ix = FrameToX(_rightClickIndicatorFrame.Value);
             if (ix >= 0f && ix <= w)
                 DrawLine(new Vector2(ix, 0f), new Vector2(ix, h),
                     new Color(1f, 1f, 1f, 0.75f), width: 1f);
         }
 
         // ── Drag preview ──────────────────────────────────────────────────────
-        if (_isDragging && _dragTargetFrame >= 0 && _dragTargetFrame != _dragSourceFrame)
+        if (_isDragging && _dragTargetFrame.HasValue && _dragTargetFrame != _dragSourceFrame)
         {
-            float targetX = _dragTargetFrame * _ppf - _scrollOffset;
-            bool isValid = !_exposures.ContainsKey(_dragTargetFrame);
+            int targetFrame = _dragTargetFrame.Value;
+            float targetX = FrameToX(targetFrame);
+            bool isValid = !_exposures.ContainsKey(targetFrame);
             Color previewColor = isValid
                 ? BarHoverColor with { A = 0.85f }
                 : new Color(0.9f, 0.25f, 0.25f, 0.6f);
@@ -305,33 +306,36 @@ public partial class CelTrack : Control
 
     /// <summary>Converts a pixel X position (local) to the nearest integer frame index.</summary>
     private int PositionToFrame(float posX) =>
-        _ppf > 0f ? Mathf.RoundToInt((posX + _scrollOffset) / _ppf) : 0;
+        TimelineFrameGeometry.XToFrameRounded(posX, _ppf, _scrollOffset);
 
     /// <summary>Converts a pixel X position (local) to the frame index by flooring (used for right-click target).</summary>
     private int PositionToFrameFloor(float posX) =>
-        _ppf > 0f ? Mathf.FloorToInt((posX + _scrollOffset) / _ppf) : 0;
+        TimelineFrameGeometry.XToFrameFloor(posX, _ppf, _scrollOffset);
+
+    private float FrameToX(int frame) =>
+        TimelineFrameGeometry.FrameToX(frame, _ppf, _scrollOffset);
 
     // ── Input ────────────────────────────────────────────────────────────────
 
-    /// <summary>Returns the frame key whose bar contains <paramref name="posX"/>, or -1.</summary>
-    private int FrameAt(float posX)
+    /// <summary>Returns the frame key whose bar contains <paramref name="posX"/>, or null.</summary>
+    private int? FrameAt(float posX)
     {
-        if (_ppf <= 0f || _exposures == null) return -1;
+        if (_ppf <= 0f || _exposures == null) return null;
         float barW = BarWidth;
         foreach (var kv in _exposures)
         {
-            float x = kv.Key * _ppf - _scrollOffset;
+            float x = FrameToX(kv.Key);
             if (posX >= x && posX < x + barW)
                 return kv.Key;
         }
-        return -1;
+        return null;
     }
 
     public override void _GuiInput(InputEvent @event)
     {
         if (@event is InputEventMouseMotion motion)
         {
-            int newHovered = FrameAt(motion.Position.X);
+            int? newHovered = FrameAt(motion.Position.X);
             if (newHovered != _hoveredFrame)
             {
                 _hoveredFrame = newHovered;
@@ -339,7 +343,7 @@ public partial class CelTrack : Control
             }
 
             // Drag: activate once threshold is exceeded, then track target frame
-            if (_pressedFrame >= 0)
+            if (_pressedFrame.HasValue)
             {
                 if (!_isDragging && Mathf.Abs(motion.Position.X - _dragStartX) > DragThreshold)
                 {
@@ -370,14 +374,14 @@ public partial class CelTrack : Control
         {
             if (lbtn.Pressed)
             {
-                int f = FrameAt(lbtn.Position.X);
-                if (f >= 0)
+                int? f = FrameAt(lbtn.Position.X);
+                if (f.HasValue)
                 {
                     _pressedFrame = f;
                     _dragStartX = lbtn.Position.X;
                     _isDragging = false;
-                    _dragSourceFrame = -1;
-                    _dragTargetFrame = -1;
+                    _dragSourceFrame = null;
+                    _dragTargetFrame = null;
                     QueueRedraw();
                 }
             }
@@ -386,12 +390,13 @@ public partial class CelTrack : Control
                 if (_isDragging)
                 {
                     // Commit the move if the target is valid (not occupied by another key)
-                    if (_dragTargetFrame >= 0
+                    if (_dragTargetFrame.HasValue
+                        && _dragSourceFrame.HasValue
                         && _dragTargetFrame != _dragSourceFrame
-                        && !_exposures.ContainsKey(_dragTargetFrame))
+                        && !_exposures.ContainsKey(_dragTargetFrame.Value))
                     {
-                        int src = _dragSourceFrame;
-                        int tgt = _dragTargetFrame;
+                        int src = _dragSourceFrame.Value;
+                        int tgt = _dragTargetFrame.Value;
                         new CommandBuilder("Move Cel Exposure")
                             .SetObservableCollection(_exposures,
                                 exposures =>
@@ -403,18 +408,19 @@ public partial class CelTrack : Control
                             .Commit();
                     }
                     _isDragging = false;
-                    _dragSourceFrame = -1;
-                    _dragTargetFrame = -1;
+                    _dragSourceFrame = null;
+                    _dragTargetFrame = null;
                 }
-                else if (_pressedFrame >= 0)
+                else if (_pressedFrame.HasValue)
                 {
                     // Click (no drag): select this cel button's cel, then move the playhead to this frame.
-                    if (_selectionManager != null && _exposures != null && _exposures.ContainsKey(_pressedFrame))
+                    int pressedFrame = _pressedFrame.Value;
+                    if (_selectionManager != null && _exposures != null && _exposures.ContainsKey(pressedFrame))
                     {
-                        var clickedCel = _exposures[_pressedFrame];
+                        var clickedCel = _exposures[pressedFrame];
                         int oldFrame = CurrentFrame.Value;
                         var cmd = new CommandBuilder(_celFolderEntity)
-                            .SetProperty(CurrentFrame, oldFrame, _pressedFrame);
+                            .SetProperty(CurrentFrame, oldFrame, pressedFrame);
                         var newWorkingLayer = _selectionManager.ComputeWorkingLayerForCelButtonSelection(_celFolderEntity, clickedCel);
                         if (!newWorkingLayer.IsNull)
                             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
@@ -422,9 +428,9 @@ public partial class CelTrack : Control
                     }
                 }
 
-                if (_pressedFrame >= 0)
+                if (_pressedFrame.HasValue)
                 {
-                    _pressedFrame = -1;
+                    _pressedFrame = null;
                     QueueRedraw();
                 }
             }
@@ -434,10 +440,10 @@ public partial class CelTrack : Control
     private void OnMenuClosed()
     {
         RightClickMenu.PopupHide -= OnMenuClosed;
-        _rightClickIndicatorFrame = -1;
+        _rightClickIndicatorFrame = null;
         QueueRedraw();
     }
 
     public override int _GetCursorShape(Vector2 atPosition) =>
-        FrameAt(atPosition.X) >= 0 ? (int)CursorShape.PointingHand : (int)CursorShape.Arrow;
+        FrameAt(atPosition.X).HasValue ? (int)CursorShape.PointingHand : (int)CursorShape.Arrow;
 }
