@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.Serialization;
 using Frent;
@@ -51,78 +51,45 @@ public class SelectionManager
     }
 
     /// <summary>
-    /// Returns the entity to switch <see cref="WorkingLayer"/> to after the current frame moves
-    /// from <paramref name="oldFrame"/> to <paramref name="newFrame"/>.
-    /// <list type="bullet">
-    /// <item>If <see cref="WorkingCelFolder"/> is null, returns <see cref="Entity.Null"/> (no switch).</item>
-    /// <item>Otherwise finds the cel exposed at the new frame inside the cel folder.</item>
-    /// <item>If the exposed cel is not a folder layer, returns it directly.</item>
-    /// <item>If it is a folder layer, computes the relative index path from the previously
-    ///   working layer down from its old exposed cel, then follows that path inside the new
-    ///   exposed cel. Trims the path from the end until a valid node is found; falls back to
-    ///   the exposed cel itself if nothing matches.</item>
-    /// <item>Returns <see cref="Entity.Null"/> when no switch is needed (already on the target layer).</item>
-    /// </list>
+    /// Returns the entity to switch <see cref="WorkingLayer"/> to after the timeline rolls to
+    /// <paramref name="frame"/>, using the working cel folder's preferred path.
     /// </summary>
-    public Entity ComputeWorkingLayerForSwitchingFrame(int oldFrame, int newFrame)
+    public Entity ComputeWorkingLayerForRollingFrame(int frame)
     {
         var celFolder = WorkingCelFolder.CurrentValue;
         if (celFolder.IsNull) return Entity.Null;
 
-        var exposures = celFolder.Get<FolderLayerSetting>().Exposures;
+        var folderSetting = celFolder.Get<FolderLayerSetting>();
+        var exposures = folderSetting.Exposures;
         if (exposures == null) return Entity.Null;
 
-        // Find exposed cel at new frame.
-        int newFloor = exposures.FloorIndex(newFrame);
-        if (newFloor < 0) return Entity.Null;
-        var newExposedCel = exposures.GetValueAtIndex(newFloor);
-        if (newExposedCel.IsNull || !newExposedCel.IsAlive) return Entity.Null;
+        int floor = exposures.FloorIndex(frame);
+        if (floor < 0) return Entity.Null;
 
-        Entity result;
+        var exposedCel = exposures.GetValueAtIndex(floor);
+        if (exposedCel.IsNull || !exposedCel.IsAlive || !exposedCel.Has<LayerTreeNode>())
+            return Entity.Null;
 
-        if (!newExposedCel.Has<FolderLayerSetting>())
-        {
-            // Non-folder cel: switch directly to the cel.
-            result = newExposedCel;
-        }
-        else
-        {
-            // Folder cel: try to preserve the relative path within the subtree.
-            var oldWorkingLayer = WorkingLayer.Value;
+        var result = ResolvePreferredWorkingLayer(
+            exposedCel.Get<LayerTreeNode>(),
+            folderSetting.PreferredWorkingLayerPathOnRollingFrame.Value);
 
-            // Find the cel that was exposed at the old frame.
-            int oldFloor = exposures.FloorIndex(oldFrame);
-            Entity oldExposedCel = oldFloor >= 0 ? exposures.GetValueAtIndex(oldFloor) : Entity.Null;
-
-            // Compute index path from oldExposedCel down to oldWorkingLayer.
-            List<int> relativePath = null;
-            if (!oldExposedCel.IsNull && oldExposedCel.IsAlive
-                && !oldWorkingLayer.IsNull && oldWorkingLayer.IsAlive
-                && oldWorkingLayer != oldExposedCel)
-            {
-                EntityTreeNode<LayerTreeNode>.BreadthFirstSearch(
-                    oldExposedCel.Get<LayerTreeNode>(),
-                    oldWorkingLayer.Get<LayerTreeNode>(),
-                    out relativePath);
-            }
-            relativePath ??= [];
-
-            // Try the path in the new cel, trimming from the end until a node is found.
-            var newCelNode = newExposedCel.Get<LayerTreeNode>();
-            result = newExposedCel;
-            for (int len = relativePath.Count; len > 0; len--)
-            {
-                var node = newCelNode.GetNodeOrNull(relativePath.Take(len).ToArray());
-                if (node != null)
-                {
-                    result = node.Self;
-                    break;
-                }
-            }
-        }
-
-        // Return Null when no switch is actually needed.
         return result == WorkingLayer.Value ? Entity.Null : result;
+    }
+
+    private static Entity ResolvePreferredWorkingLayer(
+        LayerTreeNode exposedCelNode,
+        ImmutableArray<int> preferredPath)
+    {
+        if (preferredPath.SequenceEqual([-1, -1]))
+            return exposedCelNode.GetDeepestLastLayerDescendant().Self;
+
+        var exactNode = exposedCelNode.GetLayerNodeOrNull(preferredPath, normalizeNegativeIndex: true);
+        if (exactNode != null)
+            return exactNode.Self;
+
+        int preorderIndex = exposedCelNode.GetNearestLayerPreorderIndex(preferredPath, normalizeNegativeIndex: true);
+        return exposedCelNode.GetLayerNodeAtPreorderIndex(preorderIndex).Self;
     }
 
     /// <summary>

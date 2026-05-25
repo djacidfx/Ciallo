@@ -416,7 +416,7 @@ public partial class CelTrack : Control
                             .SetProperty(CurrentFrame, oldFrame, _pressedFrame);
                         if (_selectionManager != null)
                         {
-                            var newWorkingLayer = _selectionManager.ComputeWorkingLayerForSwitchingFrame(oldFrame, _pressedFrame);
+                            var newWorkingLayer = _selectionManager.ComputeWorkingLayerForRollingFrame(_pressedFrame);
                             if (!newWorkingLayer.IsNull)
                                 cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
                         }

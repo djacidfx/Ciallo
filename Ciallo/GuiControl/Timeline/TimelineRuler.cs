@@ -473,7 +473,7 @@ public partial class TimelineRuler : Control
                     if (_currentFrame != null && _currentFrame.Value != _frameAtDragStart)
                     {
                         cmd.SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
-                        var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_frameAtDragStart, _currentFrame.Value);
+                        var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_currentFrame.Value);
                         if (!newWorkingLayer.IsNull)
                             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
                     }
@@ -486,7 +486,7 @@ public partial class TimelineRuler : Control
                     if (_currentFrame != null && _currentFrame.Value != _frameAtDragStart)
                     {
                         cmd.SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
-                        var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_frameAtDragStart, _currentFrame.Value);
+                        var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_currentFrame.Value);
                         if (!newWorkingLayer.IsNull)
                             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
                     }
@@ -589,7 +589,7 @@ public partial class TimelineRuler : Control
             .SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
         if (_currentFrame.Value != _frameAtDragStart)
         {
-            var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_frameAtDragStart, _currentFrame.Value);
+            var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_currentFrame.Value);
             if (!newWorkingLayer.IsNull)
                 cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
         }
@@ -610,7 +610,7 @@ public partial class TimelineRuler : Control
 
     // ── Working-layer switch on frame change ─────────────────────────────────
 
-    /// <summary>Delegates to <see cref="SelectionManager.ComputeWorkingLayerForSwitchingFrame"/>.</summary>
-    private Entity GetNewWorkingLayerAfterFrameChange(int oldFrame, int newFrame) =>
-        _selectionManager?.ComputeWorkingLayerForSwitchingFrame(oldFrame, newFrame) ?? Entity.Null;
+    /// <summary>Delegates to <see cref="SelectionManager.ComputeWorkingLayerForRollingFrame"/>.</summary>
+    private Entity GetNewWorkingLayerAfterFrameChange(int frame) =>
+        _selectionManager?.ComputeWorkingLayerForRollingFrame(frame) ?? Entity.Null;
 }

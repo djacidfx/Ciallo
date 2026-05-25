@@ -61,7 +61,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
             var cmd = new CommandBuilder(block.LayerEntity);
             if (newFrame != oldFrame)
                 cmd.SetProperty(selectionManager.CurrentFrame, oldFrame, newFrame);
-            cmd.SetWorkingLayer()
+            cmd.SetWorkingLayer(updatePreferredWorkingLayerPathOnRollingFrame: true)
                 .CommitToLatest();
         };
     }

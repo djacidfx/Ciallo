@@ -192,7 +192,7 @@ public partial class TimelineRulerRightClickMenu : PopupMenu
         if (oldFrame == newFrame) return;
 
         cmd.SetProperty(_selectionManager.CurrentFrame, oldFrame, newFrame);
-        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForSwitchingFrame(oldFrame, newFrame);
+        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForRollingFrame(newFrame);
         if (!newWorkingLayer.IsNull)
             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
     }

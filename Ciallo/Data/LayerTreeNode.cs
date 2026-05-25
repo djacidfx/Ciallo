@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
 using System.Runtime.Serialization;
+using Frent;
 
 namespace Ciallo.Data;
 
@@ -9,6 +10,31 @@ namespace Ciallo.Data;
 public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
 {
     public static int LayerCreationId = 1;
+
+    public List<Entity> GetLayerChildren()
+    {
+        return GetFilteredChildren(IsLayerChild);
+    }
+
+    public LayerTreeNode GetLayerNodeOrNull(IReadOnlyList<int> path, bool normalizeNegativeIndex = false)
+    {
+        return GetNodeOrNull(path, IsLayerChild, normalizeNegativeIndex);
+    }
+
+    public LayerTreeNode GetDeepestLastLayerDescendant()
+    {
+        return GetDeepestLastDescendant(IsLayerChild);
+    }
+
+    public int GetNearestLayerPreorderIndex(IReadOnlyList<int> path, bool normalizeNegativeIndex = false)
+    {
+        return GetNearestPreorderIndex(path, IsLayerChild, normalizeNegativeIndex);
+    }
+
+    public LayerTreeNode GetLayerNodeAtPreorderIndex(int preorderIndex)
+    {
+        return GetNodeAtPreorderIndex(preorderIndex, IsLayerChild);
+    }
 
     /// <summary>
     /// Assume the given node at path is focused and going to be deleted, return the path to the next node that should have focus.
@@ -51,5 +77,13 @@ public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
 
         // Fallback to parent
         return [.. parentPath];
+    }
+
+    private static bool IsLayerChild(Entity child)
+    {
+        return !child.IsNull
+               && child.IsAlive
+               && child.Has<LayerTreeNode>()
+               && child.Has<CommonLayerSetting>();
     }
 }

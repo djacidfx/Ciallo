@@ -18,7 +18,6 @@ public partial class TimelineAction : Container
     private Texture2D _playIcon;
     private Texture2D _stopIcon;
     private readonly ReactiveProperty<bool> _isPlaying = new(false);
-    private int _frameAtPlaybackStart;
     private double _playbackAccumulator;
     public ReadOnlyReactiveProperty<bool> IsPlaying => _isPlaying;
 
@@ -79,7 +78,7 @@ public partial class TimelineAction : Container
         var cmd = new CommandBuilder()
             .SetProperty(_selectionManager.CurrentFrame, oldFrame, newFrame);
 
-        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForSwitchingFrame(oldFrame, newFrame);
+        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForRollingFrame(newFrame);
         if (!newWorkingLayer.IsNull)
             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
 
@@ -105,7 +104,6 @@ public partial class TimelineAction : Container
         if (frame >= GetPlaybackLastFrame())
             frame = GetPlaybackStart();
 
-        _frameAtPlaybackStart = frame;
         SetPlaying(true);
         SetFrameDirect(frame);
     }
@@ -169,7 +167,7 @@ public partial class TimelineAction : Container
         if (_selectionManager == null) return;
 
         int currentFrame = _selectionManager.CurrentFrame.Value;
-        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForSwitchingFrame(_frameAtPlaybackStart, currentFrame);
+        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForRollingFrame(currentFrame);
         if (!newWorkingLayer.IsNull)
             new CommandBuilder(newWorkingLayer).SetWorkingLayer().Do();
     }

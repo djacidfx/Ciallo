@@ -262,13 +262,36 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         return _children[path[0]].Get<T>().GetDescendantNode(path.Skip(1).ToArray());
     }
 
-    public T GetNodeOrNull([NotNull] IReadOnlyList<int> path)
+    public T GetNodeOrNull(
+        [NotNull] IReadOnlyList<int> path,
+        Func<Entity, bool> childFilter = null,
+        bool normalizeNegativeIndex = false)
     {
-        if (path.Count == 0) return (T)this;
-        int idx = path[0];
-        if (idx < 0 || idx >= _children.Count) return null;
-        var childNode = _children[idx].Get<T>();
-        return childNode.GetNodeOrNull(path.Skip(1).ToArray());
+        if (path.Count == 0)
+            return (T)this;
+
+        var node = (T)this;
+        foreach (int rawIndex in path)
+        {
+            var children = node.GetFilteredChildren(childFilter);
+            if (children.Count == 0)
+                return null;
+
+            int index = normalizeNegativeIndex
+                ? NormalizePathIndex(rawIndex, children.Count)
+                : rawIndex;
+
+            if (index < 0 || index >= children.Count)
+                return null;
+
+            var child = children[index];
+            if (child.IsNull || !child.IsAlive || !child.Has<T>())
+                return null;
+
+            node = child.Get<T>();
+        }
+
+        return node;
     }
 
     public ImmutableArray<int> FindPathTo(Entity target)
@@ -404,6 +427,95 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
             cnt += CountSubtreeNodes(e.Get<T>());
         return cnt;
     }
+
+    public int CountSubtreeNodes(Func<Entity, bool> childFilter)
+    {
+        return CountSubtreeNodes((T)this, childFilter);
+    }
+
+    public static int CountSubtreeNodes(T n, Func<Entity, bool> childFilter)
+    {
+        int cnt = 1;
+        foreach (var e in n.GetFilteredChildren(childFilter))
+            cnt += CountSubtreeNodes(e.Get<T>(), childFilter);
+        return cnt;
+    }
+
+    public T GetDeepestLastDescendant(Func<Entity, bool> childFilter)
+    {
+        var node = (T)this;
+        while (node.GetFilteredChildren(childFilter) is { Count: > 0 } children)
+            node = children[^1].Get<T>();
+        return node;
+    }
+
+    public int GetNearestPreorderIndex(
+        IReadOnlyList<int> path,
+        Func<Entity, bool> childFilter,
+        bool normalizeNegativeIndex = false)
+    {
+        if (path.Count == 0)
+            return 0;
+
+        int preorderIndex = 0;
+        var node = (T)this;
+        foreach (int rawIndex in path)
+        {
+            var children = node.GetFilteredChildren(childFilter);
+            if (children.Count == 0)
+                return preorderIndex;
+
+            int index = normalizeNegativeIndex
+                ? NormalizePathIndex(rawIndex, children.Count)
+                : rawIndex;
+
+            if (index < 0)
+                return preorderIndex + 1;
+            if (index >= children.Count)
+                return preorderIndex + CountSubtreeNodes(node, childFilter) - 1;
+
+            for (int i = 0; i < index; i++)
+                preorderIndex += CountSubtreeNodes(children[i].Get<T>(), childFilter);
+
+            preorderIndex++;
+            node = children[index].Get<T>();
+        }
+
+        return preorderIndex;
+    }
+
+    public T GetNodeAtPreorderIndex(int preorderIndex, Func<Entity, bool> childFilter)
+    {
+        if (preorderIndex <= 0)
+            return (T)this;
+
+        int remaining = preorderIndex - 1;
+        foreach (var child in GetFilteredChildren(childFilter))
+        {
+            var childNode = child.Get<T>();
+            int subtreeCount = CountSubtreeNodes(childNode, childFilter);
+            if (remaining < subtreeCount)
+                return childNode.GetNodeAtPreorderIndex(remaining, childFilter);
+            remaining -= subtreeCount;
+        }
+
+        return (T)this;
+    }
+
+    protected List<Entity> GetFilteredChildren(Func<Entity, bool> childFilter)
+    {
+        if (childFilter == null)
+            return [.. _children];
+
+        List<Entity> result = [];
+        foreach (var child in _children)
+            if (childFilter(child))
+                result.Add(child);
+        return result;
+    }
+
+    private static int NormalizePathIndex(int index, int count) =>
+        index < 0 ? count + index : index;
 
     #endregion
 
