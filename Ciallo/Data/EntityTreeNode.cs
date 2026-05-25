@@ -28,9 +28,9 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     private readonly Subject<TreeMutationEvent> _mutations = new(); // include events from descendants
 
     /// Self events emitted after current node has been added/Removed
-    public readonly Subject<ChildInsertedEvent> Added = new();
-    public readonly Subject<ChildRemovedEvent> Removed = new();
-    public readonly Subject<ChildMovedEvent> Moved = new();
+    public readonly Subject<NodeInsertedEvent> Added = new();
+    public readonly Subject<NodeRemovedEvent> Removed = new();
+    public readonly Subject<NodeMovedEvent> Moved = new();
     public readonly MoveOrReparentAsExitEnter MovedAsAddedRemoved;
 
     public int Index => ParentValue.Get<T>()._children.IndexOf(Self);

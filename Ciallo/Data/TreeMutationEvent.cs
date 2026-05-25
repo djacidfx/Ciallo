@@ -25,35 +25,30 @@ public enum TreeMutationKind
     Move,
 }
 
-/// <summary>Fired on a child entity when it is inserted into a parent.</summary>
-public readonly record struct ChildInsertedEvent(int Index, Entity Parent);
-
-/// <summary>Fired on a child entity when it is removed from its parent.</summary>
-public readonly record struct ChildRemovedEvent(int Index, Entity Parent);
-
-/// <summary>Fired on a child entity when it is moved within (or across) parents.</summary>
-public readonly record struct ChildMovedEvent(int OldIndex, int NewIndex, Entity Parent);
+public readonly record struct NodeInsertedEvent(int Index, Entity Parent);
+public readonly record struct NodeRemovedEvent(int Index, Entity Parent);
+public readonly record struct NodeMovedEvent(int OldIndex, int NewIndex, Entity Parent);
 
 public record MoveOrReparentAsExitEnter
 {
     public MoveOrReparentAsExitEnter(
-        Observable<ChildInsertedEvent> treeEntered,
-        Observable<ChildRemovedEvent> treeExited,
-        Observable<ChildMovedEvent> moved)
+        Observable<NodeInsertedEvent> treeEntered,
+        Observable<NodeRemovedEvent> treeExited,
+        Observable<NodeMovedEvent> moved)
     {
         // Use dedicated subjects so that Removed always fires before Added
         // regardless of subscriber registration order.
-        var movedRemoved = new Subject<ChildRemovedEvent>();
-        var movedAdded = new Subject<ChildInsertedEvent>();
+        var movedRemoved = new Subject<NodeRemovedEvent>();
+        var movedAdded = new Subject<NodeInsertedEvent>();
         moved.Subscribe(et =>
         {
-            movedRemoved.OnNext(new ChildRemovedEvent(et.OldIndex, et.Parent));
-            movedAdded.OnNext(new ChildInsertedEvent(et.NewIndex, et.Parent));
+            movedRemoved.OnNext(new NodeRemovedEvent(et.OldIndex, et.Parent));
+            movedAdded.OnNext(new NodeInsertedEvent(et.NewIndex, et.Parent));
         });
         Removed = treeExited.Merge(movedRemoved);
         Added = treeEntered.Merge(movedAdded);
     }
 
-    public readonly Observable<ChildInsertedEvent> Added;
-    public readonly Observable<ChildRemovedEvent> Removed;
+    public readonly Observable<NodeInsertedEvent> Added;
+    public readonly Observable<NodeRemovedEvent> Removed;
 }

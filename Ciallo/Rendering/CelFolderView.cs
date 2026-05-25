@@ -39,7 +39,7 @@ public partial class CelFolderView : FolderLayerView
 
         layerNode.ObserveRemoveChild().Subscribe(et =>
         {
-            HideNode(GetLayerView(et.Value));
+            ShowNode(GetLayerView(et.Value));
         }).AddTo(subs);
 
     }
