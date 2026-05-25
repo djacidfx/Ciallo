@@ -78,8 +78,8 @@ public partial class TimelineAction : Container
         var cmd = new CommandBuilder()
             .SetProperty(_selectionManager.CurrentFrame, oldFrame, newFrame);
 
-        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForRollingFrame(newFrame);
-        if (!newWorkingLayer.IsNull)
+        var newWorkingLayer = _selectionManager.ResolveWorkingLayerForTimelineFrameSelection(newFrame);
+        if (!newWorkingLayer.IsNull && newWorkingLayer != _selectionManager.WorkingLayer.Value)
             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
 
         cmd.CommitOpenSequence();
@@ -167,8 +167,8 @@ public partial class TimelineAction : Container
         if (_selectionManager == null) return;
 
         int currentFrame = _selectionManager.CurrentFrame.Value;
-        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForRollingFrame(currentFrame);
-        if (!newWorkingLayer.IsNull)
+        var newWorkingLayer = _selectionManager.ResolveWorkingLayerForTimelineFrameSelection(currentFrame);
+        if (!newWorkingLayer.IsNull && newWorkingLayer != _selectionManager.WorkingLayer.Value)
             new CommandBuilder(newWorkingLayer).SetWorkingLayer().Do();
     }
 

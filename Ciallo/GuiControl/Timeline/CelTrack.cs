@@ -408,18 +408,16 @@ public partial class CelTrack : Control
                 }
                 else if (_pressedFrame >= 0)
                 {
-                    // Click (no drag): set the playhead to this frame and switch working layer if needed.
-                    if (CurrentFrame != null)
+                    // Click (no drag): select this cel button's cel, then move the playhead to this frame.
+                    if (_selectionManager != null && _exposures != null && _exposures.ContainsKey(_pressedFrame))
                     {
+                        var clickedCel = _exposures[_pressedFrame];
                         int oldFrame = CurrentFrame.Value;
                         var cmd = new CommandBuilder(_celFolderEntity)
                             .SetProperty(CurrentFrame, oldFrame, _pressedFrame);
-                        if (_selectionManager != null)
-                        {
-                            var newWorkingLayer = _selectionManager.ComputeWorkingLayerForRollingFrame(_pressedFrame);
-                            if (!newWorkingLayer.IsNull)
-                                cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
-                        }
+                        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForCelButtonSelection(_celFolderEntity, clickedCel);
+                        if (!newWorkingLayer.IsNull)
+                            cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
                         cmd.CommitToLatest();
                     }
                 }

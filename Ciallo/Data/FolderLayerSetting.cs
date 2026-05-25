@@ -43,20 +43,20 @@ public class FolderLayerSetting
     }
 
     /// <summary>
-    /// After rolling the timeline, the working layer under the exposed cel is determined by this path.
+    /// The working layer under a selected cel is determined by this path.
     /// This is runtime preference state and is not serialized.
     /// 
-    /// The path is relative to the exposed cel root; an empty path means the exposed cel itself.
+    /// The path is relative to the selected cel root; an empty path means the selected cel itself.
     /// Invalid path indexes are resolved to the nearest preorder node without mutating this preference.
-    /// The default [-1, -1] prefers the last child of the last child/folder under the exposed cel.
+    /// The default [-1, -1] prefers the last child of the last child/folder under the selected cel.
     /// </summary>
-    public ReactiveProperty<ImmutableArray<int>> PreferredWorkingLayerPathOnRollingFrame = new([-1, -1]);
+    public ReactiveProperty<ImmutableArray<int>> PreferredWorkingLayerPathForCelSelection = new([-1, -1]);
 
     public FolderLayerSetting Clone() =>
         new()
         {
             IsExpanded = { Value = IsExpanded.Value },
             Exposures = Exposures is null ? null : [.. Exposures],
-            PreferredWorkingLayerPathOnRollingFrame = { Value = PreferredWorkingLayerPathOnRollingFrame.Value },
+            PreferredWorkingLayerPathForCelSelection = { Value = PreferredWorkingLayerPathForCelSelection.Value },
         };
 }

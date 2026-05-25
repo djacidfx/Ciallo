@@ -9,15 +9,15 @@ namespace Ciallo.Command;
 [CommandBuilder]
 public class SetWorkingLayerCmd : CommandBase
 {
-    private readonly bool _updatePreferredWorkingLayerPathOnRollingFrame;
-    private Entity _preferredCelFolder = Entity.Null;
+    private readonly bool _recordCelSelectionPreference;
+    private Entity _celSelectionPreferenceFolder = Entity.Null;
     private ImmutableArray<int> _oldPreferredPath;
     private ImmutableArray<int> _newPreferredPath;
     public Entity OldLayerE;
 
-    public SetWorkingLayerCmd(bool updatePreferredWorkingLayerPathOnRollingFrame = false)
+    public SetWorkingLayerCmd(bool recordCelSelectionPreference = false)
     {
-        _updatePreferredWorkingLayerPathOnRollingFrame = updatePreferredWorkingLayerPathOnRollingFrame;
+        _recordCelSelectionPreference = recordCelSelectionPreference;
     }
 
     public override void BeforeFirstDo(Entity newLayerE)
@@ -25,21 +25,19 @@ public class SetWorkingLayerCmd : CommandBase
         var sm = Document.Get<SelectionManager>();
         OldLayerE = sm.WorkingLayer.Value;
 
-        if (!_updatePreferredWorkingLayerPathOnRollingFrame)
+        if (!_recordCelSelectionPreference)
             return;
 
-        if (!TryGetPreferredPathTarget(newLayerE, out _preferredCelFolder, out _newPreferredPath))
+        if (!TryGetCelSelectionPreferenceTarget(newLayerE, out _celSelectionPreferenceFolder, out _newPreferredPath))
             return;
 
-        _oldPreferredPath = _preferredCelFolder
-            .Get<FolderLayerSetting>()
-            .PreferredWorkingLayerPathOnRollingFrame
-            .Value;
+        _oldPreferredPath = _celSelectionPreferenceFolder
+            .Get<FolderLayerSetting>().PreferredWorkingLayerPathForCelSelection.Value;
     }
 
     public override void Do(Entity newLayerE)
     {
-        SetPreferredPath(_newPreferredPath);
+        SetCelSelectionPreferencePath(_newPreferredPath);
 
         // Selection manager
         var sm = Document.Get<SelectionManager>();
@@ -67,23 +65,23 @@ public class SetWorkingLayerCmd : CommandBase
         var sm = Document.Get<SelectionManager>();
         sm.WorkingLayer.Value = OldLayerE;
 
-        SetPreferredPath(_oldPreferredPath);
+        SetCelSelectionPreferencePath(_oldPreferredPath);
     }
 
-    private void SetPreferredPath(ImmutableArray<int> path)
+    private void SetCelSelectionPreferencePath(ImmutableArray<int> path)
     {
-        if (!_updatePreferredWorkingLayerPathOnRollingFrame
-            || _preferredCelFolder.IsNull
-            || !_preferredCelFolder.IsAlive)
+        if (!_recordCelSelectionPreference
+            || _celSelectionPreferenceFolder.IsNull
+            || !_celSelectionPreferenceFolder.IsAlive)
             return;
 
-        _preferredCelFolder
+        _celSelectionPreferenceFolder
             .Get<FolderLayerSetting>()
-            .PreferredWorkingLayerPathOnRollingFrame
+            .PreferredWorkingLayerPathForCelSelection
             .Value = path;
     }
 
-    private static bool TryGetPreferredPathTarget(
+    private static bool TryGetCelSelectionPreferenceTarget(
         Entity newLayerE,
         out Entity celFolder,
         out ImmutableArray<int> path)

@@ -56,12 +56,12 @@ public abstract partial class LayerTreeBase : ScrollContainer
             var document = block.LayerEntity.Document;
             var selectionManager = document.Get<SelectionManager>();
             int oldFrame = selectionManager.CurrentFrame.Value;
-            int newFrame = selectionManager.ComputeFrameForSwitchingWorkingLayer(block.LayerEntity);
+            int newFrame = selectionManager.ComputeFrameForWorkingLayerSelection(block.LayerEntity);
 
             var cmd = new CommandBuilder(block.LayerEntity);
             if (newFrame != oldFrame)
                 cmd.SetProperty(selectionManager.CurrentFrame, oldFrame, newFrame);
-            cmd.SetWorkingLayer(updatePreferredWorkingLayerPathOnRollingFrame: true)
+            cmd.SetWorkingLayer(recordCelSelectionPreference: true)
                 .CommitToLatest();
         };
     }

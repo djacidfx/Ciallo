@@ -473,8 +473,8 @@ public partial class TimelineRuler : Control
                     if (_currentFrame != null && _currentFrame.Value != _frameAtDragStart)
                     {
                         cmd.SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
-                        var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_currentFrame.Value);
-                        if (!newWorkingLayer.IsNull)
+                        var newWorkingLayer = ResolveWorkingLayerAfterFrameChange(_currentFrame.Value);
+                        if (!newWorkingLayer.IsNull && newWorkingLayer != _selectionManager.WorkingLayer.Value)
                             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
                     }
                     cmd.CommitOpenSequence();
@@ -486,8 +486,8 @@ public partial class TimelineRuler : Control
                     if (_currentFrame != null && _currentFrame.Value != _frameAtDragStart)
                     {
                         cmd.SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
-                        var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_currentFrame.Value);
-                        if (!newWorkingLayer.IsNull)
+                        var newWorkingLayer = ResolveWorkingLayerAfterFrameChange(_currentFrame.Value);
+                        if (!newWorkingLayer.IsNull && newWorkingLayer != _selectionManager.WorkingLayer.Value)
                             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
                     }
                     cmd.CommitOpenSequence();
@@ -589,8 +589,8 @@ public partial class TimelineRuler : Control
             .SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
         if (_currentFrame.Value != _frameAtDragStart)
         {
-            var newWorkingLayer = GetNewWorkingLayerAfterFrameChange(_currentFrame.Value);
-            if (!newWorkingLayer.IsNull)
+            var newWorkingLayer = ResolveWorkingLayerAfterFrameChange(_currentFrame.Value);
+            if (!newWorkingLayer.IsNull && newWorkingLayer != _selectionManager.WorkingLayer.Value)
                 cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
         }
         cmd.CommitToLatest();
@@ -610,7 +610,7 @@ public partial class TimelineRuler : Control
 
     // ── Working-layer switch on frame change ─────────────────────────────────
 
-    /// <summary>Delegates to <see cref="SelectionManager.ComputeWorkingLayerForRollingFrame"/>.</summary>
-    private Entity GetNewWorkingLayerAfterFrameChange(int frame) =>
-        _selectionManager?.ComputeWorkingLayerForRollingFrame(frame) ?? Entity.Null;
+    /// <summary>Delegates to <see cref="SelectionManager.ResolveWorkingLayerForTimelineFrameSelection"/>.</summary>
+    private Entity ResolveWorkingLayerAfterFrameChange(int frame) =>
+        _selectionManager?.ResolveWorkingLayerForTimelineFrameSelection(frame) ?? Entity.Null;
 }

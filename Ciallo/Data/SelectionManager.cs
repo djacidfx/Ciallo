@@ -51,10 +51,11 @@ public class SelectionManager
     }
 
     /// <summary>
-    /// Returns the entity to switch <see cref="WorkingLayer"/> to after the timeline rolls to
-    /// <paramref name="frame"/>, using the working cel folder's preferred path.
+    /// Resolves the layer that should be selected for a timeline frame, using the
+    /// working cel folder's selected cel. If the frame is before the first exposed
+    /// cel, resolves to the working cel folder itself.
     /// </summary>
-    public Entity ComputeWorkingLayerForRollingFrame(int frame)
+    public Entity ResolveWorkingLayerForTimelineFrameSelection(int frame)
     {
         var celFolder = WorkingCelFolder.CurrentValue;
         if (celFolder.IsNull) return Entity.Null;
@@ -64,38 +65,61 @@ public class SelectionManager
         if (exposures == null) return Entity.Null;
 
         int floor = exposures.FloorIndex(frame);
-        if (floor < 0) return Entity.Null;
+        if (floor < 0)
+            return celFolder;
 
         var exposedCel = exposures.GetValueAtIndex(floor);
         if (exposedCel.IsNull || !exposedCel.IsAlive || !exposedCel.Has<LayerTreeNode>())
             return Entity.Null;
 
-        var result = ResolvePreferredWorkingLayer(
+        var result = ResolvePreferredWorkingLayerForCelSelection(
             exposedCel.Get<LayerTreeNode>(),
-            folderSetting.PreferredWorkingLayerPathOnRollingFrame.Value);
+            folderSetting.PreferredWorkingLayerPathForCelSelection.Value);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Returns the entity to switch <see cref="WorkingLayer"/> to after clicking a cel button,
+    /// using the clicked track's preferred path under the clicked cel.
+    /// </summary>
+    public Entity ComputeWorkingLayerForCelButtonSelection(Entity celFolder, Entity clickedCel)
+    {
+        if (celFolder.IsNull || !celFolder.IsAlive)
+            return Entity.Null;
+        if (clickedCel.IsNull || !clickedCel.IsAlive || !clickedCel.Has<LayerTreeNode>())
+            return Entity.Null;
+
+        var folderSetting = celFolder.TryGet<FolderLayerSetting>();
+        if (folderSetting?.IsCel != true)
+            return Entity.Null;
+
+        var result = ResolvePreferredWorkingLayerForCelSelection(
+            clickedCel.Get<LayerTreeNode>(),
+            folderSetting.PreferredWorkingLayerPathForCelSelection.Value);
 
         return result == WorkingLayer.Value ? Entity.Null : result;
     }
 
-    private static Entity ResolvePreferredWorkingLayer(
-        LayerTreeNode exposedCelNode,
+    private static Entity ResolvePreferredWorkingLayerForCelSelection(
+        LayerTreeNode selectedCelNode,
         ImmutableArray<int> preferredPath)
     {
         if (preferredPath.SequenceEqual([-1, -1]))
-            return exposedCelNode.GetDeepestLastLayerDescendant().Self;
+            return selectedCelNode.GetDeepestLastLayerDescendant().Self;
 
-        var exactNode = exposedCelNode.GetLayerNodeOrNull(preferredPath, normalizeNegativeIndex: true);
+        var exactNode = selectedCelNode.GetLayerNodeOrNull(preferredPath, normalizeNegativeIndex: true);
         if (exactNode != null)
             return exactNode.Self;
 
-        int preorderIndex = exposedCelNode.GetNearestLayerPreorderIndex(preferredPath, normalizeNegativeIndex: true);
-        return exposedCelNode.GetLayerNodeAtPreorderIndex(preorderIndex).Self;
+        int preorderIndex = selectedCelNode.GetNearestLayerPreorderIndex(preferredPath, normalizeNegativeIndex: true);
+        return selectedCelNode.GetLayerNodeAtPreorderIndex(preorderIndex).Self;
     }
 
     /// <summary>
     /// Returns the frame index to switch to after switching working layer.
     /// <list type="bullet">
-    /// <item>If <paramref name="newWorkingLayer"/> is null, the document, outside any cel folder,
+    /// <item>If <paramref name="selectedWorkingLayer"/> is null, the document, outside any cel folder,
     ///   or is itself a cel folder root, returns the current frame (no switch).</item>
     /// <item>Otherwise finds the direct cel under the nearest cel folder ancestor and searches all
     ///   exposure ranges that show that cel.</item>
@@ -104,18 +128,18 @@ public class SelectionManager
     /// <item>If the layer is never exposed, returns the current frame.</item>
     /// </list>
     /// </summary>
-    public int ComputeFrameForSwitchingWorkingLayer(Entity newWorkingLayer)
+    public int ComputeFrameForWorkingLayerSelection(Entity selectedWorkingLayer)
     {
         int currentFrame = CurrentFrame.Value;
-        if (newWorkingLayer.IsNull || newWorkingLayer.IsDocument || !newWorkingLayer.IsAlive)
+        if (selectedWorkingLayer.IsNull || selectedWorkingLayer.IsDocument || !selectedWorkingLayer.IsAlive)
             return currentFrame;
 
-        if (newWorkingLayer.TryGet<FolderLayerSetting>()?.IsCel == true)
+        if (selectedWorkingLayer.TryGet<FolderLayerSetting>()?.IsCel == true)
             return currentFrame;
 
         Entity celFolder = Entity.Null;
         Entity targetCel = Entity.Null;
-        var cursor = newWorkingLayer;
+        var cursor = selectedWorkingLayer;
 
         while (!cursor.IsNull && !cursor.IsDocument)
         {
