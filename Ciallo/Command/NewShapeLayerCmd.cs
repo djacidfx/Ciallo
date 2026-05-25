@@ -75,7 +75,7 @@ public class NewShapeLayerCmd : CommandBase
         targetE.AddNode(bodyHolder);
 
         // Layer tree events
-        var events = layerNode.MovedAsAddedRemoved;
+        var events = layerNode.MovedReparentedAsAddedRemoved;
         events.Added.Subscribe(et => InsertIntoParent(et.Parent, et.Index)).AddTo(targetE);
         events.Removed.Subscribe(_ => DetachFromParent()).AddTo(targetE);
 

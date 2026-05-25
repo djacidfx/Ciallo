@@ -76,7 +76,7 @@ public class NewImageLayerCmd : CommandBase
         targetE.Document.Get<TrackTree>().Create(targetE);
 
         // Layer tree events
-        var events = layerNode.MovedAsAddedRemoved;
+        var events = layerNode.MovedReparentedAsAddedRemoved;
 
         events.Added.Subscribe(et =>
         {

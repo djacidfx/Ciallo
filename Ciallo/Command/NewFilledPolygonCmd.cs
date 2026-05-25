@@ -68,7 +68,7 @@ public class NewFilledPolygonCmd : CommandBase
         }).AddTo(targetE);
 
         // Layer tree events
-        var events = layerNode.MovedAsAddedRemoved;
+        var events = layerNode.MovedReparentedAsAddedRemoved;
         events.Added.Subscribe(et =>
         {
             (int index, var layerE) = (et.Index, et.Parent);

@@ -27,26 +27,26 @@ public enum TreeMutationKind
 
 public readonly record struct NodeInsertedEvent(int Index, Entity Parent);
 public readonly record struct NodeRemovedEvent(int Index, Entity Parent);
-public readonly record struct NodeMovedEvent(int OldIndex, int NewIndex, Entity Parent);
+public readonly record struct NodeMovedOrReparentedEvent(int OldIndex, Entity OldParent, int NewIndex, Entity NewParent);
 
 public record MoveOrReparentAsExitEnter
 {
     public MoveOrReparentAsExitEnter(
         Observable<NodeInsertedEvent> treeEntered,
         Observable<NodeRemovedEvent> treeExited,
-        Observable<NodeMovedEvent> moved)
+        Observable<NodeMovedOrReparentedEvent> movedOrReparented)
     {
         // Use dedicated subjects so that Removed always fires before Added
         // regardless of subscriber registration order.
         var movedRemoved = new Subject<NodeRemovedEvent>();
         var movedAdded = new Subject<NodeInsertedEvent>();
-        moved.Subscribe(et =>
+        movedOrReparented.Subscribe(et =>
         {
-            movedRemoved.OnNext(new NodeRemovedEvent(et.OldIndex, et.Parent));
-            movedAdded.OnNext(new NodeInsertedEvent(et.NewIndex, et.Parent));
+            movedRemoved.OnNext(new NodeRemovedEvent(et.OldIndex, et.OldParent));
+            movedAdded.OnNext(new NodeInsertedEvent(et.NewIndex, et.NewParent));
         });
-        Removed = treeExited.Merge(movedRemoved);
-        Added = treeEntered.Merge(movedAdded);
+        Removed = treeExited.Merge(movedRemoved).Share();
+        Added = treeEntered.Merge(movedAdded).Share();
     }
 
     public readonly Observable<NodeInsertedEvent> Added;
