@@ -10,31 +10,35 @@ namespace Ciallo.Command;
 
 public abstract class SetObservableCollectionBase<TCollection> : CommandBase
 {
-    public Func<Entity, TCollection> GetCollection { get; }
-    public Action<TCollection> Action { get; }
+    private readonly Func<Entity, TCollection> _getCollection;
+    private Action<TCollection> _captureChanges;
 
     public TCollection Collection;
 
     protected SetObservableCollectionBase(
         Func<Entity, TCollection> getCollection,
-        Action<TCollection> action)
+        Action<TCollection> captureChanges)
     {
-        GetCollection = getCollection;
-        Action = action;
+        _getCollection = getCollection;
+        _captureChanges = captureChanges;
     }
 
     protected SetObservableCollectionBase(
         TCollection collection,
-        Action<TCollection> action)
+        Action<TCollection> captureChanges)
     {
         Collection = collection;
-        Action = action;
+        _captureChanges = captureChanges;
     }
 
     public override void BeforeFirstDo(Entity targetE)
     {
-        if (GetCollection != null) Collection = GetCollection(targetE);
+        if (_getCollection != null) Collection = _getCollection(targetE);
+        CaptureCollectionHistory(_captureChanges);
+        _captureChanges = null;
     }
+
+    protected abstract void CaptureCollectionHistory(Action<TCollection> captureChanges);
 }
 
 public class SetObservableList<T> : SetObservableCollectionBase<ObservableList<T>>
@@ -43,19 +47,45 @@ public class SetObservableList<T> : SetObservableCollectionBase<ObservableList<T
 
     public SetObservableList(
         Func<Entity, ObservableList<T>> getCollection,
-        Action<ObservableList<T>> action
-    ) : base(getCollection, action) { }
+        Action<ObservableList<T>> captureChanges
+    ) : base(getCollection, captureChanges) { }
 
     public SetObservableList(
         ObservableList<T> collection,
-        Action<ObservableList<T>> action
-    ) : base(collection, action) { }
+        Action<ObservableList<T>> captureChanges
+    ) : base(collection, captureChanges) { }
 
-    public override void Do(Entity targetE)
+    protected override void CaptureCollectionHistory(Action<ObservableList<T>> captureChanges)
     {
         CollectionHistory.Clear();
         using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
-        Action(Collection);
+        captureChanges(Collection);
+    }
+
+    public override void Do(Entity targetE)
+    {
+        if (!IsExecuted) return;
+
+        foreach (var et in CollectionHistory)
+        {
+            switch (et.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    Collection.Insert(et.NewStartingIndex, et.NewItem);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    Collection.RemoveAt(et.OldStartingIndex);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    Collection[et.NewStartingIndex] = et.NewItem;
+                    break;
+                case NotifyCollectionChangedAction.Move:
+                    Collection.Move(et.OldStartingIndex, et.NewStartingIndex);
+                    break;
+                default:
+                    throw new NotSupportedException($"Do is not supported for action {et.Action}");
+            }
+        }
     }
 
     public override void Undo(Entity targetE)
@@ -91,19 +121,39 @@ public class SetObservableHashSet<T> : SetObservableCollectionBase<ObservableHas
 
     public SetObservableHashSet(
         Func<Entity, ObservableHashSet<T>> getCollection,
-        Action<ObservableHashSet<T>> action
-    ) : base(getCollection, action) { }
+        Action<ObservableHashSet<T>> captureChanges
+    ) : base(getCollection, captureChanges) { }
 
     public SetObservableHashSet(
         ObservableHashSet<T> collection,
-        Action<ObservableHashSet<T>> action
-    ) : base(collection, action) { }
+        Action<ObservableHashSet<T>> captureChanges
+    ) : base(collection, captureChanges) { }
 
-    public override void Do(Entity targetE)
+    protected override void CaptureCollectionHistory(Action<ObservableHashSet<T>> captureChanges)
     {
         CollectionHistory.Clear();
         using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
-        Action(Collection);
+        captureChanges(Collection);
+    }
+
+    public override void Do(Entity targetE)
+    {
+        if (!IsExecuted) return;
+
+        foreach (var et in CollectionHistory)
+        {
+            switch (et.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    Collection.Add(et.NewItem);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    Collection.Remove(et.OldItem);
+                    break;
+                default:
+                    throw new NotSupportedException($"Do is not supported for action {et.Action}");
+            }
+        }
     }
 
     public override void Undo(Entity targetE)
@@ -132,19 +182,42 @@ public class SetObservableDictionary<TKey, TValue> : SetObservableCollectionBase
 
     public SetObservableDictionary(
         Func<Entity, ObservableDictionary<TKey, TValue>> getCollection,
-        Action<ObservableDictionary<TKey, TValue>> action
-    ) : base(getCollection, action) { }
+        Action<ObservableDictionary<TKey, TValue>> captureChanges
+    ) : base(getCollection, captureChanges) { }
 
     public SetObservableDictionary(
         ObservableDictionary<TKey, TValue> collection,
-        Action<ObservableDictionary<TKey, TValue>> action
-    ) : base(collection, action) { }
+        Action<ObservableDictionary<TKey, TValue>> captureChanges
+    ) : base(collection, captureChanges) { }
 
-    public override void Do(Entity targetE)
+    protected override void CaptureCollectionHistory(Action<ObservableDictionary<TKey, TValue>> captureChanges)
     {
         CollectionHistory.Clear();
         using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
-        Action(Collection);
+        captureChanges(Collection);
+    }
+
+    public override void Do(Entity targetE)
+    {
+        if (!IsExecuted) return;
+
+        foreach (var et in CollectionHistory)
+        {
+            switch (et.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    Collection.Add(et.NewItem.Key, et.NewItem.Value);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    Collection.Remove(et.OldItem.Key);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    Collection[et.NewItem.Key] = et.NewItem.Value;
+                    break;
+                default:
+                    throw new NotSupportedException($"Do is not supported for action {et.Action}");
+            }
+        }
     }
 
     public override void Undo(Entity targetE)
@@ -177,19 +250,42 @@ public class SetObservableSortedDictionary<TKey, TValue> : SetObservableCollecti
 
     public SetObservableSortedDictionary(
         Func<Entity, ObservableSortedDictionary<TKey, TValue>> getCollection,
-        Action<ObservableSortedDictionary<TKey, TValue>> action
-    ) : base(getCollection, action) { }
+        Action<ObservableSortedDictionary<TKey, TValue>> captureChanges
+    ) : base(getCollection, captureChanges) { }
 
     public SetObservableSortedDictionary(
         ObservableSortedDictionary<TKey, TValue> collection,
-        Action<ObservableSortedDictionary<TKey, TValue>> action
-    ) : base(collection, action) { }
+        Action<ObservableSortedDictionary<TKey, TValue>> captureChanges
+    ) : base(collection, captureChanges) { }
 
-    public override void Do(Entity targetE)
+    protected override void CaptureCollectionHistory(Action<ObservableSortedDictionary<TKey, TValue>> captureChanges)
     {
         CollectionHistory.Clear();
         using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
-        Action(Collection);
+        captureChanges(Collection);
+    }
+
+    public override void Do(Entity targetE)
+    {
+        if (!IsExecuted) return;
+
+        foreach (var et in CollectionHistory)
+        {
+            switch (et.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    Collection.Add(et.NewItem.Key, et.NewItem.Value);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    Collection.Remove(et.OldItem.Key);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    Collection[et.NewItem.Key] = et.NewItem.Value;
+                    break;
+                default:
+                    throw new NotSupportedException($"Do is not supported for action {et.Action}");
+            }
+        }
     }
 
     public override void Undo(Entity targetE)
@@ -222,19 +318,42 @@ public class SetObservableSortedList<TKey, TValue> : SetObservableCollectionBase
 
     public SetObservableSortedList(
         Func<Entity, ObservableSortedList<TKey, TValue>> getCollection,
-        Action<ObservableSortedList<TKey, TValue>> action
-    ) : base(getCollection, action) { }
+        Action<ObservableSortedList<TKey, TValue>> captureChanges
+    ) : base(getCollection, captureChanges) { }
 
     public SetObservableSortedList(
         ObservableSortedList<TKey, TValue> collection,
-        Action<ObservableSortedList<TKey, TValue>> action
-    ) : base(collection, action) { }
+        Action<ObservableSortedList<TKey, TValue>> captureChanges
+    ) : base(collection, captureChanges) { }
 
-    public override void Do(Entity targetE)
+    protected override void CaptureCollectionHistory(Action<ObservableSortedList<TKey, TValue>> captureChanges)
     {
         CollectionHistory.Clear();
         using var _ = Collection.ObserveChanged().Subscribe(CollectionHistory.Add);
-        Action(Collection);
+        captureChanges(Collection);
+    }
+
+    public override void Do(Entity targetE)
+    {
+        if (!IsExecuted) return;
+
+        foreach (var et in CollectionHistory)
+        {
+            switch (et.Action)
+            {
+                case NotifyCollectionChangedAction.Add:
+                    Collection.Add(et.NewItem.Key, et.NewItem.Value);
+                    break;
+                case NotifyCollectionChangedAction.Remove:
+                    Collection.Remove(et.OldItem.Key);
+                    break;
+                case NotifyCollectionChangedAction.Replace:
+                    Collection[et.NewItem.Key] = et.NewItem.Value;
+                    break;
+                default:
+                    throw new NotSupportedException($"Do is not supported for action {et.Action}");
+            }
+        }
     }
 
     public override void Undo(Entity targetE)
@@ -262,96 +381,126 @@ public class SetObservableSortedList<TKey, TValue> : SetObservableCollectionBase
 
 public partial class CommandBuilder
 {
+    /// <summary>
+    /// Captures an observable collection mutation once; redo replays the captured collection changes.
+    /// </summary>
     public CommandBuilder SetObservableCollection<T>(
         Func<Entity, ObservableList<T>> getCollection,
-        Action<ObservableList<T>> action)
+        Action<ObservableList<T>> captureChanges)
     {
-        var cmd = new SetObservableList<T>(getCollection, action) { TargetE = TargetE };
+        var cmd = new SetObservableList<T>(getCollection, captureChanges) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
 
+    /// <summary>
+    /// Captures an observable collection mutation once; redo replays the captured collection changes.
+    /// </summary>
     public CommandBuilder SetObservableCollection<T>(
         ObservableList<T> collection,
-        Action<ObservableList<T>> action)
+        Action<ObservableList<T>> captureChanges)
     {
-        var cmd = new SetObservableList<T>(collection, action) { TargetE = TargetE };
+        var cmd = new SetObservableList<T>(collection, captureChanges) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
 
+    /// <summary>
+    /// Captures an observable collection mutation once; redo replays the captured collection changes.
+    /// </summary>
     public CommandBuilder SetObservableCollection<T>(
         Func<Entity, ObservableHashSet<T>> getCollection,
-        Action<ObservableHashSet<T>> action)
+        Action<ObservableHashSet<T>> captureChanges)
     {
-        var cmd = new SetObservableHashSet<T>(getCollection, action) { TargetE = TargetE };
+        var cmd = new SetObservableHashSet<T>(getCollection, captureChanges) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
 
+    /// <summary>
+    /// Captures an observable collection mutation once; redo replays the captured collection changes.
+    /// </summary>
     public CommandBuilder SetObservableCollection<T>(
         ObservableHashSet<T> collection,
-        Action<ObservableHashSet<T>> action)
+        Action<ObservableHashSet<T>> captureChanges)
     {
-        var cmd = new SetObservableHashSet<T>(collection, action) { TargetE = TargetE };
+        var cmd = new SetObservableHashSet<T>(collection, captureChanges) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
 
+    /// <summary>
+    /// Captures an observable collection mutation once; redo replays the captured collection changes.
+    /// </summary>
     public CommandBuilder SetObservableCollection<TKey, TValue>(
         Func<Entity, ObservableDictionary<TKey, TValue>> getCollection,
-        Action<ObservableDictionary<TKey, TValue>> action)
+        Action<ObservableDictionary<TKey, TValue>> captureChanges)
     {
-        var cmd = new SetObservableDictionary<TKey, TValue>(getCollection, action) { TargetE = TargetE };
+        var cmd = new SetObservableDictionary<TKey, TValue>(getCollection, captureChanges) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
 
+    /// <summary>
+    /// Captures an observable collection mutation once; redo replays the captured collection changes.
+    /// </summary>
     public CommandBuilder SetObservableCollection<TKey, TValue>(
         ObservableDictionary<TKey, TValue> collection,
-        Action<ObservableDictionary<TKey, TValue>> action)
+        Action<ObservableDictionary<TKey, TValue>> captureChanges)
     {
-        var cmd = new SetObservableDictionary<TKey, TValue>(collection, action) { TargetE = TargetE };
+        var cmd = new SetObservableDictionary<TKey, TValue>(collection, captureChanges) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
 
+    /// <summary>
+    /// Captures an observable collection mutation once; redo replays the captured collection changes.
+    /// </summary>
     public CommandBuilder SetObservableCollection<TKey, TValue>(
         Func<Entity, ObservableSortedDictionary<TKey, TValue>> getCollection,
-        Action<ObservableSortedDictionary<TKey, TValue>> action)
+        Action<ObservableSortedDictionary<TKey, TValue>> captureChanges)
         where TKey : notnull
     {
-        var cmd = new SetObservableSortedDictionary<TKey, TValue>(getCollection, action) { TargetE = TargetE };
+        var cmd = new SetObservableSortedDictionary<TKey, TValue>(getCollection, captureChanges) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
 
+    /// <summary>
+    /// Captures an observable collection mutation once; redo replays the captured collection changes.
+    /// </summary>
     public CommandBuilder SetObservableCollection<TKey, TValue>(
         ObservableSortedDictionary<TKey, TValue> collection,
-        Action<ObservableSortedDictionary<TKey, TValue>> action)
+        Action<ObservableSortedDictionary<TKey, TValue>> captureChanges)
         where TKey : notnull
     {
-        var cmd = new SetObservableSortedDictionary<TKey, TValue>(collection, action) { TargetE = TargetE };
+        var cmd = new SetObservableSortedDictionary<TKey, TValue>(collection, captureChanges) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
 
+    /// <summary>
+    /// Captures an observable collection mutation once; redo replays the captured collection changes.
+    /// </summary>
     public CommandBuilder SetObservableCollection<TKey, TValue>(
         Func<Entity, ObservableSortedList<TKey, TValue>> getCollection,
-        Action<ObservableSortedList<TKey, TValue>> action)
+        Action<ObservableSortedList<TKey, TValue>> captureChanges)
         where TKey : struct
     {
-        var cmd = new SetObservableSortedList<TKey, TValue>(getCollection, action) { TargetE = TargetE };
+        var cmd = new SetObservableSortedList<TKey, TValue>(getCollection, captureChanges) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
 
+    /// <summary>
+    /// Captures an observable collection mutation once; redo replays the captured collection changes.
+    /// </summary>
     public CommandBuilder SetObservableCollection<TKey, TValue>(
         ObservableSortedList<TKey, TValue> collection,
-        Action<ObservableSortedList<TKey, TValue>> action)
+        Action<ObservableSortedList<TKey, TValue>> captureChanges)
         where TKey : struct
     {
-        var cmd = new SetObservableSortedList<TKey, TValue>(collection, action) { TargetE = TargetE };
+        var cmd = new SetObservableSortedList<TKey, TValue>(collection, captureChanges) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }
