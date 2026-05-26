@@ -9,9 +9,9 @@ namespace Ciallo.GuiControl;
 
 /// <summary>
 /// Responsible for collecting and dispatching canvas gui input events.
-/// Current version also handles canvas navigation with mouse wheel. May change in the future.
+/// Current version also handles canvas navigation. May change in the future.
 /// </summary>
-public partial class WorldEventDispatcher : SubViewportContainer
+public partial class WorldEventDispatcher : Container
 {
     private Camera2D _camera;
 
@@ -52,17 +52,32 @@ public partial class WorldEventDispatcher : SubViewportContainer
         if (HandleTouchGesture(e)) return;
         // Suppress emulated mouse events while 2+ fingers are active.
         if (Input.EmulateMouseFromTouch && _activeTouches.Count >= 2) return;
-        // ------------ Tool events handling -------------
-        if (e is InputEventKey key)
-        {
-            DispatchKey(key);
-        }
-        // Following code only deal with cursor events.
-        // Note: Godot treats stylus pen input as mouse input.
+        if (HandleKeyEvent(e)) return;
+        if (e is InputEventMouse mouseEvent)
+            HandleMouseEvent(mouseEvent);
+    }
 
-        if (e is not InputEventMouse mouseEvent) return;
+    private bool HandleKeyEvent(InputEvent e)
+    {
+        if (e is not InputEventKey key) return false;
 
-        // ------------ Canvas navigation handling -------------
+        DispatchKey(key);
+        return true;
+    }
+
+    private void HandleMouseEvent(InputEventMouse mouseEvent)
+    {
+        // Godot treats stylus pen input as mouse input.
+        var cursor = GetMouseCursorState(mouseEvent);
+        var panel = (PaintPanel)Owner;
+
+        HandleCanvasNavigation(mouseEvent, panel, cursor);
+        DispatchMouseEvent(mouseEvent, cursor);
+        UpdateMouseCursorState(cursor);
+    }
+
+    private MouseCursorState GetMouseCursorState(InputEventMouse mouseEvent)
+    {
         // Pitfall _camera.GetViewportTransform() doesn't update until the end of frame, so not response to property change.
         var screenPos = mouseEvent.Position;
         var screenDelta = screenPos - _prevScreenPos;
@@ -72,9 +87,13 @@ public partial class WorldEventDispatcher : SubViewportContainer
         var worldDeltaBeforeTransformCamera = worldPos - prevWorldPosWithCurrentCamera;
         var worldDelta = worldPos - _prevWorldPos;
 
-        var panel = (PaintPanel)Owner;
+        return new MouseCursorState(screenPos, screenDelta, worldPos, worldDelta, worldDeltaBeforeTransformCamera);
+    }
+
+    private void HandleCanvasNavigation(InputEventMouse mouseEvent, PaintPanel panel, MouseCursorState cursor)
+    {
         if (mouseEvent is InputEventMouseMotion && _isPanning)
-            panel.CameraOffset.Value -= worldDeltaBeforeTransformCamera;
+            panel.CameraOffset.Value -= cursor.WorldDeltaBeforeTransformCamera;
 
         // Drag middle mouse to pan
         if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: true } && _isHovering)
@@ -113,19 +132,21 @@ public partial class WorldEventDispatcher : SubViewportContainer
         {
             panel.CameraRotation.Value -= AppPreference.MouseWheelRotateFactor.Value;
         }
+    }
 
-        // ------------- Events dispatch -------------------------
+    private void DispatchMouseEvent(InputEventMouse mouseEvent, MouseCursorState cursor)
+    {
         if (mouseEvent is InputEventMouseButton mouseButton && !_isPanning)
         {
             DispatchMouseButton(mouseButton, new()
             {
-                ScreenPosition = screenPos,
-                WorldPosition = worldPos,
+                ScreenPosition = cursor.ScreenPosition,
+                WorldPosition = cursor.WorldPosition,
                 Tilt = _prevTilt,
             });
         }
 
-        if (!worldDelta.IsZeroApprox()) // dispatch motion
+        if (!cursor.WorldDelta.IsZeroApprox()) // dispatch motion
         {
             if (mouseEvent is InputEventMouseMotion motion)
             {
@@ -133,10 +154,10 @@ public partial class WorldEventDispatcher : SubViewportContainer
 
                 DispatchMotion(new()
                 {
-                    ScreenPosition = screenPos,
-                    ScreenDelta = screenDelta,
-                    WorldPosition = worldPos,
-                    WorldDelta = worldDelta,
+                    ScreenPosition = cursor.ScreenPosition,
+                    ScreenDelta = cursor.ScreenDelta,
+                    WorldPosition = cursor.WorldPosition,
+                    WorldDelta = cursor.WorldDelta,
                     Pressure = currentPressure,
                     PressureDelta = currentPressure - _prevPressure,
                     Tilt = motion.Tilt,
@@ -153,10 +174,10 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 // dispatch with previous pressure and tilt.
                 DispatchMotion(new()
                 {
-                    ScreenPosition = screenPos,
-                    ScreenDelta = screenDelta,
-                    WorldPosition = worldPos,
-                    WorldDelta = worldDelta,
+                    ScreenPosition = cursor.ScreenPosition,
+                    ScreenDelta = cursor.ScreenDelta,
+                    WorldPosition = cursor.WorldPosition,
+                    WorldDelta = cursor.WorldDelta,
                     Pressure = _prevPressure,
                     PressureDelta = 0,
                     Tilt = _prevTilt,
@@ -165,10 +186,36 @@ public partial class WorldEventDispatcher : SubViewportContainer
                 });
             }
         }
+    }
 
+    private void UpdateMouseCursorState(MouseCursorState cursor)
+    {
         _timer.Restart();
-        _prevScreenPos = screenPos;
-        _prevWorldPos = worldPos;
+        _prevScreenPos = cursor.ScreenPosition;
+        _prevWorldPos = cursor.WorldPosition;
+    }
+
+    private readonly struct MouseCursorState
+    {
+        public readonly Vector2 ScreenPosition;
+        public readonly Vector2 ScreenDelta;
+        public readonly Vector2 WorldPosition;
+        public readonly Vector2 WorldDelta;
+        public readonly Vector2 WorldDeltaBeforeTransformCamera;
+
+        public MouseCursorState(
+            Vector2 screenPosition,
+            Vector2 screenDelta,
+            Vector2 worldPosition,
+            Vector2 worldDelta,
+            Vector2 worldDeltaBeforeTransformCamera)
+        {
+            ScreenPosition = screenPosition;
+            ScreenDelta = screenDelta;
+            WorldPosition = worldPosition;
+            WorldDelta = worldDelta;
+            WorldDeltaBeforeTransformCamera = worldDeltaBeforeTransformCamera;
+        }
     }
 
     /// <summary>

@@ -93,34 +93,35 @@ stretch = true
 mouse_target = true
 script = ExtResource("3_7pmtm")
 
-[node name="SubViewport" type="SubViewport" parent="VBoxContainer/WorldEventDispatcher" unique_id=1906940218]
+[node name="MainViewport" type="SubViewport" parent="VBoxContainer/WorldEventDispatcher" unique_id=1906940218]
 handle_input_locally = false
 use_hdr_2d = true
+canvas_cull_mask = 4293918721
 size = Vector2i(1920, 1042)
 render_target_update_mode = 4
 
-[node name="Background" type="Polygon2D" parent="VBoxContainer/WorldEventDispatcher/SubViewport" unique_id=340478953]
+[node name="Background" type="Polygon2D" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=340478953]
 unique_name_in_owner = true
 material = ExtResource("4_pm3jj")
 
-[node name="WorldView" parent="VBoxContainer/WorldEventDispatcher/SubViewport" unique_id=1013002043 instance=ExtResource("4_3trrc")]
+[node name="WorldView" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=1013002043 instance=ExtResource("4_3trrc")]
 unique_name_in_owner = true
 
-[node name="MainCamera" type="Camera2D" parent="VBoxContainer/WorldEventDispatcher/SubViewport" unique_id=506664957]
+[node name="MainCamera" type="Camera2D" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=506664957]
 unique_name_in_owner = true
 ignore_rotation = false
 
-[node name="WorldOverlay" type="Node2D" parent="VBoxContainer/WorldEventDispatcher/SubViewport" unique_id=1081160953]
+[node name="WorldOverlay" type="Node2D" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=1081160953]
 unique_name_in_owner = true
 script = ExtResource("6_je3d8")
 
-[node name="WorldBody" type="Node2D" parent="VBoxContainer/WorldEventDispatcher/SubViewport" unique_id=175556460]
+[node name="WorldBody" type="Node2D" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=175556460]
 unique_name_in_owner = true
 script = ExtResource("7_8h3gs")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="VBoxContainer/WorldEventDispatcher/SubViewport/WorldBody" unique_id=2125698815]
+[node name="CanvasLayer" type="CanvasLayer" parent="VBoxContainer/WorldEventDispatcher/MainViewport/WorldBody" unique_id=2125698815]
 
-[node name="ControlCoverWholeCanvas" type="Control" parent="VBoxContainer/WorldEventDispatcher/SubViewport/WorldBody/CanvasLayer" unique_id=42245720]
+[node name="ControlCoverWholeCanvas" type="Control" parent="VBoxContainer/WorldEventDispatcher/MainViewport/WorldBody/CanvasLayer" unique_id=42245720]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

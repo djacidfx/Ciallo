@@ -16,31 +16,29 @@ public partial class SpinSlider : HBoxContainer
 
     #region Export
 
-    private double _minValue = 0.0;
     [Export]
     public double MinValue
     {
-        get => _minValue;
+        get => field;
         set
         {
-            _minValue = value;
-            Slider.MinValue = value;
+            field = value;
+            Slider?.MinValue = value;
         }
     }
 
-    private double _maxValue = 100.0;
     [Export]
     public double MaxValue
     {
-        get => _maxValue;
+        get => field;
         set
         {
-            _maxValue = value;
-            Slider.MaxValue = value;
+            field = value;
+            Slider?.MaxValue = value;
         }
     }
 
-    private double _value = 0.0;
+    private double _value;
     [Export]
     public double Value
     {
@@ -51,69 +49,63 @@ public partial class SpinSlider : HBoxContainer
             if (_value == value) return;
             var oldValue = _value;
             _value = value;
-            Slider.SetValueNoSignal(value);
+            Slider?.SetValueNoSignal(value);
             EmitSignalValueChanged(oldValue, value);
         }
     }
 
-    private double _step = 0.01;
     [Export]
     public double Step
     {
-        get => _step;
+        get => field;
         set
         {
-            _step = value;
-            Slider.Step = value;
+            field = value;
+            Slider?.Step = value;
         }
     }
 
-    private bool _expEdit = false;
     [Export]
     public bool ExpEdit
     {
-        get => _expEdit;
+        get => field;
         set
         {
-            _expEdit = value;
-            Slider.ExpEdit = value;
+            field = value;
+            Slider?.ExpEdit = value;
         }
     }
 
-    private bool _allowLesser = false;
     [Export]
     public bool AllowLesser
     {
-        get => _allowLesser;
+        get => field;
         set
         {
-            _allowLesser = value;
-            Slider.AllowLesser = value;
+            field = value;
+            Slider?.AllowLesser = value;
         }
     }
 
-    private bool _allowGreater = false;
     [Export]
     public bool AllowGreater
     {
-        get => _allowGreater;
+        get => field;
         set
         {
-            _allowGreater = value;
-            Slider.AllowGreater = value;
+            field = value;
+            Slider?.AllowGreater = value;
         }
     }
 
-    private bool _rounded = false;
     [Export]
     public bool Rounded
     {
-        get => _rounded;
+        get => field;
         set
         {
-            _rounded = value;
-            Slider.Rounded = value;
-            SpinBox.Rounded = value;
+            field = value;
+            Slider?.Rounded = value;
         }
     }
 
@@ -124,25 +116,24 @@ public partial class SpinSlider : HBoxContainer
         set
         {
             field = value;
-            Slider.Editable = value;
-            SpinBox.Editable = value;
+            Slider?.Editable = value;
         }
     } = true;
 
     #endregion
 
-    public SpinSlider()
+    public override void _Ready()
     {
         Slider = new()
         {
-            MinValue = _minValue,
-            MaxValue = _maxValue,
-            Step = _step,
-            ExpEdit = _expEdit,
-            AllowLesser = _allowLesser,
-            AllowGreater = _allowGreater,
-            Rounded = _rounded,
-            Value = _value,
+            MinValue = MinValue,
+            MaxValue = MaxValue,
+            Step = Step,
+            ExpEdit = ExpEdit,
+            AllowLesser = AllowLesser,
+            AllowGreater = AllowGreater,
+            Rounded = Rounded,
+            Value = Value,
             CustomMinimumSize = new(64, 0),
             Scrollable = false,
             SizeFlagsVertical = SizeFlags.ShrinkCenter | SizeFlags.ExpandFill,
@@ -150,14 +141,14 @@ public partial class SpinSlider : HBoxContainer
         };
         SpinBox = new()
         {
-            MinValue = _minValue,
-            MaxValue = _maxValue,
-            Step = _step,
-            ExpEdit = _expEdit,
-            AllowLesser = _allowLesser,
-            AllowGreater = _allowGreater,
-            Rounded = _rounded,
-            Value = _value,
+            MinValue = MinValue,
+            MaxValue = MaxValue,
+            Step = Step,
+            ExpEdit = ExpEdit,
+            AllowLesser = AllowLesser,
+            AllowGreater = AllowGreater,
+            Rounded = Rounded,
+            Value = Value,
         };
 
         Slider.Share(SpinBox);
@@ -178,10 +169,16 @@ public partial class SpinSlider : HBoxContainer
         SpinBox.GetLineEdit().SubmitOnFocusExit();
     }
 
+    public override void _ExitTree()
+    {
+        if (Engine.IsEditorHint())
+            this.QueueFreeChildren();
+    }
+
     public void SetValueNoSignal(double value)
     {
         _value = value;
-        Slider.SetValueNoSignal(value);
+        Slider?.SetValueNoSignal(value);
     }
 
     public SpinSlider RegisterUndo(CommandManager manager)

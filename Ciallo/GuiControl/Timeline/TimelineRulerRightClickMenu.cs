@@ -3,10 +3,10 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Frent;
 using Godot;
-using R3;
 
 namespace Ciallo.GuiControl;
 
+[Tool]
 public partial class TimelineRulerRightClickMenu : PopupMenu
 {
     private const int FrameCount = 1;
