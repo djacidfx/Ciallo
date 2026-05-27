@@ -40,12 +40,6 @@ public class NewShapeLayerCmd : CommandBase
 
         // Others
         CreateNonDataComponents(targetE);
-
-        // Layer panel
-        targetE.Document.Get<LayerTree>().Create(targetE);
-
-        // Timeline track
-        targetE.Document.Get<TrackTree>().Create(targetE);
     }
 
     public override void Do(Entity targetE)
@@ -73,6 +67,12 @@ public class NewShapeLayerCmd : CommandBase
         // Body
         var bodyHolder = new BodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
         targetE.AddNode(bodyHolder);
+
+        // Layer panel
+        targetE.Document.Get<LayerTree>().Create(targetE);
+
+        // Timeline track
+        targetE.Document.Get<TrackTree>().Create(targetE);
 
         // Layer tree events
         var events = layerNode.MovedReparentedAsAddedRemoved;
