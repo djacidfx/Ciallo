@@ -8,31 +8,17 @@ using R3;
 
 namespace Ciallo.Geometry;
 
-/// <summary>
-/// The GDExtension binding class to call CGAL 2D arrangement
-/// Arrangement2D.h and .cpp in GDExtension for low-level CGAL code
-/// ArrangementManager.cs for high-level management
-/// </summary>
-public class Arrangement2D
+public partial class Arrangement : Godot.Arrangement2D
 {
-    private readonly GodotObject _obj = (GodotObject)ClassDB.Instantiate("Arrangement2D");
     public static readonly int MemoryPerPoint = 200; // byte in very rough estimation
     private readonly System.Collections.Generic.Dictionary<Rid, int> _polylineLengthTracker = new();
+    private bool _nativeFreeQueued;
 
     public readonly Subject<Unit> StructureChanged = new();
 
-    public void SetPolylineWithSignal(Rid id, ImmutableArray<Vector2> data)
+    public void SetPolyline(Rid id, ImmutableArray<Vector2> data)
     {
-        var result = SetPolyline(id, ImmutableCollectionsMarshal.AsArray(data));
-        StructureChanged.OnNext(Unit.Default);
-    }
-
-    public void RemovePolylineWithSignal(Rid id)
-    {
-        bool toNotify = _polylineLengthTracker[id] != 0;
-        RemovePolyline(id);
-        if (toNotify)
-            StructureChanged.OnNext(Unit.Default);
+        SetPolyline(id, ImmutableCollectionsMarshal.AsArray(data));
     }
 
     public Array<Rid> PolylineQuery(ImmutableArray<Vector2> polyline)
@@ -42,77 +28,70 @@ public class Arrangement2D
 
     # region GDExtension bindings
 
-    public Rid CreatePolyline()
+    public new Rid CreatePolyline()
     {
-        var id = (Rid)_obj.Call("create_polyline");
+        var id = base.CreatePolyline();
         _polylineLengthTracker.Add(id, 0);
         return id;
     }
 
+    public new void SetPolyline(Rid id, Vector2[] data)
+    {
+        SetPolyline(id, data.AsSpan());
+    }
+
     /// <returns>Array of face Rids that are returned in previous queries and invalid since polyline change</returns>
-    public Array<Rid> SetPolyline(Rid id, Vector2[] data)
+    public new void SetPolyline(Rid id, ReadOnlySpan<Vector2> data)
     {
         if (_polylineLengthTracker[id] > 0)
             GC.RemoveMemoryPressure(MemoryPerPoint * _polylineLengthTracker[id]);
         _polylineLengthTracker[id] = data.Length;
         if (data.Length > 0)
             GC.AddMemoryPressure(MemoryPerPoint * data.Length);
-        return (Array<Rid>)_obj.Call("set_polyline", id, data);
+        base.SetPolyline(id, data);
+        StructureChanged.OnNext(Unit.Default);
     }
 
     /// <returns>Array of face Rids that are returned in previous queries and invalid since removing polyline</returns>
-    public Array<Rid> RemovePolyline(Rid id)
+    public new void RemovePolyline(Rid id)
     {
+        bool toNotify = _polylineLengthTracker[id] != 0;
         if (_polylineLengthTracker[id] > 0)
             GC.RemoveMemoryPressure(MemoryPerPoint * _polylineLengthTracker[id]);
         _polylineLengthTracker.Remove(id);
-        return (Array<Rid>)_obj.Call("remove_polyline", id);
-    }
-
-    /// <returns>A face rid. If cannot get face like the point is on an edge, return an invalid rid</returns>
-    public Rid Query(Vector2 point)
-    {
-        return (Rid)_obj.Call("query", point);
-    }
-
-    /// <returns>An array of face rids</returns>
-    public Array<Rid> BatchQuery(Vector2[] points)
-    {
-        return (Array<Rid>)_obj.Call("batch_query", points);
-    }
-
-    public Array<Rid> PolylineQuery(Vector2[] polyline)
-    {
-        return (Array<Rid>)_obj.Call("polyline_query", polyline);
+        base.RemovePolyline(id);
+        if (toNotify)
+            StructureChanged.OnNext(Unit.Default);
     }
 
     /// <returns>
     /// Array of polygons
     /// if face is bounded the first polygon is outer rim and others are holes inside.
-    /// if face is unbounded all the polygons are holes of the unbounded face. 
+    /// if face is unbounded all the polygons are holes of the unbounded face.
     /// </returns>
     public Array<Vector2[]> GetFacePolygons(Rid id)
     {
-        return (Array<Vector2[]>)_obj.Call("get_polygon", id);
+        return GetPolygon(id);
     }
 
-    public bool IsUnboundedFace(Rid id)
+    protected override void Dispose(bool disposing)
     {
-        return (bool)_obj.Call("is_unbounded_face", id);
+        ReleaseMemoryPressure();
+        if (!_nativeFreeQueued && NativeInstance != IntPtr.Zero)
+        {
+            _nativeFreeQueued = true;
+            // Native Arrangement2D is an Object, not RefCounted; dispose only disconnects the managed binding.
+            CallDeferred(GodotObject.MethodName.Free);
+        }
+        StructureChanged.Dispose();
+        base.Dispose(disposing);
     }
 
-    public Rid GetUnboundedFace()
-    {
-        return (Rid)_obj.Call("get_unbounded_face");
-    }
-
-    ~Arrangement2D()
+    private void ReleaseMemoryPressure()
     {
         int sum = _polylineLengthTracker.Values.Sum();
         if (sum > 0) GC.RemoveMemoryPressure(sum * MemoryPerPoint);
         _polylineLengthTracker.Clear();
-        // Finalizer run in its own thread. Call_deferred makes it run in the main thread
-        _obj.CallDeferred("free");
     }
 
     # endregion

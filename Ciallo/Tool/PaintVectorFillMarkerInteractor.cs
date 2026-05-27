@@ -22,7 +22,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
         _fillBrush = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
         bool hasBrush = !_fillBrush.IsNull;
-        bool hasArr = WorkingLayer.Has<Arrangement2D>() && hasBrush;
+        bool hasArr = WorkingLayer.Has<Arrangement>() && hasBrush;
 
         if (!hasBrush) return;
         // To preview marker
@@ -37,18 +37,19 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
             // To preview fill
             _fillPreview = new() { Color = setting.FillColor.Value };
             WorkingLayer.Get<ShapeLayerView>().AddChild(_fillPreview);
-            _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
+            _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement>(), data.WorldPosition);
         }
     }
 
     public override void Moving(CursorMotionData data)
     {
         _markerPreview?.SetGeometry([data.WorldPosition], [MarkerRadius]);
-        _fillPreview?.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
+        _fillPreview?.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement>(), data.WorldPosition);
     }
 
     public override void End(CursorButtonData data)
     {
+        ClearPreview();
         var cmd = new CommandBuilder();
         Entity parentE = WorkingLayer; // parent of marker
         if (WorkingLayer.Has<ShapeLayerSetting>())
@@ -89,11 +90,17 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
     public override void Cancel() => Clear();
 
+    public void ClearPreview()
+    {
+        _markerPreview?.Free();
+        _markerPreview = null;
+        _fillPreview?.Free();
+        _fillPreview = null;
+    }
+
     public void Clear()
     {
-        _markerPreview?.QueueFree();
-        _markerPreview = null;
-        _fillPreview?.QueueFree();
+        ClearPreview();
         Input.MouseMode = Input.MouseModeEnum.Visible;
         _fillBrush = Entity.Null;
     }

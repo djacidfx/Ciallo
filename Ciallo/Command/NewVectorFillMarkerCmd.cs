@@ -58,8 +58,8 @@ public class NewVectorFillMarkerCmd : CommandBase
         }).AddTo(targetE);
 
         // Include both parent change and structure change.
-        Observable<Arrangement2D> changeArrObs = layerNode.Parent
-            .Select(e => e.TryGet<Arrangement2D>())
+        Observable<Arrangement> changeArrObs = layerNode.Parent
+            .Select(e => e.TryGet<Arrangement>())
             .Select(arr =>
             {
                 var obs = Observable.Return(arr);
