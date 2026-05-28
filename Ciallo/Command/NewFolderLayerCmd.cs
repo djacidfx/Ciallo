@@ -40,7 +40,8 @@ public class NewFolderLayerCmd : CommandBase
         {
             var celFolderView = new CelFolderView();
             var currentFrame = Document.Get<SelectionManager>().CurrentFrame;
-            celFolderView.Observe(folderSetting.CurrentExposedCel, layerNode, subs);
+            // TODO: Onion skin.
+            celFolderView.Observe(folderSetting.CurrentExposedCel, layerNode, null, null, subs);
             folderLayerView = celFolderView;
         }
         else
@@ -49,7 +50,7 @@ public class NewFolderLayerCmd : CommandBase
         }
 
         targetE.AddNode(folderLayerView);
-        commonSetting.IsVisible.Subscribe(folderLayerView.SetVisible).AddTo(targetE);
+        folderLayerView.ObserveLayerSetting(commonSetting).AddTo(targetE);
 
         // Overlay
         var overlayHolder = new OverlayHolder();

@@ -4,6 +4,7 @@ using ObservableCollections;
 using R3;
 using System;
 using Ciallo.Data;
+using System.Collections.Immutable;
 
 namespace Ciallo.Rendering;
 
@@ -24,7 +25,12 @@ public partial class CelFolderView : FolderLayerView
     {
     }
 
-    public void Observe(Observable<Entity> currentExposedCel, LayerTreeNode layerNode, CompositeDisposable subs)
+    public void Observe(
+        Observable<Entity> currentExposedCel,
+        LayerTreeNode layerNode,
+        Observable<bool> shouldShowOnionSkin,
+        Observable<ImmutableArray<int>> OnionSkinFrameOffsets,
+        CompositeDisposable subs)
     {
         layerNode.ObserveAddChild().Subscribe(et =>
         {
@@ -33,15 +39,14 @@ public partial class CelFolderView : FolderLayerView
 
         // Can safely assume when exposures change, view nodes are already children of this node, so we can just update their visibility.
         currentExposedCel.Subscribe(e =>
-            {
-                DisplayingLayerView = e.IsNull ? null : GetLayerView(e);
-            }).AddTo(subs);
+        {
+            DisplayingLayerView = e.IsNull ? null : GetLayerView(e);
+        }).AddTo(subs);
 
         layerNode.ObserveRemoveChild().Subscribe(et =>
         {
             ShowNode(GetLayerView(et.Value));
         }).AddTo(subs);
-
     }
 
     public void HideNode(Node2D node) => node?.VisibilityLayer = 0;
