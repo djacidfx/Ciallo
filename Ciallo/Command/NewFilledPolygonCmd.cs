@@ -75,7 +75,7 @@ public class NewFilledPolygonCmd : CommandBase
             // View
             var layerView = layerE.Get<ShapeLayerView>();
             layerView.InsertNodeAt(polygonView, index);
-            polygonView.SetOwner(layerView.Owner);
+            polygonView.SetOwner(Document.Get<WorldView>());
 
             // Overlay
             layerE.Get<OverlayHolder>().InsertNodeAt(overlay, index);

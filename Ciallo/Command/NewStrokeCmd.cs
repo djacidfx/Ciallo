@@ -78,7 +78,7 @@ public class NewStrokeCmd : CommandBase
             // View
             var layerView = layerE.Get<ShapeLayerView>();
             layerView.InsertNodeAt(strokeView, index);
-            strokeView.SetOwner(layerView.Owner);
+            strokeView.SetOwner(Document.Get<WorldView>());
 
             // Overlay
             layerE.Get<OverlayHolder>().InsertNodeAt(strokeWireframe, index);
