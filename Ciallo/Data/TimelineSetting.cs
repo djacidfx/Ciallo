@@ -1,5 +1,7 @@
-﻿using System.Collections.Immutable;
+﻿using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Runtime.Serialization;
+using Godot;
 using R3;
 
 namespace Ciallo.Data;
@@ -13,7 +15,33 @@ public class TimelineSetting
     [DataMember] public ReactiveProperty<float> FrameRate = new(24);
     [DataMember] public ReactiveProperty<bool> LoopPlaybackEnabled = new(false);
     [DataMember] public ReactiveProperty<bool> OnionSkinEnabled = new(false);
-    [DataMember] public ReactiveProperty<ImmutableArray<int>> OnionSkinFrames = new([-1, 1]);
+    // Offsets in exposure index, negative for past frames, positive for future frames.
+    [DataMember] public ReactiveProperty<ImmutableArray<int>> OnionSkinOffsets = new([-1, 1]);
+
+    public readonly ReadOnlyReactiveProperty<SortedList<int, ShaderMaterial>> OnionSkinMaterials;
+
+    public TimelineSetting()
+    {
+        var shader = GD.Load<Shader>("res://Rendering/OnionSkin.gdshader");
+        OnionSkinMaterials = OnionSkinOffsets.Select(offsets =>
+        {
+            var materials = new SortedList<int, ShaderMaterial>();
+            foreach (var offset in offsets)
+            {
+                var material = new ShaderMaterial() { Shader = shader };
+                Color color = offset switch
+                {
+                    < 0 => Colors.Blue with { A = 0.4f },
+                    > 0 => Colors.Red with { A = 0.4f },
+                    _ => Colors.White
+                };
+                material.SetShaderParameter("OverridingColor", color);
+                materials.Add(offset, material);
+            }
+
+            return materials;
+        }).ToReadOnlyReactiveProperty();
+    }
 
     public ReactiveProperty<float> PixelsPerFrame = new(32f);
 
@@ -31,7 +59,7 @@ public class TimelineSetting
         FrameRate.Value = other.FrameRate.Value;
         LoopPlaybackEnabled.Value = other.LoopPlaybackEnabled.Value;
         OnionSkinEnabled.Value = other.OnionSkinEnabled.Value;
-        OnionSkinFrames.Value = other.OnionSkinFrames.Value;
+        OnionSkinOffsets.Value = other.OnionSkinOffsets.Value;
         PixelsPerFrame.Value = other.PixelsPerFrame.Value;
         ScrollOffsetFrame.Value = other.ScrollOffsetFrame.Value;
     }

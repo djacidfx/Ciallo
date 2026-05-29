@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://ce1yxw3pe0nme"]
-
-[ext_resource type="Script" uid="uid://b6k54smyke07b" path="res://Rendering/WorldView.cs" id="1_oaofm"]
-
-[node name="WorldView" type="Node2D"]
-script = ExtResource("1_oaofm")

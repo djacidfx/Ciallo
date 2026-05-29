@@ -18,7 +18,6 @@ public partial class TimelineAction : Container
     private Texture2D _playIcon;
     private Texture2D _stopIcon;
     private readonly ReactiveProperty<bool> _isPlaying = new(false);
-    private int _frameAtPlaybackStart;
     private double _playbackAccumulator;
     public ReadOnlyReactiveProperty<bool> IsPlaying => _isPlaying;
 
@@ -79,8 +78,8 @@ public partial class TimelineAction : Container
         var cmd = new CommandBuilder()
             .SetProperty(_selectionManager.CurrentFrame, oldFrame, newFrame);
 
-        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForSwitchingFrame(oldFrame, newFrame);
-        if (!newWorkingLayer.IsNull)
+        var newWorkingLayer = _selectionManager.ResolveWorkingLayerForTimelineFrameSelection(newFrame);
+        if (!newWorkingLayer.IsNull && newWorkingLayer != _selectionManager.WorkingLayer.Value)
             cmd.SetTarget(newWorkingLayer).SetWorkingLayer();
 
         cmd.CommitOpenSequence();
@@ -105,7 +104,6 @@ public partial class TimelineAction : Container
         if (frame >= GetPlaybackLastFrame())
             frame = GetPlaybackStart();
 
-        _frameAtPlaybackStart = frame;
         SetPlaying(true);
         SetFrameDirect(frame);
     }
@@ -169,8 +167,8 @@ public partial class TimelineAction : Container
         if (_selectionManager == null) return;
 
         int currentFrame = _selectionManager.CurrentFrame.Value;
-        var newWorkingLayer = _selectionManager.ComputeWorkingLayerForSwitchingFrame(_frameAtPlaybackStart, currentFrame);
-        if (!newWorkingLayer.IsNull)
+        var newWorkingLayer = _selectionManager.ResolveWorkingLayerForTimelineFrameSelection(currentFrame);
+        if (!newWorkingLayer.IsNull && newWorkingLayer != _selectionManager.WorkingLayer.Value)
             new CommandBuilder(newWorkingLayer).SetWorkingLayer().Do();
     }
 
@@ -272,22 +270,19 @@ public partial class TimelineAction : Container
 
     internal static int FindNearestUnoccupiedFrame(ObservableSortedList<int, Entity> exposures, int candidate)
     {
-        if (candidate < 0)
-            candidate = 0;
-
         int floorIndex = exposures.FloorIndex(candidate);
         if (floorIndex < 0 || exposures.GetKeyAtIndex(floorIndex) != candidate)
             return candidate;
 
         for (int distance = 1; ; distance++)
         {
-            int earlier = candidate - distance;
-            if (earlier >= 0 && !exposures.ContainsKey(earlier))
-                return earlier;
+            long earlier = (long)candidate - distance;
+            if (earlier >= int.MinValue && !exposures.ContainsKey((int)earlier))
+                return (int)earlier;
 
-            int later = candidate + distance;
-            if (later <= int.MaxValue && !exposures.ContainsKey(later))
-                return later;
+            long later = (long)candidate + distance;
+            if (later <= int.MaxValue && !exposures.ContainsKey((int)later))
+                return (int)later;
         }
     }
 

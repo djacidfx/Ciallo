@@ -80,7 +80,7 @@ public class VectorFillTool : ToolBase
 
 public static class Polygon2DExtension
 {
-    public static void SetPolygonWithQueryResult(this Polygon2D node, Arrangement2D arr, Vector2 point)
+    public static void SetPolygonWithQueryResult(this Polygon2D node, Arrangement arr, Vector2 point)
     {
         var faceRid = arr.Query(point);
         var polygons = arr.GetFacePolygons(faceRid);
@@ -98,7 +98,7 @@ public static class Polygon2DExtension
             int currentStartIndex = 0;
             foreach (var hole in holes)
             {
-                int[] index = [..Enumerable.Range(currentStartIndex, hole.Length)];
+                int[] index = [.. Enumerable.Range(currentStartIndex, hole.Length)];
                 holeIndices.Add(index);
                 currentStartIndex += hole.Length;
             }

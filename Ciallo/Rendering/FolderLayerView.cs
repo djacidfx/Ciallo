@@ -1,8 +1,9 @@
-﻿using Godot;
+﻿namespace Ciallo.Rendering;
 
-namespace Ciallo.Rendering;
-
-public partial class FolderLayerView : Node2D
+/// <summary>
+/// Use a custom Godot build allowing nested CanvasGroups.
+/// </summary>
+public partial class FolderLayerView : GroupLayerView
 {
-    
+
 }

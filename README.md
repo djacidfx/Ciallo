@@ -9,38 +9,26 @@
 [![Pixiv](https://img.shields.io/badge/pixiv-0096FA.svg?style=for-the-badge&logo=pixiv&logoColor=white)](https://www.pixiv.net/artworks/137703808)
 
 [![License](https://img.shields.io/github/license/ShenCiao/Ciallo.svg)](https://github.com/ShenCiao/Ciallo/blob/main/LICENSE)
-[![godot-ci export](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml/badge.svg?branch=main)](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml)
-![.Net](https://img.shields.io/badge/.NET-512BD4.svg?style=for-the-badge&logo=dotnet&logoColor=white)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ShenCiao/Ciallo)
 
 </div>
 
 ---
 
-Ciallo is an open-source graphics program for professional digital painting.
-It aims to compete with traditional raster painting software like Photoshop and Clip Studio Paint, while offering the following unique features researched by the developer:
+Ciallo is an open-source graphics program for digital painting (animation and illustration).
+At its core, it supercharges the vector layers in software like Krita, CSP, and Fresco by offering the following unique features:
 
 ## Unique features
 
 ### Vectorized Photoshop-like brushes
 
-Vectorized stamp brushes, entirely drawn (rendered) on your graphics card (GPU).
+Vectorized stamp brushes, entirely drawn/rendered on your graphics card (GPU).
 
 ![](/.github/Stamp.gif)
 
 Resolution-independent airbrush, adjust the opacity falloff directly, with ultra‑fast rendering performance.
 
 ![](/.github/Airbrush.gif)
-
-### Export to game engines
-
-Export your artwork into the Godot game engine (as a .scn/.tscn file), and keep it resolution-independent.
-Like those old days when Flash was alive.
-
-![](/.github/Dango.png)
-
-![](/.github/DangoExportation.gif)
-
-Will support other game engines in the future.
 
 ### (WIP) Vector fill
 
@@ -61,22 +49,12 @@ The following features may be in your favor:
 <img align="left" width="192" height="192" src="https://upload.wikimedia.org/wikipedia/commons/f/f1/No_AI_art.svg">
 
 Ciallo uses a custom vector format that is aiming to be the game industry standard and hard to generate by the current AI techniques.
-Unless being explicitly declared by the copyright owners, artworks from Ciallo are [forbidden to be trained](#user-created-content-copyright-and-ai-notice).
-
-Unlike [the big company](https://www.youtube.com/watch?v=DoM3nUD-1Ro), Ciallo will never steal your artwork stocks for training AI.
-We also plan to build a sharing platform while protecting your artworks from unethical AI training.
-
-In the invisible-far future, Ciallo may offer AI-powered features --- but always designed for professional artists.
+We may offer AI-powered features in the future --- but always designed for professional artists.
 
 ### Optimized pen feel
 
 Ciallo aims to provide a drawing/pen feel significantly better than _Clip Studio Paint_ and _Procreate_; this will require several technical advancements in future updates.
 For the current version, the feel is not worse than _Clip Studio Paint_ and certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.)
-
-### Infinite canvas
-
-@Developer: "I have never seen a professional artist who needs an infinite canvas when drawing illustrators, mangas, or animes.
-Do you really need this? Tell me how I can add better support.
 
 ## Download (Free on all platforms)
 
@@ -90,29 +68,27 @@ Close any other software that heavily uses your GPU before opening Ciallo (excep
 - Memory: 6 GB or more
 - GPU: Minimum NV GTX 1650 or AMD Radeon RX 6500 XT
 - Monitor: A refresh rate greater than 100 Hz is recommended for the best drawing experience
-- Tablet: Use your tablet at its maximum polling/reporting rate. (If you need to buy a new one, the fastest is Wacom DTC-141.)
+- Tablet: Use your tablet at its maximum polling/reporting rate.
 
 > Ciallo is highly sensitive to your tablet polling rate. It can potentially respond to tablet/mouse input at up to 1000 Hz. However, tablets in 2025 can reach at most 360 Hz (DTC-141), and 150–200 Hz on average, which is highly insufficient for capturing small turning points and handwritten text. If a tablet with a 500–1000 Hz polling rate becomes available on the market, contact me — Ciallo will try to add support.
 
-> About macOS: I literally wish to support macOS, but I cannot afford a MacBook Pro (it would cost me roughly half a year's living expenses). Consider sponsoring me on Patreon; really lacking of money.
-
-## Development philosophy
-
-**EA stage**
-
-Ciallo is in an early stage of development; its version number will be labeled as EA (early access).
-During the EA stage, Ciallo mainly focuses on R&D of traditional painting features using modern shaders and GPU APIs. After finishing those major painting features, we plan to open Steam Workshop, marking the end of the EA stage.
+## Development guideline
 
 **Hand-drawn art**
 
-Although Ciallo focuses on vector features, it is NOT intended to replace Inkscape or Illustrator for graphic design.
+Although Ciallo focuses on vector features, it is NOT intended to replace those for graphic design like Inkscape, Illustrator or Figma.
 Instead, it aims to provide Clip Studio Paint or Krita vector layers on super steroids.
 All features that were previously available only in raster workflows would be supported in Ciallo's new vector workflow.
 
 **Game art first**
 
-Except for the core painting, Ciallo prioritizes auxiliary features supporting video game development.
-It aims to be a DCC program providing vector hand-drawn assets, including illustrations, 2D animations and hand-drawn textures in 3D.
+Except for the core illustration and animation, Ciallo prioritizes auxiliary features supporting video game development.
+It will be a DCC program providing vector hand-drawn assets, including illustrations, 2D animations and hand-drawn textures for 3D.
+
+**EA stage**
+
+Ciallo is in an early stage of development; its version number will be labeled as EA (early access).
+During the EA stage, Ciallo mainly focuses on R&D of traditional painting features using modern shaders and GPU APIs. After finishing those major painting features, we plan to open Steam Workshop, marking the end of the EA stage.
 
 ## Feature requests
 
@@ -127,13 +103,10 @@ If you urgently need a feature from other programs implemented in Ciallo within 
 
 ## Sponsor Ciallo's research and your future
 
-Ciallo's mission is to bring advanced hard-drawn art techniques from dream to life.
+Ciallo's mission is to bring advanced hand-drawn art techniques from dream to life, make something impossible possible.
 It needs your support to keep them free and accessible to everyone.
 
 [![Become a Patron!](https://c5.patreon.com/external/logo/become_a_patron_button.png)](https://www.patreon.com/cw/ShenCiao)
-
-Consider patreon on Ciallo development, the developer will post plans, designs and teasers about innovative features well before release, which acts as a pre-manual to understand how to use Ciallo.
-Check the post [About Vector Fill](https://www.patreon.com/posts/about-vector-143858627) as an example.
 
 Moreover, in this age of AI we all face challenges from rapidly advancing AI techniques.
 Hope Ciallo will be the tool that helps you shine in this era — a tool that liberates your creativity, not one that replaces it with AI or steals it to feed AI.
@@ -151,7 +124,7 @@ Artwork labeled or claimed as "no copyright", "public domain", or similar does n
 ## License and AI notice
 Unless otherwise specified, files in this repository are licensed under the AGPL-3.0 license.
 
-### Shader code special notice
+### Shader code has fewer constraints for games
 
 For the purposes of this Project, "Shader Code" means any GPU shader program, shader graph, material shader, or related code used to render strokes, fills, brushes, or other visual effects in this project.
 
@@ -238,12 +211,16 @@ SIGGRAPH 2023 Talk
 
 ## Build Guide
 
-Ciallo is built on Godot. Building the core part of Ciallo is the same as building a standard Godot C# project:
+Building the core part of Ciallo is the same as building a standard Godot C# project with a custom Godot binary:
 
-- Set up latest Godot and .Net. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), and pay attention to the version.
+Link: https://github.com/ShenCiao/godot
+
+(Still investigating how to distribute custom Godot to others)
+
+<!-- - Set up latest Godot and .Net. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), and pay attention to the version.
 - Open the `Ciallo/project.godot` file with your Godot editor, then build and run.
 
-Go to [Contributing Tab](https://github.com/ShenCiao/Ciallo?tab=contributing-ov-file#how-to-build) for a more complete guide.
+Go to [Contributing Tab](https://github.com/ShenCiao/Ciallo?tab=contributing-ov-file#how-to-build) for a more complete guide. -->
 
 ## Tech FAQ
 
@@ -252,7 +229,9 @@ Shen answers the following questions:
 ### Hand-drawn art vs. Graphics design?
 Ciallo is designed for hand-drawn art---illustrations and animations, rather than graphic design tasks such as logos, web layouts, or UI/UX assets.
 
-You may wonder about the difference: think of it like game development compared with front-end web development. Both involve creating visual elements, but they require different skills and tools. With unlimited resources Ciallo could support both, like the Affinity 3 does, but most programs focus on one area for a better user experience:
+You may wonder about the difference: think of it like game development compared with front-end web development. Both involve creating visual elements, but they require different skills and tools, and two groups of developers working on them.
+
+With unlimited resources Ciallo could support both, like the Affinity 3 does, but most programs focus on one area for a better user experience:
 Krita, Clip Studio Paint, and Procreate emphasize hand-drawn art, while Adobe Illustrator, Figma, and Inkscape specialize in graphic design.
 
 But Ciallo's stroke-rendering technology isn't limited to hand-drawn art. Everywhere needs stylized lines/strokes could use it. Feel free to ask me for support if you'd like to use Ciallo's brushes while developing graphic-design or other software.

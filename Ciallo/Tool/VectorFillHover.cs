@@ -19,13 +19,13 @@ public class VectorFillHover : InteractiveSessionBase
     {
         Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
         SetContoursWithQueryResult(WorkingLayer.Get<OverlayHolder>(),
-            WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
+            WorkingLayer.Get<Arrangement>(), data.WorldPosition);
     }
 
     public override void Moving(CursorMotionData data)
     {
         SetContoursWithQueryResult(WorkingLayer.Get<OverlayHolder>(),
-            WorkingLayer.Get<Arrangement2D>(), data.WorldPosition);
+            WorkingLayer.Get<Arrangement>(), data.WorldPosition);
     }
 
     public override void End(CursorButtonData data) => Cancel();
@@ -39,7 +39,7 @@ public class VectorFillHover : InteractiveSessionBase
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
 
-    public void SetContoursWithQueryResult(Node parent, Arrangement2D arr, Vector2 point)
+    public void SetContoursWithQueryResult(Node parent, Arrangement arr, Vector2 point)
     {
         var faceRid = arr.Query(point);
         if (!faceRid.IsValid)
@@ -101,10 +101,10 @@ public class VectorFillHover : InteractiveSessionBase
 
         container.AddProperty("Marker radius",
             new SpinSlider
-                {
-                    MinValue = 1.0f,
-                    MaxValue = 32f,
-                }
+            {
+                MinValue = 1.0f,
+                MaxValue = 32f,
+            }
                 .BindNumber(AppPreference.VectorFillMarkerRadius)
                 .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
         );
@@ -119,10 +119,10 @@ public class VectorFillHover : InteractiveSessionBase
         );
 
         var showWireframe = new CheckButton()
-            {
-                SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
-                CustomMinimumSize = new(128, 0),
-            }
+        {
+            SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
+            CustomMinimumSize = new(128, 0),
+        }
             .BindBool(AppPreference.ShowVectorFillReferenceLayerWireframe);
         container.AddProperty("Show reference wireframe", showWireframe);
     }

@@ -58,8 +58,8 @@ public class NewVectorFillMarkerCmd : CommandBase
         }).AddTo(targetE);
 
         // Include both parent change and structure change.
-        Observable<Arrangement2D> changeArrObs = layerNode.Parent
-            .Select(e => e.TryGet<Arrangement2D>())
+        Observable<Arrangement> changeArrObs = layerNode.Parent
+            .Select(e => e.TryGet<Arrangement>())
             .Select(arr =>
             {
                 var obs = Observable.Return(arr);
@@ -127,14 +127,14 @@ public class NewVectorFillMarkerCmd : CommandBase
         }).AddTo(targetE);
 
         // Layer tree events
-        var events = layerNode.MovedAsAddedRemoved;
+        var events = layerNode.MovedReparentedAsAddedRemoved;
         events.Added.Subscribe(et =>
         {
             (int index, var layerE) = (et.Index, et.Parent);
             // View
             var layerView = layerE.Get<ShapeLayerView>();
             layerView.InsertNodeAt(polygonView, index);
-            polygonView.SetOwner(layerView.Owner);
+            polygonView.SetOwner(Document.Get<WorldView>());
 
             // Overlay
             var holder = layerE.Get<OverlayHolder>();

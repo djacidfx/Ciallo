@@ -68,14 +68,14 @@ public class NewFilledPolygonCmd : CommandBase
         }).AddTo(targetE);
 
         // Layer tree events
-        var events = layerNode.MovedAsAddedRemoved;
+        var events = layerNode.MovedReparentedAsAddedRemoved;
         events.Added.Subscribe(et =>
         {
             (int index, var layerE) = (et.Index, et.Parent);
             // View
             var layerView = layerE.Get<ShapeLayerView>();
             layerView.InsertNodeAt(polygonView, index);
-            polygonView.SetOwner(layerView.Owner);
+            polygonView.SetOwner(Document.Get<WorldView>());
 
             // Overlay
             layerE.Get<OverlayHolder>().InsertNodeAt(overlay, index);

@@ -18,8 +18,7 @@ public partial class LayerPanel : VBoxContainer, IInitable
             .Select(e => e.TryGet<CommonLayerSetting>()?.Opacity)
             .Flatten().AddTo(document);
         LayerProperty.Opacity.BindNumber(opacity)
-            .RegisterUndo(document.Get<CommandManager>())
-            .EditableIf(document.Get<SelectionManager>().WorkingLayer, e => !e.TryHas<FolderLayerSetting>());
+            .RegisterUndo(document.Get<CommandManager>());
         document.Add(LayerTree);
         document.Add(LayerTree.RootContainer);
         LayerAction.Init(document);

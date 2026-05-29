@@ -40,12 +40,6 @@ public class NewShapeLayerCmd : CommandBase
 
         // Others
         CreateNonDataComponents(targetE);
-
-        // Layer panel
-        targetE.Document.Get<LayerTree>().Create(targetE);
-
-        // Timeline track
-        targetE.Document.Get<TrackTree>().Create(targetE);
     }
 
     public override void Do(Entity targetE)
@@ -74,8 +68,14 @@ public class NewShapeLayerCmd : CommandBase
         var bodyHolder = new BodyHolder() { ProcessMode = Node.ProcessModeEnum.Disabled };
         targetE.AddNode(bodyHolder);
 
+        // Layer panel
+        targetE.Document.Get<LayerTree>().Create(targetE);
+
+        // Timeline track
+        targetE.Document.Get<TrackTree>().Create(targetE);
+
         // Layer tree events
-        var events = layerNode.MovedAsAddedRemoved;
+        var events = layerNode.MovedReparentedAsAddedRemoved;
         events.Added.Subscribe(et => InsertIntoParent(et.Parent, et.Index)).AddTo(targetE);
         events.Removed.Subscribe(_ => DetachFromParent()).AddTo(targetE);
 
@@ -92,7 +92,7 @@ public class NewShapeLayerCmd : CommandBase
             // View
             var folderLayerView = parentE.Get<FolderLayerView>();
             folderLayerView.InsertNodeAt(shapeLayerView, index);
-            shapeLayerView.SetOwner(folderLayerView.Owner ?? folderLayerView);
+            shapeLayerView.SetOwner(targetE.Document.Get<WorldView>());
 
             // Overlay
             parentE.Get<OverlayHolder>().InsertNodeAt(overlayHolder, index);

@@ -110,15 +110,16 @@ public partial class BackgroundGrid : Control
         while (_pixelsPerFrame * step < MinColumnSpacingPx) step *= step < 5 ? 5 : 2;
 
         // Frame 0 is at virtual x = 0, matching TimelineRuler's coordinate origin.
-        int startFrame = (int)(_scrollOffset / _pixelsPerFrame) - 1;
-        int endFrame = (int)((_scrollOffset + w) / _pixelsPerFrame) + 2;
+        var visibleFrames = TimelineFrameGeometry.VisibleFrameRange(w, _pixelsPerFrame, _scrollOffset);
+        int startFrame = visibleFrames.Start;
+        int endFrame = visibleFrames.End;
         bool hasPlaybackRange = TryGetPlaybackRange(out int playbackStart, out int playbackEnd);
 
         for (int frame = startFrame; frame <= endFrame; frame++)
         {
             if (frame != 0 && frame % step != 0) continue;
 
-            float x = frame * _pixelsPerFrame - _scrollOffset;
+            float x = TimelineFrameGeometry.FrameToX(frame, _pixelsPerFrame, _scrollOffset);
             if (x < -_pixelsPerFrame || x > w + _pixelsPerFrame) continue;
 
             bool isMajor = frame == 0 || frame % (step * MajorColumnInterval) == 0;

@@ -28,10 +28,10 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     private readonly Subject<TreeMutationEvent> _mutations = new(); // include events from descendants
 
     /// Self events emitted after current node has been added/Removed
-    public readonly Subject<ChildInsertedEvent> Added = new();
-    public readonly Subject<ChildRemovedEvent> Removed = new();
-    public readonly Subject<ChildMovedEvent> Moved = new();
-    public readonly MoveOrReparentAsExitEnter MovedAsAddedRemoved;
+    public readonly Subject<NodeInsertedEvent> Added = new();
+    public readonly Subject<NodeRemovedEvent> Removed = new();
+    public readonly Subject<NodeMovedOrReparentedEvent> MovedOrReparented = new();
+    public readonly MoveOrReparentAsExitEnter MovedReparentedAsAddedRemoved;
 
     public int Index => ParentValue.Get<T>()._children.IndexOf(Self);
     public IReadOnlyList<Entity> Children => _children;
@@ -41,7 +41,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
 
     public EntityTreeNode()
     {
-        MovedAsAddedRemoved = new(Added, Removed, Moved);
+        MovedReparentedAsAddedRemoved = new(Added, Removed, MovedOrReparented);
     }
 
     public void Init(Entity self)
@@ -189,7 +189,8 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         srcParent.RemoveChildNoSignal(srcIdx);
         dstParent.InsertChildNoSignal(dstIdx, srcE);
         var mutation = new TreeMutationEvent(TreeMutationKind.Move, srcE, srcParentE, srcIdx, dstParentE, dstIdx);
-        PublishLocalMutation(mutation);
+        srcParent.PublishLocalMutation(mutation);
+        dstParent.PublishLocalMutation(mutation, signalTarget: false);
     }
 
     /// <summary>
@@ -236,7 +237,8 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         srcParent.RemoveChildNoSignal(srcIdx);
         dstParent.InsertChildNoSignal(dstIdx, moving);
         var mutation = new TreeMutationEvent(TreeMutationKind.Move, moving, srcParent.Self, srcIdx, dstParent.Self, dstIdx);
-        PublishLocalMutation(mutation);
+        srcParent.PublishLocalMutation(mutation);
+        dstParent.PublishLocalMutation(mutation, signalTarget: false);
     }
 
     #endregion
@@ -262,13 +264,36 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         return _children[path[0]].Get<T>().GetDescendantNode(path.Skip(1).ToArray());
     }
 
-    public T GetNodeOrNull([NotNull] IReadOnlyList<int> path)
+    public T GetNodeOrNull(
+        [NotNull] IReadOnlyList<int> path,
+        Func<Entity, bool> childFilter = null,
+        bool normalizeNegativeIndex = false)
     {
-        if (path.Count == 0) return (T)this;
-        int idx = path[0];
-        if (idx < 0 || idx >= _children.Count) return null;
-        var childNode = _children[idx].Get<T>();
-        return childNode.GetNodeOrNull(path.Skip(1).ToArray());
+        if (path.Count == 0)
+            return (T)this;
+
+        var node = (T)this;
+        foreach (int rawIndex in path)
+        {
+            var children = node.GetFilteredChildren(childFilter);
+            if (children.Count == 0)
+                return null;
+
+            int index = normalizeNegativeIndex
+                ? NormalizePathIndex(rawIndex, children.Count)
+                : rawIndex;
+
+            if (index < 0 || index >= children.Count)
+                return null;
+
+            var child = children[index];
+            if (child.IsNull || !child.IsAlive || !child.Has<T>())
+                return null;
+
+            node = child.Get<T>();
+        }
+
+        return node;
     }
 
     public ImmutableArray<int> FindPathTo(Entity target)
@@ -405,14 +430,104 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         return cnt;
     }
 
+    public int CountSubtreeNodes(Func<Entity, bool> childFilter)
+    {
+        return CountSubtreeNodes((T)this, childFilter);
+    }
+
+    public static int CountSubtreeNodes(T n, Func<Entity, bool> childFilter)
+    {
+        int cnt = 1;
+        foreach (var e in n.GetFilteredChildren(childFilter))
+            cnt += CountSubtreeNodes(e.Get<T>(), childFilter);
+        return cnt;
+    }
+
+    public T GetDeepestLastDescendant(Func<Entity, bool> childFilter)
+    {
+        var node = (T)this;
+        while (node.GetFilteredChildren(childFilter) is { Count: > 0 } children)
+            node = children[^1].Get<T>();
+        return node;
+    }
+
+    public int GetNearestPreorderIndex(
+        IReadOnlyList<int> path,
+        Func<Entity, bool> childFilter,
+        bool normalizeNegativeIndex = false)
+    {
+        if (path.Count == 0)
+            return 0;
+
+        int preorderIndex = 0;
+        var node = (T)this;
+        foreach (int rawIndex in path)
+        {
+            var children = node.GetFilteredChildren(childFilter);
+            if (children.Count == 0)
+                return preorderIndex;
+
+            int index = normalizeNegativeIndex
+                ? NormalizePathIndex(rawIndex, children.Count)
+                : rawIndex;
+
+            if (index < 0)
+                return preorderIndex + 1;
+            if (index >= children.Count)
+                return preorderIndex + CountSubtreeNodes(node, childFilter) - 1;
+
+            for (int i = 0; i < index; i++)
+                preorderIndex += CountSubtreeNodes(children[i].Get<T>(), childFilter);
+
+            preorderIndex++;
+            node = children[index].Get<T>();
+        }
+
+        return preorderIndex;
+    }
+
+    public T GetNodeAtPreorderIndex(int preorderIndex, Func<Entity, bool> childFilter)
+    {
+        if (preorderIndex <= 0)
+            return (T)this;
+
+        int remaining = preorderIndex - 1;
+        foreach (var child in GetFilteredChildren(childFilter))
+        {
+            var childNode = child.Get<T>();
+            int subtreeCount = CountSubtreeNodes(childNode, childFilter);
+            if (remaining < subtreeCount)
+                return childNode.GetNodeAtPreorderIndex(remaining, childFilter);
+            remaining -= subtreeCount;
+        }
+
+        return (T)this;
+    }
+
+    protected List<Entity> GetFilteredChildren(Func<Entity, bool> childFilter)
+    {
+        if (childFilter == null)
+            return [.. _children];
+
+        List<Entity> result = [];
+        foreach (var child in _children)
+            if (childFilter(child))
+                result.Add(child);
+        return result;
+    }
+
+    private static int NormalizePathIndex(int index, int count) =>
+        index < 0 ? count + index : index;
+
     #endregion
 
     #region Event
 
-    private void PublishLocalMutation(TreeMutationEvent mutation)
+    private void PublishLocalMutation(TreeMutationEvent mutation, bool signalTarget = true)
     {
         _localMutations.OnNext(mutation);
-        SignalTargetFromMutation(mutation);
+        if (signalTarget)
+            SignalTargetFromMutation(mutation);
 
         BubbleMutation(mutation);
     }
@@ -442,7 +557,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
                 node.Removed.OnNext(new(mutation.OldIndex, mutation.OldParent));
                 break;
             case TreeMutationKind.Move:
-                node.Moved.OnNext(new(mutation.OldIndex, mutation.NewIndex, mutation.NewParent));
+                node.MovedOrReparented.OnNext(new(mutation.OldIndex, mutation.OldParent, mutation.NewIndex, mutation.NewParent));
                 break;
         }
     }
@@ -452,24 +567,27 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         return includeDescendants ? _mutations : _localMutations;
     }
 
-    public Observable<CollectionAddEvent<Entity>> ObserveAddChild(bool includeDescendants = false)
+    // Reparent as Remove+Add.
+    public Observable<CollectionAddEvent<Entity>> ObserveAddChild()
     {
-        return ObserveMutation(includeDescendants)
-            .Where(e => e.Kind == TreeMutationKind.Add)
+        return ObserveMutation()
+            .Where(e => e.Kind == TreeMutationKind.Add ||
+                        e.Kind == TreeMutationKind.Move && e.OldParent != e.NewParent && e.NewParent == Self)
             .Select(e => new CollectionAddEvent<Entity>(e.NewIndex, e.Target));
     }
 
-    public Observable<CollectionRemoveEvent<Entity>> ObserveRemoveChild(bool includeDescendants = false)
+    public Observable<CollectionRemoveEvent<Entity>> ObserveRemoveChild()
     {
-        return ObserveMutation(includeDescendants)
-            .Where(e => e.Kind == TreeMutationKind.Remove)
+        return ObserveMutation()
+            .Where(e => e.Kind == TreeMutationKind.Remove ||
+                        e.Kind == TreeMutationKind.Move && e.OldParent != e.NewParent && e.OldParent == Self)
             .Select(e => new CollectionRemoveEvent<Entity>(e.OldIndex, e.Target));
     }
 
-    public Observable<CollectionMoveEvent<Entity>> ObserveMoveChild(bool includeDescendants = false)
+    public Observable<CollectionMoveEvent<Entity>> ObserveMoveChild()
     {
-        return ObserveMutation(includeDescendants)
-            .Where(e => e.Kind == TreeMutationKind.Move)
+        return ObserveMutation()
+            .Where(e => e.Kind == TreeMutationKind.Move && e.OldParent == Self && e.NewParent == Self)
             .Select(e => new CollectionMoveEvent<Entity>(e.OldIndex, e.NewIndex, e.Target));
     }
 

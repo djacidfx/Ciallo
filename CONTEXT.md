@@ -6,6 +6,10 @@
 
 A cel is a drawable layer inside a cel folder. A cel represents artwork that can be assigned to frames on the timeline.
 
+### Cel Button
+
+A cel button is the clickable exposure bar on a CelTrack that represents one exposed cel at a specific timeline frame.
+
 ### Cel Folder
 
 A cel folder is a folder layer whose children are cels. Cel folders do not nest inside other cel folders.

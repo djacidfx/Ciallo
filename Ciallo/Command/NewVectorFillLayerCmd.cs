@@ -6,9 +6,9 @@ using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
-using Godot;
 using ObservableCollections;
 using R3;
+using Godot;
 
 namespace Ciallo.Command;
 
@@ -45,7 +45,7 @@ public class NewVectorFillLayerCmd : CommandBase
             vectorFillLayerSetting.ReferenceLayers.Clear();
         targetE.Add(vectorFillLayerSetting);
 
-        var arr = new Arrangement2D();
+        var arr = new Arrangement().AddTo(targetE);
         targetE.Add(arr);
         var helper = new ArrangementSynchronizationHelper(arr, vectorFillLayerSetting.ReferenceLayers);
         targetE.Add(helper);
@@ -75,7 +75,7 @@ public class NewVectorFillLayerCmd : CommandBase
 // Design this class to avoid observing the shape layers change after user deleting this vector fill layer.
 public class ArrangementSynchronizationHelper
 {
-    private readonly Arrangement2D _arr;
+    private readonly Arrangement _arr;
     private readonly ObservableHashSet<Entity> _layerEs;
     private readonly ObservableDictionary<Entity, ImmutableArray<Vector2>> _shapePositions = [];
     public CompositeDisposable ArrangementSyncSubs;
@@ -83,18 +83,18 @@ public class ArrangementSynchronizationHelper
 
     public Dictionary<Entity, Rid> ShapeRids = [];
 
-    public ArrangementSynchronizationHelper(Arrangement2D arr, ObservableHashSet<Entity> layerEs)
+    public ArrangementSynchronizationHelper(Arrangement arr, ObservableHashSet<Entity> layerEs)
     {
         _arr = arr;
         _layerEs = layerEs;
         foreach (var layerE in layerEs)
-        foreach (var shapeE in layerE.Get<LayerTreeNode>().Children)
-        {
-            _shapePositions[shapeE] = shapeE.Get<PolylineGeometry>().Positions.Value;
-            var rid = arr.CreatePolyline();
-            ShapeRids[shapeE] = rid;
-            arr.SetPolylineWithSignal(rid, _shapePositions[shapeE]);
-        }
+            foreach (var shapeE in layerE.Get<LayerTreeNode>().Children)
+            {
+                _shapePositions[shapeE] = shapeE.Get<PolylineGeometry>().Positions.Value;
+                var rid = arr.CreatePolyline();
+                ShapeRids[shapeE] = rid;
+                arr.SetPolyline(rid, _shapePositions[shapeE]);
+            }
     }
 
     public void Subscribe()
@@ -116,24 +116,24 @@ public class ArrangementSynchronizationHelper
         {
             var rid = _arr.CreatePolyline();
             ShapeRids[et.Key] = rid;
-            _arr.SetPolylineWithSignal(rid, et.Value);
+            _arr.SetPolyline(rid, et.Value);
         }).AddTo(subs);
 
         _shapePositions.ObserveDictionaryRemove().Subscribe(et =>
         {
-            _arr.RemovePolylineWithSignal(ShapeRids[et.Key]);
+            _arr.RemovePolyline(ShapeRids[et.Key]);
             ShapeRids.Remove(et.Key);
         }).AddTo(subs);
 
         _shapePositions.ObserveDictionaryReplace().Subscribe(et =>
         {
-            _arr.SetPolylineWithSignal(ShapeRids[et.Key], et.NewValue);
+            _arr.SetPolyline(ShapeRids[et.Key], et.NewValue);
         }).AddTo(subs);
 
         _shapePositions.ObserveClear().Subscribe(_ =>
         {
             foreach (var (_, rid) in ShapeRids)
-                _arr.RemovePolylineWithSignal(rid);
+                _arr.RemovePolyline(rid);
             ShapeRids.Clear();
         }).AddTo(subs);
     }
