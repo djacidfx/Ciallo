@@ -9,21 +9,20 @@
 [![Pixiv](https://img.shields.io/badge/pixiv-0096FA.svg?style=for-the-badge&logo=pixiv&logoColor=white)](https://www.pixiv.net/artworks/137703808)
 
 [![License](https://img.shields.io/github/license/ShenCiao/Ciallo.svg)](https://github.com/ShenCiao/Ciallo/blob/main/LICENSE)
-[![godot-ci export](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml/badge.svg?branch=main)](https://github.com/ShenCiao/Ciallo/actions/workflows/godot-ci.yml)
-![.Net](https://img.shields.io/badge/.NET-512BD4.svg?style=for-the-badge&logo=dotnet&logoColor=white)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ShenCiao/Ciallo)
 
 </div>
 
 ---
 
-Ciallo is an open-source graphics program for digital painting (illustration and animation).
-At its core, it supercharges the vector layers from software like Krita, CSP, and Fresco by offering the following unique features:
+Ciallo is an open-source graphics program for digital painting (animation and illustration).
+At its core, it supercharges the vector layers in software like Krita, CSP, and Fresco by offering the following unique features:
 
 ## Unique features
 
 ### Vectorized Photoshop-like brushes
 
-Vectorized stamp brushes, entirely drawn (rendered) on your graphics card (GPU).
+Vectorized stamp brushes, entirely drawn/rendered on your graphics card (GPU).
 
 ![](/.github/Stamp.gif)
 
@@ -125,7 +124,7 @@ Artwork labeled or claimed as "no copyright", "public domain", or similar does n
 ## License and AI notice
 Unless otherwise specified, files in this repository are licensed under the AGPL-3.0 license.
 
-### Shader code has less constrain for games
+### Shader code has fewer constraints for games
 
 For the purposes of this Project, "Shader Code" means any GPU shader program, shader graph, material shader, or related code used to render strokes, fills, brushes, or other visual effects in this project.
 
@@ -230,9 +229,9 @@ Shen answers the following questions:
 ### Hand-drawn art vs. Graphics design?
 Ciallo is designed for hand-drawn art---illustrations and animations, rather than graphic design tasks such as logos, web layouts, or UI/UX assets.
 
-You may wonder about the difference: think of it like game development compared with front-end web development. Both involve creating visual elements, but they require different skills and tools, and two group of developers working on them.
+You may wonder about the difference: think of it like game development compared with front-end web development. Both involve creating visual elements, but they require different skills and tools, and two groups of developers working on them.
 
-With unlimited resources Ciallo could support both, like the Affinity3 does, but most programs focus on one area for a better user experience:
+With unlimited resources Ciallo could support both, like the Affinity 3 does, but most programs focus on one area for a better user experience:
 Krita, Clip Studio Paint, and Procreate emphasize hand-drawn art, while Adobe Illustrator, Figma, and Inkscape specialize in graphic design.
 
 But Ciallo's stroke-rendering technology isn't limited to hand-drawn art. Everywhere needs stylized lines/strokes could use it. Feel free to ask me for support if you'd like to use Ciallo's brushes while developing graphic-design or other software.
