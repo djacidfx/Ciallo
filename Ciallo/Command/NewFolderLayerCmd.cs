@@ -26,6 +26,26 @@ public class NewFolderLayerCmd : CommandBase
         CreateOther(targetE);
     }
 
+    public void CreateData(Entity targetE)
+    {
+        var layerNode = new LayerTreeNode();
+        targetE.Add(layerNode);
+        var isCel = CopyE.IsNull ? _isCel : CopyE.Get<FolderLayerSetting>().IsCel;
+
+        var commonSetting = CopyE.IsNull
+            ? new CommonLayerSetting { Name = { Value = (isCel ? "Cel folder" : "Folder").Tr() } }
+            : CopyE.Get<CommonLayerSetting>().Clone();
+        targetE.Add(commonSetting);
+
+        var folderLayerSetting = CopyE.IsNull
+            ? new FolderLayerSetting()
+            : CopyE.Get<FolderLayerSetting>().Clone();
+        folderLayerSetting.IsCel = isCel;
+        if (folderLayerSetting.IsCel)
+            folderLayerSetting.InitCurrent(Document.Get<SelectionManager>().CurrentFrame, Document.Get<TimelineSetting>().OnionSkinOffsets);
+        targetE.Add(folderLayerSetting);
+    }
+
     public void CreateOther(Entity targetE)
     {
         var commonSetting = targetE.Get<CommonLayerSetting>();
@@ -39,9 +59,13 @@ public class NewFolderLayerCmd : CommandBase
         if (folderSetting.IsCel)
         {
             var celFolderView = new CelFolderView();
-            var currentFrame = Document.Get<SelectionManager>().CurrentFrame;
-            // TODO: Onion skin.
-            celFolderView.Observe(folderSetting.CurrentExposedCel, layerNode, null, null, subs);
+            var timelineSetting = Document.Get<TimelineSetting>();
+            var shouldShowOnionSkin = timelineSetting.OnionSkinEnabled
+                .CombineLatest(Document.Get<SelectionManager>().WorkingCelFolder,
+                    (shouldShow, workingCel) => shouldShow && workingCel == targetE)
+                .ToReadOnlyReactiveProperty();
+
+            celFolderView.Observe(folderSetting, layerNode, shouldShowOnionSkin, timelineSetting.OnionSkinMaterials).AddTo(targetE);
             folderLayerView = celFolderView;
         }
         else
@@ -106,26 +130,6 @@ public class NewFolderLayerCmd : CommandBase
             // View
             folderLayerView.RemoveFromParent();
         }).AddTo(targetE);
-    }
-
-    public void CreateData(Entity targetE)
-    {
-        var layerNode = new LayerTreeNode();
-        targetE.Add(layerNode);
-        var isCel = CopyE.IsNull ? _isCel : CopyE.Get<FolderLayerSetting>().IsCel;
-
-        var commonSetting = CopyE.IsNull
-            ? new CommonLayerSetting { Name = { Value = (isCel ? "Cel folder" : "Folder").Tr() } }
-            : CopyE.Get<CommonLayerSetting>().Clone();
-        targetE.Add(commonSetting);
-
-        var folderLayerSetting = CopyE.IsNull
-            ? new FolderLayerSetting()
-            : CopyE.Get<FolderLayerSetting>().Clone();
-        folderLayerSetting.IsCel = isCel;
-        if (folderLayerSetting.IsCel)
-            folderLayerSetting.InitCurrentExposedCel(Document.Get<SelectionManager>().CurrentFrame);
-        targetE.Add(folderLayerSetting);
     }
 
     public override void Do(Entity targetE)
