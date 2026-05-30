@@ -2,6 +2,7 @@
 .godot/
 /android/
 *.translation
+.VSCodeCounter*
 
 # GdUnit4
 /gdunit4_testadapter_v5/
