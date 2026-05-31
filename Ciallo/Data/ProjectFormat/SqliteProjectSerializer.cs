@@ -292,7 +292,11 @@ public static class SqliteProjectSerializer
 
         var entity = (Entity)value;
         if (entity.IsNull)
+        {
+            if (field.EntityNullability == EntityNullability.Required)
+                throw new InvalidOperationException($"Field {field.Component.Name}.{field.Name} is required but is Entity.Null.");
             return DBNull.Value;
+        }
         if (!entityToId.TryGetValue(entity, out var id))
             throw new InvalidOperationException($"Field {field.Component.Name}.{field.Name} references an entity that is not persisted.");
         return id;
