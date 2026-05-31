@@ -7,7 +7,7 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class ShapeLayerSetting
 {
-    [DataMember] public ReactiveProperty<PolylineLayerRenderMode> RenderMode = new(PolylineLayerRenderMode.Realtime);
+    [DataMember, ProjectField] public ReactiveProperty<PolylineLayerRenderMode> RenderMode = new(PolylineLayerRenderMode.Realtime);
 
     public ShapeLayerSetting Clone()
     {

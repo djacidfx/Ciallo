@@ -242,7 +242,7 @@ public class PolylineSelectTool : ToolBase
         var smoothSubdivideButton = container.CreateButton("Smooth subdivide").AddToChildOf(polylineEditBox);
         smoothSubdivideButton.Pressed += () =>
         {
-            var builder = new CommandBuilder(Entity.Null);
+            var builder = new CommandBuilder();
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
                 var geom = polylineE.Get<PolylineGeometry>();
@@ -295,7 +295,7 @@ public class PolylineSelectTool : ToolBase
         var linearSubdivideButton = container.CreateButton("Linear subdivide").AddToChildOf(polylineEditBox);
         linearSubdivideButton.Pressed += () =>
         {
-            var cmd1 = new CommandBuilder(Entity.Null);
+            var cmd1 = new CommandBuilder();
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
                 var geom = polylineE.Get<PolylineGeometry>();
@@ -346,7 +346,7 @@ public class PolylineSelectTool : ToolBase
                 const int iterations = 1;
                 const float lambda = 0.5f;
                 var smoothedPositions = geom.Positions.Value.SmoothLaplacian(iterations, lambda);
-                builder.SetTarget(polylineE).SetPolylineGeometry([..smoothedPositions]); // copy but fine
+                builder.SetTarget(polylineE).SetPolylineGeometry([.. smoothedPositions]); // copy but fine
             }
             builder.Commit();
         };

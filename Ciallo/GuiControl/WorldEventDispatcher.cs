@@ -69,9 +69,8 @@ public partial class WorldEventDispatcher : Container
     {
         // Godot treats stylus pen input as mouse input.
         var cursor = GetMouseCursorState(mouseEvent);
-        var panel = (PaintPanel)Owner;
 
-        HandleCanvasNavigation(mouseEvent, panel, cursor);
+        HandleCanvasNavigation(mouseEvent, (PaintPanel)Owner, cursor);
         DispatchMouseEvent(mouseEvent, cursor);
         UpdateMouseCursorState(cursor);
     }

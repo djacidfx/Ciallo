@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Ciallo.Command;
+using Ciallo.Data.ProjectFormat;
 using Frent;
 using Frent.Core;
 using Godot;
@@ -208,31 +209,12 @@ public static partial class AppDocumentManager
 
     public static void Save(Entity document, string filePath)
     {
-        var bins = Serialize(document.World);
-        var writer = new ZipPacker();
-        var err = writer.Open(filePath);
-        if (err != Error.Ok) throw new InvalidOperationException($"Cannot open file {filePath} for writing.");
-        writer.StartFile("EntityComponent.bin");
-        writer.WriteFile(bins[0]);
-        writer.CloseFile();
-        writer.StartFile("ComponentData.bin");
-        writer.WriteFile(bins[1]);
-        writer.CloseFile();
-        writer.Close();
+        SqliteProjectSerializer.Save(document, filePath);
     }
 
     public static Entity Load(string filePath)
     {
-        if (!File.Exists(filePath)) throw new FileNotFoundException($"File {filePath} not found.");
-        var reader = new ZipReader();
-        var err = reader.Open(filePath);
-        var ecBin = reader.ReadFile("EntityComponent.bin");
-        var componentBin = reader.ReadFile("ComponentData.bin");
-        reader.Close();
-
-        var document = Deserialize([ecBin, componentBin]);
-        document.Get<DocumentSetting>().FilePath.Value = filePath;
-        return document;
+        return SqliteProjectSerializer.Load(filePath);
     }
 
     /// <remarks>

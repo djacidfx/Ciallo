@@ -44,6 +44,7 @@ public static partial class AppDocumentManager
         document.Add(new TimelineSetting());
         // Add managers
         document.Add(new SelectionManager());
+        document.Get<SelectionManager>().InitWorkingCelFolder();
         document.Add(new CommandManager());
         document.Add(new BrushManager());
         document.Add(new ToolManager());

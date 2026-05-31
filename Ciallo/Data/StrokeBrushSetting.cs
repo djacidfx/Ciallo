@@ -13,33 +13,33 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class StrokeBrushSetting
 {
-    [DataMember] public ReactiveProperty<string> Name = new("");
-    [DataMember] public ObservableList<BrushLabel> Labels = [];
-    [DataMember] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
-    [DataMember] public ReactiveProperty<BrushFlags> ActiveBrushFlags = new();
-    [DataMember] public ReactiveProperty<float> BaseRadius = new(5.0f);
-    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> Pressure2RadiusCurve = new(BezierCurveFactory.Linear(0.2f, 1.0f)); // radius = baseRadius * curve(pressure)
-    [DataMember] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
-    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> Pressure2FlowCurve = new(BezierCurveFactory.Constant(1.0f)); // finalFlow = curve(pressure) * Color.a
+    [DataMember, ProjectField] public ReactiveProperty<string> Name = new("");
+    [DataMember, ProjectField(StorageKind.Blob)] public ObservableList<BrushLabel> Labels = [];
+    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
+    [DataMember, ProjectField] public ReactiveProperty<BrushFlags> ActiveBrushFlags = new();
+    [DataMember, ProjectField] public ReactiveProperty<float> BaseRadius = new(5.0f);
+    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<ImmutableArray<BezierPoint>> Pressure2RadiusCurve = new(BezierCurveFactory.Linear(0.2f, 1.0f)); // radius = baseRadius * curve(pressure)
+    [DataMember, ProjectField] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
+    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<ImmutableArray<BezierPoint>> Pressure2FlowCurve = new(BezierCurveFactory.Constant(1.0f)); // finalFlow = curve(pressure) * Color.a
 
     // Vanilla
-    [DataMember] public ReactiveProperty<float> DashLength = new(2.0f);
-    [DataMember] public ReactiveProperty<float> GapLength = new(2.0f);
-    [DataMember] public ReactiveProperty<float> DashForwardSpeed = new(0.0f);
+    [DataMember, ProjectField] public ReactiveProperty<float> DashLength = new(2.0f);
+    [DataMember, ProjectField] public ReactiveProperty<float> GapLength = new(2.0f);
+    [DataMember, ProjectField] public ReactiveProperty<float> DashForwardSpeed = new(0.0f);
 
     // Stamp
-    [DataMember] public ReactiveProperty<StampFlags> ActiveStampFlags = new();
-    [DataMember] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
-    [DataMember] public ReactiveProperty<ImageTexture> StampTexture = new(null);
-    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> DiskOpacityCurve = new(BezierCurveFactory.EaseInOut(1.0f, 0.0f)); // hardness curve
-    [DataMember] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
-    [DataMember] public ReactiveProperty<ImageTexture> MaskTexture = new(null);
+    [DataMember, ProjectField] public ReactiveProperty<StampFlags> ActiveStampFlags = new();
+    [DataMember, ProjectField] public ReactiveProperty<float> StampInterval = new(0.4f); // in radius unit
+    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<ImageTexture> StampTexture = new(null);
+    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<ImmutableArray<BezierPoint>> DiskOpacityCurve = new(BezierCurveFactory.EaseInOut(1.0f, 0.0f)); // hardness curve
+    [DataMember, ProjectField] public ReactiveProperty<float> StampRotation = new(0.0f); // in radian
+    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<ImageTexture> MaskTexture = new(null);
 
-    [DataMember] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
+    [DataMember, ProjectField] public ReactiveProperty<float> RotationNoiseAmplitude = new(0.0f);
 
     // Airbrush
-    [DataMember] public ReactiveProperty<ImmutableArray<BezierPoint>> FalloffCurve = new(BezierCurveFactory.Linear(1.0f, 0.0f));
-    [DataMember] public ReactiveProperty<float> AlphaDensity = new(1.0f);
+    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<ImmutableArray<BezierPoint>> FalloffCurve = new(BezierCurveFactory.Linear(1.0f, 0.0f));
+    [DataMember, ProjectField] public ReactiveProperty<float> AlphaDensity = new(1.0f);
 
     public void DrawProperty(PropertyContainer container)
     {
