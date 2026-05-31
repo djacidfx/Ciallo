@@ -16,22 +16,6 @@ public partial class AutoloadData : Node
         Input.UseAccumulatedInput = false;
         GetTree().AutoAcceptQuit = false;
 
-        // Message pack serializer setup
-        var defaultResolver = CompositeResolver.Create(
-            [
-                EntityToIndexFormatter.Instance,
-                TypeFormatter.Instance,
-                ImageTextureFormatter.Instance,
-                ImageFormatter.Instance
-            ],
-            [
-                GodotResolver.Instance,
-                AttributeFormatterResolver.Instance,
-                ReactivePropertyResolver.Instance,
-                StandardResolverAllowPrivate.Instance
-            ]
-        );
-        MessagePackSerializer.DefaultOptions = MessagePackSerializerOptions.Standard.WithResolver(defaultResolver);
         DefaultOption = MessagePackSerializer.DefaultOptions;
 
         // Preference and load brush library data
