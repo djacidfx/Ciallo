@@ -10,7 +10,7 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class FolderLayerSetting
 {
-    [DataMember] public ReactiveProperty<bool> IsExpanded = new(true);
+    [DataMember, ProjectField] public ReactiveProperty<bool> IsExpanded = new(true);
     /// <summary>
     /// When true this folder acts as a frame-by-frame (celluloid) animation track.
     /// Its children are treated as cels going to be placed on trace.
@@ -32,7 +32,8 @@ public class FolderLayerSetting
     /// Keys represent the starting frame of a drawing; 
     /// Values represent the layer to be displayed until the next key is encountered.
     /// </summary>
-    [DataMember] public ObservableSortedList<int, Entity> Exposures = null;
+    [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Required)]
+    public ObservableSortedList<int, Entity> Exposures = null;
     public ReadOnlyReactiveProperty<Entity> CurrentExposedCel { get; private set; }
     /// <summary>
     /// Onion skin cels keyed by exposure-index offset.

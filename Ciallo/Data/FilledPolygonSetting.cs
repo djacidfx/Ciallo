@@ -8,7 +8,8 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class FilledPolygonSetting : IEquatable<FilledPolygonSetting>
 {
-    [DataMember] public ReactiveProperty<Entity> BrushE = new(default);
+    [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Nullable)]
+    public ReactiveProperty<Entity> BrushE = new(default);
 
     public FilledPolygonSetting Clone()
     {

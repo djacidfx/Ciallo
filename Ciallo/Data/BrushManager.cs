@@ -7,6 +7,8 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class BrushManager
 {
-    [DataMember] public ObservableList<Entity> StrokeBrushEs = [];
-    [DataMember] public ObservableList<Entity> VectorFillBrushEs = [];
+    [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Required)]
+    public ObservableList<Entity> StrokeBrushEs = [];
+    [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Required)]
+    public ObservableList<Entity> VectorFillBrushEs = [];
 }

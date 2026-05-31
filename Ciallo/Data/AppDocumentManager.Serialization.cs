@@ -11,7 +11,6 @@ using Frent;
 using Frent.Core;
 using Godot;
 using MessagePack;
-using ObservableCollections;
 
 namespace Ciallo.Data;
 

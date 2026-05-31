@@ -12,13 +12,13 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class PolylineGeometry
 {
-    [DataMember(Order = 0)]
+    [DataMember(Order = 0), ProjectField(StorageKind.RawArray)]
     public ReactiveProperty<ImmutableArray<Vector2>> Positions = new([]);
-    [DataMember(Order = 1)]
+    [DataMember(Order = 1), ProjectField(StorageKind.RawArray)]
     public ReactiveProperty<ImmutableArray<float>> Radii = new([]);
-    [DataMember(Order = 2)]
+    [DataMember(Order = 2), ProjectField(StorageKind.RawArray)]
     public ReactiveProperty<ImmutableArray<float>> Pressures = new([]);
-    [DataMember(Order = 3)]
+    [DataMember(Order = 3), ProjectField(StorageKind.RawArray)]
     public ReactiveProperty<ImmutableArray<Vector2>> Tilts = new([]);
 
     public int Count => Positions.Value.Length;

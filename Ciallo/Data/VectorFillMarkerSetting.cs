@@ -9,7 +9,8 @@ namespace Ciallo.Data;
 public class VectorFillMarkerSetting : IEquatable<VectorFillMarkerSetting>
 {
     // Marker use stroke/polyline has single point
-    [DataMember] public ReactiveProperty<Entity> BrushE = new(default);
+    [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Nullable)]
+    public ReactiveProperty<Entity> BrushE = new(default);
 
     public VectorFillMarkerSetting Clone()
     {

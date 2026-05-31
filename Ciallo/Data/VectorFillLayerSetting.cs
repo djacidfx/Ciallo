@@ -7,7 +7,8 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class VectorFillLayerSetting
 {
-    [DataMember] public ObservableHashSet<Entity> ReferenceLayers = [];
+    [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Required)]
+    public ObservableHashSet<Entity> ReferenceLayers = [];
 
     public VectorFillLayerSetting Clone()
     {

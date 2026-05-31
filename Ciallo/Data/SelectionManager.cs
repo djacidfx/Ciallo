@@ -12,23 +12,27 @@ namespace Ciallo.Data;
 public class SelectionManager
 {
     /// <summary>Current playhead position.</summary>
-    [DataMember] public ReactiveProperty<int> CurrentFrame = new(1);
+    [DataMember, ProjectField] public ReactiveProperty<int> CurrentFrame = new(1);
 
-    [DataMember] public ObservableList<Entity> SelectedLayers = [];
+    [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Required)]
+    public ObservableList<Entity> SelectedLayers = [];
 
     // Note: although current frame sync working layer on user side, the two properties are not directly synced on Data side.
     // The logics are implemented here but called by corresponding GUI control side.
     // Which make sure everything works OK even though CurrentFrame and WorkingLayer are not in sync.
-    [DataMember] public ReactiveProperty<Entity> WorkingLayer = new(Entity.Null);
+    [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Nullable)]
+    public ReactiveProperty<Entity> WorkingLayer = new(Entity.Null);
     public ReadOnlyReactiveProperty<Entity> WorkingCelFolder;
 
-    [DataMember] public ReactiveProperty<Entity> WorkingStrokeBrush = new(Entity.Null);
+    [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Nullable)]
+    public ReactiveProperty<Entity> WorkingStrokeBrush = new(Entity.Null);
 
-    [DataMember] public ReactiveProperty<Entity> WorkingVectorFillBrush = new(Entity.Null);
+    [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Nullable)]
+    public ReactiveProperty<Entity> WorkingVectorFillBrush = new(Entity.Null);
 
     public ObservableList<Entity> SelectedShapes = [];
 
-    public SelectionManager()
+    public void InitWorkingCelFolder()
     {
         WorkingCelFolder = WorkingLayer.Select(layerE =>
         {

@@ -19,10 +19,12 @@ namespace Ciallo.Data;
 public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : EntityTreeNode<T>
 {
     public Entity Self; // When this component is added to entity, assigned automatically.
-    [DataMember] private ReactiveProperty<Entity> _parent = new(default);
+    [DataMember, ProjectField("Parent", StorageKind.Entity, EntityNullability.Nullable)]
+    private ReactiveProperty<Entity> _parent = new(default);
     public ReadOnlyReactiveProperty<Entity> Parent => _parent;
     public Entity ParentValue => _parent.Value;
-    [DataMember(Name = "Children")] private readonly List<Entity> _children = [];
+    [DataMember(Name = "Children"), ProjectField("Children", StorageKind.Entity, EntityNullability.Required)]
+    private readonly List<Entity> _children = [];
 
     private readonly Subject<TreeMutationEvent> _localMutations = new(); // local node events
     private readonly Subject<TreeMutationEvent> _mutations = new(); // include events from descendants

@@ -9,10 +9,10 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class CommonLayerSetting
 {
-    [DataMember] public ReactiveProperty<string> Name = new("");
-    [DataMember] public ReactiveProperty<bool> IsVisible = new(true);
-    [DataMember] public ReactiveProperty<float> Opacity = new(1.0f);
-    [DataMember] public ReactiveProperty<bool> IsLocked = new(false);
+    [DataMember, ProjectField] public ReactiveProperty<string> Name = new("");
+    [DataMember, ProjectField] public ReactiveProperty<bool> IsVisible = new(true);
+    [DataMember, ProjectField] public ReactiveProperty<float> Opacity = new(1.0f);
+    [DataMember, ProjectField] public ReactiveProperty<bool> IsLocked = new(false);
 
     public void CopySettingFrom(CommonLayerSetting other)
     {

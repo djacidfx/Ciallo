@@ -10,13 +10,13 @@ namespace Ciallo.Data;
 public class TimelineSetting
 {
     // [start, end)
-    [DataMember] public ReactiveProperty<int> PlaybackStart = new(0);
-    [DataMember] public ReactiveProperty<int> PlaybackEnd = new(24);
-    [DataMember] public ReactiveProperty<float> FrameRate = new(24);
-    [DataMember] public ReactiveProperty<bool> LoopPlaybackEnabled = new(false);
-    [DataMember] public ReactiveProperty<bool> OnionSkinEnabled = new(false);
+    [DataMember, ProjectField] public ReactiveProperty<int> PlaybackStart = new(0);
+    [DataMember, ProjectField] public ReactiveProperty<int> PlaybackEnd = new(24);
+    [DataMember, ProjectField] public ReactiveProperty<float> FrameRate = new(24);
+    [DataMember, ProjectField] public ReactiveProperty<bool> LoopPlaybackEnabled = new(false);
+    [DataMember, ProjectField] public ReactiveProperty<bool> OnionSkinEnabled = new(false);
     // Offsets in exposure index, negative for past frames, positive for future frames.
-    [DataMember] public ReactiveProperty<ImmutableArray<int>> OnionSkinOffsets = new([-1, 1]);
+    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<ImmutableArray<int>> OnionSkinOffsets = new([-1, 1]);
 
     public readonly ReadOnlyReactiveProperty<SortedList<int, ShaderMaterial>> OnionSkinMaterials;
 
