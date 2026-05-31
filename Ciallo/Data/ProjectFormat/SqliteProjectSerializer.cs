@@ -1,5 +1,4 @@
 using System;
-using System.Buffers.Binary;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,6 +12,9 @@ using Godot;
 using MessagePack;
 using Microsoft.Data.Sqlite;
 using R3;
+
+// Note: May 31, 2026. Fully AI gen with grill me (GPT5.5 asked Shen 50+ questions on this and took him one and half hours to answer)
+// Shen already forget all about SQL
 
 namespace Ciallo.Data.ProjectFormat;
 
@@ -58,6 +60,7 @@ public static class SqliteProjectSerializer
         }
     }
 
+    // Return Document entity
     public static Entity Load(string filePath)
     {
         if (!File.Exists(filePath))
@@ -410,6 +413,8 @@ public static class SqliteProjectSerializer
         object value,
         Dictionary<Entity, long> entityToId)
     {
+        // V1 tradeoff: each child row currently creates and executes its own command.
+        // Reuse prepared commands here if real project saves show this path is hot.
         switch (field.Shape)
         {
             case FieldShape.List:
@@ -937,6 +942,8 @@ internal static class RawArrayCodec
                 return Array.CreateInstance(elementType, 0);
         }
 
+        // V1 tradeoff: this generic path boxes struct elements such as Vector2.
+        // Add typed ImmutableArray<T>/List<T> paths later if raw array encoding becomes hot.
         var values = ((IEnumerable)value).Cast<object>().ToArray();
         var array = Array.CreateInstance(elementType, values.Length);
         for (int i = 0; i < values.Length; i++)
