@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://c8fbv1we2au0e"
+
+[deps]
+
+files=["res://Localization/LongStrings.en.translation", "res://Localization/LongStrings.zh_CN.translation", "res://Localization/LongStrings.zh_TW.translation", "res://Localization/LongStrings.ja.translation", "res://Localization/LongStrings.ko.translation", "res://Localization/LongStrings.de.translation", "res://Localization/LongStrings.fr.translation"]
+
+source_file="res://Localization/LongStrings.csv"
+dest_files=["res://Localization/LongStrings.en.translation", "res://Localization/LongStrings.zh_CN.translation", "res://Localization/LongStrings.zh_TW.translation", "res://Localization/LongStrings.ja.translation", "res://Localization/LongStrings.ko.translation", "res://Localization/LongStrings.de.translation", "res://Localization/LongStrings.fr.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

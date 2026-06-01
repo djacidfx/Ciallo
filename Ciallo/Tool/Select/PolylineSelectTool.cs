@@ -18,9 +18,9 @@ namespace Ciallo.Tool;
 [RegisterTool(ToolButton.Select)]
 public class PolylineSelectTool : ToolBase
 {
-    public enum EditMode { Transform, BezierDeform, }
+    public enum EditMode { RectTransform, BezierDeform, }
 
-    public ReactiveProperty<EditMode> Mode = new(EditMode.BezierDeform);
+    public ReactiveProperty<EditMode> Mode = new(EditMode.RectTransform);
     public readonly ReactiveProperty<float> SimplificationRatio = new(0.25f);
 
     public readonly PolylineNoSelectionHover HoverWithoutSelection = new();
@@ -28,8 +28,15 @@ public class PolylineSelectTool : ToolBase
     public readonly PolylineBezierDeformHover BezierDeformHover = new();
 
     public readonly PolylineRectSelectInteractor Select = new();
-    public readonly PolylineTransformInteractor Transform = new();
+    public readonly PolylineTransformInteractor RectTransform = new();
     public readonly PolylineBezierDeformInteractor BezierDeform = new();
+
+    public Trigger EditModeChanged = new("EditModeChanged");
+
+    public PolylineSelectTool()
+    {
+        Mode.Skip(1).Subscribe(_ => Machine.Fire(EditModeChanged));
+    }
 
     protected override void ConfigureStateMachine()
     {
@@ -41,17 +48,19 @@ public class PolylineSelectTool : ToolBase
             .PermitDynamic(Press(MouseButton.Left), () =>
             {
                 if (HoverWithoutSelection.CanTranslate && !Input.IsKeyPressed(Key.Shift))
-                    return Transform;
+                    return RectTransform;
                 return Select;
-            });
+            })
+            .Ignore(EditModeChanged);
 
         Configure(TransformHover)
             .PermitDynamic(Press(MouseButton.Left), () =>
             {
                 if (TransformHover.CanTransform && !Input.IsKeyPressed(Key.Shift))
-                    return Transform;
+                    return RectTransform;
                 return Select;
-            });
+            })
+            .PermitDynamic(EditModeChanged, TransToHover);
 
         Configure(BezierDeformHover)
             .PermitDynamic(Press(MouseButton.Left), () =>
@@ -59,14 +68,15 @@ public class PolylineSelectTool : ToolBase
                 if (BezierDeformHover.CanDeform && !Input.IsKeyPressed(Key.Shift))
                     return BezierDeform;
                 return Select;
-            });
+            })
+            .PermitDynamic(EditModeChanged, TransToHover);
 
         Configure(BezierDeform)
             .PermitDynamic(Release(MouseButton.Left), TransToHover)
             .PermitDynamic(Press(AppActions.CancelInteraction), TransToHover)
             .PermitDynamic(Press(AppActions.ConfirmInteraction), TransToHover);
 
-        Configure(Transform)
+        Configure(RectTransform)
             .PermitDynamic(Release(MouseButton.Left), TransToHover)
             .PermitDynamic(Press(AppActions.CancelInteraction), TransToHover)
             .PermitDynamic(Press(AppActions.ConfirmInteraction), TransToHover);
@@ -81,7 +91,7 @@ public class PolylineSelectTool : ToolBase
             var shapes = Document.Get<SelectionManager>().SelectedShapes;
             if (shapes.Count <= 0)
                 return HoverWithoutSelection;
-            if (Mode.Value == EditMode.Transform)
+            if (Mode.Value == EditMode.RectTransform)
                 return TransformHover;
             if (Mode.Value == EditMode.BezierDeform)
                 return BezierDeformHover;
@@ -120,6 +130,7 @@ public class PolylineSelectTool : ToolBase
 
     public override void DrawProperty(PropertyContainer container)
     {
+        // --- Select/Deselect all buttons
         var selectionManager = Document.Get<SelectionManager>();
         var selectionButtonGroup = container.CreateHContainer().AddToChildOf(container);
         var selectAllButton = container.CreateButton("Select all").AddToChildOf(selectionButtonGroup);
@@ -137,6 +148,11 @@ public class PolylineSelectTool : ToolBase
             selectionManager.SelectedShapes.Clear();
             Machine.Fire(Trigger.Refresh);
         };
+
+        // --- Edit mode
+        var editModeButtons = EditModeSwitcher.New().Bind(Mode);
+        container.AddProperty("Edit mode", editModeButtons);
+
 
         var selectedShapes = Document.Get<SelectionManager>().SelectedShapes;
         var selectionChanged = selectedShapes.ObserveChanged().Select(_ => Unit.Default).Prepend(Unit.Default);

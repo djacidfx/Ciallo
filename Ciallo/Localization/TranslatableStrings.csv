@@ -43,11 +43,6 @@ File,File,文件,檔案,ファイル,파일,Datei,Fichier
 Edit,Edit,编辑,編輯,編集,편집,Bearbeiten,Édition
 Help,Help,帮助,說明,ヘルプ,도움말,Hilfe,Aide
 Window,Window,窗口,視窗,ウィンドウ,창,Fenster,Fenêtre
-[Vector Fill Tooltip],Vector fill\n- Fill enclose areas with editable fill markers.,矢量填充\n- 用可编辑的填充标记填充封闭区域。,矢量填充\n- 用可編輯的填充標記填充封閉區域。,ベクターフィル\n- 編集可能なフィルマーカーで閉じた領域を塗りつぶします。,벡터 채우기\n- 편집 가능한 채우기 마커로 닫힌 영역을 채웁니다.,Vektor-Füllung\n- Geschlossene Bereiche mit bearbeitbaren Füllmarkern füllen.,Remplissage vectoriel\n- Remplit les zones fermées avec des repères de remplissage modifiables.
-[Paint Fill Tooltip],Paint fill\n- Draw colored area free-handly.,填充\n- 自由手绘彩色区域。,填充\n- 自由手繪彩色區域。,ペイント塗りつぶし\n- フリーハンドでカラー領域を描画します。,페인트 채우기\n- 자유롭게 색칠된 영역을 그립니다.,Farbfüllung\n- Freihändig gezeichnete Farbflächen.,Remplissage au pinceau\n- Dessine des zones colorées à main levée.
-[Paint Brush Tooltip],Paint brush,画笔,畫筆,ペイントブラシ,페인트 브러시,Pinsel,Pinceau
-[About Ciallo],Ciallo is a free and open-source software for digital painting.\n\nCiallo's unique technologies are researched and developed by the developer Shen Ciao — inspired by love and supported by your donations.,Ciallo是一款免费开源的数字绘画软件。\n\nCiallo特有的技术由开发者Shen Ciao研发 - 因爱而生，靠您的捐赠而行。,Ciallo是一款免費開源的數位繪畫軟體。\n\nCiallo特有的技術由開發者Shen Ciao研發──源於愛並由您的捐助支持。,Cialloは、デジタルペイント用の無料でオープンソースのソフトウェアです。\n\nCialloのユニークな技術は、開発者Shen Ciaoによって研究・開発されています — 愛によって着想され、あなたの寄付によってサポートされています。,Ciallo는 디지털 페인팅을 위한 무료 오픈소스 소프트웨어입니다.\n\nCiallo의 독특한 기술은 개발자 Shen Ciao가 연구하고 개발했습니다 — 사랑에서 영감을 받고 여러분의 기부로 지원됩니다.,Ciallo ist eine kostenlose und quelloffene Software für digitales Malen.\n\nCiallos einzigartige Technologien wurden vom Entwickler Shen Ciao erforscht und entwickelt — inspiriert von Liebe und unterstützt durch Ihre Spenden.,Ciallo est un logiciel gratuit et open-source pour la peinture numérique.\n\nLes technologies uniques de Ciallo sont recherchées et développées par le développeur Shen Ciao — inspiré par l'amour et soutenu par vos dons.
-[Canvas Navigation Guide Tooltip],Mouse:\n- Scroll mouse wheel -> zoom.\n- Drag middle mouse button -> pan.\n- Double click middle mouse button -> reset canvas view.\nTouch:\n- Two-finger drag → pan + pinch-zoom.\n- Two/Three-finger tap -> Undo/Redo.,鼠标：\n- 滚动鼠标滚轮 -> 缩放。\n- 按住鼠标中键拖动 -> 平移。\n- 双击鼠标中键 -> 重置画布视图。\n触控：\n- 双指拖动 -> 平移 + 捏合缩放。\n- 双指/三指点击 -> 撤销/重做。,滑鼠：\n- 滾動滑鼠滾輪 -> 縮放。\n- 按住滑鼠中鍵拖曳 -> 平移。\n- 雙擊滑鼠中鍵 -> 重設畫布視圖。\n觸控：\n- 雙指拖曳 -> 平移 + 捏合縮放。\n- 雙指/三指點擊 -> 復原/重做。,マウス：\n- マウスホイールをスクロール -> ズーム。\n- マウス中ボタンをドラッグ -> パン。\n- マウス中ボタンをダブルクリック -> キャンバスビューをリセット。\nタッチ：\n- 2本指でドラッグ -> パン + ピンチズーム。\n- 2本指/3本指でタップ -> 元に戻す/やり直し。,마우스:\n- 마우스 휠 스크롤 -> 확대/축소.\n- 마우스 가운데 버튼 드래그 -> 이동.\n- 마우스 가운데 버튼 더블 클릭 -> 캔버스 보기 재설정.\n터치:\n- 두 손가락 드래그 -> 이동 + 핀치 줌.\n- 두/세 손가락 탭 -> 실행 취소/다시 실행.,Maus:\n- Mausrad scrollen -> zoomen.\n- Mittlere Maustaste ziehen -> verschieben.\n- Mittlere Maustaste doppelklicken -> Canvas-Ansicht zurücksetzen.\nTouch:\n- Mit zwei Fingern ziehen -> verschieben + Pinch-Zoom.\n- Mit zwei/drei Fingern tippen -> Rückgängig/Wiederholen.,Souris :\n- Faire défiler la molette -> zoomer.\n- Faire glisser le bouton central -> déplacer.\n- Double-cliquer sur le bouton central -> réinitialiser la vue du canevas.\nTactile :\n- Faire glisser avec deux doigts -> déplacer + zoom par pincement.\n- Toucher avec deux/trois doigts -> Annuler/Rétablir.
 Canvas navigation guide,Canvas navigation guide,画布移动方法,畫布導航指南,キャンバスナビゲーションガイド,캔버스 탐색 가이드,Canvas-Navigationshandbuch,Guide de navigation sur le canevas
 Line layer,Line layer,线条图层,線條圖層,ラインレイヤー,선 레이어,Linienebene,Calque de ligne
 Paint tool,Paint tool,绘画工具,繪畫工具,ペイントツール,페인트 도구,Malwerkzeug,Outil de peinture
@@ -77,15 +72,12 @@ Use brush,Use brush,使用笔刷,使用筆刷,ブラシを使用,브러시 사�
 Cancel,Cancel,取消,取消,キャンセル,취소,Abbrechen,Annuler
 Manage brush in document,Manage brush in document,管理文档中的笔刷,管理文檔中的筆刷,ドキュメント内のブラシを管理,문서의 브러시 관리,Pinsel im Dokument verwalten,Gérer le pinceau dans le document
 New brush,New brush,新笔刷,新筆刷,新しいブラシ,새 브러시,Neuer Pinsel,Nouveau pinceau
-[Mapping Curve Tooltip],"- Hold alt and drag to disconnect handles\n- Right click to delete points or reset handles\n- Left click on curve to add points","- 按住 Alt 并拖动以断开控制柄\n- 右键点击以删除点或重置控制柄\n- 左键点击曲线以添加点","- 按住 Alt 並拖動以斷開控制柄\n- 右鍵點擊以刪除點或重置控制柄\n- 左鍵點擊曲線以新增點","- Altキーを押しながらドラッグしてハンドルを切断\n- 右クリックでポイントを削除またはハンドルをリセット\n- 曲線上で左クリックしてポイントを追加","- Alt 키를 누른 상태에서 드래그하여 핸들 분리\n- 오른쪽 클릭으로 점 삭제 또는 핸들 재설정\n- 곡선에서 왼쪽 클릭으로 점 추가","- Alt halten und ziehen, um Griffe zu trennen\n- Rechtsklick zum Löschen von Punkten oder Zurücksetzen von Griffen\n- Linksklick auf Kurve, um Punkte hinzuzufügen","- Maintenez Alt et faites glisser pour déconnecter les poignées\n- Clic droit pour supprimer des points ou réinitialiser les poignées\n- Clic gauche sur la courbe pour ajouter des points"
 Select an image,Select an image,选择图像,選擇圖像,画像を選択,이미지 선택,Bild auswählen,Sélectionner une image
-[Cannot Load Image],Cannot load image,无法加载图像,無法載入圖像,画像を読み込めません,이미지를 로드할 수 없습니다,Bild kann nicht geladen werden,Impossible de charger l'image
 Pencil,Pencil,铅笔,鉛筆,鉛筆,연필,Bleistift,Crayon
 Splatter,Splatter,飞溅,飛濺,飛沫,스플래터,Spritzer,Éclaboussure
 Success,Success,成功,成功,成功,성공,Erfolg,Succès
 Output image resolution,Output image resolution,输出的图像分辨率,輸出的圖像解析度,出力画像の解像度,출력 이미지 해상도,Ausgabebildauflösung,Résolution de l'image de sortie
 Scale,Scale,缩放,縮放,スケール,크기 조정,Skalierung,Échelle
-[Recent Document List Tooltip],- Double click to open\n- Right click to delete,- 双击以打开\n- 右键点击以删除,- 雙擊以開啟\n- 右鍵點擊以刪除,- ダブルクリックで開く\n- 右クリックで削除,- 더블 클릭으로 열기\n- 오른쪽 클릭으로 삭제,- Doppelklick zum Öffnen\n- Rechtsklick zum Löschen,- Double-clic pour ouvrir\n- Clic droit pour supprimer
 File name,File name,文件名,檔案名稱,ファイル名,파일 이름,Dateiname,Nom de fichier
 Stamp rotation,Stamp rotation,印章旋转,印章旋轉,スタンプ回転,스탬프 회전,Stempelrotation,Rotation du tampon
 Rotation noise,Rotation noise,旋转噪音,旋轉噪音,回転ノイズ,회전 노이즈,Rotationsrauschen,Bruit de rotation
@@ -93,8 +85,6 @@ Rotation noise octave,Rotation noise octave,旋转噪音层数,旋轉噪音層�
 Rotation noise amplitude,Rotation noise amplitude,旋转噪音振幅,旋轉噪音振幅,回転ノイズ振幅,회전 노이즈 진폭,Rotationsrauschen-Amplitude,Amplitude du bruit de rotation
 Rotation noise frequency,Rotation noise frequency,旋转噪音频率,旋轉噪音頻率,回転ノイズ周波数,회전 노이즈 주파수,Rotationsrauschen-Frequenz,Fréquence du bruit de rotation
 Save changes?,Save changes?,保存更改？,儲存變更？,変更を保存しますか？,변경 사항을 저장하시겠습니까?,Änderungen speichern?,Enregistrer les modifications ?
-[Document Brush List Tooltip],Right click to delete a brush,右键点击以删除笔刷,右鍵點擊以刪除筆刷,右クリックでブラシを削除,브러시를 삭제하려면 오른쪽 클릭,Rechtsklick zum Löschen eines Pinsels,Clic droit pour supprimer un pinceau
-[Delete Brush Hint],Deleting this brush will also delete all strokes using this brush. Are you sure you want to proceed?,删除此笔刷将同时删除所有使用该笔刷的线条。确定要继续吗？,刪除此筆刷也會刪除所有使用該筆刷的綫條。確定要繼續嗎？,このブラシを削除すると、このブラシを使用しているすべてのストロークも削除されます。続行しますか？,이 브러시를 삭제하면 이 브러시를 사용하는 모든 스트로크도 삭제됩니다. 계속하시겠습니까?,Beim Löschen dieses Pinsels werden auch alle Striche gelöscht die diesen Pinsel verwenden. Möchten Sie fortfahren?,La suppression de ce pinceau supprimera également tous les tracés utilisant ce pinceau. Voulez-vous continuer ?
 Global pen pressure remap,Global pen pressure remap,全局笔压重映射,全域筆壓重映射,グローバル筆圧リマップ,글로벌 펜 압력 리매핑,Globale Stiftdruck-Neuzuordnung,Remappage global de la pression du stylet
 Base radius,Base radius,基础半径,基礎半徑,基本半径,기본 반지름,Grundradius,Rayon de base
 Pressure to radius,Pressure to radius,压力到半径,壓力到半徑,圧力から半径へ,압력→반지름,Druck zu Radius,Pression vers rayon
@@ -115,8 +105,6 @@ Opacity density,Opacity density,不透明度密度,不透明度密度,不透明�
 Select all,Select all,全选,全選,すべて選択,모두 선택,Alles auswählen,Sélectionner tout
 Deselect,Deselect,取消选择,取消選取,選択解除,선택 해제,Abwählen,Désélectionner
 Fill color,Fill color,填充色,填充色,塗りつぶし色,채우기 색상,Füllfarbe,Couleur de remplissage
-[Cannot Tool Layer],⚠️Selected tool cannot be used on the current layer,⚠️所选工具无法在当前图层使用,⚠️選擇的工具無法在當前圖層使用,⚠️選択したツールは現在のレイヤーでは使用できません,⚠️선택한 도구는 현재 레이어에서 사용할 수 없습니다,⚠️Das ausgewählte Werkzeug kann auf der aktuellen Ebene nicht verwendet werden,⚠️L'outil sélectionné ne peut pas être utilisé sur le calque actuel
-[Vector Fill On Shape Layer Hint], Click to create a vector fill layer,点击创建一个矢量填充图层,點擊創建一個矢量填充圖層,クリックしてベクターフィルシェイプレイヤーを作成,클릭하여 벡터 채우기 쉐이프 레이어 만들기,Clic pour créer un calque de forme de remplissage vectoriel
 Copy system info,Copy system info,复制系统信息,複製系統資訊,システム情報をコピー,시스템 정보 복사,Systeminformationen kopieren,Copier les informations système
 Report bug,Report bug,报告bug,回報bug,バグを報告,버그 신고,Fehler melden,Signaler un bug
 Fill brush,Fill brush,填充笔刷,填充筆刷,塗りつぶしブラシ,채우기 브러시,Füllpinsel,Pinceau de remplissage
@@ -128,6 +116,7 @@ Eraser,eraser,橡皮擦,橡皮擦,消しゴム,지우개,Radiergummi,Gomme
 Soft eraser,Soft eraser,软橡皮擦,軟橡皮擦,ソフト消しゴム,부드러운 지우개,weicher Radiergummi,Gomme douce
 Mapping pen,Mapping pen,丸笔,丸笔,丸ペン,맵핑 펜,Mapping-Stift,Stylo de cartographie
 Hardness curve,Hardness curve,硬度曲线,硬度曲線,硬さの曲線,경도 곡선,Härtekurve,Courbe de dureté
-[Bezier Edit Tooltip],Deforming polylines as if they were a bezier curve,把折线当作贝塞尔曲线变形,把折線當作貝塞爾曲線變形,ベジェ曲線のように折れ線を変形,폴리선을 베지어 곡선처럼 변형,Polylinien verformen, als ob sie
 UI scale,UI scale,界面缩放,界面縮放,UIスケール,UI 스케일,UI-Skala,Échelle de l'interface utilisateur
 Shape layer,Shape layer,形状图层,形狀圖層,シェイプレイヤー,쉐이프 레이어,Formebene,Calque de forme
+Edit mode,Edit mode,编辑模式,編輯模式,編集モード,편집 모드,Bearbeitungsmodus,Mode d'édition
+Transform polyline,Transform polyline,变换折线,變換折線,折れ線を変形,폴리선 변형,Polyline transformieren,Transformer la polyligne
