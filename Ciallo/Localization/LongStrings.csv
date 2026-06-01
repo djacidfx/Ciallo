@@ -10,5 +10,5 @@ key,en,zh_CN,zh_TW,ja,ko,de,fr
 [Bezier Deform Tooltip],Deforming polylines as if they were a bezier curve,把折线当作贝塞尔曲线变形,把折線當作貝塞爾曲線變形,ベジェ曲線のように折れ線を変形,폴리선을 베지어 곡선처럼 변형,Polylinien verformen, als ob sie
 [Recent Document List Tooltip],- Double click to open\n- Right click to delete,- 双击以打开\n- 右键点击以删除,- 雙擊以開啟\n- 右鍵點擊以刪除,- ダブルクリックで開く\n- 右クリックで削除,- 더블 클릭으로 열기\n- 오른쪽 클릭으로 삭제,- Doppelklick zum Öffnen\n- Rechtsklick zum Löschen,- Double-clic pour ouvrir\n- Clic droit pour supprimer
 [Cannot Tool Layer],⚠️Selected tool cannot be used on the current layer,⚠️所选工具无法在当前图层使用,⚠️選擇的工具無法在當前圖層使用,⚠️選択したツールは現在のレイヤーでは使用できません,⚠️선택한 도구는 현재 레이어에서 사용할 수 없습니다,⚠️Das ausgewählte Werkzeug kann auf der aktuellen Ebene nicht verwendet werden,⚠️L'outil sélectionné ne peut pas être utilisé sur le calque actuel
-[Vector Fill On Shape Layer Hint], Click to create a vector fill layer,点击创建一个矢量填充图层,點擊創建一個矢量填充圖層,クリックしてベクターフィルシェイプレイヤーを作成,클릭하여 벡터 채우기 쉐이프 레이어 만들기,Clic pour créer un calque de forme de remplissage vectoriel
+[Vector Fill On Shape Layer Hint],Click to create a vector fill layer,点击创建一个矢量填充图层,點擊創建一個矢量填充圖層,クリックしてベクターフィルシェイプレイヤーを作成,클릭하여 벡터 채우기 쉐이프 레이어 만들기,Clic pour créer un calque de forme de remplissage vectoriel,
 [Cannot Load Image],Cannot load image,无法加载图像,無法載入圖像,画像を読み込めません,이미지를 로드할 수 없습니다,Bild kann nicht geladen werden,Impossible de charger l'image
