@@ -29,16 +29,18 @@ public class PaintStrokeHover : InteractiveSessionBase
 
     public override void DrawProperty(PropertyContainer container)
     {
+        // ---- Global pen pressure map
         var ppCurveEdit = new MappingCurveEdit().BindCurve(AppPreference.PenPressureRemapCurve);
         var aspectBox = new AspectRatioContainer();
         aspectBox.AddChild(ppCurveEdit);
         container.AddProperty("Global pen pressure remap", aspectBox);
 
+        // ---- App brush library
         var brushSelector = new OptionButton()
-            {
-                CustomMinimumSize = new(256, 32),
-                FitToLongestItem = false,
-            }
+        {
+            CustomMinimumSize = new(256, 32),
+            FitToLongestItem = false,
+        }
             .ObserveObservableList(AppStrokeBrushLibrary.BrushSettings, s => s.Name)
             .BindSelectionIndex(AppStrokeBrushLibrary.SelectedIndex);
         container.AddProperty("Library brush", brushSelector);
@@ -102,6 +104,7 @@ public class PaintStrokeHover : InteractiveSessionBase
         // ---------------------------------------------
         container.AddChild(new HSeparator());
         // ---------------------------------------------
+        // ---- Document brush library
         var brushPreview = StrokeBrushPreviewList.New(Document);
         brushPreview.CustomMinimumSize = new(0, 256);
         container.AddChild(brushPreview);
@@ -124,11 +127,11 @@ public class PaintStrokeHover : InteractiveSessionBase
         var taperTime = AppPreference.TaperDuration.Project(
             time => time.TotalMilliseconds, TimeSpan.FromMilliseconds);
         container.AddProperty("Taper end", new SpinSlider()
-            {
-                MinValue = 0,
-                MaxValue = 50,
-                Step = 1,
-            }.BindNumber(taperTime))
+        {
+            MinValue = 0,
+            MaxValue = 50,
+            Step = 1,
+        }.BindNumber(taperTime))
             .VisibleIf(selectionM.WorkingStrokeBrush, Entity.IsNotNull);
     }
 
