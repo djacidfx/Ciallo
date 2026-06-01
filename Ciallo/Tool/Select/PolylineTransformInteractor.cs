@@ -186,7 +186,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             }
             if (e.Has<FilledPolygonSetting>())
             {
-                e.Get<Polygon2D>().SetPolygon(_currPolylines[i]);
+                e.Get<Polygon2D>().SetPolygonFromRawRing(_currPolylines[i]);
             }
         }
     }
@@ -222,7 +222,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             }
             if (e.Has<FilledPolygonSetting>())
             {
-                e.Get<Polygon2D>().SetPolygon(points.AsSpan());
+                e.Get<Polygon2D>().SetPolygonFromRawRing(points);
             }
         }
         Clear();

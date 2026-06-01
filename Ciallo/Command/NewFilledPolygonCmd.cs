@@ -1,4 +1,5 @@
 ﻿using Ciallo.Data;
+using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -53,7 +54,7 @@ public class NewFilledPolygonCmd : CommandBase
 
         polylineGeometry.Positions.Subscribe(ps =>
         {
-            polygonView.SetPolygon(ps.AsSpan());
+            polygonView.SetPolygonFromRawRing(ps);
         }).AddTo(targetE);
 
         // Overlay & Body
@@ -64,7 +65,7 @@ public class NewFilledPolygonCmd : CommandBase
         polylineGeometry.Positions.Subscribe(ps =>
         {
             overlay.SetGeometry(ps);
-            polygonBody.SetSimplePolygon(ps);
+            polygonBody.SetPolygonFromRawRing(ps);
         }).AddTo(targetE);
 
         // Layer tree events

@@ -1,4 +1,6 @@
 using Ciallo.Data;
+using Ciallo.Geometry;
+using Ciallo.Rendering;
 using Frent;
 using Frent.Components;
 using Godot;
@@ -20,7 +22,7 @@ public partial class PaintPanel : PanelContainer, IInitable
         var setting = document.Get<DocumentSetting>();
 
         float w = setting.ReferenceSize.Value.X, h = setting.ReferenceSize.Value.Y;
-        Background.Polygon = [new(-w / 2, -h / 2), new(w / 2, -h / 2), new(w / 2, h / 2), new(-w / 2, h / 2)];
+        Background.SetPolygonFromRawRing(new Vector2[] { new(-w / 2, -h / 2), new(w / 2, -h / 2), new(w / 2, h / 2), new(-w / 2, h / 2) });
 
         CameraZoom.Subscribe(v => MainCamera.Zoom = Vector2.One * v).AddTo(this);
         CameraRotation.Subscribe(v => MainCamera.Rotation = v).AddTo(this);

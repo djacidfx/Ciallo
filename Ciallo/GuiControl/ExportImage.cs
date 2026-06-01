@@ -1,4 +1,5 @@
 using Ciallo.Data;
+using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Ciallo.Widget;
 using Godot;
@@ -82,7 +83,7 @@ public partial class ExportImage : ConfirmationDialog
 
         // Size
         var rSize = _setting.ReferenceSize.Value;
-        _background.Polygon = [new(-rSize.X / 2, -rSize.Y / 2), new(rSize.X / 2, -rSize.Y / 2), new(rSize.X / 2, rSize.Y / 2), new(-rSize.X / 2, rSize.Y / 2)];
+        _background.SetPolygonFromRawRing(new Vector2[] { new(-rSize.X / 2, -rSize.Y / 2), new(rSize.X / 2, -rSize.Y / 2), new(rSize.X / 2, rSize.Y / 2), new(-rSize.X / 2, rSize.Y / 2) });
         ReferenceSizeNumber.Text = $"{rSize.X} x {rSize.Y}";
         Vector2I sizei = new((int)rSize.X, (int)rSize.Y);
         Scale.Subscribe(s =>
