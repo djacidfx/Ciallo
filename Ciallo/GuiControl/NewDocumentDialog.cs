@@ -41,7 +41,7 @@ public partial class NewDocumentDialog : ConfirmationDialog
 
         if (!docName.IsValidFileName())
         {
-            errorMessage.Text = "Invalid document name. Please use a valid file name.";
+            errorMessage.Text = "[Invalid Document Name]";
             errorMessage.Visible = true;
             return;
         }
