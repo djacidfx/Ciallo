@@ -49,9 +49,6 @@ public class PolylineInteractiveGenerator
     public float FixedRadius = 1f;
     public Func<float, float> RadiusSampler;
 
-    // Controls if the new points can intersect with existing already generated polyline.
-    public bool AllowIntersection = true;
-
     private readonly List<Vector2> _positions = new(2048);
     public IReadOnlyList<Vector2> Positions => _positions;
     private readonly List<float> _radii = new(2048);
@@ -110,8 +107,6 @@ public class PolylineInteractiveGenerator
     public void Update(CursorMotionData data)
     {
         _intervalSinceLastRecord += data.TimeDelta;
-
-        if (!AllowIntersection && CheckSelfIntersection(data.WorldPosition)) return;
 
         _positions.Add(data.WorldPosition);
         _radii.Add(CalculateRadius(data.Pressure));
@@ -383,23 +378,5 @@ public class PolylineInteractiveGenerator
         _radii.InsertRange(_radii.Count - 2, newRadii);
         _pressures.InsertRange(_pressures.Count - 2, newPressures);
         _tilts.InsertRange(_tilts.Count - 2, newTilts);
-    }
-
-    // Warning: Brutal algorithm, only suitable for short polyline.
-    private bool CheckSelfIntersection(Vector2 p)
-    {
-        if (_positions.Count < 3) return false;
-
-        var p3 = p;
-        var p2 = _positions[^1];
-
-        for (var i = 0; i < _positions.Count - 2; i++)
-        {
-            var p0 = _positions[i];
-            var p1 = _positions[i + 1];
-            if (Geometry.SegmentIntersect(p0, p1, p2, p3).HasValue) return true;
-        }
-
-        return false;
     }
 }
