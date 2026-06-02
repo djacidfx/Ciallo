@@ -149,7 +149,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
         {
             lineEdit.AcceptEvent();
             ShowContextTargetHinter(lineEdit);
-            _rightClickMenu.Show(block.LayerEntity, ShouldShowTimelineLayerActions, button.GlobalPosition);
+            _rightClickMenu.Popup(block.LayerEntity, ShouldShowTimelineLayerActions);
         }).AddTo(e);
 
         // Single click without dragging or double click

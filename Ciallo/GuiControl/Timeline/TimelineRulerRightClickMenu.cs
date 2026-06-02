@@ -33,13 +33,13 @@ public partial class TimelineRulerRightClickMenu : PopupMenu
         _timelineSetting = document.Get<TimelineSetting>();
     }
 
-    public void Show(int frame, Vector2 globalPos)
+    public void Popup(int frame)
     {
         _rightClickedFrame = frame;
         RebuildMenu();
 
-        Position = (Vector2I)globalPos;
-        Popup();
+        Position = DisplayServer.MouseGetPosition();
+        base.Popup();
     }
 
     private void RebuildMenu()

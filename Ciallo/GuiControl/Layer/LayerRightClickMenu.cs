@@ -24,15 +24,15 @@ public partial class LayerRightClickMenu : PopupMenu
         IdPressed += OnMenuSelected;
     }
 
-    public void Show(Entity targetLayer, bool showTimelineLayerActions, Vector2 globalPos)
+    public void Popup(Entity targetLayer, bool showTimelineLayerActions)
     {
         _targetLayer = targetLayer;
         _showTimelineLayerActions = showTimelineLayerActions;
 
         RebuildMenu();
 
-        Position = (Vector2I)globalPos;
-        Popup();
+        Position = DisplayServer.MouseGetPosition();
+        base.Popup();
     }
 
     private void RebuildMenu()

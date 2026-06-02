@@ -422,7 +422,7 @@ public partial class TimelineRuler : Control
             _rightClickIndicatorFrame = XToFrame(rightBtn.Position.X);
             QueueRedraw();
             RightClickMenu.PopupHide += OnRightClickMenuClosed;
-            RightClickMenu.Show(_rightClickIndicatorFrame.Value, rightBtn.GlobalPosition);
+            RightClickMenu.Popup(_rightClickIndicatorFrame.Value);
             AcceptEvent();
         }
         else if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left } btn)

@@ -12,7 +12,7 @@ namespace Ciallo.GuiControl;
 ///
 /// Usage:
 ///   1. Call <see cref="InitDocument"/> once when a document is opened.
-///   2. Call <see cref="Show"/> from a <see cref="CelTrack"/> on right-click.
+///   2. Call <see cref="Popup"/> from a <see cref="CelTrack"/> on right-click.
 ///
 /// Whether the click is "on a cel" is determined internally from the exposure map.
 /// </summary>
@@ -57,7 +57,7 @@ public partial class CelTrackRightClickMenu : PopupMenu
     /// Populates and displays the context menu.
     /// Whether the clicked frame has an existing cel is resolved from the exposure map.
     /// </summary>
-    public void Show(Entity celFolderEntity, int frame, Vector2 globalPos)
+    public void Popup(Entity celFolderEntity, int frame)
     {
         _celFolderEntity = celFolderEntity;
         _rightClickedFrame = frame;
@@ -66,8 +66,8 @@ public partial class CelTrackRightClickMenu : PopupMenu
 
         RebuildMenu();
 
-        Position = (Vector2I)globalPos;
-        Popup();
+        Position = DisplayServer.MouseGetPosition();
+        base.Popup();
     }
 
     // ── Menu building ─────────────────────────────────────────────────────────
