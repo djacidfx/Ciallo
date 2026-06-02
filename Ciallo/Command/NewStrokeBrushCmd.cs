@@ -88,7 +88,7 @@ public class NewStrokeBrushCmd : CommandBase
         });
         bg.AddChild(new ColorRect()
         {
-            Color = Colors.DimGray,
+            Color = new(0.5f, 0.5f, 0.5f, 1.0f),
             SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
             SizeFlagsVertical = Control.SizeFlags.ExpandFill,
         });
