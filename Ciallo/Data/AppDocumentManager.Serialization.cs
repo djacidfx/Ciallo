@@ -176,25 +176,41 @@ public static partial class AppDocumentManager
         resultDocument.Get<TimelineSetting>().CopyFrom(dataDocument.Get<TimelineSetting>());
     }
 
-    public static void SaveWorkingDocument()
+    public static bool SaveWorkingDocument()
     {
-        if (WorkingDocument.CurrentValue.IsNull) return;
+        if (WorkingDocument.CurrentValue.IsNull) return false;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
-        if (CanSaveFile(settings.FilePath.Value))
+        try
+        {
+            EnsureSaveDirectory(settings.FilePath.Value);
             Save(WorkingDocument.Value, settings.FilePath.Value);
-        WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
+            WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
+            return true;
+        }
+        catch (Exception exception)
+        {
+            WarnSaveFailed(exception);
+            return false;
+        }
     }
 
-    public static void SaveWorkingDocumentAs(string filePath)
+    public static bool SaveWorkingDocumentAs(string filePath)
     {
-        if (WorkingDocument.CurrentValue.IsNull) return;
+        if (WorkingDocument.CurrentValue.IsNull) return false;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
-        if (CanSaveFile(filePath))
+        try
         {
+            EnsureSaveDirectory(filePath);
             Save(WorkingDocument.Value, filePath);
             settings.FilePath.Value = filePath;
             settings.Name.Value = filePath.GetFile().GetBaseName();
             WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
+            return true;
+        }
+        catch (Exception exception)
+        {
+            WarnSaveFailed(exception);
+            return false;
         }
     }
 
@@ -333,21 +349,20 @@ public static partial class AppDocumentManager
         return fields.Length == 0;
     }
 
-    public static bool CanSaveFile(string filePath)
+    private static void EnsureSaveDirectory(string filePath)
     {
         var directory = Path.GetDirectoryName(filePath);
-        if (string.IsNullOrEmpty(directory)) return false;
-        if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+        if (string.IsNullOrEmpty(directory))
+            throw new InvalidOperationException("Save path has no directory.");
+        if (!Directory.Exists(directory))
+            Directory.CreateDirectory(directory);
+    }
 
-        try
-        {
-            // has write permission.
-            using var x = File.Create(filePath, 1, FileOptions.DeleteOnClose);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+    private static void WarnSaveFailed(Exception exception)
+    {
+        GD.PrintErr(exception);
+        var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<AcceptDialog>().Single(n => n.Name == "WarnUser");
+        dialog.DialogText = "Cannot save document.".Tr() + " " + exception.Message;
+        dialog.Popup();
     }
 }

@@ -34,22 +34,29 @@ public static class SqliteProjectSerializer
 
     public static void Save(Entity document, string filePath)
     {
+        var targetPath = Path.GetFullPath(filePath);
+        var targetDirectory = Path.GetDirectoryName(targetPath)
+                              ?? throw new InvalidOperationException($"File {filePath} has no directory.");
+        Directory.CreateDirectory(targetDirectory);
+
         var tempRoot = Path.Combine(Path.GetTempPath(), "CialloSave_" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempRoot);
         var sqlitePath = Path.Combine(tempRoot, SqlitePath);
-        var zipPath = Path.Combine(tempRoot, Path.GetFileName(filePath) + ".tmp");
+        var stagingPath = Path.Combine(
+            targetDirectory,
+            "." + Path.GetFileName(targetPath) + "." + Guid.NewGuid().ToString("N") + ".tmp");
 
         try
         {
             var registry = ProjectFormatRegistry.Create();
             WriteSqlite(document, sqlitePath, registry);
             SqliteConnection.ClearAllPools();
-            WriteZip(zipPath, sqlitePath);
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-            File.Move(zipPath, filePath, true);
+            WriteZip(stagingPath, sqlitePath);
+            CommitSave(stagingPath, targetPath);
         }
         finally
         {
+            TryDeleteFile(stagingPath);
             try
             {
                 Directory.Delete(tempRoot, true);
@@ -58,6 +65,34 @@ public static class SqliteProjectSerializer
             {
                 // Best-effort cleanup only.
             }
+        }
+    }
+
+    private static void CommitSave(string stagingPath, string targetPath)
+    {
+        if (File.Exists(targetPath))
+        {
+            var backupPath = Path.Combine(
+                Path.GetDirectoryName(targetPath)!,
+                "." + Path.GetFileName(targetPath) + "." + Guid.NewGuid().ToString("N") + ".bak");
+            File.Replace(stagingPath, targetPath, backupPath);
+            TryDeleteFile(backupPath);
+            return;
+        }
+
+        File.Move(stagingPath, targetPath, false);
+    }
+
+    private static void TryDeleteFile(string path)
+    {
+        try
+        {
+            if (File.Exists(path))
+                File.Delete(path);
+        }
+        catch
+        {
+            // Best-effort cleanup only.
         }
     }
 
