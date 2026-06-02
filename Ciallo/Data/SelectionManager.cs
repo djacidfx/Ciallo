@@ -22,7 +22,7 @@ public class SelectionManager
     // Which make sure everything works OK even though CurrentFrame and WorkingLayer are not in sync.
     [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Nullable)]
     public ReactiveProperty<Entity> WorkingLayer = new(Entity.Null);
-    public ReadOnlyReactiveProperty<Entity> WorkingCelFolder;
+    public ReadOnlyReactiveProperty<Entity> WorkingCelFolder; // Null if the working layer is not under any cel folder.
 
     [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Nullable)]
     public ReactiveProperty<Entity> WorkingStrokeBrush = new(Entity.Null);

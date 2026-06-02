@@ -1,4 +1,3 @@
-﻿using System.Collections.Generic;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -50,41 +49,16 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
     public override void End(CursorButtonData data)
     {
         ClearPreview();
-        var cmd = new CommandBuilder();
-        Entity parentE = WorkingLayer; // parent of marker
-        if (WorkingLayer.Has<ShapeLayerSetting>())
-        {
-            parentE = WorkingLayer.World.Create();
-
-            // Get all visible shape layers as reference layers
-            List<Entity> referencesLayers = [];
-            foreach (var layer in WorkingLayer.World.Query<ShapeLayerSetting>().EnumerateWithEntities())
-            {
-                if (layer.Tagged<ToSerializeTag>() &&
-                    layer.Get<CommonLayerSetting>().IsVisible.Value)
-                {
-                    referencesLayers.Add(layer);
-                }
-            }
-
-            cmd.SetTarget(parentE).NewVectorFillLayer();
-            if (referencesLayers.Count > 0)
-            {
-                cmd.SetObservableCollection(e => e.Get<VectorFillLayerSetting>().ReferenceLayers,
-                    layers => layers.AddRange(referencesLayers));
-            }
-            // index 0 is visual bottom of the layer tree
-            cmd.AddToLayerTree(Document, 0).SetWorkingLayer();
-        }
         if (!_fillBrush.IsNull)
         {
-            cmd.SetTarget(WorkingLayer.World.Create())
+            new CommandBuilder(WorkingLayer.World.Create())
                 .NewVectorFillMarker()
-                .AddToLayerTree(parentE)
+                .AddToLayerTree(WorkingLayer)
                 .SetPolylineGeometry([data.WorldPosition], [MarkerRadius], [1.0f], [Vector2.Zero])
-                .SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, _fillBrush);
+                .SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, _fillBrush)
+                .Commit();
         }
-        cmd.Commit();
+
         Clear();
     }
 
