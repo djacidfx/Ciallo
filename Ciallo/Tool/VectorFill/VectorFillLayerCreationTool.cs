@@ -141,7 +141,7 @@ public class VectorFillLayerCreationTool : ToolBase
         var cmd = new CommandBuilder("Create Vector Fill Cel Folder", newCelFolder)
             .NewCelFolder()
             .SetProperty(e => e.Get<CommonLayerSetting>().Name, GetVectorFillCelFolderName(celFolder))
-            .AddToLayerTree(sourceNode.ParentValue, sourceNode.Index + 1);
+            .AddToLayerTree(sourceNode.ParentValue, sourceNode.Index);
 
         foreach (var plan in plans)
         {
