@@ -120,10 +120,7 @@ internal sealed class FieldDescriptor
         var current = Field.GetValue(component);
         if (!exists)
         {
-            if (current is ICollection<Entity> collection)
-                collection.Clear();
-            else if (current is IDictionary<int, Entity> map)
-                map.Clear();
+            ClearEntityCollection(current);
 
             if (!Field.IsInitOnly)
                 Field.SetValue(component, null);
@@ -139,17 +136,36 @@ internal sealed class FieldDescriptor
             Field.SetValue(component, current);
         }
 
-        if (current is ICollection<Entity> entityCollection)
-        {
-            entityCollection.Clear();
+        if (ClearEntityCollection(current))
             return;
-        }
-        if (current is IDictionary<int, Entity> entityMap)
-        {
-            entityMap.Clear();
-            return;
-        }
+
         throw new InvalidOperationException($"{Component.Name}.{Name} is not a supported entity collection.");
+    }
+
+    private static bool ClearEntityCollection(object value)
+    {
+        switch (value)
+        {
+            case null:
+                return false;
+            case ObservableList<Entity> observableList:
+                observableList.Clear();
+                return true;
+            case ObservableHashSet<Entity> observableSet:
+                observableSet.Clear();
+                return true;
+            case ObservableSortedList<int, Entity> observableMap:
+                observableMap.Clear();
+                return true;
+            case ICollection<Entity> collection:
+                collection.Clear();
+                return true;
+            case IDictionary<int, Entity> map:
+                map.Clear();
+                return true;
+            default:
+                return false;
+        }
     }
 
     private IReadOnlyList<ColumnDescriptor> BuildMainColumns()
