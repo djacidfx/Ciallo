@@ -119,3 +119,8 @@ UI scale,UI scale,界面缩放,界面縮放,UIスケール,UI 스케일,UI-Skala
 Shape layer,Shape layer,形状图层,形狀圖層,シェイプレイヤー,쉐이프 레이어,Formebene,Calque de forme
 Edit mode,Edit mode,编辑模式,編輯模式,編集モード,편집 모드,Bearbeitungsmodus,Mode d'édition
 Transform polyline,Transform polyline,变换折线,變換折線,折れ線を変形,폴리선 변형,Polyline transformieren,Transformer la polyligne
+Cel,Cel,Cel,Cel,セル,셀,Cel,Cel
+Cel creation method,Cel creation method,创建cel的方法,建立cel的方法,セルの作成方法,셀 생성 방법,Methode zur Erstellung von Cels,Méthode de création de cel
+None,None,None,None,None,None,None,None
+WithinCelFolder,Within cel folder,Within cel folder,Within cel folder,Within cel folder,Within cel folder,Within cel folder,Within cel folder
+NewCelFolder,New cel folder,New cel folder,New cel folder,New cel folder,New cel folder,New cel folder,New cel folder
