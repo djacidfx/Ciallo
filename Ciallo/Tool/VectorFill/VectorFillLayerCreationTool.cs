@@ -121,7 +121,7 @@ public class VectorFillLayerCreationTool : ToolBase
         }
 
         if (!focusVectorFillLayer.IsNull)
-            cmd.SetTarget(focusVectorFillLayer).SetWorkingLayer();
+            cmd.SetTarget(focusVectorFillLayer).SetWorkingLayer(true);
 
         cmd.Commit();
     }
@@ -167,7 +167,7 @@ public class VectorFillLayerCreationTool : ToolBase
                     fillLayersBySourceCel));
 
         if (!focusVectorFillLayer.IsNull)
-            cmd.SetTarget(focusVectorFillLayer).SetWorkingLayer();
+            cmd.SetTarget(focusVectorFillLayer).SetWorkingLayer(true);
 
         cmd.Commit();
     }
