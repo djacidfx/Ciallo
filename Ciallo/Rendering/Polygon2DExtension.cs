@@ -60,14 +60,12 @@ public static class Polygon2DExtension
     public static void SetPolygonWithQueryResult(this Polygon2D node, Arrangement arr, Vector2 point)
     {
         var faceRid = arr.Query(point);
-        var polygons = arr.GetFacePolygons(faceRid);
-        if (!faceRid.IsValid || polygons.Count == 0)
+        if (!faceRid.IsValid)
         {
             node.Clear();
             return;
         }
-
-        node.SetPolygonFromRawRings(polygons);
+        node.SetTriangleResult(arr.GetTriangles(faceRid));
     }
 
     public static void Clear(this Polygon2D node)
