@@ -25,6 +25,14 @@ An exposure is a timeline assignment that says which cel is shown from a frame u
 
 Onion skin is a timeline viewing mode that shows nearby cel frames around the current frame as drawing references.
 
+### Vector Fill Layer
+
+A vector fill layer is a fill layer whose filled regions are bounded by reference layers.
+
+### Reference Layer
+
+A reference layer is a shape layer that provides boundary artwork for a vector fill layer.
+
 ### Command History
 
 Command history is a document-level record of undoable user changes.
