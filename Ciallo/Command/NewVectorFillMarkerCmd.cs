@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
@@ -10,20 +11,17 @@ using R3;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class NewVectorFillMarkerCmd : CommandBase
+public class NewVectorFillMarkerCmd : NewShapeCmdBase
 {
-    public Entity CopyE { get; }
-
-    public NewVectorFillMarkerCmd(Entity copyE = default)
+    public NewVectorFillMarkerCmd(Entity copyE = default, IReadOnlyDictionary<Entity, Entity> entityMap = null)
+        : base(copyE, entityMap)
     {
-        CopyE = copyE;
     }
 
     public override void OnDeletedAsDo() => TargetE.Delete();
 
-    public override void BeforeFirstDo(Entity targetE)
+    protected override void AddDataComponents(Entity targetE)
     {
-        // Data
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
 
@@ -35,9 +33,15 @@ public class NewVectorFillMarkerCmd : CommandBase
         var setting = CopyE.IsNull
             ? new VectorFillMarkerSetting()
             : CopyE.Get<VectorFillMarkerSetting>().Clone();
+        setting.BrushE.Value = MapEntityRef(setting.BrushE.Value);
         targetE.Add(setting);
-        if (!setting.BrushE.Value.IsNull && setting.BrushE.Value.World != targetE.World)
-            setting.BrushE.Value = default;
+    }
+
+    protected override void CreateRuntime(Entity targetE)
+    {
+        var layerNode = targetE.Get<LayerTreeNode>();
+        var polylineGeometry = targetE.Get<PolylineGeometry>();
+        var setting = targetE.Get<VectorFillMarkerSetting>();
 
         // By design, polygons attached to fill markers are views,
         // Strokes and marker sprites attached are overlays.
@@ -163,6 +167,7 @@ public class NewVectorFillMarkerCmd : CommandBase
     {
         targetE.Tag<ToSerializeTag>();
     }
+
     public override void Undo(Entity targetE)
     {
         Document.Get<SelectionManager>().SelectedShapes.Remove(targetE);

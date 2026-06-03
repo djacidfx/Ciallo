@@ -1,4 +1,5 @@
-﻿using Ciallo.Data;
+using System.Collections.Generic;
+using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
@@ -8,18 +9,16 @@ using R3;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class NewFilledPolygonCmd : CommandBase
+public class NewFilledPolygonCmd : NewShapeCmdBase
 {
-    public Entity CopyE { get; }
-
-    public NewFilledPolygonCmd(Entity copyE = default)
+    public NewFilledPolygonCmd(Entity copyE = default, IReadOnlyDictionary<Entity, Entity> entityMap = null)
+        : base(copyE, entityMap)
     {
-        CopyE = copyE;
     }
 
     public override void OnDeletedAsDo() => TargetE.Delete();
 
-    public override void BeforeFirstDo(Entity targetE)
+    protected override void AddDataComponents(Entity targetE)
     {
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
@@ -32,9 +31,15 @@ public class NewFilledPolygonCmd : CommandBase
         var setting = CopyE.IsNull
             ? new FilledPolygonSetting()
             : CopyE.Get<FilledPolygonSetting>().Clone();
+        setting.BrushE.Value = MapEntityRef(setting.BrushE.Value);
         targetE.Add(setting);
-        if (!setting.BrushE.Value.IsNull && setting.BrushE.Value.World != targetE.World)
-            setting.BrushE.Value = default;
+    }
+
+    protected override void CreateRuntime(Entity targetE)
+    {
+        var layerNode = targetE.Get<LayerTreeNode>();
+        var polylineGeometry = targetE.Get<PolylineGeometry>();
+        var setting = targetE.Get<FilledPolygonSetting>();
 
         // View
         var polygonView = new Polygon2D() { Antialiased = true };

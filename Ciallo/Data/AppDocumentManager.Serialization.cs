@@ -113,19 +113,15 @@ public static partial class AppDocumentManager
                 {
                     if (shapeDataE.Has<StrokeSetting>())
                     {
-                        var brushRef = shapeDataE.Get<StrokeSetting>().BrushE;
-                        brushRef.Value = entityMap[brushRef.Value];
                         new CommandBuilder(entityMap[shapeDataE])
-                            .NewStroke(shapeDataE)
+                            .NewStroke(shapeDataE, entityMap)
                             .AddToLayerTree(layerResultE)
                             .Do();
                     }
                     else if (shapeDataE.Has<FilledPolygonSetting>())
                     {
-                        var brushRef = shapeDataE.Get<FilledPolygonSetting>().BrushE;
-                        brushRef.Value = entityMap[brushRef.Value];
                         new CommandBuilder(entityMap[shapeDataE])
-                            .NewFilledPolygon(shapeDataE)
+                            .NewFilledPolygon(shapeDataE, entityMap)
                             .AddToLayerTree(layerResultE)
                             .Do();
                     }
@@ -140,10 +136,8 @@ public static partial class AppDocumentManager
 
                 foreach (var markerDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
-                    markerDataE.Get<VectorFillMarkerSetting>().BrushE.Value =
-                        entityMap[markerDataE.Get<VectorFillMarkerSetting>().BrushE.Value];
                     new CommandBuilder(entityMap[markerDataE])
-                        .NewVectorFillMarker(markerDataE)
+                        .NewVectorFillMarker(markerDataE, entityMap)
                         .AddToLayerTree(layerResultE)
                         .Do();
                 }

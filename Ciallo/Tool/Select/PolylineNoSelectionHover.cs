@@ -1,4 +1,5 @@
-﻿using Ciallo.Command;
+using System.Linq;
+using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
@@ -66,6 +67,31 @@ public class PolylineNoSelectionHover : InteractiveSessionBase
 
     public override bool OnKey(InputEventKey key, CursorButtonData data)
     {
+        if (AppActions.Copy.IsJustPressed)
+        {
+            AppClipboardManager.CopyShapes(Document.Get<SelectionManager>().SelectedShapes);
+            return true;
+        }
+
+        if (AppActions.Cut.IsJustPressed)
+        {
+            var selectedShapes = Document.Get<SelectionManager>().SelectedShapes.ToArray();
+            AppClipboardManager.CopyShapes(selectedShapes);
+            DeleteShapes(selectedShapes);
+            Tool.Machine.Fire(ToolBase.Trigger.Refresh);
+            return true;
+        }
+
+        if (AppActions.Paste.IsJustPressed)
+        {
+            var pastedShapes = AppClipboardManager.PasteShapes(WorkingLayer);
+            var selectedShapes = Document.Get<SelectionManager>().SelectedShapes;
+            selectedShapes.Clear();
+            selectedShapes.AddRange(pastedShapes);
+            Tool.Machine.Fire(ToolBase.Trigger.Refresh);
+            return true;
+        }
+
         if (AppActions.CancelInteraction.IsJustPressed)
         {
             Document.Get<SelectionManager>().SelectedShapes.Clear();
@@ -75,12 +101,7 @@ public class PolylineNoSelectionHover : InteractiveSessionBase
 
         if (AppActions.Delete.IsJustPressed)
         {
-            var cmd = new CommandBuilder();
-            foreach (var e in Document.Get<SelectionManager>().SelectedShapes)
-            {
-                cmd.SetTarget(e).RemoveFromLayerTree().DeleteShape();
-            }
-            cmd.Commit();
+            DeleteShapes(Document.Get<SelectionManager>().SelectedShapes.ToArray());
             Tool.Machine.Fire(ToolBase.Trigger.Refresh);
             return true;
         }
@@ -98,6 +119,16 @@ public class PolylineNoSelectionHover : InteractiveSessionBase
         }
 
         return false;
+    }
+
+    private static void DeleteShapes(Entity[] shapeEs)
+    {
+        var cmd = new CommandBuilder();
+        foreach (var e in shapeEs)
+        {
+            cmd.SetTarget(e).RemoveFromLayerTree().DeleteShape();
+        }
+        cmd.Commit();
     }
 
     public override void DrawProperty(PropertyContainer container) { }
