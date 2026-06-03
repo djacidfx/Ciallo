@@ -8,6 +8,7 @@ using R3;
 
 namespace Ciallo.Geometry;
 
+// Wrapper of CGAL's Arrangement_2 with polyline curves.
 public partial class Arrangement : Godot.Arrangement2D
 {
     public static readonly int MemoryPerPoint = 200; // byte in very rough estimation

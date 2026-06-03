@@ -348,7 +348,7 @@ public class VectorFillLayerCreationHover : InteractiveSessionBase
 {
     public override void Start(CursorButtonData data)
     {
-        Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
+        Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.PointingHand;
     }
 
     public override void Moving(CursorMotionData data) { }
