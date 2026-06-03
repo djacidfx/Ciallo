@@ -62,7 +62,8 @@ layout_mode = 2
 script = ExtResource("6_qhucf")
 Count = 1
 Width = 24
-BarColor = Color(0.7058824, 0.7058824, 0.7058824, 1)
+BarWidth = 1
+BarColor = Color(0.4337086, 0.433709, 0.43370876, 1)
 metadata/_custom_type_script = "uid://d1yjxfpa62cbe"
 
 [node name="DropdownArrow" type="CheckButton" parent="Layer/DeSeparationMarginContainer/HBoxContainer" unique_id=24815639]
