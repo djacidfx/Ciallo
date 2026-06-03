@@ -2,7 +2,6 @@
 using System.Linq;
 using Ciallo.Data;
 using Frent;
-using Frent.Systems;
 
 namespace Ciallo.Command;
 
@@ -59,11 +58,11 @@ public class DeleteLayerCmd : CommandBase
         // Remove shape layer from vector fill layer settings
         if (targetE.Has<ShapeLayerSetting>())
         {
-            var query = targetE.World.Query<VectorFillLayerSetting>();
-            query.Delegate((ref VectorFillLayerSetting setting) =>
+            var query = targetE.World.CreateQuery().With<VectorFillLayerSetting>().Tagged<ToSerializeTag>().Build();
+            foreach (var vectorFillLayerE in query.EnumerateWithEntities())
             {
-                setting.ReferenceLayers.Remove(targetE);
-            });
+                vectorFillLayerE.Get<VectorFillLayerSetting>().ReferenceLayers.Remove(targetE);
+            }
         }
 
         targetE.Detach<ToSerializeTag>();

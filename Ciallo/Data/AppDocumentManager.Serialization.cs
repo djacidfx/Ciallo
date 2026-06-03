@@ -41,11 +41,15 @@ public static partial class AppDocumentManager
         var resultDocument = Create(dataDocument.Get<DocumentSetting>());
         entityMap.Add(dataDocument, resultDocument);
         WorkingDocument.Value = resultDocument;
-        // Pre-create all result entities upfront (mirrors Serialize's Tagged<ToSerializeTag> query)
+        // Pre-create all result entities upfront (mirrors Serialize's Tagged<ToSerializeTag> query).
         var dataWorld = dataDocument.World;
         var resultWorld = resultDocument.World;
-        foreach (var dataE in dataWorld.CreateQuery().Build().EnumerateWithEntities())
-            entityMap.TryAdd(dataE, resultWorld.Create());
+        var normalEntityQuery = dataWorld.CreateQuery().Tagged<ToSerializeTag>().Build();
+        foreach (var dataE in normalEntityQuery.EnumerateWithEntities())
+        {
+            if (dataE == dataDocument) continue;
+            entityMap.Add(dataE, resultWorld.Create());
+        }
 
         // Load brushes
         var loadBrushCmd = new CommandBuilder();
@@ -147,7 +151,11 @@ public static partial class AppDocumentManager
         }
 
         // Vector fil reference layers remap
-        foreach (var dataE in dataDocument.World.Query<VectorFillLayerSetting>().EnumerateWithEntities())
+        var vectorFillLayerQuery = dataDocument.World.CreateQuery()
+            .With<VectorFillLayerSetting>()
+            .Tagged<ToSerializeTag>()
+            .Build();
+        foreach (var dataE in vectorFillLayerQuery.EnumerateWithEntities())
         {
             var resultE = entityMap[dataE];
             var newEs = dataE.Get<VectorFillLayerSetting>().ReferenceLayers.Select(e => entityMap[e]);

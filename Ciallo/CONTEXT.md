@@ -33,6 +33,18 @@ A vector fill layer is a fill layer whose filled regions are bounded by referenc
 
 A reference layer is a shape layer that provides boundary artwork for a vector fill layer.
 
+### Shape
+
+A shape is a selectable drawable object inside a shape-editable layer. The Select tool can select shapes independently of layer selection.
+
+### Shape Clipboard
+
+A shape clipboard is temporary copied or cut shape content that can later be pasted into a compatible working layer. It is distinct from layer-level copy and paste.
+
+### Shape Paste
+
+A shape paste creates new shapes from shape clipboard content in the current working layer. It is distinct from layer-level paste.
+
 ### Command History
 
 Command history is a document-level record of undoable user changes.

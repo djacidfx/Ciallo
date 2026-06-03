@@ -280,7 +280,8 @@ public class VectorFillLayerCreationTool : ToolBase
     private static List<Entity> GetVisibleShapeLayers(World world)
     {
         var result = new List<Entity>();
-        foreach (var layer in world.Query<ShapeLayerSetting>().EnumerateWithEntities())
+        var query = world.CreateQuery().With<ShapeLayerSetting>().Tagged<ToSerializeTag>().Build();
+        foreach (var layer in query.EnumerateWithEntities())
         {
             if (IsVisibleShapeLayer(layer))
                 result.Add(layer);

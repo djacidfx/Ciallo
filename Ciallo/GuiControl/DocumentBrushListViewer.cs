@@ -35,7 +35,7 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
         {
             if ((MouseButton)buttonIndex != MouseButton.Right) return;
             var brushE = document.Get<BrushManager>().StrokeBrushEs[(int)idx];
-            var query = brushE.World.CreateQuery().With<StrokeSetting>().Build();
+            var query = brushE.World.CreateQuery().With<StrokeSetting>().Tagged<ToSerializeTag>().Build();
             List<Entity> toDeleteShapes = [];
             foreach (var strokeE in query.EnumerateWithEntities())
             {
