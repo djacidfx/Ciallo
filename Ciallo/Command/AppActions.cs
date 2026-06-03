@@ -29,6 +29,9 @@ public record AppAction(StringName Name)
     public bool IsJustReleased => Input.IsActionJustReleased(Name);
     public float Strength => Input.GetActionStrength(Name);
 
+    public bool IsPressedBy(InputEvent inputEvent) => inputEvent.IsActionPressed(Name);
+    public bool IsReleasedBy(InputEvent inputEvent) => inputEvent.IsActionReleased(Name);
+
     public void Press() => Input.ActionPress(Name);
     public void Release() => Input.ActionRelease(Name);
 
