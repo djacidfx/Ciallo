@@ -124,15 +124,6 @@ public class PaintStrokeHover : InteractiveSessionBase
         container.AddProperty("Radius", radiusControl)
             .VisibleIf(selectionM.WorkingStrokeBrush, Entity.IsNotNull);
 
-        var taperTime = AppPreference.TaperDuration.Project(
-            time => time.TotalMilliseconds, TimeSpan.FromMilliseconds);
-        container.AddProperty("Taper end", new SpinSlider()
-        {
-            MinValue = 0,
-            MaxValue = 50,
-            Step = 1,
-        }.BindNumber(taperTime))
-            .VisibleIf(selectionM.WorkingStrokeBrush, Entity.IsNotNull);
     }
 
     private void OnUseBrushPressed()

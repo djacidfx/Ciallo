@@ -5,7 +5,6 @@ using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
-using R3;
 
 namespace Ciallo.Tool;
 
@@ -13,7 +12,6 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 {
     public Entity BrushE;
     public StrokeView StrokePreview;
-    public bool IsTaperEnding = false;
     public readonly PolylineInteractiveGenerator Generator = new()
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
@@ -51,13 +49,15 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         Generator.RadiusSampler = brushSetting.ToRadiusSampler();
 
         Generator.Start(data);
-        StrokePreview.SetGeometry(Generator.Positions, Generator.Radii, Generator.Pressures);
+        var geometry = Generator.CurrentGeometry;
+        StrokePreview.SetGeometry(geometry.Positions, geometry.Radii, geometry.Pressures);
     }
 
     public override void Moving(CursorMotionData data)
     {
         Generator.Update(data);
-        StrokePreview.SetGeometry(Generator.Positions, Generator.Radii, Generator.Pressures);
+        var geometry = Generator.CurrentGeometry;
+        StrokePreview.SetGeometry(geometry.Positions, geometry.Radii, geometry.Pressures);
     }
 
     public override void OnMouseButton(InputEventMouseButton button, CursorButtonData data)
@@ -70,36 +70,19 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 
     public void OnEndPaintButton()
     {
-        if (IsTaperEnding) return;
-        if (AppPreference.TaperDuration.Value <= TimeSpan.FromMilliseconds(1))
-        {
-            Tool.Machine.Fire(PaintEnd);
-            return;
-        }
-
-        // ObserveOn(BeforeProcess) ensures the callback fires before _Process (where Timer ticks),
-        // so the state machine transition happens before the next render step — no flickering.
-        Observable.Timer(AppPreference.TaperDuration.Value)
-            .ObserveOn(GodotFrameProvider.BeforeProcess)
-            .Subscribe(_ =>
-            {
-                if (Tool.Machine.CanFire(PaintEnd))
-                    Tool.Machine.Fire(PaintEnd);
-            });
-
-        IsTaperEnding = true;
-        Generator.StartTaperEnding();
+        Tool.Machine.Fire(PaintEnd);
     }
 
     public override void End(CursorButtonData data)
     {
         Generator.End(data);
+        var geometry = Generator.CurrentGeometry;
 
         new CommandBuilder(WorkingLayer.World.Create())
             .NewStroke()
             .AddToLayerTree(WorkingLayer)
             .SetProperty(e => e.Get<StrokeSetting>().BrushE, BrushE)
-            .SetPolylineGeometry([..Generator.Positions], [..Generator.Radii], [..Generator.Pressures], [..Generator.Tilts])
+            .SetPolylineGeometry([..geometry.Positions], [..geometry.Radii], [..geometry.Pressures], [..geometry.Tilts])
             .Commit();
         Clear();
     }
@@ -120,6 +103,5 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         StrokePreview.QueueFree();
         StrokePreview = null;
         Input.MouseMode = Input.MouseModeEnum.Visible;
-        IsTaperEnding = false;
     }
 }
