@@ -40,9 +40,8 @@ public class PolylineInteractiveGenerator
     public Func<float, float> RadiusSampler;
 
     private readonly StrokeModeler _modeler = new();
-    private readonly StrokeModelParams _modelerParams = StrokeModelParams.CreateDefault();
-    private readonly List<ModelerResult> _updateResults = new(256);
-    private readonly List<ModelerResult> _predictionResults = new(256);
+    private readonly StrokeModelParams _modelerParams = StrokeModelParams.CreateCialloDefault();
+    private readonly List<ModelerResult> _modelerResults = new(256);
 
     private readonly List<Vector2> _stablePositions = new(2048);
     private readonly List<float> _stableRadii = new(2048);
@@ -99,10 +98,7 @@ public class PolylineInteractiveGenerator
             BeginStroke(data.Pressure, data.Tilt);
 
         AddRawSample(data.WorldPosition, data.Tilt, _elapsedSeconds);
-        _predictionPositions.Clear();
-        _predictionRadii.Clear();
-        _predictionPressures.Clear();
-        _predictionTilts.Clear();
+        ClearPredictionGeometry();
         UpdateModeler(new ModelerInput(
             InputEventType.Up,
             ToNumericsVector2(data.WorldPosition),
@@ -121,17 +117,13 @@ public class PolylineInteractiveGenerator
         _stableRadii.Clear();
         _stablePressures.Clear();
         _stableTilts.Clear();
-        _predictionPositions.Clear();
-        _predictionRadii.Clear();
-        _predictionPressures.Clear();
-        _predictionTilts.Clear();
+        ClearPredictionGeometry();
         _positions.Clear();
         _radii.Clear();
         _pressures.Clear();
         _tilts.Clear();
         _rawSamples.Clear();
-        _updateResults.Clear();
-        _predictionResults.Clear();
+        _modelerResults.Clear();
         _elapsedSeconds = 0;
         _strokeStarted = false;
         _lastModelerInput = null;
@@ -157,21 +149,47 @@ public class PolylineInteractiveGenerator
         if (_lastModelerInput.HasValue && _lastModelerInput.Value == input)
             return;
 
-        _updateResults.Clear();
-        _modeler.Update(input, _updateResults);
+        _modelerResults.Clear();
+        _modeler.Update(input, _modelerResults);
         _lastModelerInput = input;
-        AppendStableResults(_updateResults);
+        AppendStableResults(_modelerResults);
     }
 
     private void RebuildPrediction()
+    {
+        ClearPredictionGeometry();
+
+        if (_modelerParams.Prediction is PredictionParams.Disabled)
+        {
+            // Zero extra lag
+            AppendRawPrediction(_lastModelerInput.Value);
+            return;
+        }
+
+        _modelerResults.Clear();
+        _modeler.Predict(_modelerResults);
+        AppendResults(_modelerResults, _predictionPositions, _predictionRadii, _predictionPressures, _predictionTilts);
+    }
+
+    private void AppendRawPrediction(ModelerInput input)
+    {
+        Vector2 position = ToVector2(input.Position);
+        if (_stablePositions.Count > 0 && _stablePositions[^1] == position)
+            return;
+
+        float pressure = input.Pressure < 0 ? 1f : Mathf.Clamp(input.Pressure, 0f, 1f);
+        _predictionPositions.Add(position);
+        _predictionPressures.Add(pressure);
+        _predictionRadii.Add(CalculateRadius(pressure));
+        _predictionTilts.Add(TiltAt(input.Time.TotalSeconds));
+    }
+
+    private void ClearPredictionGeometry()
     {
         _predictionPositions.Clear();
         _predictionRadii.Clear();
         _predictionPressures.Clear();
         _predictionTilts.Clear();
-        _predictionResults.Clear();
-        _modeler.Predict(_predictionResults);
-        AppendResults(_predictionResults, _predictionPositions, _predictionRadii, _predictionPressures, _predictionTilts);
     }
 
     private void AppendStableResults(IReadOnlyList<ModelerResult> results) =>
