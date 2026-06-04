@@ -38,6 +38,7 @@ public class PolylineInteractiveGenerator
     public RadiusMode Mode = RadiusMode.Fixed;
     public float FixedRadius = 1f;
     public Func<float, float> RadiusSampler;
+    public float CommitSimplificationScreenTolerancePx = 0.15f;
 
     private readonly StrokeModeler _modeler = new();
     private readonly StrokeModelParams _modelerParams = StrokeModelParams.CreateCialloDefault();
@@ -62,6 +63,7 @@ public class PolylineInteractiveGenerator
     private CursorButtonData _pendingDown;
     private ModelerInput? _lastModelerInput;
     private double _elapsedSeconds;
+    private float _worldUnitsPerPixel = 1f;
     private bool _strokeStarted;
 
     public PolylineGeneratorGeometry CurrentGeometry => new(_positions, _radii, _pressures, _tilts);
@@ -80,6 +82,7 @@ public class PolylineInteractiveGenerator
             BeginStroke(data.Pressure, data.Tilt);
 
         _elapsedSeconds += Math.Max(0, data.TimeDelta.TotalSeconds);
+        UpdateWorldUnitsPerPixel(data);
         AddRawSample(data.WorldPosition, data.Tilt, _elapsedSeconds);
         UpdateModeler(new ModelerInput(
             InputEventType.Move,
@@ -106,6 +109,7 @@ public class PolylineInteractiveGenerator
             data.Pressure,
             -1,
             -1));
+        SimplifyStableGeometryForCommit();
         ComposeCurrentGeometry();
 
         _strokeStarted = false;
@@ -125,6 +129,7 @@ public class PolylineInteractiveGenerator
         _rawSamples.Clear();
         _modelerResults.Clear();
         _elapsedSeconds = 0;
+        _worldUnitsPerPixel = 1f;
         _strokeStarted = false;
         _lastModelerInput = null;
     }
@@ -226,6 +231,38 @@ public class PolylineInteractiveGenerator
         _radii.AddRange(_predictionRadii);
         _pressures.AddRange(_predictionPressures);
         _tilts.AddRange(_predictionTilts);
+    }
+
+    private void UpdateWorldUnitsPerPixel(CursorMotionData data)
+    {
+        float screenDistance = data.ScreenDelta.Length();
+        if (screenDistance > 0f)
+            _worldUnitsPerPixel = data.WorldDelta.Length() / screenDistance;
+    }
+
+    private void SimplifyStableGeometryForCommit()
+    {
+        if (CommitSimplificationScreenTolerancePx <= 0f || _stablePositions.Count <= 2)
+            return;
+
+        float worldTolerance = CommitSimplificationScreenTolerancePx * _worldUnitsPerPixel;
+        var simplifiedPositions = _stablePositions.SimplifyRdp(worldTolerance, out var originalIndices);
+
+        _stablePositions.Clear();
+        _stablePositions.AddRange(simplifiedPositions);
+        KeepOriginalIndices(_stableRadii, originalIndices);
+        KeepOriginalIndices(_stablePressures, originalIndices);
+        KeepOriginalIndices(_stableTilts, originalIndices);
+    }
+
+    private static void KeepOriginalIndices<T>(List<T> values, IReadOnlyList<int> originalIndices)
+    {
+        var kept = new List<T>(originalIndices.Count);
+        foreach (int index in originalIndices)
+            kept.Add(values[index]);
+
+        values.Clear();
+        values.AddRange(kept);
     }
 
     private float CalculateRadius(float pressure)

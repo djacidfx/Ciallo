@@ -8,6 +8,94 @@ namespace Ciallo.Geometry;
 public static partial class PolylineExtension
 {
     /// <summary>
+    /// Simplifies an open polyline with the Ramer-Douglas-Peucker algorithm.
+    /// Points are removed when their perpendicular distance to the current range's
+    /// endpoint line is less than or equal to <paramref name="tolerance"/>.
+    /// This matches Blender's curve simplification model: tolerance is an epsilon
+    /// distance, not a target removal ratio.
+    /// </summary>
+    /// <param name="polyline">Input polyline points.</param>
+    /// <param name="tolerance">Maximum allowed deviation in the same space as <paramref name="polyline"/>.</param>
+    /// <param name="originalIndex">Indices of kept points in the original polyline.</param>
+    /// <returns>Simplified polyline.</returns>
+    public static List<Vector2> SimplifyRdp(
+        this IReadOnlyList<Vector2> polyline,
+        float tolerance,
+        out List<int> originalIndex)
+    {
+        int count = polyline.Count;
+        if (count <= 2 || tolerance <= 0f)
+        {
+            originalIndex = Enumerable.Range(0, count).ToList();
+            return polyline.ToList();
+        }
+
+        var deleted = new bool[count];
+        var stack = new Stack<(int First, int Last)>();
+        stack.Push((0, count - 1));
+
+        while (stack.Count > 0)
+        {
+            var (first, last) = stack.Pop();
+            if (last - first < 2)
+                continue;
+
+            float maxDistance = -1f;
+            int maxIndex = -1;
+
+            for (int i = first + 1; i < last; i++)
+            {
+                float distance = PerpendicularDistance(polyline, first, last, i);
+                if (distance > maxDistance)
+                {
+                    maxDistance = distance;
+                    maxIndex = i;
+                }
+            }
+
+            if (maxDistance > tolerance)
+            {
+                stack.Push((first, maxIndex));
+                stack.Push((maxIndex, last));
+            }
+            else
+            {
+                for (int i = first + 1; i < last; i++)
+                    deleted[i] = true;
+            }
+        }
+
+        var result = new List<Vector2>(count);
+        originalIndex = [];
+        for (int i = 0; i < count; i++)
+        {
+            if (deleted[i])
+                continue;
+
+            result.Add(polyline[i]);
+            originalIndex.Add(i);
+        }
+
+        return result;
+    }
+
+    private static float PerpendicularDistance(IReadOnlyList<Vector2> polyline, int first, int last, int index)
+    {
+        var from = polyline[first];
+        var to = polyline[last];
+        var value = polyline[index];
+        var ray = to - from;
+
+        float lambda = 0f;
+        float rayLengthSquared = ray.LengthSquared();
+        if (rayLengthSquared > 0f)
+            lambda = ray.Dot(value - from) / rayLengthSquared;
+
+        var interpolated = from.Lerp(to, lambda);
+        return value.DistanceTo(interpolated);
+    }
+
+    /// <summary>
     /// The Visvalingam–Whyatt algorithm to simplify the polyline.
     /// Remove the smallest effective area points until the remaining point count reaches (ratio * count).
     /// ratio in [0,1] keeps that fraction of points (clamped). ratio >= 1 keeps all.
