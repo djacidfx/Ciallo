@@ -30,7 +30,7 @@ Resolution-independent airbrush, adjust the opacity falloff directly, with ultra
 
 ![](/.github/Airbrush.gif)
 
-### (WIP) Vector fill
+### Vector fill
 
 Bucket fill in vector form: The positions to fill are editable and tracked with "fill markers", the shape $\odot$ in the image:
 
@@ -53,8 +53,8 @@ We may offer AI-powered features in the future --- but always designed for profe
 
 ### Optimized pen feel
 
-Ciallo aims to provide a drawing/pen feel significantly better than _Clip Studio Paint_ and _Procreate_; this will require several technical advancements in future updates.
-For the current version, the feel is not worse than _Clip Studio Paint_ and certainly better than _Photoshop_, _GIMP_, or _MyPaint_. (Report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.)
+Ciallo aims to provide a drawing/pen feel significantly better than _CSP_,  _Procreate_ and _SAI 2_; this will require several technical advancements in future updates.
+For the current version, the feel is not worse than _SAI 2_ and certainly better than _Photoshop_ or _Krita_. (Report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.)
 
 ## Download (Free on all platforms)
 
