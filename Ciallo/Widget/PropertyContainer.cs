@@ -46,6 +46,9 @@ public partial class PropertyContainer : VBoxContainer
         var cmdM = Document.Get<CommandManager>();
         switch (control)
         {
+            case NullableColorPickerButton nullableColorPickerButton:
+                nullableColorPickerButton.RegisterUndo(cmdM);
+                return true;
             case ColorPickerButton colorPickerButton:
                 colorPickerButton.RegisterUndo(cmdM);
                 return true;
