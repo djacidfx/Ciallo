@@ -45,6 +45,14 @@ A shape clipboard is temporary copied or cut shape content that can later be pas
 
 A shape paste creates new shapes from shape clipboard content in the current working layer. It is distinct from layer-level paste.
 
+### Stroke Prediction
+
+A stroke prediction is a transient visual extension of an in-progress stroke. It may be replaced by later input and is not saved or treated as committed drawing intent.
+
+### Stroke Preview
+
+A stroke preview is the user-visible form of an in-progress stroke. It may include stable stroke samples and transient stroke predictions.
+
 ### Command History
 
 Command history is a document-level record of undoable user changes.

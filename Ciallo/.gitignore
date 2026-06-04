@@ -4,6 +4,9 @@
 *.translation
 .VSCodeCounter*
 
+# External study references
+/ink-stroke-modeler/
+
 # GdUnit4
 /gdunit4_testadapter_v5/
 /Tests/.runsettings
