@@ -9,7 +9,7 @@ public struct CursorButtonData
 {
     public Vector2 ScreenPosition = Vector2.Inf;
     public Vector2 WorldPosition = Vector2.Inf;
-    public float Pressure = 1.0f;
+    public float Pressure = 0.0f;
     public Vector2 Tilt = Vector2.Zero;
 
     public CursorButtonData() { }
