@@ -42,15 +42,15 @@ public class VectorFillHover : InteractiveSessionBase
     public void SetContoursWithQueryResult(Node parent, Arrangement arr, Vector2 point)
     {
         var faceRid = arr.Query(point);
-        if (!faceRid.IsValid)
+        if (!faceRid.IsValid || arr.IsUnboundedFace(faceRid))
         {
-            foreach (var sv in _contours) sv.Multimesh.InstanceCount = 0;
+            HideContours();
             return;
         }
         var polygons = arr.GetFacePolygons(faceRid);
         if (polygons.Count == 0)
         {
-            foreach (var sv in _contours) sv.Multimesh.InstanceCount = 0;
+            HideContours();
             return;
         }
 
@@ -75,6 +75,12 @@ public class VectorFillHover : InteractiveSessionBase
             var closed = polygons[i].Append(polygons[i][0]).ToArray();
             _contours[i].SetGeometry(closed, radius);
         }
+    }
+
+    private void HideContours()
+    {
+        foreach (var sv in _contours)
+            sv.Multimesh.InstanceCount = 0;
     }
 
     public override void DrawProperty(PropertyContainer container)
@@ -116,6 +122,15 @@ public class VectorFillHover : InteractiveSessionBase
             new ColorPickerButton()
                 .BindColor(fillColor)
                 .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
+        );
+
+        var boundedColor = sm.WorkingLayer
+            .Select(e => e.TryGet<VectorFillLayerSetting>()?.BoundedColor)
+            .Flatten();
+        container.AddProperty("Bounded color",
+            new NullableColorPickerButton()
+                .BindColor(boundedColor)
+                .VisibleIf(sm.WorkingLayer, e => e.TryHas<VectorFillLayerSetting>())
         );
 
         var showWireframe = new CheckButton()

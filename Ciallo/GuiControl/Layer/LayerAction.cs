@@ -143,24 +143,16 @@ public partial class LayerAction : Control
 
             var faceRid = arr.Query(markerPos);
             if (!faceRid.IsValid) continue;
+            if (arr.IsUnboundedFace(faceRid)) continue;
 
             var facePolygons = arr.GetFacePolygons(faceRid);
             if (facePolygons.Count == 0) continue;
 
-            if (arr.IsUnboundedFace(faceRid))
-            {
-                // Each hole of the unbounded face becomes a separate FilledPolygon
-                foreach (var hole in facePolygons)
-                    AddFilledPolygon(cmd, shapeLayerE, hole, brushE);
-            }
-            else
-            {
-                // Bounded face (possibly with holes) → one FilledPolygon
-                IReadOnlyList<Vector2> polygon = facePolygons.Count == 1
-                    ? facePolygons.Single()
-                    : facePolygons.ConnectHoles();
-                AddFilledPolygon(cmd, shapeLayerE, polygon, brushE);
-            }
+            // Bounded face (possibly with holes) → one FilledPolygon
+            IReadOnlyList<Vector2> polygon = facePolygons.Count == 1
+                ? facePolygons.Single()
+                : facePolygons.ConnectHoles();
+            AddFilledPolygon(cmd, shapeLayerE, polygon, brushE);
         }
 
         // 3. Set working layer to new ShapeLayer, then remove and delete the VectorFillLayer

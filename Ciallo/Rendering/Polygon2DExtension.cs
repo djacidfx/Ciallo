@@ -60,12 +60,25 @@ public static class Polygon2DExtension
     public static void SetPolygonWithQueryResult(this Polygon2D node, Arrangement arr, Vector2 point)
     {
         var faceRid = arr.Query(point);
-        if (!faceRid.IsValid)
+        if (!faceRid.IsValid || arr.IsUnboundedFace(faceRid))
         {
             node.Clear();
             return;
         }
-        node.SetTriangleResult(arr.GetTriangles(faceRid));
+        node.SetTriangleResult(arr.GetTrianglesFromFace(faceRid));
+    }
+
+    public static void SetBoundedArea(this Polygon2D node, Arrangement arr, Color? color)
+    {
+        node.Visible = color.HasValue;
+        if (!color.HasValue)
+        {
+            node.Clear();
+            return;
+        }
+
+        node.Color = color.Value;
+        node.SetTriangleResult(arr.GetTrianglesFromFace(arr.GetUnboundedFace()));
     }
 
     public static void Clear(this Polygon2D node)

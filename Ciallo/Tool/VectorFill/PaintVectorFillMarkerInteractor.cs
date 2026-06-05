@@ -51,6 +51,14 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
         ClearPreview();
         if (!_fillBrush.IsNull)
         {
+            var arr = WorkingLayer.Get<Arrangement>();
+            var faceRid = arr.Query(data.WorldPosition);
+            if (!faceRid.IsValid || arr.IsUnboundedFace(faceRid))
+            {
+                Clear();
+                return;
+            }
+
             new CommandBuilder(WorkingLayer.World.Create())
                 .NewVectorFillMarker()
                 .AddToLayerTree(WorkingLayer)

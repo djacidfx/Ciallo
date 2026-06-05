@@ -72,7 +72,7 @@ public partial class Arrangement : Godot.Arrangement2D
     /// </returns>
     public Array<Vector2[]> GetFacePolygons(Rid id)
     {
-        return GetPolygon(id);
+        return GetPolygonFromFace(id);
     }
 
     protected override void Dispose(bool disposing)

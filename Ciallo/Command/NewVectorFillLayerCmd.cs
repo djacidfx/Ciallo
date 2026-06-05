@@ -53,6 +53,21 @@ public class NewVectorFillLayerCmd : CommandBase
         // Others
         NewShapeLayerCmd.CreateNonDataComponents(targetE);
 
+        var boundedAreaView = new Polygon2D
+        {
+            Name = "BoundedArea",
+            Antialiased = true,
+            Visible = false,
+        };
+        targetE.AddNode(boundedAreaView);
+        targetE.Get<ShapeLayerView>().AddChild(boundedAreaView, false, Node.InternalMode.Front);
+        vectorFillLayerSetting.BoundedColor
+            .Merge(arr.StructureChanged.Select(_ => vectorFillLayerSetting.BoundedColor.Value))
+            .ThrottleLastFrame(1)
+            .Subscribe(color => boundedAreaView.SetBoundedArea(arr, color))
+            .AddTo(targetE);
+        // Intentionally not set owner for boundedAreaView, so won't participate in exportation.
+
         // Overlay extra
         var overlayHolder = targetE.Get<OverlayHolder>();
         overlayHolder.Visible = false;
