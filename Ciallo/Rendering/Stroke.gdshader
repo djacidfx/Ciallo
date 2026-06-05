@@ -4,7 +4,11 @@ render_mode unshaded;
 render_mode skip_vertex_transform;
 // Godot doesn't support changing blend mode at runtime.
 // VARIANT_DEFINES
-#if defined(ERASER)
+#if defined(BLEND_ADD)
+render_mode blend_add;
+#elif defined(BLEND_MUL)
+render_mode blend_mul;
+#elif defined(BLEND_ERASE)
 render_mode blend_mul;
 #endif
 
@@ -170,6 +174,30 @@ vec2 solveTheQuadraticEq(vec2 pLocal){
 	return result;
 }
 
+vec4 outputAddBrush(vec3 brushColor, float amount) {
+	// Godot blend_add multiplies source color by source alpha.
+	amount = max(amount, 0.0);
+	float strength = sqrt(amount);
+	if(amount <= 1.0) return vec4(brushColor * strength, strength);
+	return vec4(brushColor * amount, 1.0);
+}
+
+vec4 outputBrush(vec3 brushColor, float coverage) {
+#if defined(BLEND_ADD)
+	return outputAddBrush(brushColor, coverage);
+#elif defined(BLEND_MUL)
+	coverage = clamp(coverage, 0.0, 1.0);
+	return vec4(mix(vec3(1.0), brushColor, coverage), 1.0);
+#elif defined(BLEND_ERASE)
+	coverage = clamp(coverage, 0.0, 1.0);
+	float keep = 1.0 - coverage;
+	return vec4(vec3(keep), keep);
+#else
+	coverage = clamp(coverage, 0.0, 1.0);
+	return vec4(brushColor, coverage);
+#endif
+}
+
 void fragment() {
 	vec2 pLocal = vec2(dot(p-p0, tangent), dot(p-p0, normal));
 	float d0 = distance(p, p0);
@@ -188,9 +216,9 @@ void fragment() {
 		if(cosPhi0 < cosTheta && d0 > r0) discard;
     	if(cosPhi1 > cosTheta && d1 > r1) discard;
 
-		COLOR = OverridingColor.a >= 0.0 ? OverridingColor : MaterialColor;
-    	float targetFlow = COLOR.a * flowRatio;
-		COLOR.a = COLOR.a * flowRatio;
+		vec4 brush = OverridingColor.a >= 0.0 ? OverridingColor : MaterialColor;
+		float targetFlow = brush.a * flowRatio;
+		float coverage = targetFlow;
 		if(targetFlow < 0.999){ // Can avoid little white dot
 			if(d0 < r0 && d1 < r1){
         		discard;
@@ -213,16 +241,14 @@ void fragment() {
 
 			if(lambda > aaStart){
 				float t = (lambda - aaStart)/(1.0 - aaStart);
-				COLOR.a = COLOR.a * smoothstep(1.0, 0.5, t);
+				coverage = coverage * smoothstep(1.0, 0.5, t);
 			}
 		}
 
 		if(d0 < r0 || d1 < r1){
-        	COLOR.a = 1.0 - sqrt(1.0 - COLOR.a);
+			coverage = 1.0 - sqrt(1.0 - coverage);
     	}
-#if defined(ERASER)
-		COLOR = vec4(1e-5);
-#endif
+		COLOR = outputBrush(brush.rgb, coverage);
 	}
 	/*----------------------------------------------------------*/
   	if(StrokeType == Stamp){
@@ -239,8 +265,8 @@ void fragment() {
  		int i = 0;
  		int MAX_i = 128;
  		float currStampIdx = ceil(startStampIdx);
-#if defined(ERASER)
-		float currA = 1.0;
+#if defined(BLEND_MUL)
+		vec3 currMul = vec3(1.0);
 #else
 		float currA = 1e-7;
 #endif
@@ -264,20 +290,22 @@ void fragment() {
 			float dotMask = hasFlag(ActiveStampFlags, StampFlags.MaskDisk) ? sampleCurve(DiskOpacityCurve, nr) : 1.0;
 			float stampSample = hasFlag(ActiveStampFlags, StampFlags.StampTexture) ? texture(StampTexture, uv).r : 1.0;
 			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || nr > 1.0;
-			float sampledA = isOutDisk ? 1e-7 : textureMask * dotMask * flow * stampSample;
+			float sampledA = isOutDisk ? 0.0 : clamp(textureMask * dotMask * flow * stampSample, 0.0, 1.0);
 
-#if defined(ERASER)
-			currA = currA * (1.0 - sampledA);
+#if defined(BLEND_ADD)
+			currA += sampledA;
+#elif defined(BLEND_MUL)
+			currMul *= mix(vec3(1.0), MaterialColor.rgb, sampledA);
 #else
 			currA = sampledA + currA * (1.0 - sampledA);
 #endif
 			i++;
 			currStampIdx += 1.0;
  		}
-#if defined(ERASER)
-		COLOR = vec4(currA);
+#if defined(BLEND_MUL)
+		COLOR = vec4(currMul, 1.0);
 #else
-		COLOR = vec4(MaterialColor.rgb, currA);
+		COLOR = outputBrush(MaterialColor.rgb, currA);
 #endif
  	}
 	/*----------------------------------------------------------*/
@@ -295,13 +323,8 @@ void fragment() {
 		float lambda = abs(pLocal.y) / sinTheta / r_p;
 		float curveFall = sampleCurve(FalloffCurve, lambda);
 		float tempValue = exp(-deltaN * AlphaDensity  * flow * curveFall);
-#if defined(ERASER)
-		float A = tempValue;
-		COLOR = vec4(A);
-#else
 		float A = 1.0 - tempValue;
-		COLOR = vec4(MaterialColor.rgb, A);
-#endif
+		COLOR = outputBrush(MaterialColor.rgb, A);
 	}
 
 	// Dash
@@ -314,7 +337,8 @@ void fragment() {
 	// Be mindful with premultiply alpha
 	// See: https://github.com/godotengine/godot/issues/99715
 	//
-	// Eraser variant uses blend_mul: result = SRC * DST.
+	// Multiply and eraser variants use blend_mul: result = SRC * DST.
 	// Godot's canvas framebuffer stores premultiplied alpha: a pixel with
 	// straight color C and alpha a is stored as (C*a, C*a, C*a, a).
+	// Eraser therefore multiplies both RGB and alpha by the same keep factor.
 }

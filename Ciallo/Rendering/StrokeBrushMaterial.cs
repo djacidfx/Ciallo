@@ -32,9 +32,13 @@ public partial class StrokeBrushMaterial : ShaderMaterial
         setting.ActiveBrushFlags.Subscribe(value => SetShaderParameter("ActiveBrushFlags", (int)value)).AddTo(Subs);
         setting.BlendMode.Subscribe(value =>
         {
-            Shader = value == BlendMode.Erase
-                ? AutoloadRendering.EraserShader
-                : AutoloadRendering.StrokeShader;
+            Shader = value switch
+            {
+                BlendMode.Add => AutoloadRendering.AddShader,
+                BlendMode.Multiply => AutoloadRendering.MultiplyShader,
+                BlendMode.Erase => AutoloadRendering.EraserShader,
+                _ => AutoloadRendering.StrokeShader,
+            };
         }).AddTo(Subs);
         ImageTexture pp2FlowTex = null;
         setting.Pressure2FlowCurve.Subscribe(points =>

@@ -190,6 +190,8 @@ public class StrokeBrushSetting
 public enum BlendMode
 {
     Normal = 0,
+    Add,
+    Multiply,
     Erase,
 }
 
