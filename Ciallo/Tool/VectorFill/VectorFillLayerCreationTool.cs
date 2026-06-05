@@ -57,8 +57,8 @@ public class VectorFillLayerCreationTool : ToolBase
             AutoHeight = true,
             AutoWidth = true,
         }.BindEnum(Strategy);
-        list.VisibleIf(Document.Get<SelectionManager>().WorkingCelFolder, e => !e.IsNull);
-        container.AddProperty("Cel creation method", list);
+        container.AddProperty("Cel creation method", list)
+            .VisibleIf(Document.Get<SelectionManager>().WorkingCelFolder, e => !e.IsNull);
     }
 
     public void OnCreate()

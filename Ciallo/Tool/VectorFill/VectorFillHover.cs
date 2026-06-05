@@ -102,43 +102,33 @@ public class VectorFillHover : InteractiveSessionBase
         container.AddProperty("Marker color",
             new ColorPickerButton { EditAlpha = false }
                 .BindColor(markerColor)
-                .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
-        );
+        )
+            .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
 
         container.AddProperty("Marker radius",
             new SpinSlider
             {
                 MinValue = 1.0f,
                 MaxValue = 32f,
-            }
-                .BindNumber(AppPreference.VectorFillMarkerRadius)
-                .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
-        );
+            }.BindNumber(AppPreference.VectorFillMarkerRadius)
+        ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
 
         var fillColor = sm.WorkingVectorFillBrush
             .Select(e => e.TryGet<VectorFillBrushSetting>()?.FillColor)
             .Flatten();
         container.AddProperty("Fill color",
-            new ColorPickerButton()
-                .BindColor(fillColor)
-                .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
-        );
+            new ColorPickerButton().BindColor(fillColor)
+        ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
 
-        var boundedColor = sm.WorkingLayer
-            .Select(e => e.TryGet<VectorFillLayerSetting>()?.BoundedColor)
-            .Flatten();
         container.AddProperty("Bounded color",
-            new NullableColorPickerButton()
-                .BindColor(boundedColor)
-                .VisibleIf(sm.WorkingLayer, e => e.TryHas<VectorFillLayerSetting>())
-        );
+            new NullableColorPickerButton().BindColor(AppPreference.VectorFillLayerBoundedAreaColor)
+        ).VisibleIf(sm.WorkingLayer, e => e.TryHas<VectorFillLayerSetting>());
 
         var showWireframe = new CheckButton()
         {
             SizeFlagsHorizontal = Control.SizeFlags.ExpandFill,
             CustomMinimumSize = new(128, 0),
-        }
-            .BindBool(AppPreference.ShowVectorFillReferenceLayerWireframe);
+        }.BindBool(AppPreference.ShowVectorFillReferenceLayerWireframe);
         container.AddProperty("Show reference wireframe", showWireframe);
     }
 }

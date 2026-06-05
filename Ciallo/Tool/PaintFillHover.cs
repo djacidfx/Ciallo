@@ -41,9 +41,7 @@ public class PaintFillHover : InteractiveSessionBase
             .Select(e => e.TryGet<VectorFillBrushSetting>()?.FillColor)
             .Flatten();
         container.AddProperty("Fill color",
-            new ColorPickerButton()
-                .BindColor(fillColor)
-                .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull)
-        );
+            new ColorPickerButton().BindColor(fillColor)
+        ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
     }
 }
