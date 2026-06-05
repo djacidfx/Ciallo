@@ -410,8 +410,8 @@ public sealed record StrokeModelParams
         },
         PositionModeler = new()
         {
-            SpringMassConstant = 11f / 32400f,
-            DragConstant = 72f,
+            SpringMassConstant = 9f / 32400f,
+            DragConstant = 54,
             LoopContractionMitigation = new()
             {
                 IsEnabled = false,

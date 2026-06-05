@@ -34,8 +34,8 @@ public partial class StrokeBrushMaterial : ShaderMaterial
         {
             Shader = value switch
             {
-                BlendMode.Add => AutoloadRendering.AddShader,
-                BlendMode.Multiply => AutoloadRendering.MultiplyShader,
+                // BlendMode.Add => AutoloadRendering.AddShader,
+                // BlendMode.Multiply => AutoloadRendering.MultiplyShader,
                 BlendMode.Erase => AutoloadRendering.EraserShader,
                 _ => AutoloadRendering.StrokeShader,
             };

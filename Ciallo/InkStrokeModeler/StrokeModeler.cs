@@ -5,7 +5,9 @@ using InkStrokeModeler.Internal;
 using InkStrokeModeler.Internal.Prediction;
 
 namespace InkStrokeModeler;
-
+/// <summary>
+/// The main stroke modeling class. Comes from google's ink-stroke-modeler library and translated to C# by GPT-5.5
+/// </summary>
 public sealed class StrokeModeler
 {
     private readonly WobbleSmoother _wobbleSmoother = new();
