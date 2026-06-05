@@ -17,6 +17,7 @@ public class StrokeBrushSetting
     [DataMember, ProjectField(StorageKind.Blob)] public ObservableList<BrushLabel> Labels = [];
     [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
     [DataMember, ProjectField] public ReactiveProperty<BrushFlags> ActiveBrushFlags = new();
+    [DataMember, ProjectField] public ReactiveProperty<BlendMode> BlendMode = new();
     [DataMember, ProjectField] public ReactiveProperty<float> BaseRadius = new(5.0f);
     [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<ImmutableArray<BezierPoint>> Pressure2RadiusCurve = new(BezierCurveFactory.Linear(0.2f, 1.0f)); // radius = baseRadius * curve(pressure)
     [DataMember, ProjectField] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
@@ -67,8 +68,8 @@ public class StrokeBrushSetting
         picker.ColorMode = ColorPicker.ColorModeType.Rgb;
         container.AddProperty("RGB+Flow", colorPickerButton.BindColor(Color));
 
-        var eraserCheck = new CheckBox().BindFlag(ActiveBrushFlags, BrushFlags.Eraser);
-        container.AddProperty("Eraser mode", eraserCheck);
+        var blendModeButton = new OptionButton().BindEnum(BlendMode);
+        container.AddProperty("Blend mode", blendModeButton);
 
         var pp2RadiusCurveEdit = new MappingCurveEdit { MinValue = 0.01f }.BindCurve(Pressure2RadiusCurve);
         var aspectBox = new AspectRatioContainer();
@@ -186,12 +187,17 @@ public class StrokeBrushSetting
     }
 }
 
+public enum BlendMode
+{
+    Normal = 0,
+    Erase,
+}
+
 [Flags]
 public enum BrushFlags
 {
     Pressure2Flow = 1 << 0,
     Dash = 1 << 1,
-    Eraser = 1 << 2,
 }
 
 [Flags]

@@ -53,7 +53,7 @@ public static partial class AppStrokeBrushLibrary
             Name = { Value = "Eraser".Tr() },
             RenderingType = { Value = BrushRenderingType.Vanilla },
             BaseRadius = { Value = 12f },
-            ActiveBrushFlags = { Value = BrushFlags.Eraser },
+            BlendMode = { Value = BlendMode.Erase },
             Pressure2RadiusCurve = { Value = BezierCurveFactory.EaseInOut(0.8f, 1.0f) },
             Labels = { BrushLabel.BuiltIn },
         });
@@ -65,7 +65,8 @@ public static partial class AppStrokeBrushLibrary
             BaseRadius = { Value = 12f },
             Labels = { BrushLabel.BuiltIn },
             Color = { Value = new(0, 0, 0, 0.4f) },
-            ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow | BrushFlags.Eraser },
+            ActiveBrushFlags = { Value = BrushFlags.Pressure2Flow },
+            BlendMode = { Value = BlendMode.Erase },
             Pressure2FlowCurve = new(BezierCurveFactory.EaseInOut()),
             FalloffCurve = new([
                 new(new(0, 1), new(-0.25f, 0), new(0.5f, 0)),

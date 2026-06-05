@@ -3,7 +3,8 @@ shader_type canvas_item;
 render_mode unshaded;
 render_mode skip_vertex_transform;
 // Godot doesn't support changing blend mode at runtime.
-#if defined(ERASER) 
+// VARIANT_DEFINES
+#if defined(ERASER)
 render_mode blend_mul;
 #endif
 
@@ -18,9 +19,8 @@ const StampFlag StampFlags = StampFlag(1 << 0, 1 << 1, 1 << 2, 1 << 3);
 struct BrushFlag {
     int Pressure2FlowCurve;
     int Dash;
-	int Eraser;
 };
-const BrushFlag BrushFlags = BrushFlag(1 << 0, 1 << 1, 1 << 2);
+const BrushFlag BrushFlags = BrushFlag(1 << 0, 1 << 1);
 
 const int Vanilla = 0, Stamp = 1, Airbrush = 2;
 uniform int StrokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;
@@ -178,7 +178,6 @@ void fragment() {
     float cosPhi1 = (pLocal.x - segmentLength) / d1;
 	vec2 p_r = pLocal - vec2(abs(pLocal.y)/tanTheta, 0);
 	float r_p = r0 - cosTheta * p_r.x;
-	bool isEraser = hasFlag(ActiveBrushFlags, BrushFlags.Eraser);
 
 	float t = mix(pp0, pp1, p_r.x/segmentLength);
 	t = clamp(t, 0.0, 1.0);
@@ -221,11 +220,9 @@ void fragment() {
 		if(d0 < r0 || d1 < r1){
         	COLOR.a = 1.0 - sqrt(1.0 - COLOR.a);
     	}
-
-		if(isEraser){
-			float A = COLOR.a;
-			COLOR = vec4(A);
-		}
+#if defined(ERASER)
+		COLOR = vec4(1e-5);
+#endif
 	}
 	/*----------------------------------------------------------*/
   	if(StrokeType == Stamp){
@@ -242,7 +239,11 @@ void fragment() {
  		int i = 0;
  		int MAX_i = 128;
  		float currStampIdx = ceil(startStampIdx);
- 		float currA = isEraser ? 1.0 : 1e-7;
+#if defined(ERASER)
+		float currA = 1.0;
+#else
+		float currA = 1e-7;
+#endif
 		float flow = MaterialColor.a * flowRatio;
 		// Main loop
  		while(i < MAX_i && currStampIdx < endStampIdx){
@@ -265,13 +266,19 @@ void fragment() {
 			bool isOutDisk = uv.x > 1.0 || uv.y > 1.0 || nr > 1.0;
 			float sampledA = isOutDisk ? 1e-7 : textureMask * dotMask * flow * stampSample;
 
- 			currA = isEraser ? currA * (1.0 - sampledA)
-				: sampledA + currA * (1.0 - sampledA);
+#if defined(ERASER)
+			currA = currA * (1.0 - sampledA);
+#else
+			currA = sampledA + currA * (1.0 - sampledA);
+#endif
 			i++;
 			currStampIdx += 1.0;
  		}
-		vec3 rgb = isEraser ? vec3(currA) : MaterialColor.rgb;
- 		COLOR = vec4(rgb, currA);
+#if defined(ERASER)
+		COLOR = vec4(currA);
+#else
+		COLOR = vec4(MaterialColor.rgb, currA);
+#endif
  	}
 	/*----------------------------------------------------------*/
 	if(StrokeType == Airbrush){
@@ -288,9 +295,13 @@ void fragment() {
 		float lambda = abs(pLocal.y) / sinTheta / r_p;
 		float curveFall = sampleCurve(FalloffCurve, lambda);
 		float tempValue = exp(-deltaN * AlphaDensity  * flow * curveFall);
-		float A = isEraser ? tempValue : 1.0 - tempValue;
-		vec3 rgb = isEraser ? vec3(A) : MaterialColor.rgb;
-		COLOR = vec4(rgb, A);
+#if defined(ERASER)
+		float A = tempValue;
+		COLOR = vec4(A);
+#else
+		float A = 1.0 - tempValue;
+		COLOR = vec4(MaterialColor.rgb, A);
+#endif
 	}
 
 	// Dash
@@ -303,7 +314,7 @@ void fragment() {
 	// Be mindful with premultiply alpha
 	// See: https://github.com/godotengine/godot/issues/99715
 	//
-	// Eraser uses blend_mul (StrokeEraser.gdshader): result = SRC * DST.
+	// Eraser variant uses blend_mul: result = SRC * DST.
 	// Godot's canvas framebuffer stores premultiplied alpha: a pixel with
 	// straight color C and alpha a is stored as (C*a, C*a, C*a, a).
 }
