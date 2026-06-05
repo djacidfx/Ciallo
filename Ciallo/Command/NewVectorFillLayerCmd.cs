@@ -61,8 +61,8 @@ public class NewVectorFillLayerCmd : CommandBase
         };
         targetE.AddNode(boundedAreaView);
         targetE.Get<ShapeLayerView>().AddChild(boundedAreaView, false, Node.InternalMode.Front);
-        vectorFillLayerSetting.BoundedColor
-            .Merge(arr.StructureChanged.Select(_ => vectorFillLayerSetting.BoundedColor.Value))
+        AppPreference.VectorFillLayerBoundedAreaColor
+            .Merge(arr.StructureChanged.Select(_ => AppPreference.VectorFillLayerBoundedAreaColor.Value))
             .ThrottleLastFrame(1)
             .Subscribe(color => boundedAreaView.SetBoundedArea(arr, color))
             .AddTo(targetE);

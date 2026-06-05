@@ -102,8 +102,7 @@ public class VectorFillHover : InteractiveSessionBase
         container.AddProperty("Marker color",
             new ColorPickerButton { EditAlpha = false }
                 .BindColor(markerColor)
-        )
-            .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
+        ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
 
         container.AddProperty("Marker radius",
             new SpinSlider
@@ -120,7 +119,7 @@ public class VectorFillHover : InteractiveSessionBase
             new ColorPickerButton().BindColor(fillColor)
         ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
 
-        container.AddProperty("Bounded color",
+        container.AddProperty("Bounded area color",
             new NullableColorPickerButton().BindColor(AppPreference.VectorFillLayerBoundedAreaColor)
         ).VisibleIf(sm.WorkingLayer, e => e.TryHas<VectorFillLayerSetting>());
 
