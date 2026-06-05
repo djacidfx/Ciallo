@@ -76,7 +76,9 @@ public class StrokeBrushSetting
         aspectBox.AddChild(pp2RadiusCurveEdit);
         container.AddProperty("Pressure to radius", aspectBox);
 
-        var pp2FlowCurveEdit = new MappingCurveEdit().BindCurve(Pressure2FlowCurve);
+        var pp2FlowCurveEdit = new MappingCurveEdit()
+            .BindCurve(Pressure2FlowCurve)
+            .VisibleIf(ActiveBrushFlags, v => v.HasFlag(BrushFlags.Pressure2Flow));
         var flowCurveFlagCheck = new CheckBox()
             .BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
         container.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit)
@@ -108,11 +110,14 @@ public class StrokeBrushSetting
         container.CreateCheckBoxCombo("Stamp texture", stampTextureFlagCheck, stampTextureEdit).AddToChildOf(stampBox);
 
         var maskDiskFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskDisk);
-        var diskOpacityCurveEdit = new MappingCurveEdit().BindCurve(DiskOpacityCurve);
+        var diskOpacityCurveEdit = new MappingCurveEdit()
+            .BindCurve(DiskOpacityCurve)
+            .VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.MaskDisk));
         container.CreateCheckBoxCombo("Hardness curve", maskDiskFlagCheck, diskOpacityCurveEdit).AddToChildOf(stampBox);
 
         var maskTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskTexture);
-        var maskTextureEdit = ImageTextureEdit.Instantiate(MaskTexture, ConvertStampImage);
+        var maskTextureEdit = ImageTextureEdit.Instantiate(MaskTexture, ConvertStampImage)
+            .VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.MaskTexture));
         container.CreateCheckBoxCombo("Mask texture", maskTextureFlagCheck, maskTextureEdit).AddToChildOf(stampBox);
 
         var stampRotationControl = new SpinSlider
@@ -127,7 +132,8 @@ public class StrokeBrushSetting
         container.CreatePropertyBox("Stamp rotation", stampRotationControl).AddToChildOf(stampBox);
 
         var rotationNoiseFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.RotationNoise);
-        var rotationNoiseBox = new VBoxContainer();
+        var rotationNoiseBox = new VBoxContainer()
+            .VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.RotationNoise));
         container.CreateCheckBoxCombo("Rotation noise", rotationNoiseFlagCheck, rotationNoiseBox).AddToChildOf(stampBox);
 
         var rotationNoiseAmplitudeControl = new SpinSlider
@@ -187,12 +193,14 @@ public class StrokeBrushSetting
     }
 }
 
+// Warning: Add, multiply in shader code are extremely wrong.
 public enum BlendMode
 {
     Normal = 0,
-    Add,
-    Multiply,
     Erase,
+    // Add,
+    // Multiply,
+
 }
 
 [Flags]

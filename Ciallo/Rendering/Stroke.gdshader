@@ -12,6 +12,9 @@ render_mode blend_mul;
 render_mode blend_mul;
 #endif
 
+// Warning: BLEND_MUL & BLEND_ADD here are implementing very wrong algorithm
+// multiply's alpha need individual blend channel
+
 struct StampFlag {
     int StampTexture;
     int MaskTexture;
@@ -174,30 +177,6 @@ vec2 solveTheQuadraticEq(vec2 pLocal){
 	return result;
 }
 
-vec4 outputAddBrush(vec3 brushColor, float amount) {
-	// Godot blend_add multiplies source color by source alpha.
-	amount = max(amount, 0.0);
-	float strength = sqrt(amount);
-	if(amount <= 1.0) return vec4(brushColor * strength, strength);
-	return vec4(brushColor * amount, 1.0);
-}
-
-vec4 outputBrush(vec3 brushColor, float coverage) {
-#if defined(BLEND_ADD)
-	return outputAddBrush(brushColor, coverage);
-#elif defined(BLEND_MUL)
-	coverage = clamp(coverage, 0.0, 1.0);
-	return vec4(mix(vec3(1.0), brushColor, coverage), 1.0);
-#elif defined(BLEND_ERASE)
-	coverage = clamp(coverage, 0.0, 1.0);
-	float keep = 1.0 - coverage;
-	return vec4(vec3(keep), keep);
-#else
-	coverage = clamp(coverage, 0.0, 1.0);
-	return vec4(brushColor, coverage);
-#endif
-}
-
 void fragment() {
 	vec2 pLocal = vec2(dot(p-p0, tangent), dot(p-p0, normal));
 	float d0 = distance(p, p0);
@@ -248,7 +227,19 @@ void fragment() {
 		if(d0 < r0 || d1 < r1){
 			coverage = 1.0 - sqrt(1.0 - coverage);
     	}
-		COLOR = outputBrush(brush.rgb, coverage);
+		coverage = clamp(coverage, 0.0, 1.0);
+#if defined(BLEND_ADD)
+		float addAmount = max(coverage, 0.0);
+		float addAlpha = sqrt(addAmount);
+		COLOR = vec4(brush.rgb * addAlpha, addAlpha);
+#elif defined(BLEND_MUL)
+		COLOR = vec4(mix(vec3(1.0), brush.rgb, coverage), 1.0);
+#elif defined(BLEND_ERASE)
+		float keep = 1.0 - coverage;
+		COLOR = vec4(vec3(keep), keep);
+#else
+		COLOR = vec4(brush.rgb, coverage);
+#endif
 	}
 	/*----------------------------------------------------------*/
   	if(StrokeType == Stamp){
@@ -266,9 +257,9 @@ void fragment() {
  		int MAX_i = 128;
  		float currStampIdx = ceil(startStampIdx);
 #if defined(BLEND_MUL)
-		vec3 currMul = vec3(1.0);
+		vec4 currMul = vec4(1.0);
 #else
-		float currA = 1e-7;
+		float currA = 0.0;
 #endif
 		float flow = MaterialColor.a * flowRatio;
 		// Main loop
@@ -295,7 +286,7 @@ void fragment() {
 #if defined(BLEND_ADD)
 			currA += sampledA;
 #elif defined(BLEND_MUL)
-			currMul *= mix(vec3(1.0), MaterialColor.rgb, sampledA);
+			currMul *= vec4(1.0 - MaterialColor.rgb, sampledA);
 #else
 			currA = sampledA + currA * (1.0 - sampledA);
 #endif
@@ -303,9 +294,16 @@ void fragment() {
 			currStampIdx += 1.0;
  		}
 #if defined(BLEND_MUL)
-		COLOR = vec4(currMul, 1.0);
+		COLOR = currMul;
+#elif defined(BLEND_ADD)
+		float addAmount = max(currA, 0.0);
+		float addAlpha = sqrt(addAmount);
+		COLOR = vec4(MaterialColor.rgb * addAlpha, addAlpha);
+#elif defined(BLEND_ERASE)
+		float keep = 1.0 - clamp(currA, 0.0, 1.0);
+		COLOR = vec4(vec3(keep), keep);
 #else
-		COLOR = outputBrush(MaterialColor.rgb, currA);
+		COLOR = vec4(MaterialColor.rgb, clamp(currA, 0.0, 1.0));
 #endif
  	}
 	/*----------------------------------------------------------*/
@@ -322,9 +320,21 @@ void fragment() {
 
 		float lambda = abs(pLocal.y) / sinTheta / r_p;
 		float curveFall = sampleCurve(FalloffCurve, lambda);
-		float tempValue = exp(-deltaN * AlphaDensity  * flow * curveFall);
-		float A = 1.0 - tempValue;
-		COLOR = outputBrush(MaterialColor.rgb, A);
+		float tau = deltaN * AlphaDensity * flow * curveFall;
+#if defined(BLEND_ADD)
+		float addAmount = max(tau, 0.0);
+		float addAlpha = sqrt(addAmount);
+		COLOR = vec4(MaterialColor.rgb * addAlpha, addAlpha);
+#elif defined(BLEND_MUL)
+		COLOR = vec4(exp(-tau * (vec3(1.0) - MaterialColor.rgb)), 1.0);
+#elif defined(BLEND_ERASE)
+		float keep = exp(-tau);
+		COLOR = vec4(vec3(keep), keep);
+#else
+		float keep = exp(-tau);
+		float A = 1.0 - keep;
+		COLOR = vec4(MaterialColor.rgb, A);
+#endif
 	}
 
 	// Dash
