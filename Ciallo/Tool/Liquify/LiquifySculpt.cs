@@ -17,7 +17,7 @@ public static class LiquifySculpt
         float pressure,
         IReadOnlyList<Vector2> strokePositions)
     {
-        float influence = Influence(position, brushCenter, radius, strength, pressure);
+        float influence = Influence(position, brushCenter, radius, strength, NormalizePressure(pressure));
         if (influence <= 0f)
             return position;
 
@@ -66,4 +66,5 @@ public static class LiquifySculpt
         return 1f - t * t * (3f - 2f * t);
     }
 
+    private static float NormalizePressure(float pressure) => pressure <= 0f ? 1f : pressure;
 }

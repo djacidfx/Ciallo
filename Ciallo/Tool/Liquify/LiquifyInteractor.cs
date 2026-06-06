@@ -40,7 +40,7 @@ public class LiquifyInteractor : InteractiveSessionBase
 
     public override void End(CursorButtonData data)
     {
-        var cmd = new CommandBuilder("Liquify");
+        var cmd = new CommandBuilder("Liquify", Document);
         foreach (var (i, e) in _processingEs.Index())
         {
             if (!Changed(i)) continue;
@@ -114,9 +114,7 @@ public class LiquifyInteractor : InteractiveSessionBase
         if (e.Has<StrokeSetting>())
             e.Get<StrokeView>().SetGeometry(positions, geom.Radii.Value, geom.Pressures.Value);
         if (e.Has<FilledPolygonSetting>())
-            e.Get<Polygon2D>().SetPolygonFromRawRing(positions is Vector2[] array
-                ? array.AsSpan()
-                : positions.ToArray().AsSpan());
+            e.Get<Polygon2D>().SetPolygonFromRawRing(positions.ToImmutableArray());
     }
 
     private void Clear()
