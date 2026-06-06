@@ -139,7 +139,8 @@ public static partial class AppDocumentManager
             var result = await dialog.PopupCollectInput();
             if (result == 1) // Yes
             {
-                SaveWorkingDocument();
+                if (!SaveWorkingDocument())
+                    return false;
                 Remove(WorkingDocument.Value);
                 return true;
             }

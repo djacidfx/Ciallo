@@ -12,15 +12,17 @@ public class PaintStrokeOnVectorFill : PaintStrokeInteractor
     {
         Generator.End(data);
         var layers = WorkingLayer.Get<VectorFillLayerSetting>().ReferenceLayers;
-        if (layers.Count <= 0) return;
-        var targetShapeLayer = layers.First();
-        var geometry = Generator.CurrentGeometry;
-        new CommandBuilder(WorkingLayer.World.Create())
-            .NewStroke()
-            .AddToLayerTree(targetShapeLayer)
-            .SetProperty(e => e.Get<StrokeSetting>().BrushE, BrushE)
-            .SetPolylineGeometry([..geometry.Positions], [..geometry.Radii], [..geometry.Pressures], [..geometry.Tilts])
-            .Commit();
+        if (layers.Count > 0)
+        {
+            var targetShapeLayer = layers.First();
+            var geometry = Generator.CurrentGeometry;
+            new CommandBuilder(WorkingLayer.World.Create())
+                .NewStroke()
+                .AddToLayerTree(targetShapeLayer)
+                .SetProperty(e => e.Get<StrokeSetting>().BrushE, BrushE)
+                .SetPolylineGeometry([..geometry.Positions], [..geometry.Radii], [..geometry.Pressures], [..geometry.Tilts])
+                .Commit();
+        }
         Clear();
     }
 

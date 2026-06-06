@@ -94,10 +94,7 @@ internal sealed class PositionModeler
             if (stepsForAngle > nSteps) nSteps = stepsForAngle;
         }
 
-        if (nSteps > samplingParams.MaxOutputsPerCall)
-            throw new ArgumentException($"Input events are too far apart; requested {nSteps} > {samplingParams.MaxOutputsPerCall} samples.");
-
-        return nSteps;
+        return Math.Min(nSteps, samplingParams.MaxOutputsPerCall);
     }
 
     private static Vector2 SpringAcceleration(TipState tipState, Vector2 anchorPosition, PositionModelerParams parameters) =>

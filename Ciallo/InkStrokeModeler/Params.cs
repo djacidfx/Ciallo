@@ -427,7 +427,7 @@ public sealed record StrokeModelParams
             MinOutputRate = 180,
             EndOfStrokeStoppingDistance = .001f,
             EndOfStrokeMaxIterations = 20,
-            MaxOutputsPerCall = 20,
+            MaxOutputsPerCall = 200,
         },
         StylusStateModeler = new()
         {
