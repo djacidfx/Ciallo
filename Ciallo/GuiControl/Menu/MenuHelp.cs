@@ -73,13 +73,13 @@ public partial class MenuHelp : PopupMenu
             {
                 Access = FileDialog.AccessEnum.Filesystem,
                 FileMode = FileDialog.FileModeEnum.OpenAny,
-                Title = "Load research animation",
+                Title = "Load research animation".Tr(),
                 CurrentDir = OS.GetSystemDir(OS.SystemDir.Documents),
                 Size = new Vector2I(1080, 720),
                 DisplayMode = FileDialog.DisplayModeEnum.List,
                 UseNativeDialog = true,
             };
-            _researchAnimationDialog.Filters = ["*.csv;Research animation CSV"];
+            _researchAnimationDialog.Filters = [$"*.csv;{"Research animation CSV".Tr()}"];
             _researchAnimationDialog.FileSelected += OnResearchAnimationPathSelected;
             _researchAnimationDialog.DirSelected += OnResearchAnimationPathSelected;
             AddChild(_researchAnimationDialog);
@@ -98,7 +98,7 @@ public partial class MenuHelp : PopupMenu
         {
             GD.PrintErr(exception);
             var dialog = GetTree().GetNodesInGroup("Dialog").OfType<AcceptDialog>().Single(n => n.Name == "WarnUser");
-            dialog.DialogText = "Cannot load research animation.".Tr() + " " + exception.Message;
+            dialog.DialogText = "Cannot load research animation.".Tr() + " " + exception.Message.Tr();
             dialog.Popup();
         }
     }

@@ -15,7 +15,7 @@ public class HintUserErrorMessageDummy : InteractiveSessionBase
         set
         {
             field = value;
-            _label?.Text = "⚠ " + value;
+            _label?.Text = FormatMessage(value);
         }
     }
 
@@ -38,7 +38,9 @@ public class HintUserErrorMessageDummy : InteractiveSessionBase
 
     public override void DrawProperty(PropertyContainer container)
     {
-        _label = new() { Text = "⚠ " + Message };
+        _label = new() { Text = FormatMessage(Message) };
         container.AddChild(_label);
     }
+
+    private static string FormatMessage(string message) => "⚠ " + message.Tr();
 }
