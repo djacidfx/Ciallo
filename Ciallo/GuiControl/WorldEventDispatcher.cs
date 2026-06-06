@@ -78,15 +78,18 @@ public partial class WorldEventDispatcher : Container
     private MouseCursorState GetMouseCursorState(InputEventMouse mouseEvent)
     {
         // Pitfall _camera.GetViewportTransform() doesn't update until the end of frame, so not response to property change.
+        var panel = (PaintPanel)Owner;
         var screenPos = mouseEvent.Position;
         var screenDelta = screenPos - _prevScreenPos;
         var invTransform = _camera.GetViewportTransform().AffineInverse();
-        var worldPos = invTransform * screenPos;
-        var prevWorldPosWithCurrentCamera = invTransform * _prevScreenPos;
-        var worldDeltaBeforeTransformCamera = worldPos - prevWorldPosWithCurrentCamera;
+        var cameraWorldPos = invTransform * screenPos;
+        var prevCameraWorldPosWithCurrentCamera = invTransform * _prevScreenPos;
+        var worldPos = panel.ToDocumentPosition(cameraWorldPos);
+        var prevWorldPosWithCurrentCamera = panel.ToDocumentPosition(prevCameraWorldPosWithCurrentCamera);
+        var cameraWorldDeltaBeforeTransformCamera = cameraWorldPos - prevCameraWorldPosWithCurrentCamera;
         var worldDelta = worldPos - _prevWorldPos;
 
-        return new MouseCursorState(screenPos, screenDelta, worldPos, worldDelta, worldDeltaBeforeTransformCamera);
+        return new MouseCursorState(screenPos, screenDelta, worldPos, worldDelta, cameraWorldDeltaBeforeTransformCamera);
     }
 
     private void HandleCanvasNavigation(InputEventMouse mouseEvent, PaintPanel panel, MouseCursorState cursor)

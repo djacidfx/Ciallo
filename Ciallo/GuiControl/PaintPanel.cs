@@ -26,11 +26,11 @@ public partial class PaintPanel : PanelContainer, IInitable
         float w = setting.ReferenceSize.Value.X, h = setting.ReferenceSize.Value.Y;
         Background.SetPolygonFromRawRing(new Vector2[] { new(-w / 2, -h / 2), new(w / 2, -h / 2), new(w / 2, h / 2), new(-w / 2, h / 2) });
 
-        CameraZoom.Subscribe(_ => ApplyCameraZoom()).AddTo(this);
+        CameraZoom.Subscribe(v => MainCamera.Zoom = Vector2.One * v).AddTo(this);
         CameraRotation.Subscribe(v => MainCamera.Rotation = v).AddTo(this);
         CameraOffset.Subscribe(v => MainCamera.Position = v).AddTo(this);
-        MirrorHorizontal.Subscribe(_ => ApplyCameraZoom()).AddTo(this);
-        MirrorVertical.Subscribe(_ => ApplyCameraZoom()).AddTo(this);
+        MirrorHorizontal.Subscribe(_ => ApplyMirrorScale()).AddTo(this);
+        MirrorVertical.Subscribe(_ => ApplyMirrorScale()).AddTo(this);
         setting.BackgroundColor.Subscribe(Background.SetColor).AddTo(this);
 
         ZoomControl.BindNumber(CameraZoom);
@@ -46,12 +46,20 @@ public partial class PaintPanel : PanelContainer, IInitable
         MirrorVerticalButton.OnToggledAsObservable().Subscribe(v => MirrorVertical.Value = v).AddTo(this);
     }
 
-    private void ApplyCameraZoom()
+    public Vector2 ToDocumentPosition(Vector2 cameraWorldPosition) => cameraWorldPosition * MirrorScale;
+
+    public Vector2 ToCameraWorldPosition(Vector2 documentPosition) => documentPosition * MirrorScale;
+
+    private Vector2 MirrorScale => new(
+        MirrorHorizontal.Value ? -1 : 1,
+        MirrorVertical.Value ? -1 : 1
+    );
+
+    private void ApplyMirrorScale()
     {
-        var zoom = CameraZoom.Value;
-        MainCamera.Zoom = new Vector2(
-            MirrorHorizontal.Value ? -zoom : zoom,
-            MirrorVertical.Value ? -zoom : zoom
-        );
+        var scale = MirrorScale;
+        WorldView.Scale = scale;
+        WorldOverlay.Scale = scale;
+        WorldBody.Scale = scale;
     }
 }
