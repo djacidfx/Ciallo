@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -17,6 +16,7 @@ public class LiquifyInteractor : InteractiveSessionBase
     private Vector2[][] _origPolylines;
     private Vector2[][] _currPolylines;
     private Rect2[] _aabbs;
+    private bool[] _dirty;
 
     public override void Start(CursorButtonData data)
     {
@@ -24,6 +24,7 @@ public class LiquifyInteractor : InteractiveSessionBase
         _origPolylines = new Vector2[_processingEs.Length][];
         _currPolylines = new Vector2[_processingEs.Length][];
         _aabbs = new Rect2[_processingEs.Length];
+        _dirty = new bool[_processingEs.Length];
 
         for (int i = 0; i < _processingEs.Length; i++)
         {
@@ -44,10 +45,10 @@ public class LiquifyInteractor : InteractiveSessionBase
     public override void End(CursorButtonData data)
     {
         var cmd = new CommandBuilder("Liquify", Document);
-        foreach (var (i, e) in _processingEs.Index())
+        for (int i = 0; i < _processingEs.Length; i++)
         {
-            if (!Changed(i)) continue;
-            cmd.SetTarget(e).SetPolylineGeometry(_currPolylines[i].ToImmutableArray());
+            if (!_dirty[i]) continue;
+            cmd.SetTarget(_processingEs[i]).SetPolylineGeometry(_currPolylines[i].ToImmutableArray());
         }
         cmd.Commit();
 
@@ -97,19 +98,11 @@ public class LiquifyInteractor : InteractiveSessionBase
 
             if (changed)
             {
+                _dirty[i] = true;
                 _aabbs[i] = ComputeAabb(points);
                 UpdateView(_processingEs[i], points);
             }
         }
-    }
-
-    private bool Changed(int polylineIndex)
-    {
-        for (int i = 0; i < _currPolylines[polylineIndex].Length; i++)
-            if (!_currPolylines[polylineIndex][i].IsEqualApprox(_origPolylines[polylineIndex][i]))
-                return true;
-
-        return false;
     }
 
     private void RestoreViews()
@@ -133,6 +126,7 @@ public class LiquifyInteractor : InteractiveSessionBase
         _origPolylines = null;
         _currPolylines = null;
         _aabbs = null;
+        _dirty = null;
     }
 
     private static Rect2 ComputeAabb(Vector2[] points)
