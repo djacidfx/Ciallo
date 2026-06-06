@@ -108,6 +108,12 @@ public abstract partial class LayerTreeBase : ScrollContainer
         block.VisibleButton
             .BindBool(commonSetting.IsVisible, subs)
             .RegisterUndo(cmdM, true);
+        commonSetting.MarkColor.Subscribe(markColor =>
+        {
+            var color = markColor ?? Colors.White;
+            block.VisibleButton.SelfModulate = color;
+            block.WorkingButton.SelfModulate = color;
+        }).AddTo(subs);
         var lineEdit = block.LabelLineEdit
             .BindString(commonSetting.Name, subs)
             .RegisterUndo(cmdM);

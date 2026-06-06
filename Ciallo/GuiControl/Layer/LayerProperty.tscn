@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://h8m1n58g888p" path="res://GuiControl/Layer/LayerProperty.cs" id="1_3smt2"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="1_jbgsm"]
+[ext_resource type="Script" uid="uid://bbm27mfx7lcse" path="res://Widget/NullableColorPickerButton.cs" id="3_mefix"]
 
 [node name="LayerProperty" type="GridContainer" unique_id=1623447946]
 offset_right = 246.0
@@ -28,6 +29,9 @@ metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 layout_mode = 2
 text = "Layer mark"
 
-[node name="ColorPickerButton" type="ColorPickerButton" parent="." unique_id=2067385133]
+[node name="LayerMark" type="ColorPickerButton" parent="." unique_id=1003100333]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+script = ExtResource("3_mefix")
+metadata/_custom_type_script = "uid://bbm27mfx7lcse"
