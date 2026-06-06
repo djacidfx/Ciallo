@@ -110,6 +110,8 @@ public partial class WorldEventDispatcher : Container
             panel.CameraOffset.Value = Vector2.Zero;
             panel.CameraZoom.Value = 1.0f;
             panel.CameraRotation.Value = 0.0f;
+            panel.MirrorHorizontal.Value = false;
+            panel.MirrorVertical.Value = false;
         }
 
         // Scroll mouse wheel to zoom camera.
