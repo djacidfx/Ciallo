@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
@@ -44,7 +43,7 @@ public class LiquifyTool : ToolBase
             {
                 CustomMinimumSize = new(128, 32),
                 FitToLongestItem = false,
-            }.BindEnum(Mode, ToModeName));
+            }.BindEnum(Mode));
 
         container.AddProperty("Radius",
             new SpinSlider
@@ -65,12 +64,4 @@ public class LiquifyTool : ToolBase
 
         base.DrawProperty(container);
     }
-
-    private static string ToModeName(LiquifyMode mode) => mode switch
-    {
-        LiquifyMode.Push => "Push",
-        LiquifyMode.Expand => "Expand",
-        LiquifyMode.Pinch => "Pinch",
-        _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
-    };
 }

@@ -272,28 +272,39 @@ public partial class WorldEventDispatcher : Container
 
                 var prevThisPos = _activeTouches[drag.Index];
                 var prevCentroid = (prevThisPos + otherPos) * 0.5f;
+                var prevVector = prevThisPos - otherPos;
                 var prevDist = prevThisPos.DistanceTo(otherPos);
 
                 _activeTouches[drag.Index] = drag.Position;
 
                 var newCentroid = (drag.Position + otherPos) * 0.5f;
+                var newVector = drag.Position - otherPos;
                 var newDist = drag.Position.DistanceTo(otherPos);
 
                 // Pitfall: same as mouse pan — GetViewportTransform() is stale until end of frame.
                 var invT = _camera.GetViewportTransform().AffineInverse();
                 var panel = (PaintPanel)Owner;
+                var oldOffset = panel.CameraOffset.Value;
+                var oldZoom = panel.CameraZoom.Value;
+                var oldRotation = panel.CameraRotation.Value;
+                var worldUnderPrevCentroid = invT * prevCentroid;
 
-                // Pan: follow centroid movement in world space.
-                panel.CameraOffset.Value -= invT * newCentroid - invT * prevCentroid;
-
-                // Zoom around new centroid: keep the world point under it fixed.
-                if (prevDist > 1f)
+                var newZoom = oldZoom;
+                var newRotation = oldRotation;
+                if (prevDist > 1f && newDist > 1f)
                 {
-                    var zoomRatio = newDist / prevDist;
-                    var worldUnderCentroid = invT * newCentroid;
-                    panel.CameraOffset.Value += (worldUnderCentroid - panel.CameraOffset.Value) * (1f - 1f / zoomRatio);
-                    panel.CameraZoom.Value *= zoomRatio;
+                    newZoom *= newDist / prevDist;
+                    newRotation -= newVector.Angle() - prevVector.Angle();
                 }
+
+                var viewportCenter = prevCentroid -
+                                     (worldUnderPrevCentroid - oldOffset).Rotated(-oldRotation) * oldZoom;
+                var newOffset = worldUnderPrevCentroid -
+                                (newCentroid - viewportCenter).Rotated(newRotation) / newZoom;
+
+                panel.CameraOffset.Value = newOffset;
+                panel.CameraZoom.Value = newZoom;
+                panel.CameraRotation.Value = newRotation;
             }
             else
             {

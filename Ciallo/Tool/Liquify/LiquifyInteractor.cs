@@ -63,8 +63,12 @@ public class LiquifyInteractor : InteractiveSessionBase
     {
         var liquifyTool = (LiquifyTool)Tool;
         var mode = liquifyTool.Mode.Value;
-        float radius = liquifyTool.Radius.Value;
-        float strength = liquifyTool.Strength.Value;
+        var dab = new LiquifyDab(
+            brushCenter,
+            brushDelta,
+            liquifyTool.Radius.Value,
+            liquifyTool.Strength.Value,
+            pressure);
 
         for (int i = 0; i < _processingEs.Length; i++)
         {
@@ -73,16 +77,7 @@ public class LiquifyInteractor : InteractiveSessionBase
             for (int j = 0; j < points.Length; j++)
             {
                 var oldPoint = points[j];
-                var newPoint = LiquifySculpt.Apply(
-                    mode,
-                    oldPoint,
-                    j,
-                    brushCenter,
-                    brushDelta,
-                    radius,
-                    strength,
-                    pressure,
-                    points);
+                var newPoint = LiquifySculpt.Apply(mode, oldPoint, dab);
                 if (newPoint.IsEqualApprox(oldPoint)) continue;
                 points[j] = newPoint;
                 changed = true;
