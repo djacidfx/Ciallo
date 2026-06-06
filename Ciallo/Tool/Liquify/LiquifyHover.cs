@@ -10,7 +10,7 @@ public class LiquifyHover : InteractiveSessionBase
 
     public override void Start(CursorButtonData data)
     {
-        Input.MouseMode = Input.MouseModeEnum.Hidden;
+        Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
         _brushCircle = new StrokeView { Material = AutoloadRendering.DashWireframeMaterial };
         Document.Get<WorldOverlay>().AddChild(_brushCircle);
         UpdateBrushCircle(data.WorldPosition);
@@ -27,7 +27,7 @@ public class LiquifyHover : InteractiveSessionBase
     {
         _brushCircle?.QueueFree();
         _brushCircle = null;
-        Input.MouseMode = Input.MouseModeEnum.Visible;
+        Document.Get<WorldBody>().DefaultCursorShape = default;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;

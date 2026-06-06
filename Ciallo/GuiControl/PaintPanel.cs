@@ -26,12 +26,11 @@ public partial class PaintPanel : PanelContainer, IInitable
         float w = setting.ReferenceSize.Value.X, h = setting.ReferenceSize.Value.Y;
         Background.SetPolygonFromRawRing(new Vector2[] { new(-w / 2, -h / 2), new(w / 2, -h / 2), new(w / 2, h / 2), new(-w / 2, h / 2) });
 
-        CameraZoom.Subscribe(v => MainCamera.Zoom = Vector2.One * v).AddTo(this);
+        CameraZoom.Subscribe(_ => ApplyCameraZoom()).AddTo(this);
         CameraRotation.Subscribe(v => MainCamera.Rotation = v).AddTo(this);
         CameraOffset.Subscribe(v => MainCamera.Position = v).AddTo(this);
-        MirrorHorizontal.CombineLatest(MirrorVertical, (horizontal, vertical) => new Vector2(horizontal ? -1 : 1, vertical ? -1 : 1))
-            .Subscribe(v => MainCamera.Scale = v)
-            .AddTo(this);
+        MirrorHorizontal.Subscribe(_ => ApplyCameraZoom()).AddTo(this);
+        MirrorVertical.Subscribe(_ => ApplyCameraZoom()).AddTo(this);
         setting.BackgroundColor.Subscribe(Background.SetColor).AddTo(this);
 
         ZoomControl.BindNumber(CameraZoom);
@@ -45,5 +44,14 @@ public partial class PaintPanel : PanelContainer, IInitable
         MirrorHorizontalButton.OnToggledAsObservable().Subscribe(v => MirrorHorizontal.Value = v).AddTo(this);
         MirrorVertical.Subscribe(MirrorVerticalButton.SetPressedNoSignal).AddTo(this);
         MirrorVerticalButton.OnToggledAsObservable().Subscribe(v => MirrorVertical.Value = v).AddTo(this);
+    }
+
+    private void ApplyCameraZoom()
+    {
+        var zoom = CameraZoom.Value;
+        MainCamera.Zoom = new Vector2(
+            MirrorHorizontal.Value ? -zoom : zoom,
+            MirrorVertical.Value ? -zoom : zoom
+        );
     }
 }

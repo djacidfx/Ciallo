@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://cmxkg61nilwq8"]
 
+[ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_55ijv"]
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://GuiControl/PaintPanel.cs" id="1_ract4"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_jsupi"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://GuiControl/WorldEventDispatcher.cs" id="3_7pmtm"]
@@ -17,6 +18,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
+theme = ExtResource("1_55ijv")
 script = ExtResource("1_ract4")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=5593848]
@@ -122,7 +124,7 @@ script = ExtResource("3_7pmtm")
 handle_input_locally = false
 use_hdr_2d = true
 canvas_cull_mask = 4293918721
-size = Vector2i(1920, 1042)
+size = Vector2i(1920, 1036)
 render_target_update_mode = 4
 
 [node name="Background" type="Polygon2D" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=340478953]
