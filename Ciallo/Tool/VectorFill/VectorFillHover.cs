@@ -19,13 +19,13 @@ public class VectorFillHover : InteractiveSessionBase
     {
         Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
         SetContoursWithQueryResult(WorkingLayer.Get<OverlayHolder>(),
-            WorkingLayer.Get<ArrangementManager>().Arr, data.WorldPosition);
+            WorkingLayer.Get<ArrangementManager>().ArrReady.CurrentValue, data.WorldPosition);
     }
 
     public override void Moving(CursorMotionData data)
     {
         SetContoursWithQueryResult(WorkingLayer.Get<OverlayHolder>(),
-            WorkingLayer.Get<ArrangementManager>().Arr, data.WorldPosition);
+            WorkingLayer.Get<ArrangementManager>().ArrReady.CurrentValue, data.WorldPosition);
     }
 
     public override void End(CursorButtonData data) => Cancel();
@@ -41,6 +41,11 @@ public class VectorFillHover : InteractiveSessionBase
 
     public void SetContoursWithQueryResult(Node parent, Arrangement arr, Vector2 point)
     {
+        if (arr == null)
+        {
+            HideContours();
+            return;
+        }
         var faceRid = arr.PointQueryFace(point);
         if (!faceRid.IsValid || arr.IsUnboundedFace(faceRid))
         {

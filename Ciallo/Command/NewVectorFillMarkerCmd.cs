@@ -61,26 +61,21 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
             polygonView.Texture = brushE.IsNull ? AutoloadRendering.DummyTextureForUV : null;
         }).AddTo(targetE);
 
-        // Include both parent change and structure change.
-        Observable<Arrangement> changeArrObs = layerNode.Parent
-            .Select(e => e.TryGet<ArrangementManager>()?.Arr)
-            .Select(arr =>
-            {
-                var obs = Observable.Return(arr);
-                if (arr != null)
-                    obs = obs.Merge(arr.StructureChanged.Select(_ => arr));
-                return obs;
-            })
-            .Switch();
-        polylineGeometry.Positions.CombineLatest(changeArrObs, ValueTuple.Create)
-            .ThrottleLastFrame(1)
+        // Polygon view — ArrReady emits whenever the arrangement is settled and safe to query.
+        layerNode.Parent
+            .Select(e => e.IsNull
+                ? Observable.Return<Arrangement>(null)
+                : e.Get<ArrangementManager>().ArrReady.AsObservable())
+            .Switch()
+            .CombineLatest(polylineGeometry.Positions.ThrottleLastFrame(1), ValueTuple.Create)
             .Subscribe(tuple =>
             {
-                var (positions, arr) = tuple;
-                if (arr == null || positions.IsDefaultOrEmpty)
+                var (arr, positions) = tuple;
+                if (positions.IsDefaultOrEmpty)
                     polygonView.Clear();
-                else
+                else if (arr != null)
                     polygonView.SetPolygonWithQueryResult(arr, positions[0]);
+                // else: arr mid-rebuild — keep last frame's polygon to avoid flicker.
             }).AddTo(targetE);
 
         // Overlay

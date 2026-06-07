@@ -68,19 +68,6 @@ public static class Polygon2DExtension
         node.SetTriangleResult(arr.GetTrianglesFromFace(faceRid));
     }
 
-    public static void SetBoundedArea(this Polygon2D node, Arrangement arr, Color? color)
-    {
-        node.Visible = color.HasValue;
-        if (!color.HasValue)
-        {
-            node.Clear();
-            return;
-        }
-
-        node.Color = color.Value;
-        node.SetTriangleResult(arr.GetTrianglesFromFace(arr.GetUnboundedFace()));
-    }
-
     public static void Clear(this Polygon2D node)
     {
         node.Polygon = null;

@@ -119,7 +119,8 @@ public partial class LayerAction : Control
     public void OnConvertToShape()
     {
         var workingLayerE = Document.Get<SelectionManager>().WorkingLayer.Value;
-        var arr = workingLayerE.Get<ArrangementManager>().Arr;
+        var arr = workingLayerE.Get<ArrangementManager>().ArrReady.CurrentValue;
+        if (arr == null) return;
         var layerNode = workingLayerE.Get<LayerTreeNode>();
         var parentE = layerNode.ParentValue;
         var index = layerNode.Index;

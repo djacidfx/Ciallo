@@ -36,36 +36,29 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
             // To preview fill
             _fillPreview = new() { Color = setting.FillColor.Value };
             WorkingLayer.Get<ShapeLayerView>().AddChild(_fillPreview);
-            _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<ArrangementManager>().Arr, data.WorldPosition);
+            _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<ArrangementManager>().ArrReady.CurrentValue, data.WorldPosition);
         }
     }
 
     public override void Moving(CursorMotionData data)
     {
         _markerPreview?.SetGeometry([data.WorldPosition], [MarkerRadius]);
-        _fillPreview?.SetPolygonWithQueryResult(WorkingLayer.Get<ArrangementManager>().Arr, data.WorldPosition);
+        if (_fillPreview == null) return;
+        var arr = WorkingLayer.Get<ArrangementManager>().ArrReady.CurrentValue;
+        if (arr == null) return;
+        _fillPreview.SetPolygonWithQueryResult(arr, data.WorldPosition);
     }
 
     public override void End(CursorButtonData data)
     {
         ClearPreview();
-        if (!_fillBrush.IsNull)
-        {
-            var arr = WorkingLayer.Get<ArrangementManager>().Arr;
-            var faceRid = arr.PointQueryFace(data.WorldPosition);
-            if (!faceRid.IsValid || arr.IsUnboundedFace(faceRid))
-            {
-                Clear();
-                return;
-            }
-
-            new CommandBuilder(WorkingLayer.World.Create())
-                .NewVectorFillMarker()
-                .AddToLayerTree(WorkingLayer)
-                .SetPolylineGeometry([data.WorldPosition], [MarkerRadius], [1.0f], [Vector2.Zero])
-                .SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, _fillBrush)
-                .Commit();
-        }
+        // Allow to place marker even if the arrangement is not ready or fill on unbounded area or brush is null.
+        new CommandBuilder(WorkingLayer.World.Create())
+            .NewVectorFillMarker()
+            .AddToLayerTree(WorkingLayer)
+            .SetPolylineGeometry([data.WorldPosition], [MarkerRadius], [1.0f], [Vector2.Zero])
+            .SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, _fillBrush)
+            .Commit();
 
         Clear();
     }

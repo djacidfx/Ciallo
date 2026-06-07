@@ -51,7 +51,7 @@ public class DeleteLayerCmd : CommandBase
     public override void Do(Entity targetE)
     {
         // If vector fill layer
-        targetE.TryGet<ArrangementManager>()?.Unsubscribe();
+        targetE.TryGet<ArrangementManager>()?.DesyncModification();
 
         // Delete children
         _deleteChildrenCmd?.Do();
@@ -75,6 +75,6 @@ public class DeleteLayerCmd : CommandBase
 
         _deleteChildrenCmd?.Undo();
 
-        layerE.TryGet<ArrangementManager>()?.Subscribe();
+        layerE.TryGet<ArrangementManager>()?.SyncModification();
     }
 }

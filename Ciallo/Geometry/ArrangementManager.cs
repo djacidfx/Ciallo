@@ -12,24 +12,40 @@ namespace Ciallo.Geometry;
 // Owns an Arrangement and synchronizes it with a fixed set of shape-layer polyline indexes.
 public class ArrangementManager : IDisposable
 {
+    // The currently queryable Arrangement, or null if not ready (e.g. mid-rebuild on a worker thread).
+    // Subscribers must handle the null case. Same reference is re-emitted on every mutation.
+    private readonly ReactiveProperty<Arrangement> _arrReady;
+    public ReadOnlyReactiveProperty<Arrangement> ArrReady => _arrReady;
+
     private readonly Arrangement _arr = new();
-    private readonly IReadOnlyList<ShapeLayerPolylineIndex> _indexes;
+    private IReadOnlyList<ShapeLayerPolylineIndex> _indexes;
     private readonly Dictionary<Entity, Rid> _shapeToRid = [];
     private readonly Dictionary<Rid, Entity> _ridToShape = [];
     private CompositeDisposable _subs;
 
-    public Arrangement Arr => _arr;
     public IReadOnlyDictionary<Entity, Rid> ShapeToRid => _shapeToRid;
     public IReadOnlyDictionary<Rid, Entity> RidToShape => _ridToShape;
     public int Generation { get; private set; }
 
-    public ArrangementManager(params ShapeLayerPolylineIndex[] indexes)
+    public ArrangementManager()
     {
+        // Empty arrangement is queryable from the start.
+        _arrReady = new ReactiveProperty<Arrangement>(_arr);
+    }
+
+    /// <summary>
+    /// Observe the given shape-layer polyline indexes and synchronize the arrangement with them.
+    /// Would be burst called on project load 100+ times.
+    /// </summary>
+    /// <param name="indexes"></param>
+    public void Observe(params ShapeLayerPolylineIndex[] indexes)
+    {
+
         _indexes = indexes;
         Rebuild();
     }
 
-    public void Subscribe()
+    public void SyncModification()
     {
         _subs?.Dispose();
         var subs = _subs = new CompositeDisposable();
@@ -62,7 +78,7 @@ public class ArrangementManager : IDisposable
         }
     }
 
-    public void Unsubscribe()
+    public void DesyncModification()
     {
         _subs?.Dispose();
         _subs = null;
@@ -72,7 +88,8 @@ public class ArrangementManager : IDisposable
 
     public void Dispose()
     {
-        Unsubscribe();
+        DesyncModification();
+        _arrReady.Dispose();
         _arr.Dispose();
     }
 
@@ -84,6 +101,11 @@ public class ArrangementManager : IDisposable
                 AddShape(shapeE, polyline.Positions);
         Generation++;
     }
+
+    // Bypass ReactiveProperty's equality dedup by going through OnNext directly:
+    // _arr is the same reference each time, but downstream consumers must still be re-triggered.
+    private void NotifyReady() => _arrReady.OnNext(_arr);
+    private void NotifyNotReady() => _arrReady.OnNext(null);
 
     private void AddShape(Entity shapeE, ImmutableArray<Vector2> positions)
     {

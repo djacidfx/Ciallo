@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
+﻿using System.Linq;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
@@ -45,28 +42,44 @@ public class NewVectorFillLayerCmd : CommandBase
             vectorFillLayerSetting.ReferenceLayers.Clear();
         targetE.Add(vectorFillLayerSetting);
 
-        var manager = new ArrangementManager(
-            [.. vectorFillLayerSetting.ReferenceLayers.Select(e => e.Get<ShapeLayerPolylineIndex>())])
-            .AddTo(targetE);
+        var manager = new ArrangementManager().AddTo(targetE);
+        vectorFillLayerSetting.ReferenceLayers.ObserveChanged().Subscribe(_ =>
+        {
+            var refLayers = vectorFillLayerSetting.ReferenceLayers;
+            manager.Observe([.. refLayers.Select(e => e.Get<ShapeLayerPolylineIndex>())]);
+        }).AddTo(targetE);
         targetE.Add(manager);
-        var arr = manager.Arr;
 
         // Others
         NewShapeLayerCmd.CreateNonDataComponents(targetE);
 
+        // Bounded area view
         var boundedAreaView = new Polygon2D
         {
             Name = "BoundedArea",
             Antialiased = true,
-            Visible = false,
         };
         targetE.AddNode(boundedAreaView);
         targetE.Get<ShapeLayerView>().AddChild(boundedAreaView, false, Node.InternalMode.Front);
-        AppPreference.VectorFillLayerBoundedAreaColor
-            .Merge(arr.StructureChanged.Select(_ => AppPreference.VectorFillLayerBoundedAreaColor.Value))
-            .ThrottleLastFrame(1)
-            .Subscribe(color => boundedAreaView.SetBoundedArea(arr, color))
-            .AddTo(targetE);
+        // Color & visibility — independent of arrangement state.
+        AppPreference.VectorFillLayerBoundedAreaColor.Subscribe(color =>
+        {
+            if (!color.HasValue)
+            {
+                boundedAreaView.Visible = false;
+                return;
+            }
+            boundedAreaView.Visible = true;
+            boundedAreaView.Color = color.Value;
+        }).AddTo(targetE);
+
+        // Shape — ArrReady emits whenever the arrangement is settled and safe to query.
+        // null means mid-rebuild; keep the last frame's triangles to avoid flicker.
+        manager.ArrReady.Subscribe(arr =>
+        {
+            if (arr == null) return;
+            boundedAreaView.SetTriangleResult(arr.GetTrianglesFromFace(arr.GetUnboundedFace()));
+        }).AddTo(targetE);
         // Intentionally not set owner for boundedAreaView, so won't participate in exportation.
 
         // Overlay extra
@@ -78,12 +91,12 @@ public class NewVectorFillLayerCmd : CommandBase
 
     public override void Do(Entity targetE)
     {
-        targetE.Get<ArrangementManager>().Subscribe();
+        targetE.Get<ArrangementManager>().SyncModification();
         targetE.Tag<ToSerializeTag>();
     }
     public override void Undo(Entity targetE)
     {
         targetE.Detach<ToSerializeTag>();
-        targetE.Get<ArrangementManager>().Unsubscribe();
+        targetE.Get<ArrangementManager>().DesyncModification();
     }
 }
