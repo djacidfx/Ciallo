@@ -41,7 +41,7 @@ public class VectorFillHover : InteractiveSessionBase
 
     public void SetContoursWithQueryResult(Node parent, Arrangement arr, Vector2 point)
     {
-        var faceRid = arr.Query(point);
+        var faceRid = arr.PointQueryFace(point);
         if (!faceRid.IsValid || arr.IsUnboundedFace(faceRid))
         {
             HideContours();

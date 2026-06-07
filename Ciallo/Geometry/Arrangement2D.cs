@@ -9,6 +9,7 @@ using R3;
 namespace Ciallo.Geometry;
 
 // Wrapper of CGAL's Arrangement_2 with polyline curves.
+// Need manually call Dispose(), don't call Free() directly.
 public partial class Arrangement : Godot.Arrangement2D
 {
     public static readonly int MemoryPerPoint = 200; // byte in very rough estimation
@@ -22,9 +23,9 @@ public partial class Arrangement : Godot.Arrangement2D
         SetPolyline(id, ImmutableCollectionsMarshal.AsArray(data));
     }
 
-    public Array<Rid> PolylineQuery(ImmutableArray<Vector2> polyline)
+    public Array<Dictionary> PolylineQueryEdges(ImmutableArray<Vector2> polyline)
     {
-        return PolylineQuery(ImmutableCollectionsMarshal.AsArray(polyline));
+        return PolylineQueryEdges(ImmutableCollectionsMarshal.AsArray(polyline));
     }
 
     # region GDExtension bindings

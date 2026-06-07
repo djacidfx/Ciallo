@@ -141,7 +141,7 @@ public partial class LayerAction : Control
             var markerPos = markerE.Get<PolylineGeometry>().Positions.Value[0];
             var brushE = markerE.Get<VectorFillMarkerSetting>().BrushE.Value;
 
-            var faceRid = arr.Query(markerPos);
+            var faceRid = arr.PointQueryFace(markerPos);
             if (!faceRid.IsValid) continue;
             if (arr.IsUnboundedFace(faceRid)) continue;
 

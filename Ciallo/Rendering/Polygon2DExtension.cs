@@ -59,7 +59,7 @@ public static class Polygon2DExtension
 
     public static void SetPolygonWithQueryResult(this Polygon2D node, Arrangement arr, Vector2 point)
     {
-        var faceRid = arr.Query(point);
+        var faceRid = arr.PointQueryFace(point);
         if (!faceRid.IsValid || arr.IsUnboundedFace(faceRid))
         {
             node.Clear();
