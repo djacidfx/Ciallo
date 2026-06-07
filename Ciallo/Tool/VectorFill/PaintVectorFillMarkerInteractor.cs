@@ -52,7 +52,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
         if (!_fillBrush.IsNull)
         {
             var arr = WorkingLayer.Get<Arrangement>();
-            var faceRid = arr.Query(data.WorldPosition);
+            var faceRid = arr.PointQueryFace(data.WorldPosition);
             if (!faceRid.IsValid || arr.IsUnboundedFace(faceRid))
             {
                 Clear();

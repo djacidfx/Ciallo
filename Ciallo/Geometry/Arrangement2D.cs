@@ -66,16 +66,6 @@ public partial class Arrangement : Godot.Arrangement2D
             StructureChanged.OnNext(Unit.Default);
     }
 
-    /// <returns>
-    /// Array of polygons
-    /// if face is bounded the first polygon is outer rim and others are holes inside.
-    /// if face is unbounded all the polygons are holes of the unbounded face.
-    /// </returns>
-    public Array<Vector2[]> GetFacePolygons(Rid id)
-    {
-        return GetPolygonFromFace(id);
-    }
-
     protected override void Dispose(bool disposing)
     {
         ReleaseMemoryPressure();

@@ -47,7 +47,7 @@ public class VectorFillHover : InteractiveSessionBase
             HideContours();
             return;
         }
-        var polygons = arr.GetFacePolygons(faceRid);
+        var polygons = arr.GetPolygonFromFace(faceRid);
         if (polygons.Count == 0)
         {
             HideContours();

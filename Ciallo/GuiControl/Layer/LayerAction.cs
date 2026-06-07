@@ -145,7 +145,7 @@ public partial class LayerAction : Control
             if (!faceRid.IsValid) continue;
             if (arr.IsUnboundedFace(faceRid)) continue;
 
-            var facePolygons = arr.GetFacePolygons(faceRid);
+            var facePolygons = arr.GetPolygonFromFace(faceRid);
             if (facePolygons.Count == 0) continue;
 
             // Bounded face (possibly with holes) → one FilledPolygon
