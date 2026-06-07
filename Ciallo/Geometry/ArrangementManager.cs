@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Ciallo.Data;
@@ -8,22 +9,22 @@ using R3;
 
 namespace Ciallo.Geometry;
 
-// Synchronizes one Arrangement with a fixed set of shape-layer polyline indexes.
-public class ArrangementSynchronizationHelper
+// Owns an Arrangement and synchronizes it with a fixed set of shape-layer polyline indexes.
+public class ArrangementManager : IDisposable
 {
-    private readonly Arrangement _arr;
+    private readonly Arrangement _arr = new();
     private readonly IReadOnlyList<ShapeLayerPolylineIndex> _indexes;
     private readonly Dictionary<Entity, Rid> _shapeToRid = [];
     private readonly Dictionary<Rid, Entity> _ridToShape = [];
     private CompositeDisposable _subs;
 
+    public Arrangement Arr => _arr;
     public IReadOnlyDictionary<Entity, Rid> ShapeToRid => _shapeToRid;
     public IReadOnlyDictionary<Rid, Entity> RidToShape => _ridToShape;
     public int Generation { get; private set; }
 
-    public ArrangementSynchronizationHelper(Arrangement arr, params ShapeLayerPolylineIndex[] indexes)
+    public ArrangementManager(params ShapeLayerPolylineIndex[] indexes)
     {
-        _arr = arr;
         _indexes = indexes;
         Rebuild();
     }
@@ -68,6 +69,12 @@ public class ArrangementSynchronizationHelper
     }
 
     public Entity GetShape(Rid rid) => _ridToShape[rid];
+
+    public void Dispose()
+    {
+        Unsubscribe();
+        _arr.Dispose();
+    }
 
     private void Rebuild()
     {

@@ -19,13 +19,13 @@ public class VectorFillHover : InteractiveSessionBase
     {
         Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
         SetContoursWithQueryResult(WorkingLayer.Get<OverlayHolder>(),
-            WorkingLayer.Get<Arrangement>(), data.WorldPosition);
+            WorkingLayer.Get<ArrangementManager>().Arr, data.WorldPosition);
     }
 
     public override void Moving(CursorMotionData data)
     {
         SetContoursWithQueryResult(WorkingLayer.Get<OverlayHolder>(),
-            WorkingLayer.Get<Arrangement>(), data.WorldPosition);
+            WorkingLayer.Get<ArrangementManager>().Arr, data.WorldPosition);
     }
 
     public override void End(CursorButtonData data) => Cancel();

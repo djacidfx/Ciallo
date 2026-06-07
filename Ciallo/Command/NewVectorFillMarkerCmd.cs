@@ -63,7 +63,7 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
 
         // Include both parent change and structure change.
         Observable<Arrangement> changeArrObs = layerNode.Parent
-            .Select(e => e.TryGet<Arrangement>())
+            .Select(e => e.TryGet<ArrangementManager>()?.Arr)
             .Select(arr =>
             {
                 var obs = Observable.Return(arr);

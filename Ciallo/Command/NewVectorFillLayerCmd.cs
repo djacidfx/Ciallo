@@ -45,12 +45,11 @@ public class NewVectorFillLayerCmd : CommandBase
             vectorFillLayerSetting.ReferenceLayers.Clear();
         targetE.Add(vectorFillLayerSetting);
 
-        var arr = new Arrangement().AddTo(targetE);
-        targetE.Add(arr);
-        var helper = new ArrangementSynchronizationHelper(
-            arr,
-            [.. vectorFillLayerSetting.ReferenceLayers.Select(e => e.Get<ShapeLayerPolylineIndex>())]);
-        targetE.Add(helper);
+        var manager = new ArrangementManager(
+            [.. vectorFillLayerSetting.ReferenceLayers.Select(e => e.Get<ShapeLayerPolylineIndex>())])
+            .AddTo(targetE);
+        targetE.Add(manager);
+        var arr = manager.Arr;
 
         // Others
         NewShapeLayerCmd.CreateNonDataComponents(targetE);
@@ -79,12 +78,12 @@ public class NewVectorFillLayerCmd : CommandBase
 
     public override void Do(Entity targetE)
     {
-        targetE.Get<ArrangementSynchronizationHelper>().Subscribe();
+        targetE.Get<ArrangementManager>().Subscribe();
         targetE.Tag<ToSerializeTag>();
     }
     public override void Undo(Entity targetE)
     {
         targetE.Detach<ToSerializeTag>();
-        targetE.Get<ArrangementSynchronizationHelper>().Unsubscribe();
+        targetE.Get<ArrangementManager>().Unsubscribe();
     }
 }

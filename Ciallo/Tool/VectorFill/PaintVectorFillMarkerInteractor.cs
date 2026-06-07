@@ -21,7 +21,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
         _fillBrush = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
         bool hasBrush = !_fillBrush.IsNull;
-        bool hasArr = WorkingLayer.Has<Arrangement>() && hasBrush;
+        bool hasArr = WorkingLayer.Has<ArrangementManager>() && hasBrush;
 
         if (!hasBrush) return;
         // To preview marker
@@ -36,14 +36,14 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
             // To preview fill
             _fillPreview = new() { Color = setting.FillColor.Value };
             WorkingLayer.Get<ShapeLayerView>().AddChild(_fillPreview);
-            _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement>(), data.WorldPosition);
+            _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<ArrangementManager>().Arr, data.WorldPosition);
         }
     }
 
     public override void Moving(CursorMotionData data)
     {
         _markerPreview?.SetGeometry([data.WorldPosition], [MarkerRadius]);
-        _fillPreview?.SetPolygonWithQueryResult(WorkingLayer.Get<Arrangement>(), data.WorldPosition);
+        _fillPreview?.SetPolygonWithQueryResult(WorkingLayer.Get<ArrangementManager>().Arr, data.WorldPosition);
     }
 
     public override void End(CursorButtonData data)
@@ -51,7 +51,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
         ClearPreview();
         if (!_fillBrush.IsNull)
         {
-            var arr = WorkingLayer.Get<Arrangement>();
+            var arr = WorkingLayer.Get<ArrangementManager>().Arr;
             var faceRid = arr.PointQueryFace(data.WorldPosition);
             if (!faceRid.IsValid || arr.IsUnboundedFace(faceRid))
             {
