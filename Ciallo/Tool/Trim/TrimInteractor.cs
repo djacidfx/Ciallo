@@ -12,7 +12,6 @@ public class TrimInteractor : InteractiveSessionBase
     private readonly List<Vector2> _gesture = [];
     private readonly List<StrokeView> _previewViews = [];
     private StrokeView _gestureView;
-    private TrimPlan _latestPlan;
 
     public new TrimTool Tool => (TrimTool)base.Tool;
 
@@ -36,7 +35,6 @@ public class TrimInteractor : InteractiveSessionBase
 
     public override void End(CursorButtonData data)
     {
-        _latestPlan?.Commit(Document);
         Clear();
     }
 
@@ -47,20 +45,6 @@ public class TrimInteractor : InteractiveSessionBase
     private void UpdatePreview()
     {
         _gestureView.SetGeometry(_gesture, AppPreference.StrokeWireframeRadius);
-        _latestPlan = TrimPlan.Create(Cache, [.. _gesture]);
-        SetPreviewPlan(_latestPlan);
-    }
-
-    private void SetPreviewPlan(TrimPlan plan)
-    {
-        ClearPreview();
-        foreach (var segment in plan.HighlightSegments)
-        {
-            var view = new StrokeView { Material = AutoloadRendering.MissingStrokeBrushMaterial };
-            Document.Get<WorldOverlay>().AddChild(view);
-            view.SetGeometry(segment.Points, segment.Radius);
-            _previewViews.Add(view);
-        }
     }
 
     private void ClearPreview()
@@ -73,7 +57,6 @@ public class TrimInteractor : InteractiveSessionBase
     private void Clear()
     {
         _gesture.Clear();
-        _latestPlan = null;
         _gestureView?.QueueFree();
         _gestureView = null;
         ClearPreview();
