@@ -90,12 +90,6 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
         var marker = new VectorFillMarkerView();
         targetE.AddNode(marker);
 
-        setting.BrushE.Subscribe(brushE =>
-        {
-            marker.Stroke.Material = !brushE.TryHas<StrokeBrushMaterial>()
-                ? AutoloadRendering.MissingStrokeBrushMaterial
-                : brushE.Get<StrokeBrushMaterial>();
-        }).AddTo(targetE);
         setting.BrushE
             .Select(e => e.IsNull
                 ? Observable.Return<ImageTexture>(null)

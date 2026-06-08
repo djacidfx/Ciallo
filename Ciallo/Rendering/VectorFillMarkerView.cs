@@ -7,12 +7,10 @@ namespace Ciallo.Rendering;
 public partial class VectorFillMarkerView : Node2D
 {
     public FixedSizeSprite2D Sprite = new() { Visible = false };
-    public StrokeView Stroke = new() { Visible = false };
 
     public VectorFillMarkerView()
     {
         AddChild(Sprite);
-        AddChild(Stroke);
     }
 
     public void SetGeometry(
@@ -22,7 +20,6 @@ public partial class VectorFillMarkerView : Node2D
         if (positions.Count == 1)
         {
             Sprite.Visible = true;
-            Stroke.Visible = false;
             var p = positions[0];
             var r = radii[0];
             Sprite.Position = p;
@@ -30,7 +27,5 @@ public partial class VectorFillMarkerView : Node2D
             return;
         }
         Sprite.Visible = false;
-        Stroke.Visible = true;
-        Stroke.SetGeometry(positions, radii);
     }
 }

@@ -2,6 +2,7 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
+using Ciallo.Widget;
 using Frent;
 using Godot;
 
@@ -13,6 +14,8 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
     private Polygon2D _fillPreview;
     private Entity _fillBrush;
 
+    private Label _lackOfBrushLabel;
+
     private float MarkerRadius => AppPreference.VectorFillMarkerRadius.Value;
 
     public override void Start(CursorButtonData data)
@@ -21,9 +24,12 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
 
         _fillBrush = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
         bool hasBrush = !_fillBrush.IsNull;
-        bool hasArr = WorkingLayer.Has<ArrangementManager>() && hasBrush;
 
-        if (!hasBrush) return;
+        if (!hasBrush)
+        {
+            _lackOfBrushLabel.Visible = true;
+            return;
+        }
         // To preview marker
         _markerPreview = new();
         var setting = _fillBrush.Get<VectorFillBrushSetting>();
@@ -31,22 +37,21 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
         _markerPreview.Sprite.Modulate = setting.MarkerColor.Value;
         WorkingLayer.Get<OverlayHolder>().AddChild(_markerPreview);
         _markerPreview.SetGeometry([data.WorldPosition], [MarkerRadius]);
-        if (hasArr)
+        var arr = WorkingLayer.Get<ArrangementManager>().ArrReady.CurrentValue;
+        _fillPreview = new() { Color = setting.FillColor.Value };
+        WorkingLayer.Get<ShapeLayerView>().AddChild(_fillPreview);
+        if (arr != null)
         {
-            // To preview fill
-            _fillPreview = new() { Color = setting.FillColor.Value };
-            WorkingLayer.Get<ShapeLayerView>().AddChild(_fillPreview);
-            _fillPreview.SetPolygonWithQueryResult(WorkingLayer.Get<ArrangementManager>().ArrReady.CurrentValue, data.WorldPosition);
+            _fillPreview.SetPolygonWithQueryResult(arr, data.WorldPosition);
         }
     }
 
     public override void Moving(CursorMotionData data)
     {
         _markerPreview?.SetGeometry([data.WorldPosition], [MarkerRadius]);
-        if (_fillPreview == null) return;
         var arr = WorkingLayer.Get<ArrangementManager>().ArrReady.CurrentValue;
         if (arr == null) return;
-        _fillPreview.SetPolygonWithQueryResult(arr, data.WorldPosition);
+        _fillPreview?.SetPolygonWithQueryResult(arr, data.WorldPosition);
     }
 
     public override void End(CursorButtonData data)
@@ -76,9 +81,20 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
     public void Clear()
     {
         ClearPreview();
+        _lackOfBrushLabel.Visible = false;
         Input.MouseMode = Input.MouseModeEnum.Visible;
         _fillBrush = Entity.Null;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
+
+    public override void DrawProperty(PropertyContainer container)
+    {
+        _lackOfBrushLabel = new Label()
+        {
+            Text = "[No Brush Hint]",
+            Visible = false,
+        };
+        container.AddChild(_lackOfBrushLabel);
+    }
 }

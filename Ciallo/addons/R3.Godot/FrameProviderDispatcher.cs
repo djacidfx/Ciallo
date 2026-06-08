@@ -1,5 +1,7 @@
 ﻿#nullable enable
 
+using System;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Godot;
 
@@ -7,8 +9,15 @@ namespace R3;
 
 public partial class FrameProviderDispatcher : Node
 {
+    static readonly ConcurrentQueue<Action> MainThreadActions = new();
+
     StrongBox<double> processDelta = new StrongBox<double>();
     StrongBox<double> physicsProcessDelta = new StrongBox<double>();
+
+    public static void Post(Action action)
+    {
+        MainThreadActions.Enqueue(action);
+    }
 
     public override void _Ready()
     {
@@ -34,6 +43,9 @@ public partial class FrameProviderDispatcher : Node
 
     public override void _Process(double delta)
     {
+        while (MainThreadActions.TryDequeue(out var action))
+            action();
+
         processDelta.Value = delta;
         ((GodotTimeProvider)GodotTimeProvider.Process).time += delta;
         ((GodotFrameProvider)GodotFrameProvider.Process).Run(delta);
