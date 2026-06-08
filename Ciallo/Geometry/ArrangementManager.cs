@@ -35,6 +35,7 @@ public class ArrangementManager : IDisposable
     private bool _drainRunning;
     private bool _arrDisposed;
     private bool _pendingClear;
+    private bool _syncModification;
 
     public ArrangementManager()
     {
@@ -60,12 +61,20 @@ public class ArrangementManager : IDisposable
         _indexes = indexes;
         RebuildSourceShapes();
         RebuildAsync();
+        if (_syncModification)
+            RebuildModificationSubscriptions();
     }
 
     public void SyncModification()
     {
+        _syncModification = true;
         if (_indexes == null)
             return;
+        RebuildModificationSubscriptions();
+    }
+
+    private void RebuildModificationSubscriptions()
+    {
         _subs?.Dispose();
         var subs = _subs = new CompositeDisposable();
 
@@ -98,6 +107,7 @@ public class ArrangementManager : IDisposable
 
     public void DesyncModification()
     {
+        _syncModification = false;
         _subs?.Dispose();
         _subs = null;
     }
