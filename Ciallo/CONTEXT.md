@@ -64,3 +64,9 @@ An undoable action is one user-facing history entry that can be undone or redone
 ### Command Segment
 
 A command segment is one ordered part of an undoable action. Related gestures may contribute multiple ordered command segments to the same undoable action.
+
+## Relationships
+
+- A **Vector Fill Layer** can have zero or more **Reference Layers**.
+- A **Reference Layer** can provide boundary artwork for zero or more **Vector Fill Layers**.
+- When editing reference artwork from a **Vector Fill Layer**, the edited **Shape** remains owned by its original **Reference Layer**.
