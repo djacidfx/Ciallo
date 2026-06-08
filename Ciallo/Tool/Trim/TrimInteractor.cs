@@ -149,6 +149,8 @@ public class TrimInteractor : InteractiveSessionBase
         foreach (var entry in groups)
         {
             var sourceE = entry.SourceE;
+            if (!CanRebuildTrimmedShape(sourceE)) continue;
+
             var geom = sourceE.Get<PolylineGeometry>();
             var sourcePositions = geom.Positions.Value;
             int n = sourcePositions.Length;
@@ -174,8 +176,7 @@ public class TrimInteractor : InteractiveSessionBase
                 if (PieceTooSmall(pieceGeom.positions)) continue;
 
                 var newE = WorkingLayer.World.Create();
-                cmd.SetTarget(newE)
-                    .NewStroke(sourceE)
+                AddShapeCreation(cmd.SetTarget(newE), sourceE)
                     .AddToLayerTree(entry.SourceLayer, originalIndex + insertOffset)
                     .SetPolylineGeometry(
                         pieceGeom.positions,
@@ -187,6 +188,18 @@ public class TrimInteractor : InteractiveSessionBase
         }
 
         if (any) cmd.Commit();
+    }
+
+    private static bool CanRebuildTrimmedShape(Entity sourceE) =>
+        sourceE.Has<StrokeSetting>() || sourceE.Has<FilledPolygonSetting>();
+
+    private static CommandBuilder AddShapeCreation(CommandBuilder cmd, Entity sourceE)
+    {
+        if (sourceE.Has<StrokeSetting>())
+            return cmd.NewStroke(sourceE);
+        if (sourceE.Has<FilledPolygonSetting>())
+            return cmd.NewFilledPolygon(sourceE);
+        throw new InvalidOperationException("Unsupported trim source shape.");
     }
 
     private static (
