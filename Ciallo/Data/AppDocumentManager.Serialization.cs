@@ -160,7 +160,7 @@ public static partial class AppDocumentManager
         var loadSelectionCmd = new CommandBuilder();
         var dataSm = dataDocument.Get<SelectionManager>();
         loadSelectionCmd.SetTarget(entityMap[dataSm.WorkingLayer.CurrentValue])
-            .SetWorkingLayer();
+            .SetWorkingLayer(true);
 
         var dataStrokeBrushE = dataSm.WorkingStrokeBrush.Value;
         if (!dataStrokeBrushE.IsNull)

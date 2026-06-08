@@ -15,7 +15,7 @@ namespace Ciallo.Tool;
 /// Key design ideas:
 /// - Separating interactive logic from how to trigger an interactive session。This allows us to support key remapping and more.
 /// E.g. Stroke drag interactor should not know it's started by dragging left mouse button, or pressing the 'G' key(like Blender)
-/// The tool scripts implement ToolBase are responsible for configurating state machine.
+/// The tool scripts implementing ToolBase are responsible for configuring state machine.
 ///
 /// </remarks>
 public abstract class InteractiveSessionBase
