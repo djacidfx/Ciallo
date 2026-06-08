@@ -111,6 +111,24 @@ public partial class StrokeBrushPreviewList : Container
         };
         wrapper.AddChild(textureRect);
 
+        var nameLabel = new Label
+        {
+            HorizontalAlignment = HorizontalAlignment.Right,
+        };
+        nameLabel.AddThemeConstantOverride("outline_size", 8);
+        var nameWrapper = new MarginContainer()
+        {
+            SizeFlagsVertical = SizeFlags.ShrinkEnd,
+            SizeFlagsHorizontal = SizeFlags.ShrinkEnd,
+        };
+        nameWrapper.AddThemeConstantOverride("margin_bottom", 12);
+        nameWrapper.AddThemeConstantOverride("margin_right", 8);
+        nameWrapper.AddChild(nameLabel);
+        wrapper.AddChild(nameWrapper);
+
+        var setting = e.Get<StrokeBrushSetting>();
+        setting.Name.Subscribe(name => nameLabel.Text = name).AddTo(e);
+
         wrapper.QueueFreeWith(e);
         return wrapper;
     }

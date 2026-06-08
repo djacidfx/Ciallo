@@ -14,7 +14,6 @@ public class PaintFillInteractor : InteractiveSessionBase
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Fixed,
         FixedRadius = AppPreference.StrokeWireframeRadius,
-        AllowIntersection = false,
     };
     private StrokeView _dashPreview;
     private Entity _fillBrush;
@@ -37,14 +36,16 @@ public class PaintFillInteractor : InteractiveSessionBase
     public override void Moving(CursorMotionData data)
     {
         _generator.Update(data);
-        ImmutableArray<Vector2> points = [.._generator.Positions, _generator.Positions[0]];
+        var geometry = _generator.CurrentGeometry;
+        ImmutableArray<Vector2> points = [.. geometry.Positions, geometry.Positions[0]];
         _dashPreview.SetGeometry(points, AppPreference.StrokeWireframeRadius);
     }
 
     public override void End(CursorButtonData data)
     {
         _generator.End(data);
-        if (_generator.Positions.Count < 3)
+        var geometry = _generator.CurrentGeometry;
+        if (geometry.Count < 3)
         {
             Clear();
             return;
@@ -53,10 +54,10 @@ public class PaintFillInteractor : InteractiveSessionBase
             .NewFilledPolygon()
             .AddToLayerTree(WorkingLayer)
             .SetPolylineGeometry(
-                [.._generator.Positions, _generator.Positions[0]],
-                [.._generator.Radii, _generator.Radii[0]],
-                [.._generator.Pressures, _generator.Pressures[0]],
-                [.._generator.Tilts, _generator.Tilts[0]])
+                [.. geometry.Positions, geometry.Positions[0]],
+                [.. geometry.Radii, geometry.Radii[0]],
+                [.. geometry.Pressures, geometry.Pressures[0]],
+                [.. geometry.Tilts, geometry.Tilts[0]])
             .SetProperty(e => e.Get<FilledPolygonSetting>().BrushE, _fillBrush)
             .Commit();
         Clear();

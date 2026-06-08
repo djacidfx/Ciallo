@@ -10,8 +10,7 @@ public partial class SaveAsDialog : FileDialog
         CurrentDir = OS.GetSystemDir(OS.SystemDir.Documents);
         FileSelected += path =>
         {
-            AppDocumentManager.SaveWorkingDocumentAs(path);
-            if (!AppPreference.RecentFiles.Contains(path))
+            if (AppDocumentManager.SaveWorkingDocumentAs(path) && !AppPreference.RecentFiles.Contains(path))
                 AppPreference.RecentFiles.Add(path);
         };
     }

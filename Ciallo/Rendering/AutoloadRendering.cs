@@ -5,11 +5,15 @@ namespace Ciallo.Rendering;
 
 public partial class AutoloadRendering : Node
 {
+    private const string VariantDefinesToken = "// VARIANT_DEFINES";
+
     public static StrokeBrushMaterial WireframeMaterial;
     public static readonly ShaderMaterial WireframeDotMaterial =
         GD.Load<ShaderMaterial>("res://Rendering/WireframeDotMaterial.tres");
     public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
-    public static readonly Shader EraserShader = GD.Load<Shader>("res://Rendering/StrokeEraser.gdshader");
+    public static readonly Shader AddShader = CreateStrokeShaderVariant("#define BLEND_ADD");
+    public static readonly Shader MultiplyShader = CreateStrokeShaderVariant("#define BLEND_MUL");
+    public static readonly Shader EraserShader = CreateStrokeShaderVariant("#define BLEND_ERASE");
     public static readonly Mesh DummyMesh = GD.Load<Mesh>("res://Rendering/StrokeDummyMesh.tres");
     public static readonly Mesh WireframeDotMesh = GD.Load<Mesh>("res://Rendering/WireframeDotMesh.tres");
     public static StrokeBrushMaterial DashWireframeMaterial;
@@ -24,9 +28,19 @@ public partial class AutoloadRendering : Node
     };
     public static readonly ShaderMaterial CheckerboardMaterial = GD.Load<ShaderMaterial>("res://Rendering/Checkerboard.tres");
 
+    private static Shader CreateStrokeShaderVariant(string variantDefines)
+    {
+        return new()
+        {
+            Code = StrokeShader.Code.Replace(VariantDefinesToken, variantDefines),
+        };
+    }
+
     public override void _Ready()
     {
         StrokeShader.TakeOverPath("");
+        AddShader.TakeOverPath("");
+        MultiplyShader.TakeOverPath("");
         EraserShader.TakeOverPath("");
         DummyMesh.TakeOverPath("");
 

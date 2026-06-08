@@ -192,7 +192,7 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
             if (e.Has<VectorFillMarkerSetting>())
                 e.Get<VectorFillMarkerView>().SetGeometry(_currPolylines[i], geom.Radii.Value);
             if (e.Has<FilledPolygonSetting>())
-                e.Get<Polygon2D>().SetPolygon(_currPolylines[i]);
+                e.Get<Polygon2D>().SetPolygonFromRawRing(_currPolylines[i]);
         }
     }
 
@@ -226,7 +226,7 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
             if (e.Has<VectorFillMarkerSetting>())
                 e.Get<VectorFillMarkerView>().SetGeometry(pts, geom.Radii.Value);
             if (e.Has<FilledPolygonSetting>())
-                e.Get<Polygon2D>().SetPolygon(pts.AsSpan());
+                e.Get<Polygon2D>().SetPolygonFromRawRing(pts);
         }
         Clear();
     }

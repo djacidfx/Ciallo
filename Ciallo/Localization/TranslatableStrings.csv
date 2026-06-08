@@ -13,7 +13,6 @@ Double click to rename,Double click to rename,双击重命名,雙擊重新命名
 Error,Error,错误,錯誤,エラー,오류,Fehler,Erreur
 Export as Godot scene,Export as Godot scene,导出为Godot场景,匯出為Godot場景,Godotシーンとしてエクスポート,Godot 씬으로 내보내기,Als Godot-Szene exportieren,Exporter comme scène Godot
 Export as image,Export as image,导出为图像,匯出為圖像,画像としてエクスポート,이미지로 내보내기,Als Bild exportieren,Exporter comme image
-Invalid document name. Please use a valid file name.,Invalid document name. Please use a valid file name.,文档名称无效。请使用有效的文件名。,文檔名稱無效。請使用有效的檔案名稱。,無効なドキュメント名です。有効なファイル名を使用してください。,잘못된 문서 이름입니다. 유효한 파일 이름을 사용하세요.,Ungültiger Dokumentname. Bitte verwenden Sie einen gültigen Dateinamen.,Nom de document invalide. Veuillez utiliser un nom de fichier valide.
 Language,Language,语言,語言,言語,언어,Sprache,Langue
 Lasso - Free-hand selection,Lasso - Free-hand selection,套索 - 自由选择,套索 - 自由選取,投げ縄 - フリーハンド選択,올가미 - 자유 선택,Lasso - Freihandauswahl,Lasso - Sélection à main levée
 Layer,Layer,图层,圖層,レイヤー,레이어,Ebene,Calque
@@ -45,6 +44,7 @@ Help,Help,帮助,說明,ヘルプ,도움말,Hilfe,Aide
 Window,Window,窗口,視窗,ウィンドウ,창,Fenster,Fenêtre
 Canvas navigation guide,Canvas navigation guide,画布移动方法,畫布導航指南,キャンバスナビゲーションガイド,캔버스 탐색 가이드,Canvas-Navigationshandbuch,Guide de navigation sur le canevas
 Line layer,Line layer,线条图层,線條圖層,ラインレイヤー,선 레이어,Linienebene,Calque de ligne
+Image,Image,图像,圖像,画像,이미지,Bild,Image
 Paint tool,Paint tool,绘画工具,繪畫工具,ペイントツール,페인트 도구,Malwerkzeug,Outil de peinture
 Select tool,Select tool,选择工具,選取工具,選択ツール,선택 도구,Auswahlwerkzeug,Outil de sélection
 Brush size,Brush size,笔刷大小,筆刷大小,ブラシサイズ,브러시 크기,Pinselgröße,Taille du pinceau
@@ -74,6 +74,7 @@ Manage brush in document,Manage brush in document,管理文档中的笔刷,管�
 New brush,New brush,新笔刷,新筆刷,新しいブラシ,새 브러시,Neuer Pinsel,Nouveau pinceau
 Select an image,Select an image,选择图像,選擇圖像,画像を選択,이미지 선택,Bild auswählen,Sélectionner une image
 Pencil,Pencil,铅笔,鉛筆,鉛筆,연필,Bleistift,Crayon
+G-pen,G-pen,G 笔,G 筆,Gペン,G펜,G-Pen,Plume G
 Splatter,Splatter,飞溅,飛濺,飛沫,스플래터,Spritzer,Éclaboussure
 Success,Success,成功,成功,成功,성공,Erfolg,Succès
 Output image resolution,Output image resolution,输出的图像分辨率,輸出的圖像解析度,出力画像の解像度,출력 이미지 해상도,Ausgabebildauflösung,Résolution de l'image de sortie
@@ -120,3 +121,31 @@ UI scale,UI scale,界面缩放,界面縮放,UIスケール,UI 스케일,UI-Skala
 Shape layer,Shape layer,形状图层,形狀圖層,シェイプレイヤー,쉐이프 레이어,Formebene,Calque de forme
 Edit mode,Edit mode,编辑模式,編輯模式,編集モード,편집 모드,Bearbeitungsmodus,Mode d'édition
 Transform polyline,Transform polyline,变换折线,變換折線,折れ線を変形,폴리선 변형,Polyline transformieren,Transformer la polyligne
+Folder,Folder,文件夹,資料夾,フォルダー,폴더,Ordner,Dossier
+Cel,Cel,赛璐珞,賽璐珞,セル,셀,Animations-Cel,Cellulo
+Cel folder,Cel folder,赛璐珞文件夹,賽璐珞資料夾,セルフォルダー,셀 폴더,Cel-Ordner,Dossier de cellulos
+Cel creation method,Cel creation method,赛璐珞创建方式,賽璐珞建立方式,セルの作成方法,셀 생성 방식,Methode zur Erstellung von Cels,Méthode de création de cellulos
+None,None,无,無,なし,없음,Keine,Aucune
+WithinCelFolder,Within cel folder,在赛璐珞文件夹内,在賽璐珞資料夾內,セルフォルダー内,셀 폴더 안,Im Cel-Ordner,Dans le dossier de cellulos
+NewCelFolder,New cel folder,新建赛璐珞文件夹,新增賽璐珞資料夾,新しいセルフォルダー,새 셀 폴더,Neuer Cel-Ordner,Nouveau dossier de cellulos
+Vector fill layer,Vector fill layer,矢量填充图层,向量填充圖層,ベクターフィルレイヤー,벡터 채우기 레이어,Vektor-Füllebene,Calque de remplissage vectoriel
+Blend mode,Blend mode,混合模式,混合模式,ブレンドモード,블렌드 모드,Mischmodus,Mode de fusion
+Bounded area color,Bounded area color,封闭区域颜色,封閉區域顏色,閉じた領域の色,닫힌 영역 색상,Farbe des geschlossenen Bereichs,Couleur de la zone fermée
+Mode,Mode,模式,模式,モード,모드,Modus,Mode
+Strength,Strength,强度,強度,強さ,강도,Stärke,Intensité
+Normal,Normal,正常,正常,通常,일반,Normal,Normal
+Erase,Erase,擦除,擦除,消去,지우기,Löschen,Effacer
+Push,Push,推移,推移,押し出し,밀기,Schieben,Pousser
+Expand,Expand,扩张,擴張,膨張,확장,Ausdehnen,Dilater
+Pinch,Pinch,收缩,收縮,つまむ,오므리기,Zusammenziehen,Pincer
+Liquify,Liquify,液化,液化,ゆがみ,픽셀 유동화,Verflüssigen,Fluidité
+No brush selected,No brush selected,未选择画笔,未選擇筆刷,ブラシが選択されていません,브러시가 선택되지 않았습니다,Kein Pinsel ausgewählt,Aucun pinceau sélectionné
+Load research animation,Load research animation,加载研究动画,載入研究動畫,研究用アニメーションを読み込む,연구용 애니메이션 불러오기,Forschungsanimation laden,Charger l'animation de recherche
+Research animation CSV,Research animation CSV,研究动画 CSV,研究動畫 CSV,研究用アニメーション CSV,연구용 애니메이션 CSV,Forschungsanimation-CSV,CSV d'animation de recherche
+Cannot load research animation.,Cannot load research animation.,无法加载研究动画。,無法載入研究動畫。,研究用アニメーションを読み込めません。,연구용 애니메이션을 불러올 수 없습니다.,Forschungsanimation kann nicht geladen werden.,Impossible de charger l'animation de recherche.
+Select a folder containing numeric frame CSV files.,Select a folder containing numeric frame CSV files.,请选择包含数字帧 CSV 文件的文件夹。,請選擇包含數字影格 CSV 檔案的資料夾。,数値フレームのCSVファイルを含むフォルダーを選択してください。,숫자 프레임 CSV 파일이 들어 있는 폴더를 선택하세요.,Wählen Sie einen Ordner mit numerischen Frame-CSV-Dateien aus.,Sélectionnez un dossier contenant des fichiers CSV de frames numériques.
+Selected folder contains no numeric frame CSV files.,Selected folder contains no numeric frame CSV files.,所选文件夹不包含数字帧 CSV 文件。,選取的資料夾不包含數字影格 CSV 檔案。,選択したフォルダーに数値フレームのCSVファイルがありません。,선택한 폴더에 숫자 프레임 CSV 파일이 없습니다.,Der ausgewählte Ordner enthält keine numerischen Frame-CSV-Dateien.,Le dossier sélectionné ne contient aucun fichier CSV de frame numérique.
+Selected animation contains no stroke samples.,Selected animation contains no stroke samples.,所选动画不包含笔画样本。,選取的動畫不包含筆畫樣本。,選択したアニメーションにストロークサンプルがありません。,선택한 애니메이션에 스트로크 샘플이 없습니다.,Die ausgewählte Animation enthält keine Strichproben.,L'animation sélectionnée ne contient aucun échantillon de trait.
+No working stroke brush is selected.,No working stroke brush is selected.,未选择当前工作笔刷。,未選擇目前工作筆刷。,作業中のストロークブラシが選択されていません。,작업 중인 스트로크 브러시가 선택되지 않았습니다.,Kein aktiver Strichpinsel ausgewählt.,Aucun pinceau de trait actif n'est sélectionné.
+Cannot save document.,Cannot save document.,无法保存文档。,無法儲存文件。,ドキュメントを保存できません。,문서를 저장할 수 없습니다.,Dokument kann nicht gespeichert werden.,Impossible d'enregistrer le document.
+Cannot open document.,Cannot open document.,无法打开文档。,無法開啟文件。,ドキュメントを開けません。,문서를 열 수 없습니다.,Dokument kann nicht geöffnet werden.,Impossible d'ouvrir le document.

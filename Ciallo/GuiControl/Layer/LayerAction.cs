@@ -119,7 +119,8 @@ public partial class LayerAction : Control
     public void OnConvertToShape()
     {
         var workingLayerE = Document.Get<SelectionManager>().WorkingLayer.Value;
-        var arr = workingLayerE.Get<Arrangement>();
+        var arr = workingLayerE.Get<ArrangementManager>().ArrReady.CurrentValue;
+        if (arr == null) return;
         var layerNode = workingLayerE.Get<LayerTreeNode>();
         var parentE = layerNode.ParentValue;
         var index = layerNode.Index;
@@ -141,26 +142,18 @@ public partial class LayerAction : Control
             var markerPos = markerE.Get<PolylineGeometry>().Positions.Value[0];
             var brushE = markerE.Get<VectorFillMarkerSetting>().BrushE.Value;
 
-            var faceRid = arr.Query(markerPos);
+            var faceRid = arr.PointQueryFace(markerPos);
             if (!faceRid.IsValid) continue;
+            if (arr.IsUnboundedFace(faceRid)) continue;
 
-            var facePolygons = arr.GetFacePolygons(faceRid);
+            var facePolygons = arr.GetPolygonFromFace(faceRid);
             if (facePolygons.Count == 0) continue;
 
-            if (arr.IsUnboundedFace(faceRid))
-            {
-                // Each hole of the unbounded face becomes a separate FilledPolygon
-                foreach (var hole in facePolygons)
-                    AddFilledPolygon(cmd, shapeLayerE, hole, brushE);
-            }
-            else
-            {
-                // Bounded face (possibly with holes) → one FilledPolygon
-                IReadOnlyList<Vector2> polygon = facePolygons.Count == 1
-                    ? facePolygons.Single()
-                    : facePolygons.ConnectHoles();
-                AddFilledPolygon(cmd, shapeLayerE, polygon, brushE);
-            }
+            // Bounded face (possibly with holes) → one FilledPolygon
+            IReadOnlyList<Vector2> polygon = facePolygons.Count == 1
+                ? facePolygons.Single()
+                : facePolygons.ConnectHoles();
+            AddFilledPolygon(cmd, shapeLayerE, polygon, brushE);
         }
 
         // 3. Set working layer to new ShapeLayer, then remove and delete the VectorFillLayer

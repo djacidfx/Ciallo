@@ -63,7 +63,7 @@ public partial class WorldBody : BodyHolder
         var pointQuery = new PhysicsPointQueryParameters2D()
         {
             CollideWithBodies = true,
-            Position = CursorWorldPosition,
+            Position = _paintPanel.ToCameraWorldPosition(CursorWorldPosition),
             CollisionMask = (uint)AppGodotLayers.Physics2DLayerMask.Stroke,
         };
         var hits = GetWorld2D().DirectSpaceState.IntersectPoint(pointQuery, 32);

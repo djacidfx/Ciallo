@@ -108,6 +108,12 @@ public abstract partial class LayerTreeBase : ScrollContainer
         block.VisibleButton
             .BindBool(commonSetting.IsVisible, subs)
             .RegisterUndo(cmdM, true);
+        commonSetting.MarkColor.Subscribe(markColor =>
+        {
+            var color = markColor ?? Colors.White;
+            block.VisibleButton.SelfModulate = color;
+            block.WorkingButton.SelfModulate = color;
+        }).AddTo(subs);
         var lineEdit = block.LabelLineEdit
             .BindString(commonSetting.Name, subs)
             .RegisterUndo(cmdM);
@@ -149,7 +155,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
         {
             lineEdit.AcceptEvent();
             ShowContextTargetHinter(lineEdit);
-            _rightClickMenu.Show(block.LayerEntity, ShouldShowTimelineLayerActions, button.GlobalPosition);
+            _rightClickMenu.Popup(block.LayerEntity, ShouldShowTimelineLayerActions);
         }).AddTo(e);
 
         // Single click without dragging or double click

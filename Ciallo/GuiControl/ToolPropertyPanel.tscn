@@ -17,6 +17,7 @@ script = ExtResource("1_5ce2c")
 
 [node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=2077719880]
 layout_mode = 2
+vertical_scroll_mode = 4
 
 [node name="MarginContainer" type="MarginContainer" parent="ScrollContainer" unique_id=1466816606]
 layout_mode = 2
@@ -24,7 +25,6 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 10
 
 [node name="PropertiesHolder" type="VBoxContainer" parent="ScrollContainer/MarginContainer" unique_id=1994574085]
 unique_name_in_owner = true

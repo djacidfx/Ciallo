@@ -41,11 +41,15 @@ public static partial class AppDocumentManager
         var resultDocument = Create(dataDocument.Get<DocumentSetting>());
         entityMap.Add(dataDocument, resultDocument);
         WorkingDocument.Value = resultDocument;
-        // Pre-create all result entities upfront (mirrors Serialize's Tagged<ToSerializeTag> query)
+        // Pre-create all result entities upfront (mirrors Serialize's Tagged<ToSerializeTag> query).
         var dataWorld = dataDocument.World;
         var resultWorld = resultDocument.World;
-        foreach (var dataE in dataWorld.CreateQuery().Build().EnumerateWithEntities())
-            entityMap.TryAdd(dataE, resultWorld.Create());
+        var normalEntityQuery = dataWorld.CreateQuery().Tagged<ToSerializeTag>().Build();
+        foreach (var dataE in normalEntityQuery.EnumerateWithEntities())
+        {
+            if (dataE == dataDocument) continue;
+            entityMap.Add(dataE, resultWorld.Create());
+        }
 
         // Load brushes
         var loadBrushCmd = new CommandBuilder();
@@ -109,19 +113,15 @@ public static partial class AppDocumentManager
                 {
                     if (shapeDataE.Has<StrokeSetting>())
                     {
-                        var brushRef = shapeDataE.Get<StrokeSetting>().BrushE;
-                        brushRef.Value = entityMap[brushRef.Value];
                         new CommandBuilder(entityMap[shapeDataE])
-                            .NewStroke(shapeDataE)
+                            .NewStroke(shapeDataE, entityMap)
                             .AddToLayerTree(layerResultE)
                             .Do();
                     }
                     else if (shapeDataE.Has<FilledPolygonSetting>())
                     {
-                        var brushRef = shapeDataE.Get<FilledPolygonSetting>().BrushE;
-                        brushRef.Value = entityMap[brushRef.Value];
                         new CommandBuilder(entityMap[shapeDataE])
-                            .NewFilledPolygon(shapeDataE)
+                            .NewFilledPolygon(shapeDataE, entityMap)
                             .AddToLayerTree(layerResultE)
                             .Do();
                     }
@@ -136,10 +136,8 @@ public static partial class AppDocumentManager
 
                 foreach (var markerDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
-                    markerDataE.Get<VectorFillMarkerSetting>().BrushE.Value =
-                        entityMap[markerDataE.Get<VectorFillMarkerSetting>().BrushE.Value];
                     new CommandBuilder(entityMap[markerDataE])
-                        .NewVectorFillMarker(markerDataE)
+                        .NewVectorFillMarker(markerDataE, entityMap)
                         .AddToLayerTree(layerResultE)
                         .Do();
                 }
@@ -147,7 +145,11 @@ public static partial class AppDocumentManager
         }
 
         // Vector fil reference layers remap
-        foreach (var dataE in dataDocument.World.Query<VectorFillLayerSetting>().EnumerateWithEntities())
+        var vectorFillLayerQuery = dataDocument.World.CreateQuery()
+            .With<VectorFillLayerSetting>()
+            .Tagged<ToSerializeTag>()
+            .Build();
+        foreach (var dataE in vectorFillLayerQuery.EnumerateWithEntities())
         {
             var resultE = entityMap[dataE];
             var newEs = dataE.Get<VectorFillLayerSetting>().ReferenceLayers.Select(e => entityMap[e]);
@@ -158,7 +160,7 @@ public static partial class AppDocumentManager
         var loadSelectionCmd = new CommandBuilder();
         var dataSm = dataDocument.Get<SelectionManager>();
         loadSelectionCmd.SetTarget(entityMap[dataSm.WorkingLayer.CurrentValue])
-            .SetWorkingLayer();
+            .SetWorkingLayer(true);
 
         var dataStrokeBrushE = dataSm.WorkingStrokeBrush.Value;
         if (!dataStrokeBrushE.IsNull)
@@ -176,25 +178,41 @@ public static partial class AppDocumentManager
         resultDocument.Get<TimelineSetting>().CopyFrom(dataDocument.Get<TimelineSetting>());
     }
 
-    public static void SaveWorkingDocument()
+    public static bool SaveWorkingDocument()
     {
-        if (WorkingDocument.CurrentValue.IsNull) return;
+        if (WorkingDocument.CurrentValue.IsNull) return false;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
-        if (CanSaveFile(settings.FilePath.Value))
+        try
+        {
+            EnsureSaveDirectory(settings.FilePath.Value);
             Save(WorkingDocument.Value, settings.FilePath.Value);
-        WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
+            WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
+            return true;
+        }
+        catch (Exception exception)
+        {
+            WarnSaveFailed(exception);
+            return false;
+        }
     }
 
-    public static void SaveWorkingDocumentAs(string filePath)
+    public static bool SaveWorkingDocumentAs(string filePath)
     {
-        if (WorkingDocument.CurrentValue.IsNull) return;
+        if (WorkingDocument.CurrentValue.IsNull) return false;
         var settings = WorkingDocument.CurrentValue.Get<DocumentSetting>();
-        if (CanSaveFile(filePath))
+        try
         {
+            EnsureSaveDirectory(filePath);
             Save(WorkingDocument.Value, filePath);
             settings.FilePath.Value = filePath;
             settings.Name.Value = filePath.GetFile().GetBaseName();
             WorkingDocument.CurrentValue.Get<CommandManager>().OnSave();
+            return true;
+        }
+        catch (Exception exception)
+        {
+            WarnSaveFailed(exception);
+            return false;
         }
     }
 
@@ -215,90 +233,6 @@ public static partial class AppDocumentManager
     public static Entity Load(string filePath)
     {
         return SqliteProjectSerializer.Load(filePath);
-    }
-
-    /// <remarks>
-    /// Serialize all entities with <see cref="ToSerializeTag"/> and their components marked with <see cref="ToSerializeAttribute"/>.
-    /// The result is two binary blobs:
-    /// 1. Entity-Component structure data: List(List(Type))`, each inner list corresponds to an entity and contains its component types.
-    /// 2. Component data: `Dictionary(Type, List(byte[]))`, each list contains the data of that component type for all entities in order.
-    /// </remarks>
-    public static byte[][] Serialize([NotNull] World world)
-    {
-        List<List<Type>> ecData = [];
-        var query = world.CreateQuery().Tagged<ToSerializeTag>().Build();
-        List<Entity> entities = [world.Document(), .. query.EnumerateWithEntities()];
-        foreach (var e in entities)
-        {
-            List<Type> types = [];
-            types.AddRange(e.TagTypes.Select(id => id.Type).Where(ToSerializeTags.Contains));
-            types.AddRange(e.ComponentTypes.Select(id => id.Type).Where(ToSerializeTypes.Contains));
-            ecData.Add(types);
-        }
-
-        var ecBin = MessagePackSerializer.Serialize(ecData);
-
-        EntityToIndexFormatter.Instance.EntityList = entities;
-
-        // Note, directly using List<object> will cause losing type information in deserialization.
-        Dictionary<Type, List<byte[]>> componentData = [];
-
-        foreach (var (idx, types) in ecData.Index())
-        {
-            foreach (var t in types)
-            {
-                if (ToSerializeTags.Contains(t)) continue;
-
-                var obj = entities[idx].Get(t);
-                if (!componentData.ContainsKey(t)) componentData[t] = [];
-                var bytes = MessagePackSerializer.Serialize(t, obj);
-                componentData[t].Add(bytes);
-            }
-        }
-
-        var componentBin = MessagePackSerializer.Serialize(componentData);
-
-        return [ecBin, componentBin];
-    }
-
-    public static Entity Deserialize(byte[][] bins)
-    {
-        var world = new World();
-
-        var ecBin = bins[0];
-        var ecData = MessagePackSerializer.Deserialize<List<List<Type>>>(ecBin);
-        var entities = new List<Entity>(ecData.Count);
-        foreach (var types in ecData)
-        {
-            var e = world.Create();
-            entities.Add(e);
-        }
-
-        var document = entities[0];
-
-        EntityToIndexFormatter.Instance.EntityList = entities;
-
-        var componentBin = bins[1];
-        var componentData = MessagePackSerializer.Deserialize<Dictionary<Type, Queue<byte[]>>>(componentBin);
-
-        foreach (var (idx, ts) in ecData.Index())
-        {
-            var e = entities[idx];
-            foreach (var t in ts)
-            {
-                if (ToSerializeTags.Contains(t)) e.Tag(t);
-                else
-                {
-                    if (!componentData.TryGetValue(t, out var dataQueue)) continue;
-                    var bytes = dataQueue.Dequeue();
-                    var component = MessagePackSerializer.Deserialize(t, bytes);
-                    Debug.Assert(component != null, nameof(component) + " != null");
-                    e.AddAs(t, component);
-                }
-            }
-        }
-
-        return document;
     }
 
     public static IEnumerable<Type> GetToSerializeTypes()
@@ -333,21 +267,20 @@ public static partial class AppDocumentManager
         return fields.Length == 0;
     }
 
-    public static bool CanSaveFile(string filePath)
+    private static void EnsureSaveDirectory(string filePath)
     {
         var directory = Path.GetDirectoryName(filePath);
-        if (string.IsNullOrEmpty(directory)) return false;
-        if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+        if (string.IsNullOrEmpty(directory))
+            throw new InvalidOperationException("Save path has no directory.");
+        if (!Directory.Exists(directory))
+            Directory.CreateDirectory(directory);
+    }
 
-        try
-        {
-            // has write permission.
-            using var x = File.Create(filePath, 1, FileOptions.DeleteOnClose);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
+    private static void WarnSaveFailed(Exception exception)
+    {
+        GD.PrintErr(exception);
+        var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<AcceptDialog>().Single(n => n.Name == "WarnUser");
+        dialog.DialogText = "Cannot save document.".Tr() + " " + exception.Message;
+        dialog.Popup();
     }
 }

@@ -39,7 +39,7 @@ window/size/viewport_height=1080
 window/energy_saving/keep_screen_on=false
 window/subwindows/embed_subwindows=false
 window/per_pixel_transparency/allowed=true
-window/vsync/vsync_mode=0
+window/vsync/vsync_mode=3
 
 [dotnet]
 
@@ -198,7 +198,7 @@ pointing/emulate_mouse_from_touch=false
 
 [internationalization]
 
-locale/translations=PackedStringArray("res://Localization/TranslatableStrings.zh_CN.translation", "res://Localization/TranslatableStrings.de.translation", "res://Localization/TranslatableStrings.en.translation", "res://Localization/TranslatableStrings.fr.translation", "res://Localization/TranslatableStrings.ja.translation", "res://Localization/TranslatableStrings.ko.translation", "res://Localization/TranslatableStrings.zh_TW.translation", "res://Localization/LongStrings.de.translation", "res://Localization/LongStrings.en.translation", "res://Localization/LongStrings.fr.translation", "res://Localization/LongStrings.ja.translation", "res://Localization/LongStrings.ko.translation", "res://Localization/LongStrings.zh_CN.translation", "res://Localization/LongStrings.zh_TW.translation")
+locale/translations=PackedStringArray("res://Localization/LongStrings.de.translation", "res://Localization/LongStrings.en.translation", "res://Localization/LongStrings.fr.translation", "res://Localization/LongStrings.ja.translation", "res://Localization/LongStrings.ko.translation", "res://Localization/LongStrings.zh_CN.translation", "res://Localization/LongStrings.zh_TW.translation", "res://Localization/TranslatableStrings.de.translation", "res://Localization/TranslatableStrings.en.translation", "res://Localization/TranslatableStrings.fr.translation", "res://Localization/TranslatableStrings.ja.translation", "res://Localization/TranslatableStrings.ko.translation", "res://Localization/TranslatableStrings.zh_CN.translation", "res://Localization/TranslatableStrings.zh_TW.translation")
 
 [layer_names]
 
@@ -221,6 +221,4 @@ rendering_device/driver.windows="d3d12"
 rendering_device/fallback_to_vulkan=false
 viewport/hdr_2d=true
 anti_aliasing/screen_space_roughness_limiter/enabled=false
-anti_aliasing/quality/smaa_edge_detection_threshold=0.1
-anti_aliasing/quality/screen_space_aa=1
 environment/screen_space_reflection/roughness_quality=0

@@ -101,14 +101,11 @@ public class Preference
     public ReactiveProperty<float> VectorFillMarkerRadius = new(10.0f);
 
     [DataMember]
+    public ReactiveProperty<Color?> VectorFillLayerBoundedAreaColor = new();
+
+    [DataMember]
     public ReactiveProperty<bool> ShowVectorFillReferenceLayerWireframe = new(false);
 
     #endregion
 
-    #region PaintStrokeTool
-
-    [DataMember]
-    public ReactiveProperty<TimeSpan> TaperDuration = new(TimeSpan.FromMilliseconds(10));
-
-    #endregion
 }

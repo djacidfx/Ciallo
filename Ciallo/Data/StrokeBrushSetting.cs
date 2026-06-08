@@ -17,6 +17,7 @@ public class StrokeBrushSetting
     [DataMember, ProjectField(StorageKind.Blob)] public ObservableList<BrushLabel> Labels = [];
     [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
     [DataMember, ProjectField] public ReactiveProperty<BrushFlags> ActiveBrushFlags = new();
+    [DataMember, ProjectField] public ReactiveProperty<BlendMode> BlendMode = new();
     [DataMember, ProjectField] public ReactiveProperty<float> BaseRadius = new(5.0f);
     [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<ImmutableArray<BezierPoint>> Pressure2RadiusCurve = new(BezierCurveFactory.Linear(0.2f, 1.0f)); // radius = baseRadius * curve(pressure)
     [DataMember, ProjectField] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
@@ -67,15 +68,17 @@ public class StrokeBrushSetting
         picker.ColorMode = ColorPicker.ColorModeType.Rgb;
         container.AddProperty("RGB+Flow", colorPickerButton.BindColor(Color));
 
-        var eraserCheck = new CheckBox().BindFlag(ActiveBrushFlags, BrushFlags.Eraser);
-        container.AddProperty("Eraser mode", eraserCheck);
+        var blendModeButton = new OptionButton().BindEnum(BlendMode);
+        container.AddProperty("Blend mode", blendModeButton);
 
         var pp2RadiusCurveEdit = new MappingCurveEdit { MinValue = 0.01f }.BindCurve(Pressure2RadiusCurve);
         var aspectBox = new AspectRatioContainer();
         aspectBox.AddChild(pp2RadiusCurveEdit);
         container.AddProperty("Pressure to radius", aspectBox);
 
-        var pp2FlowCurveEdit = new MappingCurveEdit().BindCurve(Pressure2FlowCurve);
+        var pp2FlowCurveEdit = new MappingCurveEdit()
+            .BindCurve(Pressure2FlowCurve)
+            .VisibleIf(ActiveBrushFlags, v => v.HasFlag(BrushFlags.Pressure2Flow));
         var flowCurveFlagCheck = new CheckBox()
             .BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Flow);
         container.CreateCheckBoxCombo("Pressure to flow", flowCurveFlagCheck, pp2FlowCurveEdit)
@@ -107,11 +110,14 @@ public class StrokeBrushSetting
         container.CreateCheckBoxCombo("Stamp texture", stampTextureFlagCheck, stampTextureEdit).AddToChildOf(stampBox);
 
         var maskDiskFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskDisk);
-        var diskOpacityCurveEdit = new MappingCurveEdit().BindCurve(DiskOpacityCurve);
+        var diskOpacityCurveEdit = new MappingCurveEdit()
+            .BindCurve(DiskOpacityCurve)
+            .VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.MaskDisk));
         container.CreateCheckBoxCombo("Hardness curve", maskDiskFlagCheck, diskOpacityCurveEdit).AddToChildOf(stampBox);
 
         var maskTextureFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.MaskTexture);
-        var maskTextureEdit = ImageTextureEdit.Instantiate(MaskTexture, ConvertStampImage);
+        var maskTextureEdit = ImageTextureEdit.Instantiate(MaskTexture, ConvertStampImage)
+            .VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.MaskTexture));
         container.CreateCheckBoxCombo("Mask texture", maskTextureFlagCheck, maskTextureEdit).AddToChildOf(stampBox);
 
         var stampRotationControl = new SpinSlider
@@ -126,7 +132,8 @@ public class StrokeBrushSetting
         container.CreatePropertyBox("Stamp rotation", stampRotationControl).AddToChildOf(stampBox);
 
         var rotationNoiseFlagCheck = new CheckBox().BindFlag(ActiveStampFlags, StampFlags.RotationNoise);
-        var rotationNoiseBox = new VBoxContainer();
+        var rotationNoiseBox = new VBoxContainer()
+            .VisibleIf(ActiveStampFlags, v => v.HasFlag(StampFlags.RotationNoise));
         container.CreateCheckBoxCombo("Rotation noise", rotationNoiseFlagCheck, rotationNoiseBox).AddToChildOf(stampBox);
 
         var rotationNoiseAmplitudeControl = new SpinSlider
@@ -186,12 +193,21 @@ public class StrokeBrushSetting
     }
 }
 
+// Warning: Add, multiply in shader code are extremely wrong.
+public enum BlendMode
+{
+    Normal = 0,
+    Erase,
+    // Add,
+    // Multiply,
+
+}
+
 [Flags]
 public enum BrushFlags
 {
     Pressure2Flow = 1 << 0,
     Dash = 1 << 1,
-    Eraser = 1 << 2,
 }
 
 [Flags]

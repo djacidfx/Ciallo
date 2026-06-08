@@ -1,4 +1,5 @@
-﻿using Ciallo.Data;
+using System.Collections.Generic;
+using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
 using R3;
@@ -6,31 +7,37 @@ using R3;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class NewStrokeCmd : CommandBase
+public class NewStrokeCmd : NewShapeCmdBase
 {
-    public Entity CopyE { get; }
     public override void OnDeletedAsDo() => TargetE.Delete();
 
-    public NewStrokeCmd(Entity copyE = default)
+    public NewStrokeCmd(Entity copyE = default, IReadOnlyDictionary<Entity, Entity> entityMap = null)
+        : base(copyE, entityMap)
     {
-        CopyE = copyE;
     }
 
-    public override void BeforeFirstDo(Entity targetE)
+    protected override void AddDataComponents(Entity targetE)
     {
-        // Data
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
 
         var strokeSetting = CopyE.IsNull
             ? new StrokeSetting()
             : CopyE.Get<StrokeSetting>().Clone();
+        strokeSetting.BrushE.Value = MapEntityRef(strokeSetting.BrushE.Value);
         targetE.Add(strokeSetting);
 
         var polylineGeometry = CopyE.IsNull
             ? new PolylineGeometry()
             : CopyE.Get<PolylineGeometry>().Clone();
         targetE.Add(polylineGeometry);
+    }
+
+    protected override void CreateRuntime(Entity targetE)
+    {
+        var layerNode = targetE.Get<LayerTreeNode>();
+        var strokeSetting = targetE.Get<StrokeSetting>();
+        var polylineGeometry = targetE.Get<PolylineGeometry>();
 
         // View
         var strokeView = new StrokeView()

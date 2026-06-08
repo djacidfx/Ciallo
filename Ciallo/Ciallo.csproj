@@ -38,12 +38,19 @@
 
     <ItemGroup>
         <Compile Remove="SourceGeneration\**" />
+        <Compile Remove="InkStrokeModeler\**" />
+        <Compile Remove="InkStrokeModeler.Tests\**" />
+        <Compile Remove=".godot\**" />
     </ItemGroup>
     <ItemGroup>
         <EmbeddedResource Remove="SourceGeneration\**" />
+        <EmbeddedResource Remove="InkStrokeModeler\**" />
+        <EmbeddedResource Remove="InkStrokeModeler.Tests\**" />
+        <EmbeddedResource Remove=".godot\**" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="SourceGeneration\SourceGeneration.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="InkStrokeModeler\InkStrokeModeler.csproj" />
     </ItemGroup>
 
     <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">

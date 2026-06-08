@@ -29,12 +29,16 @@ public partial class StrokeBrushMaterial : ShaderMaterial
         setting.GapLength.Subscribe(length => SetShaderParameter("GapLength", length)).AddTo(Subs);
         setting.DashForwardSpeed.Subscribe(speed => SetShaderParameter("DashForwardSpeed", speed)).AddTo(Subs);
         // Brush-level flags
-        setting.ActiveBrushFlags.Subscribe(value =>
+        setting.ActiveBrushFlags.Subscribe(value => SetShaderParameter("ActiveBrushFlags", (int)value)).AddTo(Subs);
+        setting.BlendMode.Subscribe(value =>
         {
-            SetShaderParameter("ActiveBrushFlags", (int)value);
-            Shader = value.HasFlag(BrushFlags.Eraser)
-                ? AutoloadRendering.EraserShader
-                : AutoloadRendering.StrokeShader;
+            Shader = value switch
+            {
+                // BlendMode.Add => AutoloadRendering.AddShader,
+                // BlendMode.Multiply => AutoloadRendering.MultiplyShader,
+                BlendMode.Erase => AutoloadRendering.EraserShader,
+                _ => AutoloadRendering.StrokeShader,
+            };
         }).AddTo(Subs);
         ImageTexture pp2FlowTex = null;
         setting.Pressure2FlowCurve.Subscribe(points =>

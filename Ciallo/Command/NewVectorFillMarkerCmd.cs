@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
@@ -10,20 +11,17 @@ using R3;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class NewVectorFillMarkerCmd : CommandBase
+public class NewVectorFillMarkerCmd : NewShapeCmdBase
 {
-    public Entity CopyE { get; }
-
-    public NewVectorFillMarkerCmd(Entity copyE = default)
+    public NewVectorFillMarkerCmd(Entity copyE = default, IReadOnlyDictionary<Entity, Entity> entityMap = null)
+        : base(copyE, entityMap)
     {
-        CopyE = copyE;
     }
 
     public override void OnDeletedAsDo() => TargetE.Delete();
 
-    public override void BeforeFirstDo(Entity targetE)
+    protected override void AddDataComponents(Entity targetE)
     {
-        // Data
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
 
@@ -35,9 +33,15 @@ public class NewVectorFillMarkerCmd : CommandBase
         var setting = CopyE.IsNull
             ? new VectorFillMarkerSetting()
             : CopyE.Get<VectorFillMarkerSetting>().Clone();
+        setting.BrushE.Value = MapEntityRef(setting.BrushE.Value);
         targetE.Add(setting);
-        if (!setting.BrushE.Value.IsNull && setting.BrushE.Value.World != targetE.World)
-            setting.BrushE.Value = default;
+    }
+
+    protected override void CreateRuntime(Entity targetE)
+    {
+        var layerNode = targetE.Get<LayerTreeNode>();
+        var polylineGeometry = targetE.Get<PolylineGeometry>();
+        var setting = targetE.Get<VectorFillMarkerSetting>();
 
         // By design, polygons attached to fill markers are views,
         // Strokes and marker sprites attached are overlays.
@@ -51,32 +55,22 @@ public class NewVectorFillMarkerCmd : CommandBase
             .Switch()
             .Subscribe(polygonView.SetColor)
             .AddTo(targetE);
-        setting.BrushE.Subscribe(brushE =>
-        {
-            polygonView.Material = brushE.IsNull ? AutoloadRendering.MissingFillBrushMaterial : null;
-            polygonView.Texture = brushE.IsNull ? AutoloadRendering.DummyTextureForUV : null;
-        }).AddTo(targetE);
 
-        // Include both parent change and structure change.
-        Observable<Arrangement> changeArrObs = layerNode.Parent
-            .Select(e => e.TryGet<Arrangement>())
-            .Select(arr =>
-            {
-                var obs = Observable.Return(arr);
-                if (arr != null)
-                    obs = obs.Merge(arr.StructureChanged.Select(_ => arr));
-                return obs;
-            })
-            .Switch();
-        polylineGeometry.Positions.CombineLatest(changeArrObs, ValueTuple.Create)
-            .ThrottleLastFrame(1)
+        // Polygon view — ArrReady emits whenever the arrangement is settled and safe to query.
+        layerNode.Parent
+            .Select(e => e.IsNull
+                ? Observable.Return<Arrangement>(null)
+                : e.Get<ArrangementManager>().ArrReady.AsObservable())
+            .Switch()
+            .CombineLatest(polylineGeometry.Positions.ThrottleLastFrame(1), ValueTuple.Create)
             .Subscribe(tuple =>
             {
-                var (positions, arr) = tuple;
-                if (arr == null || positions.IsDefaultOrEmpty)
+                var (arr, positions) = tuple;
+                if (positions.IsDefaultOrEmpty)
                     polygonView.Clear();
-                else
+                else if (arr != null)
                     polygonView.SetPolygonWithQueryResult(arr, positions[0]);
+                // else: arr mid-rebuild — keep last frame's polygon to avoid flicker.
             }).AddTo(targetE);
 
         // Overlay
@@ -93,9 +87,14 @@ public class NewVectorFillMarkerCmd : CommandBase
 
         setting.BrushE.Subscribe(brushE =>
         {
-            marker.Stroke.Material = !brushE.TryHas<StrokeBrushMaterial>()
-                ? AutoloadRendering.MissingStrokeBrushMaterial
-                : brushE.Get<StrokeBrushMaterial>();
+            if (brushE.IsNull)
+            {
+                VectorFillMarkerView.ApplyMissingBrush(polygonView, marker);
+                return;
+            }
+
+            polygonView.Material = null;
+            polygonView.Texture = null;
         }).AddTo(targetE);
         setting.BrushE
             .Select(e => e.IsNull
@@ -163,6 +162,7 @@ public class NewVectorFillMarkerCmd : CommandBase
     {
         targetE.Tag<ToSerializeTag>();
     }
+
     public override void Undo(Entity targetE)
     {
         Document.Get<SelectionManager>().SelectedShapes.Remove(targetE);

@@ -128,7 +128,7 @@ public abstract partial class ToolBase : ITool
     public bool OnKey(InputEventKey key)
     {
         // Check trigger action
-        var actionTrigger = DetectTriggerAction();
+        var actionTrigger = DetectTriggerAction(key);
         if (actionTrigger != null && Machine.CanFire(actionTrigger))
         {
             Machine.Fire(actionTrigger);
@@ -145,13 +145,13 @@ public abstract partial class ToolBase : ITool
         return Machine.State.OnKey(key, _lastestCursor);
     }
 
-    private Trigger DetectTriggerAction()
+    private Trigger DetectTriggerAction(InputEventKey key)
     {
         foreach (var action in _triggerActions)
         {
-            if (action.IsJustPressed)
+            if (action.IsPressedBy(key))
                 return Trigger.Get(action, true);
-            if (action.IsJustReleased)
+            if (action.IsReleasedBy(key))
                 return Trigger.Get(action, false);
         }
         return null;

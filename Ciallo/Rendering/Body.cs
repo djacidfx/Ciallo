@@ -89,14 +89,26 @@ public partial class Body : StaticBody2D, IInitable, IDestroyable
         }
     }
 
-    public void SetSimplePolygon(IReadOnlyList<Vector2> points)
+    public void SetPolygonFromRawRing(IReadOnlyList<Vector2> points)
     {
         ClearShapes();
 
-        AddChild(new CollisionPolygon2D()
+        var triangleResult = Arrangement2D.RepairAndTriangulate([points.ToArray()]);
+        var vertices = (Vector2[])triangleResult["vertices"];
+        var indices = (int[])triangleResult["indices"];
+
+        for (int i = 0; i + 2 < indices.Length; i += 3)
         {
-            Polygon = [..points],
-        });
+            var shapeRid = PhysicsServer2D.ConvexPolygonShapeCreate();
+            PhysicsServer2D.ShapeSetData(shapeRid, new[]
+            {
+                vertices[indices[i]],
+                vertices[indices[i + 1]],
+                vertices[indices[i + 2]],
+            });
+            _shapes.Add(shapeRid);
+            PhysicsServer2D.BodyAddShape(GetRid(), shapeRid);
+        }
     }
 
     public void SetStrokeCenterline(IReadOnlyList<Vector2> points, float radius)

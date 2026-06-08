@@ -28,6 +28,7 @@ public partial class StrokeBrushEditor : AcceptDialog
             Name = workingBrush.Select(s => s?.Name).Flatten().AddTo(subs),
             Color = workingBrush.Select(s => s?.Color).Flatten().AddTo(subs),
             ActiveBrushFlags = workingBrush.Select(s => s?.ActiveBrushFlags).Flatten().AddTo(subs),
+            BlendMode = workingBrush.Select(s => s?.BlendMode).Flatten().AddTo(subs),
             BaseRadius = workingBrush.Select(s => s?.BaseRadius).Flatten().AddTo(subs),
             Pressure2RadiusCurve = workingBrush.Select(s => s?.Pressure2RadiusCurve).Flatten().AddTo(subs),
             RenderingType = workingBrush.Select(s => s?.RenderingType).Flatten().AddTo(subs),

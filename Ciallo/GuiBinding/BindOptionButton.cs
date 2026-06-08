@@ -18,10 +18,11 @@ public static class BindOptionButton
         /// </summary>
         /// <param name="property"></param>
         /// <typeparam name="T">Must be enum type.</typeparam>
-        public OptionButton BindEnum<T>(ReactiveProperty<T> property) where T : Enum
+        public OptionButton BindEnum<T>(ReactiveProperty<T> property, Func<T, string> toName = null) where T : Enum
         {
+            toName ??= value => value.ToString().Tr();
             var values = (T[])Enum.GetValues(typeof(T));
-            button.BindValue(values, property);
+            button.BindValue(values, property, toName);
             return button;
         }
         /// <summary>
@@ -41,7 +42,6 @@ public static class BindOptionButton
             foreach (var item in items)
                 button.AddItem(toString(item));
 
-            // Bind
             property.Subscribe(value => button.Selected = items.IndexOf(value)).AddTo(subs);
             button.OnItemSelectedAsObservable().Subscribe(index =>
             {
@@ -161,7 +161,6 @@ public static class BindOptionButton
         public OptionButton BindSelectionIndex(ReactiveProperty<int> property)
         {
             var subs = new CompositeDisposable();
-
             property.Subscribe(value =>
             {
                 if (value >= 0 && value < button.GetItemCount())
@@ -170,9 +169,9 @@ public static class BindOptionButton
                     button.Selected = -1;
             }).AddTo(subs);
 
-            button.OnItemSelectedAsObservable().Subscribe(index => property.Value = (int)index)
+            button.OnItemSelectedAsObservable()
+                .Subscribe(index => property.Value = (int)index)
                 .AddTo(subs);
-
             subs.AddTo(button);
             return button;
         }

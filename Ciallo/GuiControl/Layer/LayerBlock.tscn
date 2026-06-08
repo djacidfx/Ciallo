@@ -9,6 +9,15 @@
 [ext_resource type="Script" uid="uid://d1yjxfpa62cbe" path="res://Widget/Indent.cs" id="6_qhucf"]
 [ext_resource type="Texture2D" uid="uid://tcs0hhsr6evc" path="res://Icon/FixedSize/chevron-down-sized.svg" id="7_f2a0e"]
 [ext_resource type="Texture2D" uid="uid://k84vnagoi87c" path="res://Icon/FixedSize/chevron-forward-sized.svg" id="8_qhucf"]
+[ext_resource type="Texture2D" uid="uid://kc3cwh88aicc" path="res://Icon/folder.svg" id="9_folder"]
+[ext_resource type="Texture2D" uid="uid://2lcc8gqapmry" path="res://Icon/folder-animation.svg" id="10_folderanim"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_41jg2"]
+content_margin_left = 8.0
+content_margin_top = 0.0
+content_margin_right = 0.0
+content_margin_bottom = 0.0
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qp082"]
 content_margin_left = 10.0
@@ -62,7 +71,8 @@ layout_mode = 2
 script = ExtResource("6_qhucf")
 Count = 1
 Width = 24
-BarColor = Color(0.7058824, 0.7058824, 0.7058824, 1)
+BarWidth = 1
+BarColor = Color(0.4337086, 0.433709, 0.43370876, 1)
 metadata/_custom_type_script = "uid://d1yjxfpa62cbe"
 
 [node name="DropdownArrow" type="CheckButton" parent="Layer/DeSeparationMarginContainer/HBoxContainer" unique_id=24815639]
@@ -73,6 +83,27 @@ theme_override_icons/checked = ExtResource("7_f2a0e")
 theme_override_icons/unchecked = ExtResource("8_qhucf")
 action_mode = 0
 expand_icon = true
+
+[node name="IconPanel" type="PanelContainer" parent="Layer/DeSeparationMarginContainer/HBoxContainer" unique_id=681528299]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_41jg2")
+
+[node name="RegularFolderIcon" type="TextureRect" parent="Layer/DeSeparationMarginContainer/HBoxContainer/IconPanel" unique_id=1549803962]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+texture = ExtResource("9_folder")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CelFolderIcon" type="TextureRect" parent="Layer/DeSeparationMarginContainer/HBoxContainer/IconPanel" unique_id=1839858191]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+texture = ExtResource("10_folderanim")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="LabelLineEdit" type="LineEdit" parent="Layer" unique_id=800426827]
 unique_name_in_owner = true

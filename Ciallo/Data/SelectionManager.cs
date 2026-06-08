@@ -22,7 +22,7 @@ public class SelectionManager
     // Which make sure everything works OK even though CurrentFrame and WorkingLayer are not in sync.
     [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Nullable)]
     public ReactiveProperty<Entity> WorkingLayer = new(Entity.Null);
-    public ReadOnlyReactiveProperty<Entity> WorkingCelFolder;
+    public ReadOnlyReactiveProperty<Entity> WorkingCelFolder; // Null if the working layer is not under any cel folder.
 
     [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Nullable)]
     public ReactiveProperty<Entity> WorkingStrokeBrush = new(Entity.Null);
@@ -32,26 +32,28 @@ public class SelectionManager
 
     public ObservableList<Entity> SelectedShapes = [];
 
-    public void InitWorkingCelFolder()
+    public void InitWorkingCelFolder(LayerTreeNode root)
     {
-        WorkingCelFolder = WorkingLayer.Select(layerE =>
-        {
-            if (layerE.IsNull || layerE.IsDocument)
+        var layerTreeChanged = root.ObserveMutation().DebounceFrame(1).ObserveOn(GodotFrameProvider.BeforeProcess);
+        WorkingCelFolder = layerTreeChanged.CombineLatest(WorkingLayer, (_, layerE) => layerE)
+            .Select(layerE =>
+            {
+                if (layerE.IsNull || layerE.IsDocument)
+                    return Entity.Null;
+                if (layerE.TryGet<FolderLayerSetting>()?.IsCel == true)
+                {
+                    return layerE;
+                }
+
+                var ancestors = layerE.Get<LayerTreeNode>().EnumerateAncestors();
+                foreach (Entity e in ancestors)
+                {
+                    // Layer's parent must have FolderLayerSetting component, but it may not be a cel folder.
+                    if (e.Get<FolderLayerSetting>().IsCel) return e;
+                }
+
                 return Entity.Null;
-            if (layerE.TryGet<FolderLayerSetting>()?.IsCel == true)
-            {
-                return layerE;
-            }
-
-            var ancestors = layerE.Get<LayerTreeNode>().EnumerateAncestors();
-            foreach (Entity e in ancestors)
-            {
-                // Layer's parent must have FolderLayerSetting component, but it may not be a cel folder.
-                if (e.Get<FolderLayerSetting>().IsCel) return e;
-            }
-
-            return Entity.Null;
-        }).ToReadOnlyReactiveProperty();
+            }).ToReadOnlyReactiveProperty();
     }
 
     /// <summary>

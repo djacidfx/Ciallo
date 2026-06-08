@@ -1,5 +1,6 @@
 ﻿using System.Runtime.Serialization;
 using R3;
+using Godot;
 
 namespace Ciallo.Data;
 
@@ -12,6 +13,7 @@ public class CommonLayerSetting
     [DataMember, ProjectField] public ReactiveProperty<string> Name = new("");
     [DataMember, ProjectField] public ReactiveProperty<bool> IsVisible = new(true);
     [DataMember, ProjectField] public ReactiveProperty<float> Opacity = new(1.0f);
+    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<Color?> MarkColor = new();
     [DataMember, ProjectField] public ReactiveProperty<bool> IsLocked = new(false);
 
     public void CopySettingFrom(CommonLayerSetting other)
@@ -19,6 +21,7 @@ public class CommonLayerSetting
         Name.Value = other.Name.Value;
         IsVisible.Value = other.IsVisible.Value;
         Opacity.Value = other.Opacity.Value;
+        MarkColor.Value = other.MarkColor.Value;
         IsLocked.Value = other.IsLocked.Value;
     }
 
@@ -29,6 +32,7 @@ public class CommonLayerSetting
             Name = { Value = Name.Value },
             IsVisible = { Value = IsVisible.Value },
             Opacity = { Value = Opacity.Value },
+            MarkColor = { Value = MarkColor.Value },
             IsLocked = { Value = IsLocked.Value },
         };
     }

@@ -201,6 +201,7 @@ public partial class TimelineAction : Container
         new CommandBuilder(folder)
             .NewCelFolder()
             .AddToLayerTree(parent)
+            .SetWorkingLayer()
             .Commit();
     }
 

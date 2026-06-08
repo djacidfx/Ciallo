@@ -167,12 +167,10 @@ theme_override_constants/margin_left = 10
 layout_mode = 2
 size_flags_vertical = 3
 split_offsets = PackedInt32Array(365)
-split_offset = 365
 
 [node name="VSplit" type="VSplitContainer" parent="MainGui/MarginContainer/UIBlock" unique_id=861482289]
 layout_mode = 2
 split_offsets = PackedInt32Array(500)
-split_offset = 500
 
 [node name="HSplitContainer" type="HSplitContainer" parent="MainGui/MarginContainer/UIBlock/VSplit" unique_id=648431329]
 layout_mode = 2
@@ -202,7 +200,6 @@ size_flags_vertical = 3
 [node name="VSplitContainer" type="VSplitContainer" parent="MainGui/MarginContainer/UIBlock" unique_id=619523970]
 layout_mode = 2
 split_offsets = PackedInt32Array(265)
-split_offset = 265
 
 [node name="WelcomePanel" parent="MainGui/MarginContainer/UIBlock/VSplitContainer" unique_id=1492248500 groups=["UncategorizedControl"] instance=ExtResource("16_fpfj3")]
 layout_mode = 2

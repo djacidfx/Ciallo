@@ -38,5 +38,12 @@ public partial class LayerBlock : Container, IInitable, ILayerBlock
     public void Init(Entity self)
     {
         LayerEntity = self;
+        UpdateFolderIcons();
+    }
+
+    private void UpdateFolderIcons()
+    {
+        RegularFolderIcon.Visible = IsFolder && !IsCelFolder;
+        CelFolderIcon.Visible = IsCelFolder;
     }
 }

@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://cmxkg61nilwq8"]
 
+[ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_55ijv"]
 [ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://GuiControl/PaintPanel.cs" id="1_ract4"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_jsupi"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://GuiControl/WorldEventDispatcher.cs" id="3_7pmtm"]
@@ -7,6 +8,8 @@
 [ext_resource type="Script" uid="uid://b6k54smyke07b" path="res://Rendering/WorldView.cs" id="5_pm3jj"]
 [ext_resource type="Script" uid="uid://ci7loyp0at1cr" path="res://Rendering/WorldOverlay.cs" id="6_je3d8"]
 [ext_resource type="Script" uid="uid://dc5n5euy0qfdj" path="res://Rendering/WorldBody.cs" id="7_8h3gs"]
+[ext_resource type="Texture2D" uid="uid://bhoa1i50mggd4" path="res://Icon/flip-horizontal.svg" id="8_0jsmf"]
+[ext_resource type="Texture2D" uid="uid://f80karf2gkhx" path="res://Icon/flip-vertical.svg" id="9_ms4ye"]
 
 [node name="PaintPanel" type="PanelContainer" unique_id=265811070]
 anchors_preset = 15
@@ -15,6 +18,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
+theme = ExtResource("1_55ijv")
 script = ExtResource("1_ract4")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=5593848]
@@ -84,6 +88,29 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 
+[node name="VSeparator4" type="VSeparator" parent="VBoxContainer/Bar/HBoxContainer" unique_id=1856136557]
+layout_mode = 2
+
+[node name="MirrorHorizontalButton" type="Button" parent="VBoxContainer/Bar/HBoxContainer" unique_id=1856136558]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Mirror horizontally"
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+icon = ExtResource("8_0jsmf")
+expand_icon = true
+
+[node name="MirrorVerticalButton" type="Button" parent="VBoxContainer/Bar/HBoxContainer" unique_id=1856136559]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "Mirror vertically"
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+icon = ExtResource("9_ms4ye")
+expand_icon = true
+
 [node name="WorldEventDispatcher" type="SubViewportContainer" parent="VBoxContainer" unique_id=50397957]
 unique_name_in_owner = true
 layout_mode = 2
@@ -97,7 +124,7 @@ script = ExtResource("3_7pmtm")
 handle_input_locally = false
 use_hdr_2d = true
 canvas_cull_mask = 4293918721
-size = Vector2i(1920, 1042)
+size = Vector2i(1920, 1036)
 render_target_update_mode = 4
 
 [node name="Background" type="Polygon2D" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=340478953]

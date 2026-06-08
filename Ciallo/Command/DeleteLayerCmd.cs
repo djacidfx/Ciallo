@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
+using Ciallo.Geometry;
 using Frent;
-using Frent.Systems;
 
 namespace Ciallo.Command;
 
@@ -51,7 +51,7 @@ public class DeleteLayerCmd : CommandBase
     public override void Do(Entity targetE)
     {
         // If vector fill layer
-        targetE.TryGet<ArrangementSynchronizationHelper>()?.Unsubscribe();
+        targetE.TryGet<ArrangementManager>()?.DesyncModification();
 
         // Delete children
         _deleteChildrenCmd?.Do();
@@ -59,11 +59,11 @@ public class DeleteLayerCmd : CommandBase
         // Remove shape layer from vector fill layer settings
         if (targetE.Has<ShapeLayerSetting>())
         {
-            var query = targetE.World.Query<VectorFillLayerSetting>();
-            query.Delegate((ref VectorFillLayerSetting setting) =>
+            var query = targetE.World.CreateQuery().With<VectorFillLayerSetting>().Tagged<ToSerializeTag>().Build();
+            foreach (var vectorFillLayerE in query.EnumerateWithEntities())
             {
-                setting.ReferenceLayers.Remove(targetE);
-            });
+                vectorFillLayerE.Get<VectorFillLayerSetting>().ReferenceLayers.Remove(targetE);
+            }
         }
 
         targetE.Detach<ToSerializeTag>();
@@ -75,6 +75,6 @@ public class DeleteLayerCmd : CommandBase
 
         _deleteChildrenCmd?.Undo();
 
-        layerE.TryGet<ArrangementSynchronizationHelper>()?.Subscribe();
+        layerE.TryGet<ArrangementManager>()?.SyncModification();
     }
 }

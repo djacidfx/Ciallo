@@ -21,15 +21,20 @@ public static class BindItemList
             [NotNull] ReactiveProperty<T> property, Func<T, string> toName = null)
         {
             if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
+            toName ??= v => v.ToString();
+
             control.Clear();
             foreach (var item in items)
-                control.AddItem(toName != null ? toName(item) : item.ToString());
+                control.AddItem(toName(item));
 
             var subs = new CompositeDisposable();
             property.Subscribe(value =>
             {
-                var idx = items.IndexOf<T>(value);
-                control.Select(idx);
+                var idx = items.IndexOf(value);
+                if (idx >= 0)
+                    control.Select(idx);
+                else
+                    control.DeselectAll();
             }).AddTo(subs);
 
             control.SignalAsObservable<long>(ItemList.SignalName.ItemSelected)
@@ -157,21 +162,26 @@ public static class BindItemList
         {
             if (control.SelectMode != ItemList.SelectModeEnum.Single) throw new ArgumentException("List must be single selectable", nameof(control));
             var subs = new CompositeDisposable();
-
-            // Bind index property to selection
-            subs.Add(index.Subscribe(value =>
+            index.Subscribe(value =>
             {
                 if (value >= 0 && value < control.GetItemCount())
                     control.Select(value);
                 else
                     control.DeselectAll();
-            }));
+            }).AddTo(subs);
 
-            // Update property on user selection
             control.SignalAsObservable<long>(ItemList.SignalName.ItemSelected)
-                .Subscribe(idx => index.Value = (int)idx).AddTo(subs);
-
+                .Subscribe(idx => index.Value = (int)idx)
+                .AddTo(subs);
             subs.AddTo(control);
+            return control;
+        }
+
+        public ItemList BindEnum<T>(ReactiveProperty<T> property, Func<T, string> toName = null) where T : Enum
+        {
+            toName ??= value => value.ToString().Tr();
+            var values = (T[])Enum.GetValues(typeof(T));
+            control.BindValue(values, property, toName);
             return control;
         }
     }

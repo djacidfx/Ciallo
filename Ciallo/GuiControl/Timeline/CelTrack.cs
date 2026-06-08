@@ -178,31 +178,33 @@ public partial class CelTrack : Control
         float playbackStartX = FrameToX(_playbackStart);
         float playbackEndX = FrameToX(_playbackEnd);
 
-        // ── Arrow from playbackStart to first in-range frame ──────────────────
+        // Arrow from playbackStart to first in-range frame.
+        // If the exposure started before playbackStart, use that cel's mark color.
         int? firstInRange = null;
-        foreach (int f in frames)
-            if (f >= _playbackStart && f < _playbackEnd) { firstInRange = f; break; }
-
-        bool hasFramesBefore = frames.Count > 0 && frames[0] < _playbackStart;
-        if (hasFramesBefore && firstInRange.HasValue)
+        int? previousFrame = null;
+        foreach (int frame in frames)
         {
-            float shaftStart = playbackStartX;
-            float firstX = FrameToX(firstInRange.Value);
-            float tipX = Mathf.Min(firstX, w + ArrowHeadLength);
-            if (tipX - shaftStart > ArrowHeadLength)
+            if (frame < _playbackStart)
             {
-                DrawLine(new(shaftStart, midY), new(tipX - ArrowHeadLength, midY), ArrowColor);
-                Vector2 tip = new(tipX, midY);
-                Vector2 p1 = new(tipX - ArrowHeadLength, midY - ArrowHeadHalfWidth);
-                Vector2 p2 = new(tipX - ArrowHeadLength, midY + ArrowHeadHalfWidth);
-                DrawColoredPolygon([tip, p1, p2], ArrowColor);
+                previousFrame = frame;
+                continue;
             }
+            if (frame < _playbackEnd)
+                firstInRange = frame;
+            break;
+        }
+
+        if (previousFrame.HasValue && firstInRange.HasValue)
+        {
+            float tipX = Mathf.Min(FrameToX(firstInRange.Value), w + ArrowHeadLength);
+            DrawArrow(playbackStartX, tipX, midY, GetCelArrowColor(_exposures[previousFrame.Value]));
         }
 
         for (int i = 0; i < frames.Count; i++)
         {
             int frame = frames[i];
             float x = FrameToX(frame);
+            var layerE = _exposures[frame];
 
             // ── Cel drag bar
             var barRect = new Rect2(x, 0f, barW, h);
@@ -221,10 +223,8 @@ public partial class CelTrack : Control
             }
 
             // ── Layer name label (draw for any visible frame) ─────────────────
-            var layerE = _exposures[frame];
             string name = layerE.Get<CommonLayerSetting>().Name.Value;
             float labelX = x + barW + LabelPad;
-            // Label end: next frame's bar (any range), except last in-range frame uses playbackEndX
             int? nextAny = i + 1 < frames.Count ? frames[i + 1] : null;
             float labelEnd = nextAny.HasValue
                 ? FrameToX(nextAny.Value) - ArrowHeadLength - LabelPad
@@ -243,32 +243,11 @@ public partial class CelTrack : Control
                 if (frames[j] >= _playbackStart && frames[j] < _playbackEnd) { nextInRange = frames[j]; break; }
             }
 
-            // ── Arrow to next bar (or to playbackEnd for the last in-range frame) ────
-            float shaftStart = x + barW;
-            float tipX;
-
-            if (nextInRange.HasValue)
-            {
-                // Arrow points toward next bar
-                float nextX = FrameToX(nextInRange.Value);
-                tipX = Mathf.Min(nextX, w + ArrowHeadLength);
-            }
-            else
-            {
-                // Last in-range frame: arrow points to playbackEnd
-                tipX = Mathf.Min(playbackEndX, w + ArrowHeadLength);
-            }
-
-            if (tipX - shaftStart <= ArrowHeadLength) continue; // gap too narrow
-
-            // Shaft line
-            DrawLine(new(shaftStart, midY), new(tipX - ArrowHeadLength, midY), ArrowColor);
-
-            // Arrowhead (triangle pointing right)
-            Vector2 tip = new(tipX, midY);
-            Vector2 p1 = new(tipX - ArrowHeadLength, midY - ArrowHeadHalfWidth);
-            Vector2 p2 = new(tipX - ArrowHeadLength, midY + ArrowHeadHalfWidth);
-            DrawColoredPolygon([tip, p1, p2], ArrowColor);
+            // Arrow to next bar, or to playbackEnd for the last in-range frame.
+            float tipX = nextInRange.HasValue
+                ? Mathf.Min(FrameToX(nextInRange.Value), w + ArrowHeadLength)
+                : Mathf.Min(playbackEndX, w + ArrowHeadLength);
+            DrawArrow(x + barW, tipX, midY, GetCelArrowColor(layerE));
         }
 
         // ── Right-click indicator line ────────────────────────────────────────
@@ -301,6 +280,21 @@ public partial class CelTrack : Control
             DrawLine(new Vector2(0f, h - width / 2), new Vector2(w, h - width / 2), HintSelectedColor, width: width);
         }
     }
+
+    private void DrawArrow(float shaftStart, float tipX, float midY, Color color)
+    {
+        if (tipX - shaftStart <= ArrowHeadLength) return;
+
+        DrawLine(new(shaftStart, midY), new(tipX - ArrowHeadLength, midY), color);
+
+        Vector2 tip = new(tipX, midY);
+        Vector2 p1 = new(tipX - ArrowHeadLength, midY - ArrowHeadHalfWidth);
+        Vector2 p2 = new(tipX - ArrowHeadLength, midY + ArrowHeadHalfWidth);
+        DrawColoredPolygon([tip, p1, p2], color);
+    }
+
+    private Color GetCelArrowColor(Entity layerE) =>
+        layerE.Get<CommonLayerSetting>().MarkColor.Value ?? ArrowColor;
 
     // ── Coordinate helper ────────────────────────────────────────────────────
 
@@ -367,7 +361,7 @@ public partial class CelTrack : Control
             _rightClickIndicatorFrame = frame;
             QueueRedraw();
             RightClickMenu.PopupHide += OnMenuClosed;
-            RightClickMenu.Show(_celFolderEntity, frame, btn.GlobalPosition);
+            RightClickMenu.Popup(_celFolderEntity, frame);
             AcceptEvent();
         }
         else if (@event is InputEventMouseButton lbtn && lbtn.ButtonIndex == MouseButton.Left)

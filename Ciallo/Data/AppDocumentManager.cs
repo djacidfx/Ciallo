@@ -39,12 +39,13 @@ public static partial class AppDocumentManager
         var document = world.Create();
 
         document.Add(settings);
-        document.Add(new LayerTreeNode()); // Document entity is layer tree root
+        var root = new LayerTreeNode();
+        document.Add(root); // Document entity is layer tree root
         document.Add(new FolderLayerSetting()); // Document entity is also a folder layer
         document.Add(new TimelineSetting());
         // Add managers
         document.Add(new SelectionManager());
-        document.Get<SelectionManager>().InitWorkingCelFolder();
+        document.Get<SelectionManager>().InitWorkingCelFolder(root);
         document.Add(new CommandManager());
         document.Add(new BrushManager());
         document.Add(new ToolManager());
@@ -138,7 +139,8 @@ public static partial class AppDocumentManager
             var result = await dialog.PopupCollectInput();
             if (result == 1) // Yes
             {
-                SaveWorkingDocument();
+                if (!SaveWorkingDocument())
+                    return false;
                 Remove(WorkingDocument.Value);
                 return true;
             }

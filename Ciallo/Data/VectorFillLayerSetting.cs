@@ -9,7 +9,6 @@ public class VectorFillLayerSetting
 {
     [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Required)]
     public ObservableHashSet<Entity> ReferenceLayers = [];
-
     public VectorFillLayerSetting Clone()
     {
         VectorFillLayerSetting newObj = new();

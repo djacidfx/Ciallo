@@ -37,6 +37,7 @@ public class NewShapeLayerCmd : CommandBase
             ? new ShapeLayerSetting()
             : CopyE.Get<ShapeLayerSetting>().Clone();
         targetE.Add(shapeLayerSetting);
+        targetE.Add(new ShapeLayerPolylineIndex(targetE));
 
         // Others
         CreateNonDataComponents(targetE);
@@ -44,12 +45,14 @@ public class NewShapeLayerCmd : CommandBase
 
     public override void Do(Entity targetE)
     {
+        targetE.Get<ShapeLayerPolylineIndex>().Subscribe();
         targetE.Tag<ToSerializeTag>();
     }
 
     public override void Undo(Entity targetE)
     {
         targetE.Detach<ToSerializeTag>();
+        targetE.Get<ShapeLayerPolylineIndex>().Unsubscribe();
     }
 
     public static void CreateNonDataComponents(Entity targetE)

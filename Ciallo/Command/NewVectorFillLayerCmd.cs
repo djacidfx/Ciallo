@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
+﻿using System.Linq;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
@@ -45,13 +42,45 @@ public class NewVectorFillLayerCmd : CommandBase
             vectorFillLayerSetting.ReferenceLayers.Clear();
         targetE.Add(vectorFillLayerSetting);
 
-        var arr = new Arrangement().AddTo(targetE);
-        targetE.Add(arr);
-        var helper = new ArrangementSynchronizationHelper(arr, vectorFillLayerSetting.ReferenceLayers);
-        targetE.Add(helper);
+        var manager = new ArrangementManager().AddTo(targetE);
+        vectorFillLayerSetting.ReferenceLayers.ObserveChanged().Subscribe(_ =>
+        {
+            var refLayers = vectorFillLayerSetting.ReferenceLayers;
+            manager.Observe([.. refLayers.Select(e => e.Get<ShapeLayerPolylineIndex>())]);
+        }).AddTo(targetE);
+        targetE.Add(manager);
 
         // Others
         NewShapeLayerCmd.CreateNonDataComponents(targetE);
+
+        // Bounded area view
+        var boundedAreaView = new Polygon2D
+        {
+            Name = "BoundedArea",
+            Antialiased = true,
+        };
+        targetE.AddNode(boundedAreaView);
+        targetE.Get<ShapeLayerView>().AddChild(boundedAreaView, false, Node.InternalMode.Front);
+        // Color & visibility — independent of arrangement state.
+        AppPreference.VectorFillLayerBoundedAreaColor.Subscribe(color =>
+        {
+            if (!color.HasValue)
+            {
+                boundedAreaView.Visible = false;
+                return;
+            }
+            boundedAreaView.Visible = true;
+            boundedAreaView.Color = color.Value;
+        }).AddTo(targetE);
+
+        // Shape — ArrReady emits whenever the arrangement is settled and safe to query.
+        // null means mid-rebuild; keep the last frame's triangles to avoid flicker.
+        manager.ArrReady.Subscribe(arr =>
+        {
+            if (arr == null) return;
+            boundedAreaView.SetTriangleResult(arr.GetTrianglesFromFace(arr.GetUnboundedFace()));
+        }).AddTo(targetE);
+        // Intentionally not set owner for boundedAreaView, so won't participate in exportation.
 
         // Overlay extra
         var overlayHolder = targetE.Get<OverlayHolder>();
@@ -62,171 +91,12 @@ public class NewVectorFillLayerCmd : CommandBase
 
     public override void Do(Entity targetE)
     {
-        targetE.Get<ArrangementSynchronizationHelper>().Subscribe();
+        targetE.Get<ArrangementManager>().SyncModification();
         targetE.Tag<ToSerializeTag>();
     }
     public override void Undo(Entity targetE)
     {
         targetE.Detach<ToSerializeTag>();
-        targetE.Get<ArrangementSynchronizationHelper>().Unsubscribe();
-    }
-}
-
-// Design this class to avoid observing the shape layers change after user deleting this vector fill layer.
-public class ArrangementSynchronizationHelper
-{
-    private readonly Arrangement _arr;
-    private readonly ObservableHashSet<Entity> _layerEs;
-    private readonly ObservableDictionary<Entity, ImmutableArray<Vector2>> _shapePositions = [];
-    public CompositeDisposable ArrangementSyncSubs;
-    public CompositeDisposable ShapeTrackingSubs;
-
-    public Dictionary<Entity, Rid> ShapeRids = [];
-
-    public ArrangementSynchronizationHelper(Arrangement arr, ObservableHashSet<Entity> layerEs)
-    {
-        _arr = arr;
-        _layerEs = layerEs;
-        foreach (var layerE in layerEs)
-            foreach (var shapeE in layerE.Get<LayerTreeNode>().Children)
-            {
-                _shapePositions[shapeE] = shapeE.Get<PolylineGeometry>().Positions.Value;
-                var rid = arr.CreatePolyline();
-                ShapeRids[shapeE] = rid;
-                arr.SetPolyline(rid, _shapePositions[shapeE]);
-            }
-    }
-
-    public void Subscribe()
-    {
-        SubscribeShapeTracking();
-        SubscribeArrangementSync();
-    }
-
-    public void Unsubscribe()
-    {
-        ArrangementSyncSubs?.Dispose();
-        ShapeTrackingSubs?.Dispose();
-    }
-
-    private void SubscribeArrangementSync()
-    {
-        var subs = ArrangementSyncSubs = new();
-        _shapePositions.ObserveDictionaryAdd().Subscribe(et =>
-        {
-            var rid = _arr.CreatePolyline();
-            ShapeRids[et.Key] = rid;
-            _arr.SetPolyline(rid, et.Value);
-        }).AddTo(subs);
-
-        _shapePositions.ObserveDictionaryRemove().Subscribe(et =>
-        {
-            _arr.RemovePolyline(ShapeRids[et.Key]);
-            ShapeRids.Remove(et.Key);
-        }).AddTo(subs);
-
-        _shapePositions.ObserveDictionaryReplace().Subscribe(et =>
-        {
-            _arr.SetPolyline(ShapeRids[et.Key], et.NewValue);
-        }).AddTo(subs);
-
-        _shapePositions.ObserveClear().Subscribe(_ =>
-        {
-            foreach (var (_, rid) in ShapeRids)
-                _arr.RemovePolyline(rid);
-            ShapeRids.Clear();
-        }).AddTo(subs);
-    }
-
-    /// <summary>
-    /// Subscribe to keep _shapePositions up to date. Does not repopulate existing entries.
-    /// </summary>
-    private void SubscribeShapeTracking()
-    {
-        var subs = ShapeTrackingSubs = new();
-
-        // Per-layer subscriptions keyed by layer entity
-        var layerSubs = new Dictionary<Entity, CompositeDisposable>();
-
-        // Attach to existing layers
-        foreach (var layerE in _layerEs)
-            SubscribeLayer(layerE);
-
-        // Watch layer set changes
-        _layerEs.ObserveAdd()
-            .Select(et => et.Value)
-            .Subscribe(layerE =>
-            {
-                // Populate existing shapes before subscribing, so .Skip(1) in SubscribeLayer is correct
-                foreach (var shapeE in layerE.Get<LayerTreeNode>().Children)
-                    _shapePositions[shapeE] = shapeE.Get<PolylineGeometry>().Positions.Value;
-                SubscribeLayer(layerE);
-            })
-            .AddTo(subs);
-
-        _layerEs.ObserveRemove()
-            .Select(et => et.Value)
-            .Subscribe(UnsubscribeLayer)
-            .AddTo(subs);
-
-        // Dispose all layer subs when the outer subs is disposed
-        subs.Add(Disposable.Create(() =>
-        {
-            foreach (var d in layerSubs.Values)
-                d.Dispose();
-            layerSubs.Clear();
-        }));
-
-        void UnsubscribeLayer(Entity layerE)
-        {
-            if (!layerSubs.TryGetValue(layerE, out var layerDisposables)) return;
-            layerDisposables.Dispose();
-            layerSubs.Remove(layerE);
-            foreach (var shapeE in layerE.Get<LayerTreeNode>().Children)
-                _shapePositions.Remove(shapeE);
-        }
-
-        void SubscribeLayer(Entity layerE)
-        {
-            var layerDisposables = new CompositeDisposable();
-            layerSubs[layerE] = layerDisposables;
-
-            var layerNode = layerE.Get<LayerTreeNode>();
-            var shapeSubs = new Dictionary<Entity, IDisposable>();
-
-            // _shapePositions already has correct values for existing shapes — skip current emission, watch future changes only
-            foreach (var shapeE in layerNode.Children)
-                shapeSubs[shapeE] = shapeE.Get<PolylineGeometry>().Positions
-                    .Skip(1)
-                    .Subscribe(p => _shapePositions[shapeE] = p);
-
-            // New shapes entering: subscribe from first emission to populate dict
-            layerNode.ObserveAddChild()
-                .Select(et => et.Value)
-                .Subscribe(shapeE =>
-                {
-                    shapeSubs[shapeE] = shapeE.Get<PolylineGeometry>().Positions
-                        .Subscribe(p => _shapePositions[shapeE] = p);
-                }).AddTo(layerDisposables);
-
-            // Shapes leaving: dispose per-shape subscription and remove from dict
-            layerNode.ObserveRemoveChild()
-                .Select(et => et.Value)
-                .Subscribe(shapeE =>
-                {
-                    if (shapeSubs.Remove(shapeE, out var d))
-                        d.Dispose();
-                    _shapePositions.Remove(shapeE);
-                })
-                .AddTo(layerDisposables);
-
-            // Dispose all remaining per-shape subscriptions when the layer is unsubscribed
-            layerDisposables.Add(Disposable.Create(() =>
-            {
-                foreach (var d in shapeSubs.Values)
-                    d.Dispose();
-                shapeSubs.Clear();
-            }));
-        }
+        targetE.Get<ArrangementManager>().DesyncModification();
     }
 }
