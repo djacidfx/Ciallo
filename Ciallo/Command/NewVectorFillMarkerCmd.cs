@@ -55,11 +55,6 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
             .Switch()
             .Subscribe(polygonView.SetColor)
             .AddTo(targetE);
-        setting.BrushE.Subscribe(brushE =>
-        {
-            polygonView.Material = brushE.IsNull ? AutoloadRendering.MissingFillBrushMaterial : null;
-            polygonView.Texture = brushE.IsNull ? AutoloadRendering.DummyTextureForUV : null;
-        }).AddTo(targetE);
 
         // Polygon view — ArrReady emits whenever the arrangement is settled and safe to query.
         layerNode.Parent
@@ -90,6 +85,17 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
         var marker = new VectorFillMarkerView();
         targetE.AddNode(marker);
 
+        setting.BrushE.Subscribe(brushE =>
+        {
+            if (brushE.IsNull)
+            {
+                VectorFillMarkerView.ApplyMissingBrush(polygonView, marker);
+                return;
+            }
+
+            polygonView.Material = null;
+            polygonView.Texture = null;
+        }).AddTo(targetE);
         setting.BrushE
             .Select(e => e.IsNull
                 ? Observable.Return<ImageTexture>(null)

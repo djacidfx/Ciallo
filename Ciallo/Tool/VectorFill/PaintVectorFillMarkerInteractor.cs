@@ -2,7 +2,6 @@ using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
-using Ciallo.Widget;
 using Frent;
 using Godot;
 
@@ -14,8 +13,6 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
     private Polygon2D _fillPreview;
     private Entity _fillBrush;
 
-    private Label _lackOfBrushLabel;
-
     private float MarkerRadius => AppPreference.VectorFillMarkerRadius.Value;
 
     public override void Start(CursorButtonData data)
@@ -23,22 +20,14 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
         Input.MouseMode = Input.MouseModeEnum.Hidden;
 
         _fillBrush = Document.Get<SelectionManager>().WorkingVectorFillBrush.Value;
-        bool hasBrush = !_fillBrush.IsNull;
 
-        if (!hasBrush)
-        {
-            _lackOfBrushLabel.Visible = true;
-            return;
-        }
         // To preview marker
         _markerPreview = new();
-        var setting = _fillBrush.Get<VectorFillBrushSetting>();
-        _markerPreview.Sprite.Texture = setting.MarkerTexture.Value;
-        _markerPreview.Sprite.Modulate = setting.MarkerColor.Value;
         WorkingLayer.Get<OverlayHolder>().AddChild(_markerPreview);
         _markerPreview.SetGeometry([data.WorldPosition], [MarkerRadius]);
         var arr = WorkingLayer.Get<ArrangementManager>().ArrReady.CurrentValue;
-        _fillPreview = new() { Color = setting.FillColor.Value };
+        _fillPreview = new() { Antialiased = true };
+        VectorFillMarkerView.ApplyBrush(_fillPreview, _markerPreview, _fillBrush);
         WorkingLayer.Get<ShapeLayerView>().AddChild(_fillPreview);
         if (arr != null)
         {
@@ -81,20 +70,9 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
     public void Clear()
     {
         ClearPreview();
-        _lackOfBrushLabel.Visible = false;
         Input.MouseMode = Input.MouseModeEnum.Visible;
         _fillBrush = Entity.Null;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => true;
-
-    public override void DrawProperty(PropertyContainer container)
-    {
-        _lackOfBrushLabel = new Label()
-        {
-            Text = "[No Brush Hint]",
-            Visible = false,
-        };
-        container.AddChild(_lackOfBrushLabel);
-    }
 }

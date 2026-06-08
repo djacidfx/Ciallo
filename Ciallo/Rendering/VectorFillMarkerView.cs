@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Ciallo.Data;
 using Ciallo.Widget;
 using Godot;
 
@@ -27,5 +28,34 @@ public partial class VectorFillMarkerView : Node2D
             return;
         }
         Sprite.Visible = false;
+    }
+
+    public static void ApplyBrush(Polygon2D polygon, VectorFillMarkerView marker, Entity brushE)
+    {
+        if (brushE.IsNull)
+        {
+            ApplyMissingBrush(polygon, marker);
+            return;
+        }
+
+        ApplyBrush(polygon, marker, brushE.Get<VectorFillBrushSetting>());
+    }
+
+    public static void ApplyBrush(Polygon2D polygon, VectorFillMarkerView marker, VectorFillBrushSetting setting)
+    {
+        polygon.Color = setting.FillColor.Value;
+        polygon.Material = null;
+        polygon.Texture = null;
+        marker.Sprite.Texture = setting.MarkerTexture.Value;
+        marker.Sprite.Modulate = setting.MarkerColor.Value;
+    }
+
+    public static void ApplyMissingBrush(Polygon2D polygon, VectorFillMarkerView marker)
+    {
+        polygon.Color = Colors.Black;
+        polygon.Material = AutoloadRendering.MissingFillBrushMaterial;
+        polygon.Texture = AutoloadRendering.DummyTextureForUV;
+        marker.Sprite.Texture = null;
+        marker.Sprite.Modulate = Colors.Black;
     }
 }
