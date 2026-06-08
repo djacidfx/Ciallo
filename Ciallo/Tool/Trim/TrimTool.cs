@@ -8,6 +8,12 @@ using R3;
 
 namespace Ciallo.Tool;
 
+/// <summary>
+/// Trim tool aims to be "visually/feelingly topologically robust"
+/// Not truly topologically correct, as long as users feel it correct.
+/// Ciallo is a drawing app, not a CAD topology editor: prefer visually
+/// correct 95% behavior over preserving every tiny real stroke or junction.
+/// </summary>
 [RegisterTool(ToolButton.Trim)]
 public class TrimTool : ToolBase
 {

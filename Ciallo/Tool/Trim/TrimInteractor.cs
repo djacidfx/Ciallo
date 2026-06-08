@@ -15,8 +15,12 @@ public class TrimInteractor : InteractiveSessionBase
 {
     public new TrimTool Tool => (TrimTool)base.Tool;
 
-    private const float SnapToleranceWorld = 6f; // world units; ~visual pixels at 1× zoom
+    // Undercut intentionally leaves a tiny amount of source geometry around cuts so the rebuilt
+    // arrangement feels connected. This is a drawing-tool heuristic, not a topology guarantee.
+    // Be willing to delete tiny real strokes if that makes the common visual result cleaner.
+    private const float UndercutDistanceWorld = 0.1f;
     private const float MinKeptBoundsSize = 1.5f; // world units; bbox shorter side filter
+    private const float MinKeptLength = 2f; // world units; aggressively culls tiny epsilon tails
 
     private readonly List<Vector2> _gesture = [];
     private StrokeView _gestureView;
@@ -139,8 +143,6 @@ public class TrimInteractor : InteractiveSessionBase
             .SelectMany(layerGroup => layerGroup.OrderByDescending(x => x.Index))
             .ToArray();
 
-        var snapCandidates = _sourceSnapshot.ToArray();
-
         var cmd = new CommandBuilder("Trim");
         bool any = false;
 
@@ -148,10 +150,14 @@ public class TrimInteractor : InteractiveSessionBase
         {
             var sourceE = entry.SourceE;
             var geom = sourceE.Get<PolylineGeometry>();
-            int n = geom.Positions.Value.Length;
+            var sourcePositions = geom.Positions.Value;
+            int n = sourcePositions.Length;
             if (n < 2) continue;
 
-            var keptRanges = TrimGeometry.InvertDoomedRanges(entry.Hits, n);
+            var keptRanges = TrimGeometry.InvertDoomedRanges(
+                entry.Hits,
+                sourcePositions,
+                UndercutDistanceWorld);
             int originalIndex = entry.Index;
 
             cmd.SetTarget(sourceE).RemoveFromLayerTree().DeleteShape();
@@ -165,23 +171,14 @@ public class TrimInteractor : InteractiveSessionBase
                 var pieceGeom = SliceGeometry(geom, from, to);
                 if (pieceGeom.positions.Length < 2) continue;
 
-                // Tolerance snap each interior endpoint to nearby strokes.
-                var snappedPositions = pieceGeom.positions;
-                bool fromInterior = from > 1e-4f;
-                bool toInterior = to < (n - 1) - 1e-4f;
-                if (fromInterior)
-                    snappedPositions = SnapEndpoint(snappedPositions, isFromEnd: true, sourceE, snapCandidates);
-                if (toInterior)
-                    snappedPositions = SnapEndpoint(snappedPositions, isFromEnd: false, sourceE, snapCandidates);
-
-                if (BoundsTooSmall(snappedPositions)) continue;
+                if (PieceTooSmall(pieceGeom.positions)) continue;
 
                 var newE = WorkingLayer.World.Create();
                 cmd.SetTarget(newE)
                     .NewStroke(sourceE)
                     .AddToLayerTree(entry.SourceLayer, originalIndex + insertOffset)
                     .SetPolylineGeometry(
-                        snappedPositions,
+                        pieceGeom.positions,
                         pieceGeom.radii,
                         pieceGeom.pressures,
                         pieceGeom.tilts);
@@ -211,56 +208,11 @@ public class TrimInteractor : InteractiveSessionBase
         return (pos, rad, pr, ti);
     }
 
-    private static ImmutableArray<Vector2> SnapEndpoint(
-        ImmutableArray<Vector2> piecePositions,
-        bool isFromEnd,
-        Entity sourceE,
-        IReadOnlyList<Entity> candidates)
-    {
-        if (piecePositions.Length < 2) return piecePositions;
-        Vector2 endpoint = isFromEnd ? piecePositions[0] : piecePositions[^1];
-        Vector2 inside = isFromEnd ? piecePositions[1] : piecePositions[^2];
-        Vector2 keepDir = (endpoint - inside).Normalized();
-
-        Vector2 best = endpoint;
-        float bestDistSq = SnapToleranceWorld * SnapToleranceWorld;
-
-        foreach (var other in candidates)
-        {
-            if (other == sourceE) continue;
-            if (!other.IsAlive || !other.Has<PolylineGeometry>()) continue;
-            var otherPos = other.Get<PolylineGeometry>().Positions.Value;
-            if (otherPos.Length < 2) continue;
-
-            // Coarse bbox prune.
-            var bbox = otherPos.GetBoundingBox().Grow(SnapToleranceWorld);
-            if (!bbox.HasPoint(endpoint)) continue;
-
-            var closest = otherPos.GetClosestPoint(endpoint, out _);
-            float distSq = closest.DistanceSquaredTo(endpoint);
-            if (distSq >= bestDistSq) continue;
-
-            // Direction check: the snap target must lie on the kept side, not behind the trimmed
-            // tail. Project (closest - inside) onto keepDir; positive means same side as the
-            // existing kept endpoint.
-            if ((closest - inside).Dot(keepDir) <= 0) continue;
-
-            bestDistSq = distSq;
-            best = closest;
-        }
-
-        if (best == endpoint) return piecePositions;
-
-        var builder = piecePositions.ToBuilder();
-        if (isFromEnd) builder[0] = best;
-        else builder[^1] = best;
-        return builder.ToImmutable();
-    }
-
-    private static bool BoundsTooSmall(ImmutableArray<Vector2> positions)
+    private static bool PieceTooSmall(ImmutableArray<Vector2> positions)
     {
         if (positions.Length < 2) return true;
         var b = positions.GetBoundingBox();
-        return b.Size.X < MinKeptBoundsSize && b.Size.Y < MinKeptBoundsSize;
+        return (b.Size.X < MinKeptBoundsSize && b.Size.Y < MinKeptBoundsSize)
+            || TrimGeometry.GetPolylineLength(positions) < MinKeptLength;
     }
 }
