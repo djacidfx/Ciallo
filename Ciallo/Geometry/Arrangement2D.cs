@@ -11,7 +11,7 @@ namespace Ciallo.Geometry;
 // Need manually call Dispose(), don't call Free() directly.
 public partial class Arrangement : Godot.Arrangement2D
 {
-    public void SetPolyline(Rid id, ImmutableArray<Vector2> data)
+    public void SetPolyline(long id, ImmutableArray<Vector2> data)
     {
         SetPolyline(id, ImmutableCollectionsMarshal.AsArray(data));
     }

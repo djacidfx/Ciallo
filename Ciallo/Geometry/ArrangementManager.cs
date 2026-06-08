@@ -1,6 +1,8 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Ciallo;
 using Ciallo.Data;
 using Frent;
 using Godot;
@@ -17,15 +19,9 @@ public class ArrangementManager : IDisposable
     private readonly ReactiveProperty<Arrangement> _arrReady;
     public ReadOnlyReactiveProperty<Arrangement> ArrReady => _arrReady;
 
-    private readonly Arrangement _arr = new();
+    private Arrangement _arr = new();
     private IReadOnlyList<ShapeLayerPolylineIndex> _indexes;
-    private readonly Dictionary<Entity, Rid> _shapeToRid = [];
-    private readonly Dictionary<Rid, Entity> _ridToShape = [];
     private CompositeDisposable _subs;
-
-    public IReadOnlyDictionary<Entity, Rid> ShapeToRid => _shapeToRid;
-    public IReadOnlyDictionary<Rid, Entity> RidToShape => _ridToShape;
-    public int Generation { get; private set; }
 
     public ArrangementManager()
     {
@@ -35,18 +31,21 @@ public class ArrangementManager : IDisposable
 
     /// <summary>
     /// Observe the given shape-layer polyline indexes and synchronize the arrangement with them.
-    /// Would be burst called on project load 100+ times.
+    /// Would be burst called 100+ times on project load. Need asynchronous concurrency.
     /// </summary>
-    /// <param name="indexes"></param>
+    /// <remarks>
+    /// Would be called multiple times, clean up previous subscriptions and start observing the new set of indexes.
+    /// </remarks>
     public void Observe(params ShapeLayerPolylineIndex[] indexes)
     {
-
         _indexes = indexes;
         Rebuild();
     }
 
     public void SyncModification()
     {
+        if (_indexes == null)
+            return;
         _subs?.Dispose();
         var subs = _subs = new CompositeDisposable();
 
@@ -55,25 +54,21 @@ public class ArrangementManager : IDisposable
             index.Polylines.ObserveDictionaryAdd().Subscribe(et =>
             {
                 AddShape(et.Key, et.Value.Positions);
-                Generation++;
             }).AddTo(subs);
 
             index.Polylines.ObserveDictionaryRemove().Subscribe(et =>
             {
                 RemoveShape(et.Key);
-                Generation++;
             }).AddTo(subs);
 
             index.Polylines.ObserveDictionaryReplace().Subscribe(et =>
             {
-                _arr.SetPolyline(_shapeToRid[et.Key], et.NewValue.Positions);
-                Generation++;
+                _arr.SetPolyline(et.Key.PackedValue, et.NewValue.Positions);
             }).AddTo(subs);
 
             index.Polylines.ObserveClear().Subscribe(_ =>
             {
                 Clear();
-                Generation++;
             }).AddTo(subs);
         }
     }
@@ -84,8 +79,6 @@ public class ArrangementManager : IDisposable
         _subs = null;
     }
 
-    public Entity GetShape(Rid rid) => _ridToShape[rid];
-
     public void Dispose()
     {
         DesyncModification();
@@ -95,11 +88,11 @@ public class ArrangementManager : IDisposable
 
     private void Rebuild()
     {
-        Clear();
+        NotifyNotReady();
         foreach (var index in _indexes)
             foreach (var (shapeE, polyline) in index.Polylines)
                 AddShape(shapeE, polyline.Positions);
-        Generation++;
+        NotifyReady();
     }
 
     // Bypass ReactiveProperty's equality dedup by going through OnNext directly:
@@ -109,25 +102,19 @@ public class ArrangementManager : IDisposable
 
     private void AddShape(Entity shapeE, ImmutableArray<Vector2> positions)
     {
-        var rid = _arr.CreatePolyline();
-        _shapeToRid[shapeE] = rid;
-        _ridToShape[rid] = shapeE;
-        _arr.SetPolyline(rid, positions);
+        long id = shapeE.PackedValue;
+        _arr.CreatePolyline(id);
+        _arr.SetPolyline(id, positions);
     }
 
     private void RemoveShape(Entity shapeE)
     {
-        var rid = _shapeToRid[shapeE];
-        _arr.RemovePolyline(rid);
-        _shapeToRid.Remove(shapeE);
-        _ridToShape.Remove(rid);
+        _arr.RemovePolyline(shapeE.PackedValue);
     }
 
     private void Clear()
     {
-        foreach (var rid in _shapeToRid.Values)
-            _arr.RemovePolyline(rid);
-        _shapeToRid.Clear();
-        _ridToShape.Clear();
+        _arr.Dispose();
+        _arr = new Arrangement();
     }
 }

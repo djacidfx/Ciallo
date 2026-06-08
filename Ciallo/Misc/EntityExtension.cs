@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Runtime.CompilerServices;
 using Ciallo.Data;
 using Frent;
 
@@ -15,6 +16,7 @@ public static class EntityExtension
 
         public bool IsDocument => self.World.Document() == self; // If entity is the singleton document entity.
         public Entity Document => self.World.Document();
+        public long PackedValue => Unsafe.As<Entity, long>(ref Unsafe.AsRef(in self));
 
         /// <summary>
         /// Return null if entity is null or do not have T component.
@@ -22,6 +24,11 @@ public static class EntityExtension
         public T TryGet<T>() where T : class => self.IsNull || !self.TryHas<T>() ? null : self.Get<T>();
 
         public static bool IsNotNull(Entity e) => !e.IsNull;
+    }
+
+    extension(long packedValue)
+    {
+        public Entity ToEntity() => Unsafe.As<long, Entity>(ref Unsafe.AsRef(in packedValue));
     }
 
     public static T AddTo<T>(this T disposable, Entity e) where T : IDisposable
