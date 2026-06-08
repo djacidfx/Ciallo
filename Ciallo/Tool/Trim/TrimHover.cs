@@ -6,11 +6,9 @@ namespace Ciallo.Tool;
 
 public class TrimHover : InteractiveSessionBase
 {
-    public override void Start(CursorButtonData data)
-    {
-        Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
-    }
+    public new TrimTool Tool => (TrimTool)base.Tool;
 
+    public override void Start(CursorButtonData data) => RefreshCursor();
     public override void Moving(CursorMotionData data) { }
     public override void End(CursorButtonData data) => Cancel();
 
@@ -20,4 +18,12 @@ public class TrimHover : InteractiveSessionBase
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
+
+    public void RefreshCursor()
+    {
+        var body = Document.Get<WorldBody>();
+        body.DefaultCursorShape = Tool.Arrangement?.ArrReady.CurrentValue == null
+            ? Control.CursorShape.Wait
+            : Control.CursorShape.Cross;
+    }
 }

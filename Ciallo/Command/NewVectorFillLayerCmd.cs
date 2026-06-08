@@ -48,6 +48,7 @@ public class NewVectorFillLayerCmd : CommandBase
             var refLayers = vectorFillLayerSetting.ReferenceLayers;
             manager.Observe([.. refLayers.Select(e => e.Get<ShapeLayerPolylineIndex>())]);
         }).AddTo(targetE);
+        manager.Observe([.. vectorFillLayerSetting.ReferenceLayers.Select(e => e.Get<ShapeLayerPolylineIndex>())]);
         targetE.Add(manager);
 
         // Others

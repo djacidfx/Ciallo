@@ -27,6 +27,7 @@ public class ArrangementManager : IDisposable
     private readonly object _gate = new();
     private readonly CancellationTokenSource _disposeCts = new();
     private readonly Dictionary<Entity, PendingPolylineChange> _pendingChanges = [];
+    private readonly HashSet<Entity> _sourceShapes = [];
     private readonly IDisposable _flushSub;
 
     private IReadOnlyList<ShapeLayerPolylineIndex> _indexes;
@@ -34,6 +35,7 @@ public class ArrangementManager : IDisposable
     private bool _drainRunning;
     private bool _arrDisposed;
     private bool _pendingClear;
+    private bool _syncModification;
 
     public ArrangementManager()
     {
@@ -45,6 +47,8 @@ public class ArrangementManager : IDisposable
             .Subscribe(_ => FlushPendingChanges());
     }
 
+    public IReadOnlySet<Entity> SourceShapes => _sourceShapes;
+
     /// <summary>
     /// Observe the given shape-layer polyline indexes and synchronize the arrangement with them.
     /// Would be burst called 100+ times on project load.
@@ -55,13 +59,22 @@ public class ArrangementManager : IDisposable
     public void Observe(params ShapeLayerPolylineIndex[] indexes)
     {
         _indexes = indexes;
+        RebuildSourceShapes();
         RebuildAsync();
+        if (_syncModification)
+            RebuildModificationSubscriptions();
     }
 
     public void SyncModification()
     {
+        _syncModification = true;
         if (_indexes == null)
             return;
+        RebuildModificationSubscriptions();
+    }
+
+    private void RebuildModificationSubscriptions()
+    {
         _subs?.Dispose();
         var subs = _subs = new CompositeDisposable();
 
@@ -69,11 +82,13 @@ public class ArrangementManager : IDisposable
         {
             index.Polylines.ObserveDictionaryAdd().Subscribe(et =>
             {
+                _sourceShapes.Add(et.Key);
                 UpsertShape(et.Key, et.Value);
             }).AddTo(subs);
 
             index.Polylines.ObserveDictionaryRemove().Subscribe(et =>
             {
+                _sourceShapes.Remove(et.Key);
                 RemoveShape(et.Key);
             }).AddTo(subs);
 
@@ -84,6 +99,7 @@ public class ArrangementManager : IDisposable
 
             index.Polylines.ObserveClear().Subscribe(_ =>
             {
+                RebuildSourceShapes();
                 Clear();
             }).AddTo(subs);
         }
@@ -91,6 +107,7 @@ public class ArrangementManager : IDisposable
 
     public void DesyncModification()
     {
+        _syncModification = false;
         _subs?.Dispose();
         _subs = null;
     }
@@ -124,6 +141,14 @@ public class ArrangementManager : IDisposable
         foreach (var index in _indexes)
             foreach (var (shapeE, polyline) in index.Polylines)
                 UpsertShape(shapeE, polyline);
+    }
+
+    private void RebuildSourceShapes()
+    {
+        _sourceShapes.Clear();
+        foreach (var index in _indexes)
+            foreach (var shapeE in index.Polylines.Keys)
+                _sourceShapes.Add(shapeE);
     }
 
     // Bypass ReactiveProperty's equality dedup by going through OnNext directly:
