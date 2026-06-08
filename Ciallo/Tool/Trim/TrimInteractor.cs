@@ -118,8 +118,8 @@ public class TrimInteractor : InteractiveSessionBase
 
     private void CommitTrim(List<TrimEdgeHit> hits)
     {
-        // Process sources by descending layer index so each AddToLayerTreeCmd's static
-        // insertion index stays valid: mutations at higher indices don't shift lower ones.
+        // Group by parent layer, then process shapes by descending sibling index so each
+        // AddToLayerTreeCmd's static insertion index stays valid within that layer.
         var groups = hits
             .Where(h => _sourceSnapshot.Contains(h.SourceShape))
             .Where(h => h.SourceShape.IsAlive && h.SourceShape.Has<PolylineGeometry>())
