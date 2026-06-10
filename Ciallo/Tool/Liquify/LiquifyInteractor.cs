@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
@@ -52,7 +53,7 @@ public class LiquifyInteractor : InteractiveSessionBase
             _aabbs[i] = ComputeAabb(_currPolylines[i]);
         }
 
-        ApplyDab(data.WorldPosition, Vector2.Zero, data.Pressure);
+        ApplyDab(data.WorldPosition, Vector2.Inf, data.Pressure);
     }
 
     public override void Moving(CursorMotionData data)
@@ -97,11 +98,7 @@ public class LiquifyInteractor : InteractiveSessionBase
             liquifyTool.Strength.Value,
             pressure);
 
-        // Push moves points by the brush delta, so a polyline whose AABB sits just outside
-        // the brush this frame can still be reached next frame. Inflate the cull radius by
-        // |delta| to keep that case in scope; Expand/Pinch don't need it but the extra cost
-        // is one float add.
-        float cullRadius = dab.Radius + brushDelta.Length();
+        float cullRadius = dab.Radius;
         bool thicknessMode = mode is LiquifyMode.Thicken or LiquifyMode.Thin;
 
         for (int i = 0; i < _processingEs.Length; i++)
