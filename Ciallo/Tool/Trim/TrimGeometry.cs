@@ -1,3 +1,4 @@
+using Ciallo;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -28,7 +29,19 @@ public static class TrimGeometry
         return hits;
     }
 
-    // Sub-slice an array of element type T by t ∈ [0, count-1] using linear interpolation
+    // Sample an array of element type T by t in [0, count-1] using linear interpolation.
+    public static Vector2 SampleVec2(ImmutableArray<Vector2> src, float t)
+    {
+        if (src.Length == 0) return default;
+        if (src.Length == 1) return src[0];
+
+        t = Math.Clamp(t, 0f, src.Length - 1f);
+        int i = Math.Min((int)MathF.Floor(t), src.Length - 2);
+        float local = t - i;
+        return src[i].Lerp(src[i + 1], local);
+    }
+
+    // Sub-slice an array of element type T by t in [0, count-1] using linear interpolation
     // at the two ends and verbatim copy of integer-indexed elements in between.
     public static ImmutableArray<Vector2> SliceVec2(ImmutableArray<Vector2> src, float fromT, float toT)
         => Slice(src, fromT, toT, LerpVec2);
@@ -96,7 +109,7 @@ public static class TrimGeometry
         intervals.Sort((x, y) => x.From.CompareTo(y.From));
 
         // Merge overlapping doomed intervals (this is required for correctness, not coalescing of
-        // adjacent halfedges — overlapping halfedges from x-monotone splits or repeated edges do
+        // adjacent halfedges. Overlapping halfedges from x-monotone splits or repeated edges do
         // happen and would otherwise produce bogus kept pieces).
         var merged = new List<(float From, float To)>();
         foreach (var iv in intervals)

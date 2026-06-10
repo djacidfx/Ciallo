@@ -1,4 +1,5 @@
-﻿using Ciallo.Data;
+using Ciallo.Data;
+using Ciallo.Geometry;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
@@ -39,6 +40,10 @@ public class NewShapeLayerCmd : CommandBase
         targetE.Add(shapeLayerSetting);
         targetE.Add(new ShapeLayerPolylineIndex(targetE));
 
+        var manager = new ArrangementManager().AddTo(targetE);
+        targetE.Add(manager);
+        manager.Observe([targetE.Get<ShapeLayerPolylineIndex>()]);
+
         // Others
         CreateNonDataComponents(targetE);
     }
@@ -46,12 +51,14 @@ public class NewShapeLayerCmd : CommandBase
     public override void Do(Entity targetE)
     {
         targetE.Get<ShapeLayerPolylineIndex>().Subscribe();
+        targetE.Get<ArrangementManager>().SyncModification();
         targetE.Tag<ToSerializeTag>();
     }
 
     public override void Undo(Entity targetE)
     {
         targetE.Detach<ToSerializeTag>();
+        targetE.Get<ArrangementManager>().DesyncModification();
         targetE.Get<ShapeLayerPolylineIndex>().Unsubscribe();
     }
 
