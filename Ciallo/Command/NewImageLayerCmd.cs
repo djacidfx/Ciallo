@@ -1,4 +1,4 @@
-﻿using Ciallo.Data;
+using Ciallo.Data;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;

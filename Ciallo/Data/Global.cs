@@ -1,4 +1,4 @@
-﻿global using static Ciallo.Data.Global;
+global using static Ciallo.Data.Global;
 
 namespace Ciallo.Data;
 

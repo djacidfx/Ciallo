@@ -1,4 +1,4 @@
-﻿using Ciallo.Data;
+using Ciallo.Data;
 using Godot;
 using R3;
 

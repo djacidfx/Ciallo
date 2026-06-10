@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Ciallo.Data;
 using Frent;
 using Godot;

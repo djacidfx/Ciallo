@@ -1,4 +1,4 @@
-﻿/* This file is originally copied from Godot 4.4 curve_editor_plugin.cpp, translated to C# with AI tool, proof-edited and modified by human.
+/* This file is originally copied from Godot 4.4 curve_editor_plugin.cpp, translated to C# with AI tool, proof-edited and modified by human.
 Shen: this control took me around two hours to make it work correctly at basic level.
 Shen: Bezier curve took me two and this control took me one entire working day to further modify.
 Sep 15 2025: Given the complexity of this control, Shen still consider this as a productive workflow.

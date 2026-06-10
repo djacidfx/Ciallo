@@ -1,4 +1,4 @@
-﻿using Frent;
+using Frent;
 using R3;
 
 namespace Ciallo.Data;

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;

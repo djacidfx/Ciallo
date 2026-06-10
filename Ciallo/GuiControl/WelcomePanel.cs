@@ -1,4 +1,4 @@
-﻿using Ciallo.Widget;
+using Ciallo.Widget;
 using Godot;
 
 namespace Ciallo.GuiControl;

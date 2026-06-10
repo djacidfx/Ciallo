@@ -1,4 +1,4 @@
-﻿using Ciallo.Geometry;
+using Ciallo.Geometry;
 using Ciallo.Widget;
 using Frent;
 using Godot;

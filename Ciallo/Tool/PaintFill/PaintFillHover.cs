@@ -1,4 +1,4 @@
-﻿using Ciallo.Data;
+using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;

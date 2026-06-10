@@ -1,4 +1,4 @@
-﻿using Ciallo.Data;
+using Ciallo.Data;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Ciallo.GuiControl;
