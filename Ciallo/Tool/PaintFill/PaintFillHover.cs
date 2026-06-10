@@ -1,5 +1,4 @@
 using Ciallo.Data;
-using Ciallo.Geometry;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Ciallo.Widget;

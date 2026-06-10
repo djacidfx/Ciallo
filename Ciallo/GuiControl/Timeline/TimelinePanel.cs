@@ -1,5 +1,4 @@
 using Ciallo.Data;
-using Ciallo.Tool;
 using Frent;
 using Godot;
 using R3;

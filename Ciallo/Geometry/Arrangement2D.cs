@@ -1,15 +1,13 @@
-using System;
 using System.Collections.Immutable;
 using System.Runtime.InteropServices;
 using Godot;
 using Godot.Collections;
-using R3;
 
 namespace Ciallo.Geometry;
 
 // Wrapper of CGAL's Arrangement_2 with polyline curves.
 // Need manually call Dispose(), don't call Free() directly.
-public partial class Arrangement : Godot.Arrangement2D
+public partial class Arrangement : Arrangement2D
 {
     public void SetPolyline(long id, ImmutableArray<Vector2> data)
     {

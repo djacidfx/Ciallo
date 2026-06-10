@@ -1,13 +1,13 @@
-using Ciallo.Data;
+using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
+using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Godot;
 
 namespace Ciallo.Tool;
 
-public sealed class GapBridgePreviewManager : System.IDisposable
+public sealed class GapBridgePreviewManager : IDisposable
 {
     private readonly Node2D _root;
     private readonly Node2D _facesRoot = new();

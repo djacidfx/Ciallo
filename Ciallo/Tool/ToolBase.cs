@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
-using Ciallo.Geometry;
 using Ciallo.Widget;
 using Frent;
 using Godot;

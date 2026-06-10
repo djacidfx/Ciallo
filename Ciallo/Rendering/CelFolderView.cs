@@ -1,10 +1,9 @@
+using System;
+using System.Collections.Generic;
+using Ciallo.Data;
 using Frent;
 using Godot;
-using ObservableCollections;
 using R3;
-using System;
-using Ciallo.Data;
-using System.Collections.Generic;
 
 namespace Ciallo.Rendering;
 

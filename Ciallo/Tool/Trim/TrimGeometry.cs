@@ -1,10 +1,9 @@
-using Ciallo;
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using Ciallo.Data;
 using Frent;
 using Godot;
+using Godot.Collections;
 
 namespace Ciallo.Tool;
 
@@ -16,7 +15,7 @@ public readonly record struct TrimEdgeHit(Entity SourceShape, float FromT, float
 // Pure helpers shared by TrimInteractor (preview) and TrimTool commit logic.
 public static class TrimGeometry
 {
-    public static List<TrimEdgeHit> ParseEdgeHits(Godot.Collections.Array<Godot.Collections.Dictionary> raw)
+    public static List<TrimEdgeHit> ParseEdgeHits(Array<Dictionary> raw)
     {
         var hits = new List<TrimEdgeHit>(raw.Count);
         foreach (var dict in raw)

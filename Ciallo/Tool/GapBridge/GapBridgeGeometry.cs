@@ -1,7 +1,6 @@
-using Ciallo;
 using System.Collections.Generic;
 using Frent;
-using Godot;
+using Godot.Collections;
 
 namespace Ciallo.Tool;
 
@@ -14,7 +13,7 @@ public readonly record struct GapBridgeCandidate(
 
 public static class GapBridgeGeometry
 {
-    public static List<GapBridgeCandidate> ParseCandidates(Godot.Collections.Array<Godot.Collections.Dictionary> raw)
+    public static List<GapBridgeCandidate> ParseCandidates(Array<Dictionary> raw)
     {
         var result = new List<GapBridgeCandidate>(raw.Count);
         foreach (var dict in raw)
