@@ -60,6 +60,7 @@ public class LiquifyTool : ToolBase
                 MinValue = 0.01f,
                 MaxValue = 1f,
                 Step = 0.01f,
+                AllowGreater = true,
             }.BindNumber(Strength));
 
         base.DrawProperty(container);

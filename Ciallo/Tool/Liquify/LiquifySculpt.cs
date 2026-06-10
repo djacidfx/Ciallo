@@ -15,12 +15,15 @@ public readonly record struct LiquifyDab(
 /// </remarks>
 public static class LiquifySculpt
 {
-    // Per-dab radial scaling for Expand/Pinch. With influence ≤ 1, peak per-dab
-    // displacement is (1/5)² = 4%, so a drag accumulates smoothly instead of
+    // Per-dab radial scaling for Expand/Pinch. With influence ≈ 1, peak per-dab
+    // displacement is (1/5)^2 = 4%, so a drag accumulates smoothly instead of
     // snapping the geometry on a single dab.
     private const float RadialEffectScale = 1f / 5f;
+    // Thickness nudges stay small per dab so the stroke width changes feel
+    // continuous instead of jumping.
+    private const float ThicknessEffectScale = 1f / 10f;
 
-    public static Vector2 Apply(LiquifyMode mode, Vector2 position, LiquifyDab dab)
+    public static Vector2 ApplyPosition(LiquifyMode mode, Vector2 position, LiquifyDab dab)
     {
         float influence = Influence(position, dab);
         if (influence <= 0f)
@@ -31,6 +34,21 @@ public static class LiquifySculpt
             LiquifyMode.Push => Push(position, dab.Delta, influence),
             LiquifyMode.Expand => Expand(position, dab.Center, influence),
             LiquifyMode.Pinch => Pinch(position, dab.Center, influence),
+            _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+        };
+    }
+
+    public static float ApplyThickness(LiquifyMode mode, Vector2 position, float radius, LiquifyDab dab)
+    {
+        float influence = Influence(position, dab);
+        if (influence <= 0f)
+            return radius;
+
+        float delta = influence * ThicknessEffectScale;
+        return mode switch
+        {
+            LiquifyMode.Thicken => Mathf.Max(1f, radius + delta),
+            LiquifyMode.Thin => Mathf.Max(1f, radius - delta),
             _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
         };
     }
