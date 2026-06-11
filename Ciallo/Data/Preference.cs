@@ -105,6 +105,10 @@ public class Preference
 
     [DataMember]
     public ReactiveProperty<bool> ShowVectorFillReferenceLayerWireframe = new(false);
+    [DataMember]
+    public ReactiveProperty<float> GapBridgeDetectMaxGapLength = new(24f);
+    [DataMember]
+    public ReactiveProperty<float> GapBridgeHitRadius = new(6f);
 
     #endregion
 

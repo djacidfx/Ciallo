@@ -56,6 +56,8 @@ public abstract partial class ToolBase : ITool
 
     private IDisposable _commandManagerSub;
 
+    protected CursorButtonData LatestCursor => _lastestCursor;
+
     protected ToolBase()
     {
         Machine = new(() => ActiveSession.Value, s => ActiveSession.Value = s);

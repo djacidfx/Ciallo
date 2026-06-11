@@ -14,6 +14,7 @@ public sealed class GapBridgePreviewManager : IDisposable
     private readonly Node2D _bridgesRoot = new();
     private readonly Dictionary<Rid, Polygon2D> _faceNodes = [];
     private readonly Dictionary<Rid, Color> _faceColors = [];
+    private List<GapBridgeTarget> _targets = [];
     private int _nextFaceColorIndex;
 
     public GapBridgePreviewManager(Node2D parent)
@@ -31,6 +32,7 @@ public sealed class GapBridgePreviewManager : IDisposable
         if (arr == null)
         {
             _root.Visible = false;
+            _targets.Clear();
             return;
         }
 
@@ -42,6 +44,15 @@ public sealed class GapBridgePreviewManager : IDisposable
     public void Dispose()
     {
         _root.QueueFree();
+    }
+
+    public bool TryPickTarget(Vector2 worldPosition, out GapBridgeTarget target)
+    {
+        return GapBridgeGeometry.TryFindNearestTarget(
+            _targets,
+            worldPosition,
+            AppPreference.GapBridgeHitRadius.Value,
+            out target);
     }
 
     private void SyncFaces(Arrangement arr)
@@ -84,25 +95,18 @@ public sealed class GapBridgePreviewManager : IDisposable
         foreach (var child in _bridgesRoot.GetChildren())
             child.QueueFree();
 
-        foreach (var candidate in GapBridgeGeometry.ParseCandidates(arr.GetGapBridgeCandidates(100f)))
+        var maxGapLength = AppPreference.GapBridgeDetectMaxGapLength.Value;
+        _targets = GapBridgeGeometry.QueryTargets(arr, maxGapLength);
+
+        foreach (var target in _targets)
         {
-            if (!candidate.FromCurve.IsAlive || !candidate.ToCurve.IsAlive)
-                continue;
-            if (!candidate.FromCurve.Has<PolylineGeometry>() || !candidate.ToCurve.Has<PolylineGeometry>())
-                continue;
-
-            var fromPositions = candidate.FromCurve.Get<PolylineGeometry>().Positions.Value;
-            var toPositions = candidate.ToCurve.Get<PolylineGeometry>().Positions.Value;
-            var fromPoint = TrimGeometry.SampleVec2(fromPositions, candidate.FromT);
-            var toPoint = TrimGeometry.SampleVec2(toPositions, candidate.ToT);
-
             var bridge = new StrokeView
             {
                 Material = AutoloadRendering.DashWireframeMaterial,
                 Modulate = new Color(1f, 1f, 1f, 0.9f),
             };
             _bridgesRoot.AddChild(bridge);
-            bridge.SetGeometry([fromPoint, toPoint], AppPreference.StrokeWireframeRadius * 1.25f);
+            bridge.SetGeometry(target.TargetPolyline, AppPreference.StrokeWireframeRadius * 1.25f);
         }
     }
 
