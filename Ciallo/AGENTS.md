@@ -10,5 +10,6 @@
 ## After any code writing before validate/build check:
 - I did not store the same fact twice. If a value can be derived cheaply and unambiguously from fields already carried by a type, expose it as a property/helper instead of caching it as another field. This “single source of truth” also apply across containers storeage.
 - I did not create pass-through structs/classes that merely copy the fields of an existing domain record.
-- I did not stop after finding one instance of a smell. After fixing a duplicated field or pass-through wrapper, scan the surrounding module for the same pattern across records, helper structs, dictionaries, caches, and method parameters.
+- I did not stop after finding one instance of a smell. After fixing it, scan the surrounding module for the same pattern.
+- I am trusting my context, not defensive programming.
 - If a helper type exists only to make call sites shorter, but it hides where identity or ownership comes from, prefer more explicit call sites over duplicating state.
