@@ -56,7 +56,7 @@ public class GapBridgeHover : InteractiveSessionBase
     private void ApplyCursor()
     {
         var body = Document.Get<WorldBody>();
-        if (Tool.Arrangement?.ArrReady.CurrentValue == null)
+        if (Tool.Arrangement.ArrReady.CurrentValue == null)
         {
             body.DefaultCursorShape = Control.CursorShape.Wait;
             return;

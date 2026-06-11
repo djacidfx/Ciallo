@@ -12,4 +12,5 @@
 - I did not create pass-through structs/classes that merely copy the fields of an existing domain record.
 - I did not stop after finding one instance of a smell. After fixing it, scan the surrounding module for the same pattern.
 - I am trusting my context, not defensive programming.
+- I rate the APIs I designed 8-9/10, if not, rework on it.
 - If a helper type exists only to make call sites shorter, but it hides where identity or ownership comes from, prefer more explicit call sites over duplicating state.

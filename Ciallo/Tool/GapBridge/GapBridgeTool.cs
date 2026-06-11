@@ -53,7 +53,7 @@ public class GapBridgeTool : ToolBase
     public override void OnActivated()
     {
         Arrangement = WorkingLayer.Get<ArrangementManager>();
-        _preview = new GapBridgePreviewManager(Document.Get<WorldOverlay>());
+        _preview = new GapBridgePreviewManager(Document.Get<WorldOverlay>(), Arrangement.SourceShapes);
         _preview.Refresh(Arrangement.ArrReady.CurrentValue);
 
         _arrReadySub = Arrangement.ArrReady.Subscribe(arr =>
@@ -66,9 +66,9 @@ public class GapBridgeTool : ToolBase
 
     public override void OnDeactivated()
     {
-        _arrReadySub?.Dispose();
+        _arrReadySub.Dispose();
         _arrReadySub = null;
-        _preview?.Dispose();
+        _preview.Dispose();
         _preview = null;
         Arrangement = null;
     }
@@ -76,12 +76,12 @@ public class GapBridgeTool : ToolBase
     public bool TryPickTarget(Vector2 worldPosition, out GapBridgeTarget target)
     {
         target = default;
-        return _preview?.TryPickTarget(worldPosition, out target) == true;
+        return _preview.TryPickTarget(worldPosition, out target);
     }
 
     private void OnClick()
     {
-        if (Arrangement?.ArrReady.CurrentValue == null)
+        if (Arrangement.ArrReady.CurrentValue == null)
             return;
 
         var clickPosition = LatestCursor.WorldPosition;
@@ -97,21 +97,14 @@ public class GapBridgeTool : ToolBase
     private void CommitBridge(GapBridgeTarget target)
     {
         var candidate = target.Candidate;
-        if (!GapBridgeGeometry.TryResolveCandidate(candidate, out var fromPoint, out var toPoint))
-            return;
+        var (fromPoint, toPoint) = GapBridgeGeometry.ResolveCandidate(candidate);
 
         var bridgePolyline = GapBridgeRepairGeometry.BuildPolyline(candidate, fromPoint, toPoint);
-        if (bridgePolyline.Length < 2)
-            return;
 
-        target = new GapBridgeTarget(candidate, fromPoint, toPoint, bridgePolyline);
+        target = new GapBridgeTarget(candidate, bridgePolyline);
         var targetLayer = ResolveTargetLayer(target);
-        if (targetLayer.IsNull || !targetLayer.IsAlive || !targetLayer.Has<ShapeLayerSetting>())
-            return;
 
         var bridgeGeometry = GapBridgeRepairGeometry.BuildStrokeGeometry(target);
-        if (bridgeGeometry.Positions.Length < 2)
-            return;
 
         var bridgeE = WorkingLayer.World.Create();
         var cmd = new CommandBuilder("Gap Bridge", bridgeE);
@@ -131,9 +124,12 @@ public class GapBridgeTool : ToolBase
         if (WorkingLayer.Has<ShapeLayerSetting>())
             return WorkingLayer;
 
-        if (TryGetShapeLayer(target.Candidate.FromCurve, out var fromLayer))
+        var fromLayer = GetShapeLayer(target.Candidate.FromCurve);
+        if (!fromLayer.IsNull)
             return fromLayer;
-        if (TryGetShapeLayer(target.Candidate.ToCurve, out var toLayer))
+
+        var toLayer = GetShapeLayer(target.Candidate.ToCurve);
+        if (!toLayer.IsNull)
             return toLayer;
 
         if (WorkingLayer.Has<VectorFillLayerSetting>())
@@ -157,13 +153,9 @@ public class GapBridgeTool : ToolBase
         return Entity.Null;
     }
 
-    private static bool TryGetShapeLayer(Entity shape, out Entity layer)
+    private static Entity GetShapeLayer(Entity shape)
     {
-        layer = Entity.Null;
-        if (!shape.IsAlive || !shape.Has<LayerTreeNode>())
-            return false;
-
-        layer = shape.Get<LayerTreeNode>().ParentValue;
-        return !layer.IsNull && layer.IsAlive && layer.Has<ShapeLayerSetting>();
+        var layer = shape.Get<LayerTreeNode>().ParentValue;
+        return layer.Has<ShapeLayerSetting>() ? layer : Entity.Null;
     }
 }

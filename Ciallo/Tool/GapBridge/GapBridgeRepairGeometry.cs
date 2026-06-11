@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Ciallo.Data;
+using Ciallo.Geometry;
 using Frent;
 using Godot;
 
@@ -23,10 +24,8 @@ public static class GapBridgeRepairGeometry
         Vector2 fromPoint,
         Vector2 toPoint)
     {
-        if (!GapBridgeGeometry.TryGetPositions(candidate.FromCurve, out var fromPositions) ||
-            !GapBridgeGeometry.TryGetPositions(candidate.ToCurve, out var toPositions))
-            return CleanPolyline(fromPoint, toPoint);
-
+        var fromPositions = GapBridgeGeometry.GetPositions(candidate.FromCurve);
+        var toPositions = GapBridgeGeometry.GetPositions(candidate.ToCurve);
         if (!TryChooseTangents(
                 fromPositions,
                 candidate.FromT,
@@ -47,9 +46,6 @@ public static class GapBridgeRepairGeometry
     public static GapBridgeStrokeGeometry BuildStrokeGeometry(GapBridgeTarget target)
     {
         var positions = target.TargetPolyline;
-        if (positions.Length < 2)
-            return new GapBridgeStrokeGeometry([], [], [], []);
-
         var candidate = target.Candidate;
         float fromRadius = SampleRadius(candidate.FromCurve, candidate.FromT);
         float toRadius = SampleRadius(candidate.ToCurve, candidate.ToT);
@@ -63,7 +59,7 @@ public static class GapBridgeRepairGeometry
         var tilts = ImmutableArray.CreateBuilder<Vector2>(positions.Length);
         for (int i = 0; i < positions.Length; i++)
         {
-            float u = positions.Length == 1 ? 0f : (float)i / (positions.Length - 1);
+            float u = (float)i / (positions.Length - 1);
             radii.Add(Mathf.Max(0.1f, Mathf.Lerp(fromRadius, toRadius, u)));
             pressures.Add(Mathf.Lerp(fromPressure, toPressure, u));
             tilts.Add(fromTilt.Lerp(toTilt, u));
@@ -121,9 +117,6 @@ public static class GapBridgeRepairGeometry
         Vector2 toward)
     {
         var result = new List<Vector2>(2);
-        if (positions.Length < 2)
-            return result;
-
         float maxT = positions.Length - 1f;
         if (t <= 1e-3f)
         {
@@ -169,7 +162,7 @@ public static class GapBridgeRepairGeometry
 
         corner = fromPoint + fromTangent * fromDistance;
         float maxCornerOffset = gapLength * 2f;
-        if (DistanceSquaredToSegment(corner, fromPoint, toPoint) > maxCornerOffset * maxCornerOffset)
+        if (corner.DistanceSquaredToSegment(fromPoint, toPoint) > maxCornerOffset * maxCornerOffset)
             return false;
 
         float minLeg = gapLength * 0.08f;
@@ -207,48 +200,32 @@ public static class GapBridgeRepairGeometry
 
     private static float SampleRadius(Entity curve, float t)
     {
-        if (!TryGetGeometry(curve, out var geom))
-            return AppPreference.StrokeWireframeRadius;
-
+        var geom = curve.Get<PolylineGeometry>();
         var positions = geom.Positions.Value;
         var radii = geom.Radii.Value;
         if (radii.Length == positions.Length)
-            return GapBridgeGeometry.SampleFloat(radii, t, AppPreference.StrokeWireframeRadius);
+            return radii.Sample(t);
         return radii.Length > 0 ? radii[0] : AppPreference.StrokeWireframeRadius;
     }
 
     private static float SamplePressure(Entity curve, float t)
     {
-        if (!TryGetGeometry(curve, out var geom))
-            return 1f;
-
+        var geom = curve.Get<PolylineGeometry>();
         var positions = geom.Positions.Value;
         var pressures = geom.Pressures.Value;
         if (pressures.Length == positions.Length)
-            return GapBridgeGeometry.SampleFloat(pressures, t, 1f);
+            return pressures.Sample(t);
         return pressures.Length > 0 ? pressures[0] : 1f;
     }
 
     private static Vector2 SampleTilt(Entity curve, float t)
     {
-        if (!TryGetGeometry(curve, out var geom))
-            return Vector2.Zero;
-
+        var geom = curve.Get<PolylineGeometry>();
         var positions = geom.Positions.Value;
         var tilts = geom.Tilts.Value;
         if (tilts.Length == positions.Length)
-            return TrimGeometry.SampleVec2(tilts, t);
+            return tilts.Sample(t);
         return tilts.Length > 0 ? tilts[0] : Vector2.Zero;
-    }
-
-    private static bool TryGetGeometry(Entity curve, out PolylineGeometry geom)
-    {
-        geom = null;
-        if (!curve.IsAlive || !curve.Has<PolylineGeometry>())
-            return false;
-
-        geom = curve.Get<PolylineGeometry>();
-        return geom.Positions.Value.Length >= 2;
     }
 
     private static void AddUniqueNormalized(List<Vector2> result, Vector2 tangent)
@@ -283,14 +260,4 @@ public static class GapBridgeRepairGeometry
 
     private static float Cross(Vector2 a, Vector2 b) => a.X * b.Y - a.Y * b.X;
 
-    private static float DistanceSquaredToSegment(Vector2 point, Vector2 a, Vector2 b)
-    {
-        var ab = b - a;
-        float lenSq = ab.LengthSquared();
-        if (lenSq <= Epsilon * Epsilon)
-            return point.DistanceSquaredTo(a);
-
-        float t = Mathf.Clamp((point - a).Dot(ab) / lenSq, 0f, 1f);
-        return point.DistanceSquaredTo(a + t * ab);
-    }
 }

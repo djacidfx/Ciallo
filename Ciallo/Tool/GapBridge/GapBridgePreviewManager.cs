@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
+using Frent;
 using Godot;
 
 namespace Ciallo.Tool;
@@ -16,9 +17,11 @@ public sealed class GapBridgePreviewManager : IDisposable
     private readonly Dictionary<Rid, Color> _faceColors = [];
     private List<GapBridgeTarget> _targets = [];
     private int _nextFaceColorIndex;
+    private readonly IReadOnlySet<Entity> _sourceShapes;
 
-    public GapBridgePreviewManager(Node2D parent)
+    public GapBridgePreviewManager(Node2D parent, IReadOnlySet<Entity> sourceShapes)
     {
+        _sourceShapes = sourceShapes;
         _root = new Node2D { Visible = false };
         _root.AddChild(_facesRoot);
         _root.AddChild(_bridgesRoot);
@@ -96,7 +99,7 @@ public sealed class GapBridgePreviewManager : IDisposable
             child.QueueFree();
 
         var maxGapLength = AppPreference.GapBridgeDetectMaxGapLength.Value;
-        _targets = GapBridgeGeometry.QueryTargets(arr, maxGapLength);
+        _targets = GapBridgeGeometry.QueryTargets(arr, _sourceShapes, maxGapLength);
 
         foreach (var target in _targets)
         {
