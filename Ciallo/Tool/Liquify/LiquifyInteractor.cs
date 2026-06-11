@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
+using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
@@ -48,7 +49,7 @@ public class LiquifyInteractor : InteractiveSessionBase
                 _currRadii[i] = [];
             }
 
-            _aabbs[i] = ComputeAabb(_currPolylines[i]);
+            _aabbs[i] = _currPolylines[i].GetBoundingBox();
         }
 
         ApplyDab(data.WorldPosition, Vector2.Inf, data.Pressure);
@@ -146,7 +147,7 @@ public class LiquifyInteractor : InteractiveSessionBase
             if (moved)
             {
                 _dirty[i] = true;
-                _aabbs[i] = ComputeAabb(polyline);
+                _aabbs[i] = polyline.GetBoundingBox();
                 UpdateView(_processingEs[i], polyline, _currRadii[i]);
             }
         }
@@ -176,20 +177,6 @@ public class LiquifyInteractor : InteractiveSessionBase
         _currRadii = null;
         _aabbs = null;
         _dirty = null;
-    }
-
-    private static Rect2 ComputeAabb(Vector2[] points)
-    {
-        if (points.Length == 0) return new Rect2();
-        var min = points[0];
-        var max = points[0];
-        for (int i = 1; i < points.Length; i++)
-        {
-            var p = points[i];
-            if (p.X < min.X) min.X = p.X; else if (p.X > max.X) max.X = p.X;
-            if (p.Y < min.Y) min.Y = p.Y; else if (p.Y > max.Y) max.Y = p.Y;
-        }
-        return new Rect2(min, max - min);
     }
 
     private static bool CircleIntersectsAabb(Vector2 center, float radius, Rect2 aabb)
