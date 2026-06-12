@@ -49,7 +49,7 @@ public partial class MenuHelp : PopupMenu
                 OS.ShellOpen("https://www.patreon.com/posts/143863276");
                 break;
             case 1:
-                GetTree().GetNodesInGroup("Dialog").OfType<AcceptDialog>().First(n => n.Name == "AboutCiallo").Popup();
+                AppDialogHost.AboutCiallo.Popup();
                 break;
             case 2:
                 DisplayServer.ClipboardSet(CollectSystemInfo());
@@ -97,9 +97,8 @@ public partial class MenuHelp : PopupMenu
         catch (Exception exception)
         {
             GD.PrintErr(exception);
-            var dialog = GetTree().GetNodesInGroup("Dialog").OfType<AcceptDialog>().Single(n => n.Name == "WarnUser");
-            dialog.DialogText = "Cannot load research animation.".Tr() + " " + exception.Message.Tr();
-            dialog.Popup();
+            AppDialogHost.WarnUser.DialogText = "Cannot load research animation.".Tr() + " " + exception.Message.Tr();
+            AppDialogHost.WarnUser.Popup();
         }
     }
 

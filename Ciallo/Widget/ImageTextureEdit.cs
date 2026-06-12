@@ -1,5 +1,5 @@
 using System;
-using System.Linq;
+using Ciallo.Data;
 using Godot;
 using R3;
 
@@ -58,9 +58,8 @@ public partial class ImageTextureEdit : BoxContainer
             var image = Image.LoadFromFile(path);
             if (image == null || image.IsEmpty())
             {
-                var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<AcceptDialog>().Single(n => n.Name == "WarnUser");
-                dialog.DialogText = "[Cannot Load Image]".Tr();
-                dialog.Popup();
+                AppDialogHost.WarnUser.DialogText = "[Cannot Load Image]".Tr();
+                AppDialogHost.WarnUser.Popup();
                 return;
             }
             ImageProcess?.Invoke(image);

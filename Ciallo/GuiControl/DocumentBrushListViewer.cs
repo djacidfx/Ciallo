@@ -45,9 +45,8 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
 
             if (toDeleteShapes.Count > 0)
             {
-                var dialog = GetTree().GetNodesInGroup("Dialog").OfType<YesNoDialog>().First();
-                dialog.DialogText = "[Delete Brush Hint]".Tr();
-                if (!await dialog.PopupCollectInput()) return;
+                AppDialogHost.YesNoDialog.DialogText = "[Delete Brush Hint]".Tr();
+                if (!await AppDialogHost.YesNoDialog.PopupCollectInput()) return;
             }
 
             var cmd = new CommandBuilder(Entity.Null);

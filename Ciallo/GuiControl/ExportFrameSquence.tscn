@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://dgjotk4vkcyo8"]
+
+[node name="ExportFrameSquence" type="ConfirmationDialog" unique_id=1984231464]
+oversampling_override = 1.0
+position = Vector2i(0, 36)
+visible = true

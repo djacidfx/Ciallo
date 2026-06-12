@@ -57,26 +57,23 @@ public partial class MenuFile : PopupMenu
                 break;
             case 5: // Save as
                 if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
-                var dialog = GetTree().GetNodesInGroup("Dialog").OfType<SaveAsDialog>().Single();
                 var setting = AppDocumentManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
-                dialog.CurrentDir = setting.FilePath.CurrentValue.GetBaseDir();
-                dialog.PopupCentered();
+                AppDialogHost.SaveAsDialog.CurrentDir = setting.FilePath.CurrentValue.GetBaseDir();
+                AppDialogHost.SaveAsDialog.PopupCentered();
                 break;
 
             case 7: // Export as image
                 if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
-                var dialogExportImage = GetTree().GetNodesInGroup("Dialog").OfType<ExportImage>().Single();
-                dialogExportImage.Init();
-                dialogExportImage.Popup();
+                AppDialogHost.ExportImage.Init();
+                AppDialogHost.ExportImage.Popup();
                 break;
 
             case 8: // Export as Godot scene
                 if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
-                var dialogExportGodot = GetTree().GetNodesInGroup("Dialog").OfType<ExportGodotScene>().Single();
                 var documentSetting = AppDocumentManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
-                dialogExportGodot.CurrentFile = documentSetting.Name.Value;
-                dialogExportGodot.CurrentDir = documentSetting.FilePath.CurrentValue.GetBaseDir();
-                dialogExportGodot.Popup();
+                AppDialogHost.ExportGodotScene.CurrentFile = documentSetting.Name.Value;
+                AppDialogHost.ExportGodotScene.CurrentDir = documentSetting.FilePath.CurrentValue.GetBaseDir();
+                AppDialogHost.ExportGodotScene.Popup();
                 break;
 
             default:

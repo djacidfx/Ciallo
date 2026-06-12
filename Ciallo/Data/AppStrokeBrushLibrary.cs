@@ -143,7 +143,7 @@ public static partial class AppStrokeBrushLibrary
     public static void BindToGui()
     {
         // Setup brush library panel
-        var panel = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<BrushPanel>().First();
+        var panel = AppDialogHost.BrushLibrary;
         SelectedIndex = panel.SelectedIndex;
         panel.BindBrushSetting(BrushSettings, s => s);
 

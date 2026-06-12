@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b5mma1lfqwdf1"]
 
-[ext_resource type="Script" uid="uid://c7dapweauj2pm" path="res://GuiControl/ExportImage.cs" id="1_rwryi"]
+[ext_resource type="Script" uid="uid://c7dapweauj2pm" path="res://GuiControl/Dialog/ExportImage.cs" id="1_rwryi"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_3aowm"]
 [ext_resource type="Script" uid="uid://ckillqfnqh8wc" path="res://Widget/FilePathPicker.cs" id="3_3aowm"]
 

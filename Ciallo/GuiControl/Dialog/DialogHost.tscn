@@ -1,0 +1,83 @@
+[gd_scene format=3 uid="uid://c0ryp0upwet88"]
+
+[ext_resource type="Script" uid="uid://b16ea8em6488j" path="res://GuiControl/Dialog/DialogHost.cs" id="1_lohs5"]
+[ext_resource type="PackedScene" uid="uid://bpntrjged60df" path="res://GuiControl/Dialog/NewDocumentDialog.tscn" id="2_lbo4v"]
+[ext_resource type="Script" uid="uid://co17yxacb7838" path="res://GuiControl/OpenDocumentDialog.cs" id="3_1xav8"]
+[ext_resource type="PackedScene" uid="uid://b605gtasdgmsb" path="res://GuiControl/Dialog/About.tscn" id="4_3ccb4"]
+[ext_resource type="PackedScene" uid="uid://dw0q5mir7loyl" path="res://GuiControl/BrushPanel.tscn" id="5_hs7a8"]
+[ext_resource type="PackedScene" uid="uid://b5mma1lfqwdf1" path="res://GuiControl/Dialog/ExportImage.tscn" id="6_qk158"]
+[ext_resource type="Script" uid="uid://desmnb4wwk1h0" path="res://GuiControl/ExportGodotScene.cs" id="7_xkft4"]
+[ext_resource type="Script" uid="uid://bsu2387oxsudi" path="res://GuiControl/SaveChangeDialog.cs" id="8_qrdyv"]
+[ext_resource type="Script" uid="uid://dt8ylkob7fe5w" path="res://GuiControl/YesNoDialog.cs" id="9_t87eu"]
+[ext_resource type="Script" uid="uid://dn4468qjyqneb" path="res://GuiControl/SaveAsDialog.cs" id="10_0gwwr"]
+
+[node name="DialogHost" type="Control" unique_id=1874914548]
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_lohs5")
+
+[node name="NewDocumentDialog" parent="." unique_id=1822263327 instance=ExtResource("2_lbo4v")]
+unique_name_in_owner = true
+visible = false
+
+[node name="OpenDocumentDialog" type="FileDialog" parent="." unique_id=1440741866]
+unique_name_in_owner = true
+use_hdr_2d = true
+title = "Open a File"
+initial_position = 1
+size = Vector2i(1080, 720)
+ok_button_text = "Open"
+file_mode = 0
+display_mode = 1
+access = 2
+filters = PackedStringArray("*.ciallo;")
+use_native_dialog = true
+script = ExtResource("3_1xav8")
+
+[node name="AboutCiallo" parent="." unique_id=2025639422 instance=ExtResource("4_3ccb4")]
+unique_name_in_owner = true
+visible = false
+
+[node name="NewLayer" type="ConfirmationDialog" parent="." unique_id=1207508410]
+unique_name_in_owner = true
+oversampling_override = 1.0
+
+[node name="BrushLibrary" parent="." unique_id=1348164898 instance=ExtResource("5_hs7a8")]
+unique_name_in_owner = true
+visible = false
+
+[node name="ExportImage" parent="." unique_id=1928459055 instance=ExtResource("6_qk158")]
+unique_name_in_owner = true
+visible = false
+
+[node name="ExportGodotScene" type="FileDialog" parent="." unique_id=2111474897]
+unique_name_in_owner = true
+use_hdr_2d = true
+initial_position = 2
+display_mode = 1
+access = 2
+filters = PackedStringArray("*.scn", "*.tscn")
+use_native_dialog = true
+script = ExtResource("7_xkft4")
+
+[node name="WarnUser" type="AcceptDialog" parent="." unique_id=1656009061]
+unique_name_in_owner = true
+initial_position = 1
+transient = false
+always_on_top = true
+
+[node name="SaveChangeDialog" type="ConfirmationDialog" parent="." unique_id=819494425]
+unique_name_in_owner = true
+ok_button_text = "Save"
+script = ExtResource("8_qrdyv")
+
+[node name="YesNoDialog" type="ConfirmationDialog" parent="." unique_id=774819221]
+unique_name_in_owner = true
+script = ExtResource("9_t87eu")
+
+[node name="SaveAsDialog" type="FileDialog" parent="." unique_id=1444371044]
+unique_name_in_owner = true
+access = 2
+filters = PackedStringArray("*.ciallo;")
+use_native_dialog = true
+script = ExtResource("10_0gwwr")
