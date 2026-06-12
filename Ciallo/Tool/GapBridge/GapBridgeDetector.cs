@@ -165,9 +165,11 @@ internal sealed class GapBridgeDetector
         var nearestPoint = target.Positions.GetClosestPoint(sourcePoint, out var nearestT);
         var targetKind = ClassifyTargetKind(nearestT, target.LastT);
         KeepBetterIfValid(CreateHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, nearestT, nearestPoint, targetKind), ref best);
-        if (TryCreateEndpointHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, EndpointSide.Start, out var startHit))
+        if (targetKind != GapBridgeTargetKind.EndpointStart
+            && TryCreateEndpointHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, EndpointSide.Start, out var startHit))
             KeepBetter(startHit, ref best);
-        if (TryCreateEndpointHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, EndpointSide.End, out var endHit))
+        if (targetKind != GapBridgeTargetKind.EndpointEnd
+            && TryCreateEndpointHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, EndpointSide.End, out var endHit))
             KeepBetter(endHit, ref best);
 
         if (best is not { } found)
@@ -259,8 +261,6 @@ internal sealed class GapBridgeDetector
         float bestDistance = ComparableDistance(best.Candidate);
         if (!Mathf.IsEqualApprox(candidateDistance, bestDistance))
             return candidateDistance < bestDistance;
-        if (!Mathf.IsEqualApprox(candidate.Candidate.DistanceSquared, best.Candidate.DistanceSquared))
-            return candidate.Candidate.DistanceSquared < best.Candidate.DistanceSquared;
         if (candidate.Candidate.ToCurve.PackedValue != best.Candidate.ToCurve.PackedValue)
             return candidate.Candidate.ToCurve.PackedValue < best.Candidate.ToCurve.PackedValue;
         return candidate.Candidate.ToT < best.Candidate.ToT;

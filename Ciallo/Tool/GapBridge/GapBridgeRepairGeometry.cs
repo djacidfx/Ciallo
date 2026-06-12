@@ -8,14 +8,17 @@ namespace Ciallo.Tool;
 
 public static class GapBridgeRepairGeometry
 {
-    private const float GapBridgeOverrunDistanceWorld = 0.1f;
+    // Body targets overpass the hit point slightly so visual fills do not leave a hairline gap.
+    private const float BodyTargetOverrunDistanceWorld = 0.1f;
 
     public static ImmutableArray<Vector2> BuildRepairedPositions(Arrangement arr, GapBridgeCandidate candidate)
     {
         var geom = candidate.FromCurve.Get<PolylineGeometry>();
         var positions = geom.Positions.Value;
+        if (positions.Length < 2)
+            return positions;
         var endpointInfo = arr.GetCurveEndpointInfo(candidate.FromCurve.PackedValue);
-        bool repairStart = candidate.FromT <= 0.5f;
+        bool repairStart = SourceEndpointIsStart(candidate.FromT, positions.Length - 1f);
         float junctionLength = repairStart
             ? endpointInfo.StartJunctionLength
             : endpointInfo.EndJunctionLength;
@@ -42,7 +45,16 @@ public static class GapBridgeRepairGeometry
             return toPoint;
 
         var repairDirection = (toPoint - fromPoint).Normalized();
-        return toPoint + repairDirection * GapBridgeOverrunDistanceWorld;
+        return toPoint + repairDirection * BodyTargetOverrunDistanceWorld;
+    }
+
+    private static bool SourceEndpointIsStart(float sourceT, float lastT)
+    {
+        if (sourceT == 0f)
+            return true;
+        if (sourceT == lastT)
+            return false;
+        throw new InvalidOperationException($"Gap Bridge repair source must be an endpoint t, got {sourceT}.");
     }
 
     private static ImmutableArray<int> BuildTailIndices(
