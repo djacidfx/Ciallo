@@ -53,6 +53,10 @@ A stroke prediction is a transient visual extension of an in-progress stroke. It
 
 A stroke preview is the user-visible form of an in-progress stroke. It may include stable stroke samples and transient stroke predictions.
 
+### Gap Bridge
+
+Gap Bridge repairs a visual gap by deforming a dangling endpoint of the source shape toward a target.
+
 ### Command History
 
 Command history is a document-level record of undoable user changes.

@@ -97,65 +97,15 @@ public class GapBridgeTool : ToolBase
     private void CommitBridge(GapBridgeTarget target)
     {
         var candidate = target.Candidate;
-        var (fromPoint, toPoint) = GapBridgeGeometry.ResolveCandidate(candidate);
+        var sourceGeometry = candidate.FromCurve.Get<PolylineGeometry>();
+        var repairedPositions = GapBridgeRepairGeometry.BuildRepairedPositions(Arrangement.ArrReady.CurrentValue, candidate);
 
-        var bridgePolyline = GapBridgeRepairGeometry.BuildPolyline(candidate, fromPoint, toPoint);
-
-        target = new GapBridgeTarget(candidate, bridgePolyline);
-        var targetLayer = ResolveTargetLayer(target);
-
-        var bridgeGeometry = GapBridgeRepairGeometry.BuildStrokeGeometry(target);
-
-        var bridgeE = WorkingLayer.World.Create();
-        var cmd = new CommandBuilder("Gap Bridge", bridgeE);
-        var styleSource = ResolveStyleSource(target);
-        cmd = styleSource.IsNull ? cmd.NewStroke() : cmd.NewStroke(styleSource);
-        cmd.AddToLayerTree(targetLayer)
+        new CommandBuilder("Gap Bridge", candidate.FromCurve)
             .SetPolylineGeometry(
-                bridgeGeometry.Positions,
-                bridgeGeometry.Radii,
-                bridgeGeometry.Pressures,
-                bridgeGeometry.Tilts)
+                repairedPositions,
+                sourceGeometry.Radii.Value,
+                sourceGeometry.Pressures.Value,
+                sourceGeometry.Tilts.Value)
             .Commit();
-    }
-
-    private Entity ResolveTargetLayer(GapBridgeTarget target)
-    {
-        if (WorkingLayer.Has<ShapeLayerSetting>())
-            return WorkingLayer;
-
-        var fromLayer = GetShapeLayer(target.Candidate.FromCurve);
-        if (!fromLayer.IsNull)
-            return fromLayer;
-
-        var toLayer = GetShapeLayer(target.Candidate.ToCurve);
-        if (!toLayer.IsNull)
-            return toLayer;
-
-        if (WorkingLayer.Has<VectorFillLayerSetting>())
-        {
-            foreach (var layer in WorkingLayer.Get<VectorFillLayerSetting>().ReferenceLayers)
-            {
-                if (layer.IsAlive && layer.Has<ShapeLayerSetting>())
-                    return layer;
-            }
-        }
-
-        return Entity.Null;
-    }
-
-    private static Entity ResolveStyleSource(GapBridgeTarget target)
-    {
-        if (target.Candidate.FromCurve.IsAlive && target.Candidate.FromCurve.Has<StrokeSetting>())
-            return target.Candidate.FromCurve;
-        if (target.Candidate.ToCurve.IsAlive && target.Candidate.ToCurve.Has<StrokeSetting>())
-            return target.Candidate.ToCurve;
-        return Entity.Null;
-    }
-
-    private static Entity GetShapeLayer(Entity shape)
-    {
-        var layer = shape.Get<LayerTreeNode>().ParentValue;
-        return layer.Has<ShapeLayerSetting>() ? layer : Entity.Null;
     }
 }

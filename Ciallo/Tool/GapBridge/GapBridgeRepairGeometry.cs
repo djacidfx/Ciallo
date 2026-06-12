@@ -1,263 +1,74 @@
 using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using Ciallo.Data;
 using Ciallo.Geometry;
-using Frent;
 using Godot;
 
 namespace Ciallo.Tool;
 
-public readonly record struct GapBridgeStrokeGeometry(
-    ImmutableArray<Vector2> Positions,
-    ImmutableArray<float> Radii,
-    ImmutableArray<float> Pressures,
-    ImmutableArray<Vector2> Tilts);
-
 public static class GapBridgeRepairGeometry
 {
-    private const int SmoothBridgeSegments = 12;
-    private const float Epsilon = 1e-5f;
+    private const float GapBridgeOverrunDistanceWorld = 0.1f;
 
-    public static ImmutableArray<Vector2> BuildPolyline(
-        GapBridgeCandidate candidate,
-        Vector2 fromPoint,
-        Vector2 toPoint)
+    public static ImmutableArray<Vector2> BuildRepairedPositions(Arrangement arr, GapBridgeCandidate candidate)
     {
-        var fromPositions = GapBridgeGeometry.GetPositions(candidate.FromCurve);
-        var toPositions = GapBridgeGeometry.GetPositions(candidate.ToCurve);
-        if (!TryChooseTangents(
-                fromPositions,
-                candidate.FromT,
-                toPositions,
-                candidate.ToT,
-                fromPoint,
-                toPoint,
-                out var fromTangent,
-                out var toTangent))
-            return CleanPolyline(fromPoint, toPoint);
+        var geom = candidate.FromCurve.Get<PolylineGeometry>();
+        var positions = geom.Positions.Value;
+        var endpointInfo = arr.GetCurveEndpointInfo(candidate.FromCurve.PackedValue);
+        bool repairStart = candidate.FromT <= 0.5f;
+        float junctionLength = repairStart
+            ? endpointInfo.StartJunctionLength
+            : endpointInfo.EndJunctionLength;
+        var tailIndices = BuildTailIndices(positions, repairStart, junctionLength);
+        var targetPoint = ResolveRepairTarget(candidate);
+        var endpointDelta = targetPoint - positions[tailIndices[^1]];
+        var repaired = positions.ToBuilder();
 
-        if (TryBuildSharpCorner(fromPoint, fromTangent, toPoint, toTangent, out var corner))
-            return CleanPolyline(fromPoint, corner, toPoint);
-
-        return BuildSmoothBridge(fromPoint, fromTangent, toPoint, toTangent);
-    }
-
-    public static GapBridgeStrokeGeometry BuildStrokeGeometry(GapBridgeTarget target)
-    {
-        var positions = target.TargetPolyline;
-        var candidate = target.Candidate;
-        float fromRadius = SampleRadius(candidate.FromCurve, candidate.FromT);
-        float toRadius = SampleRadius(candidate.ToCurve, candidate.ToT);
-        float fromPressure = SamplePressure(candidate.FromCurve, candidate.FromT);
-        float toPressure = SamplePressure(candidate.ToCurve, candidate.ToT);
-        var fromTilt = SampleTilt(candidate.FromCurve, candidate.FromT);
-        var toTilt = SampleTilt(candidate.ToCurve, candidate.ToT);
-
-        var radii = ImmutableArray.CreateBuilder<float>(positions.Length);
-        var pressures = ImmutableArray.CreateBuilder<float>(positions.Length);
-        var tilts = ImmutableArray.CreateBuilder<Vector2>(positions.Length);
-        for (int i = 0; i < positions.Length; i++)
+        // The accepted displacement model has fixed endpoints and penalizes
+        // first/second displacement differences. Its minimum is a linear ramp.
+        int segmentCount = tailIndices.Length - 1;
+        for (int i = 1; i < tailIndices.Length; i++)
         {
-            float u = (float)i / (positions.Length - 1);
-            radii.Add(Mathf.Max(0.1f, Mathf.Lerp(fromRadius, toRadius, u)));
-            pressures.Add(Mathf.Lerp(fromPressure, toPressure, u));
-            tilts.Add(fromTilt.Lerp(toTilt, u));
+            float u = (float)i / segmentCount;
+            repaired[tailIndices[i]] = positions[tailIndices[i]] + endpointDelta * u;
         }
-
-        return new GapBridgeStrokeGeometry(
-            positions,
-            radii.ToImmutable(),
-            pressures.ToImmutable(),
-            tilts.ToImmutable());
+        return repaired.ToImmutable();
     }
 
-    private static bool TryChooseTangents(
-        ImmutableArray<Vector2> fromPositions,
-        float fromT,
-        ImmutableArray<Vector2> toPositions,
-        float toT,
-        Vector2 fromPoint,
-        Vector2 toPoint,
-        out Vector2 fromTangent,
-        out Vector2 toTangent)
+    private static Vector2 ResolveRepairTarget(GapBridgeCandidate candidate)
     {
-        fromTangent = default;
-        toTangent = default;
+        var (fromPoint, toPoint) = GapBridgeGeometry.ResolveCandidate(candidate);
+        if (candidate.TargetKind != GapBridgeTargetKind.Body)
+            return toPoint;
 
-        var fromTo = NormalizeOrZero(toPoint - fromPoint);
-        if (fromTo == Vector2.Zero)
-            return false;
-
-        var fromCandidates = GetCompletionTangents(fromPositions, fromT, fromTo);
-        var toCandidates = GetCompletionTangents(toPositions, toT, -fromTo);
-        if (fromCandidates.Count == 0 || toCandidates.Count == 0)
-            return false;
-
-        float bestScore = float.NegativeInfinity;
-        foreach (var fromCandidate in fromCandidates)
-        {
-            foreach (var toCandidate in toCandidates)
-            {
-                float score = fromCandidate.Dot(fromTo) + toCandidate.Dot(-fromTo);
-                if (score <= bestScore)
-                    continue;
-
-                fromTangent = fromCandidate;
-                toTangent = toCandidate;
-                bestScore = score;
-            }
-        }
-        return true;
+        var repairDirection = (toPoint - fromPoint).Normalized();
+        return toPoint + repairDirection * GapBridgeOverrunDistanceWorld;
     }
 
-    private static List<Vector2> GetCompletionTangents(
+    private static ImmutableArray<int> BuildTailIndices(
         ImmutableArray<Vector2> positions,
-        float t,
-        Vector2 toward)
+        bool repairStart,
+        float junctionLength)
     {
-        var result = new List<Vector2>(2);
-        float maxT = positions.Length - 1f;
-        if (t <= 1e-3f)
+        float endpointT = repairStart ? 0f : positions.Length - 1f;
+        float junctionT = positions.MoveTByDistance(endpointT, junctionLength, forward: repairStart);
+        int anchorIndex = repairStart
+            ? Math.Clamp((int)MathF.Ceiling(junctionT), 1, positions.Length - 1)
+            : Math.Clamp((int)MathF.Floor(junctionT), 0, positions.Length - 2);
+
+        var builder = ImmutableArray.CreateBuilder<int>(
+            repairStart ? anchorIndex + 1 : positions.Length - anchorIndex);
+        if (repairStart)
         {
-            AddUniqueNormalized(result, positions[0] - positions[1]);
-            return result;
+            for (int i = anchorIndex; i >= 0; i--)
+                builder.Add(i);
         }
-
-        if (t >= maxT - 1e-3f)
+        else
         {
-            AddUniqueNormalized(result, positions[^1] - positions[^2]);
-            return result;
-        }
-
-        int seg = Math.Clamp((int)MathF.Floor(t), 0, positions.Length - 2);
-        AddUniqueNormalized(result, positions[seg + 1] - positions[seg]);
-        AddUniqueNormalized(result, positions[seg] - positions[seg + 1]);
-
-        result.Sort((a, b) => b.Dot(toward).CompareTo(a.Dot(toward)));
-        return result;
-    }
-
-    private static bool TryBuildSharpCorner(
-        Vector2 fromPoint,
-        Vector2 fromTangent,
-        Vector2 toPoint,
-        Vector2 toTangent,
-        out Vector2 corner)
-    {
-        corner = default;
-        float gapLength = fromPoint.DistanceTo(toPoint);
-        if (gapLength <= Epsilon)
-            return false;
-
-        float denom = Cross(fromTangent, toTangent);
-        if (Mathf.Abs(denom) < 0.25f)
-            return false;
-
-        var delta = toPoint - fromPoint;
-        float fromDistance = Cross(delta, toTangent) / denom;
-        float toDistance = Cross(delta, fromTangent) / denom;
-        if (fromDistance <= Epsilon || toDistance <= Epsilon)
-            return false;
-
-        corner = fromPoint + fromTangent * fromDistance;
-        float maxCornerOffset = gapLength * 2f;
-        if (corner.DistanceSquaredToSegment(fromPoint, toPoint) > maxCornerOffset * maxCornerOffset)
-            return false;
-
-        float minLeg = gapLength * 0.08f;
-        return corner.DistanceSquaredTo(fromPoint) >= minLeg * minLeg &&
-               corner.DistanceSquaredTo(toPoint) >= minLeg * minLeg;
-    }
-
-    private static ImmutableArray<Vector2> BuildSmoothBridge(
-        Vector2 fromPoint,
-        Vector2 fromTangent,
-        Vector2 toPoint,
-        Vector2 toTangent)
-    {
-        float handleLength = fromPoint.DistanceTo(toPoint) / 3f;
-        var p1 = fromPoint + fromTangent * handleLength;
-        var p2 = toPoint + toTangent * handleLength;
-
-        var builder = ImmutableArray.CreateBuilder<Vector2>(SmoothBridgeSegments + 1);
-        for (int i = 0; i <= SmoothBridgeSegments; i++)
-        {
-            float u = (float)i / SmoothBridgeSegments;
-            builder.Add(Cubic(fromPoint, p1, p2, toPoint, u));
-        }
-        return CleanPolyline(builder.ToArray());
-    }
-
-    private static Vector2 Cubic(Vector2 p0, Vector2 p1, Vector2 p2, Vector2 p3, float t)
-    {
-        float mt = 1f - t;
-        return mt * mt * mt * p0
-               + 3f * mt * mt * t * p1
-               + 3f * mt * t * t * p2
-               + t * t * t * p3;
-    }
-
-    private static float SampleRadius(Entity curve, float t)
-    {
-        var geom = curve.Get<PolylineGeometry>();
-        var positions = geom.Positions.Value;
-        var radii = geom.Radii.Value;
-        if (radii.Length == positions.Length)
-            return radii.Sample(t);
-        return radii.Length > 0 ? radii[0] : AppPreference.StrokeWireframeRadius;
-    }
-
-    private static float SamplePressure(Entity curve, float t)
-    {
-        var geom = curve.Get<PolylineGeometry>();
-        var positions = geom.Positions.Value;
-        var pressures = geom.Pressures.Value;
-        if (pressures.Length == positions.Length)
-            return pressures.Sample(t);
-        return pressures.Length > 0 ? pressures[0] : 1f;
-    }
-
-    private static Vector2 SampleTilt(Entity curve, float t)
-    {
-        var geom = curve.Get<PolylineGeometry>();
-        var positions = geom.Positions.Value;
-        var tilts = geom.Tilts.Value;
-        if (tilts.Length == positions.Length)
-            return tilts.Sample(t);
-        return tilts.Length > 0 ? tilts[0] : Vector2.Zero;
-    }
-
-    private static void AddUniqueNormalized(List<Vector2> result, Vector2 tangent)
-    {
-        tangent = NormalizeOrZero(tangent);
-        if (tangent == Vector2.Zero)
-            return;
-
-        foreach (var existing in result)
-        {
-            if (existing.IsEqualApprox(tangent))
-                return;
-        }
-        result.Add(tangent);
-    }
-
-    private static ImmutableArray<Vector2> CleanPolyline(params Vector2[] points)
-    {
-        var builder = ImmutableArray.CreateBuilder<Vector2>(points.Length);
-        foreach (var point in points)
-        {
-            if (builder.Count == 0 || builder[^1].DistanceSquaredTo(point) > Epsilon * Epsilon)
-                builder.Add(point);
+            for (int i = anchorIndex; i < positions.Length; i++)
+                builder.Add(i);
         }
         return builder.ToImmutable();
     }
-
-    private static Vector2 NormalizeOrZero(Vector2 v)
-    {
-        return v.LengthSquared() <= Epsilon * Epsilon ? Vector2.Zero : v.Normalized();
-    }
-
-    private static float Cross(Vector2 a, Vector2 b) => a.X * b.Y - a.Y * b.X;
 
 }

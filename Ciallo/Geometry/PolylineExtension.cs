@@ -151,6 +151,9 @@ public static partial class PolylineExtension
 
         while (distance > 0f)
         {
+            if (forward && t >= maxT) return maxT;
+            if (!forward && t <= 0f) return 0f;
+
             int seg = forward
                 ? Math.Min((int)MathF.Floor(t), count - 2)
                 : Math.Min((int)MathF.Ceiling(t) - 1, count - 2);
