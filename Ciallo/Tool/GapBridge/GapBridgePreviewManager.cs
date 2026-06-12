@@ -106,7 +106,6 @@ public sealed class GapBridgePreviewManager : IDisposable
             var bridge = new StrokeView
             {
                 Material = AutoloadRendering.DashWireframeMaterial,
-                Modulate = new Color(1f, 1f, 1f, 0.9f),
             };
             _bridgesRoot.AddChild(bridge);
             bridge.SetGeometry(target.TargetPolyline, AppPreference.StrokeWireframeRadius * 1.25f);
