@@ -1,41 +1,27 @@
 using Ciallo.Data;
 using Ciallo.Rendering;
-using Ciallo.Widget;
 using Godot;
 using R3;
 
 namespace Ciallo.GuiControl;
 
+[SceneTree]
 public partial class ExportImage : ConfirmationDialog
 {
     public readonly ReactiveProperty<float> Scale = new(1f);
     public readonly ReactiveProperty<Color> BackgroundColor = new(Colors.Transparent);
 
-    public Label ReferenceSizeNumber;
-    public SpinSlider ScaleNumber;
-    public Label FinalImageSizeNumber;
-    public SubViewport ImageSubViewport;
-    public FilePathPicker PathPicker;
-    public LineEdit FileNameEdit;
-    public TextureRect ImageTextureRect;
-    public Label Message;
-    public ColorPickerButton BackgroundColorButton;
-
     private DocumentSetting _setting;
     private Camera2D _camera;
     private Polygon2D _background;
+    private CompositeDisposable _previewSubs = new();
 
     public override void _Ready()
     {
-        ReferenceSizeNumber = GetNode<Label>("%ReferenceSizeNumber");
-        ScaleNumber = GetNode<SpinSlider>("%ScaleNumber").BindNumber(Scale);
-        FinalImageSizeNumber = GetNode<Label>("%FinalImageSizeNumber");
-        ImageSubViewport = GetNode<SubViewport>("%ImageSubViewport");
-        PathPicker = GetNode<FilePathPicker>("%FilePathPicker");
-        FileNameEdit = GetNode<LineEdit>("%FileNameEdit");
-        ImageTextureRect = GetNode<TextureRect>("%ImageTextureRect");
-        Message = GetNode<Label>("%Message");
-        BackgroundColorButton = GetNode<ColorPickerButton>("%BackgroundColorButton").BindColor(BackgroundColor);
+        var subs = new CompositeDisposable();
+        ScaleNumber.BindNumber(Scale, subs);
+        BackgroundColorButton.BindColor(BackgroundColor, subs);
+        subs.AddTo(this);
 
         Confirmed += OnExport;
     }
@@ -59,6 +45,8 @@ public partial class ExportImage : ConfirmationDialog
     {
         ImageSubViewport.QueueFreeChildren();
         Message.Hide();
+        _previewSubs.Dispose();
+        _previewSubs = new();
 
         var document = AppDocumentManager.WorkingDocument.CurrentValue;
         _setting = document.Get<DocumentSetting>();
@@ -75,7 +63,7 @@ public partial class ExportImage : ConfirmationDialog
             _background.Color = c;
             ImageSubViewport.RenderTargetClearMode = SubViewport.ClearMode.Once;
             ImageSubViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
-        });
+        }).AddTo(_previewSubs);
         ImageSubViewport.AddChild(root);
         _camera = new Camera2D();
         ImageSubViewport.AddChild(_camera);
@@ -89,7 +77,7 @@ public partial class ExportImage : ConfirmationDialog
         {
             Vector2I size = new((int)(rSize.X * s), (int)(rSize.Y * s));
             FinalImageSizeNumber.Text = $"{size.X} x {size.Y}";
-        });
+        }).AddTo(_previewSubs);
 
         ImageSubViewport.Size = sizei;
         ImageSubViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;

@@ -10,6 +10,7 @@
 [ext_resource type="Script" uid="uid://bsu2387oxsudi" path="res://GuiControl/Dialog/SaveChangeDialog.cs" id="8_qrdyv"]
 [ext_resource type="Script" uid="uid://dt8ylkob7fe5w" path="res://GuiControl/Dialog/YesNoDialog.cs" id="9_t87eu"]
 [ext_resource type="Script" uid="uid://dn4468qjyqneb" path="res://GuiControl/Dialog/SaveAsDialog.cs" id="10_0gwwr"]
+[ext_resource type="PackedScene" uid="uid://dgjotk4vkcyo8" path="res://GuiControl/Dialog/ExportFrameSquence.tscn" id="11_v7wqp"]
 
 [node name="DialogHost" type="Control" unique_id=1874914548]
 layout_mode = 3
@@ -47,6 +48,10 @@ unique_name_in_owner = true
 visible = false
 
 [node name="ExportImage" parent="." unique_id=1928459055 instance=ExtResource("6_qk158")]
+unique_name_in_owner = true
+visible = false
+
+[node name="ExportFrameSquence" parent="." unique_id=1984231464 instance=ExtResource("11_v7wqp")]
 unique_name_in_owner = true
 visible = false
 

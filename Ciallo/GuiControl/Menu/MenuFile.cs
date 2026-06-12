@@ -18,6 +18,7 @@ public partial class MenuFile : PopupMenu
         { "Save As...", AppActions.SaveAs },
         { "-2", null },
         { "Export as image", null },
+        { "Export frame sequence", null },
         { "Export as Godot scene", null },
     };
 
@@ -68,7 +69,12 @@ public partial class MenuFile : PopupMenu
                 AppDialogHost.ExportImage.Popup();
                 break;
 
-            case 8: // Export as Godot scene
+            case 8: // Export frame sequence
+                if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
+                AppDialogHost.ExportFrameSquence.PopupCentered(AppDocumentManager.WorkingDocument.CurrentValue);
+                break;
+
+            case 9: // Export as Godot scene
                 if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
                 var documentSetting = AppDocumentManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
                 AppDialogHost.ExportGodotScene.CurrentFile = documentSetting.Name.Value;
