@@ -21,6 +21,10 @@ Any layer's parent must be a folder layer. The document entity is a folder layer
 
 An exposure is a timeline assignment that says which cel is shown from a frame until the next exposure on the same cel folder.
 
+### Frame Sequence
+
+A frame sequence is an animation export made of one still image file per timeline frame.
+
 ### Onion Skin
 
 Onion skin is a timeline viewing mode that shows nearby cel frames around the current frame as drawing references.

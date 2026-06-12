@@ -15,7 +15,8 @@ public partial class ToolManager : IInitable, IDestroyable
     public ReactiveProperty<ToolButton?> PressedToolButton => AppPreference.PressedToolButton;
     public ReactiveProperty<ITool> WorkingTool = new(null);
     public Entity Document;
-    private readonly ReactiveProperty<bool> _isTimelineRolling = new(false);
+    private readonly ReactiveProperty<bool> _isRollingFrame = new(false);
+    private int _rollingFrameScopeCount;
 
     public void Init(Entity self)
     {
@@ -23,25 +24,41 @@ public partial class ToolManager : IInitable, IDestroyable
         ToolButtonMap = InitializeToolButtonMap(self);
         var workingLayer = Document.Get<SelectionManager>().WorkingLayer;
         // Switch tool
-        _isTimelineRolling
+        _isRollingFrame
             .CombineLatest(workingLayer, ValueTuple.Create)
             .CombineLatest(PressedToolButton, ValueTuple.Create)
             .Subscribe(tuple =>
             {
-                var (isTimelineRolling, layerE) = tuple.Item1;
+                var (isRollingFrame, layerE) = tuple.Item1;
                 var toolButton = tuple.Item2;
-                var targetTool = isTimelineRolling ? null : ResolveTool(layerE, toolButton);
+                var targetTool = isRollingFrame ? null : ResolveTool(layerE, toolButton);
                 SwitchWorkingTool(targetTool, layerE);
             }).AddTo(Document);
     }
 
     public void ObserveTimelineRolling(Observable<bool> isTimelineRolling)
     {
+        IDisposable rollingFrameScope = null;
         isTimelineRolling.Subscribe(rolling =>
         {
-            if (_isTimelineRolling.Value == rolling) return;
-            _isTimelineRolling.Value = rolling;
+            if (rolling)
+            {
+                rollingFrameScope ??= BeginRollingFrame();
+                return;
+            }
+
+            rollingFrameScope?.Dispose();
+            rollingFrameScope = null;
         }).AddTo(Document);
+    }
+
+    public IDisposable BeginRollingFrame()
+    {
+        _rollingFrameScopeCount++;
+        if (_rollingFrameScopeCount == 1)
+            _isRollingFrame.Value = true;
+
+        return new RollingFrameScope(this);
     }
 
     public void Destroy() => DeactivateWorkingTool();
@@ -67,5 +84,28 @@ public partial class ToolManager : IInitable, IDestroyable
         WorkingTool.Value?.OnDeactivate();
         targetTool?.OnActivate(layerE);
         WorkingTool.Value = targetTool;
+    }
+
+    private void EndRollingFrame()
+    {
+        _rollingFrameScopeCount--;
+        if (_rollingFrameScopeCount == 0)
+            _isRollingFrame.Value = false;
+    }
+
+    private sealed class RollingFrameScope : IDisposable
+    {
+        private ToolManager _manager;
+
+        public RollingFrameScope(ToolManager manager)
+        {
+            _manager = manager;
+        }
+
+        public void Dispose()
+        {
+            _manager.EndRollingFrame();
+            _manager = null;
+        }
     }
 }

@@ -1,5 +1,8 @@
+using System.IO;
+using System.Threading.Tasks;
 using Ciallo.Data;
 using Ciallo.Rendering;
+using Ciallo.Tool;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -19,6 +22,8 @@ public class FrameFileNameSetting
 [SceneTree]
 public partial class ExportFrameSquence : ConfirmationDialog
 {
+    private const uint ExportBackgroundVisibilityLayer = 1 << 1;
+
     public readonly ReactiveProperty<float> Scale = new(1f);
     public readonly ReactiveProperty<Color?> BackgroundColor = new(default); // Use nullable color button
     public readonly ReactiveProperty<string> ExportPath = new("");
@@ -26,6 +31,14 @@ public partial class ExportFrameSquence : ConfirmationDialog
     public ReadOnlyReactiveProperty<string> PreviewFrameFileName;
 
     public Entity Document;
+    private readonly Polygon2D _background = new()
+    {
+        Name = "ExportBackground",
+        VisibilityLayer = ExportBackgroundVisibilityLayer,
+        ZIndex = -4096,
+        Visible = false,
+    };
+
     public ExportFrameSquence()
     {
         PreviewFrameFileName = NameSetting.Prefix.CombineLatest(NameSetting.Suffix, NameSetting.Separator, NameSetting.StartNumber,
@@ -47,14 +60,133 @@ public partial class ExportFrameSquence : ConfirmationDialog
         PreviewFrameFileName.Subscribe(fileName => PreviewFrameFileNameLabel.Text = fileName).AddTo(subs);
         subs.AddTo(this);
 
+        ExportViewport.AddChild(_background);
+        ExportViewport.MoveChild(_background, 0);
         Confirmed += Export;
     }
 
-    private void Export()
+    private async void Export()
+    {
+        GetOkButton().Disabled = true;
+        var progressBarPopup = GetNode<PopupPanel>("ProgressBarPopup");
+        progressBarPopup.PopupCentered();
+        try
+        {
+            await ExportFrames();
+            Hide();
+        }
+        finally
+        {
+            progressBarPopup.Hide();
+            GetOkButton().Disabled = false;
+        }
+    }
+
+    private async Task ExportFrames()
     {
         var paintViewport = (SubViewport)Document.Get<WorldView>().GetParent();
+        var liveBackground = paintViewport.GetNode<Polygon2D>("Background");
+        var worldOverlay = paintViewport.GetNode<Node2D>("WorldOverlay");
+        var worldBody = paintViewport.GetNode<Node2D>("WorldBody");
+        var documentSetting = Document.Get<DocumentSetting>();
+        var timelineSetting = Document.Get<TimelineSetting>();
+        var selectionManager = Document.Get<SelectionManager>();
+
+        var oldFrame = selectionManager.CurrentFrame.Value;
+        var oldOnionSkinEnabled = timelineSetting.OnionSkinEnabled.Value;
+        var oldPaintViewportCullMask = paintViewport.CanvasCullMask;
+        var oldLiveBackgroundVisible = liveBackground.Visible;
+        var oldWorldOverlayVisible = worldOverlay.Visible;
+        var oldWorldBodyVisible = worldBody.Visible;
+        using var rollingFrame = Document.Get<ToolManager>().BeginRollingFrame();
+
+        Directory.CreateDirectory(ExportPath.Value);
+
+        var referenceSize = documentSetting.ReferenceSize.Value;
+        ConfigureExportViewport(oldPaintViewportCullMask, referenceSize);
+        ConfigureExportBackground(referenceSize);
+
+        var startFrame = timelineSetting.PlaybackStart.Value;
+        var endFrameExclusive = timelineSetting.PlaybackEnd.Value;
+        var frameCount = endFrameExclusive - startFrame;
+        var progressBar = GetNode<Godot.ProgressBar>("ProgressBarPopup/ProgressBar");
+        progressBar.MinValue = 0;
+        progressBar.MaxValue = frameCount;
+        progressBar.Value = 0;
+
         ExportViewport.World2D = paintViewport.World2D;
         paintViewport.CanvasCullMask = 0;
+        timelineSetting.OnionSkinEnabled.Value = false;
+        liveBackground.Visible = false;
+        worldOverlay.Visible = false;
+        worldBody.Visible = false;
+
+        try
+        {
+            for (var frame = startFrame; frame < endFrameExclusive; frame++)
+            {
+                selectionManager.CurrentFrame.Value = frame;
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+
+                ExportViewport.RenderTargetClearMode = SubViewport.ClearMode.Once;
+                ExportViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
+                await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
+
+                var outputNumber = NameSetting.StartNumber.Value + frame - startFrame;
+                var outputPath = ExportPath.Value.PathJoin(FormatFrameFileName(
+                    NameSetting.Prefix.Value,
+                    NameSetting.Suffix.Value,
+                    NameSetting.Separator.Value,
+                    outputNumber,
+                    NameSetting.NumberDigits));
+                SavePngFrame(outputPath);
+
+                progressBar.Value = frame - startFrame + 1;
+                await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
+            }
+        }
+        finally
+        {
+            selectionManager.CurrentFrame.Value = oldFrame;
+            timelineSetting.OnionSkinEnabled.Value = oldOnionSkinEnabled;
+            paintViewport.CanvasCullMask = oldPaintViewportCullMask;
+            liveBackground.Visible = oldLiveBackgroundVisible;
+            worldOverlay.Visible = oldWorldOverlayVisible;
+            worldBody.Visible = oldWorldBodyVisible;
+            _background.Visible = false;
+            ExportViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
+            ExportViewport.World2D = null;
+        }
+    }
+
+    private void ConfigureExportViewport(uint paintViewportCullMask, Vector2 referenceSize)
+    {
+        ExportViewport.TransparentBg = true;
+        ExportViewport.CanvasCullMask = paintViewportCullMask | ExportBackgroundVisibilityLayer;
+        ExportViewport.Size = new Vector2I((int)(referenceSize.X * Scale.Value), (int)(referenceSize.Y * Scale.Value));
+        Camera.Zoom = Vector2.One * Scale.Value;
+    }
+
+    private void ConfigureExportBackground(Vector2 referenceSize)
+    {
+        _background.SetPolygonFromRawRing(new Vector2[]
+        {
+            new(-referenceSize.X / 2, -referenceSize.Y / 2),
+            new(referenceSize.X / 2, -referenceSize.Y / 2),
+            new(referenceSize.X / 2, referenceSize.Y / 2),
+            new(-referenceSize.X / 2, referenceSize.Y / 2)
+        });
+
+        _background.Visible = BackgroundColor.Value.HasValue;
+        if (BackgroundColor.Value.HasValue)
+            _background.Color = BackgroundColor.Value.Value;
+    }
+
+    private void SavePngFrame(string path)
+    {
+        var error = ExportViewport.GetTexture().GetImage().SavePng(path);
+        if (error != Error.Ok)
+            throw new IOException($"Failed to save PNG frame to '{path}': {error}");
     }
 
     public void PopupCentered(Entity document)
