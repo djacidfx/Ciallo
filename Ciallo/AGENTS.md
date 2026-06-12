@@ -8,4 +8,4 @@
 - Objective Evaluation: Treat every user idea as a hypothesis to be verified, not a command to be blindly executed.
 
 ## After any code writing before validate/build check:
-- I score my code 8-9 out of 10 from clean code perspecitve, if not, rework on it.
+- I score my code >=8 out of 10 from clean code perspecitve, if not, clean it.

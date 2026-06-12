@@ -83,6 +83,8 @@ internal sealed class GapBridgeDetector
 
     private CandidateHit? FindBestHit(Entity sourceCurve, GapBridgeCurveInfo source, EndpointSide sourceSide)
     {
+        // Source rule: bridges start only from original open-stroke endpoints that are
+        // dangling and have at least max-gap visible length before the next junction.
         if (source.IsClosed || !source.EndpointCanStartBridge(sourceSide, _maxGapLength))
             return null;
 
@@ -92,6 +94,8 @@ internal sealed class GapBridgeDetector
 
         foreach (var (targetCurve, target) in QueryBoundaryCurves(sourcePoint))
         {
+            // Same-stroke body hits are ignored; TryCreateSameCurveEndpointHit handles
+            // the one allowed same-stroke target: the opposite original endpoint.
             if (targetCurve == sourceCurve)
                 continue;
 
@@ -121,6 +125,8 @@ internal sealed class GapBridgeDetector
         Vector2 sourcePoint,
         float sourceT)
     {
+        // Same-stroke rule: only the opposite original endpoint may be targeted. It
+        // must be dangling, but it does not need to satisfy the source length rule.
         var targetSide = Opposite(sourceSide);
         if (!source.EndpointIsDangling(targetSide))
             return null;
@@ -153,6 +159,9 @@ internal sealed class GapBridgeDetector
         hit = default;
         CandidateHit? best = null;
 
+        // Cross-stroke targets may be a stroke body or a dangling endpoint within
+        // max gap. The source length rule is intentionally not applied to targets,
+        // so a short dangling endpoint and a closed stroke body can still be reached.
         var nearestPoint = target.Positions.GetClosestPoint(sourcePoint, out var nearestT);
         var targetKind = ClassifyTargetKind(nearestT, target.LastT);
         KeepBetterIfValid(CreateHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, nearestT, nearestPoint, targetKind), ref best);
@@ -244,6 +253,8 @@ internal sealed class GapBridgeDetector
 
     private bool CandidateIsBetter(CandidateHit candidate, CandidateHit best)
     {
+        // Each directional source endpoint keeps one target. Distance leads, with a
+        // small preference for loose endpoints over slightly closer stroke bodies.
         float candidateDistance = ComparableDistance(candidate.Candidate);
         float bestDistance = ComparableDistance(best.Candidate);
         if (!Mathf.IsEqualApprox(candidateDistance, bestDistance))
