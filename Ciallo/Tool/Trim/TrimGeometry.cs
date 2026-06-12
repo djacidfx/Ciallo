@@ -2,39 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Ciallo.Geometry;
-using Frent;
 using Godot;
-using Godot.Collections;
 
 namespace Ciallo.Tool;
-
-// Native Arrangement2D.polyline_query_edges returns one dict per crossed halfedge:
-// { source_id: long (Entity.PackedValue), from_t: float, to_t: float }.
-// from_t/to_t are fractional indices into the source polyline's segment array.
-public readonly record struct TrimEdgeHit(Entity SourceShape, float FromT, float ToT);
 
 // Pure helpers shared by TrimInteractor (preview) and TrimTool commit logic.
 public static class TrimGeometry
 {
-    public static List<TrimEdgeHit> ParseEdgeHits(Array<Dictionary> raw)
-    {
-        var hits = new List<TrimEdgeHit>(raw.Count);
-        foreach (var dict in raw)
-        {
-            long sourceId = (long)dict["source_id"];
-            float fromT = (float)dict["from_t"];
-            float toT = (float)dict["to_t"];
-            hits.Add(new TrimEdgeHit(sourceId.ToEntity(), fromT, toT));
-        }
-        return hits;
-    }
-
     // Build the kept ranges for a single source from a collection of doomed (from_t, to_t) intervals.
     // The doomed intervals are merged first, then undercut in world space. This keeps a tiny amount
     // of original geometry around intersections so the rebuilt arrangement still feels connected.
     // The goal is apparent correctness for drawing, not exact graph-topology preservation.
     public static List<(float From, float To)> InvertDoomedRanges(
-        IReadOnlyList<TrimEdgeHit> doomed,
+        IReadOnlyList<PolylineEdgeHit> doomed,
         ImmutableArray<Vector2> sourcePositions,
         float undercutDistance)
     {

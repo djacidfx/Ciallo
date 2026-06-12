@@ -63,7 +63,7 @@ public class TrimInteractor : InteractiveSessionBase
     {
         // Final query off the full gesture, then commit.
         var hits = QueryHits();
-        if (hits.Count > 0)
+        if (hits.Length > 0)
             CommitTrim(hits);
         Clear();
     }
@@ -77,11 +77,10 @@ public class TrimInteractor : InteractiveSessionBase
         _gestureView.SetGeometry(_gesture, AppPreference.StrokeWireframeRadius);
     }
 
-    private List<TrimEdgeHit> QueryHits()
+    private PolylineEdgeHit[] QueryHits()
     {
         if (_arrSnapshot == null || _gesture.Count < 2) return [];
-        var raw = _arrSnapshot.PolylineQueryEdges([.. _gesture]);
-        return TrimGeometry.ParseEdgeHits(raw);
+        return _arrSnapshot.PolylineQueryEdges([.. _gesture]);
     }
 
     private void RefreshDoomedPreview()
@@ -116,7 +115,7 @@ public class TrimInteractor : InteractiveSessionBase
         _sourceSnapshot = null;
     }
 
-    private void CommitTrim(List<TrimEdgeHit> hits)
+    private void CommitTrim(PolylineEdgeHit[] hits)
     {
         // Group by parent layer, then process shapes by descending sibling index so each
         // AddToLayerTreeCmd's static insertion index stays valid within that layer.
