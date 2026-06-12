@@ -15,6 +15,8 @@ public class LiquifyInteractor : InteractiveSessionBase
     private Entity[] _processingEs;
     private Vector2[][] _origPolylines;
     private Vector2[][] _currPolylines;
+    private float[][] _origRadii;
+    private float[][] _currRadii;
     private Rect2[] _aabbs;
     private bool[] _dirty;
 
@@ -23,18 +25,34 @@ public class LiquifyInteractor : InteractiveSessionBase
         _processingEs = LiquifyTargetScope.Resolve(Document, WorkingLayer);
         _origPolylines = new Vector2[_processingEs.Length][];
         _currPolylines = new Vector2[_processingEs.Length][];
+        _origRadii = new float[_processingEs.Length][];
+        _currRadii = new float[_processingEs.Length][];
         _aabbs = new Rect2[_processingEs.Length];
         _dirty = new bool[_processingEs.Length];
 
         for (int i = 0; i < _processingEs.Length; i++)
         {
-            var positions = _processingEs[i].Get<PolylineGeometry>().Positions.Value;
-            _origPolylines[i] = positions.ToArray();
-            _currPolylines[i] = positions.ToArray();
-            _aabbs[i] = ComputeAabb(_currPolylines[i]);
+            var geom = _processingEs[i].Get<PolylineGeometry>();
+            var positions = geom.Positions.Value;
+            _origPolylines[i] = [.. positions];
+            _currPolylines[i] = [.. positions];
+
+            if (_processingEs[i].Has<StrokeSetting>())
+            {
+                var radii = geom.Radii.Value;
+                _origRadii[i] = [.. radii];
+                _currRadii[i] = [.. radii];
+            }
+            else
+            {
+                _origRadii[i] = [];
+                _currRadii[i] = [];
+            }
+
+            _aabbs[i] = _currPolylines[i].GetBoundingBox();
         }
 
-        ApplyDab(data.WorldPosition, Vector2.Zero, data.Pressure);
+        ApplyDab(data.WorldPosition, Vector2.Inf, data.Pressure);
     }
 
     public override void Moving(CursorMotionData data)
@@ -48,7 +66,12 @@ public class LiquifyInteractor : InteractiveSessionBase
         for (int i = 0; i < _processingEs.Length; i++)
         {
             if (!_dirty[i]) continue;
-            cmd.SetTarget(_processingEs[i]).SetPolylineGeometry(_currPolylines[i].ToImmutableArray());
+
+            cmd.SetTarget(_processingEs[i]);
+            if (_processingEs[i].Has<StrokeSetting>())
+                cmd.SetPolylineGeometry(_currPolylines[i].ToImmutableArray(), _currRadii[i].ToImmutableArray());
+            else
+                cmd.SetPolylineGeometry(_currPolylines[i].ToImmutableArray());
         }
         cmd.Commit();
 
@@ -74,33 +97,58 @@ public class LiquifyInteractor : InteractiveSessionBase
             liquifyTool.Strength.Value,
             pressure);
 
-        // Push moves points by the brush delta, so a polyline whose AABB sits just outside
-        // the brush this frame can still be reached next frame. Inflate the cull radius by
-        // |delta| to keep that case in scope; Expand/Pinch don't need it but the extra cost
-        // is one float add.
-        float cullRadius = dab.Radius + brushDelta.Length();
+        float cullRadius = dab.Radius;
+        bool thicknessMode = mode is LiquifyMode.Thicken or LiquifyMode.Thin;
 
         for (int i = 0; i < _processingEs.Length; i++)
         {
             if (!CircleIntersectsAabb(brushCenter, cullRadius, _aabbs[i]))
                 continue;
 
-            var points = _currPolylines[i];
-            bool changed = false;
-            for (int j = 0; j < points.Length; j++)
+            if (thicknessMode)
             {
-                var oldPoint = points[j];
-                var newPoint = LiquifySculpt.Apply(mode, oldPoint, dab);
-                if (newPoint.IsEqualApprox(oldPoint)) continue;
-                points[j] = newPoint;
-                changed = true;
+                if (!_processingEs[i].Has<StrokeSetting>())
+                    continue;
+
+                var points = _currPolylines[i];
+                var radii = _currRadii[i];
+                bool changed = false;
+                for (int j = 0; j < points.Length; j++)
+                {
+                    var oldRadius = radii[j];
+                    var newRadius = LiquifySculpt.ApplyThickness(mode, points[j], oldRadius, dab);
+                    if (Mathf.IsEqualApprox(newRadius, oldRadius))
+                        continue;
+
+                    radii[j] = newRadius;
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    _dirty[i] = true;
+                    UpdateView(_processingEs[i], points, radii);
+                }
+
+                continue;
             }
 
-            if (changed)
+            var polyline = _currPolylines[i];
+            bool moved = false;
+            for (int j = 0; j < polyline.Length; j++)
+            {
+                var oldPoint = polyline[j];
+                var newPoint = LiquifySculpt.ApplyPosition(mode, oldPoint, dab);
+                if (newPoint.IsEqualApprox(oldPoint)) continue;
+                polyline[j] = newPoint;
+                moved = true;
+            }
+
+            if (moved)
             {
                 _dirty[i] = true;
-                _aabbs[i] = ComputeAabb(points);
-                UpdateView(_processingEs[i], points);
+                _aabbs[i] = polyline.GetBoundingBox();
+                UpdateView(_processingEs[i], polyline, _currRadii[i]);
             }
         }
     }
@@ -108,14 +156,14 @@ public class LiquifyInteractor : InteractiveSessionBase
     private void RestoreViews()
     {
         foreach (var (i, e) in _processingEs.Index())
-            UpdateView(e, _origPolylines[i]);
+            UpdateView(e, _origPolylines[i], _origRadii[i]);
     }
 
-    private static void UpdateView(Entity e, IReadOnlyList<Vector2> positions)
+    private static void UpdateView(Entity e, IReadOnlyList<Vector2> positions, IReadOnlyList<float> radii)
     {
         var geom = e.Get<PolylineGeometry>();
         if (e.Has<StrokeSetting>())
-            e.Get<StrokeView>().SetGeometry(positions, geom.Radii.Value, geom.Pressures.Value);
+            e.Get<StrokeView>().SetGeometry(positions, radii, geom.Pressures.Value);
         if (e.Has<FilledPolygonSetting>())
             e.Get<Polygon2D>().SetPolygonFromRawRing(positions.ToImmutableArray());
     }
@@ -125,22 +173,10 @@ public class LiquifyInteractor : InteractiveSessionBase
         _processingEs = null;
         _origPolylines = null;
         _currPolylines = null;
+        _origRadii = null;
+        _currRadii = null;
         _aabbs = null;
         _dirty = null;
-    }
-
-    private static Rect2 ComputeAabb(Vector2[] points)
-    {
-        if (points.Length == 0) return new Rect2();
-        var min = points[0];
-        var max = points[0];
-        for (int i = 1; i < points.Length; i++)
-        {
-            var p = points[i];
-            if (p.X < min.X) min.X = p.X; else if (p.X > max.X) max.X = p.X;
-            if (p.Y < min.Y) min.Y = p.Y; else if (p.Y > max.Y) max.Y = p.Y;
-        }
-        return new Rect2(min, max - min);
     }
 
     private static bool CircleIntersectsAabb(Vector2 center, float radius, Rect2 aabb)

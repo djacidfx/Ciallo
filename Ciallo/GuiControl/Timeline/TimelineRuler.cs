@@ -1,4 +1,4 @@
-﻿using Ciallo.Command;
+using Ciallo.Command;
 using Ciallo.Data;
 using Frent;
 using Godot;

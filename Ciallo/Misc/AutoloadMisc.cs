@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using System.Runtime;
 using MessagePack;
 using MessagePackGodot;

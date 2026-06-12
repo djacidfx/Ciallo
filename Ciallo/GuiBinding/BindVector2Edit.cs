@@ -1,4 +1,4 @@
-﻿using Ciallo.Widget;
+using Ciallo.Widget;
 using Godot;
 using R3;
 

@@ -1,4 +1,4 @@
-﻿#if TOOLS
+#if TOOLS
 #nullable enable
 
 using System;

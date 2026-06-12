@@ -1,4 +1,4 @@
-﻿// Shen is not capable to maintain this, just pray Mr. sonnet 4.6 is all-knowing
+// Shen is not capable to maintain this, just pray Mr. sonnet 4.6 is all-knowing
 
 #nullable enable
 using System.Collections;

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
-using Ciallo.Tool;
 using Frent;
 using Godot;
 using R3;

@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 using R3;
 
 namespace Ciallo.GuiControl;

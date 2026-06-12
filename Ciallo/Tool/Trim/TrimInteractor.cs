@@ -63,7 +63,7 @@ public class TrimInteractor : InteractiveSessionBase
     {
         // Final query off the full gesture, then commit.
         var hits = QueryHits();
-        if (hits.Count > 0)
+        if (hits.Length > 0)
             CommitTrim(hits);
         Clear();
     }
@@ -77,11 +77,10 @@ public class TrimInteractor : InteractiveSessionBase
         _gestureView.SetGeometry(_gesture, AppPreference.StrokeWireframeRadius);
     }
 
-    private List<TrimEdgeHit> QueryHits()
+    private PolylineEdgeHit[] QueryHits()
     {
         if (_arrSnapshot == null || _gesture.Count < 2) return [];
-        var raw = _arrSnapshot.PolylineQueryEdges([.. _gesture]);
-        return TrimGeometry.ParseEdgeHits(raw);
+        return _arrSnapshot.PolylineQueryEdges([.. _gesture]);
     }
 
     private void RefreshDoomedPreview()
@@ -95,7 +94,7 @@ public class TrimInteractor : InteractiveSessionBase
             if (!hit.SourceShape.IsAlive || !hit.SourceShape.Has<PolylineGeometry>()) continue;
 
             var geom = hit.SourceShape.Get<PolylineGeometry>();
-            var slicePts = TrimGeometry.SliceVec2(geom.Positions.Value, hit.FromT, hit.ToT);
+            var slicePts = geom.Positions.Value.Slice(hit.FromT, hit.ToT);
             if (slicePts.Length < 2) continue;
 
             var preview = new StrokeView { Material = AutoloadRendering.DashWireframeMaterial };
@@ -116,7 +115,7 @@ public class TrimInteractor : InteractiveSessionBase
         _sourceSnapshot = null;
     }
 
-    private void CommitTrim(List<TrimEdgeHit> hits)
+    private void CommitTrim(PolylineEdgeHit[] hits)
     {
         // Group by parent layer, then process shapes by descending sibling index so each
         // AddToLayerTreeCmd's static insertion index stays valid within that layer.
@@ -208,15 +207,15 @@ public class TrimInteractor : InteractiveSessionBase
         ImmutableArray<float> pressures,
         ImmutableArray<Vector2> tilts) SliceGeometry(PolylineGeometry geom, float from, float to)
     {
-        var pos = TrimGeometry.SliceVec2(geom.Positions.Value, from, to);
+        var pos = geom.Positions.Value.Slice(from, to);
         var rad = geom.Radii.Value.Length == geom.Positions.Value.Length
-            ? TrimGeometry.SliceFloat(geom.Radii.Value, from, to)
+            ? geom.Radii.Value.Slice(from, to)
             : geom.Radii.Value;
         var pr = geom.Pressures.Value.Length == geom.Positions.Value.Length
-            ? TrimGeometry.SliceFloat(geom.Pressures.Value, from, to)
+            ? geom.Pressures.Value.Slice(from, to)
             : geom.Pressures.Value;
         var ti = geom.Tilts.Value.Length == geom.Positions.Value.Length
-            ? TrimGeometry.SliceVec2(geom.Tilts.Value, from, to)
+            ? geom.Tilts.Value.Slice(from, to)
             : geom.Tilts.Value;
         return (pos, rad, pr, ti);
     }
@@ -226,6 +225,6 @@ public class TrimInteractor : InteractiveSessionBase
         if (positions.Length < 2) return true;
         var b = positions.GetBoundingBox();
         return (b.Size.X < MinKeptBoundsSize && b.Size.Y < MinKeptBoundsSize)
-            || TrimGeometry.GetPolylineLength(positions) < MinKeptLength;
+            || positions.GetLength() < MinKeptLength;
     }
 }

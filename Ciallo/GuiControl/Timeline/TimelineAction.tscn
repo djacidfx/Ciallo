@@ -77,6 +77,17 @@ icon = ExtResource("5_play")
 icon_alignment = 1
 expand_icon = true
 
+[node name="LoopPlay" type="Button" parent="." unique_id=1837789258]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+tooltip_text = "Loop playback"
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+icon = ExtResource("8_repeat")
+icon_alignment = 1
+expand_icon = true
+
 [node name="NextFrame" type="Button" parent="." unique_id=1521646873]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(36, 0)
@@ -100,17 +111,6 @@ expand_icon = true
 [node name="Blank3" type="Control" parent="." unique_id=1440464577]
 custom_minimum_size = Vector2(64, 0)
 layout_mode = 2
-
-[node name="LoopPlay" type="Button" parent="." unique_id=1837789258]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(36, 0)
-layout_mode = 2
-tooltip_text = "Loop playback"
-theme_type_variation = &"ToolButton"
-toggle_mode = true
-icon = ExtResource("8_repeat")
-icon_alignment = 1
-expand_icon = true
 
 [node name="OnionSkin" type="Button" parent="." unique_id=2112742470]
 unique_name_in_owner = true

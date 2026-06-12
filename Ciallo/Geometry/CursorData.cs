@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using Godot;
 
-namespace Ciallo.Geometry;
+namespace Ciallo;
 
 [DebuggerDisplay("{ToString(),nq}")]
 public struct CursorButtonData

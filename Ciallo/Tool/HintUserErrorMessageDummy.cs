@@ -1,4 +1,3 @@
-﻿using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Ciallo.Widget;
 using Godot;

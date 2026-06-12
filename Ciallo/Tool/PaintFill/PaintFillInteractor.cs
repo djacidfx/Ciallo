@@ -1,4 +1,4 @@
-﻿using System.Collections.Immutable;
+using System.Collections.Immutable;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;

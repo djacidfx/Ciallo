@@ -1,4 +1,4 @@
-﻿using Godot;
+using Godot;
 
 namespace Ciallo.Geometry;
 
@@ -16,6 +16,16 @@ public static partial class Geometry
         var closestPoint = linePoint + lineDir * t;
 
         return p.DistanceTo(closestPoint);
+    }
+
+    public static float DistanceSquaredToSegment(this Vector2 p, Vector2 a, Vector2 b)
+    {
+        var ab = b - a;
+        float lenSq = ab.LengthSquared();
+        if (lenSq <= 1e-10f) return p.DistanceSquaredTo(a);
+
+        float t = Mathf.Clamp((p - a).Dot(ab) / lenSq, 0f, 1f);
+        return p.DistanceSquaredTo(a + ab * t);
     }
 
     public static float TriangleArea(Vector2 a, Vector2 b, Vector2 c)

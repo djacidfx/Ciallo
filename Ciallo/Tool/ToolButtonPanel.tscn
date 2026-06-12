@@ -8,6 +8,7 @@
 [ext_resource type="Texture2D" uid="uid://c15gbt8wm46pc" path="res://Icon/format-color-fill.svg" id="6_4b63a"]
 [ext_resource type="Texture2D" uid="uid://oq3f8l5vnydo" path="res://Icon/water-drop.svg" id="6_jovi7"]
 [ext_resource type="Texture2D" uid="uid://dfd4qmvr0kkkr" path="res://Icon/scissor.svg" id="8_c6bpv"]
+[ext_resource type="Texture2D" uid="uid://bgxr2a6lqjqvy" path="res://Icon/wrench.svg" id="9_wrench"]
 
 [sub_resource type="InputEventAction" id="InputEventAction_sx6ov"]
 action = &"ToolSelection"
@@ -48,8 +49,7 @@ expand_icon = true
 visible = false
 custom_minimum_size = Vector2(48, 48)
 layout_mode = 2
-tooltip_text = "Lasso
-- Free-hand selection"
+tooltip_text = "Lasso\n- Free-hand selection"
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
@@ -102,4 +102,13 @@ tooltip_text = "Trim"
 theme_type_variation = &"ToolButton"
 toggle_mode = true
 icon = ExtResource("8_c6bpv")
+expand_icon = true
+
+[node name="GapBridge" type="Button" parent="." unique_id=1876543210]
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+tooltip_text = "[Gap Bridge Tooltip]"
+theme_type_variation = &"ToolButton"
+toggle_mode = true
+icon = ExtResource("9_wrench")
 expand_icon = true

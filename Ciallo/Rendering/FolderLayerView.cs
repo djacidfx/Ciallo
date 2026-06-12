@@ -1,4 +1,4 @@
-﻿namespace Ciallo.Rendering;
+namespace Ciallo.Rendering;
 
 /// <summary>
 /// Use a custom Godot build allowing nested CanvasGroups.

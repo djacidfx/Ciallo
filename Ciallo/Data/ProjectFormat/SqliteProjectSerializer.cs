@@ -12,7 +12,7 @@ using Godot;
 using MessagePack;
 using Microsoft.Data.Sqlite;
 using ObservableCollections;
-using R3;
+using SQLitePCL;
 
 // Note: May 31, 2026. Fully AI gen with grill me (GPT5.5 asked Shen 50+ questions on this and took him one and half hours to answer)
 // Shen already forget all about SQL
@@ -27,7 +27,7 @@ public static class SqliteProjectSerializer
 
     static SqliteProjectSerializer()
     {
-        SQLitePCL.Batteries_V2.Init();
+        Batteries_V2.Init();
     }
 
     #region Public API

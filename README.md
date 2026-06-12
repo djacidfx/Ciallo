@@ -16,13 +16,13 @@
 ---
 
 Ciallo is an open-source graphics program for digital painting (animation and illustration).
-At its core, it supercharges the vector layers in software like Krita, CSP, and Fresco by offering the following unique features:
+It supercharges the vector layers in software like Toon Boom Harmony, CSP, and Fresco by offering the following unique features:
 
 ## Unique features
 
 ### Vectorized Photoshop-like brushes
 
-Vectorized stamp brushes, entirely drawn/rendered on your graphics card (GPU).
+Vectorized stamp brushes, rendered in real time on your graphics card (GPU).
 
 ![](/.github/Stamp.gif)
 
@@ -30,7 +30,7 @@ Resolution-independent airbrush, adjust the opacity falloff directly, with ultra
 
 ![](/.github/Airbrush.gif)
 
-### Vector fill
+### Vector bucket fill
 
 Bucket fill in vector form: The positions to fill are editable and tracked with "fill markers", the shape $\odot$ in the image:
 

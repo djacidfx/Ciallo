@@ -1,6 +1,5 @@
-﻿using Ciallo.Command;
+using Ciallo.Command;
 using Ciallo.Data;
-using Ciallo.Geometry;
 using Godot;
 
 namespace Ciallo.Tool;

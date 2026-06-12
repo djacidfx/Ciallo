@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;

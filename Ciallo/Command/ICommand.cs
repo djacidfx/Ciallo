@@ -1,4 +1,4 @@
-﻿namespace Ciallo.Command;
+namespace Ciallo.Command;
 
 public interface ICommand
 {

@@ -20,11 +20,10 @@ public class TrimTool : ToolBase
     public readonly TrimHover Hover = new();
     public readonly TrimInteractor Trim = new();
 
-    // On shape layers this is tool-owned; on vector fill layers it is the layer-owned manager.
+    // Layer-owned ArrangementManager, shared with vector-fill and future topology tools.
     public ArrangementManager Arrangement { get; private set; }
 
     private IDisposable _arrReadySub;
-    private bool _ownsArrangement;
 
     protected override void ConfigureStateMachine()
     {
@@ -45,20 +44,8 @@ public class TrimTool : ToolBase
 
     public override void OnActivated()
     {
-        if (WorkingLayer.Has<VectorFillLayerSetting>())
-        {
-            Arrangement = WorkingLayer.Get<ArrangementManager>();
-            _ownsArrangement = false;
-        }
-        else
-        {
-            Arrangement = new ArrangementManager();
-            _ownsArrangement = true;
-            Arrangement.Observe(WorkingLayer.Get<ShapeLayerPolylineIndex>());
-            Arrangement.SyncModification();
-        }
+        Arrangement = WorkingLayer.Get<ArrangementManager>();
 
-        // Refresh hover cursor when the snapshot becomes ready / not-ready.
         _arrReadySub = Arrangement.ArrReady.Subscribe(_ =>
         {
             if (Machine.State is TrimHover hover)
@@ -70,12 +57,6 @@ public class TrimTool : ToolBase
     {
         _arrReadySub?.Dispose();
         _arrReadySub = null;
-        if (_ownsArrangement)
-        {
-            Arrangement.DesyncModification();
-            Arrangement.Dispose();
-        }
         Arrangement = null;
-        _ownsArrangement = false;
     }
 }

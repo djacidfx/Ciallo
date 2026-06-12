@@ -1,7 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,7 +8,6 @@ using Ciallo.Data.ProjectFormat;
 using Frent;
 using Frent.Core;
 using Godot;
-using MessagePack;
 
 namespace Ciallo.Data;
 

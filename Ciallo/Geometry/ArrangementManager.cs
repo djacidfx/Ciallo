@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Ciallo;
 using Ciallo.Data;
 using Frent;
 using Godot;
 using ObservableCollections;
 using R3;
+using Environment = System.Environment;
 
 namespace Ciallo.Geometry;
 
@@ -20,7 +20,7 @@ public class ArrangementManager : IDisposable
     private readonly ReactiveProperty<Arrangement> _arrReady;
     public ReadOnlyReactiveProperty<Arrangement> ArrReady => _arrReady;
 
-    private static readonly SemaphoreSlim NativeConcurrency = new(Math.Max(1, System.Environment.ProcessorCount - 1));
+    private static readonly SemaphoreSlim NativeConcurrency = new(Math.Max(1, Environment.ProcessorCount - 1));
 
     private readonly Arrangement _arr = new();
     private readonly Subject<Unit> _flushRequests = new();

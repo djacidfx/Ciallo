@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Godot;
@@ -15,9 +16,8 @@ public static partial class PolylineExtension
     {
         int count = polyline.Count;
         if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
-        var radiiList = radii ?? Enumerable.Repeat(0f, count).ToList();
         Vector2 first = polyline[0];
-        float firstR = radiiList[0];
+        float firstR = radii?[0] ?? 0f;
         float minX = first.X - firstR;
         float minY = first.Y - firstR;
         float maxX = first.X + firstR;
@@ -26,7 +26,7 @@ public static partial class PolylineExtension
         for (int i = 1; i < count; i++)
         {
             Vector2 p = polyline[i];
-            float r = radiiList[i];
+            float r = radii?[i] ?? 0f;
             float xMin = p.X - r;
             float yMin = p.Y - r;
             float xMax = p.X + r;
@@ -38,6 +38,145 @@ public static partial class PolylineExtension
         }
 
         return new Rect2(new Vector2(minX, minY), new Vector2(maxX - minX, maxY - minY));
+    }
+
+    public static Vector2 Sample([NotNull] this IReadOnlyList<Vector2> polyline, float polyT)
+    {
+        int count = polyline.Count;
+        if (count == 0) throw new ArgumentException("Polyline cannot be empty.", nameof(polyline));
+        if (count == 1) return polyline[0];
+
+        polyT = Math.Clamp(polyT, 0f, count - 1f);
+        int i = Math.Min((int)MathF.Floor(polyT), count - 2);
+        float localT = polyT - i;
+        return polyline[i].Lerp(polyline[i + 1], localT);
+    }
+
+    public static float Sample([NotNull] this IReadOnlyList<float> values, float polyT)
+    {
+        int count = values.Count;
+        if (count == 0) throw new ArgumentException("Value list cannot be empty.", nameof(values));
+        if (count == 1) return values[0];
+
+        polyT = Math.Clamp(polyT, 0f, count - 1f);
+        int i = Math.Min((int)MathF.Floor(polyT), count - 2);
+        float localT = polyT - i;
+        return Mathf.Lerp(values[i], values[i + 1], localT);
+    }
+
+    public static ImmutableArray<Vector2> Slice(this ImmutableArray<Vector2> polyline, float fromT, float toT)
+        => SliceByPolylineT(polyline, fromT, toT, static (a, b, t) => a.Lerp(b, t));
+
+    public static ImmutableArray<float> Slice(this ImmutableArray<float> values, float fromT, float toT)
+        => SliceByPolylineT(values, fromT, toT, static (a, b, t) => Mathf.Lerp(a, b, t));
+
+    private static ImmutableArray<T> SliceByPolylineT<T>(
+        ImmutableArray<T> values,
+        float fromT,
+        float toT,
+        Func<T, T, float, T> lerp)
+    {
+        int count = values.Length;
+        if (count == 0) return [];
+
+        fromT = Math.Clamp(fromT, 0f, count - 1f);
+        toT = Math.Clamp(toT, 0f, count - 1f);
+        if (toT < fromT) (fromT, toT) = (toT, fromT);
+
+        int firstWhole = (int)Math.Ceiling(fromT);
+        int lastWhole = (int)Math.Floor(toT);
+
+        var builder = ImmutableArray.CreateBuilder<T>();
+
+        if (firstWhole > fromT + 1e-6f)
+        {
+            int i = firstWhole - 1;
+            float localT = fromT - i;
+            builder.Add(lerp(values[i], values[i + 1], localT));
+        }
+
+        for (int i = firstWhole; i <= lastWhole && i < count; i++)
+            builder.Add(values[i]);
+
+        if (lastWhole < toT - 1e-6f && lastWhole + 1 < count)
+        {
+            float localT = toT - lastWhole;
+            builder.Add(lerp(values[lastWhole], values[lastWhole + 1], localT));
+        }
+
+        return builder.ToImmutable();
+    }
+
+    public static float GetLength([NotNull] this IReadOnlyList<Vector2> polyline)
+    {
+        float length = 0f;
+        for (int i = 1; i < polyline.Count; i++)
+            length += polyline[i - 1].DistanceTo(polyline[i]);
+        return length;
+    }
+
+    public static float GetLength([NotNull] this IReadOnlyList<Vector2> polyline, float fromT, float toT)
+    {
+        int count = polyline.Count;
+        if (count < 2) return 0f;
+
+        fromT = Math.Clamp(fromT, 0f, count - 1f);
+        toT = Math.Clamp(toT, 0f, count - 1f);
+        if (toT < fromT) (fromT, toT) = (toT, fromT);
+        if (Math.Abs(toT - fromT) < 1e-6f) return 0f;
+
+        float length = 0f;
+        float t = fromT;
+        while (t < toT)
+        {
+            int seg = Math.Min((int)MathF.Floor(t), count - 2);
+            float nextT = Math.Min(seg + 1f, toT);
+            float segLen = polyline[seg].DistanceTo(polyline[seg + 1]);
+            length += (nextT - t) * segLen;
+            t = nextT;
+        }
+        return length;
+    }
+
+    public static float MoveTByDistance(
+        [NotNull] this IReadOnlyList<Vector2> polyline,
+        float t,
+        float distance,
+        bool forward)
+    {
+        int count = polyline.Count;
+        if (distance <= 0f || count < 2) return t;
+        float maxT = count - 1f;
+        t = Math.Clamp(t, 0f, maxT);
+
+        while (distance > 0f)
+        {
+            if (forward && t >= maxT) return maxT;
+            if (!forward && t <= 0f) return 0f;
+
+            int seg = forward
+                ? Math.Min((int)MathF.Floor(t), count - 2)
+                : Math.Min((int)MathF.Ceiling(t) - 1, count - 2);
+            if (seg < 0 || seg >= count - 1)
+                return forward ? maxT : 0f;
+
+            float segLen = polyline[seg].DistanceTo(polyline[seg + 1]);
+            if (segLen <= 1e-6f)
+            {
+                t = forward ? seg + 1f : seg;
+                continue;
+            }
+
+            float localT = t - seg;
+            float available = forward ? (1f - localT) * segLen : localT * segLen;
+            if (distance <= available)
+                return t + (forward ? 1f : -1f) * distance / segLen;
+
+            distance -= available;
+            t = forward ? seg + 1f : seg;
+        }
+
+        return t;
     }
 
     /// <summary>

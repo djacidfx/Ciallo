@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MessagePack;
 using MessagePack.Formatters;
 using R3;

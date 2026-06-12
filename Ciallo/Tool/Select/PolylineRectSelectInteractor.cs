@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using Ciallo.Data;
-using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;

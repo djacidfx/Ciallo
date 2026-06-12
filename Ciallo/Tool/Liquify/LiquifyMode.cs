@@ -5,4 +5,6 @@ public enum LiquifyMode
     Push,
     Expand,
     Pinch,
+    Thicken,
+    Thin,
 }
