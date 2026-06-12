@@ -23,6 +23,7 @@ public partial class Arrangement : Arrangement2D
         SetPolyline(id, ImmutableCollectionsMarshal.AsArray(data));
     }
 
+    // Note: this function not return real halfedges (x_mono_curves) t range in arrangement_2, it connects real halfedges at vertices degree 2.  
     public PolylineEdgeHit[] PolylineQueryEdges(ImmutableArray<Vector2> polyline)
     {
         var raw = PolylineQueryEdges(ImmutableCollectionsMarshal.AsArray(polyline));

@@ -10,6 +10,9 @@ internal sealed class GapBridgeDetector
 {
     private const int QueryOctagonSides = 8;
     private const float Epsilon = 1e-5f;
+    // Business choice: when a loose endpoint is almost as close as the stroke body,
+    // users usually expect Gap Bridge to finish the loose end.
+    internal const float DanglingEndpointDistancePreference = 1.25f;
 
     private readonly Arrangement _arr;
     private readonly Dictionary<Entity, GapBridgeCurveInfo> _curves;
@@ -92,7 +95,7 @@ internal sealed class GapBridgeDetector
             if (targetCurve == sourceCurve)
                 continue;
 
-            if (TryCreateNearestCurveHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, out var hit))
+            if (TryCreateBestCurveHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, out var hit))
                 KeepBetter(hit, ref best);
         }
 
@@ -139,7 +142,7 @@ internal sealed class GapBridgeDetector
             targetPoint);
     }
 
-    private bool TryCreateNearestCurveHit(
+    private bool TryCreateBestCurveHit(
         Entity sourceCurve,
         Vector2 sourcePoint,
         float sourceT,
@@ -148,26 +151,90 @@ internal sealed class GapBridgeDetector
         out CandidateHit hit)
     {
         hit = default;
+        CandidateHit? best = null;
+
         var nearestPoint = target.Positions.GetClosestPoint(sourcePoint, out var nearestT);
-        float nearestDistanceSquared = sourcePoint.DistanceSquaredTo(nearestPoint);
-        if (nearestDistanceSquared <= Epsilon * Epsilon || nearestDistanceSquared > _maxDistanceSquared)
+        var targetKind = ClassifyTargetKind(nearestT, target.LastT);
+        KeepBetterIfValid(CreateHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, nearestT, nearestPoint, targetKind), ref best);
+        if (TryCreateEndpointHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, EndpointSide.Start, out var startHit))
+            KeepBetter(startHit, ref best);
+        if (TryCreateEndpointHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, EndpointSide.End, out var endHit))
+            KeepBetter(endHit, ref best);
+
+        if (best is not { } found)
             return false;
 
-        var targetKind = ClassifyTargetKind(nearestT, target.LastT);
+        hit = found;
+        return true;
+    }
+
+    private CandidateHit CreateHit(
+        Entity sourceCurve,
+        Vector2 sourcePoint,
+        float sourceT,
+        Entity targetCurve,
+        GapBridgeCurveInfo target,
+        float targetT,
+        Vector2 targetPoint,
+        GapBridgeTargetKind targetKind)
+    {
+        return new CandidateHit(
+            new GapBridgeCandidate(
+                sourceCurve,
+                sourceT,
+                targetCurve,
+                targetT,
+                sourcePoint.DistanceSquaredTo(targetPoint),
+                targetKind,
+                target.EndpointIsDangling(targetKind)),
+            targetPoint);
+    }
+
+    private bool TryCreateEndpointHit(
+        Entity sourceCurve,
+        Vector2 sourcePoint,
+        float sourceT,
+        Entity targetCurve,
+        GapBridgeCurveInfo target,
+        EndpointSide targetSide,
+        out CandidateHit hit)
+    {
+        hit = default;
+        if (!target.EndpointIsDangling(targetSide))
+            return false;
+
+        var targetPoint = target.EndpointPoint(targetSide);
+        float distanceSquared = sourcePoint.DistanceSquaredTo(targetPoint);
+        if (distanceSquared <= Epsilon * Epsilon || distanceSquared > _maxDistanceSquared)
+            return false;
+
         hit = new CandidateHit(
             new GapBridgeCandidate(
                 sourceCurve,
                 sourceT,
                 targetCurve,
-                nearestT,
-                nearestDistanceSquared,
-                targetKind,
-                target.EndpointIsDangling(targetKind)),
-            nearestPoint);
+                target.EndpointT(targetSide),
+                distanceSquared,
+                ToTargetKind(targetSide),
+                true),
+            targetPoint);
         return true;
     }
 
-    private static void KeepBetter(CandidateHit hit, ref CandidateHit? best)
+    private void KeepBetterIfValid(CandidateHit hit, ref CandidateHit? best)
+    {
+        if (!IsValidGapDistance(hit.Candidate.DistanceSquared))
+            return;
+
+        KeepBetter(hit, ref best);
+    }
+
+    private bool IsValidGapDistance(float distanceSquared)
+    {
+        return distanceSquared > Epsilon * Epsilon && distanceSquared <= _maxDistanceSquared;
+    }
+
+    private void KeepBetter(CandidateHit hit, ref CandidateHit? best)
     {
         if (best is { } current && !CandidateIsBetter(hit, current))
             return;
@@ -175,13 +242,27 @@ internal sealed class GapBridgeDetector
         best = hit;
     }
 
-    private static bool CandidateIsBetter(CandidateHit candidate, CandidateHit best)
+    private bool CandidateIsBetter(CandidateHit candidate, CandidateHit best)
     {
+        float candidateDistance = ComparableDistance(candidate.Candidate);
+        float bestDistance = ComparableDistance(best.Candidate);
+        if (!Mathf.IsEqualApprox(candidateDistance, bestDistance))
+            return candidateDistance < bestDistance;
         if (!Mathf.IsEqualApprox(candidate.Candidate.DistanceSquared, best.Candidate.DistanceSquared))
             return candidate.Candidate.DistanceSquared < best.Candidate.DistanceSquared;
         if (candidate.Candidate.ToCurve.PackedValue != best.Candidate.ToCurve.PackedValue)
             return candidate.Candidate.ToCurve.PackedValue < best.Candidate.ToCurve.PackedValue;
         return candidate.Candidate.ToT < best.Candidate.ToT;
+    }
+
+    internal static float ComparableDistance(float distance, bool targetDangling)
+    {
+        return targetDangling ? distance / DanglingEndpointDistancePreference : distance;
+    }
+
+    private static float ComparableDistance(GapBridgeCandidate candidate)
+    {
+        return ComparableDistance(Mathf.Sqrt(candidate.DistanceSquared), candidate.TargetDangling);
     }
 
     private static GapBridgeTargetKind ClassifyTargetKind(float t, float lastT)

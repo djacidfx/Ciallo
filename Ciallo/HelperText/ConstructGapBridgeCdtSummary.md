@@ -27,7 +27,9 @@ This document records which visual gaps Gap Bridge should consider.
 
 ## Candidate Selection
 
-- Each valid source endpoint keeps only its nearest valid target.
+- Each valid source endpoint keeps only its best valid target.
+- Distance is the main preference.
+- A nearby loose endpoint is preferred over a slightly closer stroke body.
+- A clearly closer stroke body still wins.
 - Candidates are directional: source-to-target direction matters.
 - Multiple source endpoints may target the same point.
-- There is no score-based ranking.
