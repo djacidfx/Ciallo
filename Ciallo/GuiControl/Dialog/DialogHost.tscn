@@ -2,14 +2,14 @@
 
 [ext_resource type="Script" uid="uid://b16ea8em6488j" path="res://GuiControl/Dialog/DialogHost.cs" id="1_lohs5"]
 [ext_resource type="PackedScene" uid="uid://bpntrjged60df" path="res://GuiControl/Dialog/NewDocumentDialog.tscn" id="2_lbo4v"]
-[ext_resource type="Script" uid="uid://co17yxacb7838" path="res://GuiControl/OpenDocumentDialog.cs" id="3_1xav8"]
+[ext_resource type="Script" uid="uid://co17yxacb7838" path="res://GuiControl/Dialog/OpenDocumentDialog.cs" id="3_1xav8"]
 [ext_resource type="PackedScene" uid="uid://b605gtasdgmsb" path="res://GuiControl/Dialog/About.tscn" id="4_3ccb4"]
 [ext_resource type="PackedScene" uid="uid://dw0q5mir7loyl" path="res://GuiControl/BrushPanel.tscn" id="5_hs7a8"]
 [ext_resource type="PackedScene" uid="uid://b5mma1lfqwdf1" path="res://GuiControl/Dialog/ExportImage.tscn" id="6_qk158"]
-[ext_resource type="Script" uid="uid://desmnb4wwk1h0" path="res://GuiControl/ExportGodotScene.cs" id="7_xkft4"]
-[ext_resource type="Script" uid="uid://bsu2387oxsudi" path="res://GuiControl/SaveChangeDialog.cs" id="8_qrdyv"]
-[ext_resource type="Script" uid="uid://dt8ylkob7fe5w" path="res://GuiControl/YesNoDialog.cs" id="9_t87eu"]
-[ext_resource type="Script" uid="uid://dn4468qjyqneb" path="res://GuiControl/SaveAsDialog.cs" id="10_0gwwr"]
+[ext_resource type="Script" uid="uid://desmnb4wwk1h0" path="res://GuiControl/Dialog/ExportGodotScene.cs" id="7_xkft4"]
+[ext_resource type="Script" uid="uid://bsu2387oxsudi" path="res://GuiControl/Dialog/SaveChangeDialog.cs" id="8_qrdyv"]
+[ext_resource type="Script" uid="uid://dt8ylkob7fe5w" path="res://GuiControl/Dialog/YesNoDialog.cs" id="9_t87eu"]
+[ext_resource type="Script" uid="uid://dn4468qjyqneb" path="res://GuiControl/Dialog/SaveAsDialog.cs" id="10_0gwwr"]
 
 [node name="DialogHost" type="Control" unique_id=1874914548]
 layout_mode = 3
