@@ -10,16 +10,15 @@ namespace Ciallo.Rendering;
 public partial class CelFolderView : FolderLayerView
 {
     private readonly List<Node2D> _displayingOnionSkinViews = [];
-    private Node2D _displayingLayerView;
 
     private Node2D DisplayingLayerView
     {
-        get => _displayingLayerView;
+        get;
         set
         {
-            HideNode(_displayingLayerView);
-            _displayingLayerView = value;
-            ShowNode(_displayingLayerView);
+            if (field != null && field != value) HideLayerView(field);
+            field = value;
+            if (field != null) ShowCurrentLayerView(field);
         }
     }
 
@@ -32,26 +31,21 @@ public partial class CelFolderView : FolderLayerView
         CompositeDisposable subs = new();
         layerNode.ObserveAddChild().Subscribe(et =>
         {
-            HideNode(GetLayerView(et.Value));
-        }).AddTo(subs);
-
-        // Can safely assume when exposures change, view nodes are already children of this node, so we can just update their visibility.
-        setting.CurrentExposedCel.Subscribe(e =>
-        {
-            DisplayingLayerView = e.IsNull ? null : GetLayerView(e);
+            HideLayerView(GetLayerView(et.Value));
         }).AddTo(subs);
 
         layerNode.ObserveRemoveChild().Subscribe(et =>
         {
-            ShowNode(GetLayerView(et.Value));
+            ShowCurrentLayerView(GetLayerView(et.Value));
         }).AddTo(subs);
 
         // Note: Although CurrentOnionSkinCels could have duplicated entities (e.g. if the same cel is onion-skinned at multiple offsets)
         // Its Ok to ShowOnionSkin it twice
-        shouldShowOnionSkin.CombineLatest(setting.CurrentOnionSkinCels, onionSkinMaterials, ValueTuple.Create)
+        setting.CurrentExposedCel.CombineLatest(shouldShowOnionSkin, setting.CurrentOnionSkinCels, onionSkinMaterials, ValueTuple.Create)
             .Subscribe(tuple =>
             {
-                var (shouldShow, onionSkinCels, materials) = tuple;
+                var (currentCel, shouldShow, onionSkinCels, materials) = tuple;
+                DisplayingLayerView = currentCel.IsNull ? null : GetLayerView(currentCel);
                 HideDisplayingOnionSkinViews();
 
                 if (!shouldShow)
@@ -66,7 +60,7 @@ public partial class CelFolderView : FolderLayerView
                     if (view == DisplayingLayerView)
                         continue;
 
-                    ShowOnionSkin(view, material);
+                    ShowOnionSkin(view, material, offset);
                     _displayingOnionSkinViews.Add(view);
                 }
             }).AddTo(subs);
@@ -79,24 +73,30 @@ public partial class CelFolderView : FolderLayerView
         foreach (var view in _displayingOnionSkinViews)
             HideOnionSkin(view);
         _displayingOnionSkinViews.Clear();
-        ShowNode(DisplayingLayerView);
+        if (DisplayingLayerView != null)
+            ShowCurrentLayerView(DisplayingLayerView);
     }
 
-    private static void HideNode(Node2D node) => node?.VisibilityLayer = 0;
-    private static void ShowNode(Node2D node) => node?.VisibilityLayer = 1 << 0;
-
-    private static void ShowOnionSkin(Node2D node, ShaderMaterial material)
+    private static void HideLayerView(Node2D node) => node.VisibilityLayer = 0;
+    private static void ShowCurrentLayerView(Node2D node)
     {
-        ShowNode(node);
-        node?.Material = material;
-        node?.ZIndex = -1;
+        node.VisibilityLayer = (uint)AppGodotLayers.Render2DLayer.View;
+        node.Material = null;
+        node.ZIndex = 0;
+    }
+
+    private static void ShowOnionSkin(Node2D node, ShaderMaterial material, int offset)
+    {
+        node.VisibilityLayer = (uint)AppGodotLayers.Render2DLayer.Other;
+        node.Material = material;
+        node.ZIndex = offset > 0 ? -1 : -2;
     }
 
     private static void HideOnionSkin(Node2D node)
     {
-        HideNode(node);
-        node?.Material = null;
-        node?.ZIndex = 0;
+        node.VisibilityLayer = 0;
+        node.Material = null;
+        node.ZIndex = 0;
     }
 
     private static Node2D GetLayerView(Entity e)

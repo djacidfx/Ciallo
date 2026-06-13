@@ -120,36 +120,39 @@ stretch = true
 mouse_target = true
 script = ExtResource("3_7pmtm")
 
-[node name="MainViewport" type="SubViewport" parent="VBoxContainer/WorldEventDispatcher" unique_id=1906940218]
+[node name="PaintViewport" type="SubViewport" parent="VBoxContainer/WorldEventDispatcher" unique_id=1906940218]
 handle_input_locally = false
 use_hdr_2d = true
-canvas_cull_mask = 4293918721
-size = Vector2i(2, 2)
+canvas_cull_mask = 4293918723
+size = Vector2i(1920, 1036)
 render_target_update_mode = 4
 
-[node name="Background" type="Polygon2D" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=340478953]
+[node name="Background" type="Polygon2D" parent="VBoxContainer/WorldEventDispatcher/PaintViewport" unique_id=340478953]
 unique_name_in_owner = true
+visibility_layer = 2
 material = ExtResource("4_pm3jj")
 
-[node name="WorldView" type="CanvasGroup" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=445565768]
+[node name="WorldView" type="CanvasGroup" parent="VBoxContainer/WorldEventDispatcher/PaintViewport" unique_id=445565768]
 unique_name_in_owner = true
 script = ExtResource("5_pm3jj")
 
-[node name="MainCamera" type="Camera2D" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=506664957]
+[node name="MainCamera" type="Camera2D" parent="VBoxContainer/WorldEventDispatcher/PaintViewport" unique_id=506664957]
 unique_name_in_owner = true
 ignore_rotation = false
 
-[node name="WorldOverlay" type="Node2D" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=1081160953]
+[node name="WorldOverlay" type="Node2D" parent="VBoxContainer/WorldEventDispatcher/PaintViewport" unique_id=1081160953]
 unique_name_in_owner = true
+visibility_layer = 2
 script = ExtResource("6_je3d8")
 
-[node name="WorldBody" type="Node2D" parent="VBoxContainer/WorldEventDispatcher/MainViewport" unique_id=175556460]
+[node name="WorldBody" type="Node2D" parent="VBoxContainer/WorldEventDispatcher/PaintViewport" unique_id=175556460]
 unique_name_in_owner = true
+visibility_layer = 2
 script = ExtResource("7_8h3gs")
 
-[node name="CanvasLayer" type="CanvasLayer" parent="VBoxContainer/WorldEventDispatcher/MainViewport/WorldBody" unique_id=2125698815]
+[node name="CanvasLayer" type="CanvasLayer" parent="VBoxContainer/WorldEventDispatcher/PaintViewport/WorldBody" unique_id=2125698815]
 
-[node name="ControlCoverWholeCanvas" type="Control" parent="VBoxContainer/WorldEventDispatcher/MainViewport/WorldBody/CanvasLayer" unique_id=42245720]
+[node name="ControlCoverWholeCanvas" type="Control" parent="VBoxContainer/WorldEventDispatcher/PaintViewport/WorldBody/CanvasLayer" unique_id=42245720]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
