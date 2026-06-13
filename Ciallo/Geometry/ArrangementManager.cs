@@ -82,8 +82,7 @@ public class ArrangementManager : IDisposable
         {
             index.Polylines.ObserveDictionaryAdd().Subscribe(et =>
             {
-                _sourceShapes.Add(et.Key);
-                UpsertShape(et.Key, et.Value);
+                SyncShape(et.Key, et.Value);
             }).AddTo(subs);
 
             index.Polylines.ObserveDictionaryRemove().Subscribe(et =>
@@ -94,7 +93,7 @@ public class ArrangementManager : IDisposable
 
             index.Polylines.ObserveDictionaryReplace().Subscribe(et =>
             {
-                UpsertShape(et.Key, et.NewValue);
+                SyncShape(et.Key, et.NewValue);
             }).AddTo(subs);
 
             index.Polylines.ObserveClear().Subscribe(_ =>
@@ -140,21 +139,50 @@ public class ArrangementManager : IDisposable
         Clear();
         foreach (var index in _indexes)
             foreach (var (shapeE, polyline) in index.Polylines)
-                UpsertShape(shapeE, polyline);
+                SyncShape(shapeE, polyline);
     }
 
     private void RebuildSourceShapes()
     {
         _sourceShapes.Clear();
         foreach (var index in _indexes)
-            foreach (var shapeE in index.Polylines.Keys)
-                _sourceShapes.Add(shapeE);
+            foreach (var (shapeE, polyline) in index.Polylines)
+                if (CanCreateArrangementCurve(polyline.Positions))
+                    _sourceShapes.Add(shapeE);
     }
 
     // Bypass ReactiveProperty's equality dedup by going through OnNext directly:
     // _arr is the same reference each time, but downstream consumers must still be re-triggered.
     private void NotifyReady() => _arrReady.OnNext(_arr);
     private void NotifyNotReady() => _arrReady.OnNext(null);
+
+    private void SyncShape(Entity shapeE, IndexedPolyline polyline)
+    {
+        if (!CanCreateArrangementCurve(polyline.Positions))
+        {
+            _sourceShapes.Remove(shapeE);
+            RemoveShape(shapeE);
+            return;
+        }
+
+        _sourceShapes.Add(shapeE);
+        UpsertShape(shapeE, polyline);
+    }
+
+    private static bool CanCreateArrangementCurve(ImmutableArray<Vector2> positions)
+    {
+        if (positions.Length < 2)
+            return false;
+
+        var previous = positions[0];
+        for (int i = 1; i < positions.Length; i++)
+        {
+            if (!positions[i].IsEqualApprox(previous))
+                return true;
+            previous = positions[i];
+        }
+        return false;
+    }
 
     private void UpsertShape(Entity shapeE, IndexedPolyline polyline)
     {
