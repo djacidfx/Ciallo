@@ -189,6 +189,22 @@ internal sealed class GapBridgeDetector
         Vector2 targetPoint,
         GapBridgeTargetKind targetKind)
     {
+        // Endpoint targets must repair to the exact original endpoint. A nearest
+        // body query can classify a nearly-endpoint hit as an endpoint, but keeping
+        // its sampled t/point would leave tiny gaps that exact arrangement geometry
+        // still treats as open.
+        switch (targetKind)
+        {
+            case GapBridgeTargetKind.EndpointStart:
+                targetT = 0f;
+                targetPoint = target.EndpointPoint(EndpointSide.Start);
+                break;
+            case GapBridgeTargetKind.EndpointEnd:
+                targetT = target.LastT;
+                targetPoint = target.EndpointPoint(EndpointSide.End);
+                break;
+        }
+
         return new CandidateHit(
             new GapBridgeCandidate(
                 sourceCurve,

@@ -90,7 +90,13 @@ public sealed class GapBridgePreviewManager : IDisposable
         }
 
         foreach (var faceRid in deadFaces)
+        {
+            // Repairing one gap must not repaint unrelated faces. Keep colors for
+            // still-live face RIDs, but release removed faces so reused RIDs get
+            // a fresh color for the newly created region.
             _faceNodes.Remove(faceRid);
+            _faceColors.Remove(faceRid);
+        }
     }
 
     private void SyncBridges(Arrangement arr)

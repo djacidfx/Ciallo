@@ -47,8 +47,17 @@ public static partial class PolylineExtension
         if (count == 1) return polyline[0];
 
         polyT = Math.Clamp(polyT, 0f, count - 1f);
+        if (polyT <= 0f)
+            return polyline[0];
+        if (polyT >= count - 1f)
+            return polyline[^1];
+
         int i = Math.Min((int)MathF.Floor(polyT), count - 2);
         float localT = polyT - i;
+        if (localT <= 0f)
+            return polyline[i];
+        if (localT >= 1f)
+            return polyline[i + 1];
         return polyline[i].Lerp(polyline[i + 1], localT);
     }
 
@@ -59,8 +68,17 @@ public static partial class PolylineExtension
         if (count == 1) return values[0];
 
         polyT = Math.Clamp(polyT, 0f, count - 1f);
+        if (polyT <= 0f)
+            return values[0];
+        if (polyT >= count - 1f)
+            return values[^1];
+
         int i = Math.Min((int)MathF.Floor(polyT), count - 2);
         float localT = polyT - i;
+        if (localT <= 0f)
+            return values[i];
+        if (localT >= 1f)
+            return values[i + 1];
         return Mathf.Lerp(values[i], values[i + 1], localT);
     }
 
