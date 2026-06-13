@@ -89,7 +89,6 @@ public partial class ExportFrameSquence : ConfirmationDialog
 
         var oldFrame = selectionManager.CurrentFrame.Value;
         var oldPaintViewportCullMask = paintViewport.CanvasCullMask;
-        var oldExportViewportWorld = ExportViewport.World2D;
         using var rollingFrame = Document.Get<ToolManager>().BeginRollingFrame();
 
         Directory.CreateDirectory(ExportPath.Value);
@@ -139,7 +138,7 @@ public partial class ExportFrameSquence : ConfirmationDialog
             paintViewport.CanvasCullMask = oldPaintViewportCullMask;
             _background.Visible = false;
             ExportViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
-            ExportViewport.World2D = oldExportViewportWorld;
+            ExportViewport.World2D = null;
         }
     }
 
