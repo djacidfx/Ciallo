@@ -18,6 +18,7 @@ public class TimelineSetting
     // Offsets in exposure index, negative for past frames, positive for future frames.
     [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<ImmutableArray<int>> OnionSkinOffsets = new([-1, 1]);
 
+    public ReactiveProperty<bool> IsRollingFrame = new(false);
     public readonly ReadOnlyReactiveProperty<SortedList<int, ShaderMaterial>> OnionSkinMaterials;
 
     public TimelineSetting()

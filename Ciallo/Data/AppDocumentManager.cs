@@ -49,6 +49,7 @@ public static partial class AppDocumentManager
         document.Add(new CommandManager());
         document.Add(new BrushManager());
         document.Add(new ToolManager());
+        document.Get<ToolManager>().ObserveTimelineRolling(document.Get<TimelineSetting>().IsRollingFrame);
 
         WorldToDocument.Add(world, document);
 

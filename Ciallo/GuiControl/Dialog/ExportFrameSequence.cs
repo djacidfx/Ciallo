@@ -2,7 +2,6 @@ using System.IO;
 using System.Threading.Tasks;
 using Ciallo.Data;
 using Ciallo.Rendering;
-using Ciallo.Tool;
 using Ciallo.Widget;
 using Frent;
 using Godot;
@@ -90,7 +89,6 @@ public partial class ExportFrameSequence : ConfirmationDialog
 
         var oldFrame = selectionManager.CurrentFrame.Value;
         var oldPaintViewportCullMask = paintViewport.CanvasCullMask;
-        using var rollingFrame = Document.Get<ToolManager>().BeginRollingFrame();
 
         Directory.CreateDirectory(ExportPath.Value);
 
@@ -108,6 +106,7 @@ public partial class ExportFrameSequence : ConfirmationDialog
 
         ExportViewport.World2D = paintViewport.FindWorld2D();
         paintViewport.CanvasCullMask = 0;
+        timelineSetting.IsRollingFrame.Value = true;
 
         try
         {
@@ -140,6 +139,7 @@ public partial class ExportFrameSequence : ConfirmationDialog
             _background.Visible = false;
             ExportViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
             ExportViewport.World2D = null;
+            timelineSetting.IsRollingFrame.Value = false;
         }
     }
 

@@ -11,8 +11,6 @@ namespace Ciallo.GuiControl;
 [SceneTree, Instantiable]
 public partial class TimelinePanel : VBoxContainer
 {
-    public ReadOnlyReactiveProperty<bool> IsTimelineRolling { get; private set; }
-
     public override void _Ready()
     {
         TrackTree.RightClickMenu = CelTrackRightClickMenu;
@@ -24,10 +22,6 @@ public partial class TimelinePanel : VBoxContainer
             HSplitScrollBar.SplitOffsets = [(int)offset];
             HSplitBgGrid.SplitOffsets = [(int)offset];
         };
-
-        IsTimelineRolling = TimelineAction.IsPlaying
-            .CombineLatest(TimelineRuler.IsScrubbing, (playing, scrubbing) => playing || scrubbing)
-            .ToReadOnlyReactiveProperty();
     }
 
     public void Init(Entity document)
@@ -38,6 +32,10 @@ public partial class TimelinePanel : VBoxContainer
         BindTimeline(setting, selectionManager.CurrentFrame);
         InitTrackTree(document, selectionManager);
         TimelineAction.Init(document);
+        TimelineAction.IsPlaying
+            .CombineLatest(TimelineRuler.IsScrubbing, (playing, scrubbing) => playing || scrubbing)
+            .Subscribe(rolling => setting.IsRollingFrame.Value = rolling)
+            .AddTo(document);
     }
 
     /// <summary>

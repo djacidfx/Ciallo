@@ -16,7 +16,6 @@ public partial class ToolManager : IInitable, IDestroyable
     public ReactiveProperty<ITool> WorkingTool = new(null);
     public Entity Document;
     private readonly ReactiveProperty<bool> _isRollingFrame = new(false);
-    private int _rollingFrameScopeCount;
 
     public void Init(Entity self)
     {
@@ -38,27 +37,7 @@ public partial class ToolManager : IInitable, IDestroyable
 
     public void ObserveTimelineRolling(Observable<bool> isTimelineRolling)
     {
-        IDisposable rollingFrameScope = null;
-        isTimelineRolling.Subscribe(rolling =>
-        {
-            if (rolling)
-            {
-                rollingFrameScope ??= BeginRollingFrame();
-                return;
-            }
-
-            rollingFrameScope?.Dispose();
-            rollingFrameScope = null;
-        }).AddTo(Document);
-    }
-
-    public IDisposable BeginRollingFrame()
-    {
-        _rollingFrameScopeCount++;
-        if (_rollingFrameScopeCount == 1)
-            _isRollingFrame.Value = true;
-
-        return new RollingFrameScope(this);
+        isTimelineRolling.Subscribe(rolling => _isRollingFrame.Value = rolling).AddTo(Document);
     }
 
     public void Destroy() => DeactivateWorkingTool();
@@ -84,28 +63,5 @@ public partial class ToolManager : IInitable, IDestroyable
         WorkingTool.Value?.OnDeactivate();
         targetTool?.OnActivate(layerE);
         WorkingTool.Value = targetTool;
-    }
-
-    private void EndRollingFrame()
-    {
-        _rollingFrameScopeCount--;
-        if (_rollingFrameScopeCount == 0)
-            _isRollingFrame.Value = false;
-    }
-
-    private sealed class RollingFrameScope : IDisposable
-    {
-        private ToolManager _manager;
-
-        public RollingFrameScope(ToolManager manager)
-        {
-            _manager = manager;
-        }
-
-        public void Dispose()
-        {
-            _manager.EndRollingFrame();
-            _manager = null;
-        }
     }
 }

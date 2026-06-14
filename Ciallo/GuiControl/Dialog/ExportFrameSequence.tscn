@@ -189,6 +189,7 @@ unique_name_in_owner = true
 oversampling_override = 1.0
 position = Vector2i(207, 0)
 size = Vector2i(222, 100)
+exclusive = true
 
 [node name="ProgressBar" type="ProgressBar" parent="ProgressBarPopup" unique_id=2133293457]
 offset_left = 4.0
