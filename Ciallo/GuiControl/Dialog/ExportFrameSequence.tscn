@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://dgjotk4vkcyo8"]
 
-[ext_resource type="Script" uid="uid://cl42cvs3hpbx2" path="res://GuiControl/Dialog/ExportFrameSquence.cs" id="1_kjou5"]
+[ext_resource type="Script" uid="uid://cl42cvs3hpbx2" path="res://GuiControl/Dialog/ExportFrameSequence.cs" id="1_kjou5"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_0qmc2"]
 [ext_resource type="Script" uid="uid://bbm27mfx7lcse" path="res://Widget/NullableColorPickerButton.cs" id="3_smy8e"]
 [ext_resource type="Script" uid="uid://ckillqfnqh8wc" path="res://Widget/FilePathPicker.cs" id="4_wl8st"]
 
-[node name="ExportFrameSquence" type="ConfirmationDialog" unique_id=1984231464]
+[node name="ExportFrameSequence" type="ConfirmationDialog" unique_id=1984231464]
 use_hdr_2d = true
 oversampling_override = 1.0
 title = "Export frame sequence"

@@ -20,7 +20,7 @@ public class FrameFileNameSetting
 }
 
 [SceneTree]
-public partial class ExportFrameSquence : ConfirmationDialog
+public partial class ExportFrameSequence : ConfirmationDialog
 {
     public readonly ReactiveProperty<float> Scale = new(1f);
     public readonly ReactiveProperty<Color?> BackgroundColor = new(default); // Use nullable color button
@@ -38,7 +38,7 @@ public partial class ExportFrameSquence : ConfirmationDialog
         Visible = false,
     };
 
-    public ExportFrameSquence()
+    public ExportFrameSequence()
     {
         PreviewFrameFileName = NameSetting.Prefix.CombineLatest(NameSetting.Suffix, NameSetting.Separator, NameSetting.StartNumber,
             (prefix, suffix, separator, startNumber) => FormatFrameFileName(prefix, suffix, separator, startNumber, NameSetting.NumberDigits))

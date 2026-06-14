@@ -71,7 +71,7 @@ public partial class MenuFile : PopupMenu
 
             case 8: // Export frame sequence
                 if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
-                AppDialogHost.ExportFrameSquence.PopupCentered(AppDocumentManager.WorkingDocument.CurrentValue);
+                AppDialogHost.ExportFrameSequence.PopupCentered(AppDocumentManager.WorkingDocument.CurrentValue);
                 break;
 
             case 9: // Export as Godot scene
