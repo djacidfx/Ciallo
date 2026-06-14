@@ -49,6 +49,7 @@ public static partial class AppDocumentManager
         document.Add(new CommandManager());
         document.Add(new BrushManager());
         document.Add(new ToolManager());
+        document.Get<ToolManager>().ObserveTimelineRolling(document.Get<TimelineSetting>().IsRollingFrame);
 
         WorldToDocument.Add(world, document);
 
@@ -134,9 +135,7 @@ public static partial class AppDocumentManager
 
         if (WorkingDocumentModified)
         {
-            var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<SaveChangeDialog>()
-                .Single();
-            var result = await dialog.PopupCollectInput();
+            var result = await AppDialogHost.SaveChangeDialog.PopupCollectInput();
             if (result == 1) // Yes
             {
                 if (!SaveWorkingDocument())

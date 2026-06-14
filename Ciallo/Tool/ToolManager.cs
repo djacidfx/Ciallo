@@ -15,7 +15,7 @@ public partial class ToolManager : IInitable, IDestroyable
     public ReactiveProperty<ToolButton?> PressedToolButton => AppPreference.PressedToolButton;
     public ReactiveProperty<ITool> WorkingTool = new(null);
     public Entity Document;
-    private readonly ReactiveProperty<bool> _isTimelineRolling = new(false);
+    private readonly ReactiveProperty<bool> _isRollingFrame = new(false);
 
     public void Init(Entity self)
     {
@@ -23,25 +23,21 @@ public partial class ToolManager : IInitable, IDestroyable
         ToolButtonMap = InitializeToolButtonMap(self);
         var workingLayer = Document.Get<SelectionManager>().WorkingLayer;
         // Switch tool
-        _isTimelineRolling
+        _isRollingFrame
             .CombineLatest(workingLayer, ValueTuple.Create)
             .CombineLatest(PressedToolButton, ValueTuple.Create)
             .Subscribe(tuple =>
             {
-                var (isTimelineRolling, layerE) = tuple.Item1;
+                var (isRollingFrame, layerE) = tuple.Item1;
                 var toolButton = tuple.Item2;
-                var targetTool = isTimelineRolling ? null : ResolveTool(layerE, toolButton);
+                var targetTool = isRollingFrame ? null : ResolveTool(layerE, toolButton);
                 SwitchWorkingTool(targetTool, layerE);
             }).AddTo(Document);
     }
 
     public void ObserveTimelineRolling(Observable<bool> isTimelineRolling)
     {
-        isTimelineRolling.Subscribe(rolling =>
-        {
-            if (_isTimelineRolling.Value == rolling) return;
-            _isTimelineRolling.Value = rolling;
-        }).AddTo(Document);
+        isTimelineRolling.Subscribe(rolling => _isRollingFrame.Value = rolling).AddTo(Document);
     }
 
     public void Destroy() => DeactivateWorkingTool();

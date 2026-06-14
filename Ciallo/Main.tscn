@@ -1,22 +1,14 @@
 [gd_scene format=3 uid="uid://bhueivskybp02"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_j4qnp"]
-[ext_resource type="Script" uid="uid://co17yxacb7838" path="res://GuiControl/OpenDocumentDialog.cs" id="3_j4qnp"]
-[ext_resource type="PackedScene" uid="uid://bpntrjged60df" path="res://GuiControl/NewDocumentDialog.tscn" id="3_sc1dx"]
-[ext_resource type="PackedScene" uid="uid://b605gtasdgmsb" path="res://GuiControl/About.tscn" id="4_fpfj3"]
+[ext_resource type="PackedScene" uid="uid://c0ryp0upwet88" path="res://GuiControl/Dialog/DialogHost.tscn" id="2_fpfj3"]
 [ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icon/star.svg" id="4_kjvhd"]
 [ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://GuiControl/Menu/MenuFile.cs" id="5_5tuhn"]
-[ext_resource type="PackedScene" uid="uid://dw0q5mir7loyl" path="res://GuiControl/BrushPanel.tscn" id="5_j4qnp"]
 [ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://GuiControl/Menu/MenuEdit.cs" id="6_2gh4u"]
-[ext_resource type="Script" uid="uid://desmnb4wwk1h0" path="res://GuiControl/ExportGodotScene.cs" id="6_fpfj3"]
-[ext_resource type="PackedScene" uid="uid://b5mma1lfqwdf1" path="res://GuiControl/ExportImage.tscn" id="6_sc1dx"]
-[ext_resource type="Script" uid="uid://bsu2387oxsudi" path="res://GuiControl/SaveChangeDialog.cs" id="8_5tuhn"]
 [ext_resource type="Script" uid="uid://cwjtb7r01fcf7" path="res://GuiControl/Menu/MenuWindow.cs" id="8_c2ibq"]
 [ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://GuiControl/Menu/MenuHelp.cs" id="8_sc1dx"]
-[ext_resource type="Script" uid="uid://dt8ylkob7fe5w" path="res://GuiControl/YesNoDialog.cs" id="9_2gh4u"]
 [ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://Tool/ToolButtonPanel.tscn" id="9_5vvyt"]
 [ext_resource type="PackedScene" uid="uid://cbe5uqtdiejke" path="res://GuiControl/ToolPropertyPanel.tscn" id="10_c6i3y"]
-[ext_resource type="Script" uid="uid://dn4468qjyqneb" path="res://GuiControl/SaveAsDialog.cs" id="10_devvj"]
 [ext_resource type="Script" uid="uid://dqewxa0t2mptr" path="res://GuiControl/ToolButtonPanelContainer.cs" id="13_kjvhd"]
 [ext_resource type="Script" uid="uid://b7mwe7nmkxh5d" path="res://GuiControl/PaintPanelContainer.cs" id="16_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://GuiControl/WelcomePanel.tscn" id="16_fpfj3"]
@@ -40,63 +32,8 @@ size_flags_vertical = 0
 theme = ExtResource("1_j4qnp")
 theme_override_styles/panel = SubResource("StyleBoxFlat_hhcpw")
 
-[node name="Dialog" type="Control" parent="." unique_id=317513807]
-anchors_preset = 0
-
-[node name="NewDocumentDialog" parent="Dialog" unique_id=1736497745 groups=["Dialog"] instance=ExtResource("3_sc1dx")]
-visible = false
-
-[node name="OpenDocumentDialog" type="FileDialog" parent="Dialog" unique_id=1227874256 groups=["Dialog"]]
-use_hdr_2d = true
-title = "Open a File"
-initial_position = 1
-size = Vector2i(1080, 720)
-ok_button_text = "Open"
-file_mode = 0
-display_mode = 1
-access = 2
-filters = PackedStringArray("*.ciallo;")
-use_native_dialog = true
-script = ExtResource("3_j4qnp")
-
-[node name="AboutCiallo" parent="Dialog" unique_id=1102239031 groups=["Dialog"] instance=ExtResource("4_fpfj3")]
-visible = false
-
-[node name="NewLayer" type="ConfirmationDialog" parent="Dialog" unique_id=202273283 groups=["Dialog"]]
-oversampling_override = 1.0
-
-[node name="BrushLibrary" parent="Dialog" unique_id=349746140 groups=["Dialog"] instance=ExtResource("5_j4qnp")]
-visible = false
-
-[node name="ExportImage" parent="Dialog" unique_id=1002906021 groups=["Dialog"] instance=ExtResource("6_sc1dx")]
-visible = false
-
-[node name="ExportGodotScene" type="FileDialog" parent="Dialog" unique_id=146299948 groups=["Dialog"]]
-use_hdr_2d = true
-initial_position = 2
-display_mode = 1
-access = 2
-filters = PackedStringArray("*.scn", "*.tscn")
-use_native_dialog = true
-script = ExtResource("6_fpfj3")
-
-[node name="WarnUser" type="AcceptDialog" parent="Dialog" unique_id=1802432901 groups=["Dialog"]]
-initial_position = 1
-transient = false
-always_on_top = true
-
-[node name="SaveChangeDialog" type="ConfirmationDialog" parent="Dialog" unique_id=1236783369 groups=["Dialog"]]
-ok_button_text = "Save"
-script = ExtResource("8_5tuhn")
-
-[node name="YesNoDialog" type="ConfirmationDialog" parent="Dialog" unique_id=1762343273 groups=["Dialog"]]
-script = ExtResource("9_2gh4u")
-
-[node name="SaveAsDialog" type="FileDialog" parent="Dialog" unique_id=663948942 groups=["Dialog"]]
-access = 2
-filters = PackedStringArray("*.ciallo;")
-use_native_dialog = true
-script = ExtResource("10_devvj")
+[node name="DialogHost" parent="." unique_id=1874914548 instance=ExtResource("2_fpfj3")]
+layout_mode = 0
 
 [node name="MainGui" type="VBoxContainer" parent="." unique_id=1229649880]
 layout_mode = 1

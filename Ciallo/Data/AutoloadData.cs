@@ -1,4 +1,5 @@
 using System;
+using Ciallo.GuiControl;
 using Godot;
 using MessagePack;
 using R3;
@@ -58,6 +59,7 @@ public partial class AutoloadData : Node
 
     public override void _Ready()
     {
+        AppDialogHost = GetTree().CurrentScene.GetNode<DialogHost>("DialogHost");
         AppStrokeBrushLibrary.BindToGui();
     }
 

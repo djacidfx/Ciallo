@@ -276,8 +276,7 @@ public static partial class AppDocumentManager
     private static void WarnSaveFailed(Exception exception)
     {
         GD.PrintErr(exception);
-        var dialog = ((SceneTree)Engine.GetMainLoop()).GetNodesInGroup("Dialog").OfType<AcceptDialog>().Single(n => n.Name == "WarnUser");
-        dialog.DialogText = "Cannot save document.".Tr() + " " + exception.Message;
-        dialog.Popup();
+        AppDialogHost.WarnUser.DialogText = "Cannot save document.".Tr() + " " + exception.Message;
+        AppDialogHost.WarnUser.Popup();
     }
 }

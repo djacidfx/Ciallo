@@ -88,8 +88,7 @@ public class PaintStrokeHover : InteractiveSessionBase
 
         manageButton.Pressed += () =>
         {
-            var godotTree = (SceneTree)Engine.GetMainLoop();
-            godotTree.GetNodesInGroup("Dialog").OfType<BrushPanel>().First().Popup();
+            AppDialogHost.BrushLibrary.Popup();
         };
 
         var box = new VBoxContainer()

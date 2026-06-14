@@ -82,26 +82,17 @@ bool hasFlag(int flags, int flag) {
 	return (flags & flag) != 0;
 }
 
-vec2 unpack2floats(float f) {
-    uint word = floatBitsToUint(f);
-    // unpackHalf2x16 returns vec2( halfToFloat(high16), halfToFloat(low16) )
-    return unpackHalf2x16(word);
-}
-
 void vertex() {
 	mat3 canvas_linear = mat3(CANVAS_MATRIX);  // discard translation
     scale = length(canvas_linear * vec3(1.0, 0.0, 0.0));  // X-scale
-	// Canvas item not
-	p0 = INSTANCE_CUSTOM.xy;
-	p1 = INSTANCE_CUSTOM.zw;
-	vec2 rs = unpack2floats(COLOR.x);
-	r0 = max(rs.x, 1e-7);
-	r1 = max(rs.y, 1e-7);
-	vec2 pps = unpack2floats(COLOR.y);
-	pp0 = pps.x;
-	pp1 = pps.y;
-	n0 = COLOR.z;
-	n1 = COLOR.w;
+	p0 = INSTANCE_TRANSFORM[0].xy;
+	p1 = INSTANCE_TRANSFORM[1].xy;
+	r0 = max(INSTANCE_TRANSFORM[3].x, 1e-7);
+	r1 = max(INSTANCE_TRANSFORM[3].y, 1e-7);
+	n0 = INSTANCE_CUSTOM.x;
+	n1 = INSTANCE_CUSTOM.y;
+	pp0 = INSTANCE_CUSTOM.z;
+	pp1 = INSTANCE_CUSTOM.w;
 
 	if(RadiusMode == 1){
 		r0 /= scale;

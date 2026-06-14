@@ -1,0 +1,198 @@
+[gd_scene format=3 uid="uid://dgjotk4vkcyo8"]
+
+[ext_resource type="Script" uid="uid://cl42cvs3hpbx2" path="res://GuiControl/Dialog/ExportFrameSequence.cs" id="1_kjou5"]
+[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_0qmc2"]
+[ext_resource type="Script" uid="uid://bbm27mfx7lcse" path="res://Widget/NullableColorPickerButton.cs" id="3_smy8e"]
+[ext_resource type="Script" uid="uid://ckillqfnqh8wc" path="res://Widget/FilePathPicker.cs" id="4_wl8st"]
+
+[node name="ExportFrameSequence" type="ConfirmationDialog" unique_id=1984231464]
+use_hdr_2d = true
+oversampling_override = 1.0
+title = "Export frame sequence"
+initial_position = 2
+size = Vector2i(465, 520)
+visible = true
+ok_button_text = "Export"
+dialog_hide_on_ok = false
+script = ExtResource("1_kjou5")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=661194910]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 457.0
+offset_bottom = 471.0
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1977953548]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="GridContainer" type="GridContainer" parent="MarginContainer/VBoxContainer" unique_id=285848740]
+layout_mode = 2
+theme_override_constants/h_separation = 40
+theme_override_constants/v_separation = 8
+columns = 2
+
+[node name="Label9" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=733142287]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Reference size"
+vertical_alignment = 1
+
+[node name="ReferenceSizeNumber" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=891309191]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=662905068]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Scale"
+vertical_alignment = 1
+
+[node name="ScaleNumber" type="HBoxContainer" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=188708632]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("2_0qmc2")
+MinValue = 0.25
+MaxValue = 8.0
+Value = 1.0
+ExpEdit = true
+metadata/_custom_type_script = "uid://b1dclx7d0dgng"
+
+[node name="Label10" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=1854396777]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Output image resolution"
+vertical_alignment = 1
+
+[node name="FinalImageSizeNumber" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=793105963]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label2" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=921040105]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Background color"
+vertical_alignment = 1
+
+[node name="BackgroundColorButton" type="ColorPickerButton" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=574630724]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+edit_intensity = false
+script = ExtResource("3_smy8e")
+metadata/_custom_type_script = "uid://bbm27mfx7lcse"
+
+[node name="Label3" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=518659944]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Export folder"
+vertical_alignment = 1
+
+[node name="ExportPathPicker" type="HBoxContainer" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=252456956]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("4_wl8st")
+FileMode = 2
+metadata/_custom_type_script = "uid://ckillqfnqh8wc"
+
+[node name="Label8" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=1576272100]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 1
+text = "File name preview"
+vertical_alignment = 1
+
+[node name="PreviewFrameFileNameLabel" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=521147768]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+clip_text = true
+text_overrun_behavior = 3
+
+[node name="Label4" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=718483360]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Prefix"
+vertical_alignment = 1
+
+[node name="PrefixEdit" type="LineEdit" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=215856450]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label5" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=950075315]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Suffix"
+vertical_alignment = 1
+
+[node name="SuffixEdit" type="LineEdit" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=1316051113]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label6" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=1776753201]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Separator"
+vertical_alignment = 1
+
+[node name="SeparatorEdit" type="LineEdit" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=1174092460]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label7" type="Label" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=810665089]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+size_flags_vertical = 1
+text = "Start number"
+vertical_alignment = 1
+
+[node name="StartNumber" type="SpinBox" parent="MarginContainer/VBoxContainer/GridContainer" unique_id=1161451271]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+max_value = 9999999.0
+rounded = true
+alignment = 2
+
+[node name="ExportViewport" type="SubViewport" parent="." unique_id=760370591]
+unique_name_in_owner = true
+disable_3d = true
+transparent_bg = true
+handle_input_locally = false
+use_hdr_2d = true
+canvas_cull_mask = 1
+render_target_clear_mode = 1
+render_target_update_mode = 0
+
+[node name="Camera" type="Camera2D" parent="ExportViewport" unique_id=671983155]
+unique_name_in_owner = true
+
+[node name="ProgressBarPopup" type="PopupPanel" parent="." unique_id=959271011]
+oversampling_override = 1.0
+position = Vector2i(207, 0)
+size = Vector2i(222, 100)
+exclusive = true
+
+[node name="ProgressBar" type="ProgressBar" parent="ProgressBarPopup" unique_id=2133293457]
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 218.0
+offset_bottom = 96.0

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://b5mma1lfqwdf1"]
 
-[ext_resource type="Script" uid="uid://c7dapweauj2pm" path="res://GuiControl/ExportImage.cs" id="1_rwryi"]
+[ext_resource type="Script" uid="uid://c7dapweauj2pm" path="res://GuiControl/Dialog/ExportImage.cs" id="1_rwryi"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_3aowm"]
 [ext_resource type="Script" uid="uid://ckillqfnqh8wc" path="res://Widget/FilePathPicker.cs" id="3_3aowm"]
 
@@ -111,11 +111,12 @@ size_flags_vertical = 1
 text = "Save folder"
 vertical_alignment = 1
 
-[node name="FilePathPicker" type="HBoxContainer" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer" unique_id=552991996]
+[node name="PathPicker" type="HBoxContainer" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer" unique_id=552991996]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 script = ExtResource("3_3aowm")
+FileMode = 2
 metadata/_custom_type_script = "uid://ckillqfnqh8wc"
 
 [node name="Label6" type="Label" parent="MarginContainer/HBoxContainer/VBoxContainer/GridContainer" unique_id=55070252]
@@ -151,13 +152,8 @@ unique_name_in_owner = true
 disable_3d = true
 transparent_bg = true
 handle_input_locally = false
-use_hdr_2d = true
 render_target_clear_mode = 1
 render_target_update_mode = 0
 
-[node name="FileDialog" type="FileDialog" parent="." unique_id=25475742]
-oversampling_override = 1.0
-title = "Save image"
-display_mode = 1
-access = 2
-use_native_dialog = true
+[node name="Camera" type="Camera2D" parent="ImageSubViewport" unique_id=1155757271]
+unique_name_in_owner = true

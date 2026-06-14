@@ -15,7 +15,9 @@ public partial class FilePathPicker : HBoxContainer
         get => IsInstanceValid(PathEdit) ? PathEdit.Text : string.Empty;
         set
         {
-            if (IsInstanceValid(PathEdit)) PathEdit.Text = value;
+            if (!IsInstanceValid(PathEdit)) return;
+            PathEdit.Text = value;
+            PathEdit.EmitSignal(LineEdit.SignalName.TextChanged, value);
         }
     }
 
@@ -93,6 +95,6 @@ public partial class FilePathPicker : HBoxContainer
 
     private void OnSelected(string path)
     {
-        PathEdit.Text = path;
+        Path = path;
     }
 }

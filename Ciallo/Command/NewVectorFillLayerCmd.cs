@@ -54,24 +54,25 @@ public class NewVectorFillLayerCmd : CommandBase
         // Others
         NewShapeLayerCmd.CreateNonDataComponents(targetE);
 
-        // Bounded area view
-        var boundedAreaView = new Polygon2D
+        // Bounded area
+        var boundedAreaPreview = new Polygon2D
         {
             Name = "BoundedArea",
             Antialiased = true,
+            VisibilityLayer = (uint)AppGodotLayers.Render2DLayer.Other,
         };
-        targetE.AddNode(boundedAreaView);
-        targetE.Get<ShapeLayerView>().AddChild(boundedAreaView, false, Node.InternalMode.Front);
+        targetE.AddNode(boundedAreaPreview);
+        targetE.Get<ShapeLayerView>().AddChild(boundedAreaPreview, false, Node.InternalMode.Front);
         // Color & visibility — independent of arrangement state.
         AppPreference.VectorFillLayerBoundedAreaColor.Subscribe(color =>
         {
             if (!color.HasValue)
             {
-                boundedAreaView.Visible = false;
+                boundedAreaPreview.Visible = false;
                 return;
             }
-            boundedAreaView.Visible = true;
-            boundedAreaView.Color = color.Value;
+            boundedAreaPreview.Visible = true;
+            boundedAreaPreview.Color = color.Value;
         }).AddTo(targetE);
 
         // Shape — ArrReady emits whenever the arrangement is settled and safe to query.
@@ -79,7 +80,7 @@ public class NewVectorFillLayerCmd : CommandBase
         manager.ArrReady.Subscribe(arr =>
         {
             if (arr == null) return;
-            boundedAreaView.SetTriangleResult(arr.GetTrianglesFromFace(arr.GetUnboundedFace()));
+            boundedAreaPreview.SetTriangleResult(arr.GetTrianglesFromFace(arr.GetUnboundedFace()));
         }).AddTo(targetE);
         // Intentionally not set owner for boundedAreaView, so won't participate in exportation.
 

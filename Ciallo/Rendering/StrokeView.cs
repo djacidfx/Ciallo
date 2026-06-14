@@ -18,7 +18,6 @@ public partial class StrokeView : MultiMeshInstance2D
         var multiMesh = new MultiMesh
         {
             TransformFormat = MultiMesh.TransformFormatEnum.Transform2D,
-            UseColors = true,
             UseCustomData = true,
             Mesh = AutoloadRendering.DummyMesh,
         };
@@ -29,14 +28,14 @@ public partial class StrokeView : MultiMeshInstance2D
     public void SetGeometry([NotNull] IReadOnlyList<Vector2> positions, float radius)
     {
         SetGeometry(positions,
-            [..Enumerable.Repeat(radius, positions.Count)]);
+            [.. Enumerable.Repeat(radius, positions.Count)]);
     }
 
     public void SetGeometry(
         [NotNull] IReadOnlyList<Vector2> positions,
         [NotNull] IReadOnlyList<float> radii)
     {
-        SetGeometry(positions, radii, [..Enumerable.Repeat(1.0f, positions.Count)]);
+        SetGeometry(positions, radii, [.. Enumerable.Repeat(1.0f, positions.Count)]);
     }
 
     public void SetGeometry(
@@ -104,24 +103,12 @@ public partial class StrokeView : MultiMeshInstance2D
 
         for (int i = 0; i < multiMesh.InstanceCount; i++)
         {
-            Color customPos = new()
-            {
-                R = ps[i].X,
-                G = ps[i].Y,
-                B = ps[i + 1].X,
-                A = ps[i + 1].Y,
-            };
-
-            multiMesh.SetInstanceCustomData(i, customPos);
-            // Have to use instance color to store t.
-            multiMesh.SetInstanceColor(i,
-                new(Float32Packer.Pack(rs[i], rs[i + 1]),
-                    Float32Packer.Pack(pressures[i], pressures[i + 1]),
-                    _ns[i],
-                    _ns[i + 1]));
-            // Have to set transform or do not render, this transform values are not used in shaders
-            // Cannot access this matrix from the CanvasItem shader, so cannot be used for passing data.
-            multiMesh.SetInstanceTransform2D(i, Transform2D.Identity);
+            multiMesh.SetInstanceTransform2D(i,
+                new Transform2D(
+                    ps[i],
+                    ps[i + 1],
+                    new(rs[i], rs[i + 1])));
+            multiMesh.SetInstanceCustomData(i, new(_ns[i], _ns[i + 1], pressures[i], pressures[i + 1]));
         }
 
         // Set bounding box
@@ -131,38 +118,5 @@ public partial class StrokeView : MultiMeshInstance2D
         // Godot cannot save the value in the scene.
         var aabb = new Aabb(boundingBox.Position.X, boundingBox.Position.Y, 0, boundingBox.Size.X, boundingBox.Size.Y, 0);
         multiMesh.CustomAabb = aabb;
-    }
-}
-
-public static class Float32Packer
-{
-    /// <summary>
-    /// Packs two 32-bit floats into one 32-bit float
-    /// </summary>
-    public static float Pack(float x, float y)
-    {
-        ushort hx = BitConverter.HalfToUInt16Bits((Half)x);
-        ushort hy = BitConverter.HalfToUInt16Bits((Half)y);
-
-        uint word = ((uint)hy << 16) | hx;
-
-        return BitConverter.Int32BitsToSingle((int)word);
-    }
-
-    public static float Pack(Vector2 v) => Pack(v.X, v.Y);
-
-    // ReSharper disable once UnusedMember.Global
-    public static Vector2 Unpack(float packed)
-    {
-        uint word = (uint)BitConverter.SingleToInt32Bits(packed);
-
-        // slice into the two 16-bit halves
-        ushort hx = (ushort)(word >> 16);
-        ushort hy = (ushort)(word & 0xFFFF);
-
-        // convert back to full-precision floats
-        var x = (float)BitConverter.UInt16BitsToHalf(hx);
-        var y = (float)BitConverter.UInt16BitsToHalf(hy);
-        return new(x, y);
     }
 }

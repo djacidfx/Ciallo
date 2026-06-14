@@ -56,6 +56,9 @@ We may offer AI-powered features in the future --- but always designed for profe
 Ciallo aims to provide a drawing/pen feel significantly better than _CSP_,  _Procreate_ and _SAI 2_; this will require several technical advancements in future updates.
 For the current version, the feel is not worse than _SAI 2_ and certainly better than _Photoshop_ or _Krita_. (Report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.)
 
+### (WIP) Export to game engines
+Ciallo will support export real-time renderable vector 2D contents into game engines（BTW, Ciallo is built upon a game engine so it is absolutely possible.)
+
 ## Download (Free on all platforms)
 
 [Steam](https://store.steampowered.com/app/3973810) | [Itch.io](https://shenciao.itch.io/ciallo)

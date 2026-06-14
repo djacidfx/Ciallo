@@ -4,7 +4,7 @@
 
 ### Cel
 
-A cel is a drawable layer inside a cel folder. A cel represents artwork that can be assigned to frames on the timeline.
+A cel is a direct child layer of a cel folder, whether or not it is currently assigned to an exposure.
 
 ### Cel Button
 
@@ -20,6 +20,10 @@ Any layer's parent must be a folder layer. The document entity is a folder layer
 ### Exposure
 
 An exposure is a timeline assignment that says which cel is shown from a frame until the next exposure on the same cel folder.
+
+### Frame Sequence
+
+A frame sequence is an animation export made of one still image file per timeline frame.
 
 ### Onion Skin
 

@@ -202,6 +202,8 @@ locale/translations=PackedStringArray("res://Localization/LongStrings.de.transla
 
 [layer_names]
 
+2d_render/layer_1="View"
+2d_render/layer_2="Other"
 2d_physics/layer_1="Empty"
 2d_physics/layer_2="Stroke"
 
