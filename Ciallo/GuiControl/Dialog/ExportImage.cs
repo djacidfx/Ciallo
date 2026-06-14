@@ -83,7 +83,7 @@ public partial class ExportImage : ConfirmationDialog
         ReferenceSizeNumber.Text = $"{rSize.X} x {rSize.Y}";
         Scale.Subscribe(s =>
         {
-            Vector2I size = new((int)(rSize.X * s), (int)(rSize.Y * s));
+            var size = GetExportSize(rSize, s);
             FinalImageSizeNumber.Text = $"{size.X} x {size.Y}";
             ConfigureExportViewport();
             ImageSubViewport.RenderTargetClearMode = SubViewport.ClearMode.Once;
@@ -101,11 +101,17 @@ public partial class ExportImage : ConfirmationDialog
 
     private void ConfigureExportViewport()
     {
-        var imageSize = _setting.ReferenceSize.Value * Scale.Value;
         ImageSubViewport.TransparentBg = true;
         ImageSubViewport.UseHdr2D = false;
         ImageSubViewport.CanvasCullMask = (uint)AppGodotLayers.Render2DLayer.View;
-        ImageSubViewport.Size = new((int)imageSize.X, (int)imageSize.Y);
+        ImageSubViewport.Size = GetExportSize(_setting.ReferenceSize.Value, Scale.Value);
         Camera.Zoom = Vector2.One * Scale.Value;
+    }
+
+    private static Vector2I GetExportSize(Vector2 referenceSize, float scale)
+    {
+        return new Vector2I(
+            Mathf.RoundToInt(referenceSize.X * scale),
+            Mathf.RoundToInt(referenceSize.Y * scale));
     }
 }

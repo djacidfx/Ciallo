@@ -29,6 +29,7 @@ public partial class ExportFrameSquence : ConfirmationDialog
     public ReadOnlyReactiveProperty<string> PreviewFrameFileName;
 
     public Entity Document;
+    private CompositeDisposable _popupSubs = new();
     private readonly Polygon2D _background = new()
     {
         Name = "ExportBackground",
@@ -147,8 +148,15 @@ public partial class ExportFrameSquence : ConfirmationDialog
         ExportViewport.TransparentBg = true;
         ExportViewport.UseHdr2D = false;
         ExportViewport.CanvasCullMask = (uint)AppGodotLayers.Render2DLayer.View;
-        ExportViewport.Size = new Vector2I((int)(referenceSize.X * Scale.Value), (int)(referenceSize.Y * Scale.Value));
+        ExportViewport.Size = GetExportSize(referenceSize, Scale.Value);
         Camera.Zoom = Vector2.One * Scale.Value;
+    }
+
+    private static Vector2I GetExportSize(Vector2 referenceSize, float scale)
+    {
+        return new Vector2I(
+            Mathf.RoundToInt(referenceSize.X * scale),
+            Mathf.RoundToInt(referenceSize.Y * scale));
     }
 
     private void ConfigureExportBackground(Vector2 referenceSize)
@@ -176,7 +184,19 @@ public partial class ExportFrameSquence : ConfirmationDialog
     public void PopupCentered(Entity document)
     {
         Document = document;
-        ExportPath.Value = document.Get<DocumentSetting>().FilePath.Value.GetBaseDir();
+        var documentSetting = document.Get<DocumentSetting>();
+        var referenceSize = documentSetting.ReferenceSize.Value;
+
+        _popupSubs.Dispose();
+        _popupSubs = new();
+        ReferenceSizeNumber.Text = $"{referenceSize.X} x {referenceSize.Y}";
+        Scale.Subscribe(s =>
+        {
+            var size = GetExportSize(referenceSize, s);
+            FinalImageSizeNumber.Text = $"{size.X} x {size.Y}";
+        }).AddTo(_popupSubs);
+
+        ExportPath.Value = documentSetting.FilePath.Value.GetBaseDir();
         base.PopupCentered();
     }
 
