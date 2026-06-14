@@ -18,6 +18,8 @@ public partial class LayerRightClickMenu : PopupMenu
     private const int IdNewCelFolderLayer = 2;
     private const int IdDeleteLayer = 3;
     private const int IdUngroupFolder = 4;
+    private const int IdRenameCelsByExposure = 5;
+    private const int IdWrapChildrenInFolders = 6;
 
     public override void _Ready()
     {
@@ -47,7 +49,12 @@ public partial class LayerRightClickMenu : PopupMenu
         AddSeparator();
         AddItem("Delete Layer", IdDeleteLayer);
         if (_targetLayer.Has<FolderLayerSetting>())
+        {
+            if (_targetLayer.Get<FolderLayerSetting>().IsCel)
+                AddItem("Rename Cels by Exposure", IdRenameCelsByExposure);
+            AddItem("Wrap Children in Folders", IdWrapChildrenInFolders);
             AddItem("Ungroup Folder", IdUngroupFolder);
+        }
     }
 
     private void OnMenuSelected(long id)
@@ -71,6 +78,12 @@ public partial class LayerRightClickMenu : PopupMenu
                 break;
             case IdUngroupFolder:
                 LayerContextActions.UngroupFolder(_targetLayer);
+                break;
+            case IdRenameCelsByExposure:
+                LayerContextActions.RenameCelsByExposure(_targetLayer);
+                break;
+            case IdWrapChildrenInFolders:
+                LayerContextActions.WrapChildrenInFolders(_targetLayer);
                 break;
         }
     }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
@@ -81,6 +82,68 @@ internal static class LayerContextActions
             .RemoveFromLayerTree()
             .DeleteLayer()
             .Commit();
+    }
+
+    public static void RenameCelsByExposure(Entity celFolder)
+    {
+        var exposures = celFolder.Get<FolderLayerSetting>().Exposures;
+        var renamedCels = new HashSet<Entity>();
+        var cmd = new CommandBuilder("Rename Cels by Exposure", celFolder);
+        int name = 1;
+
+        foreach (var cel in exposures.Values)
+        {
+            if (!renamedCels.Add(cel))
+                continue;
+
+            cmd.SetTarget(cel)
+                .SetProperty(e => e.Get<CommonLayerSetting>().Name, name.ToString());
+            name++;
+        }
+
+        cmd.Commit();
+    }
+
+    public static void WrapChildrenInFolders(Entity targetFolder)
+    {
+        var children = targetFolder.Get<LayerTreeNode>().Children.ToArray();
+        if (children.Length == 0) return;
+
+        var document = targetFolder.Document;
+        var cmd = new CommandBuilder("Wrap Children in Folders", document);
+        bool targetIsCelFolder = targetFolder.Get<FolderLayerSetting>().IsCel;
+
+        foreach (var child in children)
+        {
+            var wrapper = document.World.Create();
+            var childName = child.Get<CommonLayerSetting>().Name.Value;
+            var childIndex = child.Get<LayerTreeNode>().Index;
+
+            cmd.SetTarget(wrapper)
+                .NewFolderLayer()
+                .SetProperty(e => e.Get<CommonLayerSetting>().Name, childName)
+                .AddToLayerTree(targetFolder, childIndex);
+
+            if (targetIsCelFolder)
+            {
+                cmd.SetTarget(targetFolder)
+                    .SetObservableCollection(
+                        e => e.Get<FolderLayerSetting>().Exposures,
+                        exposures =>
+                        {
+                            foreach (var (frame, cel) in exposures.ToArray())
+                            {
+                                if (cel == child)
+                                    exposures[frame] = wrapper;
+                            }
+                        });
+            }
+
+            cmd.SetTarget(document)
+                .MoveLayer(child, wrapper, 0);
+        }
+
+        cmd.Commit();
     }
 
     private static (Entity parentE, int index) GetNewLayerInsertPosition(Entity targetLayer)
