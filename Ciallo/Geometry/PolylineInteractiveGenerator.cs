@@ -39,6 +39,7 @@ public class PolylineInteractiveGenerator
     public float FixedRadius = 1f;
     public Func<float, float> RadiusSampler;
     public float CommitSimplificationScreenTolerancePx = 0.15f;
+    public float CommitSimplificationMaxSegmentScreenPx = 32f;
 
     private readonly StrokeModeler _modeler = new();
     private readonly StrokeModelParams _modelerParams = StrokeModelParams.CreateCialloDefault();
@@ -246,7 +247,8 @@ public class PolylineInteractiveGenerator
             return;
 
         float worldTolerance = CommitSimplificationScreenTolerancePx * _worldUnitsPerPixel;
-        var simplifiedPositions = _stablePositions.SimplifyRdp(worldTolerance, out var originalIndices);
+        float maxSegmentLength = CommitSimplificationMaxSegmentScreenPx * _worldUnitsPerPixel;
+        var simplifiedPositions = _stablePositions.SimplifyRdp(worldTolerance, out var originalIndices, maxSegmentLength);
 
         _stablePositions.Clear();
         _stablePositions.AddRange(simplifiedPositions);
