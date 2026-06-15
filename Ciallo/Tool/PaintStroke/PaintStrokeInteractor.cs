@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -20,12 +19,8 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
     };
     private PaintStrokeSnapTarget? _startSnapTarget;
-    private bool? _startSnapAllowed;
     private PaintStrokeSnapTarget? _endSnapTarget;
-    private readonly List<Vector2> _previewPositions = new(2048);
-    private readonly List<float> _previewRadii = new(2048);
-    private readonly List<float> _previewPressures = new(2048);
-    private readonly List<Vector2> _previewTilts = new(2048);
+    private readonly List<Vector2> _snapHintPoints = new(2);
 
     public static readonly ToolBase.Trigger PaintEnd = new("PaintEnd");
 
@@ -63,16 +58,18 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         _startSnapTarget = Tool.TryFindSnapTarget(data.WorldPosition, out var startTarget)
             ? startTarget
             : null;
-        _startSnapAllowed = _startSnapTarget.HasValue ? null : false;
         _endSnapTarget = null;
         Generator.Start(data);
-        UpdatePreview(data.WorldPosition);
+        UpdatePreview();
+        UpdateSnapHint();
     }
 
     public override void Moving(CursorMotionData data)
     {
         Generator.Update(data);
-        UpdatePreview(data.WorldPosition);
+        RefreshEndSnapTarget(data.WorldPosition);
+        UpdatePreview();
+        UpdateSnapHint();
     }
 
     public override void End(CursorButtonData data)
@@ -117,48 +114,26 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         StrokePreview.QueueFree();
         StrokePreview = null;
         _startSnapTarget = null;
-        _startSnapAllowed = null;
         _endSnapTarget = null;
-        Tool.SnapPreview.Hide();
+        Tool.SnapHint.Hide();
         Input.MouseMode = Input.MouseModeEnum.Visible;
     }
 
     protected PaintStrokeGeometry BuildCommitGeometry(CursorButtonData data)
     {
         Generator.End(data);
-        RefreshStartSnapAllowed(Generator.CurrentGeometry);
         RefreshEndSnapTarget(data.WorldPosition);
-        return PaintStrokeSnap.BuildGeometry(
+        return PaintStrokeSnap.BuildRepairedGeometry(
             Generator.CurrentGeometry,
-            _startSnapAllowed == true ? _startSnapTarget : null,
-            EndSnapTargetIfAllowed(Generator.CurrentGeometry));
+            _startSnapTarget,
+            _endSnapTarget,
+            AppPreference.PaintStrokeSnapDistance.Value);
     }
 
-    private void UpdatePreview(Vector2 worldPosition)
+    private void UpdatePreview()
     {
         var generatorGeometry = Generator.CurrentGeometry;
-        RefreshStartSnapAllowed(generatorGeometry);
-        RefreshEndSnapTarget(worldPosition);
-        var endSnapTarget = EndSnapTargetIfAllowed(generatorGeometry);
-        PaintStrokeSnap.FillGeometry(
-            generatorGeometry,
-            _startSnapAllowed == true ? _startSnapTarget : null,
-            endSnapTarget,
-            _previewPositions,
-            _previewRadii,
-            _previewPressures,
-            _previewTilts);
-        StrokePreview.SetGeometry(_previewPositions, _previewRadii, _previewPressures);
-        UpdateSnapPreview(generatorGeometry, worldPosition, endSnapTarget);
-    }
-
-    private void RefreshStartSnapAllowed(PolylineGeneratorGeometry geometry)
-    {
-        if (_startSnapAllowed.HasValue || _startSnapTarget is not { } startTarget)
-            return;
-
-        if (PaintStrokeSnap.TryResolveStartDirection(geometry.Positions, startTarget, out var allowed))
-            _startSnapAllowed = allowed;
+        StrokePreview.SetGeometry(generatorGeometry.Positions, generatorGeometry.Radii, generatorGeometry.Pressures);
     }
 
     private void RefreshEndSnapTarget(Vector2 worldPosition)
@@ -168,30 +143,20 @@ public class PaintStrokeInteractor : InteractiveSessionBase
             : null;
     }
 
-    private void UpdateSnapPreview(
-        PolylineGeneratorGeometry geometry,
-        Vector2 worldPosition,
-        PaintStrokeSnapTarget? endSnapTarget)
+    private void UpdateSnapHint()
     {
-        if (endSnapTarget is { } end)
+        _snapHintPoints.Clear();
+        if (_startSnapTarget is { } startTarget)
+            _snapHintPoints.Add(startTarget.HitPoint);
+        if (_endSnapTarget is { } endTarget)
+            _snapHintPoints.Add(endTarget.HitPoint);
+
+        if (_snapHintPoints.Count > 0)
         {
-            Tool.SnapPreview.Show(worldPosition, end.HitPoint);
+            Tool.SnapHint.Show(_snapHintPoints);
             return;
         }
 
-        if (_startSnapAllowed == true && _startSnapTarget is { } startTarget)
-        {
-            Tool.SnapPreview.Show(startTarget.HitPoint, geometry.Positions[0]);
-            return;
-        }
-
-        Tool.SnapPreview.Hide();
-    }
-
-    private PaintStrokeSnapTarget? EndSnapTargetIfAllowed(PolylineGeneratorGeometry geometry)
-    {
-        return _endSnapTarget is { } endTarget && PaintStrokeSnap.EndDirectionAllowsSnap(geometry.Positions, endTarget)
-            ? endTarget
-            : null;
+        Tool.SnapHint.Hide();
     }
 }

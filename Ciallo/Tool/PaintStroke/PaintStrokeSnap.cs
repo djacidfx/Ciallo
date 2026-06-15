@@ -10,28 +10,27 @@ using Godot;
 namespace Ciallo.Tool;
 
 public readonly record struct PaintStrokeSnapTarget(
+    Entity Curve,
     Vector2 HitPoint,
-    Vector2 RepairPoint,
-    float DistanceSquared);
+    float HitT);
 
-public sealed class PaintStrokeSnapPreviewManager : IDisposable
+public sealed class PaintStrokeSnapHintManager : IDisposable
 {
     private readonly Node2D _root = new();
-    private readonly StrokeView _dash;
+    private readonly MultiMeshInstance2D _dots;
 
-    public PaintStrokeSnapPreviewManager(Node2D parent)
+    public PaintStrokeSnapHintManager(Node2D parent)
     {
-        _dash = new StrokeView { Material = AutoloadRendering.DashWireframeMaterial };
-        _root.AddChild(_dash);
+        _dots = AutoloadRendering.CreateDots();
+        _root.AddChild(_dots);
         parent.AddChild(_root);
         Hide();
     }
 
-    public void Show(Vector2 dashFrom, Vector2 dashTo)
+    public void Show(IReadOnlyList<Vector2> points)
     {
         _root.Visible = true;
-        _dash.Visible = true;
-        _dash.SetGeometry([dashFrom, dashTo], AppPreference.StrokeWireframeRadius * 2f);
+        _dots.SetDotGeometry(points, AppPreference.StrokeDotRadius);
     }
 
     public void Hide()
@@ -73,6 +72,7 @@ public static class PaintStrokeSnap
                 KeepIfNearer(curve, worldPosition, ref target, ref bestDistanceSquared, ref found);
         }
 
+        // Single-point strokes are valid snap targets, but Arrangement curve queries cannot return them.
         foreach (var curve in sourceShapes)
             if (seen.Add(curve) && curve.Get<PolylineGeometry>().Positions.Value.GetBoundingBox().Grow(snapDistance).HasPoint(worldPosition))
                 KeepIfNearer(curve, worldPosition, ref target, ref bestDistanceSquared, ref found);
@@ -93,127 +93,120 @@ public static class PaintStrokeSnap
         if (distanceSquared > bestDistanceSquared)
             return;
 
-        var repairPoint = ResolveRepairPoint(positions, t, hitPoint, worldPosition);
-        target = new PaintStrokeSnapTarget(hitPoint, repairPoint, distanceSquared);
+        target = new PaintStrokeSnapTarget(curve, hitPoint, t);
         bestDistanceSquared = distanceSquared;
         found = true;
     }
 
-    public static PaintStrokeGeometry BuildGeometry(
-        PolylineGeneratorGeometry geometry,
-        PaintStrokeSnapTarget? startTarget,
-        PaintStrokeSnapTarget? endTarget)
-    {
-        var positions = new List<Vector2>(geometry.Count + 2);
-        var radii = new List<float>(geometry.Count + 2);
-        var pressures = new List<float>(geometry.Count + 2);
-        var tilts = new List<Vector2>(geometry.Count + 2);
-
-        FillGeometry(geometry, startTarget, endTarget, positions, radii, pressures, tilts);
-
-        return new PaintStrokeGeometry(
-            positions.ToImmutableArray(),
-            radii.ToImmutableArray(),
-            pressures.ToImmutableArray(),
-            tilts.ToImmutableArray());
-    }
-
-    public static void FillGeometry(
+    public static PaintStrokeGeometry BuildRepairedGeometry(
         PolylineGeneratorGeometry geometry,
         PaintStrokeSnapTarget? startTarget,
         PaintStrokeSnapTarget? endTarget,
-        List<Vector2> positions,
-        List<float> radii,
-        List<float> pressures,
-        List<Vector2> tilts)
+        float repairLength)
     {
-        positions.Clear();
-        radii.Clear();
-        pressures.Clear();
-        tilts.Clear();
-
         if (geometry.Count == 0)
-            return;
+            return new PaintStrokeGeometry([], [], [], []);
 
-        if (startTarget is { } start)
-            AddSample(start.RepairPoint, geometry.Radii[0], geometry.Pressures[0], geometry.Tilts[0]);
+        var positions = ImmutableArray.CreateBuilder<Vector2>(geometry.Count);
+        var radii = ImmutableArray.CreateBuilder<float>(geometry.Count);
+        var pressures = ImmutableArray.CreateBuilder<float>(geometry.Count);
+        var tilts = ImmutableArray.CreateBuilder<Vector2>(geometry.Count);
+
+        if (geometry.Count == 1)
+        {
+            var position = startTarget.HasValue
+                ? ResolveRepairPoint(geometry.Positions, startTarget.Value, repairStart: true)
+                : endTarget.HasValue
+                    ? ResolveRepairPoint(geometry.Positions, endTarget.Value, repairStart: false)
+                    : geometry.Positions[0];
+            positions.Add(position);
+            radii.Add(geometry.Radii[0]);
+            pressures.Add(geometry.Pressures[0]);
+            tilts.Add(geometry.Tilts[0]);
+            return new PaintStrokeGeometry(
+                positions.ToImmutable(),
+                radii.ToImmutable(),
+                pressures.ToImmutable(),
+                tilts.ToImmutable());
+        }
+
+        var arcLengths = new float[geometry.Count];
+        for (int i = 1; i < geometry.Count; i++)
+            arcLengths[i] = arcLengths[i - 1] + geometry.Positions[i - 1].DistanceTo(geometry.Positions[i]);
+
+        float totalLength = arcLengths[^1];
+        var startDelta = startTarget.HasValue
+            ? ResolveRepairPoint(geometry.Positions, startTarget.Value, repairStart: true) - geometry.Positions[0]
+            : Vector2.Zero;
+        var endDelta = endTarget.HasValue
+            ? ResolveRepairPoint(geometry.Positions, endTarget.Value, repairStart: false) - geometry.Positions[^1]
+            : Vector2.Zero;
 
         for (int i = 0; i < geometry.Count; i++)
-            AddSample(geometry.Positions[i], geometry.Radii[i], geometry.Pressures[i], geometry.Tilts[i]);
-
-        if (endTarget is { } end)
-            AddSample(end.RepairPoint, geometry.Radii[^1], geometry.Pressures[^1], geometry.Tilts[^1]);
-
-        void AddSample(Vector2 position, float radius, float pressure, Vector2 tilt)
         {
-            if (positions.Count > 0 && positions[^1].IsEqualApprox(position))
-                return;
-
+            var position = geometry.Positions[i];
+            if (startTarget.HasValue)
+            {
+                float distanceFromStart = arcLengths[i];
+                float startWeight = 1f - Math.Clamp(
+                    distanceFromStart / Math.Min(repairLength, Math.Max(totalLength, Epsilon)),
+                    0f,
+                    1f);
+                position += startDelta * startWeight;
+            }
+            if (endTarget.HasValue)
+            {
+                float distanceFromEnd = totalLength - arcLengths[i];
+                float endWeight = 1f - Math.Clamp(
+                    distanceFromEnd / Math.Min(repairLength, Math.Max(totalLength, Epsilon)),
+                    0f,
+                    1f);
+                position += endDelta * endWeight;
+            }
             positions.Add(position);
-            radii.Add(radius);
-            pressures.Add(pressure);
-            tilts.Add(tilt);
-        }
-    }
-
-    public static bool TryResolveStartDirection(IReadOnlyList<Vector2> positions, PaintStrokeSnapTarget target, out bool allowed)
-    {
-        allowed = false;
-        if (positions.Count < 2)
-            return false;
-
-        var snapDirection = positions[0] - target.HitPoint;
-        if (snapDirection.LengthSquared() <= Epsilon * Epsilon)
-            return true;
-
-        for (int i = 1; i < positions.Count; i++)
-        {
-            var travelDirection = positions[i] - positions[0];
-            // Pen pressure changes can also arrive as cursor move events, producing duplicate positions before spatial travel exists.
-            if (travelDirection.LengthSquared() <= Epsilon * Epsilon)
-                continue;
-
-            allowed = travelDirection.Dot(snapDirection) >= 0f;
-            return true;
+            radii.Add(geometry.Radii[i]);
+            pressures.Add(geometry.Pressures[i]);
+            tilts.Add(geometry.Tilts[i]);
         }
 
-        return false;
-    }
-
-    public static bool EndDirectionAllowsSnap(IReadOnlyList<Vector2> positions, PaintStrokeSnapTarget target)
-    {
-        if (positions.Count < 2)
-            return false;
-
-        var snapDirection = target.HitPoint - positions[^1];
-        if (snapDirection.LengthSquared() <= Epsilon * Epsilon)
-            return false;
-
-        for (int i = positions.Count - 2; i >= 0; i--)
-        {
-            var travelDirection = positions[^1] - positions[i];
-            if (travelDirection.LengthSquared() > Epsilon * Epsilon)
-                return travelDirection.Dot(snapDirection) >= 0f;
-        }
-
-        return false;
+        return new PaintStrokeGeometry(
+            positions.ToImmutable(),
+            radii.ToImmutable(),
+            pressures.ToImmutable(),
+            tilts.ToImmutable());
     }
 
     private static Vector2 ResolveRepairPoint(
-        ImmutableArray<Vector2> positions,
-        float t,
-        Vector2 hitPoint,
-        Vector2 worldPosition)
+        IReadOnlyList<Vector2> strokePositions,
+        PaintStrokeSnapTarget target,
+        bool repairStart)
     {
-        if (Mathf.IsEqualApprox(t, 0f))
-            return positions[0];
-        if (Mathf.IsEqualApprox(t, positions.Length - 1f))
-            return positions[^1];
-        if (Mathf.IsEqualApprox(t, MathF.Round(t)))
-            return positions[(int)MathF.Round(t)];
+        var targetPositions = target.Curve.Get<PolylineGeometry>().Positions.Value;
+        var hitPoint = targetPositions.Sample(target.HitT);
+        var t = target.HitT;
+        if (t <= Epsilon)
+            return targetPositions[0];
+        if (t >= targetPositions.Length - 1f - Epsilon)
+            return targetPositions[^1];
 
-        var direction = (hitPoint - worldPosition).Normalized();
-        return hitPoint + direction * BodyTargetOverrunDistanceWorld;
+        var outwardTangent = GetEndpointOutwardTangent(strokePositions, repairStart);
+        return hitPoint + outwardTangent * BodyTargetOverrunDistanceWorld;
+    }
+
+    private static Vector2 GetEndpointOutwardTangent(IReadOnlyList<Vector2> strokePositions, bool fromStart)
+    {
+        var endpoint = fromStart ? strokePositions[0] : strokePositions[^1];
+        int step = fromStart ? 1 : -1;
+        for (int i = fromStart ? 1 : strokePositions.Count - 2;
+             i >= 0 && i < strokePositions.Count;
+             i += step)
+        {
+            var tangent = endpoint - strokePositions[i];
+            if (tangent.LengthSquared() > Epsilon * Epsilon)
+                return tangent.Normalized();
+        }
+
+        return Vector2.Zero;
     }
 
 }

@@ -27,7 +27,7 @@ public class PaintStrokeHover : InteractiveSessionBase
     public override void Cancel()
     {
         Document.Get<WorldBody>().DefaultCursorShape = default;
-        Tool.SnapPreview.Hide();
+        Tool.SnapHint.Hide();
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
@@ -119,9 +119,10 @@ public class PaintStrokeHover : InteractiveSessionBase
             .Flatten();
         var radiusControl = new SpinSlider
         {
-            MinValue = 0.1f,
+            MinValue = 0.5f,
             MaxValue = 256f,
             Step = 0.03333333f,
+            AllowGreater = true,
             ExpEdit = true,
         }.BindNumber(radius);
         radius.AddTo(radiusControl);
@@ -145,10 +146,10 @@ public class PaintStrokeHover : InteractiveSessionBase
     {
         if (!Tool.TryFindSnapTarget(worldPosition, out var target))
         {
-            Tool.SnapPreview.Hide();
+            Tool.SnapHint.Hide();
             return;
         }
 
-        Tool.SnapPreview.Show(target.HitPoint, worldPosition);
+        Tool.SnapHint.Show([target.HitPoint]);
     }
 }
