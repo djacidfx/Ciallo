@@ -334,7 +334,7 @@ void fragment() {
 	if(hasFlag(ActiveBrushFlags, BrushFlags.Dash)){
 		float unitLength = DashLength + (GapLength > 0.0 ? GapLength : DashLength);
 		float pixelN = x2n(pLocal.x) + n0;
-		if(mod(pixelN + TIME * DashForwardSpeed, unitLength) > DashLength) discard;
+		if(mod(pixelN - TIME * DashForwardSpeed, unitLength) > DashLength) discard;
 	}
 
 	// Be mindful with premultiply alpha
