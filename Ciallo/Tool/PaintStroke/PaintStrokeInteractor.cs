@@ -126,8 +126,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         return PaintStrokeSnap.BuildRepairedGeometry(
             Generator.CurrentGeometry,
             _startSnapTarget,
-            _endSnapTarget,
-            AppPreference.PaintStrokeSnapDistance.Value);
+            _endSnapTarget);
     }
 
     private void UpdatePreview()
