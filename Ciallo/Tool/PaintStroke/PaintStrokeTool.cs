@@ -2,6 +2,9 @@ using System;
 using System.Linq;
 using Ciallo.Command;
 using Ciallo.Data;
+using Ciallo.Geometry;
+using Ciallo.Rendering;
+using Ciallo.Widget;
 using Frent;
 using Godot;
 using R3;
@@ -16,6 +19,8 @@ public class PaintStrokeTool : ToolBase
     public readonly PaintStrokeHover Hover = new();
     public readonly PaintStrokeInteractor Left = new();
     public readonly PaintStrokeOnVectorFill LeftOnFill = new();
+    public ArrangementManager Arrangement { get; private set; }
+    public PaintStrokeSnapPreviewManager SnapPreview { get; private set; }
 
     protected override void ConfigureStateMachine()
     {
@@ -52,8 +57,32 @@ public class PaintStrokeTool : ToolBase
     }
 
     public readonly Subject<Unit> DeactivateSignal = new();
+
+    public override void DrawProperty(PropertyContainer container)
+    {
+        container.AddProperty("Snap", new CheckBox
+        {
+            ToggleMode = true,
+        }.BindBool(AppPreference.PaintStrokeSnapEnabled));
+
+        container.AddProperty("Snap distance",
+            new SpinSlider
+            {
+                MinValue = 1f,
+                MaxValue = 128f,
+                Step = 1f,
+                ExpEdit = true,
+                AllowGreater = true,
+            }.BindNumber(AppPreference.PaintStrokeSnapDistance));
+
+        base.DrawProperty(container);
+    }
+
     public override void OnActivated()
     {
+        Arrangement = WorkingLayer.Get<ArrangementManager>();
+        SnapPreview = new PaintStrokeSnapPreviewManager(Document.Get<WorldOverlay>());
+
         if (!WorkingLayer.Has<VectorFillLayerSetting>()) return;
 
         var referenceLayers = WorkingLayer.Get<VectorFillLayerSetting>().ReferenceLayers;
@@ -65,6 +94,23 @@ public class PaintStrokeTool : ToolBase
 
     public override void OnDeactivated()
     {
+        SnapPreview.Dispose();
+        SnapPreview = null;
+        Arrangement = null;
         DeactivateSignal.OnNext(Unit.Default);
+    }
+
+    public bool TryFindSnapTarget(Vector2 worldPosition, out PaintStrokeSnapTarget target)
+    {
+        target = default;
+        if (!AppPreference.PaintStrokeSnapEnabled.Value)
+            return false;
+
+        return PaintStrokeSnap.TryFindTarget(
+            Arrangement.ArrReady.CurrentValue,
+            Arrangement.SourceShapes,
+            worldPosition,
+            AppPreference.PaintStrokeSnapDistance.Value,
+            out target);
     }
 }

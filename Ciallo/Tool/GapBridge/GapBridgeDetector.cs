@@ -8,7 +8,6 @@ namespace Ciallo.Tool;
 
 internal sealed class GapBridgeDetector
 {
-    private const int QueryOctagonSides = 8;
     private const float Epsilon = 1e-5f;
     // Business choice: when a loose endpoint is almost as close as the stroke body,
     // users usually expect Gap Bridge to finish the loose end.
@@ -110,7 +109,7 @@ internal sealed class GapBridgeDetector
     {
         // Intentional business tradeoff: this queries curves touched by the octagon boundary.
         // Curves fully contained inside the radius do not count as gap targets for this tool.
-        foreach (long targetId in _arr.PolylineQueryCurves(BuildClosedOctagon(sourcePoint, _maxGapLength)))
+        foreach (long targetId in _arr.PolylineQueryCurves(PolylineShapeBuilder.BuildClosedOctagon(sourcePoint, _maxGapLength)))
         {
             var targetCurve = targetId.ToEntity();
             if (_curves.TryGetValue(targetCurve, out var target))
@@ -309,18 +308,6 @@ internal sealed class GapBridgeDetector
     private static GapBridgeTargetKind ToTargetKind(EndpointSide side)
     {
         return side == EndpointSide.Start ? GapBridgeTargetKind.EndpointStart : GapBridgeTargetKind.EndpointEnd;
-    }
-
-    private static ImmutableArray<Vector2> BuildClosedOctagon(Vector2 center, float radius)
-    {
-        var builder = ImmutableArray.CreateBuilder<Vector2>(QueryOctagonSides + 1);
-        for (int i = 0; i < QueryOctagonSides; i++)
-        {
-            float angle = Mathf.Tau * i / QueryOctagonSides;
-            builder.Add(center + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius);
-        }
-        builder.Add(builder[0]);
-        return builder.ToImmutable();
     }
 
     private static bool IsClosed(ImmutableArray<Vector2> positions)

@@ -12,15 +12,22 @@ namespace Ciallo.Tool;
 
 public class PaintStrokeHover : InteractiveSessionBase
 {
+    public new PaintStrokeTool Tool => (PaintStrokeTool)base.Tool;
+
     public override void Start(CursorButtonData data)
     {
         Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
+        RefreshSnap(data.WorldPosition);
     }
-    public override void Moving(CursorMotionData data) { }
+    public override void Moving(CursorMotionData data)
+    {
+        RefreshSnap(data.WorldPosition);
+    }
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
         Document.Get<WorldBody>().DefaultCursorShape = default;
+        Tool.SnapPreview.Hide();
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
@@ -132,5 +139,16 @@ public class PaintStrokeHover : InteractiveSessionBase
             .SetWorkingStrokeBrush()
             .Commit();
         AppStrokeBrushLibrary.SelectedIndex.Value = -1;
+    }
+
+    private void RefreshSnap(Vector2 worldPosition)
+    {
+        if (!Tool.TryFindSnapTarget(worldPosition, out var target))
+        {
+            Tool.SnapPreview.Hide();
+            return;
+        }
+
+        Tool.SnapPreview.Show(target.HitPoint, worldPosition);
     }
 }
