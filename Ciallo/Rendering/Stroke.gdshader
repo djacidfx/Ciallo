@@ -127,6 +127,8 @@ void vertex() {
 	{
 		vec2 offset = offsetSign.x * r * tangent + offsetSign.y * r * normal * normalTanValue;
 		p = position + offset;
+	} else {
+		p = vec2(0.0);
 	}
 
 	VERTEX = (MODEL_MATRIX * vec4(p, 0.0, 1.0)).xy;
