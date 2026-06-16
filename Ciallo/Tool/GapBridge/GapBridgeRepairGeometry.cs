@@ -17,14 +17,14 @@ public static class GapBridgeRepairGeometry
     private const double DisplacementWeight = 0.08;
     private const double FarDisplacementPenalty = 24.0;
 
-    public static ImmutableArray<Vector2> BuildRepairedPositions(Arrangement arr, GapBridgeCandidate candidate)
+    public static ImmutableArray<Vector2> BuildRepairedPositions(Arrangement arr, GapBridge bridge)
     {
-        var geom = candidate.FromCurve.Get<PolylineGeometry>();
+        var geom = bridge.SourceCurve.Get<PolylineGeometry>();
         var positions = geom.Positions.Value;
         if (positions.Length < 2)
             return positions;
-        var endpointInfo = arr.GetCurveEndpointInfo(candidate.FromCurve.PackedValue);
-        bool repairStart = SourceEndpointIsStart(candidate.FromT, positions.Length - 1f);
+        var endpointInfo = arr.GetCurveEndpointInfo(bridge.SourceCurve.PackedValue);
+        bool repairStart = bridge.RepairStart;
         float junctionLength = repairStart
             ? endpointInfo.StartJunctionLength
             : endpointInfo.EndJunctionLength;
@@ -36,7 +36,7 @@ public static class GapBridgeRepairGeometry
         // boundary, not a snap source: the lone penalty origin is the moving endpoint, so the
         // correction concentrates there and fades toward the anchor.
         int endpointLocal = tailIndices.Length - 1;
-        var targetPoint = ResolveRepairTarget(candidate);
+        var targetPoint = ResolveRepairTarget(bridge);
         var tailPositions = new Vector2[tailIndices.Length];
         for (int i = 0; i < tailIndices.Length; i++)
             tailPositions[i] = positions[tailIndices[i]];
@@ -60,23 +60,13 @@ public static class GapBridgeRepairGeometry
         return repaired.ToImmutable();
     }
 
-    private static Vector2 ResolveRepairTarget(GapBridgeCandidate candidate)
+    private static Vector2 ResolveRepairTarget(GapBridge bridge)
     {
-        var (fromPoint, toPoint) = GapBridgeGeometry.ResolveCandidate(candidate);
-        if (candidate.TargetKind != GapBridgeTargetKind.Body)
-            return toPoint;
+        if (!bridge.TargetIsBody)
+            return bridge.TargetPoint;
 
-        var repairDirection = (toPoint - fromPoint).Normalized();
-        return toPoint + repairDirection * BodyTargetOverrunDistanceWorld;
-    }
-
-    private static bool SourceEndpointIsStart(float sourceT, float lastT)
-    {
-        if (sourceT == 0f)
-            return true;
-        if (sourceT == lastT)
-            return false;
-        throw new InvalidOperationException($"Gap Bridge repair source must be an endpoint t, got {sourceT}.");
+        var repairDirection = (bridge.TargetPoint - bridge.SourcePoint).Normalized();
+        return bridge.TargetPoint + repairDirection * BodyTargetOverrunDistanceWorld;
     }
 
     private static ImmutableArray<int> BuildTailIndices(

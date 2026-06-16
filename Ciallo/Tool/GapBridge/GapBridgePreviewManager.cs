@@ -15,7 +15,7 @@ public sealed class GapBridgePreviewManager : IDisposable
     private readonly Node2D _bridgesRoot = new();
     private readonly Dictionary<Rid, Polygon2D> _faceNodes = [];
     private readonly Dictionary<Rid, Color> _faceColors = [];
-    private List<GapBridgeTarget> _targets = [];
+    private List<GapBridge> _bridges = [];
     private int _nextFaceColorIndex;
     private readonly IReadOnlySet<Entity> _sourceShapes;
 
@@ -35,7 +35,7 @@ public sealed class GapBridgePreviewManager : IDisposable
         if (arr == null)
         {
             _root.Visible = false;
-            _targets.Clear();
+            _bridges.Clear();
             return;
         }
 
@@ -49,13 +49,13 @@ public sealed class GapBridgePreviewManager : IDisposable
         _root.QueueFree();
     }
 
-    public bool TryPickTarget(Vector2 worldPosition, out GapBridgeTarget target)
+    public bool TryPickBridge(Vector2 worldPosition, out GapBridge bridge)
     {
-        return GapBridgeGeometry.TryFindNearestTarget(
-            _targets,
+        return GapBridge.TryPickNearest(
+            _bridges,
             worldPosition,
             AppPreference.GapBridgeHitRadius.Value,
-            out target);
+            out bridge);
     }
 
     private void SyncFaces(Arrangement arr)
@@ -105,16 +105,16 @@ public sealed class GapBridgePreviewManager : IDisposable
             child.QueueFree();
 
         var maxGapLength = AppPreference.GapBridgeDetectMaxGapLength.Value;
-        _targets = GapBridgeGeometry.QueryTargets(arr, _sourceShapes, maxGapLength);
+        _bridges = GapBridgeDetector.QueryBridges(arr, _sourceShapes, maxGapLength);
 
-        foreach (var target in _targets)
+        foreach (var bridge in _bridges)
         {
-            var bridge = new StrokeView
+            var view = new StrokeView
             {
                 Material = AutoloadRendering.DashWireframeMaterial,
             };
-            _bridgesRoot.AddChild(bridge);
-            bridge.SetGeometry(target.TargetPolyline, AppPreference.StrokeWireframeRadius * 1.25f);
+            _bridgesRoot.AddChild(view);
+            view.SetGeometry(bridge.Polyline, AppPreference.StrokeWireframeRadius * 1.25f);
         }
     }
 

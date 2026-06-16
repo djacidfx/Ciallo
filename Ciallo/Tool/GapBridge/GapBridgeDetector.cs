@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using Ciallo.Data;
 using Ciallo.Geometry;
 using Frent;
 using Godot;
@@ -9,9 +10,6 @@ namespace Ciallo.Tool;
 internal sealed class GapBridgeDetector
 {
     private const float Epsilon = 1e-5f;
-    // Business choice: when a loose endpoint is almost as close as the stroke body,
-    // users usually expect Gap Bridge to finish the loose end.
-    internal const float DanglingEndpointDistancePreference = 1.25f;
 
     private readonly Arrangement _arr;
     private readonly Dictionary<Entity, GapBridgeCurveInfo> _curves;
@@ -26,22 +24,22 @@ internal sealed class GapBridgeDetector
         _maxDistanceSquared = maxGapLength * maxGapLength;
     }
 
-    public static List<GapBridgeTarget> QueryTargets(
+    public static List<GapBridge> QueryBridges(
         Arrangement arr,
         IReadOnlyCollection<Entity> sourceShapes,
         float maxGapLength)
     {
         var detector = new GapBridgeDetector(arr, sourceShapes, maxGapLength);
-        return detector.QueryTargets();
+        return detector.QueryBridges();
     }
 
-    private List<GapBridgeTarget> QueryTargets()
+    private List<GapBridge> QueryBridges()
     {
-        var result = new List<GapBridgeTarget>();
+        var result = new List<GapBridge>();
         foreach (var (sourceCurve, source) in _curves)
         {
-            AddTargetForEndpoint(sourceCurve, source, EndpointSide.Start, result);
-            AddTargetForEndpoint(sourceCurve, source, EndpointSide.End, result);
+            AddBridgeForEndpoint(sourceCurve, source, EndpointSide.Start, result);
+            AddBridgeForEndpoint(sourceCurve, source, EndpointSide.End, result);
         }
         return result;
     }
@@ -53,7 +51,7 @@ internal sealed class GapBridgeDetector
         var result = new Dictionary<Entity, GapBridgeCurveInfo>();
         foreach (var sourceShape in sourceShapes)
         {
-            var positions = GapBridgeGeometry.GetPositions(sourceShape);
+            var positions = sourceShape.Get<PolylineGeometry>().Positions.Value;
             var endpointInfo = arr.GetCurveEndpointInfo(sourceShape.PackedValue);
             result[sourceShape] = new GapBridgeCurveInfo(
                 positions,
@@ -66,18 +64,23 @@ internal sealed class GapBridgeDetector
         return result;
     }
 
-    private void AddTargetForEndpoint(
+    private void AddBridgeForEndpoint(
         Entity sourceCurve,
         GapBridgeCurveInfo source,
         EndpointSide sourceSide,
-        List<GapBridgeTarget> result)
+        List<GapBridge> result)
     {
         var hit = FindBestHit(sourceCurve, source, sourceSide);
         if (hit is not { } best)
             return;
 
-        var sourcePoint = source.EndpointPoint(sourceSide);
-        result.Add(new GapBridgeTarget(best.Candidate, [sourcePoint, best.TargetPoint]));
+        result.Add(new GapBridge(
+            sourceCurve,
+            sourceSide == EndpointSide.Start,
+            source.EndpointPoint(sourceSide),
+            best.TargetPoint,
+            best.Candidate.TargetKind == GapBridgeTargetKind.Body,
+            best.Candidate.DistanceSquared));
     }
 
     private CandidateHit? FindBestHit(Entity sourceCurve, GapBridgeCurveInfo source, EndpointSide sourceSide)
@@ -142,8 +145,7 @@ internal sealed class GapBridgeDetector
                 sourceCurve,
                 source.EndpointT(targetSide),
                 distanceSquared,
-                ToTargetKind(targetSide),
-                true),
+                ToTargetKind(targetSide)),
             targetPoint);
     }
 
@@ -163,6 +165,36 @@ internal sealed class GapBridgeDetector
         // so a short dangling endpoint and a closed stroke body can still be reached.
         var nearestPoint = target.Positions.GetClosestPoint(sourcePoint, out var nearestT);
         var targetKind = ClassifyTargetKind(nearestT, target.LastT);
+        if (targetKind == GapBridgeTargetKind.Body)
+        {
+            // A dangling endpoint owns the terminal gap-length of its curve. If the
+            // nearest body point is still in that tail, the artist most likely meant
+            // endpoint-to-endpoint closure rather than an overpassing body bridge.
+            bool startOwnsHit = target.EndpointIsDangling(EndpointSide.Start)
+                && target.Positions.GetLength(0f, nearestT) <= _maxGapLength;
+            bool endOwnsHit = target.EndpointIsDangling(EndpointSide.End)
+                && target.Positions.GetLength(nearestT, target.LastT) <= _maxGapLength;
+            float startDistanceSquared = sourcePoint.DistanceSquaredTo(target.EndpointPoint(EndpointSide.Start));
+            float endDistanceSquared = sourcePoint.DistanceSquaredTo(target.EndpointPoint(EndpointSide.End));
+            startOwnsHit = startOwnsHit && IsValidGapDistance(startDistanceSquared);
+            endOwnsHit = endOwnsHit && IsValidGapDistance(endDistanceSquared);
+
+            if (startOwnsHit && endOwnsHit)
+            {
+                targetKind = startDistanceSquared <= endDistanceSquared
+                    ? GapBridgeTargetKind.EndpointStart
+                    : GapBridgeTargetKind.EndpointEnd;
+            }
+            else if (startOwnsHit)
+            {
+                targetKind = GapBridgeTargetKind.EndpointStart;
+            }
+            else if (endOwnsHit)
+            {
+                targetKind = GapBridgeTargetKind.EndpointEnd;
+            }
+        }
+
         KeepBetterIfValid(CreateHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, nearestT, nearestPoint, targetKind), ref best);
         if (targetKind != GapBridgeTargetKind.EndpointStart
             && TryCreateEndpointHit(sourceCurve, sourcePoint, sourceT, targetCurve, target, EndpointSide.Start, out var startHit))
@@ -211,8 +243,7 @@ internal sealed class GapBridgeDetector
                 targetCurve,
                 targetT,
                 sourcePoint.DistanceSquaredTo(targetPoint),
-                targetKind,
-                target.EndpointIsDangling(targetKind)),
+                targetKind),
             targetPoint);
     }
 
@@ -241,8 +272,7 @@ internal sealed class GapBridgeDetector
                 targetCurve,
                 target.EndpointT(targetSide),
                 distanceSquared,
-                ToTargetKind(targetSide),
-                true),
+                ToTargetKind(targetSide)),
             targetPoint);
         return true;
     }
@@ -270,25 +300,13 @@ internal sealed class GapBridgeDetector
 
     private bool CandidateIsBetter(CandidateHit candidate, CandidateHit best)
     {
-        // Each directional source endpoint keeps one target. Distance leads, with a
-        // small preference for loose endpoints over slightly closer stroke bodies.
-        float candidateDistance = ComparableDistance(candidate.Candidate);
-        float bestDistance = ComparableDistance(best.Candidate);
-        if (!Mathf.IsEqualApprox(candidateDistance, bestDistance))
-            return candidateDistance < bestDistance;
+        // Each directional source endpoint keeps one target. After target kind is
+        // resolved, ranking uses the real gap distance.
+        if (!Mathf.IsEqualApprox(candidate.Candidate.DistanceSquared, best.Candidate.DistanceSquared))
+            return candidate.Candidate.DistanceSquared < best.Candidate.DistanceSquared;
         if (candidate.Candidate.ToCurve.PackedValue != best.Candidate.ToCurve.PackedValue)
             return candidate.Candidate.ToCurve.PackedValue < best.Candidate.ToCurve.PackedValue;
         return candidate.Candidate.ToT < best.Candidate.ToT;
-    }
-
-    internal static float ComparableDistance(float distance, bool targetDangling)
-    {
-        return targetDangling ? distance / DanglingEndpointDistancePreference : distance;
-    }
-
-    private static float ComparableDistance(GapBridgeCandidate candidate)
-    {
-        return ComparableDistance(Mathf.Sqrt(candidate.DistanceSquared), candidate.TargetDangling);
     }
 
     private static GapBridgeTargetKind ClassifyTargetKind(float t, float lastT)
@@ -321,6 +339,15 @@ internal sealed class GapBridgeDetector
         End,
     }
 
+    // Internal target classification: only used while the detector decides which exact
+    // point to land on. Consumers see the resolved point plus GapBridge.TargetIsBody.
+    private enum GapBridgeTargetKind
+    {
+        EndpointStart,
+        EndpointEnd,
+        Body,
+    }
+
     private readonly record struct GapBridgeCurveInfo(
         ImmutableArray<Vector2> Positions,
         bool IsClosed,
@@ -333,15 +360,6 @@ internal sealed class GapBridgeDetector
         public Vector2 EndpointPoint(EndpointSide side) => side == EndpointSide.Start ? Positions[0] : Positions[^1];
         public float EndpointT(EndpointSide side) => side == EndpointSide.Start ? 0f : LastT;
         public bool EndpointIsDangling(EndpointSide side) => side == EndpointSide.Start ? StartDangling : EndDangling;
-        public bool EndpointIsDangling(GapBridgeTargetKind kind)
-        {
-            return kind switch
-            {
-                GapBridgeTargetKind.EndpointStart => StartDangling,
-                GapBridgeTargetKind.EndpointEnd => EndDangling,
-                _ => false,
-            };
-        }
 
         public bool EndpointCanStartBridge(EndpointSide side, float minJunctionLength)
         {
@@ -357,7 +375,18 @@ internal sealed class GapBridgeDetector
         }
     }
 
+    // Internal: pairs a candidate with its resolved landing point during ranking.
     private readonly record struct CandidateHit(
         GapBridgeCandidate Candidate,
         Vector2 TargetPoint);
+
+    // Internal ranking record. Carries t-space bookkeeping (FromT/ToCurve/ToT) used only
+    // to break ranking ties deterministically; the public GapBridge keeps just the result.
+    private readonly record struct GapBridgeCandidate(
+        Entity FromCurve,
+        float FromT,
+        Entity ToCurve,
+        float ToT,
+        float DistanceSquared,
+        GapBridgeTargetKind TargetKind);
 }

@@ -8,8 +8,8 @@ public class GapBridgeHover : InteractiveSessionBase
     public new GapBridgeTool Tool => (GapBridgeTool)base.Tool;
 
     private Vector2 _lastWorldPosition = Vector2.Inf;
-    private GapBridgeTarget _hoveredTarget;
-    private bool _hasHoveredTarget;
+    private GapBridge _hoveredBridge;
+    private bool _hasHoveredBridge;
 
     public override void Start(CursorButtonData data) => RefreshHover(data.WorldPosition);
     public override void Moving(CursorMotionData data) => RefreshHover(data.WorldPosition);
@@ -18,16 +18,16 @@ public class GapBridgeHover : InteractiveSessionBase
     public override void Cancel()
     {
         _lastWorldPosition = Vector2.Inf;
-        _hasHoveredTarget = false;
+        _hasHoveredBridge = false;
         Document.Get<WorldBody>().DefaultCursorShape = default;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
 
-    public bool TryGetHoveredTarget(out GapBridgeTarget target)
+    public bool TryGetHoveredBridge(out GapBridge bridge)
     {
-        target = _hoveredTarget;
-        return _hasHoveredTarget;
+        bridge = _hoveredBridge;
+        return _hasHoveredBridge;
     }
 
     public bool RefreshHover(Vector2 worldPosition)
@@ -35,7 +35,7 @@ public class GapBridgeHover : InteractiveSessionBase
         _lastWorldPosition = worldPosition;
         RefreshTarget();
         ApplyCursor();
-        return _hasHoveredTarget;
+        return _hasHoveredBridge;
     }
 
     public void RefreshCursor()
@@ -46,11 +46,11 @@ public class GapBridgeHover : InteractiveSessionBase
 
     private void RefreshTarget()
     {
-        _hasHoveredTarget = false;
+        _hasHoveredBridge = false;
         if (!IsFinite(_lastWorldPosition))
             return;
 
-        _hasHoveredTarget = Tool.TryPickTarget(_lastWorldPosition, out _hoveredTarget);
+        _hasHoveredBridge = Tool.TryPickBridge(_lastWorldPosition, out _hoveredBridge);
     }
 
     private void ApplyCursor()
@@ -62,7 +62,7 @@ public class GapBridgeHover : InteractiveSessionBase
             return;
         }
 
-        body.DefaultCursorShape = _hasHoveredTarget
+        body.DefaultCursorShape = _hasHoveredBridge
             ? Control.CursorShape.PointingHand
             : default;
     }

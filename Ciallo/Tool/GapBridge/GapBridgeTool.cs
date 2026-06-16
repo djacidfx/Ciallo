@@ -73,10 +73,9 @@ public class GapBridgeTool : ToolBase
         Arrangement = null;
     }
 
-    public bool TryPickTarget(Vector2 worldPosition, out GapBridgeTarget target)
+    public bool TryPickBridge(Vector2 worldPosition, out GapBridge bridge)
     {
-        target = default;
-        return _preview.TryPickTarget(worldPosition, out target);
+        return _preview.TryPickBridge(worldPosition, out bridge);
     }
 
     private void OnClick()
@@ -85,22 +84,21 @@ public class GapBridgeTool : ToolBase
             return;
 
         var clickPosition = LatestCursor.WorldPosition;
-        if (!TryPickTarget(clickPosition, out var target) &&
-            !Hover.TryGetHoveredTarget(out target))
+        if (!TryPickBridge(clickPosition, out var bridge) &&
+            !Hover.TryGetHoveredBridge(out bridge))
             return;
 
-        CommitBridge(target);
+        CommitBridge(bridge);
         if (Machine.State is GapBridgeHover hover)
             hover.RefreshHover(clickPosition);
     }
 
-    private void CommitBridge(GapBridgeTarget target)
+    private void CommitBridge(GapBridge bridge)
     {
-        var candidate = target.Candidate;
-        var sourceGeometry = candidate.FromCurve.Get<PolylineGeometry>();
-        var repairedPositions = GapBridgeRepairGeometry.BuildRepairedPositions(Arrangement.ArrReady.CurrentValue, candidate);
+        var sourceGeometry = bridge.SourceCurve.Get<PolylineGeometry>();
+        var repairedPositions = GapBridgeRepairGeometry.BuildRepairedPositions(Arrangement.ArrReady.CurrentValue, bridge);
 
-        new CommandBuilder("Gap Bridge", candidate.FromCurve)
+        new CommandBuilder("Gap Bridge", bridge.SourceCurve)
             .SetPolylineGeometry(
                 repairedPositions,
                 sourceGeometry.Radii.Value,
