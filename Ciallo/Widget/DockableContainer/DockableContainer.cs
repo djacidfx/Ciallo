@@ -16,7 +16,7 @@ public partial class DockableContainer : Container
 
     private DockableLayout _layout;
     private DockablePanel _dragPanel;
-    private TabBar.AlignmentMode _tabAlignment = TabBar.AlignmentMode.Center;
+    private TabBar.AlignmentMode _tabAlignment = TabBar.AlignmentMode.Left;
     private bool _tabsVisible = true;
     private bool _useHiddenTabsForMinSize;
     private bool _hideSingleTab;
@@ -369,44 +369,44 @@ public partial class DockableContainer : Container
         switch (layoutNode)
         {
             case DockableLayoutPanel layoutPanel:
-            {
-                var nodes = new List<Control>();
-                foreach (string name in layoutPanel.Names)
                 {
-                    if (!_childByName.TryGetValue(name, out var child)) continue;
-                    var node = (Control)child;
-                    if (IsControlHidden(node))
-                        node.Visible = false;
-                    else
-                        nodes.Add(node);
+                    var nodes = new List<Control>();
+                    foreach (string name in layoutPanel.Names)
+                    {
+                        if (!_childByName.TryGetValue(name, out var child)) continue;
+                        var node = (Control)child;
+                        if (IsControlHidden(node))
+                            node.Visible = false;
+                        else
+                            nodes.Add(node);
+                    }
+
+                    if (nodes.Count == 0) return null;
+
+                    var panel = GetPanel(_currentPanelIndex);
+                    _currentPanelIndex++;
+                    panel.TrackNodes(nodes.ToArray(), layoutPanel);
+                    result.Add(panel);
+                    return panel;
                 }
-
-                if (nodes.Count == 0) return null;
-
-                var panel = GetPanel(_currentPanelIndex);
-                _currentPanelIndex++;
-                panel.TrackNodes(nodes.ToArray(), layoutPanel);
-                result.Add(panel);
-                return panel;
-            }
             case DockableLayoutSplit layoutSplit:
-            {
-                var secondResult = CalculatePanelAndSplitList(result, layoutSplit.Second);
-                var firstResult = CalculatePanelAndSplitList(result, layoutSplit.First);
-
-                if (firstResult != null && secondResult != null)
                 {
-                    var split = GetSplit(_currentSplitIndex);
-                    _currentSplitIndex++;
-                    split.LayoutSplit = layoutSplit;
-                    split.FirstMinimumSize = GetLayoutMinimumSize(firstResult);
-                    split.SecondMinimumSize = GetLayoutMinimumSize(secondResult);
-                    result.Add(split);
-                    return split;
-                }
+                    var secondResult = CalculatePanelAndSplitList(result, layoutSplit.Second);
+                    var firstResult = CalculatePanelAndSplitList(result, layoutSplit.First);
 
-                return firstResult ?? secondResult;
-            }
+                    if (firstResult != null && secondResult != null)
+                    {
+                        var split = GetSplit(_currentSplitIndex);
+                        _currentSplitIndex++;
+                        split.LayoutSplit = layoutSplit;
+                        split.FirstMinimumSize = GetLayoutMinimumSize(firstResult);
+                        split.SecondMinimumSize = GetLayoutMinimumSize(secondResult);
+                        result.Add(split);
+                        return split;
+                    }
+
+                    return firstResult ?? secondResult;
+                }
             default:
                 throw new System.InvalidOperationException($"Invalid Resource, should be branch or leaf, found {layoutNode}");
         }
