@@ -2,7 +2,7 @@ using Godot;
 
 namespace Ciallo.Widget.DockableContainer;
 
-[Tool, GlobalClass]
+[Tool]
 public partial class DockableDragNDropPanel : Control
 {
     private const int DrawNothing = -1;

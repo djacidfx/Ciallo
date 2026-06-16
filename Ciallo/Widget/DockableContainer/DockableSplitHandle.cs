@@ -2,7 +2,7 @@ using Godot;
 
 namespace Ciallo.Widget.DockableContainer;
 
-[Tool, GlobalClass]
+[Tool]
 public partial class DockableSplitHandle : Control
 {
     private static readonly string[] SplitThemeClass =

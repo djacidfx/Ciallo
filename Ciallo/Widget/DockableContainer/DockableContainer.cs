@@ -11,8 +11,6 @@ public partial class DockableContainer : Container
     private readonly DockableDragNDropPanel _dragNDropPanel = new();
     private readonly Dictionary<Node, string> _nameByChild = new();
     private readonly Dictionary<string, Node> _childByName = new();
-    private readonly Dictionary<Node, System.Action> _renamedHandlerByChild = new();
-    private readonly Dictionary<Node, System.Action> _treeExitingHandlerByChild = new();
 
     private DockableLayout _layout;
     private DockablePanel _dragPanel;
@@ -20,6 +18,7 @@ public partial class DockableContainer : Container
     private bool _tabsVisible = true;
     private bool _useHiddenTabsForMinSize;
     private bool _hideSingleTab;
+    private int _rearrangeGroup;
     private int _currentPanelIndex;
     private int _currentSplitIndex;
     private bool _layoutDirty;
@@ -73,7 +72,16 @@ public partial class DockableContainer : Container
     }
 
     [Export]
-    public int RearrangeGroup { get; set; }
+    public int RearrangeGroup
+    {
+        get => _rearrangeGroup;
+        set
+        {
+            _rearrangeGroup = value;
+            foreach (var panel in GetPanels())
+                panel.SetTabsRearrangeGroup(Mathf.Max(0, value));
+        }
+    }
 
     [Export]
     public DockableLayout Layout
@@ -87,8 +95,9 @@ public partial class DockableContainer : Container
 
     public DockableContainer()
     {
-        Connect(Node.SignalName.ChildEnteredTree, Callable.From<Node>(OnContainerChildEnteredTree));
-        Connect(Node.SignalName.ChildExitingTree, Callable.From<Node>(OnContainerChildExitingTree));
+        // C# signal events can reload as: "delegate_handle.value is null" / "Can't get method on CallableCustom 'Delegate::Invoke'".
+        Connect(Node.SignalName.ChildEnteredTree, new Callable(this, MethodName.OnContainerChildEnteredTree));
+        Connect(Node.SignalName.ChildExitingTree, new Callable(this, MethodName.OnContainerChildExitingTree));
         SetLayout(new DockableLayout());
     }
 
@@ -98,17 +107,17 @@ public partial class DockableContainer : Container
         SetProcessInput(false);
 
         _panelContainer.Name = "_panel_container";
-        AddChild(_panelContainer);
-        MoveChild(_panelContainer, 0);
+        // Normal helper children require move_child(), which fails as: "Parent node is busy setting up children".
+        AddChild(_panelContainer, false, Node.InternalMode.Front);
 
         _splitContainer.Name = "_split_container";
         _splitContainer.MouseFilter = MouseFilterEnum.Pass;
-        _panelContainer.AddChild(_splitContainer);
+        _panelContainer.AddChild(_splitContainer, false, Node.InternalMode.Front);
 
         _dragNDropPanel.Name = "_drag_n_drop_panel";
         _dragNDropPanel.MouseFilter = MouseFilterEnum.Pass;
         _dragNDropPanel.Visible = false;
-        AddChild(_dragNDropPanel);
+        AddChild(_dragNDropPanel, false, Node.InternalMode.Back);
 
         if (CloneLayoutOnReady && !Engine.IsEditorHint())
             SetLayout(_layout.Clone());
@@ -159,9 +168,7 @@ public partial class DockableContainer : Container
     {
         var dictionary = data.AsGodotDictionary();
         var fromPath = dictionary["from_path"].AsNodePath();
-        var fromNode = GetNode(fromPath);
-        if (fromNode is TabBar)
-            fromNode = fromNode.GetParent();
+        var fromNode = NormalizeDragSource(GetNode(fromPath));
 
         if (fromNode == _dragPanel && _dragPanel.GetChildCount() == 1)
             return;
@@ -218,11 +225,13 @@ public partial class DockableContainer : Container
         value ??= new DockableLayout();
         if (value == _layout) return;
 
-        if (_layout != null && _layout.IsConnected(Resource.SignalName.Changed, Callable.From(QueueSort)))
-            _layout.Changed -= QueueSort;
+        var layoutChanged = new Callable(this, MethodName.OnLayoutChanged);
+        if (_layout != null && _layout.IsConnected(Resource.SignalName.Changed, layoutChanged))
+            _layout.Disconnect(Resource.SignalName.Changed, layoutChanged);
 
         _layout = value;
-        _layout.Changed += QueueSort;
+        // _layout.Changed += QueueSort later spams: "Error calling from signal 'changed' to callable: 'Resource::'".
+        _layout.Connect(Resource.SignalName.Changed, layoutChanged);
         _layoutDirty = true;
         QueueSort();
     }
@@ -264,7 +273,7 @@ public partial class DockableContainer : Container
             || tabType is "tab_container_tab" or "tabc_element";
         if (!isValidType || !dictionary.TryGetValue("from_path", out Variant fromPathValue)) return false;
 
-        var sourceNode = GetNodeOrNull(fromPathValue.AsNodePath());
+        var sourceNode = NormalizeDragSource(GetNodeOrNull(fromPathValue.AsNodePath()));
         if (sourceNode == null || !sourceNode.HasMethod("get_tabs_rearrange_group")) return false;
         Variant result = sourceNode.Call("get_tabs_rearrange_group");
         return result.AsInt32() == RearrangeGroup;
@@ -277,15 +286,17 @@ public partial class DockableContainer : Container
         && node is Control control
         && !control.TopLevel;
 
+    private static Node NormalizeDragSource(Node node) =>
+        node is TabBar ? node.GetParent() : node;
+
     private void UpdateLayoutWithChildren()
     {
         var names = new List<string>();
         _nameByChild.Clear();
         _childByName.Clear();
 
-        for (int i = 1; i < GetChildCount() - 1; i++)
+        foreach (Node child in GetChildren())
         {
-            var child = GetChild(i);
             if (!TrackNode(child)) continue;
             names.Add(child.Name);
         }
@@ -301,19 +312,10 @@ public partial class DockableContainer : Container
         _nameByChild[node] = node.Name;
         _childByName[node.Name] = node;
 
-        if (!_renamedHandlerByChild.ContainsKey(node))
-        {
-            System.Action renamedHandler = () => OnChildRenamed(node);
-            _renamedHandlerByChild[node] = renamedHandler;
-            node.Renamed += renamedHandler;
-        }
-
-        if (!_treeExitingHandlerByChild.ContainsKey(node))
-        {
-            System.Action treeExitingHandler = () => UntrackNode(node);
-            _treeExitingHandlerByChild[node] = treeExitingHandler;
-            node.TreeExiting += treeExitingHandler;
-        }
+        // Renamed has no sender and Callable.Bind() is unavailable; lambdas recreate "Delegate::Invoke" reload errors.
+        var renamedHandler = new Callable(this, MethodName.OnTrackedChildRenamed);
+        if (!node.IsConnected(Node.SignalName.Renamed, renamedHandler))
+            node.Connect(Node.SignalName.Renamed, renamedHandler);
         return true;
     }
 
@@ -331,29 +333,22 @@ public partial class DockableContainer : Container
     {
         _nameByChild.Remove(node);
         _childByName.Remove(node.Name);
-        if (_renamedHandlerByChild.Remove(node, out var renamedHandler))
-            node.Renamed -= renamedHandler;
-
-        if (_treeExitingHandlerByChild.Remove(node, out var treeExitingHandler))
-            node.TreeExiting -= treeExitingHandler;
+        var renamedHandler = new Callable(this, MethodName.OnTrackedChildRenamed);
+        if (node.IsConnected(Node.SignalName.Renamed, renamedHandler))
+            node.Disconnect(Node.SignalName.Renamed, renamedHandler);
         _layoutDirty = true;
     }
 
     private void Resort()
     {
-        if (_panelContainer.GetIndex() != 0)
-            MoveChild(_panelContainer, 0);
-        if (_dragNDropPanel.GetIndex() < GetChildCount() - 1)
-            _dragNDropPanel.MoveToFront();
-
         if (_layoutDirty)
             UpdateLayoutWithChildren();
 
         var rect = new Rect2(Vector2.Zero, Size);
-        FitChildInRect(_panelContainer, rect);
-        _panelContainer.FitChildInRect(_splitContainer, rect);
+        FitChildInRectIfChanged(this, _panelContainer, rect);
+        FitChildInRectIfChanged(_panelContainer, _splitContainer, rect);
 
-        _currentPanelIndex = 1;
+        _currentPanelIndex = 0;
         _currentSplitIndex = 0;
 
         var childrenList = new List<Control>();
@@ -376,7 +371,7 @@ public partial class DockableContainer : Container
                         if (!_childByName.TryGetValue(name, out var child)) continue;
                         var node = (Control)child;
                         if (IsControlHidden(node))
-                            node.Visible = false;
+                            SetVisibleIfChanged(node, false);
                         else
                             nodes.Add(node);
                     }
@@ -421,12 +416,12 @@ public partial class DockableContainer : Container
 
         if (control is DockablePanel panel)
         {
-            _panelContainer.FitChildInRect(panel, rect);
+            FitChildInRectIfChanged(_panelContainer, panel, rect);
         }
         else if (control is DockableSplitHandle split)
         {
             var splitRects = split.GetSplitRects(rect);
-            _splitContainer.FitChildInRect(split, splitRects.Self);
+            FitChildInRectIfChanged(_splitContainer, split, splitRects.Self);
             FitPanelAndSplitListToRect(panelAndSplitList, splitRects.First);
             FitPanelAndSplitListToRect(panelAndSplitList, splitRects.Second);
         }
@@ -445,7 +440,8 @@ public partial class DockableContainer : Container
             UseHiddenTabsForMinSize = _useHiddenTabsForMinSize,
         };
         panel.SetTabsRearrangeGroup(Mathf.Max(0, RearrangeGroup));
-        panel.TabLayoutChanged += tab => OnPanelTabLayoutChanged((int)tab, panel);
+        // Capturing panel in a lambda can reload as: "Can't get method on CallableCustom 'Delegate::Invoke'".
+        panel.Connect(DockablePanel.SignalName.TabLayoutChanged, new Callable(this, MethodName.OnPanelTabLayoutChanged));
         _panelContainer.AddChild(panel);
         return panel;
     }
@@ -487,6 +483,21 @@ public partial class DockableContainer : Container
         QueueSort();
     }
 
+    private void OnLayoutChanged() => QueueSort();
+
+    private void OnTrackedChildRenamed()
+    {
+        Node renamedChild = null;
+        foreach (var child in _nameByChild.Keys)
+        {
+            if (_nameByChild[child] == child.Name) continue;
+            renamedChild = child;
+            break;
+        }
+        if (renamedChild != null)
+            OnChildRenamed(renamedChild);
+    }
+
     private void OnChildRenamed(Node child)
     {
         string oldName = _nameByChild[child];
@@ -501,7 +512,6 @@ public partial class DockableContainer : Container
     private void OnContainerChildEnteredTree(Node node)
     {
         if (node == _panelContainer || node == _dragNDropPanel) return;
-        _dragNDropPanel.MoveToFront();
         TrackAndAddNode(node);
     }
 
@@ -513,7 +523,7 @@ public partial class DockableContainer : Container
 
     private IEnumerable<DockablePanel> GetPanels()
     {
-        for (int i = 1; i < _panelContainer.GetChildCount(); i++)
+        for (int i = 0; i < _panelContainer.GetChildCount(); i++)
             yield return (DockablePanel)_panelContainer.GetChild(i);
     }
 
@@ -524,4 +534,17 @@ public partial class DockableContainer : Container
             DockableSplitHandle split => split.GetLayoutMinimumSize(),
             _ => control.GetCombinedMinimumSize(),
         };
+
+    private static void FitChildInRectIfChanged(Container parent, Control child, Rect2 rect)
+    {
+        if (child.Position.IsEqualApprox(rect.Position) && child.Size.IsEqualApprox(rect.Size))
+            return;
+        parent.FitChildInRect(child, rect);
+    }
+
+    private static void SetVisibleIfChanged(CanvasItem item, bool visible)
+    {
+        if (item.Visible == visible) return;
+        item.Visible = visible;
+    }
 }

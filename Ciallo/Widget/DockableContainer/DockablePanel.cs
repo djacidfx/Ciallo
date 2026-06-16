@@ -2,11 +2,11 @@ using Godot;
 
 namespace Ciallo.Widget.DockableContainer;
 
-[Tool, GlobalClass]
+[Tool]
 public partial class DockablePanel : TabContainer
 {
     [Signal]
-    public delegate void TabLayoutChangedEventHandler(int tab);
+    public delegate void TabLayoutChangedEventHandler(int tab, DockablePanel panel);
 
     private DockableLayoutPanel _leaf;
     private bool _showTabs = true;
@@ -47,16 +47,17 @@ public partial class DockablePanel : TabContainer
     public override void _EnterTree()
     {
         base._EnterTree();
-        ActiveTabRearranged += OnTabChanged;
-        TabSelected += OnTabSelected;
-        TabChanged += OnTabChanged;
+        // ActiveTabRearranged += OnTabChanged can exit as: "Attempt to disconnect a nonexistent connection ... Delegate::Invoke".
+        Connect(TabContainer.SignalName.ActiveTabRearranged, new Callable(this, MethodName.OnTabChanged));
+        Connect(TabContainer.SignalName.TabSelected, new Callable(this, MethodName.OnTabSelected));
+        Connect(TabContainer.SignalName.TabChanged, new Callable(this, MethodName.OnTabChanged));
     }
 
     public override void _ExitTree()
     {
-        ActiveTabRearranged -= OnTabChanged;
-        TabSelected -= OnTabSelected;
-        TabChanged -= OnTabChanged;
+        Disconnect(TabContainer.SignalName.ActiveTabRearranged, new Callable(this, MethodName.OnTabChanged));
+        Disconnect(TabContainer.SignalName.TabSelected, new Callable(this, MethodName.OnTabSelected));
+        Disconnect(TabContainer.SignalName.TabChanged, new Callable(this, MethodName.OnTabChanged));
         base._ExitTree();
     }
 
@@ -80,7 +81,8 @@ public partial class DockablePanel : TabContainer
         {
             var refControl = (DockableReferenceControl)GetChild(i);
             refControl.ReferenceTo = nodes[i];
-            SetTabTitle(i, nodes[i].Name);
+            if (GetTabTitle(i) != nodes[i].Name)
+                SetTabTitle(i, nodes[i].Name);
         }
 
         SetLeaf(newLeaf);
@@ -96,7 +98,11 @@ public partial class DockablePanel : TabContainer
     public void SetLeaf(DockableLayoutPanel value)
     {
         if (GetTabCount() > 0 && value != null)
-            CurrentTab = Mathf.Clamp(value.CurrentTab, 0, GetTabCount() - 1);
+        {
+            int currentTab = Mathf.Clamp(value.CurrentTab, 0, GetTabCount() - 1);
+            if (CurrentTab != currentTab)
+                CurrentTab = currentTab;
+        }
         _leaf = value;
     }
 
@@ -117,7 +123,10 @@ public partial class DockablePanel : TabContainer
 
         int nameIndexInLeaf = _leaf.FindName(control.Name);
         if (nameIndexInLeaf != tab)
-            EmitSignal(SignalName.TabLayoutChanged, (int)tab);
+        {
+            // Capturing panel in a lambda can reload as: "Can't get method on CallableCustom 'Delegate::Invoke'".
+            EmitSignal(SignalName.TabLayoutChanged, (int)tab, this);
+        }
     }
 
     private void HandleTabVisibility()

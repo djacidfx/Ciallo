@@ -47,20 +47,29 @@ public partial class DockableLayout : Resource
     public void SetRoot(DockableLayoutNode value, bool shouldEmitChanged = true)
     {
         value ??= new DockableLayoutPanel();
-        if (_root == value && _root.IsConnected(Resource.SignalName.Changed, Callable.From(OnRootChanged))) return;
+        // _root.Changed += OnRootChanged can reload as: "Error calling from signal 'changed' to callable: 'Resource::'".
+        var rootChanged = new Callable(this, MethodName.OnRootChanged);
+        if (_root == value && _root.IsConnected(Resource.SignalName.Changed, rootChanged)) return;
 
-        if (_root != null && _root.IsConnected(Resource.SignalName.Changed, Callable.From(OnRootChanged)))
-            _root.Changed -= OnRootChanged;
+        if (_root != null && _root.IsConnected(Resource.SignalName.Changed, rootChanged))
+            _root.Disconnect(Resource.SignalName.Changed, rootChanged);
 
         _root = value;
         _root.Parent = null;
-        _root.Changed += OnRootChanged;
+        _root.Connect(Resource.SignalName.Changed, rootChanged);
 
         if (shouldEmitChanged)
             OnRootChanged();
     }
 
-    public DockableLayout Clone() => (DockableLayout)Duplicate(true);
+    public DockableLayout Clone()
+    {
+        // Duplicate(true) copies signal connections too; runtime clones then inherit "Delegate::Invoke" errors.
+        var clone = new DockableLayout();
+        clone._hiddenTabs = _hiddenTabs.Duplicate();
+        clone.SetRoot(CloneNode(_root), false);
+        return clone;
+    }
 
     public string[] GetNames() => _root.GetNames();
 
@@ -68,6 +77,7 @@ public partial class DockableLayout : Resource
     {
         _leafByNodeName.Clear();
         _firstLeaf = null;
+        bool changed = false;
 
         var orderedNames = new List<string>(names);
         var nodeNames = new HashSet<string>(orderedNames);
@@ -75,12 +85,29 @@ public partial class DockableLayout : Resource
         EnsureNamesInNode(_root, nodeNames, emptyLeaves);
 
         foreach (var leaf in emptyLeaves)
+        {
             RemoveLeaf(leaf);
+            changed = true;
+        }
+        _firstLeaf = FindFirstLeaf(_root);
+
+        var staleHiddenTabs = new List<Variant>();
+        foreach (Variant tabName in _hiddenTabs.Keys)
+        {
+            if (!nodeNames.Contains(tabName.AsString()))
+                staleHiddenTabs.Add(tabName);
+        }
+        foreach (Variant tabName in staleHiddenTabs)
+        {
+            _hiddenTabs.Remove(tabName);
+            changed = true;
+        }
 
         if (_firstLeaf == null)
         {
             _firstLeaf = new DockableLayoutPanel();
             SetRoot(_firstLeaf);
+            changed = true;
         }
 
         foreach (string name in orderedNames)
@@ -88,9 +115,11 @@ public partial class DockableLayout : Resource
             if (_leafByNodeName.ContainsKey(name)) continue;
             _firstLeaf.PushName(name);
             _leafByNodeName[name] = _firstLeaf;
+            changed = true;
         }
 
-        OnRootChanged();
+        if (changed)
+            OnRootChanged();
     }
 
     public void MoveNodeToLeaf(Node node, DockableLayoutPanel leaf, int relativePosition)
@@ -155,6 +184,7 @@ public partial class DockableLayout : Resource
     {
         string nodeName = node.Name;
         if (_leafByNodeName.ContainsKey(nodeName)) return;
+        _firstLeaf ??= FindFirstLeaf(_root);
         _firstLeaf.PushName(nodeName);
         _leafByNodeName[nodeName] = _firstLeaf;
         OnRootChanged();
@@ -198,6 +228,7 @@ public partial class DockableLayout : Resource
 
     private void OnRootChanged()
     {
+        // Immediate EmitChanged() here can keep the editor redraw spinner running forever.
         if (_changedSignalQueued) return;
         _changedSignalQueued = true;
         CallDeferred(MethodName.FlushChangedSignal);
@@ -226,6 +257,36 @@ public partial class DockableLayout : Resource
             default:
                 throw new System.InvalidOperationException($"Invalid Resource, should be branch or leaf, found {node}");
         }
+    }
+
+    private static DockableLayoutNode CloneNode(DockableLayoutNode node)
+    {
+        return node switch
+        {
+            DockableLayoutPanel panel => new DockableLayoutPanel
+            {
+                Names = panel.Names,
+                CurrentTab = panel.CurrentTab,
+            },
+            DockableLayoutSplit split => new DockableLayoutSplit
+            {
+                Direction = split.Direction,
+                Percent = split.Percent,
+                First = CloneNode(split.First),
+                Second = CloneNode(split.Second),
+            },
+            _ => throw new System.InvalidOperationException($"Invalid Resource, should be branch or leaf, found {node}"),
+        };
+    }
+
+    private static DockableLayoutPanel FindFirstLeaf(DockableLayoutNode node)
+    {
+        return node switch
+        {
+            DockableLayoutPanel panel => panel,
+            DockableLayoutSplit split => FindFirstLeaf(split.First) ?? FindFirstLeaf(split.Second),
+            _ => throw new System.InvalidOperationException($"Invalid Resource, should be branch or leaf, found {node}"),
+        };
     }
 
     private void RemoveLeaf(DockableLayoutPanel leaf)

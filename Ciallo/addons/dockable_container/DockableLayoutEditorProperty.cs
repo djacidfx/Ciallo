@@ -22,6 +22,7 @@ public partial class DockableLayoutEditorProperty : EditorProperty
     private string[] _hiddenMenuList = [];
     private DockableLayout _previewLayout;
     private bool _updating;
+    private bool _ignoreNextPreviewLayoutChanged;
 
     public DockableLayoutEditorProperty()
     {
@@ -57,6 +58,7 @@ public partial class DockableLayoutEditorProperty : EditorProperty
 
         _previewLayout = GetEditedLayout().Clone();
         RebuildPreviewControls();
+        _ignoreNextPreviewLayoutChanged = true;
         _container.Layout = _previewLayout;
         _previewLayout.Connect(Resource.SignalName.Changed, new Callable(this, MethodName.OnPreviewLayoutChanged));
 
@@ -92,7 +94,11 @@ public partial class DockableLayoutEditorProperty : EditorProperty
 
     private void OnPreviewLayoutChanged()
     {
-        if (_updating) return;
+        if (_updating || _ignoreNextPreviewLayoutChanged)
+        {
+            _ignoreNextPreviewLayoutChanged = false;
+            return;
+        }
         EmitChanged(GetEditedProperty(), _previewLayout);
     }
 

@@ -18,7 +18,7 @@ Names = PackedStringArray("ColorRect3")
 [sub_resource type="Resource" id="Resource_ko1um"]
 resource_name = "Split"
 script = ExtResource("3_nv4k7")
-Percent = 0.4211738
+Percent = 0.24427292
 First = SubResource("Resource_nv4k7")
 Second = SubResource("Resource_2i7r1")
 
