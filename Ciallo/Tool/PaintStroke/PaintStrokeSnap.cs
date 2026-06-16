@@ -6,7 +6,6 @@ using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
 using Godot;
-using MathNet.Numerics.LinearAlgebra;
 
 namespace Ciallo.Tool;
 
@@ -151,18 +150,6 @@ public static class PaintStrokeSnap
         if (!startTarget.HasValue && !endTarget.HasValue)
             return CreateGeometry(geometry, geometry.Positions);
 
-        var arcLengths = new float[geometry.Count];
-        for (int i = 1; i < geometry.Count; i++)
-            arcLengths[i] = arcLengths[i - 1] + geometry.Positions[i - 1].DistanceTo(geometry.Positions[i]);
-
-        float totalLength = arcLengths[^1];
-        var startDelta = startTarget.HasValue
-            ? ResolveRepairPoint(geometry.Positions, startTarget.Value, repairStart: true) - geometry.Positions[0]
-            : Vector2.Zero;
-        var endDelta = endTarget.HasValue
-            ? ResolveRepairPoint(geometry.Positions, endTarget.Value, repairStart: false) - geometry.Positions[^1]
-            : Vector2.Zero;
-
         // Paint Stroke Snap is not smoothing the drawn stroke itself. The user already
         // authored that curve; snap repair only distributes endpoint correction across
         // the new stroke without creating the hard kink produced by the old local ramp.
@@ -173,146 +160,31 @@ public static class PaintStrokeSnap
         // - distant points should move less, preserving the user's stroke away from the snap;
         // - "Snap distance" is only the hit-test radius, not a repair-range cutoff.
         //
-        // We solve for displacement \(d_i = x'_i - x_i\), not for raw positions:
-        //
-        // $$
-        // \min_d E(d) =
-        // \lambda_{\mathrm{lap}} \sum_i
-        // \left\lVert d_{i-1} - 2d_i + d_{i+1} \right\rVert^2
-        // +
-        // \lambda_{\mathrm{disp}} \sum_i
-        // w_i \left\lVert d_i \right\rVert^2
-        // $$
-        //
-        // $$
-        // w_i = 1 + \alpha
-        // \left(\frac{\operatorname{distAlongStroke}(i,\mathrm{nearestSnap})}{L}\right)^2
-        // $$
-        //
-        // $$
-        // d_0 = \mathrm{startRepair} - x_0
-        // \quad\text{and/or}\quad
-        // d_n = \mathrm{endRepair} - x_n
-        // $$
-        //
-        // The first term makes the displacement field Laplacian-smooth, which keeps
-        // local stroke shape changes gradual. The second term is the ramp-like business
-        // rule: w_i grows with distance from the snapped endpoint, so far-away points
-        // are increasingly expensive to move.
-        var repairedPositions = SolveDisplacementLaplacian(
+        // The snapped endpoints are both the hard constraints and the penalty origins, so the
+        // displacement-Laplacian penalty grows with distance from them. See
+        // PolylineExtension.SolveDisplacementLaplacian for the full model.
+        var fixedDisplacements = new Dictionary<int, Vector2>(2);
+        var penaltyOrigins = new List<int>(2);
+        if (startTarget.HasValue)
+        {
+            fixedDisplacements[0] = ResolveRepairPoint(geometry.Positions, startTarget.Value, repairStart: true) - geometry.Positions[0];
+            penaltyOrigins.Add(0);
+        }
+        if (endTarget.HasValue)
+        {
+            int last = geometry.Count - 1;
+            fixedDisplacements[last] = ResolveRepairPoint(geometry.Positions, endTarget.Value, repairStart: false) - geometry.Positions[last];
+            penaltyOrigins.Add(last);
+        }
+
+        var repairedPositions = PolylineExtension.SolveDisplacementLaplacian(
             geometry.Positions,
-            arcLengths,
-            totalLength,
-            startTarget.HasValue,
-            startDelta,
-            endTarget.HasValue,
-            endDelta);
+            fixedDisplacements,
+            penaltyOrigins,
+            DisplacementWeight,
+            FarDisplacementPenalty);
 
         return CreateGeometry(geometry, repairedPositions);
-    }
-
-    private static ImmutableArray<Vector2> SolveDisplacementLaplacian(
-        IReadOnlyList<Vector2> positions,
-        float[] arcLengths,
-        float totalLength,
-        bool repairStart,
-        Vector2 startDelta,
-        bool repairEnd,
-        Vector2 endDelta)
-    {
-        int count = positions.Count;
-        var variableByPoint = new int[count];
-        Array.Fill(variableByPoint, -1);
-
-        int variableCount = 0;
-        for (int i = 0; i < count; i++)
-        {
-            if ((i == 0 && repairStart) || (i == count - 1 && repairEnd))
-                continue;
-            variableByPoint[i] = variableCount++;
-        }
-
-        // Only the two endpoints exist and both are constrained.
-        if (variableCount == 0)
-            return [positions[0] + startDelta, positions[^1] + endDelta];
-
-        // X and Y are independent; pack them as two RHS columns and solve in one QR back-substitution.
-        int rowCount = (count - 2) + variableCount;
-        var matrix = Matrix<double>.Build.Dense(rowCount, variableCount);
-        var rhs = Matrix<double>.Build.Dense(rowCount, 2);
-
-        int row = 0;
-        for (int i = 1; i < count - 1; i++)
-        {
-            EmitLaplacianTerm(matrix, rhs, row, variableByPoint, i - 1, 1.0, startDelta, endDelta);
-            EmitLaplacianTerm(matrix, rhs, row, variableByPoint, i, -2.0, startDelta, endDelta);
-            EmitLaplacianTerm(matrix, rhs, row, variableByPoint, i + 1, 1.0, startDelta, endDelta);
-            row++;
-        }
-
-        double invStrokeLength = 1.0 / Math.Max(totalLength, Epsilon);
-        for (int i = 0; i < count; i++)
-        {
-            int variable = variableByPoint[i];
-            if (variable < 0)
-                continue;
-
-            double normalizedDistance = DistanceToNearestSnap(arcLengths, totalLength, repairStart, repairEnd, i) * invStrokeLength;
-            matrix[row, variable] = Math.Sqrt(DisplacementWeight * (1.0 + FarDisplacementPenalty * normalizedDistance * normalizedDistance));
-            row++;
-        }
-
-        var solution = matrix.QR().Solve(rhs);
-        var repaired = ImmutableArray.CreateBuilder<Vector2>(count);
-        for (int i = 0; i < count; i++)
-        {
-            int v = variableByPoint[i];
-            var displacement = v >= 0
-                ? new Vector2((float)solution[v, 0], (float)solution[v, 1])
-                : i == 0 ? startDelta : endDelta;
-            repaired.Add(positions[i] + displacement);
-        }
-
-        return repaired.ToImmutable();
-    }
-
-    // Writes one (row, point) entry of the Laplacian stencil:
-    // - if the point is a free variable, accumulate the coefficient into the matrix;
-    // - if the point is a constrained endpoint, fold its known displacement into the RHS.
-    private static void EmitLaplacianTerm(
-        Matrix<double> matrix,
-        Matrix<double> rhs,
-        int row,
-        int[] variableByPoint,
-        int point,
-        double coefficient,
-        Vector2 startDelta,
-        Vector2 endDelta)
-    {
-        int variable = variableByPoint[point];
-        if (variable >= 0)
-        {
-            matrix[row, variable] += coefficient;
-            return;
-        }
-
-        var knownDisplacement = point == 0 ? startDelta : endDelta;
-        rhs[row, 0] -= coefficient * knownDisplacement.X;
-        rhs[row, 1] -= coefficient * knownDisplacement.Y;
-    }
-
-    private static double DistanceToNearestSnap(
-        float[] arcLengths,
-        float totalLength,
-        bool repairStart,
-        bool repairEnd,
-        int index)
-    {
-        if (repairStart && repairEnd)
-            return Math.Min(arcLengths[index], totalLength - arcLengths[index]);
-        if (repairStart)
-            return arcLengths[index];
-        return totalLength - arcLengths[index];
     }
 
     private static PaintStrokeGeometry CreateGeometry(
