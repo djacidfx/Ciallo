@@ -21,6 +21,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
     private PaintStrokeSnapTarget? _startSnapTarget;
     private PaintStrokeSnapTarget? _endSnapTarget;
     private readonly List<Vector2> _snapHintPoints = new(2);
+    private MultiMeshInstance2D _snapDots;
 
     public static readonly ToolBase.Trigger PaintEnd = new("PaintEnd");
 
@@ -51,6 +52,9 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         };
         var layerView = WorkingLayer.Get<ShapeLayerView>();
         layerView.AddChild(StrokePreview);
+
+        _snapDots = AutoloadRendering.CreateDots();
+        Document.Get<WorldOverlay>().AddChild(_snapDots);
 
         var brushSetting = BrushE.Get<StrokeBrushSetting>();
         Generator.RadiusSampler = brushSetting.ToRadiusSampler();
@@ -115,7 +119,8 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         StrokePreview = null;
         _startSnapTarget = null;
         _endSnapTarget = null;
-        Tool.SnapHint.Hide();
+        _snapDots?.QueueFree();
+        _snapDots = null;
         Input.MouseMode = Input.MouseModeEnum.Visible;
     }
 
@@ -150,12 +155,8 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         if (_endSnapTarget is { } endTarget)
             _snapHintPoints.Add(endTarget.HitPoint);
 
+        _snapDots.Visible = _snapHintPoints.Count > 0;
         if (_snapHintPoints.Count > 0)
-        {
-            Tool.SnapHint.Show(_snapHintPoints);
-            return;
-        }
-
-        Tool.SnapHint.Hide();
+            _snapDots.SetDotGeometry(_snapHintPoints, AppPreference.StrokeDotRadius);
     }
 }

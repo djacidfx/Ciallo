@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using Ciallo.Data;
 using Ciallo.Geometry;
-using Ciallo.Rendering;
 using Frent;
 using Godot;
 
@@ -13,37 +11,6 @@ public readonly record struct PaintStrokeSnapTarget(
     Entity Curve,
     Vector2 HitPoint,
     float HitT);
-
-public sealed class PaintStrokeSnapHintManager : IDisposable
-{
-    private readonly Node2D _root = new();
-    private readonly MultiMeshInstance2D _dots;
-
-    public PaintStrokeSnapHintManager(Node2D parent)
-    {
-        _dots = AutoloadRendering.CreateDots();
-        _root.AddChild(_dots);
-        parent.AddChild(_root);
-        Hide();
-    }
-
-    public void Show(IReadOnlyList<Vector2> points)
-    {
-        _root.Visible = true;
-        _dots.SetDotGeometry(points, AppPreference.StrokeDotRadius);
-    }
-
-    public void Hide()
-    {
-        _root.Visible = false;
-    }
-
-    public void Dispose()
-    {
-        _root.QueueFree();
-    }
-
-}
 
 public static class PaintStrokeSnap
 {

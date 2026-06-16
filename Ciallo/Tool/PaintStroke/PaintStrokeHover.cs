@@ -14,9 +14,13 @@ public class PaintStrokeHover : InteractiveSessionBase
 {
     public new PaintStrokeTool Tool => (PaintStrokeTool)base.Tool;
 
+    private MultiMeshInstance2D _snapDots;
+
     public override void Start(CursorButtonData data)
     {
         Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
+        _snapDots = AutoloadRendering.CreateDots();
+        Document.Get<WorldOverlay>().AddChild(_snapDots);
         RefreshSnap(data.WorldPosition);
     }
     public override void Moving(CursorMotionData data)
@@ -27,7 +31,8 @@ public class PaintStrokeHover : InteractiveSessionBase
     public override void Cancel()
     {
         Document.Get<WorldBody>().DefaultCursorShape = default;
-        Tool.SnapHint.Hide();
+        _snapDots?.QueueFree();
+        _snapDots = null;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
@@ -146,10 +151,11 @@ public class PaintStrokeHover : InteractiveSessionBase
     {
         if (!Tool.TryFindSnapTarget(worldPosition, out var target))
         {
-            Tool.SnapHint.Hide();
+            _snapDots.Visible = false;
             return;
         }
 
-        Tool.SnapHint.Show([target.HitPoint]);
+        _snapDots.Visible = true;
+        _snapDots.SetDotGeometry([target.HitPoint], AppPreference.StrokeDotRadius);
     }
 }

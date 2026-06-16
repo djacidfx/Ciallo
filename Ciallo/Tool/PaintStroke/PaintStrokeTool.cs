@@ -20,7 +20,6 @@ public class PaintStrokeTool : ToolBase
     public readonly PaintStrokeInteractor Left = new();
     public readonly PaintStrokeOnVectorFill LeftOnFill = new();
     public ArrangementManager Arrangement { get; private set; }
-    public PaintStrokeSnapHintManager SnapHint { get; private set; }
 
     protected override void ConfigureStateMachine()
     {
@@ -81,7 +80,6 @@ public class PaintStrokeTool : ToolBase
     public override void OnActivated()
     {
         Arrangement = WorkingLayer.Get<ArrangementManager>();
-        SnapHint = new PaintStrokeSnapHintManager(Document.Get<WorldOverlay>());
 
         if (!WorkingLayer.Has<VectorFillLayerSetting>()) return;
 
@@ -94,8 +92,6 @@ public class PaintStrokeTool : ToolBase
 
     public override void OnDeactivated()
     {
-        SnapHint.Dispose();
-        SnapHint = null;
         Arrangement = null;
         DeactivateSignal.OnNext(Unit.Default);
     }
