@@ -19,6 +19,7 @@ public class PaintStrokeTool : ToolBase
     public readonly PaintStrokeHover Hover = new();
     public readonly PaintStrokeInteractor Left = new();
     public readonly PaintStrokeOnVectorFill LeftOnFill = new();
+    private readonly PaintStrokeSnap _snap = new();
     public ArrangementManager Arrangement { get; private set; }
 
     protected override void ConfigureStateMachine()
@@ -106,7 +107,7 @@ public class PaintStrokeTool : ToolBase
         if (arr == null)
             return false;
 
-        return PaintStrokeSnap.TryFindTarget(
+        return _snap.TryFindTarget(
             arr,
             worldPosition,
             AppPreference.PaintStrokeSnapDistance.Value,

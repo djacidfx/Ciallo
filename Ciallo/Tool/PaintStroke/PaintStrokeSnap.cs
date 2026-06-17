@@ -12,7 +12,7 @@ public readonly record struct PaintStrokeSnapTarget(
     Vector2 HitPoint,
     float HitT);
 
-public static class PaintStrokeSnap
+public sealed class PaintStrokeSnap
 {
     private const float Epsilon = 1e-5f;
     private const float BodyTargetOverrunDistanceWorld = 0.1f;
@@ -21,7 +21,9 @@ public static class PaintStrokeSnap
     private const double DisplacementWeight = 0.08;
     private const double FarDisplacementPenalty = 24.0;
 
-    public static bool TryFindTarget(
+    private readonly HashSet<Entity> _seen = [];
+
+    public bool TryFindTarget(
         Arrangement arr,
         Vector2 worldPosition,
         float snapDistance,
@@ -40,13 +42,13 @@ public static class PaintStrokeSnap
         float bestBodyDistanceSquared = snapDistanceSquared;
         bool foundEndpoint = false;
         bool foundBody = false;
-        var seen = new HashSet<Entity>();
+        _seen.Clear();
 
         // Although single-point strokes are theoretically valid snap targets, but Arrangement curve queries cannot return them, so we discard them intentionally.
         foreach (long targetId in arr.PolylineQueryCurves(PolylineShapeBuilder.BuildClosedOctagon(worldPosition, snapDistance)))
         {
             var curve = targetId.ToEntity();
-            if (seen.Add(curve))
+            if (_seen.Add(curve))
                 KeepIfNearer(curve);
         }
 
@@ -154,23 +156,17 @@ public static class PaintStrokeSnap
         IReadOnlyList<Vector2> positions)
     {
         var repairedPositions = ImmutableArray.CreateBuilder<Vector2>(geometry.Count);
-        var radii = ImmutableArray.CreateBuilder<float>(geometry.Count);
-        var pressures = ImmutableArray.CreateBuilder<float>(geometry.Count);
-        var tilts = ImmutableArray.CreateBuilder<Vector2>(geometry.Count);
 
         for (int i = 0; i < geometry.Count; i++)
         {
             repairedPositions.Add(positions[i]);
-            radii.Add(geometry.Radii[i]);
-            pressures.Add(geometry.Pressures[i]);
-            tilts.Add(geometry.Tilts[i]);
         }
 
         return new PaintStrokeGeometry(
-            repairedPositions.ToImmutable(),
-            radii.ToImmutable(),
-            pressures.ToImmutable(),
-            tilts.ToImmutable());
+            repairedPositions.MoveToImmutable(),
+            geometry.Radii.ToImmutableArray(),
+            geometry.Pressures.ToImmutableArray(),
+            geometry.Tilts.ToImmutableArray());
     }
 
     private static Vector2 ResolveRepairPoint(
