@@ -27,7 +27,7 @@ metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 
 [node name="Label2" type="Label" parent="." unique_id=268284363]
 layout_mode = 2
-text = "Layer mark"
+text = "Mark color"
 
 [node name="LayerMark" type="ColorPickerButton" parent="." unique_id=1003100333]
 unique_name_in_owner = true

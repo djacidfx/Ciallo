@@ -51,6 +51,7 @@ public partial class TimelineAction : Container
     public override void _Input(InputEvent @event)
     {
         if (!_isPlaying.Value) return;
+        if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Middle }) return;
         if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left } mouseButton &&
             PlayStop.GetGlobalRect().HasPoint(mouseButton.GlobalPosition))
             return;
