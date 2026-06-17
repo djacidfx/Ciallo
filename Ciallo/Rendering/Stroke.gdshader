@@ -127,6 +127,8 @@ void vertex() {
 	{
 		vec2 offset = offsetSign.x * r * tangent + offsetSign.y * r * normal * normalTanValue;
 		p = position + offset;
+	} else {
+		p = vec2(0.0);
 	}
 
 	VERTEX = (MODEL_MATRIX * vec4(p, 0.0, 1.0)).xy;
@@ -332,7 +334,7 @@ void fragment() {
 	if(hasFlag(ActiveBrushFlags, BrushFlags.Dash)){
 		float unitLength = DashLength + (GapLength > 0.0 ? GapLength : DashLength);
 		float pixelN = x2n(pLocal.x) + n0;
-		if(mod(pixelN + TIME * DashForwardSpeed, unitLength) > DashLength) discard;
+		if(mod(pixelN - TIME * DashForwardSpeed, unitLength) > DashLength) discard;
 	}
 
 	// Be mindful with premultiply alpha

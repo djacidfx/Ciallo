@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Ciallo.Command;
 using Ciallo.Data;
 using Ciallo.Geometry;
@@ -10,12 +11,17 @@ namespace Ciallo.Tool;
 
 public class PaintStrokeInteractor : InteractiveSessionBase
 {
+    public new PaintStrokeTool Tool => (PaintStrokeTool)base.Tool;
     public Entity BrushE;
     public StrokeView StrokePreview;
     public readonly PolylineInteractiveGenerator Generator = new()
     {
         Mode = PolylineInteractiveGenerator.RadiusMode.Sampled,
     };
+    private PaintStrokeSnapTarget? _startSnapTarget;
+    private PaintStrokeSnapTarget? _endSnapTarget;
+    private readonly List<Vector2> _snapHintPoints = new(2);
+    private MultiMeshInstance2D _snapDots;
 
     public static readonly ToolBase.Trigger PaintEnd = new("PaintEnd");
 
@@ -40,24 +46,57 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 
         var brushMaterial = BrushE.Get<StrokeBrushMaterial>();
 
-        StrokePreview = new StrokeView();
-        StrokePreview.Material = brushMaterial;
+        StrokePreview = new StrokeView
+        {
+            Material = brushMaterial
+        };
         var layerView = WorkingLayer.Get<ShapeLayerView>();
         layerView.AddChild(StrokePreview);
+
+        _snapDots = AutoloadRendering.CreateDots();
+        Document.Get<WorldOverlay>().AddChild(_snapDots);
 
         var brushSetting = BrushE.Get<StrokeBrushSetting>();
         Generator.RadiusSampler = brushSetting.ToRadiusSampler();
 
+        _startSnapTarget = Tool.TryFindSnapTarget(data.WorldPosition, out var startTarget)
+            ? startTarget
+            : null;
+        _endSnapTarget = null;
         Generator.Start(data);
-        var geometry = Generator.CurrentGeometry;
-        StrokePreview.SetGeometry(geometry.Positions, geometry.Radii, geometry.Pressures);
+        UpdatePreview();
+        UpdateSnapHint();
     }
 
     public override void Moving(CursorMotionData data)
     {
         Generator.Update(data);
-        var geometry = Generator.CurrentGeometry;
-        StrokePreview.SetGeometry(geometry.Positions, geometry.Radii, geometry.Pressures);
+        RefreshEndSnapTarget(data.WorldPosition);
+        UpdatePreview();
+        UpdateSnapHint();
+    }
+
+    public override void End(CursorButtonData data)
+    {
+        var geometry = BuildCommitGeometry(data);
+
+        new CommandBuilder(WorkingLayer.World.Create())
+            .NewStroke()
+            .AddToLayerTree(WorkingLayer)
+            .SetProperty(e => e.Get<StrokeSetting>().BrushE, BrushE)
+            .SetPolylineGeometry(geometry.Positions, geometry.Radii, geometry.Pressures, geometry.Tilts)
+            .Commit();
+        Clear();
+    }
+
+    public override void Cancel() => Clear();
+    public override bool OnKey(InputEventKey key, CursorButtonData data)
+    {
+        if (AppActions.ConfirmInteraction.IsPressedBy(key))
+        {
+            OnEndPaintButton();
+        }
+        return true;
     }
 
     public override void OnMouseButton(InputEventMouseButton button, CursorButtonData data)
@@ -73,35 +112,51 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         Tool.Machine.Fire(PaintEnd);
     }
 
-    public override void End(CursorButtonData data)
-    {
-        Generator.End(data);
-        var geometry = Generator.CurrentGeometry;
-
-        new CommandBuilder(WorkingLayer.World.Create())
-            .NewStroke()
-            .AddToLayerTree(WorkingLayer)
-            .SetProperty(e => e.Get<StrokeSetting>().BrushE, BrushE)
-            .SetPolylineGeometry([..geometry.Positions], [..geometry.Radii], [..geometry.Pressures], [..geometry.Tilts])
-            .Commit();
-        Clear();
-    }
-
-    public override void Cancel() => Clear();
-    public override bool OnKey(InputEventKey key, CursorButtonData data)
-    {
-        if (AppActions.ConfirmInteraction.IsPressedBy(key))
-        {
-            OnEndPaintButton();
-        }
-        return true;
-    }
-
     public void Clear()
     {
         Generator.Clear();
         StrokePreview.QueueFree();
         StrokePreview = null;
+        _startSnapTarget = null;
+        _endSnapTarget = null;
+        _snapDots?.QueueFree();
+        _snapDots = null;
         Input.MouseMode = Input.MouseModeEnum.Visible;
+    }
+
+    protected PaintStrokeGeometry BuildCommitGeometry(CursorButtonData data)
+    {
+        Generator.End(data);
+        RefreshEndSnapTarget(data.WorldPosition);
+        return PaintStrokeSnap.BuildRepairedGeometry(
+            Generator.CurrentGeometry,
+            _startSnapTarget,
+            _endSnapTarget);
+    }
+
+    private void UpdatePreview()
+    {
+        var generatorGeometry = Generator.CurrentGeometry;
+        StrokePreview.SetGeometry(generatorGeometry.Positions, generatorGeometry.Radii, generatorGeometry.Pressures);
+    }
+
+    private void RefreshEndSnapTarget(Vector2 worldPosition)
+    {
+        _endSnapTarget = Tool.TryFindSnapTarget(worldPosition, out var endTarget)
+            ? endTarget
+            : null;
+    }
+
+    private void UpdateSnapHint()
+    {
+        _snapHintPoints.Clear();
+        if (_startSnapTarget is { } startTarget)
+            _snapHintPoints.Add(startTarget.HitPoint);
+        if (_endSnapTarget is { } endTarget)
+            _snapHintPoints.Add(endTarget.HitPoint);
+
+        _snapDots.Visible = _snapHintPoints.Count > 0;
+        if (_snapHintPoints.Count > 0)
+            _snapDots.SetDotGeometry(_snapHintPoints, AppPreference.StrokeDotRadius);
     }
 }

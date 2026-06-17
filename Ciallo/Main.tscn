@@ -76,11 +76,13 @@ flat = true
 
 [node name="File" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar" unique_id=1777051197]
 auto_translate_mode = 1
+oversampling_override = 1.0
 size = Vector2i(201, 172)
 submenu_popup_delay = 0.01
 script = ExtResource("5_5tuhn")
 
 [node name="Edit" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar" unique_id=411502354]
+oversampling_override = 1.0
 submenu_popup_delay = 0.1
 script = ExtResource("6_2gh4u")
 
@@ -111,11 +113,12 @@ split_offsets = PackedInt32Array(500)
 
 [node name="HSplitContainer" type="HSplitContainer" parent="MainGui/MarginContainer/UIBlock/VSplit" unique_id=648431329]
 layout_mode = 2
+split_offsets = PackedInt32Array(5)
 
 [node name="ToolButtonPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer" unique_id=747777120]
 layout_mode = 2
 theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 5
+theme_override_constants/margin_right = 10
 script = ExtResource("13_kjvhd")
 
 [node name="ToolButtonPanelPreview" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolButtonPanelContainer" unique_id=559447363 instance=ExtResource("9_5vvyt")]

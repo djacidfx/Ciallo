@@ -56,6 +56,11 @@ public class Preference
     [DataMember]
     public ReactiveProperty<ImmutableArray<BezierPoint>> PenPressureRemapCurve = new(BezierCurveFactory.Linear());
 
+    [DataMember]
+    public ReactiveProperty<bool> PaintStrokeSnapEnabled = new(false);
+    [DataMember]
+    public ReactiveProperty<float> PaintStrokeSnapDistance = new(24f);
+
     #region Save Load Json
 
     public static readonly string Path = "user://Preference.json";

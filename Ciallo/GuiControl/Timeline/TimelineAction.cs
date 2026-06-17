@@ -48,6 +48,17 @@ public partial class TimelineAction : Container
         subs.AddTo(document);
     }
 
+    public override void _Input(InputEvent @event)
+    {
+        if (!_isPlaying.Value) return;
+        if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Middle }) return;
+        if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left } mouseButton &&
+            PlayStop.GetGlobalRect().HasPoint(mouseButton.GlobalPosition))
+            return;
+
+        GetViewport().SetInputAsHandled();
+    }
+
     private void NavigateRelative(int frameOffset)
     {
         if (_selectionManager == null) return;
@@ -183,7 +194,7 @@ public partial class TimelineAction : Container
         {
             if (cursor.Has<FolderLayerSetting>())
             {
-                if (cursor.Get<FolderLayerSetting>().IsCel)
+                if (cursor.Get<FolderLayerSetting>().IsCelFolder)
                 {
                     animFolderParent = cursor.Get<LayerTreeNode>().ParentValue;
                     break;

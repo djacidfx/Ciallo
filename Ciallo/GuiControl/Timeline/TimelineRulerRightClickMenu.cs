@@ -229,7 +229,7 @@ public partial class TimelineRulerRightClickMenu : PopupMenu
 
     private static IEnumerable<Entity> EnumerateCelFoldersRecursive(Entity entity)
     {
-        if (entity.TryGet<FolderLayerSetting>() is { IsCel: true })
+        if (entity.TryGet<FolderLayerSetting>() is { IsCelFolder: true })
             yield return entity;
 
         if (!entity.Has<LayerTreeNode>())

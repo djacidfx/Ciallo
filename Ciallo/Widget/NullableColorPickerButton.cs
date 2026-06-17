@@ -123,12 +123,12 @@ public partial class NullableColorPickerButton : ColorPickerButton
         if (HasColor) return;
 
         var rect = new Rect2(new Vector2(3, 3), Size - new Vector2(6, 6));
-        var white = Colors.White;
+        var markColor = GetNullMarkColor();
 
         DrawRect(rect, new Color(0, 0, 0, 0.18f));
-        DrawRect(rect, white, filled: false, width: 1f);
-        DrawLine(rect.Position, rect.End, white, width: 2f);
-        DrawLine(new Vector2(rect.Position.X, rect.End.Y), new Vector2(rect.End.X, rect.Position.Y), white, width: 2f);
+        DrawRect(rect, markColor, filled: false, width: 1f);
+        DrawLine(rect.Position, rect.End, markColor, width: 2f);
+        DrawLine(new Vector2(rect.Position.X, rect.End.Y), new Vector2(rect.End.X, rect.Position.Y), markColor, width: 2f);
     }
 
     private void OnHasColorToggled(bool hasColor)
@@ -145,5 +145,15 @@ public partial class NullableColorPickerButton : ColorPickerButton
     {
         SetColorOrNullNoSignal(color);
         ColorOrNullChanged.OnNext(ColorOrNull);
+    }
+
+    private Color GetNullMarkColor()
+    {
+        var luminance = Color.Luminance;
+        return luminance switch
+        {
+            < 0.5f => Colors.White,
+            _ => Colors.Black,
+        };
     }
 }

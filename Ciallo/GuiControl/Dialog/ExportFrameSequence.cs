@@ -126,7 +126,7 @@ public partial class ExportFrameSequence : ConfirmationDialog
                     NameSetting.Separator.Value,
                     outputNumber,
                     NameSetting.NumberDigits));
-                SavePngFrame(outputPath);
+                ExportPngWriter.SaveHdr2DViewportAsPng(ExportViewport, outputPath);
 
                 progressBar.Value = frame - startFrame + 1;
                 await ToSignal(GetTree(), SceneTree.SignalName.ProcessFrame);
@@ -146,7 +146,8 @@ public partial class ExportFrameSequence : ConfirmationDialog
     private void ConfigureExportViewport(Vector2 referenceSize)
     {
         ExportViewport.TransparentBg = true;
-        ExportViewport.UseHdr2D = false;
+        // Match the main paint viewport so exported colors follow the user's visible composition.
+        ExportViewport.UseHdr2D = true;
         ExportViewport.CanvasCullMask = (uint)AppGodotLayers.Render2DLayer.View;
         ExportViewport.Size = GetExportSize(referenceSize, Scale.Value);
         Camera.Zoom = Vector2.One * Scale.Value;
@@ -172,13 +173,6 @@ public partial class ExportFrameSequence : ConfirmationDialog
         _background.Visible = BackgroundColor.Value.HasValue;
         if (BackgroundColor.Value.HasValue)
             _background.Color = BackgroundColor.Value.Value;
-    }
-
-    private void SavePngFrame(string path)
-    {
-        var error = ExportViewport.GetTexture().GetImage().SavePng(path);
-        if (error != Error.Ok)
-            throw new IOException($"Failed to save PNG frame to '{path}': {error}");
     }
 
     public void PopupCentered(Entity document)

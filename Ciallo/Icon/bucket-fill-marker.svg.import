@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://c15gbt8wm46pc"
-path="res://.godot/imported/format-color-fill.svg-fe0e5d9c932ad088952dad1f3b69308d.ctex"
+path="res://.godot/imported/bucket-fill-marker.svg-d92f8d125d32dcee89d7badb3267e9cb.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://Icon/format-color-fill.svg"
-dest_files=["res://.godot/imported/format-color-fill.svg-fe0e5d9c932ad088952dad1f3b69308d.ctex"]
+source_file="res://Icon/bucket-fill-marker.svg"
+dest_files=["res://.godot/imported/bucket-fill-marker.svg-d92f8d125d32dcee89d7badb3267e9cb.ctex"]
 
 [params]
 

@@ -1,4 +1,3 @@
-using System.IO;
 using Ciallo.Data;
 using Ciallo.Rendering;
 using Frent;
@@ -48,9 +47,7 @@ public partial class ExportImage : ConfirmationDialog
             ImageSubViewport.RenderTargetUpdateMode = SubViewport.UpdateMode.Once;
             await ToSignal(RenderingServer.Singleton, RenderingServer.SignalName.FramePostDraw);
 
-            var error = ImageSubViewport.GetTexture().GetImage().SavePng(filePath);
-            if (error != Error.Ok)
-                throw new IOException($"Failed to save PNG image to '{filePath}': {error}");
+            ExportPngWriter.SaveHdr2DViewportAsPng(ImageSubViewport, filePath);
 
             Message.Show();
         }
@@ -102,7 +99,8 @@ public partial class ExportImage : ConfirmationDialog
     private void ConfigureExportViewport()
     {
         ImageSubViewport.TransparentBg = true;
-        ImageSubViewport.UseHdr2D = false;
+        // Match the main paint viewport so exported colors follow the user's visible composition.
+        ImageSubViewport.UseHdr2D = true;
         ImageSubViewport.CanvasCullMask = (uint)AppGodotLayers.Render2DLayer.View;
         ImageSubViewport.Size = GetExportSize(_setting.ReferenceSize.Value, Scale.Value);
         Camera.Zoom = Vector2.One * Scale.Value;

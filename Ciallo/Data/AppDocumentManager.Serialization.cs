@@ -71,7 +71,7 @@ public static partial class AppDocumentManager
             var cachedExposures = new SortedList<int, Entity>();
             if (layerDataE.Has<FolderLayerSetting>())
             {
-                if (layerDataE.Get<FolderLayerSetting>().IsCel)
+                if (layerDataE.Get<FolderLayerSetting>().IsCelFolder)
                 {
                     var dataExposures = layerDataE.Get<FolderLayerSetting>().Exposures;
                     foreach (var (frame, exposedE) in dataExposures.ToArray())

@@ -1,1 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><g fill="none" stroke="#FFFFFF" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><circle cx="12" cy="12" r="2"/><circle cx="12" cy="12" r="6"/><path d="M2.8 8.1a10 10 0 1 0 5.3-5.3C5 4 3 2 3 2L2 3s2 2 .8 5.1M18 20v2m3-1l-1.9-1.9M22 18h-2"/></g></svg>
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generator: Adobe Illustrator 23.0.6, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
+<svg version="1.1" id="图层_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 24 24" style="enable-background:new 0 0 24 24;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;stroke:#FFFFFF;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+</style>
+<g>
+	<circle class="st0" cx="12" cy="12" r="1.7"/>
+	<circle class="st0" cx="12" cy="12" r="5"/>
+	<path class="st0" d="M4.3,8.7c-1.8,4.3,0.2,9.2,4.4,11c4.3,1.8,9.2-0.2,11-4.4c1.8-4.3-0.2-9.2-4.4-11c-2.1-0.9-4.5-0.9-6.5,0
+		c-2.6,1-4.3-0.7-4.3-0.7L3.6,4.5C3.6,4.5,5.3,6.1,4.3,8.7 M17,18.7v2.8 M20.4,20.4l-2.5-2.5 M21.5,17h-2.8"/>
+</g>
+</svg>

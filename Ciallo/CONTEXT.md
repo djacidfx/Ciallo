@@ -57,6 +57,14 @@ A stroke prediction is a transient visual extension of an in-progress stroke. It
 
 A stroke preview is the user-visible form of an in-progress stroke. It may include stable stroke samples and transient stroke predictions.
 
+### Paint Stroke Snap Target
+
+A paint stroke snap target is the reference curve and curve-local hit position that a paint stroke endpoint may snap through when committed.
+
+### Paint Stroke Snap Hint
+
+A paint stroke snap hint is the user-visible dot that shows an available paint stroke snap target during hover or drawing.
+
 ### Gap Bridge
 
 Gap Bridge repairs a visual gap by deforming a dangling endpoint of the source shape toward a target.

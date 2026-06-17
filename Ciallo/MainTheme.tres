@@ -47,32 +47,60 @@ bg_color = Color(0.1, 0.1, 0.1, 0.6)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4as0w"]
 
+[sub_resource type="DPITexture" id="DPITexture_4as0w"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><rect width=\"14\" height=\"14\" x=\"1\" y=\"1\" fill=\"#fff\" fill-opacity=\".75\" rx=\"2.333\"/><path fill=\"#1a1a1a\" d=\"m11.5 3.75-5.6 5.6-1.7-1.7-1.5 1.5 3.2 3.2 7.1-7.1z\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_yhag5"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><rect width=\"14\" height=\"14\" x=\"1\" y=\"1\" fill=\"#fff\" fill-opacity=\".37\" rx=\"2.333\"/><path fill=\"#1a1a1a\" fill-opacity=\".5\" d=\"m11.5 3.75-5.6 5.6-1.7-1.7-1.5 1.5 3.2 3.2 7.1-7.1z\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_rfn4m"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"5.5\" fill=\"#1a1a1a\" stroke=\"#fff\" stroke-opacity=\".75\" stroke-width=\"3\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_u23kh"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#fff\" fill-opacity=\".37\"/><circle cx=\"8\" cy=\"8\" r=\"4\" fill=\"#1a1a1a\" fill-opacity=\".5\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_ogfsw"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#1a1a1a\" fill-opacity=\".5\"/></svg>
+"
+
+[sub_resource type="DPITexture" id="DPITexture_6qad1"]
+_source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#1a1a1a\" fill-opacity=\".25\"/></svg>
+"
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yhag5"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u23kh"]
-content_margin_left = 4.0
-content_margin_top = 4.0
-content_margin_right = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(0, 0, 0, 0.8745098)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ogfsw"]
-content_margin_left = 4.0
-content_margin_top = 4.0
-content_margin_right = 4.0
-content_margin_bottom = 4.0
-bg_color = Color(0, 0, 0, 0.85882354)
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
+bg_color = Color(0, 0, 0, 0.5019608)
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_u23kh"]
+content_margin_left = 3.0
+content_margin_top = 3.0
+content_margin_right = 3.0
+content_margin_bottom = 3.0
+bg_color = Color(0, 0, 0, 0.5019608)
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_t6ki5"]
 bg_color = Color(1, 1, 1, 0)
+border_color = Color(0.8, 0.8, 0.8, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6qad1"]
+bg_color = Color(0, 0, 0, 0.5019608)
+expand_margin_left = 5.0
+expand_margin_top = 5.0
+expand_margin_right = 5.0
+expand_margin_bottom = 5.0
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_yhag5"]
 color = Color(0.101961, 0.101961, 0.101961, 0.6)
@@ -94,10 +122,28 @@ LayerBlockButton/styles/hover = SubResource("StyleBoxFlat_rfn4m")
 LayerBlockButton/styles/normal = SubResource("StyleBoxFlat_8s18r")
 LayerBlockButton/styles/pressed = SubResource("StyleBoxFlat_4as0w")
 LineEdit/styles/focus = SubResource("StyleBoxEmpty_4as0w")
+PopupMenu/colors/font_accelerator_color = Color(0.7, 0.7, 0.7, 0.8)
+PopupMenu/colors/font_color = Color(0.875, 0.875, 0.875, 1)
+PopupMenu/colors/font_disabled_color = Color(0.4, 0.4, 0.4, 0.8)
+PopupMenu/colors/font_hover_color = Color(0.875, 0.875, 0.875, 1)
+PopupMenu/colors/font_outline_color = Color(0, 0, 0, 1)
+PopupMenu/colors/font_separator_color = Color(0.875, 0.875, 0.875, 1)
+PopupMenu/colors/font_separator_outline_color = Color(0, 0, 0, 1)
+PopupMenu/constants/item_end_padding = 8
+PopupMenu/constants/item_start_padding = 8
+PopupMenu/constants/separator_outline_size = 0
+PopupMenu/constants/v_separation = 8
+PopupMenu/icons/checked = SubResource("DPITexture_4as0w")
+PopupMenu/icons/checked_disabled = SubResource("DPITexture_yhag5")
+PopupMenu/icons/radio_checked = SubResource("DPITexture_rfn4m")
+PopupMenu/icons/radio_checked_disabled = SubResource("DPITexture_u23kh")
+PopupMenu/icons/radio_unchecked = SubResource("DPITexture_ogfsw")
+PopupMenu/icons/radio_unchecked_disabled = SubResource("DPITexture_6qad1")
 TabBar/styles/tab_focus = SubResource("StyleBoxEmpty_yhag5")
 ToolButton/base_type = &"Button"
-ToolButton/styles/hover = SubResource("StyleBoxFlat_u23kh")
-ToolButton/styles/hover_pressed = SubResource("StyleBoxFlat_ogfsw")
+ToolButton/styles/hover = SubResource("StyleBoxFlat_ogfsw")
+ToolButton/styles/hover_pressed = SubResource("StyleBoxFlat_u23kh")
 ToolButton/styles/normal = SubResource("StyleBoxFlat_t6ki5")
+ToolButton/styles/pressed = SubResource("StyleBoxFlat_6qad1")
 VSplitContainer/constants/separation = 6
 VSplitContainer/styles/split_bar_background = SubResource("StyleBoxLine_yhag5")

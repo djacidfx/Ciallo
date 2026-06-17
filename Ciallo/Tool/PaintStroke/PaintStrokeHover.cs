@@ -12,15 +12,27 @@ namespace Ciallo.Tool;
 
 public class PaintStrokeHover : InteractiveSessionBase
 {
+    public new PaintStrokeTool Tool => (PaintStrokeTool)base.Tool;
+
+    private MultiMeshInstance2D _snapDots;
+
     public override void Start(CursorButtonData data)
     {
         Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
+        _snapDots = AutoloadRendering.CreateDots();
+        Document.Get<WorldOverlay>().AddChild(_snapDots);
+        RefreshSnap(data.WorldPosition);
     }
-    public override void Moving(CursorMotionData data) { }
+    public override void Moving(CursorMotionData data)
+    {
+        RefreshSnap(data.WorldPosition);
+    }
     public override void End(CursorButtonData data) => Cancel();
     public override void Cancel()
     {
         Document.Get<WorldBody>().DefaultCursorShape = default;
+        _snapDots?.QueueFree();
+        _snapDots = null;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
@@ -112,9 +124,10 @@ public class PaintStrokeHover : InteractiveSessionBase
             .Flatten();
         var radiusControl = new SpinSlider
         {
-            MinValue = 0.1f,
+            MinValue = 0.5f,
             MaxValue = 256f,
             Step = 0.03333333f,
+            AllowGreater = true,
             ExpEdit = true,
         }.BindNumber(radius);
         radius.AddTo(radiusControl);
@@ -132,5 +145,17 @@ public class PaintStrokeHover : InteractiveSessionBase
             .SetWorkingStrokeBrush()
             .Commit();
         AppStrokeBrushLibrary.SelectedIndex.Value = -1;
+    }
+
+    private void RefreshSnap(Vector2 worldPosition)
+    {
+        if (!Tool.TryFindSnapTarget(worldPosition, out var target))
+        {
+            _snapDots.Visible = false;
+            return;
+        }
+
+        _snapDots.Visible = true;
+        _snapDots.SetDotGeometry([target.HitPoint], AppPreference.StrokeDotRadius);
     }
 }

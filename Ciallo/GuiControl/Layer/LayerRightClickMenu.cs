@@ -50,7 +50,7 @@ public partial class LayerRightClickMenu : PopupMenu
         AddItem("Delete Layer", IdDeleteLayer);
         if (_targetLayer.Has<FolderLayerSetting>())
         {
-            if (_targetLayer.Get<FolderLayerSetting>().IsCel)
+            if (_targetLayer.Get<FolderLayerSetting>().IsCelFolder)
                 AddItem("Rename Cels by Exposure", IdRenameCelsByExposure);
             AddItem("Wrap Children in Folders", IdWrapChildrenInFolders);
             AddItem("Ungroup Folder", IdUngroupFolder);

@@ -40,7 +40,7 @@ public class SelectionManager
             {
                 if (layerE.IsNull || layerE.IsDocument)
                     return Entity.Null;
-                if (layerE.TryGet<FolderLayerSetting>()?.IsCel == true)
+                if (layerE.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
                 {
                     return layerE;
                 }
@@ -49,7 +49,7 @@ public class SelectionManager
                 foreach (Entity e in ancestors)
                 {
                     // Layer's parent must have FolderLayerSetting component, but it may not be a cel folder.
-                    if (e.Get<FolderLayerSetting>().IsCel) return e;
+                    if (e.Get<FolderLayerSetting>().IsCelFolder) return e;
                 }
 
                 return Entity.Null;
@@ -97,7 +97,7 @@ public class SelectionManager
             return Entity.Null;
 
         var folderSetting = celFolder.TryGet<FolderLayerSetting>();
-        if (folderSetting?.IsCel != true)
+        if (folderSetting?.IsCelFolder != true)
             return Entity.Null;
 
         var result = ResolvePreferredWorkingLayerForCelSelection(
@@ -140,7 +140,7 @@ public class SelectionManager
         if (selectedWorkingLayer.IsNull || selectedWorkingLayer.IsDocument || !selectedWorkingLayer.IsAlive)
             return currentFrame;
 
-        if (selectedWorkingLayer.TryGet<FolderLayerSetting>()?.IsCel == true)
+        if (selectedWorkingLayer.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
             return currentFrame;
 
         Entity celFolder = Entity.Null;
@@ -152,7 +152,7 @@ public class SelectionManager
             var parent = cursor.Get<LayerTreeNode>().ParentValue;
             if (parent.IsNull) break;
 
-            if (parent.TryGet<FolderLayerSetting>()?.IsCel == true)
+            if (parent.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
             {
                 celFolder = parent;
                 targetCel = cursor;

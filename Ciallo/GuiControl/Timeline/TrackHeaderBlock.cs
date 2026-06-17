@@ -23,7 +23,7 @@ public partial class TrackHeaderBlock : Container, IInitable, ILayerBlock
     /// Computed from the entity component so it is always up to date,
     /// even when the layer is marked as a CelFolder after block creation.
     /// </summary>
-    public bool IsCelFolder => LayerEntity.TryGet<FolderLayerSetting>()?.IsCel ?? false;
+    public bool IsCelFolder => LayerEntity.TryGet<FolderLayerSetting>()?.IsCelFolder ?? false;
 
     /// <summary>
     /// Set by <see cref="TrackTree.Create"/> before the node enters the scene tree.

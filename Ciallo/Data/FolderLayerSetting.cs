@@ -21,7 +21,7 @@ public class FolderLayerSetting
     ///
     /// Cel is pronounced in JP style "seru" (セ ル) or in its full name "celluloid".
     /// </remarks>
-    public bool IsCel
+    public bool IsCelFolder
     {
         get => Exposures != null;
         set => Exposures = value ? (Exposures ?? []) : null;

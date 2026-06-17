@@ -10,24 +10,36 @@ public static partial class PolylineExtension
     /// <summary>
     /// Simplifies an open polyline with the Ramer-Douglas-Peucker algorithm.
     /// Points are removed when their perpendicular distance to the current range's
-    /// endpoint line is less than or equal to <paramref name="tolerance"/>.
+    /// endpoint line is less than or equal to <paramref name="tolerance"/>, and
+    /// the optional source segment length constraint allows the removal.
     /// This matches Blender's curve simplification model: tolerance is an epsilon
     /// distance, not a target removal ratio.
     /// </summary>
     /// <param name="polyline">Input polyline points.</param>
     /// <param name="tolerance">Maximum allowed deviation in the same space as <paramref name="polyline"/>.</param>
     /// <param name="originalIndex">Indices of kept points in the original polyline.</param>
+    /// <param name="maxSegmentLength">Maximum original polyline path length allowed between two kept points. Values less than or equal to zero disable this constraint.</param>
     /// <returns>Simplified polyline.</returns>
     public static List<Vector2> SimplifyRdp(
         this IReadOnlyList<Vector2> polyline,
         float tolerance,
-        out List<int> originalIndex)
+        out List<int> originalIndex,
+        float maxSegmentLength = 0f)
     {
         int count = polyline.Count;
         if (count <= 2 || tolerance <= 0f)
         {
             originalIndex = Enumerable.Range(0, count).ToList();
             return polyline.ToList();
+        }
+
+        bool hasMaxSegmentLength = maxSegmentLength > 0f;
+        float[] cumulativeLengths = [];
+        if (hasMaxSegmentLength)
+        {
+            cumulativeLengths = new float[count];
+            for (int i = 1; i < count; i++)
+                cumulativeLengths[i] = cumulativeLengths[i - 1] + polyline[i - 1].DistanceTo(polyline[i]);
         }
 
         var deleted = new bool[count];
@@ -58,6 +70,12 @@ public static partial class PolylineExtension
                 stack.Push((first, maxIndex));
                 stack.Push((maxIndex, last));
             }
+            else if (hasMaxSegmentLength && cumulativeLengths[last] - cumulativeLengths[first] > maxSegmentLength)
+            {
+                int middle = FindSegmentMiddle(cumulativeLengths, first, last);
+                stack.Push((first, middle));
+                stack.Push((middle, last));
+            }
             else
             {
                 for (int i = first + 1; i < last; i++)
@@ -77,6 +95,16 @@ public static partial class PolylineExtension
         }
 
         return result;
+    }
+
+    private static int FindSegmentMiddle(IReadOnlyList<float> cumulativeLengths, int first, int last)
+    {
+        float target = (cumulativeLengths[first] + cumulativeLengths[last]) * 0.5f;
+        int middle = first + 1;
+        while (middle < last - 1 && cumulativeLengths[middle] < target)
+            middle++;
+
+        return middle;
     }
 
     private static float PerpendicularDistance(IReadOnlyList<Vector2> polyline, int first, int last, int index)
