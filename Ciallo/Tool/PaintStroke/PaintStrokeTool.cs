@@ -102,9 +102,12 @@ public class PaintStrokeTool : ToolBase
         if (!AppPreference.PaintStrokeSnapEnabled.Value)
             return false;
 
+        var arr = Arrangement.ArrReady.CurrentValue;
+        if (arr == null)
+            return false;
+
         return PaintStrokeSnap.TryFindTarget(
-            Arrangement.ArrReady.CurrentValue,
-            Arrangement.SourceShapes,
+            arr,
             worldPosition,
             AppPreference.PaintStrokeSnapDistance.Value,
             out target);

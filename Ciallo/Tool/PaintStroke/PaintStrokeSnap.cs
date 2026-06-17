@@ -23,13 +23,12 @@ public static class PaintStrokeSnap
 
     public static bool TryFindTarget(
         Arrangement arr,
-        IReadOnlySet<Entity> sourceShapes,
         Vector2 worldPosition,
         float snapDistance,
         out PaintStrokeSnapTarget target)
     {
         target = default;
-        if (arr == null || snapDistance <= 0f)
+        if (snapDistance <= 0f)
             return false;
 
         float snapDistanceSquared = snapDistance * snapDistance;
@@ -43,17 +42,13 @@ public static class PaintStrokeSnap
         bool foundBody = false;
         var seen = new HashSet<Entity>();
 
+        // Although single-point strokes are theoretically valid snap targets, but Arrangement curve queries cannot return them, so we discard them intentionally.
         foreach (long targetId in arr.PolylineQueryCurves(PolylineShapeBuilder.BuildClosedOctagon(worldPosition, snapDistance)))
         {
             var curve = targetId.ToEntity();
-            if (sourceShapes.Contains(curve) && seen.Add(curve))
+            if (seen.Add(curve))
                 KeepIfNearer(curve);
         }
-
-        // Single-point strokes are valid snap targets, but Arrangement curve queries cannot return them.
-        foreach (var curve in sourceShapes)
-            if (seen.Add(curve) && curve.Get<PolylineGeometry>().Positions.Value.GetBoundingBox().Grow(snapDistance).HasPoint(worldPosition))
-                KeepIfNearer(curve);
 
         target = foundEndpoint ? endpointTarget : bodyTarget;
         return foundEndpoint || foundBody;
