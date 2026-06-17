@@ -28,6 +28,7 @@ custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 tooltip_text = "Add a layer"
 theme_type_variation = &"ToolButton"
+action_mode = 0
 icon = ExtResource("2_rh62m")
 expand_icon = true
 
@@ -35,6 +36,7 @@ expand_icon = true
 custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 theme_type_variation = &"ToolButton"
+action_mode = 0
 icon = ExtResource("3_7h52i")
 expand_icon = true
 
@@ -43,6 +45,7 @@ custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 tooltip_text = "New folder layer"
 theme_type_variation = &"ToolButton"
+action_mode = 0
 icon = ExtResource("4_7h52i")
 expand_icon = true
 
@@ -51,6 +54,7 @@ custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 tooltip_text = "Import an image"
 theme_type_variation = &"ToolButton"
+action_mode = 0
 icon = ExtResource("4_54l2l")
 expand_icon = true
 
@@ -59,5 +63,6 @@ custom_minimum_size = Vector2(36, 36)
 layout_mode = 2
 tooltip_text = "Convert to shape layer"
 theme_type_variation = &"ToolButton"
+action_mode = 0
 icon = ExtResource("5_conv1")
 expand_icon = true
