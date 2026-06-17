@@ -10,7 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://6fwtxd5kofc4" path="res://Icon/step-forward.svg" id="6_stepforward"]
 [ext_resource type="Texture2D" uid="uid://bvwa5e8cypnnx" path="res://Icon/page-last.svg" id="7_pagelast"]
 [ext_resource type="Texture2D" uid="uid://bj88q5o4x80ck" path="res://Icon/repeat.svg" id="8_repeat"]
-[ext_resource type="Texture2D" uid="uid://btuke6715q4xi" path="res://Icon/onionskin.svg" id="11_pdp5i"]
+[ext_resource type="Texture2D" uid="uid://d0u7w02y86ge1" path="res://Icon/onion.svg" id="11_pdp5i"]
 
 [node name="TimelineAction" type="HFlowContainer" unique_id=1607254887]
 offset_right = 1044.0
