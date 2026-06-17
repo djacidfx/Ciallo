@@ -193,7 +193,7 @@ public partial class TimelineAction : Container
         {
             if (cursor.Has<FolderLayerSetting>())
             {
-                if (cursor.Get<FolderLayerSetting>().IsCel)
+                if (cursor.Get<FolderLayerSetting>().IsCelFolder)
                 {
                     animFolderParent = cursor.Get<LayerTreeNode>().ParentValue;
                     break;

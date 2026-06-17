@@ -27,7 +27,7 @@ public partial class TrackTree : LayerTreeBase
     protected override LayerWrapper GetWrapper(Entity e) => e.Get<TrackRowWrapper>();
     protected override ILayerBlock GetBlock(Entity e) => e.Get<TrackHeaderBlock>();
     protected override bool ShouldShowDropdownArrow(Entity e) =>
-        e.TryGet<FolderLayerSetting>() is { IsCel: false };
+        e.TryGet<FolderLayerSetting>() is { IsCelFolder: false };
     protected override bool ShouldShowTimelineLayerActions => true;
 
     /// <summary>Exposes the root wrapper so <see cref="TimelinePanel"/> can register it on the document entity.</summary>
@@ -76,7 +76,7 @@ public partial class TrackTree : LayerTreeBase
         trackRow.Configure(_splitOffset, wrapper);
 
         var folderSetting = layerE.TryGet<FolderLayerSetting>();
-        if (folderSetting?.IsCel == true)
+        if (folderSetting?.IsCelFolder == true)
         {
             var subs = new CompositeDisposable();
             subs.AddTo(layerE);

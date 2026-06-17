@@ -356,7 +356,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
         var cmd = new CommandBuilder(document);
 
         int[] exposureFrames = [];
-        if (oldParentE != newParentE && oldParentE.TryGet<FolderLayerSetting>()?.IsCel == true)
+        if (oldParentE != newParentE && oldParentE.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
         {
             exposureFrames = oldParentE.Get<FolderLayerSetting>().Exposures
                 .Where(pair => pair.Value == draggedEntity)
@@ -377,7 +377,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
         cmd.SetTarget(document)
             .MoveLayer(draggedEntity, newParentE, insertIndex);
 
-        if (exposureFrames.Length > 0 && newParentE.TryGet<FolderLayerSetting>()?.IsCel == true)
+        if (exposureFrames.Length > 0 && newParentE.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
         {
             cmd.SetTarget(newParentE)
                 .SetObservableCollection(

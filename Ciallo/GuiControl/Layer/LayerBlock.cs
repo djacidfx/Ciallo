@@ -17,7 +17,7 @@ public partial class LayerBlock : Container, IInitable, ILayerBlock
     /// Computed from the entity component so it is always up to date,
     /// even when the layer is marked as a CelFolder after block creation.
     /// </summary>
-    public bool IsCelFolder => LayerEntity.TryGet<FolderLayerSetting>()?.IsCel ?? false;
+    public bool IsCelFolder => LayerEntity.TryGet<FolderLayerSetting>()?.IsCelFolder ?? false;
 
     /// <summary>The <see cref="LayerWrapper"/> that owns this block as its Title.</summary>
     public virtual LayerWrapper Wrapper => (LayerWrapper)GetParent();

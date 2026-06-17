@@ -327,7 +327,7 @@ public class VectorFillLayerCreationTool : ToolBase
         && layer.Get<CommonLayerSetting>().IsVisible.Value;
 
     private static bool IsRegularFolder(Entity layer) =>
-        layer.TryGet<FolderLayerSetting>() is { IsCel: false };
+        layer.TryGet<FolderLayerSetting>() is { IsCelFolder: false };
 
     private static bool IsValidLayer(Entity layer) =>
         !layer.IsNull

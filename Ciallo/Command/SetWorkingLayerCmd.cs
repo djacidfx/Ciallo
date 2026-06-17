@@ -92,7 +92,7 @@ public class SetWorkingLayerCmd : CommandBase
         if (newLayerE.IsNull || newLayerE.IsDocument || !newLayerE.IsAlive)
             return false;
 
-        if (newLayerE.TryGet<FolderLayerSetting>()?.IsCel == true)
+        if (newLayerE.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
             return false;
 
         var cursor = newLayerE;
@@ -102,7 +102,7 @@ public class SetWorkingLayerCmd : CommandBase
             var parent = cursor.Get<LayerTreeNode>().ParentValue;
             if (parent.IsNull) break;
 
-            if (parent.TryGet<FolderLayerSetting>()?.IsCel == true)
+            if (parent.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
             {
                 celFolder = parent;
                 exposedCel = cursor;

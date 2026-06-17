@@ -111,7 +111,7 @@ internal static class LayerContextActions
 
         var document = targetFolder.Document;
         var cmd = new CommandBuilder("Wrap Children in Folders", document);
-        bool targetIsCelFolder = targetFolder.Get<FolderLayerSetting>().IsCel;
+        bool targetIsCelFolder = targetFolder.Get<FolderLayerSetting>().IsCelFolder;
 
         foreach (var child in children)
         {
@@ -163,7 +163,7 @@ internal static class LayerContextActions
         if (targetLayer.IsNull || targetLayer.IsDocument)
             return (AppDocumentManager.WorkingDocument.Value, -1);
 
-        if (targetLayer.TryGet<FolderLayerSetting>() is { IsCel: false })
+        if (targetLayer.TryGet<FolderLayerSetting>() is { IsCelFolder: false })
             return (targetLayer, -1);
 
         var cursor = targetLayer;
@@ -173,7 +173,7 @@ internal static class LayerContextActions
         {
             if (cursor.Has<FolderLayerSetting>())
             {
-                if (cursor.Get<FolderLayerSetting>().IsCel)
+                if (cursor.Get<FolderLayerSetting>().IsCelFolder)
                 {
                     nearestCelFolder = cursor;
                     break;
@@ -205,7 +205,7 @@ internal static class LayerContextActions
     private static void RemoveParentCelFolderExposures(CommandBuilder cmd, Entity targetLayer)
     {
         var parentE = targetLayer.Get<LayerTreeNode>().ParentValue;
-        if (parentE.TryGet<FolderLayerSetting>()?.IsCel != true)
+        if (parentE.TryGet<FolderLayerSetting>()?.IsCelFolder != true)
             return;
 
         cmd.SetTarget(parentE)

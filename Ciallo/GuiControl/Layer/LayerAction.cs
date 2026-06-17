@@ -70,7 +70,7 @@ public partial class LayerAction : Control
             .SetWorkingLayer();
 
         // Any layer's parent must be a folder layer.
-        if (currentLayerParentE.Get<FolderLayerSetting>().IsCel == true)
+        if (currentLayerParentE.Get<FolderLayerSetting>().IsCelFolder == true)
         {
             cmd.SetTarget(currentLayerParentE)
                 .SetObservableCollection(

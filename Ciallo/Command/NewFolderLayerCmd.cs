@@ -30,7 +30,7 @@ public class NewFolderLayerCmd : CommandBase
     {
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
-        var isCel = CopyE.IsNull ? _isCel : CopyE.Get<FolderLayerSetting>().IsCel;
+        var isCel = CopyE.IsNull ? _isCel : CopyE.Get<FolderLayerSetting>().IsCelFolder;
 
         var commonSetting = CopyE.IsNull
             ? new CommonLayerSetting { Name = { Value = (isCel ? "Cel folder" : "Folder").Tr() } }
@@ -40,8 +40,8 @@ public class NewFolderLayerCmd : CommandBase
         var folderLayerSetting = CopyE.IsNull
             ? new FolderLayerSetting()
             : CopyE.Get<FolderLayerSetting>().Clone();
-        folderLayerSetting.IsCel = isCel;
-        if (folderLayerSetting.IsCel)
+        folderLayerSetting.IsCelFolder = isCel;
+        if (folderLayerSetting.IsCelFolder)
             folderLayerSetting.InitCurrent(Document.Get<SelectionManager>().CurrentFrame, Document.Get<TimelineSetting>().OnionSkinOffsets);
         targetE.Add(folderLayerSetting);
     }
@@ -56,7 +56,7 @@ public class NewFolderLayerCmd : CommandBase
         subs.AddTo(targetE);
         FolderLayerView folderLayerView;
         // View
-        if (folderSetting.IsCel)
+        if (folderSetting.IsCelFolder)
         {
             var celFolderView = new CelFolderView();
             var timelineSetting = Document.Get<TimelineSetting>();
