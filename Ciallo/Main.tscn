@@ -16,7 +16,6 @@
 [ext_resource type="Script" uid="uid://bc538pxjigcuv" path="res://GuiControl/Layer/LayerPanelContainer.cs" id="19_3b0ty"]
 [ext_resource type="Script" uid="uid://b4x3guxbl2wmb" path="res://GuiControl/Timeline/TimelinePanelContainer.cs" id="23_hhcpw"]
 [ext_resource type="PackedScene" uid="uid://cetiftxidiijh" path="res://GuiControl/Timeline/TimelinePanel.tscn" id="24_hhcpw"]
-[ext_resource type="Script" uid="uid://s2y4e3sr38gm" path="res://GuiControl/TimelinePlaybackInputBlocker.cs" id="25_inputblocker"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hhcpw"]
 bg_color = Color(0.234608, 0.23460817, 0.23460811, 1)
@@ -32,7 +31,6 @@ size_flags_horizontal = 0
 size_flags_vertical = 0
 theme = ExtResource("1_j4qnp")
 theme_override_styles/panel = SubResource("StyleBoxFlat_hhcpw")
-script = ExtResource("25_inputblocker")
 
 [node name="DialogHost" parent="." unique_id=1874914548 instance=ExtResource("2_fpfj3")]
 layout_mode = 0
@@ -78,11 +76,13 @@ flat = true
 
 [node name="File" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar" unique_id=1777051197]
 auto_translate_mode = 1
+oversampling_override = 1.0
 size = Vector2i(201, 172)
 submenu_popup_delay = 0.01
 script = ExtResource("5_5tuhn")
 
 [node name="Edit" type="PopupMenu" parent="MainGui/MenuBarContainer/Margin/HBoxContainer/MenuBar" unique_id=411502354]
+oversampling_override = 1.0
 submenu_popup_delay = 0.1
 script = ExtResource("6_2gh4u")
 

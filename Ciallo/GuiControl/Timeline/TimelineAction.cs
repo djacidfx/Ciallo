@@ -48,6 +48,16 @@ public partial class TimelineAction : Container
         subs.AddTo(document);
     }
 
+    public override void _Input(InputEvent @event)
+    {
+        if (!_isPlaying.Value) return;
+        if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left } mouseButton &&
+            PlayStop.GetGlobalRect().HasPoint(mouseButton.GlobalPosition))
+            return;
+
+        GetViewport().SetInputAsHandled();
+    }
+
     private void NavigateRelative(int frameOffset)
     {
         if (_selectionManager == null) return;
