@@ -1,9 +1,9 @@
-using System.Runtime.Serialization;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Runtime.Serialization;
 using Frent;
 using ObservableCollections;
 using R3;
-using System.Collections.Generic;
 
 namespace Ciallo.Data;
 
@@ -34,7 +34,9 @@ public class FolderLayerSetting
     /// </summary>
     [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Required)]
     public ObservableSortedList<int, Entity> Exposures = null;
+
     public ReadOnlyReactiveProperty<Entity> CurrentExposedCel { get; private set; }
+
     /// <summary>
     /// Onion skin cels keyed by exposure-index offset.
     /// </summary>
@@ -42,33 +44,31 @@ public class FolderLayerSetting
     public void InitCurrent(ReactiveProperty<int> currentFrame, Observable<ImmutableArray<int>> onionSkinOffsets)
     {
         CurrentExposedCel = Exposures.ObserveChanged().PrependDefault()
-            .CombineLatest(currentFrame, (_, currentFrame) => Exposures.FloorIndex(currentFrame))
+            .CombineLatest(currentFrame, (_, frame) => Exposures.FloorIndex(frame))
             .Select(idx => idx >= 0 ? Exposures.GetValueAtIndex(idx) : Entity.Null)
             .ToReadOnlyReactiveProperty();
 
         CurrentOnionSkinCels = Exposures.ObserveChanged().PrependDefault()
             .CombineLatest(onionSkinOffsets, currentFrame,
-                (_, offsets, frame) => BuildCurrentOnionSkinCels(frame, offsets))
-            .ToReadOnlyReactiveProperty();
-    }
+                (_, offsets, frame) =>
+                {
+                    var cels = new SortedList<int, Entity>();
+                    int currentExposureIndex = Exposures.FloorIndex(frame);
+                    if (currentExposureIndex < 0)
+                        return cels;
 
-    private SortedList<int, Entity> BuildCurrentOnionSkinCels(int currentFrame, ImmutableArray<int> offsets)
-    {
-        var cels = new SortedList<int, Entity>();
-        int currentExposureIndex = Exposures.FloorIndex(currentFrame);
-        if (currentExposureIndex < 0)
-            return cels;
+                    foreach (var offset in offsets)
+                    {
+                        int targetExposureIndex = currentExposureIndex + offset;
+                        if (targetExposureIndex < 0 || targetExposureIndex >= Exposures.Count)
+                            continue;
 
-        foreach (var offset in offsets)
-        {
-            int targetExposureIndex = currentExposureIndex + offset;
-            if (targetExposureIndex < 0 || targetExposureIndex >= Exposures.Count)
-                continue;
+                        cels[offset] = Exposures.GetValueAtIndex(targetExposureIndex);
+                    }
 
-            cels[offset] = Exposures.GetValueAtIndex(targetExposureIndex);
-        }
-
-        return cels;
+                    return cels;
+                }
+            ).ToReadOnlyReactiveProperty();
     }
 
     /// <summary>

@@ -1,7 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using Frent;
 using Ciallo.Geometry;
+using Frent;
 using Godot;
 using ObservableCollections;
 using R3;
@@ -29,7 +30,7 @@ public class ShapeLayerPolylineIndex
         _subs?.Dispose();
         var subs = _subs = new CompositeDisposable();
         var layerNode = _layerE.Get<LayerTreeNode>();
-        var shapeSubs = new System.Collections.Generic.Dictionary<Entity, IDisposable>();
+        var shapeSubs = new Dictionary<Entity, IDisposable>();
 
         foreach (var shapeE in layerNode.Children)
             shapeSubs[shapeE] = SubscribeShape(shapeE, skipCurrent: true);

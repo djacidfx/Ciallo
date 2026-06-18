@@ -4,19 +4,16 @@ using Godot;
 
 namespace Ciallo.Geometry;
 
-/// <remarks>
-/// Agents worked on the solver. Shen has very little knowledge of numerical methods.
-/// </remarks>
 public static partial class PolylineExtension
 {
     private const float DisplacementLaplacianEpsilon = 1e-5f;
 
     /// <summary>
-    /// Repairs a polyline span by pulling constrained points onto target displacements while
-    /// keeping the displacement field Laplacian-smooth.
+    /// Solves a constrained displacement-Laplacian deformation for one polyline span.
     ///
-    /// We solve for displacement \(d_i = x'_i - x_i\), not raw positions, so unconstrained points
-    /// drift only as much as smoothness and the per-point penalty allow:
+    /// The unknown is displacement \(d_i = x'_i - x_i\), not raw position \(x'_i\). This
+    /// preserves the authored curve away from hard constraints: free points move only when
+    /// Laplacian smoothness and the displacement penalty agree that they should.
     ///
     /// $$
     /// \min_d \;
@@ -27,9 +24,9 @@ public static partial class PolylineExtension
     /// w_i = 1 + \alpha \left(\frac{\operatorname{dist}(i,\text{nearest origin})}{L}\right)^2
     /// $$
     ///
-    /// subject to \(d_i\) fixed for every <paramref name="fixedDisplacements"/> entry. The first
-    /// term keeps shape changes gradual; the second is the ramp-like rule that makes far-away
-    /// points expensive to move.
+    /// subject to \(d_i\) fixed for every <paramref name="fixedDisplacements"/> entry. The
+    /// Laplacian term keeps the correction gradual; the displacement term prevents the whole
+    /// span from drifting, with larger weights farther from the nearest penalty origin.
     ///
     /// <paramref name="penaltyOrigins"/> are the indices the penalty distance is measured from
     /// (nearest wins). This lets callers distinguish constrained points that should "pull" the

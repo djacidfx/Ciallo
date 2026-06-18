@@ -12,8 +12,8 @@ public static class GapBridgeRepairGeometry
     // Body targets overpass the hit point slightly so visual fills do not leave a hairline gap.
     private const float BodyTargetOverrunDistanceWorld = 0.1f;
 
-    // Reuse Paint Stroke Snap's solver tuning: smoothness weight is implicitly 1.0 and these
-    // are relative to it. See PolylineExtension.SolveDisplacementLaplacian.
+    // Identical to Paint Stroke Snap's displacement-Laplacian tuning. Smoothness weight is
+    // implicitly 1.0; these values scale the distance-weighted displacement penalty.
     private const double DisplacementWeight = 0.08;
     private const double FarDisplacementPenalty = 24.0;
 
@@ -30,11 +30,8 @@ public static class GapBridgeRepairGeometry
             : endpointInfo.EndJunctionLength;
         var tailIndices = BuildTailIndices(positions, repairStart, junctionLength);
 
-        // tailIndices runs anchor -> endpoint. The junction-side anchor is a fixed boundary
-        // (displacement zero) and the dangling endpoint lands exactly on the resolved target.
-        // Same displacement-Laplacian model as Paint Stroke Snap, but the anchor is only a
-        // boundary, not a snap source: the lone penalty origin is the moving endpoint, so the
-        // correction concentrates there and fades toward the anchor.
+        // This is displacement-Laplacian deformation of the dangling tail: the junction-side anchor is a hard
+        // zero-displacement boundary, and the endpoint is a hard snap target.
         int endpointLocal = tailIndices.Length - 1;
         var targetPoint = ResolveRepairTarget(bridge);
         var tailPositions = new Vector2[tailIndices.Length];
@@ -94,5 +91,4 @@ public static class GapBridgeRepairGeometry
         }
         return builder.ToImmutable();
     }
-
 }
