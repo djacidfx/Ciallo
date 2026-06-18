@@ -108,11 +108,24 @@ public abstract partial class LayerTreeBase : ScrollContainer
         block.VisibleButton
             .BindBool(commonSetting.IsVisible, subs)
             .RegisterUndo(cmdM, true);
+        StyleBoxFlat markColorStyleBox = null;
         commonSetting.MarkColor.Subscribe(markColor =>
         {
-            var color = markColor ?? Colors.White;
-            block.VisibleButton.SelfModulate = color;
-            block.WorkingButton.SelfModulate = color;
+            if (markColor == null)
+            {
+                block.VisibleButton.RemoveThemeStyleboxOverride("normal");
+                block.VisibleButton.RemoveThemeStyleboxOverride("pressed");
+                block.WorkingButton.RemoveThemeStyleboxOverride("normal");
+                block.WorkingButton.RemoveThemeStyleboxOverride("pressed");
+                return;
+            }
+
+            markColorStyleBox ??= new StyleBoxFlat();
+            markColorStyleBox.BgColor = markColor.Value;
+            block.VisibleButton.AddThemeStyleboxOverride("normal", markColorStyleBox);
+            block.VisibleButton.AddThemeStyleboxOverride("pressed", markColorStyleBox);
+            block.WorkingButton.AddThemeStyleboxOverride("normal", markColorStyleBox);
+            block.WorkingButton.AddThemeStyleboxOverride("pressed", markColorStyleBox);
         }).AddTo(subs);
         var lineEdit = block.LabelLineEdit
             .BindString(commonSetting.Name, subs)
