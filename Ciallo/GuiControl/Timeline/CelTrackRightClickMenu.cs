@@ -10,17 +10,12 @@ namespace Ciallo.GuiControl;
 /// Shared right-click context menu for all <see cref="CelTrack"/> instances.
 /// Inherits <see cref="PopupMenu"/> directly — one node in <c>TimelinePanel.tscn</c>.
 ///
-/// Usage:
-///   1. Call <see cref="InitDocument"/> once when a document is opened.
-///   2. Call <see cref="Popup"/> from a <see cref="CelTrack"/> on right-click.
+/// Usage: Call <see cref="Popup"/> from a <see cref="CelTrack"/> on right-click.
 ///
 /// Whether the click is "on a cel" is determined internally from the exposure map.
 /// </summary>
 public partial class CelTrackRightClickMenu : PopupMenu
 {
-    // ── Document-level state ──────────────────────────────────────────────────
-    private SelectionManager _selectionManager;
-
     // ── Context captured at Show() ────────────────────────────────────────────
     private Entity _celFolderEntity;
     private int _rightClickedFrame;
@@ -41,14 +36,6 @@ public partial class CelTrackRightClickMenu : PopupMenu
     public override void _Ready()
     {
         IdPressed += OnMenuSelected;
-    }
-
-    /// <summary>
-    /// Call once after a document is opened to cache document-level singletons.
-    /// </summary>
-    public void InitDocument(Entity document)
-    {
-        _selectionManager = document.Get<SelectionManager>();
     }
 
     // ── Public API ────────────────────────────────────────────────────────────
@@ -171,19 +158,19 @@ public partial class CelTrackRightClickMenu : PopupMenu
         }
 
         var document = _celFolderEntity.Document;
-        var cel = document.World.Create();
+        var celE = _celFolderEntity.World.Create();
+        var shapeLayerE = _celFolderEntity.World.Create();
 
-        new CommandBuilder(cel)
-            .NewShapeLayer()
+        new CommandBuilder(celE)
+            .NewFolderLayer()
             .SetProperty(e => e.Get<CommonLayerSetting>().Name, name)
             .AddToLayerTree(_celFolderEntity)
+            .SetTarget(shapeLayerE)
+            .NewShapeLayer()
+            .AddToLayerTree(celE)
             .SetWorkingLayer()
-            .SetTarget(_celFolderEntity)
-            .SetObservableCollection(
-                e => e.Get<FolderLayerSetting>().Exposures,
-                exp => exp.Add(targetFrame, cel))
-            .SetTarget(document)
-            .SetProperty(e => e.Get<SelectionManager>().CurrentFrame, targetFrame)
+            .SetObservableCollection(exposures, exp => exp.Add(targetFrame, celE))
+            .SetProperty(document.Get<SelectionManager>().CurrentFrame, targetFrame)
             .Commit();
     }
 
@@ -197,8 +184,7 @@ public partial class CelTrackRightClickMenu : PopupMenu
         new CommandBuilder(label)
             .SetObservableCollection(exposures, exp =>
             {
-                if (onCel && exp.ContainsKey(frame))
-                    exp.Remove(frame);
+                if (onCel) exp.Remove(frame);
                 exp.Add(frame, celEntity);
             })
             .Commit();

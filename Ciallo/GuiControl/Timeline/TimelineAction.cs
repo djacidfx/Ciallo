@@ -155,8 +155,7 @@ public partial class TimelineAction : Container
         _selectionManager.CurrentFrame.Value = newFrame;
     }
 
-    private int ClampPlaybackFrame(int frame) =>
-        Mathf.Clamp(frame, GetPlaybackStart(), GetPlaybackLastFrame());
+    private int ClampPlaybackFrame(int frame) => Mathf.Clamp(frame, GetPlaybackStart(), GetPlaybackLastFrame());
 
     private int GetPlaybackStart() => _timelineSetting?.PlaybackStart.Value ?? 0;
 
@@ -230,17 +229,21 @@ public partial class TimelineAction : Container
 
         int currentFrame = Document.Get<SelectionManager>().CurrentFrame.Value;
         (int frame, string name) = GetNewAnimationCelFrameName(celFolder, currentFrame);
-        var cel = Document.World.Create();
+        var celE = Document.World.Create();
+        var shapeLayerE = Document.World.Create();
 
-        new CommandBuilder(cel)
-            .NewShapeLayer()
+        new CommandBuilder(celE)
+            .NewFolderLayer()
             .SetProperty(e => e.Get<CommonLayerSetting>().Name, name)
             .AddToLayerTree(celFolder)
+            .SetTarget(shapeLayerE)
+            .NewShapeLayer()
+            .AddToLayerTree(celE)
             .SetWorkingLayer()
             .SetTarget(celFolder)
             .SetObservableCollection(
-                e => e.Get<FolderLayerSetting>().Exposures,
-                exposures => exposures.Add(frame, cel))
+                celFolder.Get<FolderLayerSetting>().Exposures,
+                exposures => exposures.Add(frame, celE))
             .SetTarget(Document)
             .SetProperty(e => e.Get<SelectionManager>().CurrentFrame, frame)
             .Commit();
@@ -293,7 +296,7 @@ public partial class TimelineAction : Container
         if (floorIndex < 0 || exposures.GetKeyAtIndex(floorIndex) != candidate)
             return candidate;
 
-        for (int distance = 1; ; distance++)
+        for (int distance = 1;; distance++)
         {
             long earlier = (long)candidate - distance;
             if (earlier >= int.MinValue && !exposures.ContainsKey((int)earlier))
@@ -384,7 +387,7 @@ public partial class TimelineAction : Container
 
     internal static string MakeUniqueNumericName(int baseNumber, HashSet<string> usedNames)
     {
-        for (int number = baseNumber; ; number++)
+        for (int number = baseNumber;; number++)
         {
             string candidate = number.ToString();
             if (!usedNames.Contains(candidate))
@@ -411,7 +414,7 @@ public partial class TimelineAction : Container
 
     internal static string MakeUniqueFallbackName(int number, HashSet<string> usedNames)
     {
-        for (int i = 1; ; i++)
+        for (int i = 1;; i++)
         {
             string candidate = $"{number}_{i}";
             if (!usedNames.Contains(candidate))
