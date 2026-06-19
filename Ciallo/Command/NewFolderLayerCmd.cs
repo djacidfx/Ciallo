@@ -104,7 +104,6 @@ public class NewFolderLayerCmd : CommandBase
             // View
             var parentView = parentE.Get<FolderLayerView>();
             parentView.InsertNodeAt(folderLayerView, et.Index);
-            folderLayerView.SetOwner(Document.Get<WorldView>());
 
             // Overlay
             parentE.Get<OverlayHolder>().InsertNodeAt(overlayHolder, et.Index);

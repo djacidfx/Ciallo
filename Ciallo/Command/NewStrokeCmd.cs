@@ -12,9 +12,7 @@ public class NewStrokeCmd : NewShapeCmdBase
     public override void OnDeletedAsDo() => TargetE.Delete();
 
     public NewStrokeCmd(Entity copyE = default, IReadOnlyDictionary<Entity, Entity> entityMap = null)
-        : base(copyE, entityMap)
-    {
-    }
+        : base(copyE, entityMap) { }
 
     protected override void AddDataComponents(Entity targetE)
     {
@@ -85,7 +83,6 @@ public class NewStrokeCmd : NewShapeCmdBase
             // View
             var layerView = layerE.Get<ShapeLayerView>();
             layerView.InsertNodeAt(strokeView, index);
-            strokeView.SetOwner(Document.Get<WorldView>());
 
             // Overlay
             layerE.Get<OverlayHolder>().InsertNodeAt(strokeWireframe, index);

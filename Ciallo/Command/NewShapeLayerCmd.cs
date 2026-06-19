@@ -100,7 +100,6 @@ public class NewShapeLayerCmd : CommandBase
             // View
             var folderLayerView = parentE.Get<FolderLayerView>();
             folderLayerView.InsertNodeAt(shapeLayerView, index);
-            shapeLayerView.SetOwner(targetE.Document.Get<WorldView>());
 
             // Overlay
             parentE.Get<OverlayHolder>().InsertNodeAt(overlayHolder, index);

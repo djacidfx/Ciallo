@@ -24,6 +24,7 @@ public class ChildShapePolylineLookup : IInitable, IDestroyable
     public void Init(Entity self)
     {
         _layerE = self;
+        Rebuild();
         Subscribe();
     }
 

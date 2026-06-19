@@ -11,9 +11,7 @@ namespace Ciallo.Command;
 public class NewFilledPolygonCmd : NewShapeCmdBase
 {
     public NewFilledPolygonCmd(Entity copyE = default, IReadOnlyDictionary<Entity, Entity> entityMap = null)
-        : base(copyE, entityMap)
-    {
-    }
+        : base(copyE, entityMap) { }
 
     public override void OnDeletedAsDo() => TargetE.Delete();
 
@@ -80,7 +78,6 @@ public class NewFilledPolygonCmd : NewShapeCmdBase
             // View
             var layerView = layerE.Get<ShapeLayerView>();
             layerView.InsertNodeAt(polygonView, index);
-            polygonView.SetOwner(Document.Get<WorldView>());
 
             // Overlay
             layerE.Get<OverlayHolder>().InsertNodeAt(overlay, index);
