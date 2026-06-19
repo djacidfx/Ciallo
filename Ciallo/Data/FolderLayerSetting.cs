@@ -27,6 +27,16 @@ public class FolderLayerSetting
         set => Exposures = value ? (Exposures ?? []) : null;
     }
 
+    public FolderLayerSetting Clone() =>
+        new()
+        {
+            IsExpanded = { Value = IsExpanded.Value },
+            Exposures = Exposures is null ? null : [.. Exposures],
+            PreferredWorkingLayerPathForCelSelection = { Value = PreferredWorkingLayerPathForCelSelection.Value },
+        };
+
+    #region Cel Folder
+
     /// <summary>
     /// Cel exposure table. 
     /// Keys represent the starting frame of a drawing; 
@@ -36,11 +46,11 @@ public class FolderLayerSetting
     public ObservableSortedList<int, Entity> Exposures = null;
 
     public ReadOnlyReactiveProperty<Entity> CurrentExposedCel { get; private set; }
-
     /// <summary>
     /// Onion skin cels keyed by exposure-index offset.
     /// </summary>
     public ReadOnlyReactiveProperty<SortedList<int, Entity>> CurrentOnionSkinCels { get; private set; }
+
     public void InitCurrent(ReactiveProperty<int> currentFrame, Observable<ImmutableArray<int>> onionSkinOffsets)
     {
         CurrentExposedCel = Exposures.ObserveChanged().PrependDefault()
@@ -71,6 +81,9 @@ public class FolderLayerSetting
             ).ToReadOnlyReactiveProperty();
     }
 
+    public readonly Subject<Dictionary<string, HashSet<Entity>>> CelChildrenNameLookupChanged = new();
+    public readonly Dictionary<string, HashSet<Entity>> CelChildrenByName = new();
+
     /// <summary>
     /// The working layer under a selected cel is determined by this path.
     /// This is runtime preference state and is not serialized.
@@ -81,11 +94,5 @@ public class FolderLayerSetting
     /// </summary>
     public ReactiveProperty<ImmutableArray<int>> PreferredWorkingLayerPathForCelSelection = new([-1, -1]);
 
-    public FolderLayerSetting Clone() =>
-        new()
-        {
-            IsExpanded = { Value = IsExpanded.Value },
-            Exposures = Exposures is null ? null : [.. Exposures],
-            PreferredWorkingLayerPathForCelSelection = { Value = PreferredWorkingLayerPathForCelSelection.Value },
-        };
+    #endregion
 }
