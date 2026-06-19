@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using Ciallo.Geometry;
 using Frent;
+using Frent.Components;
 using Godot;
 using ObservableCollections;
 using R3;
@@ -11,19 +12,24 @@ namespace Ciallo.Data;
 
 public readonly record struct IndexedPolyline(ImmutableArray<Vector2> Positions, Rect2 Bounds);
 
-public class ChildShapePolylineLookup
+public class ChildShapePolylineLookup : IInitable, IDestroyable
 {
     private readonly ObservableDictionary<Entity, IndexedPolyline> _polylines = [];
     public IReadOnlyObservableDictionary<Entity, IndexedPolyline> Polylines => _polylines;
     public int Generation { get; private set; }
 
-    private readonly Entity _layerE;
+    private Entity _layerE;
     private CompositeDisposable _subs;
 
-    public ChildShapePolylineLookup(Entity layerE)
+    public void Init(Entity self)
     {
-        _layerE = layerE;
-        Rebuild();
+        _layerE = self;
+        Subscribe();
+    }
+
+    public void Destroy()
+    {
+        Unsubscribe();
     }
 
     public void Subscribe()

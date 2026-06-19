@@ -38,11 +38,13 @@ public class NewShapeLayerCmd : CommandBase
             ? new ShapeLayerSetting()
             : CopyE.Get<ShapeLayerSetting>().Clone();
         targetE.Add(shapeLayerSetting);
-        targetE.Add(new ChildShapePolylineLookup(targetE));
+        var polylineLookup = new ChildShapePolylineLookup();
+        targetE.Add(polylineLookup);
 
         var manager = new ArrangementManager().AddTo(targetE);
         targetE.Add(manager);
-        manager.Observe([targetE.Get<ChildShapePolylineLookup>()]);
+        manager.Observe(polylineLookup);
+        targetE.Get<ArrangementManager>().SyncModification();
 
         // Others
         CreateNonDataComponents(targetE);
@@ -50,16 +52,12 @@ public class NewShapeLayerCmd : CommandBase
 
     public override void Do(Entity targetE)
     {
-        targetE.Get<ChildShapePolylineLookup>().Subscribe();
-        targetE.Get<ArrangementManager>().SyncModification();
         targetE.Tag<ToSerializeTag>();
     }
 
     public override void Undo(Entity targetE)
     {
         targetE.Detach<ToSerializeTag>();
-        targetE.Get<ArrangementManager>().DesyncModification();
-        targetE.Get<ChildShapePolylineLookup>().Unsubscribe();
     }
 
     public static void CreateNonDataComponents(Entity targetE)
