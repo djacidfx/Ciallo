@@ -13,7 +13,7 @@ using Environment = System.Environment;
 
 namespace Ciallo.Geometry;
 
-// Owns an Arrangement and synchronizes it with a fixed set of shape-layer polyline indexes.
+// Owns an Arrangement and synchronizes it with a fixed set of shape-layer polyline lookups.
 public class ArrangementManager : IDisposable
 {
     // The currently queryable Arrangement, or null if not ready (e.g. mid-rebuild on a worker thread).
@@ -26,7 +26,7 @@ public class ArrangementManager : IDisposable
     private readonly Arrangement _arrangement = new();
     private readonly HashSet<Entity> _sourceShapes = [];
 
-    private IReadOnlyList<ShapeLayerPolylineIndex> _observedIndexes;
+    private IReadOnlyList<ChildShapePolylineLookup> _observedLookups;
     private bool _isSyncingModifications;
 
     private readonly Lock _pendingChangesLock = new();
@@ -54,15 +54,15 @@ public class ArrangementManager : IDisposable
     public IReadOnlySet<Entity> SourceShapes => _sourceShapes;
 
     /// <summary>
-    /// Observe the given shape-layer polyline indexes and synchronize the arrangement with them.
+    /// Observe the given shape-layer polyline lookups and synchronize the arrangement with them.
     /// Would be burst called 100+ times on project load.
     /// </summary>
     /// <remarks>
-    /// Would be called multiple times, clean up previous subscriptions and start observing the new set of indexes.
+    /// Would be called multiple times, clean up previous subscriptions and start observing the new set of lookups.
     /// </remarks>
-    public void Observe(params ShapeLayerPolylineIndex[] indexes)
+    public void Observe(params ChildShapePolylineLookup[] lookups)
     {
-        _observedIndexes = indexes;
+        _observedLookups = lookups;
         RebuildAsync();
         if (_isSyncingModifications)
             RebuildModificationSubscriptions();
@@ -71,7 +71,7 @@ public class ArrangementManager : IDisposable
     public void SyncModification()
     {
         _isSyncingModifications = true;
-        if (_observedIndexes == null)
+        if (_observedLookups == null)
             return;
         RebuildModificationSubscriptions();
     }
@@ -81,25 +81,25 @@ public class ArrangementManager : IDisposable
         _modificationSubscriptions?.Dispose();
         var subs = _modificationSubscriptions = new CompositeDisposable();
 
-        foreach (var index in _observedIndexes)
+        foreach (var lookup in _observedLookups)
         {
-            index.Polylines.ObserveDictionaryAdd().Subscribe(et =>
+            lookup.Polylines.ObserveDictionaryAdd().Subscribe(et =>
             {
                 SyncShape(et.Key, et.Value);
             }).AddTo(subs);
 
-            index.Polylines.ObserveDictionaryRemove().Subscribe(et =>
+            lookup.Polylines.ObserveDictionaryRemove().Subscribe(et =>
             {
                 _sourceShapes.Remove(et.Key);
                 RemoveShape(et.Key);
             }).AddTo(subs);
 
-            index.Polylines.ObserveDictionaryReplace().Subscribe(et =>
+            lookup.Polylines.ObserveDictionaryReplace().Subscribe(et =>
             {
                 SyncShape(et.Key, et.NewValue);
             }).AddTo(subs);
 
-            index.Polylines.ObserveClear().Subscribe(_ =>
+            lookup.Polylines.ObserveClear().Subscribe(_ =>
             {
                 RebuildAsync();
             }).AddTo(subs);
@@ -140,8 +140,8 @@ public class ArrangementManager : IDisposable
     {
         _sourceShapes.Clear();
         Clear();
-        foreach (var index in _observedIndexes)
-        foreach (var (shapeE, polyline) in index.Polylines)
+        foreach (var lookup in _observedLookups)
+        foreach (var (shapeE, polyline) in lookup.Polylines)
             SyncShape(shapeE, polyline);
     }
 

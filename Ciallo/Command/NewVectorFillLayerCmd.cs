@@ -3,9 +3,9 @@ using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
+using Godot;
 using ObservableCollections;
 using R3;
-using Godot;
 
 namespace Ciallo.Command;
 
@@ -46,9 +46,9 @@ public class NewVectorFillLayerCmd : CommandBase
         vectorFillLayerSetting.ReferenceLayers.ObserveChanged().Subscribe(_ =>
         {
             var refLayers = vectorFillLayerSetting.ReferenceLayers;
-            manager.Observe([.. refLayers.Select(e => e.Get<ShapeLayerPolylineIndex>())]);
+            manager.Observe([.. refLayers.Select(e => e.Get<ChildShapePolylineLookup>())]);
         }).AddTo(targetE);
-        manager.Observe([.. vectorFillLayerSetting.ReferenceLayers.Select(e => e.Get<ShapeLayerPolylineIndex>())]);
+        manager.Observe([.. vectorFillLayerSetting.ReferenceLayers.Select(e => e.Get<ChildShapePolylineLookup>())]);
         targetE.Add(manager);
 
         // Others

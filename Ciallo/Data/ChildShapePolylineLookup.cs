@@ -11,15 +11,16 @@ namespace Ciallo.Data;
 
 public readonly record struct IndexedPolyline(ImmutableArray<Vector2> Positions, Rect2 Bounds);
 
-public class ShapeLayerPolylineIndex
+public class ChildShapePolylineLookup
 {
-    public readonly ObservableDictionary<Entity, IndexedPolyline> Polylines = [];
+    private readonly ObservableDictionary<Entity, IndexedPolyline> _polylines = [];
+    public IReadOnlyObservableDictionary<Entity, IndexedPolyline> Polylines => _polylines;
     public int Generation { get; private set; }
 
     private readonly Entity _layerE;
     private CompositeDisposable _subs;
 
-    public ShapeLayerPolylineIndex(Entity layerE)
+    public ChildShapePolylineLookup(Entity layerE)
     {
         _layerE = layerE;
         Rebuild();
@@ -33,15 +34,15 @@ public class ShapeLayerPolylineIndex
         var shapeSubs = new Dictionary<Entity, IDisposable>();
 
         foreach (var shapeE in layerNode.Children)
-            shapeSubs[shapeE] = SubscribeShape(shapeE, skipCurrent: true);
+            shapeSubs[shapeE] = SubscribeShape(shapeE);
 
         layerNode.ObserveAddChild()
             .Select(et => et.Value)
             .Subscribe(shapeE =>
             {
-                Polylines[shapeE] = CreateIndexedPolyline(shapeE.Get<PolylineGeometry>().Positions.Value);
+                _polylines[shapeE] = CreateIndexedPolyline(shapeE.Get<PolylineGeometry>().Positions.Value);
                 Generation++;
-                shapeSubs[shapeE] = SubscribeShape(shapeE, skipCurrent: true);
+                shapeSubs[shapeE] = SubscribeShape(shapeE);
             })
             .AddTo(subs);
 
@@ -51,7 +52,7 @@ public class ShapeLayerPolylineIndex
             {
                 shapeSubs.Remove(shapeE, out var shapeSub);
                 shapeSub?.Dispose();
-                Polylines.Remove(shapeE);
+                _polylines.Remove(shapeE);
                 Generation++;
             })
             .AddTo(subs);
@@ -60,7 +61,6 @@ public class ShapeLayerPolylineIndex
         {
             foreach (var sub in shapeSubs.Values)
                 sub.Dispose();
-            shapeSubs.Clear();
         }));
     }
 
@@ -70,23 +70,22 @@ public class ShapeLayerPolylineIndex
         _subs = null;
     }
 
-    private IDisposable SubscribeShape(Entity shapeE, bool skipCurrent)
+    private IDisposable SubscribeShape(Entity shapeE)
     {
-        var observable = shapeE.Get<PolylineGeometry>().Positions.AsObservable();
-        if (skipCurrent)
-            observable = observable.Skip(1);
-        return observable.Subscribe(p =>
-        {
-            Polylines[shapeE] = CreateIndexedPolyline(p);
-            Generation++;
-        });
+        return shapeE.Get<PolylineGeometry>().Positions
+            .Skip(1)
+            .Subscribe(p =>
+            {
+                _polylines[shapeE] = CreateIndexedPolyline(p);
+                Generation++;
+            });
     }
 
     private void Rebuild()
     {
-        Polylines.Clear();
+        _polylines.Clear();
         foreach (var shapeE in _layerE.Get<LayerTreeNode>().Children)
-            Polylines[shapeE] = CreateIndexedPolyline(shapeE.Get<PolylineGeometry>().Positions.Value);
+            _polylines[shapeE] = CreateIndexedPolyline(shapeE.Get<PolylineGeometry>().Positions.Value);
         Generation++;
     }
 
