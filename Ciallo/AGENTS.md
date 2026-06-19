@@ -11,3 +11,4 @@
 
 ## Abstraction Judgment
 - Prefer keeping important business rules inline when nearby context explains them better than a helper name would. Do not extract a one-off function only because the logic can be named.
+- Prefer smaller local representations over one-off helper structs/enums when the state space is tiny.
