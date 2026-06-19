@@ -73,7 +73,6 @@ public partial class TimelinePanel : VBoxContainer
         document.Add(TrackTree.RootWrapper);
         document.Add(BackgroundGrid);
         TimelineRuler.BindSelectionManager(selectionManager);
-        CelTrackRightClickMenu.InitDocument(document);
         TimelineRulerRightClickMenu.InitDocument(document);
     }
 }

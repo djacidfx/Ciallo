@@ -89,7 +89,7 @@ public class NewFolderLayerCmd : CommandBase
         // Timeline track (creates CelTrack for CelFolders automatically)
         targetE.Document.Get<TrackTree>().Create(targetE);
 
-        // Layer tree events
+        // Layer tree self events
         var events = layerNode.MovedReparentedAsAddedRemoved;
 
         events.Added.Subscribe(et =>
@@ -142,7 +142,6 @@ public class NewFolderLayerCmd : CommandBase
         targetE.Detach<ToSerializeTag>();
     }
 }
-
 
 public partial class CommandBuilder
 {
