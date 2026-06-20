@@ -134,5 +134,23 @@ public class VectorFillHover : InteractiveSessionBase
             CustomMinimumSize = new(128, 0),
         }.BindBool(AppPreference.ShowVectorFillReferenceLayerWireframe);
         container.AddProperty("Show reference wireframe", showWireframe);
+
+        var editReferenceLayers = new Button
+        {
+            Text = "Edit reference layers",
+            CustomMinimumSize = new(0, 32),
+        };
+        editReferenceLayers.Pressed += () =>
+        {
+            var workingLayer = sm.WorkingLayer.CurrentValue;
+            if (!workingLayer.Has<VectorFillLayerSetting>()) return;
+
+            var popup = new ReferenceLayerPickerPopup();
+            popup.PopupHide += popup.QueueFree;
+            container.AddChild(popup);
+            popup.Popup(Document, workingLayer);
+        };
+        container.AddChild(editReferenceLayers
+            .VisibleIf(sm.WorkingLayer, e => e.TryHas<VectorFillLayerSetting>()));
     }
 }
