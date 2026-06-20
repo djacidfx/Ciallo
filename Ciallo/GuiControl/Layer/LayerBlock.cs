@@ -19,15 +19,19 @@ public partial class LayerBlock : Container, IInitable, ILayerBlock
     /// </summary>
     public bool IsCelFolder => LayerEntity.TryGet<FolderLayerSetting>()?.IsCelFolder ?? false;
 
-    /// <summary>The <see cref="LayerWrapper"/> that owns this block as its Title.</summary>
-    public virtual LayerWrapper Wrapper => (LayerWrapper)GetParent();
+    /// <summary>
+    /// The <see cref="LayerWrapper"/> that owns this block as its Title, or null when the block
+    /// is used standalone (e.g. a cel-child template row parented to an HSplitContainer).
+    /// </summary>
+    public virtual LayerWrapper Wrapper => GetParent() as LayerWrapper;
     public Container Node => this;
 
     public override void _EnterTree()
     {
-        // Every LayerBlock is the Title of its own LayerWrapper (Level N),
-        // so its visual indent level is N-1.
-        Indent.Count = Wrapper.Level - 1;
+        // Every LayerBlock that is the Title of its own LayerWrapper (Level N) gets indent N-1.
+        // Standalone template rows have no owning wrapper and set their indent explicitly.
+        if (Wrapper != null)
+            Indent.Count = Wrapper.Level - 1;
     }
 
     public override void _ExitTree()

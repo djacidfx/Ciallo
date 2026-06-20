@@ -14,4 +14,12 @@ public partial class TrackRowWrapper : LayerWrapper
     public override ILayerBlock Block => (Title as TrackRow)?.HeaderBlock;
 
     public TrackHeaderBlock HeaderBlock => (Title as TrackRow)?.HeaderBlock;
+
+    public override void _EnterTree()
+    {
+        base._EnterTree();
+        // Timeline shows cel folders via their CelTrack, not as individual child rows.
+        // Hide every row inside a cel folder so an expanded cel folder shows only its templates.
+        Visible = !IsBeingCeled;
+    }
 }

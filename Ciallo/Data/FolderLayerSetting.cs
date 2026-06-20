@@ -81,8 +81,11 @@ public class FolderLayerSetting
             ).ToReadOnlyReactiveProperty();
     }
 
-    public readonly Subject<Dictionary<string, HashSet<Entity>>> CelChildrenNameLookupChanged = new();
-    public readonly Dictionary<string, HashSet<Entity>> CelChildrenByName = new();
+    // Name indexed children set. Used for batch modification of cel children layers.
+    // ponytail: ObservableHashSet (not HashSet) so a future "show template only when >=2 members"
+    // filter can subscribe to inner add/remove. Inner signals are unused today - only the outer
+    // dictionary's add/remove drives the template GUI.
+    public readonly ObservableDictionary<string, ObservableHashSet<Entity>> CelChildrenByName = new();
 
     /// <summary>
     /// The working layer under a selected cel is determined by this path.

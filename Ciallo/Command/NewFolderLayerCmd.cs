@@ -157,11 +157,6 @@ public class NewFolderLayerCmd : CommandBase
                     celChildrenByName.Remove(name);
             }
 
-            void SignalChange()
-            {
-                folderSetting.CelChildrenNameLookupChanged.OnNext(celChildrenByName);
-            }
-
             layerNode.ObserveAddChild().Subscribe(et =>
             {
                 Entity newChildE = et.Value;
@@ -173,7 +168,6 @@ public class NewFolderLayerCmd : CommandBase
 
                 foreach (var (layerE, name) in nameLookup.Names)
                     AddCelChildNameLookupEntry(name, layerE);
-                SignalChange();
 
                 var subs = new CompositeDisposable();
                 childNameLookupSubs[newChildE] = subs;
@@ -183,7 +177,6 @@ public class NewFolderLayerCmd : CommandBase
                     string newName = addEvent.Value.Value;
                     Entity layerE = addEvent.Value.Key;
                     AddCelChildNameLookupEntry(newName, layerE);
-                    SignalChange();
                 }).AddTo(subs);
 
                 nameLookup.Names.ObserveReplace().Subscribe(replaceEvent =>
@@ -194,7 +187,6 @@ public class NewFolderLayerCmd : CommandBase
 
                     RemoveCelChildNameLookupEntry(oldName, layerE);
                     AddCelChildNameLookupEntry(newName, layerE);
-                    SignalChange();
                 }).AddTo(subs);
 
                 nameLookup.Names.ObserveRemove().Subscribe(removeEvent =>
@@ -203,7 +195,6 @@ public class NewFolderLayerCmd : CommandBase
                     Entity layerE = removeEvent.Value.Key;
 
                     RemoveCelChildNameLookupEntry(removedName, layerE);
-                    SignalChange();
                 }).AddTo(subs);
             }).AddTo(targetE);
 
@@ -217,7 +208,6 @@ public class NewFolderLayerCmd : CommandBase
 
                 foreach (var (layerE, name) in nameLookup.Names)
                     RemoveCelChildNameLookupEntry(name, layerE);
-                SignalChange();
 
                 childNameLookupSubs.Remove(childE, out var subs);
                 subs.Dispose();
