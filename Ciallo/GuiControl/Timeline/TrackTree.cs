@@ -104,6 +104,7 @@ public partial class TrackTree : LayerTreeBase
     private void WireCelChildTemplates(Entity layerE, TrackRowWrapper wrapper, FolderLayerSetting folderSetting, CompositeDisposable subs)
     {
         var celChildrenByName = folderSetting.CelChildrenByName;
+        var sm = layerE.Document.Get<SelectionManager>();
         var blocks = new Dictionary<string, LayerBlock>();
         var blockSubs = new Dictionary<string, CompositeDisposable>();
 
@@ -112,7 +113,10 @@ public partial class TrackTree : LayerTreeBase
             if (blocks.ContainsKey(name)) return;
 
             var block = LayerBlock.New();
-            block.WorkingButton.Visible = false;
+            // The working button is shown but deliberately NOT added to WorkingLayerButtonGroup:
+            // a template is not itself a selectable layer, its pressed state is derived (see BindTemplate)
+            // and its click navigates to a same-named cel child instead of toggling group membership.
+            block.WorkingButton.Visible = true;
             block.DropdownArrow.Visible = false;
             block.RegularFolderIcon.Visible = false;
             block.CelFolderIcon.Visible = false;
@@ -163,6 +167,51 @@ public partial class TrackTree : LayerTreeBase
                 .Subscribe(v => PushToMembers(name, e => e.Get<CommonLayerSetting>().IsVisible, v)).AddTo(bs);
             block.LabelLineEdit.OnTextSubmittedAsObservable()
                 .Subscribe(v => PushToMembers(name, e => e.Get<CommonLayerSetting>().Name, v)).AddTo(bs);
+
+            // Derived pressed state: lit when the working layer is a current member of this template
+            // (which, since members are this folder's cel children, also implies WorkingCelFolder == layerE).
+            // It is NOT owned by the button group, so we always drive it via SetPressedNoSignal.
+            void SyncPressed() =>
+                block.WorkingButton.SetPressedNoSignal(
+                    sm.WorkingCelFolder.CurrentValue == layerE && members.Contains(sm.WorkingLayer.CurrentValue));
+
+            // Recompute on: working-layer switch, working-cel-folder resettle (debounced), and member-set
+            // mutation. The last one matters because renaming the working layer moves it between name groups
+            // (an inner-set add/remove) without changing the working-layer entity or the dict keys.
+            sm.WorkingLayer.Select(_ => Unit.Default)
+                .Merge(sm.WorkingCelFolder.Select(_ => Unit.Default))
+                .Merge(members.ObserveAdd().Select(_ => Unit.Default))
+                .Merge(members.ObserveRemove().Select(_ => Unit.Default))
+                .DebounceFrame(1, GodotFrameProvider.Process)
+                .Subscribe(_ => SyncPressed()).AddTo(bs);
+            SyncPressed();
+
+            // Click navigates the working layer to this template's same-named child under the currently
+            // exposed cel, without moving the playhead. The button is a derived indicator, so we ignore the
+            // toggle value and recompute/correct the visual ourselves.
+            block.WorkingButton.OnToggledAsObservable().Subscribe(_ =>
+            {
+                // Already the working layer's template: nothing to navigate to.
+                if (sm.WorkingCelFolder.CurrentValue == layerE && members.Contains(sm.WorkingLayer.CurrentValue))
+                {
+                    SyncPressed();
+                    return;
+                }
+
+                var cel = folderSetting.CurrentExposedCel.CurrentValue;
+                var target = cel.IsNull ? Entity.Null : cel.Get<LayerTreeNode>().GetLayerChildByName(name);
+                if (target.IsNull)
+                {
+                    // No matching child under the current cel (or no cel exposed): ignore the click.
+                    SyncPressed();
+                    return;
+                }
+
+                new CommandBuilder(target).SetWorkingLayer(recordCelSelectionPreference: true).CommitToLatest();
+                // The target carries this template's name and is a cel child of this folder, so it is a member:
+                // light the button optimistically (WorkingCelFolder resettles a frame later via the sub above).
+                block.WorkingButton.SetPressedNoSignal(true);
+            }).AddTo(bs);
         }
 
         // Overwrite the chosen property on every current member of the named group, in one undoable action.

@@ -1,5 +1,3 @@
-using System.Collections.Immutable;
-using System.Linq;
 using System.Runtime.Serialization;
 using Frent;
 using ObservableCollections;
@@ -58,36 +56,50 @@ public class SelectionManager
 
     /// <summary>
     /// Resolves the layer that should be selected for a timeline frame, using the
-    /// working cel folder's selected cel. If the frame is before the first exposed
-    /// cel, resolves to the working cel folder itself.
+    /// working cel folder's selected cel and its preferred cel child name.
+    /// <list type="bullet">
+    /// <item>Returns <see cref="Entity.Null"/> when there is no working cel folder, i.e. the
+    ///   current working layer is not under any cel folder. The caller should keep the working
+    ///   layer untouched (scrubbing must not disturb plain-layer editing).</item>
+    /// <item>Returns the document entity when a working cel folder exists but the frame resolves
+    ///   to no cel child (frame before the first cel, dead cel, or no direct child matching the
+    ///   preferred name). The caller commits this so the working layer is cleared.</item>
+    /// <item>Otherwise returns the matching cel child to switch to.</item>
+    /// </list>
     /// </summary>
     public Entity ResolveWorkingLayerForTimelineFrameSelection(int frame)
     {
         var celFolder = WorkingCelFolder.CurrentValue;
+        // Not in a cel-folder context: keep the current working layer (no change).
         if (celFolder.IsNull) return Entity.Null;
 
         var folderSetting = celFolder.Get<FolderLayerSetting>();
         var exposures = folderSetting.Exposures;
         if (exposures == null) return Entity.Null;
 
+        // In a cel-folder context from here on: a miss means "clear", signalled by the document entity.
         int floor = exposures.FloorIndex(frame);
         if (floor < 0)
-            return celFolder;
+            return celFolder.Document;
 
         var exposedCel = exposures.GetValueAtIndex(floor);
         if (exposedCel.IsNull || !exposedCel.IsAlive || !exposedCel.Has<LayerTreeNode>())
-            return Entity.Null;
+            return celFolder.Document;
 
-        var result = ResolvePreferredWorkingLayerForCelSelection(
-            exposedCel.Get<LayerTreeNode>(),
-            folderSetting.PreferredWorkingLayerPathForCelSelection.Value);
-
-        return result;
+        var child = exposedCel.Get<LayerTreeNode>().GetLayerChildByName(folderSetting.PreferredNameForCelSelection.Value);
+        return child.IsNull ? celFolder.Document : child;
     }
 
     /// <summary>
     /// Returns the entity to switch <see cref="WorkingLayer"/> to after clicking a cel button,
-    /// using the clicked track's preferred path under the clicked cel.
+    /// using the clicked cel's direct child matching the folder's preferred cel child name.
+    /// <list type="bullet">
+    /// <item>Returns <see cref="Entity.Null"/> when the arguments are invalid, or the resolved
+    ///   child is already the working layer (nothing to do).</item>
+    /// <item>Returns the document entity when the clicked cel has no direct child matching the
+    ///   preferred name, so the caller clears the working layer.</item>
+    /// <item>Otherwise returns the matching cel child.</item>
+    /// </list>
     /// </summary>
     public Entity ComputeWorkingLayerForCelButtonSelection(Entity celFolder, Entity clickedCel)
     {
@@ -100,26 +112,11 @@ public class SelectionManager
         if (folderSetting?.IsCelFolder != true)
             return Entity.Null;
 
-        var result = ResolvePreferredWorkingLayerForCelSelection(
-            clickedCel.Get<LayerTreeNode>(),
-            folderSetting.PreferredWorkingLayerPathForCelSelection.Value);
-
+        // No matching child: clear the working layer, signalled by the document entity.
+        var child = clickedCel.Get<LayerTreeNode>().GetLayerChildByName(folderSetting.PreferredNameForCelSelection.Value);
+        var result = child.IsNull ? celFolder.Document : child;
+        // Already the working layer (including already-cleared): nothing to do.
         return result == WorkingLayer.Value ? Entity.Null : result;
-    }
-
-    private static Entity ResolvePreferredWorkingLayerForCelSelection(
-        LayerTreeNode selectedCelNode,
-        ImmutableArray<int> preferredPath)
-    {
-        if (preferredPath.SequenceEqual([-1, -1]))
-            return selectedCelNode.GetDeepestLastLayerDescendant().Self;
-
-        var exactNode = selectedCelNode.GetLayerNodeOrNull(preferredPath, normalizeNegativeIndex: true);
-        if (exactNode != null)
-            return exactNode.Self;
-
-        int preorderIndex = selectedCelNode.GetNearestLayerPreorderIndex(preferredPath, normalizeNegativeIndex: true);
-        return selectedCelNode.GetLayerNodeAtPreorderIndex(preorderIndex).Self;
     }
 
     /// <summary>

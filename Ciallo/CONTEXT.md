@@ -18,6 +18,10 @@ A cel folder is a folder layer whose children are cels. Cel folders do not nest 
 
 A cel child template is a shared editable setting grouped by layer name across the cel children of one cel folder. Cel children are the layers nested inside the cels (the grandchildren of the cel folder), grouped by name. Editing a template applies its values one-way to every cel child layer that currently shares that name, overwriting their prior values. Renaming a template renames all those layers; if the new name already names another group, the groups merge. A template exists for every distinct name, including names used by only one layer.
 
+### Preferred Cel Child Name
+
+A preferred cel child name is a cel folder's runtime memory of which cel child layer, by name, the working layer should follow when navigating between cels. Navigating to a cel (clicking a cel button or scrubbing the timeline) resolves the working layer to the same-named cel child under the newly exposed cel. When no cel child under that cel matches the name, no layer is selected. It is set only when the working layer becomes a direct cel child, and is empty by default.
+
 ### Folder layer
 Any layer's parent must be a folder layer. The document entity is a folder layer entity.
 

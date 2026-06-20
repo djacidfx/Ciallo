@@ -16,24 +16,18 @@ public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
         return GetFilteredChildren(IsLayerChild);
     }
 
-    public LayerTreeNode GetLayerNodeOrNull(IReadOnlyList<int> path, bool normalizeNegativeIndex = false)
+    /// <summary>
+    /// Returns the direct layer child whose name equals <paramref name="name"/>,
+    /// or <see cref="Entity.Null"/> when none matches (including when the name is empty
+    /// and no child happens to be named empty). On duplicate names the first match wins.
+    /// </summary>
+    public Entity GetLayerChildByName(string name)
     {
-        return GetNodeOrNull(path, IsLayerChild, normalizeNegativeIndex);
-    }
+        foreach (var childE in GetLayerChildren())
+            if (childE.Get<CommonLayerSetting>().Name.Value == name)
+                return childE;
 
-    public LayerTreeNode GetDeepestLastLayerDescendant()
-    {
-        return GetDeepestLastDescendant(IsLayerChild);
-    }
-
-    public int GetNearestLayerPreorderIndex(IReadOnlyList<int> path, bool normalizeNegativeIndex = false)
-    {
-        return GetNearestPreorderIndex(path, IsLayerChild, normalizeNegativeIndex);
-    }
-
-    public LayerTreeNode GetLayerNodeAtPreorderIndex(int preorderIndex)
-    {
-        return GetNodeAtPreorderIndex(preorderIndex, IsLayerChild);
+        return Entity.Null;
     }
 
     /// <summary>

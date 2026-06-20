@@ -32,7 +32,7 @@ public class FolderLayerSetting
         {
             IsExpanded = { Value = IsExpanded.Value },
             Exposures = Exposures is null ? null : [.. Exposures],
-            PreferredWorkingLayerPathForCelSelection = { Value = PreferredWorkingLayerPathForCelSelection.Value },
+            PreferredNameForCelSelection = { Value = PreferredNameForCelSelection.Value },
         };
 
     #region Cel Folder
@@ -88,14 +88,15 @@ public class FolderLayerSetting
     public readonly ObservableDictionary<string, ObservableHashSet<Entity>> CelChildrenByName = new();
 
     /// <summary>
-    /// The working layer under a selected cel is determined by this path.
-    /// This is runtime preference state and is not serialized.
-    /// 
-    /// The path is relative to the selected cel root; an empty path means the selected cel itself.
-    /// Invalid path indexes are resolved to the nearest preorder node without mutating this preference.
-    /// The default [-1, -1] prefers the last child of the last child/folder under the selected cel.
+    /// When navigating to a cel (clicking a cel button or scrubbing the timeline), the working layer
+    /// follows the direct cel child sharing this name. If the newly exposed cel has no direct child with
+    /// this name (including the empty-name default), no layer is selected.
+    ///
+    /// Set only when the working layer becomes a direct cel child (see <see cref="Command.SetWorkingLayerCmd"/>);
+    /// other working-layer changes leave it untouched. Empty by default.
     /// </summary>
-    public ReactiveProperty<ImmutableArray<int>> PreferredWorkingLayerPathForCelSelection = new([-1, -1]);
+    [DataMember, ProjectField]
+    public ReactiveProperty<string> PreferredNameForCelSelection = new("");
 
     #endregion
 }

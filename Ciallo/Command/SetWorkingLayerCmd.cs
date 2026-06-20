@@ -1,6 +1,4 @@
 using Ciallo.Data;
-using System.Collections.Generic;
-using System.Collections.Immutable;
 using Ciallo.GuiControl;
 using Frent;
 
@@ -11,8 +9,8 @@ public class SetWorkingLayerCmd : CommandBase
 {
     private readonly bool _recordCelSelectionPreference;
     private Entity _celSelectionPreferenceFolder = Entity.Null;
-    private ImmutableArray<int> _oldPreferredPath;
-    private ImmutableArray<int> _newPreferredPath;
+    private string _oldPreferredName;
+    private string _newPreferredName;
     public Entity OldLayerE;
 
     public SetWorkingLayerCmd(bool recordCelSelectionPreference = false)
@@ -28,16 +26,16 @@ public class SetWorkingLayerCmd : CommandBase
         if (!_recordCelSelectionPreference)
             return;
 
-        if (!TryGetCelSelectionPreferenceTarget(newLayerE, out _celSelectionPreferenceFolder, out _newPreferredPath))
+        if (!TryGetCelSelectionPreferenceTarget(newLayerE, out _celSelectionPreferenceFolder, out _newPreferredName))
             return;
 
-        _oldPreferredPath = _celSelectionPreferenceFolder
-            .Get<FolderLayerSetting>().PreferredWorkingLayerPathForCelSelection.Value;
+        _oldPreferredName = _celSelectionPreferenceFolder
+            .Get<FolderLayerSetting>().PreferredNameForCelSelection.Value;
     }
 
     public override void Do(Entity newLayerE)
     {
-        SetCelSelectionPreferencePath(_newPreferredPath);
+        SetCelSelectionPreferenceName(_newPreferredName);
 
         // Selection manager
         var sm = Document.Get<SelectionManager>();
@@ -65,10 +63,10 @@ public class SetWorkingLayerCmd : CommandBase
         var sm = Document.Get<SelectionManager>();
         sm.WorkingLayer.Value = OldLayerE;
 
-        SetCelSelectionPreferencePath(_oldPreferredPath);
+        SetCelSelectionPreferenceName(_oldPreferredName);
     }
 
-    private void SetCelSelectionPreferencePath(ImmutableArray<int> path)
+    private void SetCelSelectionPreferenceName(string name)
     {
         if (!_recordCelSelectionPreference
             || _celSelectionPreferenceFolder.IsNull
@@ -77,17 +75,23 @@ public class SetWorkingLayerCmd : CommandBase
 
         _celSelectionPreferenceFolder
             .Get<FolderLayerSetting>()
-            .PreferredWorkingLayerPathForCelSelection
-            .Value = path;
+            .PreferredNameForCelSelection
+            .Value = name;
     }
 
+    /// <summary>
+    /// Determines whether switching to <paramref name="newLayerE"/> should update a cel folder's
+    /// preferred cel child name, and to what. Only a direct child of a cel under a cel folder
+    /// qualifies; in every other case (the cel folder itself, the cel root, or a deeper nested
+    /// layer) the preference is left untouched.
+    /// </summary>
     private static bool TryGetCelSelectionPreferenceTarget(
         Entity newLayerE,
         out Entity celFolder,
-        out ImmutableArray<int> path)
+        out string name)
     {
         celFolder = Entity.Null;
-        path = [];
+        name = null;
 
         if (newLayerE.IsNull || newLayerE.IsDocument || !newLayerE.IsAlive)
             return false;
@@ -95,37 +99,17 @@ public class SetWorkingLayerCmd : CommandBase
         if (newLayerE.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
             return false;
 
-        var cursor = newLayerE;
-        Entity exposedCel = Entity.Null;
-        while (!cursor.IsNull && !cursor.IsDocument)
-        {
-            var parent = cursor.Get<LayerTreeNode>().ParentValue;
-            if (parent.IsNull) break;
-
-            if (parent.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
-            {
-                celFolder = parent;
-                exposedCel = cursor;
-                break;
-            }
-
-            cursor = parent;
-        }
-
-        if (celFolder.IsNull || exposedCel.IsNull)
+        // The preference only tracks direct cel children: the new layer's parent must be a cel.
+        var celE = newLayerE.Get<LayerTreeNode>().ParentValue;
+        if (celE.IsNull || celE.IsDocument)
             return false;
 
-        if (newLayerE == exposedCel)
-            return true;
-
-        EntityTreeNode<LayerTreeNode>.BreadthFirstSearch(
-            exposedCel.Get<LayerTreeNode>(),
-            newLayerE.Get<LayerTreeNode>(),
-            out List<int> relativePath);
-        if (relativePath == null)
+        var folderParentE = celE.Get<LayerTreeNode>().ParentValue;
+        if (folderParentE.IsNull || folderParentE.TryGet<FolderLayerSetting>()?.IsCelFolder != true)
             return false;
 
-        path = [.. relativePath];
+        celFolder = folderParentE;
+        name = newLayerE.Get<CommonLayerSetting>().Name.Value;
         return true;
     }
 }
