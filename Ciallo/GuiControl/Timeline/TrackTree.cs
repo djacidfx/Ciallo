@@ -13,7 +13,6 @@ namespace Ciallo.GuiControl;
 /// The split offset of every <see cref="TrackRow"/> is kept in sync with HSplitRuler
 /// via <see cref="SplitOffset"/>.
 /// </summary>
-/// <remarks> Get AI slop into this class and related places since shen's laziness. Refactor on implementing new needs. </remarks>
 [SceneTree(root: "Root"), Instantiable]
 public partial class TrackTree : LayerTreeBase
 {

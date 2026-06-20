@@ -304,16 +304,14 @@ public abstract partial class LayerTreeBase : ScrollContainer
                 var labelLineEdit = GetBlock(dropTarget.ParentEntity).LabelLineEdit;
                 _hinter.GlobalPosition = labelLineEdit.GlobalPosition;
                 _hinter.Size = labelLineEdit.Size;
+                _hinter.Visible = true;
             }
             else
             {
                 var refBlock = GetBlock(dropTarget.ParentEntity.Get<LayerTreeNode>().Children[0]);
-                float startX = refBlock.DropdownArrow.GlobalPosition.X;
                 float lineY = _root.GlobalPosition.Y + _root.Size.Y;
-                _hinter.GlobalPosition = new Vector2(startX, lineY - _hinter.Width / 2f);
-                _hinter.Size = new Vector2(refBlock.Node.GlobalPosition.X + refBlock.Node.Size.X - startX, _hinter.Width);
+                PlaceHinterLine(dropTarget.ParentEntity, refBlock, lineY);
             }
-            _hinter.Visible = true;
             return;
         }
 
@@ -335,13 +333,22 @@ public abstract partial class LayerTreeBase : ScrollContainer
                 lineGlobalY = refBlock.Node.GlobalPosition.Y;
             }
 
-            float startX = !dropTarget.ParentEntity.IsDocument
-                ? GetBlock(dropTarget.ParentEntity).LabelLineEdit.GlobalPosition.X
-                : refBlock.DropdownArrow.GlobalPosition.X;
-            _hinter.GlobalPosition = new Vector2(startX, lineGlobalY - _hinter.Width / 2f);
-            _hinter.Size = new Vector2(refBlock.Node.GlobalPosition.X + refBlock.Node.Size.X - startX, _hinter.Width);
-            _hinter.Visible = true;
+            PlaceHinterLine(dropTarget.ParentEntity, refBlock, lineGlobalY);
         }
+    }
+
+    /// <summary>
+    /// Positions <see cref="_hinter"/> as a horizontal insertion line spanning from the
+    /// parent's indent start to <paramref name="refBlock"/>'s right edge, at <paramref name="lineGlobalY"/>.
+    /// </summary>
+    private void PlaceHinterLine(Entity parentEntity, ILayerBlock refBlock, float lineGlobalY)
+    {
+        float startX = !parentEntity.IsDocument
+            ? GetBlock(parentEntity).LabelLineEdit.GlobalPosition.X
+            : refBlock.DropdownArrow.GlobalPosition.X;
+        _hinter.GlobalPosition = new Vector2(startX, lineGlobalY - _hinter.Width / 2f);
+        _hinter.Size = new Vector2(refBlock.Node.GlobalPosition.X + refBlock.Node.Size.X - startX, _hinter.Width);
+        _hinter.Visible = true;
     }
 
     private void OnDragEnd(ILayerBlock draggedBlock, InputEventMouseButton button)
