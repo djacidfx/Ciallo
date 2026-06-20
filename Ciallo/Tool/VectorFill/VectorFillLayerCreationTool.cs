@@ -14,18 +14,18 @@ namespace Ciallo.Tool;
 [RegisterTool(ToolButton.VectorFill)]
 public class VectorFillLayerCreationTool : ToolBase
 {
-    public enum CelCreationStrategy
+    public enum CreationStrategy
     {
         None, // Do not create cel, just create one vector fill layer like Illustration
 
-        // Try to create many vector fill layers based on exposed cels.
-        WithinCelFolder, // Put new vector fill layers into the same cel folder as exposed cels.
+        // Create many vector fill layers based on cels.
+        WithinCel, // Put new vector fill layers into the same cel folder as exposed cels.
         // If exposed cels are already regular folders, put new layers into corresponding regular folders.
         // If not, wrap a new layer and their reference layers into a new regular folder, named by the exposed cel.
         NewCelFolder, // Create a cel folder and put new vector fill layers into it
     }
 
-    public readonly ReactiveProperty<CelCreationStrategy> Strategy = new(CelCreationStrategy.WithinCelFolder);
+    public readonly ReactiveProperty<CreationStrategy> Strategy = new(CreationStrategy.WithinCel);
     public readonly VectorFillLayerCreationHover Hover = new();
 
     protected override void ConfigureStateMachine()
@@ -63,7 +63,7 @@ public class VectorFillLayerCreationTool : ToolBase
     public void OnCreate()
     {
         var celFolder = Document.Get<SelectionManager>().WorkingCelFolder.CurrentValue;
-        if (celFolder.IsNull || Strategy.Value == CelCreationStrategy.None)
+        if (celFolder.IsNull || Strategy.Value == CreationStrategy.None)
         {
             CreateSingleVectorFillLayer();
             return;
@@ -71,10 +71,10 @@ public class VectorFillLayerCreationTool : ToolBase
 
         switch (Strategy.Value)
         {
-            case CelCreationStrategy.WithinCelFolder:
+            case CreationStrategy.WithinCel:
                 CreateVectorFillLayersWithinCelFolder(celFolder);
                 break;
-            case CelCreationStrategy.NewCelFolder:
+            case CreationStrategy.NewCelFolder:
                 CreateVectorFillLayersInNewCelFolder(celFolder);
                 break;
         }
