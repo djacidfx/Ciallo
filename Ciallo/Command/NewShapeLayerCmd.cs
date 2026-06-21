@@ -29,7 +29,7 @@ public class NewShapeLayerCmd : CommandBase
         var commonSetting = CopyE.IsNull
             ? new CommonLayerSetting
             {
-                Name = { Value = $"{"Shape layer".Tr()} {LayerTreeNode.LayerCreationId++}" }
+                Name = { Value = "Shape layer".Tr() }
             }
             : CopyE.Get<CommonLayerSetting>().Clone();
         targetE.Add(commonSetting);

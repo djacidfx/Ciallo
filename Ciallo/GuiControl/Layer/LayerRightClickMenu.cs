@@ -45,7 +45,8 @@ public partial class LayerRightClickMenu : PopupMenu
     {
         Clear();
 
-        AddItem("New Shape Layer", (int)MenuItem.NewShapeLayer);
+        bool targetIsCelFolder = _targetLayer.TryGet<FolderLayerSetting>() is { IsCelFolder: true };
+        AddItem(targetIsCelFolder ? "Add Shape Layer to All Cels" : "New Shape Layer", (int)MenuItem.NewShapeLayer);
         AddItem("New Folder Layer", (int)MenuItem.NewFolderLayer);
         if (_showTimelineLayerActions)
             AddItem("New Cel Folder Layer", (int)MenuItem.NewCelFolderLayer);

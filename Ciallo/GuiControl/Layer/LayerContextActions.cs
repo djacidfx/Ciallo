@@ -8,12 +8,18 @@ namespace Ciallo.GuiControl;
 
 internal static class LayerContextActions
 {
+    private static int s_plainShapeLayerId = 1;
+
     public static void NewShapeLayer(Entity targetLayer)
     {
+        if (TryAddShapeLayerInCelContext(targetLayer))
+            return;
+
         var document = targetLayer.Document;
         var (parentE, index) = GetNewLayerInsertPosition(targetLayer);
         new CommandBuilder(document.World.Create())
             .NewShapeLayer()
+            .SetProperty(e => e.Get<CommonLayerSetting>().Name, $"{"Shape layer".Tr()} {s_plainShapeLayerId++}")
             .AddToLayerTree(parentE, index)
             .SetWorkingLayer()
             .Commit();
@@ -186,6 +192,118 @@ internal static class LayerContextActions
 
         cmd.SetTarget(targetLayer)
             .SetWorkingLayer()
+            .Commit();
+    }
+
+    /// <summary>
+    /// Cel-aware "add shape layer". Distinguishes batch edits from single-cel edits:
+    /// <list type="bullet">
+    ///   <item><b>Target is a cel folder</b> (batch): add a shape layer at the visual top of every
+    ///     folder-cel, all sharing one name so they collapse to a single template row. Non-folder cels
+    ///     are skipped. If no folder-cel exists, fall back to the new-cel flow (a fresh folder cel whose
+    ///     child is the shape layer).</item>
+    ///   <item><b>Target lands inside one cel</b> (single): add the shape layer to that cel only, named
+    ///     with a leading '_' so it stays out of the template system — unless the cel folder holds just
+    ///     one cel, in which case this edit IS the template, so no '_' prefix.</item>
+    /// </list>
+    /// Returns false when there is no cel context, letting the caller do an ordinary insert.
+    /// </summary>
+    private static bool TryAddShapeLayerInCelContext(Entity targetLayer)
+    {
+        if (targetLayer.IsNull || targetLayer.IsDocument)
+            return false;
+
+        // Target is the cel folder itself → batch over all its cels.
+        if (targetLayer.TryGet<FolderLayerSetting>() is { IsCelFolder: true })
+        {
+            AddShapeLayerToAllCels(targetLayer);
+            return true;
+        }
+
+        // Otherwise find the single cel the new layer would land in (target is the cel, or inside it).
+        var cel = FindContainingCel(targetLayer);
+        if (cel.IsNull || !cel.Has<FolderLayerSetting>())
+            return false; // non-folder cel can't hold children → ordinary insert handles it
+
+        AddShapeLayerToSingleCel(cel);
+        return true;
+    }
+
+    /// <summary>Walks up from <paramref name="layer"/> to the nearest cel (a CelTag-tagged ancestor or self).</summary>
+    private static Entity FindContainingCel(Entity layer)
+    {
+        var cursor = layer;
+        while (!cursor.IsNull && !cursor.IsDocument && cursor.Has<LayerTreeNode>())
+        {
+            if (cursor.Tagged<CelTag>())
+                return cursor;
+            cursor = cursor.Get<LayerTreeNode>().ParentValue;
+        }
+        return Entity.Null;
+    }
+
+    private static void AddShapeLayerToAllCels(Entity celFolder)
+    {
+        var folderCels = celFolder.Get<LayerTreeNode>().Children
+            .Where(c => c.IsAlive && c.Tagged<CelTag>() && c.Has<FolderLayerSetting>())
+            .ToArray();
+
+        // No folder-cel to add into → bootstrap a brand-new cel like the New Animation Cel button.
+        if (folderCels.Length == 0)
+        {
+            var document = celFolder.Document;
+            int currentFrame = document.Get<SelectionManager>().CurrentFrame.Value;
+            var (frame, name) = TimelineAction.GetNewAnimationCelFrameName(celFolder, currentFrame);
+            TimelineAction.NewCelFromTemplate(celFolder, frame, name);
+            return;
+        }
+
+        // One shared name across every cel, so the new layers collapse into a single template row.
+        // Reuse the plain-path counter (one bump per batch) — laziest way to keep repeated batches distinct.
+        string sharedName = $"{"Shape layer".Tr()} {s_plainShapeLayerId++}";
+
+        var cmd = new CommandBuilder("Add Shape Layer to All Cels", celFolder.Document);
+        Entity workingLayerE = Entity.Null;
+        var exposedCel = celFolder.Get<FolderLayerSetting>().CurrentExposedCel.CurrentValue;
+
+        foreach (var cel in folderCels)
+        {
+            var shapeE = celFolder.World.Create();
+            cmd.SetTarget(shapeE)
+                .NewShapeLayer()
+                .SetProperty(e => e.Get<CommonLayerSetting>().Name, sharedName)
+                .AddToLayerTree(cel); // -1 default = last child = visual top
+
+            if (cel == exposedCel)
+                workingLayerE = shapeE;
+        }
+
+        // Land the working layer on the new layer in the currently-exposed cel, so the user can draw at once.
+        // Record the preference so cel navigation follows the just-added shared layer, not the old template row.
+        if (!workingLayerE.IsNull)
+            cmd.SetTarget(workingLayerE).SetWorkingLayer(recordCelSelectionPreference: true);
+
+        cmd.Commit();
+    }
+
+    private static void AddShapeLayerToSingleCel(Entity cel)
+    {
+        var celFolder = cel.Get<LayerTreeNode>().ParentValue;
+        int celCount = celFolder.Get<LayerTreeNode>().Children.Count(c => c.IsAlive && c.Tagged<CelTag>());
+
+        // Single-cel edit gets a '_' prefix to stay out of the template — except when this is the
+        // folder's only cel, where the edit defines the template and must NOT be hidden from it.
+        bool isBatch = celCount <= 1;
+        string baseName = $"{"Shape layer".Tr()} {s_plainShapeLayerId++}";
+        string name = isBatch ? baseName : "_" + baseName;
+
+        var shapeE = cel.World.Create();
+        new CommandBuilder("Add Shape Layer", cel.Document)
+            .SetTarget(shapeE)
+            .NewShapeLayer()
+            .SetProperty(e => e.Get<CommonLayerSetting>().Name, name)
+            .AddToLayerTree(cel)
+            .SetWorkingLayer(recordCelSelectionPreference: true)
             .Commit();
     }
 

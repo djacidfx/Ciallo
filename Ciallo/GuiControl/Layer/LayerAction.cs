@@ -35,12 +35,8 @@ public partial class LayerAction : Control
 
     public void OnNewShapeLayer()
     {
-        var (parentE, index) = GetNewLayerInsertPosition();
-        new CommandBuilder(Document.World.Create())
-            .NewShapeLayer()
-            .AddToLayerTree(parentE, index)
-            .SetWorkingLayer()
-            .Commit();
+        var workingLayerE = Document.Get<SelectionManager>().WorkingLayer.Value;
+        LayerContextActions.NewShapeLayer(workingLayerE.IsNull ? Document : workingLayerE);
     }
 
     public void OnNewFolderLayer()

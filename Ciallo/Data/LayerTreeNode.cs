@@ -9,8 +9,6 @@ namespace Ciallo.Data;
 [DataContract, ToSerialize]
 public class LayerTreeNode : EntityTreeNode<LayerTreeNode>
 {
-    public static int LayerCreationId = 1;
-
     public List<Entity> GetLayerChildren()
     {
         return GetFilteredChildren(IsLayerChild);
