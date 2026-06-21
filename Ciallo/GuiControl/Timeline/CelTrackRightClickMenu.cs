@@ -157,21 +157,7 @@ public partial class CelTrackRightClickMenu : PopupMenu
             name = TimelineAction.GetNewAnimationCelName(exposures, targetFrame, usedNames);
         }
 
-        var document = _celFolderEntity.Document;
-        var celE = _celFolderEntity.World.Create();
-        var shapeLayerE = _celFolderEntity.World.Create();
-
-        new CommandBuilder(celE)
-            .NewFolderLayer()
-            .SetProperty(e => e.Get<CommonLayerSetting>().Name, name)
-            .AddToLayerTree(_celFolderEntity)
-            .SetTarget(shapeLayerE)
-            .NewShapeLayer()
-            .AddToLayerTree(celE)
-            .SetWorkingLayer()
-            .SetObservableCollection(exposures, exp => exp.Add(targetFrame, celE))
-            .SetProperty(document.Get<SelectionManager>().CurrentFrame, targetFrame)
-            .Commit();
+        TimelineAction.NewCelFromTemplate(_celFolderEntity, targetFrame, name);
     }
 
     private void ActionInsertOrReplaceCel(Entity celEntity)

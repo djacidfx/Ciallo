@@ -229,24 +229,187 @@ public partial class TimelineAction : Container
 
         int currentFrame = Document.Get<SelectionManager>().CurrentFrame.Value;
         (int frame, string name) = GetNewAnimationCelFrameName(celFolder, currentFrame);
-        var celE = Document.World.Create();
-        var shapeLayerE = Document.World.Create();
+        NewCelFromTemplate(celFolder, frame, name);
+    }
 
-        new CommandBuilder(celE)
+    /// <summary>
+    /// Builds a new cel under <paramref name="celFolder"/> at <paramref name="frame"/>, replicating the
+    /// cel-child template schema, then exposes it and moves the playhead there — one undoable action.
+    ///
+    /// The cel is a regular folder named <paramref name="name"/>. Its contents come from
+    /// <see cref="FolderLayerSetting.CelChildrenByName"/>: one child per surviving template name, cloned
+    /// from that name's representative (the group's first member, matching the timeline template row).
+    /// Empty template dict (the folder's first cel) falls back to a single blank shape layer.
+    ///
+    /// Self-contained on purpose: both entry points (toolbar button, cel right-click menu) differ only
+    /// in how they pick (frame, name); everything after is identical, so it owns the CommandBuilder and
+    /// the commit rather than taking a half-built one.
+    /// </summary>
+    internal static void NewCelFromTemplate(Entity celFolder, int frame, string name)
+    {
+        var document = celFolder.Document;
+        var folderSetting = celFolder.Get<FolderLayerSetting>();
+        var exposures = folderSetting.Exposures;
+        var celE = celFolder.World.Create();
+
+        var cmd = new CommandBuilder("New Animation Cel", celE)
             .NewFolderLayer()
             .SetProperty(e => e.Get<CommonLayerSetting>().Name, name)
-            .AddToLayerTree(celFolder)
-            .SetTarget(shapeLayerE)
-            .NewShapeLayer()
-            .AddToLayerTree(celE)
-            .SetWorkingLayer()
-            .SetTarget(celFolder)
-            .SetObservableCollection(
-                celFolder.Get<FolderLayerSetting>().Exposures,
-                exposures => exposures.Add(frame, celE))
-            .SetTarget(Document)
+            .AddToLayerTree(celFolder);
+
+        // name -> the new cel's child carrying that name. Drives both VF reference remap and the
+        // working-layer pick. Each surviving template name yields exactly one child, so this is 1:1.
+        var newChildByName = new Dictionary<string, Entity>();
+        var newVectorFillReps = new List<(Entity newChild, Entity representative)>();
+
+        var templates = SelectTemplateRepresentatives(celFolder);
+        if (templates.Count == 0)
+        {
+            // Bootstrap (no templates yet) OR every template filtered out. Q2: an empty dict means the
+            // folder's first cel, where there is no schema to follow, so seed a blank shape layer to draw
+            // on. Q8: a non-empty dict that filters to nothing yields a deliberately empty cel folder.
+            if (folderSetting.CelChildrenByName.Count == 0)
+            {
+                var shapeLayerE = celFolder.World.Create();
+                cmd.SetTarget(shapeLayerE)
+                    .NewShapeLayer()
+                    .AddToLayerTree(celE)
+                    .SetWorkingLayer();
+            }
+        }
+        else
+        {
+            // Pass 1: clone each representative into the new cel, preserving layer order (templates are
+            // pre-sorted by representative index). VF reference remap is deferred to pass 2 because a
+            // fill layer may reference a sibling created later in this same pass.
+            foreach (var (templateName, representative) in templates)
+            {
+                var newChildE = celFolder.World.Create();
+                cmd.SetTarget(newChildE);
+                CloneLayerByType(cmd, representative);
+                cmd.AddToLayerTree(celE);
+
+                newChildByName[templateName] = newChildE;
+                if (representative.Has<VectorFillLayerSetting>())
+                    newVectorFillReps.Add((newChildE, representative));
+            }
+
+            // Pass 2: rebuild each new fill layer's references by NAME. The representative's references
+            // are cel-local shape siblings; we translate each to the same-named child in THIS cel.
+            foreach (var (newChildE, representative) in newVectorFillReps)
+            {
+                var remapped = new List<Entity>();
+                foreach (var oldRef in representative.Get<VectorFillLayerSetting>().ReferenceLayers)
+                {
+                    if (oldRef.IsNull || !oldRef.IsAlive || !oldRef.Has<CommonLayerSetting>())
+                        continue;
+
+                    string refName = oldRef.Get<CommonLayerSetting>().Name.Value;
+                    if (newChildByName.TryGetValue(refName, out var newRef))
+                        remapped.Add(newRef); // Q4: same-named child exists in the new cel — connect it.
+                    else if (!HasCelFolderAncestor(oldRef))
+                        remapped.Add(oldRef); // Q4: a document-level shared layer (no cel ancestor) — keep as-is.
+                    // else: unmapped AND lives inside some cel — drop it rather than point across cels.
+                }
+
+                if (remapped.Count > 0)
+                {
+                    var refs = remapped; // capture for the closure
+                    cmd.SetTarget(newChildE).SetObservableCollection(
+                        e => e.Get<VectorFillLayerSetting>().ReferenceLayers,
+                        layers => layers.AddRange(refs));
+                }
+            }
+
+            // Working layer follows the same rule as a cel-button click: the new cel's child sharing the
+            // folder's preferred name. No match (empty preference, or that name was filtered) -> leave the
+            // working layer untouched, same "rather not select than select wrong" stance as cel navigation.
+            string preferredName = folderSetting.PreferredNameForCelSelection.Value;
+            if (newChildByName.TryGetValue(preferredName, out var workingLayerE))
+                cmd.SetTarget(workingLayerE).SetWorkingLayer();
+        }
+
+        cmd.SetTarget(celFolder)
+            .SetObservableCollection(exposures, exp => exp.Add(frame, celE))
+            .SetTarget(document)
             .SetProperty(e => e.Get<SelectionManager>().CurrentFrame, frame)
             .Commit();
+    }
+
+    /// <summary>
+    /// Selects the template names to replicate into a new cel and their representative layers, ordered to
+    /// mirror layer order (ascending representative index, matching the timeline template rows).
+    ///
+    /// Filter (Q1.1-a): once the folder holds more than one cel, a name owned by a single layer is treated
+    /// as a one-off, not part of the shared schema, and is skipped. While the folder still has at most one
+    /// cel every name is necessarily single-membered, so the filter is disabled there to avoid producing an
+    /// empty cel during bootstrap.
+    /// </summary>
+    private static List<(string name, Entity representative)> SelectTemplateRepresentatives(Entity celFolder)
+    {
+        var celChildrenByName = celFolder.Get<FolderLayerSetting>().CelChildrenByName;
+        bool filterSingletons = CountDirectCelChildren(celFolder) > 1;
+
+        var result = new List<(string name, Entity representative)>();
+        foreach (var (templateName, members) in celChildrenByName)
+        {
+            if (members.Count == 0) continue;
+            if (filterSingletons && members.Count == 1) continue;
+
+            Entity representative = default;
+            foreach (var m in members) { representative = m; break; }
+            if (representative.IsNull || !representative.IsAlive || !representative.Has<LayerTreeNode>())
+                continue;
+
+            result.Add((templateName, representative));
+        }
+
+        result.Sort((a, b) =>
+            a.representative.Get<LayerTreeNode>().Index.CompareTo(b.representative.Get<LayerTreeNode>().Index));
+        return result;
+    }
+
+    /// <summary>Counts a cel folder's direct cel children (folder children), the same population that
+    /// <see cref="FolderLayerSetting.CelChildrenByName"/> aggregates.</summary>
+    private static int CountDirectCelChildren(Entity celFolder)
+    {
+        int count = 0;
+        foreach (var child in celFolder.Get<LayerTreeNode>().Children)
+            if (child.IsAlive && child.Has<FolderLayerSetting>())
+                count++;
+        return count;
+    }
+
+    /// <summary>Dispatches the copy-based new-layer command for a representative's concrete layer type.
+    /// Folder reps are cloned non-recursively (their own children are not template members).</summary>
+    private static void CloneLayerByType(CommandBuilder cmd, Entity representative)
+    {
+        if (representative.Has<VectorFillLayerSetting>())
+            cmd.NewVectorFillLayer(representative);
+        else if (representative.Has<ShapeLayerSetting>())
+            cmd.NewShapeLayer(representative);
+        else if (representative.Has<ImageLayerSetting>())
+            cmd.NewImageLayer(representative);
+        else if (representative.Has<FolderLayerSetting>())
+            cmd.NewFolderLayer(representative);
+        else
+            cmd.NewShapeLayer(); // Unknown type: fall back to a blank shape layer so the slot still exists.
+    }
+
+    /// <summary>True if <paramref name="layer"/> has any cel-folder ancestor, i.e. it lives inside a cel.</summary>
+    private static bool HasCelFolderAncestor(Entity layer)
+    {
+        var cursor = layer;
+        while (cursor.IsAlive && !cursor.IsDocument && cursor.Has<LayerTreeNode>())
+        {
+            var parent = cursor.Get<LayerTreeNode>().ParentValue;
+            if (parent.IsNull) break;
+            if (parent.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
+                return true;
+            cursor = parent;
+        }
+
+        return false;
     }
 
     /// <summary>

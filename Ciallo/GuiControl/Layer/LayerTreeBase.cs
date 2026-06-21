@@ -249,7 +249,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
         if (DraggedSubtreeHasCelFolder && hoverBlock.Wrapper.IsBeingCeled)
             return default;
 
-        if (hoverBlock.IsFolder && localPos.Y > size.Y / 3f)
+        if (hoverBlock.IsFolder && localPos.Y > size.Y / 3f && localPos.Y <= size.Y * 2f / 3f)
         {
             if (DraggedSubtreeHasCelFolder && hoverBlock.IsCelFolder)
                 return default;
@@ -258,7 +258,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
 
         var parentEntity = hoverTreeNode.ParentValue;
         int hoverIndex = hoverTreeNode.Index;
-        int insertIndex = (hoverBlock.IsFolder || localPos.Y <= size.Y / 2f) ? hoverIndex + 1 : hoverIndex;
+        int insertIndex = localPos.Y <= size.Y / 2f ? hoverIndex + 1 : hoverIndex;
 
         return new(DropKind.Sibling, parentEntity, insertIndex);
     }
