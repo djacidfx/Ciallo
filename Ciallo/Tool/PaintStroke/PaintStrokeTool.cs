@@ -60,6 +60,8 @@ public class PaintStrokeTool : ToolBase
 
     public override void DrawProperty(PropertyContainer container)
     {
+        base.DrawProperty(container);
+
         container.AddProperty("Snap", new CheckBox
         {
             ToggleMode = true,
@@ -74,8 +76,6 @@ public class PaintStrokeTool : ToolBase
                 ExpEdit = true,
                 AllowGreater = true,
             }.BindNumber(AppPreference.PaintStrokeSnapDistance));
-
-        base.DrawProperty(container);
     }
 
     public override void OnActivated()
