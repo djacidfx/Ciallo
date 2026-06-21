@@ -42,12 +42,13 @@ public class SelectionManager
                 {
                     return layerE;
                 }
+                if (layerE.Tagged<CelTag>())
+                    return layerE.Get<LayerTreeNode>().ParentValue;
 
                 var ancestors = layerE.Get<LayerTreeNode>().EnumerateAncestors();
                 foreach (Entity e in ancestors)
                 {
-                    // Layer's parent must have FolderLayerSetting component, but it may not be a cel folder.
-                    if (e.Get<FolderLayerSetting>().IsCelFolder) return e;
+                    if (e.Tagged<CelTag>()) return e.Get<LayerTreeNode>().ParentValue;
                 }
 
                 return Entity.Null;
@@ -86,6 +87,9 @@ public class SelectionManager
         if (exposedCel.IsNull || !exposedCel.IsAlive || !exposedCel.Has<LayerTreeNode>())
             return celFolder.Document;
 
+        if (!exposedCel.Has<FolderLayerSetting>())
+            return exposedCel;
+
         var child = exposedCel.Get<LayerTreeNode>().GetLayerChildByName(folderSetting.PreferredNameForCelSelection.Value);
         return child.IsNull ? celFolder.Document : child;
     }
@@ -109,12 +113,21 @@ public class SelectionManager
             return Entity.Null;
 
         var folderSetting = celFolder.TryGet<FolderLayerSetting>();
-        if (folderSetting?.IsCelFolder != true)
+        if (folderSetting?.IsCelFolder != true || !clickedCel.Tagged<CelTag>())
             return Entity.Null;
 
-        // No matching child: clear the working layer, signalled by the document entity.
-        var child = clickedCel.Get<LayerTreeNode>().GetLayerChildByName(folderSetting.PreferredNameForCelSelection.Value);
-        var result = child.IsNull ? celFolder.Document : child;
+        Entity result;
+        if (clickedCel.Has<FolderLayerSetting>())
+        {
+            // No matching child: clear the working layer, signalled by the document entity.
+            var child = clickedCel.Get<LayerTreeNode>().GetLayerChildByName(folderSetting.PreferredNameForCelSelection.Value);
+            result = child.IsNull ? celFolder.Document : child;
+        }
+        else
+        {
+            result = clickedCel;
+        }
+
         // Already the working layer (including already-cleared): nothing to do.
         return result == WorkingLayer.Value ? Entity.Null : result;
     }
@@ -146,17 +159,14 @@ public class SelectionManager
 
         while (!cursor.IsNull && !cursor.IsDocument)
         {
-            var parent = cursor.Get<LayerTreeNode>().ParentValue;
-            if (parent.IsNull) break;
-
-            if (parent.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
+            if (cursor.Tagged<CelTag>())
             {
-                celFolder = parent;
+                celFolder = cursor.Get<LayerTreeNode>().ParentValue;
                 targetCel = cursor;
                 break;
             }
 
-            cursor = parent;
+            cursor = cursor.Get<LayerTreeNode>().ParentValue;
         }
 
         if (celFolder.IsNull || targetCel.IsNull) return currentFrame;

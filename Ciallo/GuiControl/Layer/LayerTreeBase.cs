@@ -376,7 +376,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
         var cmd = new CommandBuilder(document);
 
         int[] exposureFrames = [];
-        if (oldParentE != newParentE && oldParentE.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
+        if (oldParentE != newParentE && draggedEntity.Tagged<CelTag>())
         {
             exposureFrames = oldParentE.Get<FolderLayerSetting>().Exposures
                 .Where(pair => pair.Value == draggedEntity)

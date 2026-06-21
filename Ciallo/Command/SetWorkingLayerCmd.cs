@@ -81,7 +81,7 @@ public class SetWorkingLayerCmd : CommandBase
 
     /// <summary>
     /// Determines whether switching to <paramref name="newLayerE"/> should update a cel folder's
-    /// preferred cel child name, and to what. Only a direct child of a cel under a cel folder
+    /// preferred cel child name, and to what. Only a direct child inside a cel
     /// qualifies; in every other case (the cel folder itself, the cel root, or a deeper nested
     /// layer) the preference is left untouched.
     /// </summary>
@@ -99,16 +99,12 @@ public class SetWorkingLayerCmd : CommandBase
         if (newLayerE.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
             return false;
 
-        // The preference only tracks direct cel children: the new layer's parent must be a cel.
+        // The preference only tracks direct children inside a cel: the new layer's parent must be a cel.
         var celE = newLayerE.Get<LayerTreeNode>().ParentValue;
-        if (celE.IsNull || celE.IsDocument)
+        if (celE.IsNull || celE.IsDocument || !celE.Tagged<CelTag>())
             return false;
 
-        var folderParentE = celE.Get<LayerTreeNode>().ParentValue;
-        if (folderParentE.IsNull || folderParentE.TryGet<FolderLayerSetting>()?.IsCelFolder != true)
-            return false;
-
-        celFolder = folderParentE;
+        celFolder = celE.Get<LayerTreeNode>().ParentValue;
         name = newLayerE.Get<CommonLayerSetting>().Name.Value;
         return true;
     }

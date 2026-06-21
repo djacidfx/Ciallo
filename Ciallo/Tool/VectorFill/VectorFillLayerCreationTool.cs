@@ -228,11 +228,10 @@ public class VectorFillLayerCreationTool : ToolBase
         var cursor = layer;
         while (!cursor.IsNull && !cursor.IsDocument && cursor.Has<LayerTreeNode>())
         {
-            var parent = cursor.Get<LayerTreeNode>().ParentValue;
-            if (parent == celFolder)
+            if (cursor.Tagged<CelTag>() && cursor.Get<LayerTreeNode>().ParentValue == celFolder)
                 return cursor;
 
-            cursor = parent;
+            cursor = cursor.Get<LayerTreeNode>().ParentValue;
         }
 
         return Entity.Null;

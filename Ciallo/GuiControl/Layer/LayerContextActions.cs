@@ -204,10 +204,10 @@ internal static class LayerContextActions
 
     private static void RemoveParentCelFolderExposures(CommandBuilder cmd, Entity targetLayer)
     {
-        var parentE = targetLayer.Get<LayerTreeNode>().ParentValue;
-        if (parentE.TryGet<FolderLayerSetting>()?.IsCelFolder != true)
+        if (!targetLayer.Tagged<CelTag>())
             return;
 
+        var parentE = targetLayer.Get<LayerTreeNode>().ParentValue;
         cmd.SetTarget(parentE)
             .SetObservableCollection(
                 e => e.Get<FolderLayerSetting>().Exposures,

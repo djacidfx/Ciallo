@@ -67,7 +67,7 @@ public partial class CelTrackRightClickMenu : PopupMenu
         var children = _celFolderEntity.Get<LayerTreeNode>().Children;
         foreach (var celEntity in children)
         {
-            if (celEntity.IsNull || !celEntity.IsAlive || !celEntity.Has<CommonLayerSetting>())
+            if (celEntity.IsNull || !celEntity.IsAlive || !celEntity.Tagged<CelTag>() || !celEntity.Has<CommonLayerSetting>())
                 continue;
             _celListEntities.Add(celEntity);
         }

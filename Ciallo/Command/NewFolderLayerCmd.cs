@@ -160,7 +160,8 @@ public class NewFolderLayerCmd : CommandBase
             layerNode.ObserveAddChild().Subscribe(et =>
             {
                 Entity newChildE = et.Value;
-                if (!newChildE.Has<FolderLayerSetting>()) return; // User may drag a non-folder layer into a cel folder.
+                newChildE.Tag<CelTag>();
+                if (!newChildE.Has<FolderLayerSetting>()) return;
 
                 ChildLayerNameLookup nameLookup = new(newChildE);
                 newChildE.Add(nameLookup);
@@ -201,6 +202,7 @@ public class NewFolderLayerCmd : CommandBase
             layerNode.ObserveRemoveChild().Subscribe(et =>
             {
                 Entity childE = et.Value;
+                childE.Detach<CelTag>();
                 if (!childE.Has<ChildLayerNameLookup>()) return;
 
                 var nameLookup = childE.GetRemove<ChildLayerNameLookup>();

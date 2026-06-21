@@ -307,7 +307,7 @@ public partial class TimelineAction : Container
                     string refName = oldRef.Get<CommonLayerSetting>().Name.Value;
                     if (newChildByName.TryGetValue(refName, out var newRef))
                         remapped.Add(newRef); // Q4: same-named child exists in the new cel — connect it.
-                    else if (!HasCelFolderAncestor(oldRef))
+                    else if (!HasCelAncestor(oldRef))
                         remapped.Add(oldRef); // Q4: a document-level shared layer (no cel ancestor) — keep as-is.
                     // else: unmapped AND lives inside some cel — drop it rather than point across cels.
                 }
@@ -369,13 +369,12 @@ public partial class TimelineAction : Container
         return result;
     }
 
-    /// <summary>Counts a cel folder's direct cel children (folder children), the same population that
-    /// <see cref="FolderLayerSetting.CelChildrenByName"/> aggregates.</summary>
+    /// <summary>Counts a cel folder's direct cel children.</summary>
     private static int CountDirectCelChildren(Entity celFolder)
     {
         int count = 0;
         foreach (var child in celFolder.Get<LayerTreeNode>().Children)
-            if (child.IsAlive && child.Has<FolderLayerSetting>())
+            if (child.IsAlive && child.Tagged<CelTag>())
                 count++;
         return count;
     }
@@ -396,17 +395,16 @@ public partial class TimelineAction : Container
             cmd.NewShapeLayer(); // Unknown type: fall back to a blank shape layer so the slot still exists.
     }
 
-    /// <summary>True if <paramref name="layer"/> has any cel-folder ancestor, i.e. it lives inside a cel.</summary>
-    private static bool HasCelFolderAncestor(Entity layer)
+    /// <summary>True if <paramref name="layer"/> is a cel or has a cel ancestor.</summary>
+    private static bool HasCelAncestor(Entity layer)
     {
         var cursor = layer;
         while (cursor.IsAlive && !cursor.IsDocument && cursor.Has<LayerTreeNode>())
         {
-            var parent = cursor.Get<LayerTreeNode>().ParentValue;
-            if (parent.IsNull) break;
-            if (parent.TryGet<FolderLayerSetting>()?.IsCelFolder == true)
+            if (cursor.Tagged<CelTag>())
                 return true;
-            cursor = parent;
+
+            cursor = cursor.Get<LayerTreeNode>().ParentValue;
         }
 
         return false;
@@ -537,7 +535,7 @@ public partial class TimelineAction : Container
         var usedNames = new HashSet<string>();
         foreach (var cel in celFolder.Get<LayerTreeNode>().Children)
         {
-            if (cel.IsNull || !cel.IsAlive || !cel.Has<CommonLayerSetting>())
+            if (cel.IsNull || !cel.IsAlive || !cel.Tagged<CelTag>() || !cel.Has<CommonLayerSetting>())
                 continue;
 
             var name = cel.Get<CommonLayerSetting>().Name.Value;
