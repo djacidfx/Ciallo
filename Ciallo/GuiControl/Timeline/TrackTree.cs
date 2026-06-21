@@ -231,6 +231,44 @@ public partial class TrackTree : LayerTreeBase
             if (blocks.Remove(name, out var block)) block.GetParent().QueueFree();
         }
 
+        // Sort key for a template: the representative cel child's index within its cel
+        // (LayerTreeNode.Index). Same representative pick as BindTemplate (first in the set), so order
+        // and display agree. int.MaxValue parks a name with no live member at the end.
+        int RepIndex(string name)
+        {
+            if (celChildrenByName.TryGetValue(name, out var members))
+                foreach (var m in members)
+                    return m.IsAlive ? m.Get<LayerTreeNode>().Index : int.MaxValue;
+            return int.MaxValue;
+        }
+
+        // Order the template rows to mirror layer order: ascending RepIndex, matching the layer-panel
+        // convention (lower index sits lower in the ReverseOrder stack).
+        // Cel rows are safe because templates form a contiguous tail: they are only ever appended
+        // (CreateTemplate's wrapper.AddChild), while cel rows occupy the low indices [0..numCels) via
+        // InsertNodeAt(dataIndex), and every cel add/remove/move preserves that tail. So the slots the
+        // templates occupy are a contiguous block above all cel rows; permuting within it never moves a
+        // cel row (MoveChild shifts intervening nodes, but no cel row lies between two template slots).
+        void ReorderTemplates()
+        {
+            if (blocks.Count < 2) return;
+
+            var ordered = new List<(Node split, int order)>(blocks.Count);
+            foreach (var (name, block) in blocks)
+                ordered.Add((block.GetParent(), RepIndex(name)));
+            ordered.Sort((a, b) => a.order.CompareTo(b.order));
+
+            var slots = new List<int>(ordered.Count);
+            foreach (var (split, _) in ordered)
+                slots.Add(split.GetIndex());
+            slots.Sort();
+
+            // Process ascending: slot k receives the k-th desired split. Targets are the pre-captured
+            // sorted slots, so each move only shuffles not-yet-placed nodes, preserving placed ones.
+            for (int k = 0; k < ordered.Count; k++)
+                wrapper.MoveChild(ordered[k].split, slots[k]);
+        }
+
         void Reconcile()
         {
             foreach (var name in new List<string>(blocks.Keys))
@@ -243,6 +281,7 @@ public partial class TrackTree : LayerTreeBase
                 else
                     CreateTemplate(pair.Key);
             }
+            ReorderTemplates();
         }
 
         celChildrenByName.ObserveDictionaryAdd().Select(_ => Unit.Default)
