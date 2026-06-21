@@ -19,7 +19,7 @@ public partial class TrackRowWrapper : LayerWrapper
     {
         base._EnterTree();
         // Timeline shows cel folders via their CelTrack, not as individual child rows.
-        // Hide every row inside a cel folder so an expanded cel folder shows only its templates.
+        // Hide every row inside a cel folder so an expanded cel folder shows only its archetypes.
         Visible = !IsBeingCeled;
     }
 }

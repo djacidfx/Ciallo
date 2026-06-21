@@ -157,7 +157,7 @@ public partial class CelTrackRightClickMenu : PopupMenu
             name = TimelineAction.GetNewAnimationCelName(exposures, targetFrame, usedNames);
         }
 
-        TimelineAction.NewCelFromTemplate(_celFolderEntity, targetFrame, name);
+        TimelineAction.NewCelFromArchetype(_celFolderEntity, targetFrame, name);
     }
 
     private void ActionInsertOrReplaceCel(Entity celEntity)

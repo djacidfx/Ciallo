@@ -140,8 +140,8 @@ public class NewFolderLayerCmd : CommandBase
 
             void AddCelChildNameLookupEntry(string name, Entity layerE)
             {
-                // ponytail: a name starting with '_' or '!' is excluded from the template system
-                // (never enters CelChildrenByName, so template rows / NewCelFromTemplate / working-button
+                // ponytail: a name starting with '_' or '!' is excluded from the archetype system
+                // (never enters CelChildrenByName, so archetype rows / NewCelFromArchetype / working-button
                 // all inherit the exclusion for free). '_' reads as "private", '!' is just easy to type.
                 // Encoding it in the name keeps zero extra state — exclusion rides along through any
                 // future refactor with the one piece of info we can never lose: the layer's name.

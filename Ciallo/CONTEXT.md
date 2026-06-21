@@ -14,9 +14,9 @@ A cel button is the clickable exposure bar on a CelTrack that represents one exp
 
 A cel folder is a folder layer whose children are cels. Cel folders do not nest inside other cel folders.
 
-### Cel Child Template
+### Cel Child Archetype
 
-A cel child template is a shared editable setting grouped by layer name across the cel children of one cel folder. Cel children are the layers nested inside the cels (the grandchildren of the cel folder), grouped by name. Editing a template applies its values one-way to every cel child layer that currently shares that name, overwriting their prior values. Renaming a template renames all those layers; if the new name already names another group, the groups merge. A template exists for every distinct name, including names used by only one layer.
+A cel child archetype is a shared editable setting grouped by layer name across the cel children of one cel folder. Cel children are the layers nested inside the cels (the grandchildren of the cel folder), grouped by name. Editing an archetype applies its values one-way to every cel child layer that currently shares that name, overwriting their prior values. Renaming an archetype renames all those layers; if the new name already names another group, the groups merge. An archetype exists for every distinct name, including names used by only one layer.
 
 ### Preferred Cel Child Name
 

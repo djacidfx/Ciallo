@@ -229,23 +229,23 @@ public partial class TimelineAction : Container
 
         int currentFrame = Document.Get<SelectionManager>().CurrentFrame.Value;
         (int frame, string name) = GetNewAnimationCelFrameName(celFolder, currentFrame);
-        NewCelFromTemplate(celFolder, frame, name);
+        NewCelFromArchetype(celFolder, frame, name);
     }
 
     /// <summary>
     /// Builds a new cel under <paramref name="celFolder"/> at <paramref name="frame"/>, replicating the
-    /// cel-child template schema, then exposes it and moves the playhead there — one undoable action.
+    /// cel-child archetype schema, then exposes it and moves the playhead there — one undoable action.
     ///
     /// The cel is a regular folder named <paramref name="name"/>. Its contents come from
-    /// <see cref="FolderLayerSetting.CelChildrenByName"/>: one child per surviving template name, cloned
-    /// from that name's representative (the group's first member, matching the timeline template row).
-    /// Empty template dict (the folder's first cel) falls back to a single blank shape layer.
+    /// <see cref="FolderLayerSetting.CelChildrenByName"/>: one child per surviving archetype name, cloned
+    /// from that name's representative (the group's first member, matching the timeline archetype row).
+    /// Empty archetype dict (the folder's first cel) falls back to a single blank shape layer.
     ///
     /// Self-contained on purpose: both entry points (toolbar button, cel right-click menu) differ only
     /// in how they pick (frame, name); everything after is identical, so it owns the CommandBuilder and
     /// the commit rather than taking a half-built one.
     /// </summary>
-    internal static void NewCelFromTemplate(Entity celFolder, int frame, string name)
+    internal static void NewCelFromArchetype(Entity celFolder, int frame, string name)
     {
         var document = celFolder.Document;
         var folderSetting = celFolder.Get<FolderLayerSetting>();
@@ -258,14 +258,14 @@ public partial class TimelineAction : Container
             .AddToLayerTree(celFolder);
 
         // name -> the new cel's child carrying that name. Drives both VF reference remap and the
-        // working-layer pick. Each surviving template name yields exactly one child, so this is 1:1.
+        // working-layer pick. Each surviving archetype name yields exactly one child, so this is 1:1.
         var newChildByName = new Dictionary<string, Entity>();
         var newVectorFillReps = new List<(Entity newChild, Entity representative)>();
 
-        var templates = SelectTemplateRepresentatives(celFolder);
-        if (templates.Count == 0)
+        var archetypes = SelectArchetypeRepresentatives(celFolder);
+        if (archetypes.Count == 0)
         {
-            // Bootstrap (no templates yet) OR every template filtered out. Q2: an empty dict means the
+            // Bootstrap (no archetypes yet) OR every archetype filtered out. Q2: an empty dict means the
             // folder's first cel, where there is no schema to follow, so seed a blank shape layer to draw
             // on. Q8: a non-empty dict that filters to nothing yields a deliberately empty cel folder.
             if (folderSetting.CelChildrenByName.Count == 0)
@@ -279,17 +279,17 @@ public partial class TimelineAction : Container
         }
         else
         {
-            // Pass 1: clone each representative into the new cel, preserving layer order (templates are
+            // Pass 1: clone each representative into the new cel, preserving layer order (archetypes are
             // pre-sorted by representative index). VF reference remap is deferred to pass 2 because a
             // fill layer may reference a sibling created later in this same pass.
-            foreach (var (templateName, representative) in templates)
+            foreach (var (archetypeName, representative) in archetypes)
             {
                 var newChildE = celFolder.World.Create();
                 cmd.SetTarget(newChildE);
                 CloneLayerByType(cmd, representative);
                 cmd.AddToLayerTree(celE);
 
-                newChildByName[templateName] = newChildE;
+                newChildByName[archetypeName] = newChildE;
                 if (representative.Has<VectorFillLayerSetting>())
                     newVectorFillReps.Add((newChildE, representative));
             }
@@ -337,21 +337,21 @@ public partial class TimelineAction : Container
     }
 
     /// <summary>
-    /// Selects the template names to replicate into a new cel and their representative layers, ordered to
-    /// mirror layer order (ascending representative index, matching the timeline template rows).
+    /// Selects the archetype names to replicate into a new cel and their representative layers, ordered to
+    /// mirror layer order (ascending representative index, matching the timeline archetype rows).
     ///
     /// Filter (Q1.1-a): once the folder holds more than one cel, a name owned by a single layer is treated
     /// as a one-off, not part of the shared schema, and is skipped. While the folder still has at most one
     /// cel every name is necessarily single-membered, so the filter is disabled there to avoid producing an
     /// empty cel during bootstrap.
     /// </summary>
-    private static List<(string name, Entity representative)> SelectTemplateRepresentatives(Entity celFolder)
+    private static List<(string name, Entity representative)> SelectArchetypeRepresentatives(Entity celFolder)
     {
         var celChildrenByName = celFolder.Get<FolderLayerSetting>().CelChildrenByName;
         bool filterSingletons = CountDirectCelChildren(celFolder) > 1;
 
         var result = new List<(string name, Entity representative)>();
-        foreach (var (templateName, members) in celChildrenByName)
+        foreach (var (archetypeName, members) in celChildrenByName)
         {
             if (members.Count == 0) continue;
             if (filterSingletons && members.Count == 1) continue;
@@ -361,7 +361,7 @@ public partial class TimelineAction : Container
             if (representative.IsNull || !representative.IsAlive || !representative.Has<LayerTreeNode>())
                 continue;
 
-            result.Add((templateName, representative));
+            result.Add((archetypeName, representative));
         }
 
         result.Sort((a, b) =>
@@ -380,7 +380,7 @@ public partial class TimelineAction : Container
     }
 
     /// <summary>Dispatches the copy-based new-layer command for a representative's concrete layer type.
-    /// Folder reps are cloned non-recursively (their own children are not template members).</summary>
+    /// Folder reps are cloned non-recursively (their own children are not archetype members).</summary>
     private static void CloneLayerByType(CommandBuilder cmd, Entity representative)
     {
         if (representative.Has<VectorFillLayerSetting>())

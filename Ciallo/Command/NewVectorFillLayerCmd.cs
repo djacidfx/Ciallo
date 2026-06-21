@@ -41,7 +41,7 @@ public class NewVectorFillLayerCmd : CommandBase
         // The copy path deliberately drops ReferenceLayers. References are cel-local (a fill layer
         // points at shape-layer siblings inside its own cel), so a blind clone would leave the new
         // layer pointing at the source's siblings — wrong for both copy-based creation paths:
-        // deserialization rebuilds references from stored entity ids, and cel-from-template remaps
+        // deserialization rebuilds references from stored entity ids, and cel-from-archetype remaps
         // them by name into the new cel (see ADR-0001). Neither relies on Clone carrying them over,
         // so clearing here also removes the need for the old cross-World reference guard.
         vectorFillLayerSetting.ReferenceLayers.Clear();

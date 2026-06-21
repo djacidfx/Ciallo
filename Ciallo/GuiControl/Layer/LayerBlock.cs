@@ -21,7 +21,7 @@ public partial class LayerBlock : Container, IInitable, ILayerBlock
 
     /// <summary>
     /// The <see cref="LayerWrapper"/> that owns this block as its Title, or null when the block
-    /// is used standalone (e.g. a cel-child template row parented to an HSplitContainer).
+    /// is used standalone (e.g. a cel-child archetype row parented to an HSplitContainer).
     /// </summary>
     public virtual LayerWrapper Wrapper => GetParent() as LayerWrapper;
     public Container Node => this;
@@ -29,7 +29,7 @@ public partial class LayerBlock : Container, IInitable, ILayerBlock
     public override void _EnterTree()
     {
         // Every LayerBlock that is the Title of its own LayerWrapper (Level N) gets indent N-1.
-        // Standalone template rows have no owning wrapper and set their indent explicitly.
+        // Standalone archetype rows have no owning wrapper and set their indent explicitly.
         if (Wrapper != null)
             Indent.Count = Wrapper.Level - 1;
     }

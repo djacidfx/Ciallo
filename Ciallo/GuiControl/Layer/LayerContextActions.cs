@@ -199,12 +199,12 @@ internal static class LayerContextActions
     /// Cel-aware "add shape layer". Distinguishes batch edits from single-cel edits:
     /// <list type="bullet">
     ///   <item><b>Target is a cel folder</b> (batch): add a shape layer at the visual top of every
-    ///     folder-cel, all sharing one name so they collapse to a single template row. Non-folder cels
+    ///     folder-cel, all sharing one name so they collapse to a single archetype row. Non-folder cels
     ///     are skipped. If no folder-cel exists, fall back to the new-cel flow (a fresh folder cel whose
     ///     child is the shape layer).</item>
     ///   <item><b>Target lands inside one cel</b> (single): add the shape layer to that cel only, named
-    ///     with a leading '_' so it stays out of the template system — unless the cel folder holds just
-    ///     one cel, in which case this edit IS the template, so no '_' prefix.</item>
+    ///     with a leading '_' so it stays out of the archetype system — unless the cel folder holds just
+    ///     one cel, in which case this edit IS the archetype, so no '_' prefix.</item>
     /// </list>
     /// Returns false when there is no cel context, letting the caller do an ordinary insert.
     /// </summary>
@@ -254,11 +254,11 @@ internal static class LayerContextActions
             var document = celFolder.Document;
             int currentFrame = document.Get<SelectionManager>().CurrentFrame.Value;
             var (frame, name) = TimelineAction.GetNewAnimationCelFrameName(celFolder, currentFrame);
-            TimelineAction.NewCelFromTemplate(celFolder, frame, name);
+            TimelineAction.NewCelFromArchetype(celFolder, frame, name);
             return;
         }
 
-        // One shared name across every cel, so the new layers collapse into a single template row.
+        // One shared name across every cel, so the new layers collapse into a single archetype row.
         // Reuse the plain-path counter (one bump per batch) — laziest way to keep repeated batches distinct.
         string sharedName = $"{"Shape layer".Tr()} {s_plainShapeLayerId++}";
 
@@ -279,7 +279,7 @@ internal static class LayerContextActions
         }
 
         // Land the working layer on the new layer in the currently-exposed cel, so the user can draw at once.
-        // Record the preference so cel navigation follows the just-added shared layer, not the old template row.
+        // Record the preference so cel navigation follows the just-added shared layer, not the old archetype row.
         if (!workingLayerE.IsNull)
             cmd.SetTarget(workingLayerE).SetWorkingLayer(recordCelSelectionPreference: true);
 
@@ -291,8 +291,8 @@ internal static class LayerContextActions
         var celFolder = cel.Get<LayerTreeNode>().ParentValue;
         int celCount = celFolder.Get<LayerTreeNode>().Children.Count(c => c.IsAlive && c.Tagged<CelTag>());
 
-        // Single-cel edit gets a '_' prefix to stay out of the template — except when this is the
-        // folder's only cel, where the edit defines the template and must NOT be hidden from it.
+        // Single-cel edit gets a '_' prefix to stay out of the archetype — except when this is the
+        // folder's only cel, where the edit defines the archetype and must NOT be hidden from it.
         bool isBatch = celCount <= 1;
         string baseName = $"{"Shape layer".Tr()} {s_plainShapeLayerId++}";
         string name = isBatch ? baseName : "_" + baseName;

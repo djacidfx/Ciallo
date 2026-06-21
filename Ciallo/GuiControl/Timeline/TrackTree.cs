@@ -54,9 +54,9 @@ public partial class TrackTree : LayerTreeBase
     {
         foreach (var child in node.GetChildren())
         {
-            // Template rows are HSplitContainers added directly under a wrapper (not a TrackRow title).
-            if (child is HSplitContainer templateSplit)
-                templateSplit.SplitOffsets = [splitOffset];
+            // Archetype rows are HSplitContainers added directly under a wrapper (not a TrackRow title).
+            if (child is HSplitContainer archetypeSplit)
+                archetypeSplit.SplitOffsets = [splitOffset];
             if (child is not TrackRowWrapper wrapper) continue;
             if (wrapper.Title is TrackRow row)
                 row.SplitOffsets = [splitOffset];
@@ -84,7 +84,7 @@ public partial class TrackTree : LayerTreeBase
             var subs = new CompositeDisposable();
             subs.AddTo(layerE);
             trackRow.EnableCelTrack(layerE, RightClickMenu, subs);
-            WireCelChildTemplates(layerE, wrapper, folderSetting, subs);
+            WireCelChildArchetypes(layerE, wrapper, folderSetting, subs);
         }
 
         wrapper.Title = trackRow;
@@ -95,26 +95,26 @@ public partial class TrackTree : LayerTreeBase
     }
 
     /// <summary>
-    /// Renders one template <see cref="LayerBlock"/> per distinct cel-child name under a cel folder,
+    /// Renders one archetype <see cref="LayerBlock"/> per distinct cel-child name under a cel folder,
     /// shown when the folder is expanded (the real cel rows stay hidden via
     /// <see cref="TrackRowWrapper.IsBeingCeled"/>). Reconciles on the debounced add/remove signals
-    /// of <see cref="FolderLayerSetting.CelChildrenByName"/>: new key -> create+wire a template,
+    /// of <see cref="FolderLayerSetting.CelChildrenByName"/>: new key -> create+wire an archetype,
     /// removed key -> dispose+free its block. Surviving keys are left untouched.
     /// </summary>
-    private void WireCelChildTemplates(Entity layerE, TrackRowWrapper wrapper, FolderLayerSetting folderSetting, CompositeDisposable subs)
+    private void WireCelChildArchetypes(Entity layerE, TrackRowWrapper wrapper, FolderLayerSetting folderSetting, CompositeDisposable subs)
     {
         var celChildrenByName = folderSetting.CelChildrenByName;
         var sm = layerE.Document.Get<SelectionManager>();
         var blocks = new Dictionary<string, LayerBlock>();
         var blockSubs = new Dictionary<string, CompositeDisposable>();
 
-        void CreateTemplate(string name)
+        void CreateArchetype(string name)
         {
             if (blocks.ContainsKey(name)) return;
 
             var block = LayerBlock.New();
             // The working button is shown but deliberately NOT added to WorkingLayerButtonGroup:
-            // a template is not itself a selectable layer, its pressed state is derived (see BindTemplate)
+            // an archetype is not itself a selectable layer, its pressed state is derived (see BindArchetype)
             // and its click navigates to a same-named cel child instead of toggling group membership.
             block.WorkingButton.Visible = true;
             block.DropdownArrow.Visible = false;
@@ -131,19 +131,19 @@ public partial class TrackTree : LayerTreeBase
             split.AddChild(new Control());
             split.SplitOffsets = [_splitOffset];
             wrapper.AddChild(split);
-            // ponytail: one level deeper than the cel-folder header (Wrapper.Level - 1) so a template
+            // ponytail: one level deeper than the cel-folder header (Wrapper.Level - 1) so an archetype
             // reads as an aggregated child row, not a sibling of the cel folder. LayerBlock._EnterTree
-            // skips indent for a non-wrapper parent, so this assignment sticks (template rows never re-enter).
+            // skips indent for a non-wrapper parent, so this assignment sticks (archetype rows never re-enter).
             block.Indent.Count = wrapper.Level;
             blocks[name] = block;
 
-            BindTemplate(name, block);
+            BindArchetype(name, block);
         }
 
         // (Re)wire a block to a current representative of its name group. Called on create and on every
         // reconcile for surviving keys, so a block always reflects a member that is currently in the group
         // (handles rename-merge: the kept block re-picks a representative from the merged membership).
-        void BindTemplate(string name, LayerBlock block)
+        void BindArchetype(string name, LayerBlock block)
         {
             if (blockSubs.Remove(name, out var oldSubs)) oldSubs.Dispose();
             if (!celChildrenByName.TryGetValue(name, out var members) || members.Count == 0) return;
@@ -155,7 +155,7 @@ public partial class TrackTree : LayerTreeBase
             // no value of its own. Undo/redo reverts members -> representative fires -> display follows,
             // so the block can never drift from the real state.
             // ponytail: representative is any current member (no "mixed" indicator); members that disagree
-            // are not surfaced and keep their own values until the next explicit template edit.
+            // are not surfaced and keep their own values until the next explicit archetype edit.
             Entity rep = default;
             foreach (var m in members) { rep = m; break; }
             var repSetting = rep.Get<CommonLayerSetting>();
@@ -168,7 +168,7 @@ public partial class TrackTree : LayerTreeBase
             block.LabelLineEdit.OnTextSubmittedAsObservable()
                 .Subscribe(v => PushToMembers(name, e => e.Get<CommonLayerSetting>().Name, v)).AddTo(bs);
 
-            // Derived pressed state: lit when the working layer is a current member of this template
+            // Derived pressed state: lit when the working layer is a current member of this archetype
             // (which, since members are this folder's cel children, also implies WorkingCelFolder == layerE).
             // It is NOT owned by the button group, so we always drive it via SetPressedNoSignal.
             void SyncPressed() =>
@@ -186,12 +186,12 @@ public partial class TrackTree : LayerTreeBase
                 .Subscribe(_ => SyncPressed()).AddTo(bs);
             SyncPressed();
 
-            // Click navigates the working layer to this template's same-named child under the currently
+            // Click navigates the working layer to this archetype's same-named child under the currently
             // exposed cel, without moving the playhead. The button is a derived indicator, so we ignore the
             // toggle value and recompute/correct the visual ourselves.
             block.WorkingButton.OnToggledAsObservable().Subscribe(_ =>
             {
-                // Already the working layer's template: nothing to navigate to.
+                // Already the working layer's archetype: nothing to navigate to.
                 if (sm.WorkingCelFolder.CurrentValue == layerE && members.Contains(sm.WorkingLayer.CurrentValue))
                 {
                     SyncPressed();
@@ -208,7 +208,7 @@ public partial class TrackTree : LayerTreeBase
                 }
 
                 new CommandBuilder(target).SetWorkingLayer(recordCelSelectionPreference: true).CommitToLatest();
-                // The target carries this template's name and is a cel child of this folder, so it is a member:
+                // The target carries this archetype's name and is a cel child of this folder, so it is a member:
                 // light the button optimistically (WorkingCelFolder resettles a frame later via the sub above).
                 block.WorkingButton.SetPressedNoSignal(true);
             }).AddTo(bs);
@@ -224,15 +224,15 @@ public partial class TrackTree : LayerTreeBase
             cmd.Commit();
         }
 
-        void RemoveTemplate(string name)
+        void RemoveArchetype(string name)
         {
             if (blockSubs.Remove(name, out var bs)) bs.Dispose();
             // Free the HSplitContainer wrapper (block's parent), not just the block, or the split is orphaned.
             if (blocks.Remove(name, out var block)) block.GetParent().QueueFree();
         }
 
-        // Sort key for a template: the representative cel child's index within its cel
-        // (LayerTreeNode.Index). Same representative pick as BindTemplate (first in the set), so order
+        // Sort key for an archetype: the representative cel child's index within its cel
+        // (LayerTreeNode.Index). Same representative pick as BindArchetype (first in the set), so order
         // and display agree. int.MaxValue parks a name with no live member at the end.
         int RepIndex(string name)
         {
@@ -242,14 +242,14 @@ public partial class TrackTree : LayerTreeBase
             return int.MaxValue;
         }
 
-        // Order the template rows to mirror layer order: ascending RepIndex, matching the layer-panel
+        // Order the archetype rows to mirror layer order: ascending RepIndex, matching the layer-panel
         // convention (lower index sits lower in the ReverseOrder stack).
-        // Cel rows are safe because templates form a contiguous tail: they are only ever appended
-        // (CreateTemplate's wrapper.AddChild), while cel rows occupy the low indices [0..numCels) via
+        // Cel rows are safe because archetypes form a contiguous tail: they are only ever appended
+        // (CreateArchetype's wrapper.AddChild), while cel rows occupy the low indices [0..numCels) via
         // InsertNodeAt(dataIndex), and every cel add/remove/move preserves that tail. So the slots the
-        // templates occupy are a contiguous block above all cel rows; permuting within it never moves a
-        // cel row (MoveChild shifts intervening nodes, but no cel row lies between two template slots).
-        void ReorderTemplates()
+        // archetypes occupy are a contiguous block above all cel rows; permuting within it never moves a
+        // cel row (MoveChild shifts intervening nodes, but no cel row lies between two archetype slots).
+        void ReorderArchetypes()
         {
             if (blocks.Count < 2) return;
 
@@ -273,15 +273,15 @@ public partial class TrackTree : LayerTreeBase
         {
             foreach (var name in new List<string>(blocks.Keys))
                 if (!celChildrenByName.ContainsKey(name))
-                    RemoveTemplate(name);
+                    RemoveArchetype(name);
             foreach (var pair in celChildrenByName)
             {
                 if (blocks.TryGetValue(pair.Key, out var block))
-                    BindTemplate(pair.Key, block); // surviving key: re-pick representative (handles merge)
+                    BindArchetype(pair.Key, block); // surviving key: re-pick representative (handles merge)
                 else
-                    CreateTemplate(pair.Key);
+                    CreateArchetype(pair.Key);
             }
-            ReorderTemplates();
+            ReorderArchetypes();
         }
 
         celChildrenByName.ObserveDictionaryAdd().Select(_ => Unit.Default)
