@@ -140,6 +140,14 @@ public class NewFolderLayerCmd : CommandBase
 
             void AddCelChildNameLookupEntry(string name, Entity layerE)
             {
+                // ponytail: a name starting with '_' or '!' is excluded from the template system
+                // (never enters CelChildrenByName, so template rows / NewCelFromTemplate / working-button
+                // all inherit the exclusion for free). '_' reads as "private", '!' is just easy to type.
+                // Encoding it in the name keeps zero extra state — exclusion rides along through any
+                // future refactor with the one piece of info we can never lose: the layer's name.
+                if (name.Length > 0 && (name[0] == '_' || name[0] == '!'))
+                    return;
+
                 if (!celChildrenByName.TryGetValue(name, out var layers))
                 {
                     layers = [];
@@ -151,7 +159,8 @@ public class NewFolderLayerCmd : CommandBase
 
             void RemoveCelChildNameLookupEntry(string name, Entity layerE)
             {
-                var layers = celChildrenByName[name];
+                if (!celChildrenByName.TryGetValue(name, out var layers))
+                    return; // excluded name (never added) or already gone
                 layers.Remove(layerE);
                 if (layers.Count == 0)
                     celChildrenByName.Remove(name);

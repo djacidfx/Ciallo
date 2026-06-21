@@ -146,6 +146,49 @@ internal static class LayerContextActions
         cmd.Commit();
     }
 
+    public static void WrapSelfInFolder(Entity targetLayer)
+    {
+        if (targetLayer.IsNull || targetLayer.IsDocument) return;
+
+        var node = targetLayer.Get<LayerTreeNode>();
+        var parentE = node.ParentValue;
+        if (parentE.IsNull) return;
+
+        var document = targetLayer.Document;
+        var name = targetLayer.Get<CommonLayerSetting>().Name.Value;
+        var index = node.Index;
+        var wrapper = document.World.Create();
+
+        var cmd = new CommandBuilder("Wrap Self in Folder", document)
+            .SetTarget(wrapper)
+            .NewFolderLayer()
+            .SetProperty(e => e.Get<CommonLayerSetting>().Name, name)
+            .AddToLayerTree(parentE, index);
+
+        // If wrapped inside a cel folder, hand the wrapper the cel's exposure slots.
+        if (parentE.TryGet<FolderLayerSetting>() is { IsCelFolder: true })
+        {
+            cmd.SetTarget(parentE)
+                .SetObservableCollection(
+                    e => e.Get<FolderLayerSetting>().Exposures,
+                    exposures =>
+                    {
+                        foreach (var (frame, cel) in exposures.ToArray())
+                        {
+                            if (cel == targetLayer)
+                                exposures[frame] = wrapper;
+                        }
+                    });
+        }
+
+        cmd.SetTarget(document)
+            .MoveLayer(targetLayer, wrapper, 0);
+
+        cmd.SetTarget(targetLayer)
+            .SetWorkingLayer()
+            .Commit();
+    }
+
     private static (Entity parentE, int index) GetNewLayerInsertPosition(Entity targetLayer)
     {
         if (targetLayer.IsNull || targetLayer.IsDocument)

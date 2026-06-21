@@ -13,13 +13,17 @@ public partial class LayerRightClickMenu : PopupMenu
     private Entity _targetLayer;
     private bool _showTimelineLayerActions;
 
-    private const int IdNewShapeLayer = 0;
-    private const int IdNewFolderLayer = 1;
-    private const int IdNewCelFolderLayer = 2;
-    private const int IdDeleteLayer = 3;
-    private const int IdUngroupFolder = 4;
-    private const int IdRenameCelsByExposure = 5;
-    private const int IdWrapChildrenInFolders = 6;
+    private enum MenuItem
+    {
+        NewShapeLayer,
+        NewFolderLayer,
+        NewCelFolderLayer,
+        DeleteLayer,
+        UngroupFolder,
+        RenameCelsByExposure,
+        WrapChildrenInFolders,
+        WrapSelfInFolder,
+    }
 
     public override void _Ready()
     {
@@ -41,19 +45,20 @@ public partial class LayerRightClickMenu : PopupMenu
     {
         Clear();
 
-        AddItem("New Shape Layer", IdNewShapeLayer);
-        AddItem("New Folder Layer", IdNewFolderLayer);
+        AddItem("New Shape Layer", (int)MenuItem.NewShapeLayer);
+        AddItem("New Folder Layer", (int)MenuItem.NewFolderLayer);
         if (_showTimelineLayerActions)
-            AddItem("New Cel Folder Layer", IdNewCelFolderLayer);
+            AddItem("New Cel Folder Layer", (int)MenuItem.NewCelFolderLayer);
 
         AddSeparator();
-        AddItem("Delete Layer", IdDeleteLayer);
+        AddItem("Delete Layer", (int)MenuItem.DeleteLayer);
+        AddItem("Wrap Self into Folder", (int)MenuItem.WrapSelfInFolder);
         if (_targetLayer.Has<FolderLayerSetting>())
         {
             if (_targetLayer.Get<FolderLayerSetting>().IsCelFolder)
-                AddItem("Rename Cels by Exposure", IdRenameCelsByExposure);
-            AddItem("Wrap Children in Folders", IdWrapChildrenInFolders);
-            AddItem("Ungroup Folder", IdUngroupFolder);
+                AddItem("Rename Cels by Exposure", (int)MenuItem.RenameCelsByExposure);
+            AddItem("Wrap Children in Folders", (int)MenuItem.WrapChildrenInFolders);
+            AddItem("Ungroup Folder", (int)MenuItem.UngroupFolder);
         }
     }
 
@@ -62,28 +67,31 @@ public partial class LayerRightClickMenu : PopupMenu
         if (_targetLayer.IsNull || !_targetLayer.IsAlive)
             return;
 
-        switch ((int)id)
+        switch ((MenuItem)id)
         {
-            case IdNewShapeLayer:
+            case MenuItem.NewShapeLayer:
                 LayerContextActions.NewShapeLayer(_targetLayer);
                 break;
-            case IdNewFolderLayer:
+            case MenuItem.NewFolderLayer:
                 LayerContextActions.NewFolderLayer(_targetLayer);
                 break;
-            case IdNewCelFolderLayer:
+            case MenuItem.NewCelFolderLayer:
                 LayerContextActions.NewCelFolderLayer(_targetLayer);
                 break;
-            case IdDeleteLayer:
+            case MenuItem.DeleteLayer:
                 LayerContextActions.DeleteLayer(_targetLayer);
                 break;
-            case IdUngroupFolder:
+            case MenuItem.UngroupFolder:
                 LayerContextActions.UngroupFolder(_targetLayer);
                 break;
-            case IdRenameCelsByExposure:
+            case MenuItem.RenameCelsByExposure:
                 LayerContextActions.RenameCelsByExposure(_targetLayer);
                 break;
-            case IdWrapChildrenInFolders:
+            case MenuItem.WrapChildrenInFolders:
                 LayerContextActions.WrapChildrenInFolders(_targetLayer);
+                break;
+            case MenuItem.WrapSelfInFolder:
+                LayerContextActions.WrapSelfInFolder(_targetLayer);
                 break;
         }
     }
