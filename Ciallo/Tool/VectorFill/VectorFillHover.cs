@@ -14,19 +14,16 @@ namespace Ciallo.Tool;
 public class VectorFillHover : InteractiveSessionBase
 {
     private readonly List<StrokeView> _contours = [];
+    // ponytail: cache leans on PointQueryFace returning a stable Rid per face (native arrangement_2d). Same face -> equal Rid -> skip redraw.
+    private Rid _cachedFace;
 
     public override void Start(CursorButtonData data)
     {
         Document.Get<WorldBody>().DefaultCursorShape = Control.CursorShape.Cross;
-        SetContoursWithQueryResult(WorkingLayer.Get<OverlayHolder>(),
-            WorkingLayer.Get<ArrangementManager>().ArrReady.CurrentValue, data.WorldPosition);
+        UpdateContours(data.WorldPosition);
     }
 
-    public override void Moving(CursorMotionData data)
-    {
-        SetContoursWithQueryResult(WorkingLayer.Get<OverlayHolder>(),
-            WorkingLayer.Get<ArrangementManager>().ArrReady.CurrentValue, data.WorldPosition);
-    }
+    public override void Moving(CursorMotionData data) => UpdateContours(data.WorldPosition);
 
     public override void End(CursorButtonData data) => Cancel();
 
@@ -34,24 +31,31 @@ public class VectorFillHover : InteractiveSessionBase
     {
         foreach (var sv in _contours) sv.QueueFree();
         _contours.Clear();
+        _cachedFace = default;
         Document.Get<WorldBody>().DefaultCursorShape = default;
     }
 
     public override bool OnKey(InputEventKey key, CursorButtonData data) => false;
 
-    public void SetContoursWithQueryResult(Node parent, Arrangement arr, Vector2 point)
+    private void UpdateContours(Vector2 point)
     {
+        var arr = WorkingLayer.Get<ArrangementManager>().ArrReady.CurrentValue;
         if (arr == null)
         {
+            _cachedFace = default;
             HideContours();
             return;
         }
         var faceRid = arr.PointQueryFace(point);
         if (!faceRid.IsValid || arr.IsUnboundedFace(faceRid))
         {
+            _cachedFace = default;
             HideContours();
             return;
         }
+        if (faceRid == _cachedFace) return;
+        _cachedFace = faceRid;
+
         var polygons = arr.GetPolygonFromFace(faceRid);
         if (polygons.Count == 0)
         {
@@ -59,6 +63,7 @@ public class VectorFillHover : InteractiveSessionBase
             return;
         }
 
+        var parent = WorkingLayer.Get<OverlayHolder>();
         // Grow
         while (_contours.Count < polygons.Count)
         {
@@ -134,5 +139,23 @@ public class VectorFillHover : InteractiveSessionBase
             CustomMinimumSize = new(128, 0),
         }.BindBool(AppPreference.ShowVectorFillReferenceLayerWireframe);
         container.AddProperty("Show reference wireframe", showWireframe);
+
+        var editReferenceLayers = new Button
+        {
+            Text = "Edit reference layers",
+            CustomMinimumSize = new(0, 32),
+        };
+        editReferenceLayers.Pressed += () =>
+        {
+            var workingLayer = sm.WorkingLayer.CurrentValue;
+            if (!workingLayer.Has<VectorFillLayerSetting>()) return;
+
+            var popup = new ReferenceLayerPickerPopup();
+            popup.PopupHide += popup.QueueFree;
+            container.AddChild(popup);
+            popup.Popup(Document, workingLayer);
+        };
+        container.AddChild(editReferenceLayers
+            .VisibleIf(sm.WorkingLayer, e => e.TryHas<VectorFillLayerSetting>()));
     }
 }

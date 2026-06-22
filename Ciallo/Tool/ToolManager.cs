@@ -54,7 +54,7 @@ public partial class ToolManager : IInitable, IDestroyable
     }
 
     private ITool ResolveTool(Entity layerE, ToolButton? toolButton) =>
-        layerE.IsNull || toolButton == null
+        layerE.IsNull || layerE.IsDocument || toolButton == null
             ? null
             : ToolButtonMap[toolButton.Value].FirstOrDefault(t => t.CanHandleLayer(layerE));
 

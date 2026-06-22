@@ -51,7 +51,15 @@ public partial class TimelineAction : Container
     public override void _Input(InputEvent @event)
     {
         if (!_isPlaying.Value) return;
-        if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Middle }) return;
+        if (@event is InputEventMouseMotion) return;
+        if (@event is InputEventMouseButton
+            {
+                ButtonIndex: MouseButton.Middle
+                or MouseButton.WheelUp
+                or MouseButton.WheelDown
+                or MouseButton.WheelLeft
+                or MouseButton.WheelRight
+            }) return;
         if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left } mouseButton &&
             PlayStop.GetGlobalRect().HasPoint(mouseButton.GlobalPosition))
             return;
@@ -147,8 +155,7 @@ public partial class TimelineAction : Container
         _selectionManager.CurrentFrame.Value = newFrame;
     }
 
-    private int ClampPlaybackFrame(int frame) =>
-        Mathf.Clamp(frame, GetPlaybackStart(), GetPlaybackLastFrame());
+    private int ClampPlaybackFrame(int frame) => Mathf.Clamp(frame, GetPlaybackStart(), GetPlaybackLastFrame());
 
     private int GetPlaybackStart() => _timelineSetting?.PlaybackStart.Value ?? 0;
 
@@ -222,20 +229,185 @@ public partial class TimelineAction : Container
 
         int currentFrame = Document.Get<SelectionManager>().CurrentFrame.Value;
         (int frame, string name) = GetNewAnimationCelFrameName(celFolder, currentFrame);
-        var cel = Document.World.Create();
+        NewCelFromArchetype(celFolder, frame, name);
+    }
 
-        new CommandBuilder(cel)
-            .NewShapeLayer()
+    /// <summary>
+    /// Builds a new cel under <paramref name="celFolder"/> at <paramref name="frame"/>, replicating the
+    /// cel-child archetype schema, then exposes it and moves the playhead there — one undoable action.
+    ///
+    /// The cel is a regular folder named <paramref name="name"/>. Its contents come from
+    /// <see cref="FolderLayerSetting.CelChildrenByName"/>: one child per surviving archetype name, cloned
+    /// from that name's representative (the group's first member, matching the timeline archetype row).
+    /// Empty archetype dict (the folder's first cel) falls back to a single blank shape layer.
+    ///
+    /// Self-contained on purpose: both entry points (toolbar button, cel right-click menu) differ only
+    /// in how they pick (frame, name); everything after is identical, so it owns the CommandBuilder and
+    /// the commit rather than taking a half-built one.
+    /// </summary>
+    internal static void NewCelFromArchetype(Entity celFolder, int frame, string name)
+    {
+        var document = celFolder.Document;
+        var folderSetting = celFolder.Get<FolderLayerSetting>();
+        var exposures = folderSetting.Exposures;
+        var celE = celFolder.World.Create();
+
+        var cmd = new CommandBuilder("New Animation Cel", celE)
+            .NewFolderLayer()
             .SetProperty(e => e.Get<CommonLayerSetting>().Name, name)
-            .AddToLayerTree(celFolder)
-            .SetWorkingLayer()
-            .SetTarget(celFolder)
-            .SetObservableCollection(
-                e => e.Get<FolderLayerSetting>().Exposures,
-                exposures => exposures.Add(frame, cel))
-            .SetTarget(Document)
+            .AddToLayerTree(celFolder);
+
+        // name -> the new cel's child carrying that name. Drives both VF reference remap and the
+        // working-layer pick. Each surviving archetype name yields exactly one child, so this is 1:1.
+        var newChildByName = new Dictionary<string, Entity>();
+        var newVectorFillReps = new List<(Entity newChild, Entity representative)>();
+
+        var archetypes = SelectArchetypeRepresentatives(celFolder);
+        if (archetypes.Count == 0)
+        {
+            // Bootstrap (no archetypes yet) OR every archetype filtered out. Q2: an empty dict means the
+            // folder's first cel, where there is no schema to follow, so seed a blank shape layer to draw
+            // on. Q8: a non-empty dict that filters to nothing yields a deliberately empty cel folder.
+            if (folderSetting.CelChildrenByName.Count == 0)
+            {
+                var shapeLayerE = celFolder.World.Create();
+                cmd.SetTarget(shapeLayerE)
+                    .NewShapeLayer()
+                    .AddToLayerTree(celE)
+                    .SetWorkingLayer();
+            }
+        }
+        else
+        {
+            // Pass 1: clone each representative into the new cel, preserving layer order (archetypes are
+            // pre-sorted by representative index). VF reference remap is deferred to pass 2 because a
+            // fill layer may reference a sibling created later in this same pass.
+            foreach (var (archetypeName, representative) in archetypes)
+            {
+                var newChildE = celFolder.World.Create();
+                cmd.SetTarget(newChildE);
+                CloneLayerByType(cmd, representative);
+                cmd.AddToLayerTree(celE);
+
+                newChildByName[archetypeName] = newChildE;
+                if (representative.Has<VectorFillLayerSetting>())
+                    newVectorFillReps.Add((newChildE, representative));
+            }
+
+            // Pass 2: rebuild each new fill layer's references by NAME. The representative's references
+            // are cel-local shape siblings; we translate each to the same-named child in THIS cel.
+            foreach (var (newChildE, representative) in newVectorFillReps)
+            {
+                var remapped = new List<Entity>();
+                foreach (var oldRef in representative.Get<VectorFillLayerSetting>().ReferenceLayers)
+                {
+                    if (oldRef.IsNull || !oldRef.IsAlive || !oldRef.Has<CommonLayerSetting>())
+                        continue;
+
+                    string refName = oldRef.Get<CommonLayerSetting>().Name.Value;
+                    if (newChildByName.TryGetValue(refName, out var newRef))
+                        remapped.Add(newRef); // Q4: same-named child exists in the new cel — connect it.
+                    else if (!HasCelAncestor(oldRef))
+                        remapped.Add(oldRef); // Q4: a document-level shared layer (no cel ancestor) — keep as-is.
+                    // else: unmapped AND lives inside some cel — drop it rather than point across cels.
+                }
+
+                if (remapped.Count > 0)
+                {
+                    var refs = remapped; // capture for the closure
+                    cmd.SetTarget(newChildE).SetObservableCollection(
+                        e => e.Get<VectorFillLayerSetting>().ReferenceLayers,
+                        layers => layers.AddRange(refs));
+                }
+            }
+
+            // Working layer follows the same rule as a cel-button click: the new cel's child sharing the
+            // folder's preferred name. No match (empty preference, or that name was filtered) -> leave the
+            // working layer untouched, same "rather not select than select wrong" stance as cel navigation.
+            string preferredName = folderSetting.PreferredNameForCelSelection.Value;
+            if (newChildByName.TryGetValue(preferredName, out var workingLayerE))
+                cmd.SetTarget(workingLayerE).SetWorkingLayer();
+        }
+
+        cmd.SetTarget(celFolder)
+            .SetObservableCollection(exposures, exp => exp.Add(frame, celE))
+            .SetTarget(document)
             .SetProperty(e => e.Get<SelectionManager>().CurrentFrame, frame)
             .Commit();
+    }
+
+    /// <summary>
+    /// Selects the archetype names to replicate into a new cel and their representative layers, ordered to
+    /// mirror layer order (ascending representative index, matching the timeline archetype rows).
+    ///
+    /// Filter (Q1.1-a): once the folder holds more than one cel, a name owned by a single layer is treated
+    /// as a one-off, not part of the shared schema, and is skipped. While the folder still has at most one
+    /// cel every name is necessarily single-membered, so the filter is disabled there to avoid producing an
+    /// empty cel during bootstrap.
+    /// </summary>
+    private static List<(string name, Entity representative)> SelectArchetypeRepresentatives(Entity celFolder)
+    {
+        var celChildrenByName = celFolder.Get<FolderLayerSetting>().CelChildrenByName;
+        bool filterSingletons = CountDirectCelChildren(celFolder) > 1;
+
+        var result = new List<(string name, Entity representative)>();
+        foreach (var (archetypeName, members) in celChildrenByName)
+        {
+            if (members.Count == 0) continue;
+            if (filterSingletons && members.Count == 1) continue;
+
+            Entity representative = default;
+            foreach (var m in members) { representative = m; break; }
+            if (representative.IsNull || !representative.IsAlive || !representative.Has<LayerTreeNode>())
+                continue;
+
+            result.Add((archetypeName, representative));
+        }
+
+        result.Sort((a, b) =>
+            a.representative.Get<LayerTreeNode>().Index.CompareTo(b.representative.Get<LayerTreeNode>().Index));
+        return result;
+    }
+
+    /// <summary>Counts a cel folder's direct cel children.</summary>
+    private static int CountDirectCelChildren(Entity celFolder)
+    {
+        int count = 0;
+        foreach (var child in celFolder.Get<LayerTreeNode>().Children)
+            if (child.IsAlive && child.Tagged<CelTag>())
+                count++;
+        return count;
+    }
+
+    /// <summary>Dispatches the copy-based new-layer command for a representative's concrete layer type.
+    /// Folder reps are cloned non-recursively (their own children are not archetype members).</summary>
+    private static void CloneLayerByType(CommandBuilder cmd, Entity representative)
+    {
+        if (representative.Has<VectorFillLayerSetting>())
+            cmd.NewVectorFillLayer(representative);
+        else if (representative.Has<ShapeLayerSetting>())
+            cmd.NewShapeLayer(representative);
+        else if (representative.Has<ImageLayerSetting>())
+            cmd.NewImageLayer(representative);
+        else if (representative.Has<FolderLayerSetting>())
+            cmd.NewFolderLayer(representative);
+        else
+            cmd.NewShapeLayer(); // Unknown type: fall back to a blank shape layer so the slot still exists.
+    }
+
+    /// <summary>True if <paramref name="layer"/> is a cel or has a cel ancestor.</summary>
+    private static bool HasCelAncestor(Entity layer)
+    {
+        var cursor = layer;
+        while (cursor.IsAlive && !cursor.IsDocument && cursor.Has<LayerTreeNode>())
+        {
+            if (cursor.Tagged<CelTag>())
+                return true;
+
+            cursor = cursor.Get<LayerTreeNode>().ParentValue;
+        }
+
+        return false;
     }
 
     /// <summary>
@@ -285,7 +457,7 @@ public partial class TimelineAction : Container
         if (floorIndex < 0 || exposures.GetKeyAtIndex(floorIndex) != candidate)
             return candidate;
 
-        for (int distance = 1; ; distance++)
+        for (int distance = 1;; distance++)
         {
             long earlier = (long)candidate - distance;
             if (earlier >= int.MinValue && !exposures.ContainsKey((int)earlier))
@@ -363,7 +535,7 @@ public partial class TimelineAction : Container
         var usedNames = new HashSet<string>();
         foreach (var cel in celFolder.Get<LayerTreeNode>().Children)
         {
-            if (cel.IsNull || !cel.IsAlive || !cel.Has<CommonLayerSetting>())
+            if (cel.IsNull || !cel.IsAlive || !cel.Tagged<CelTag>() || !cel.Has<CommonLayerSetting>())
                 continue;
 
             var name = cel.Get<CommonLayerSetting>().Name.Value;
@@ -376,7 +548,7 @@ public partial class TimelineAction : Container
 
     internal static string MakeUniqueNumericName(int baseNumber, HashSet<string> usedNames)
     {
-        for (int number = baseNumber; ; number++)
+        for (int number = baseNumber;; number++)
         {
             string candidate = number.ToString();
             if (!usedNames.Contains(candidate))
@@ -403,7 +575,7 @@ public partial class TimelineAction : Container
 
     internal static string MakeUniqueFallbackName(int number, HashSet<string> usedNames)
     {
-        for (int i = 1; ; i++)
+        for (int i = 1;; i++)
         {
             string candidate = $"{number}_{i}";
             if (!usedNames.Contains(candidate))

@@ -22,6 +22,13 @@ public static class EntityExtension
         /// Return null if entity is null or do not have T component.
         /// </summary>
         public T TryGet<T>() where T : class => self.IsNull || !self.TryHas<T>() ? null : self.Get<T>();
+        public T GetRemove<T>() where T : class
+        {
+            var component = self.Get<T>();
+            self.Remove<T>();
+            return component;
+        }
+        public T TryGetRemove<T>() where T : class => self.IsNull || !self.TryHas<T>() ? null : self.GetRemove<T>();
 
         public static bool IsNotNull(Entity e) => !e.IsNull;
     }

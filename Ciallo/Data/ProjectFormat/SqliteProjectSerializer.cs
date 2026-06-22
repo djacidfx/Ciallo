@@ -575,8 +575,12 @@ public static class SqliteProjectSerializer
             idToEntity[id] = entity;
         }
 
+        // Deduplicate strings within a single load so identical values (e.g. layer
+        // names repeated across thousands of rows) share one reference.
+        var stringPool = new Dictionary<string, string>(StringComparer.Ordinal);
+
         foreach (var component in registry.Components)
-            ReadComponentTable(connection, component, idToEntity);
+            ReadComponentTable(connection, component, idToEntity, stringPool);
 
         foreach (var component in registry.Components)
             ReadChildTables(connection, component, idToEntity);
@@ -601,12 +605,13 @@ public static class SqliteProjectSerializer
     private static object DeserializeMainField(
         SqliteDataReader reader,
         FieldDescriptor field,
-        Dictionary<long, Entity> idToEntity)
+        Dictionary<long, Entity> idToEntity,
+        Dictionary<string, string> stringPool)
     {
         switch (field.Shape)
         {
             case FieldShape.Scalar:
-                return ScalarFromDb(reader, field);
+                return ScalarFromDb(reader, field, stringPool);
             case FieldShape.Entity:
                 return EntityFromDb(reader, field, idToEntity);
             case FieldShape.Blob:
@@ -618,7 +623,10 @@ public static class SqliteProjectSerializer
         }
     }
 
-    private static object ScalarFromDb(SqliteDataReader reader, FieldDescriptor field)
+    private static object ScalarFromDb(
+        SqliteDataReader reader,
+        FieldDescriptor field,
+        Dictionary<string, string> stringPool)
     {
         var ordinal = reader.GetOrdinal(field.Name);
         if (reader.IsDBNull(ordinal))
@@ -642,7 +650,15 @@ public static class SqliteProjectSerializer
         if (type.IsEnum)
             return Enum.ToObject(type, reader.GetInt64(ordinal));
         if (type == typeof(string))
-            return reader.GetString(ordinal);
+        {
+            var s = reader.GetString(ordinal);
+            if (s.Length == 0)
+                return string.Empty;
+            if (stringPool.TryGetValue(s, out var existing))
+                return existing;
+            stringPool[s] = s;
+            return s;
+        }
         if (type == typeof(float))
             return (float)reader.GetDouble(ordinal);
         if (type == typeof(double))
@@ -767,7 +783,8 @@ public static class SqliteProjectSerializer
     private static void ReadComponentTable(
         SqliteConnection connection,
         ComponentDescriptor component,
-        Dictionary<long, Entity> idToEntity)
+        Dictionary<long, Entity> idToEntity,
+        Dictionary<string, string> stringPool)
     {
         if (!TableExists(connection, component.TableName))
             return;
@@ -789,7 +806,7 @@ public static class SqliteProjectSerializer
             {
                 if (!field.MainColumns.All(c => columns.Contains(c.Name)))
                     continue;
-                var value = DeserializeMainField(reader, field, idToEntity);
+                var value = DeserializeMainField(reader, field, idToEntity, stringPool);
                 field.SetProjectValue(instance, value);
             }
 

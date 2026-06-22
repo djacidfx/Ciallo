@@ -132,7 +132,6 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
             // View
             var layerView = layerE.Get<ShapeLayerView>();
             layerView.InsertNodeAt(polygonView, index);
-            polygonView.SetOwner(Document.Get<WorldView>());
 
             // Overlay
             var holder = layerE.Get<OverlayHolder>();

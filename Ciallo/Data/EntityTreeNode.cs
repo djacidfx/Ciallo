@@ -518,8 +518,7 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
         return result;
     }
 
-    private static int NormalizePathIndex(int index, int count) =>
-        index < 0 ? count + index : index;
+    private static int NormalizePathIndex(int index, int count) => index < 0 ? count + index : index;
 
     #endregion
 
@@ -573,24 +572,28 @@ public partial class EntityTreeNode<T> : IInitable, IDestroyable where T : Entit
     public Observable<CollectionAddEvent<Entity>> ObserveAddChild()
     {
         return ObserveMutation()
-            .Where(e => e.Kind == TreeMutationKind.Add ||
-                        e.Kind == TreeMutationKind.Move && e.OldParent != e.NewParent && e.NewParent == Self)
-            .Select(e => new CollectionAddEvent<Entity>(e.NewIndex, e.Target));
+            .Where(et => et.Kind == TreeMutationKind.Add ||
+                         et.Kind == TreeMutationKind.Move && et.OldParent != et.NewParent && et.NewParent == Self)
+            .Select(et => new CollectionAddEvent<Entity>(et.NewIndex, et.Target));
     }
 
     public Observable<CollectionRemoveEvent<Entity>> ObserveRemoveChild()
     {
         return ObserveMutation()
-            .Where(e => e.Kind == TreeMutationKind.Remove ||
-                        e.Kind == TreeMutationKind.Move && e.OldParent != e.NewParent && e.OldParent == Self)
-            .Select(e => new CollectionRemoveEvent<Entity>(e.OldIndex, e.Target));
+            .Where(et => et.Kind == TreeMutationKind.Remove ||
+                         et.Kind == TreeMutationKind.Move &&
+                         et.OldParent != et.NewParent &&
+                         et.OldParent == Self)
+            .Select(et => new CollectionRemoveEvent<Entity>(et.OldIndex, et.Target));
     }
 
     public Observable<CollectionMoveEvent<Entity>> ObserveMoveChild()
     {
         return ObserveMutation()
-            .Where(e => e.Kind == TreeMutationKind.Move && e.OldParent == Self && e.NewParent == Self)
-            .Select(e => new CollectionMoveEvent<Entity>(e.OldIndex, e.NewIndex, e.Target));
+            .Where(et => et.Kind == TreeMutationKind.Move
+                         && et.OldParent == Self
+                         && et.NewParent == Self)
+            .Select(et => new CollectionMoveEvent<Entity>(et.OldIndex, et.NewIndex, et.Target));
     }
 
     #endregion

@@ -1,9 +1,9 @@
-using System.Runtime.Serialization;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Runtime.Serialization;
 using Frent;
 using ObservableCollections;
 using R3;
-using System.Collections.Generic;
 
 namespace Ciallo.Data;
 
@@ -27,6 +27,16 @@ public class FolderLayerSetting
         set => Exposures = value ? (Exposures ?? []) : null;
     }
 
+    public FolderLayerSetting Clone() =>
+        new()
+        {
+            IsExpanded = { Value = IsExpanded.Value },
+            Exposures = Exposures is null ? null : [.. Exposures],
+            PreferredNameForCelSelection = { Value = PreferredNameForCelSelection.Value },
+        };
+
+    #region Cel Folder
+
     /// <summary>
     /// Cel exposure table. 
     /// Keys represent the starting frame of a drawing; 
@@ -34,58 +44,59 @@ public class FolderLayerSetting
     /// </summary>
     [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Required)]
     public ObservableSortedList<int, Entity> Exposures = null;
+
     public ReadOnlyReactiveProperty<Entity> CurrentExposedCel { get; private set; }
     /// <summary>
     /// Onion skin cels keyed by exposure-index offset.
     /// </summary>
     public ReadOnlyReactiveProperty<SortedList<int, Entity>> CurrentOnionSkinCels { get; private set; }
+
     public void InitCurrent(ReactiveProperty<int> currentFrame, Observable<ImmutableArray<int>> onionSkinOffsets)
     {
         CurrentExposedCel = Exposures.ObserveChanged().PrependDefault()
-            .CombineLatest(currentFrame, (_, currentFrame) => Exposures.FloorIndex(currentFrame))
+            .CombineLatest(currentFrame, (_, frame) => Exposures.FloorIndex(frame))
             .Select(idx => idx >= 0 ? Exposures.GetValueAtIndex(idx) : Entity.Null)
             .ToReadOnlyReactiveProperty();
 
         CurrentOnionSkinCels = Exposures.ObserveChanged().PrependDefault()
             .CombineLatest(onionSkinOffsets, currentFrame,
-                (_, offsets, frame) => BuildCurrentOnionSkinCels(frame, offsets))
-            .ToReadOnlyReactiveProperty();
+                (_, offsets, frame) =>
+                {
+                    var cels = new SortedList<int, Entity>();
+                    int currentExposureIndex = Exposures.FloorIndex(frame);
+                    if (currentExposureIndex < 0)
+                        return cels;
+
+                    foreach (var offset in offsets)
+                    {
+                        int targetExposureIndex = currentExposureIndex + offset;
+                        if (targetExposureIndex < 0 || targetExposureIndex >= Exposures.Count)
+                            continue;
+
+                        cels[offset] = Exposures.GetValueAtIndex(targetExposureIndex);
+                    }
+
+                    return cels;
+                }
+            ).ToReadOnlyReactiveProperty();
     }
 
-    private SortedList<int, Entity> BuildCurrentOnionSkinCels(int currentFrame, ImmutableArray<int> offsets)
-    {
-        var cels = new SortedList<int, Entity>();
-        int currentExposureIndex = Exposures.FloorIndex(currentFrame);
-        if (currentExposureIndex < 0)
-            return cels;
-
-        foreach (var offset in offsets)
-        {
-            int targetExposureIndex = currentExposureIndex + offset;
-            if (targetExposureIndex < 0 || targetExposureIndex >= Exposures.Count)
-                continue;
-
-            cels[offset] = Exposures.GetValueAtIndex(targetExposureIndex);
-        }
-
-        return cels;
-    }
+    // Name indexed children set. Used for batch modification of cel children layers.
+    // ponytail: ObservableHashSet (not HashSet) so a future "show archetype only when >=2 members"
+    // filter can subscribe to inner add/remove. Inner signals are unused today - only the outer
+    // dictionary's add/remove drives the archetype GUI.
+    public readonly ObservableDictionary<string, ObservableHashSet<Entity>> CelChildrenByName = new();
 
     /// <summary>
-    /// The working layer under a selected cel is determined by this path.
-    /// This is runtime preference state and is not serialized.
-    /// 
-    /// The path is relative to the selected cel root; an empty path means the selected cel itself.
-    /// Invalid path indexes are resolved to the nearest preorder node without mutating this preference.
-    /// The default [-1, -1] prefers the last child of the last child/folder under the selected cel.
+    /// When navigating to a cel (clicking a cel button or scrubbing the timeline), the working layer
+    /// follows the direct cel child sharing this name. If the newly exposed cel has no direct child with
+    /// this name (including the empty-name default), no layer is selected.
+    ///
+    /// Set only when the working layer becomes a direct cel child (see <see cref="Command.SetWorkingLayerCmd"/>);
+    /// other working-layer changes leave it untouched. Empty by default.
     /// </summary>
-    public ReactiveProperty<ImmutableArray<int>> PreferredWorkingLayerPathForCelSelection = new([-1, -1]);
+    [DataMember, ProjectField]
+    public ReactiveProperty<string> PreferredNameForCelSelection = new("");
 
-    public FolderLayerSetting Clone() =>
-        new()
-        {
-            IsExpanded = { Value = IsExpanded.Value },
-            Exposures = Exposures is null ? null : [.. Exposures],
-            PreferredWorkingLayerPathForCelSelection = { Value = PreferredWorkingLayerPathForCelSelection.Value },
-        };
+    #endregion
 }

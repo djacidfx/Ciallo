@@ -50,7 +50,7 @@ public class DeleteLayerCmd : CommandBase
 
     public override void Do(Entity targetE)
     {
-        // If vector fill layer
+        targetE.TryGet<ChildShapePolylineLookup>()?.Unsubscribe();
         targetE.TryGet<ArrangementManager>()?.DesyncModification();
 
         // Delete children
@@ -69,12 +69,13 @@ public class DeleteLayerCmd : CommandBase
         targetE.Detach<ToSerializeTag>();
     }
 
-    public override void Undo(Entity layerE)
+    public override void Undo(Entity targetE)
     {
-        layerE.Tag<ToSerializeTag>();
+        targetE.Tag<ToSerializeTag>();
 
         _deleteChildrenCmd?.Undo();
 
-        layerE.TryGet<ArrangementManager>()?.SyncModification();
+        targetE.TryGet<ArrangementManager>()?.SyncModification();
+        targetE.TryGet<ChildShapePolylineLookup>()?.Subscribe();
     }
 }

@@ -35,12 +35,8 @@ public partial class LayerAction : Control
 
     public void OnNewShapeLayer()
     {
-        var (parentE, index) = GetNewLayerInsertPosition();
-        new CommandBuilder(Document.World.Create())
-            .NewShapeLayer()
-            .AddToLayerTree(parentE, index)
-            .SetWorkingLayer()
-            .Commit();
+        var workingLayerE = Document.Get<SelectionManager>().WorkingLayer.Value;
+        LayerContextActions.NewShapeLayer(workingLayerE.IsNull ? Document : workingLayerE);
     }
 
     public void OnNewFolderLayer()
@@ -60,7 +56,6 @@ public partial class LayerAction : Control
         if (currentLayerE.IsNull) return;
 
         var workingLayerE = document.Get<SelectionManager>().WorkingLayer.Value;
-        var currentLayerParentE = currentLayerE.Get<LayerTreeNode>().ParentValue;
         var root = document.Get<LayerTreeNode>();
         var workingLayerPath = root.FindPathTo(workingLayerE);
         var nextLayerPath = root.GetNextFocusPathAfterDeletion(workingLayerPath);
@@ -69,10 +64,10 @@ public partial class LayerAction : Control
         var cmd = new CommandBuilder(nextLayerE)
             .SetWorkingLayer();
 
-        // Any layer's parent must be a folder layer.
-        if (currentLayerParentE.Get<FolderLayerSetting>().IsCelFolder == true)
+        if (currentLayerE.Tagged<CelTag>())
         {
-            cmd.SetTarget(currentLayerParentE)
+            var celFolderE = currentLayerE.Get<LayerTreeNode>().ParentValue;
+            cmd.SetTarget(celFolderE)
                 .SetObservableCollection(
                     e => e.Get<FolderLayerSetting>().Exposures,
                     exposures =>

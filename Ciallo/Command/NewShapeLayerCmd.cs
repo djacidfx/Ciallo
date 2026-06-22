@@ -29,7 +29,7 @@ public class NewShapeLayerCmd : CommandBase
         var commonSetting = CopyE.IsNull
             ? new CommonLayerSetting
             {
-                Name = { Value = $"{"Shape layer".Tr()} {LayerTreeNode.LayerCreationId++}" }
+                Name = { Value = "Shape layer".Tr() }
             }
             : CopyE.Get<CommonLayerSetting>().Clone();
         targetE.Add(commonSetting);
@@ -38,11 +38,13 @@ public class NewShapeLayerCmd : CommandBase
             ? new ShapeLayerSetting()
             : CopyE.Get<ShapeLayerSetting>().Clone();
         targetE.Add(shapeLayerSetting);
-        targetE.Add(new ShapeLayerPolylineIndex(targetE));
+        var polylineLookup = new ChildShapePolylineLookup();
+        targetE.Add(polylineLookup);
 
         var manager = new ArrangementManager().AddTo(targetE);
         targetE.Add(manager);
-        manager.Observe([targetE.Get<ShapeLayerPolylineIndex>()]);
+        manager.Observe(polylineLookup);
+        targetE.Get<ArrangementManager>().SyncModification();
 
         // Others
         CreateNonDataComponents(targetE);
@@ -50,16 +52,12 @@ public class NewShapeLayerCmd : CommandBase
 
     public override void Do(Entity targetE)
     {
-        targetE.Get<ShapeLayerPolylineIndex>().Subscribe();
-        targetE.Get<ArrangementManager>().SyncModification();
         targetE.Tag<ToSerializeTag>();
     }
 
     public override void Undo(Entity targetE)
     {
         targetE.Detach<ToSerializeTag>();
-        targetE.Get<ArrangementManager>().DesyncModification();
-        targetE.Get<ShapeLayerPolylineIndex>().Unsubscribe();
     }
 
     public static void CreateNonDataComponents(Entity targetE)
@@ -102,7 +100,6 @@ public class NewShapeLayerCmd : CommandBase
             // View
             var folderLayerView = parentE.Get<FolderLayerView>();
             folderLayerView.InsertNodeAt(shapeLayerView, index);
-            shapeLayerView.SetOwner(targetE.Document.Get<WorldView>());
 
             // Overlay
             parentE.Get<OverlayHolder>().InsertNodeAt(overlayHolder, index);

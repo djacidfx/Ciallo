@@ -1,7 +1,9 @@
+using System.Collections.Generic;
 using Ciallo.Data;
 using Ciallo.GuiControl;
 using Ciallo.Rendering;
 using Frent;
+using ObservableCollections;
 using R3;
 
 namespace Ciallo.Command;
@@ -10,12 +12,12 @@ namespace Ciallo.Command;
 public class NewFolderLayerCmd : CommandBase
 {
     public readonly Entity CopyE;
-    private readonly bool _isCel;
+    private bool _isCelFolder;
 
-    public NewFolderLayerCmd(Entity copyE = default, bool isCel = false)
+    public NewFolderLayerCmd(Entity copyE = default, bool isCelFolder = false)
     {
         CopyE = copyE;
-        _isCel = isCel;
+        _isCelFolder = isCelFolder;
     }
 
     public override void OnDeletedAsDo() => TargetE.Delete();
@@ -30,17 +32,17 @@ public class NewFolderLayerCmd : CommandBase
     {
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
-        var isCel = CopyE.IsNull ? _isCel : CopyE.Get<FolderLayerSetting>().IsCelFolder;
+        _isCelFolder = CopyE.IsNull ? _isCelFolder : CopyE.Get<FolderLayerSetting>().IsCelFolder;
 
         var commonSetting = CopyE.IsNull
-            ? new CommonLayerSetting { Name = { Value = (isCel ? "Cel folder" : "Folder").Tr() } }
+            ? new CommonLayerSetting { Name = { Value = (_isCelFolder ? "Cel folder" : "Folder").Tr() } }
             : CopyE.Get<CommonLayerSetting>().Clone();
         targetE.Add(commonSetting);
 
         var folderLayerSetting = CopyE.IsNull
             ? new FolderLayerSetting()
             : CopyE.Get<FolderLayerSetting>().Clone();
-        folderLayerSetting.IsCelFolder = isCel;
+        folderLayerSetting.IsCelFolder = _isCelFolder;
         if (folderLayerSetting.IsCelFolder)
             folderLayerSetting.InitCurrent(Document.Get<SelectionManager>().CurrentFrame, Document.Get<TimelineSetting>().OnionSkinOffsets);
         targetE.Add(folderLayerSetting);
@@ -89,7 +91,7 @@ public class NewFolderLayerCmd : CommandBase
         // Timeline track (creates CelTrack for CelFolders automatically)
         targetE.Document.Get<TrackTree>().Create(targetE);
 
-        // Layer tree events
+        // Layer tree self events
         var events = layerNode.MovedReparentedAsAddedRemoved;
 
         events.Added.Subscribe(et =>
@@ -104,7 +106,6 @@ public class NewFolderLayerCmd : CommandBase
             // View
             var parentView = parentE.Get<FolderLayerView>();
             parentView.InsertNodeAt(folderLayerView, et.Index);
-            folderLayerView.SetOwner(Document.Get<WorldView>());
 
             // Overlay
             parentE.Get<OverlayHolder>().InsertNodeAt(overlayHolder, et.Index);
@@ -130,6 +131,99 @@ public class NewFolderLayerCmd : CommandBase
             // View
             folderLayerView.RemoveFromParent();
         }).AddTo(targetE);
+
+        // Cel folder specific handling for name lookup
+        if (_isCelFolder)
+        {
+            var childNameLookupSubs = new Dictionary<Entity, CompositeDisposable>();
+            var celChildrenByName = folderSetting.CelChildrenByName;
+
+            void AddCelChildNameLookupEntry(string name, Entity layerE)
+            {
+                // ponytail: a name starting with '_' or '!' is excluded from the archetype system
+                // (never enters CelChildrenByName, so archetype rows / NewCelFromArchetype / working-button
+                // all inherit the exclusion for free). '_' reads as "private", '!' is just easy to type.
+                // Encoding it in the name keeps zero extra state — exclusion rides along through any
+                // future refactor with the one piece of info we can never lose: the layer's name.
+                if (name.Length > 0 && (name[0] == '_' || name[0] == '!'))
+                    return;
+
+                if (!celChildrenByName.TryGetValue(name, out var layers))
+                {
+                    layers = [];
+                    celChildrenByName[name] = layers;
+                }
+
+                layers.Add(layerE);
+            }
+
+            void RemoveCelChildNameLookupEntry(string name, Entity layerE)
+            {
+                if (!celChildrenByName.TryGetValue(name, out var layers))
+                    return; // excluded name (never added) or already gone
+                layers.Remove(layerE);
+                if (layers.Count == 0)
+                    celChildrenByName.Remove(name);
+            }
+
+            layerNode.ObserveAddChild().Subscribe(et =>
+            {
+                Entity newChildE = et.Value;
+                newChildE.Tag<CelTag>();
+                if (!newChildE.Has<FolderLayerSetting>()) return;
+
+                ChildLayerNameLookup nameLookup = new(newChildE);
+                newChildE.Add(nameLookup);
+                nameLookup.Subscribe();
+
+                foreach (var (layerE, name) in nameLookup.Names)
+                    AddCelChildNameLookupEntry(name, layerE);
+
+                var subs = new CompositeDisposable();
+                childNameLookupSubs[newChildE] = subs;
+
+                nameLookup.Names.ObserveAdd().Subscribe(addEvent =>
+                {
+                    string newName = addEvent.Value.Value;
+                    Entity layerE = addEvent.Value.Key;
+                    AddCelChildNameLookupEntry(newName, layerE);
+                }).AddTo(subs);
+
+                nameLookup.Names.ObserveReplace().Subscribe(replaceEvent =>
+                {
+                    string oldName = replaceEvent.OldValue.Value;
+                    string newName = replaceEvent.NewValue.Value;
+                    Entity layerE = replaceEvent.NewValue.Key;
+
+                    RemoveCelChildNameLookupEntry(oldName, layerE);
+                    AddCelChildNameLookupEntry(newName, layerE);
+                }).AddTo(subs);
+
+                nameLookup.Names.ObserveRemove().Subscribe(removeEvent =>
+                {
+                    string removedName = removeEvent.Value.Value;
+                    Entity layerE = removeEvent.Value.Key;
+
+                    RemoveCelChildNameLookupEntry(removedName, layerE);
+                }).AddTo(subs);
+            }).AddTo(targetE);
+
+            layerNode.ObserveRemoveChild().Subscribe(et =>
+            {
+                Entity childE = et.Value;
+                childE.Detach<CelTag>();
+                if (!childE.Has<ChildLayerNameLookup>()) return;
+
+                var nameLookup = childE.GetRemove<ChildLayerNameLookup>();
+                nameLookup.Unsubscribe();
+
+                foreach (var (layerE, name) in nameLookup.Names)
+                    RemoveCelChildNameLookupEntry(name, layerE);
+
+                childNameLookupSubs.Remove(childE, out var subs);
+                subs.Dispose();
+            }).AddTo(targetE);
+        }
     }
 
     public override void Do(Entity targetE)
@@ -143,12 +237,11 @@ public class NewFolderLayerCmd : CommandBase
     }
 }
 
-
 public partial class CommandBuilder
 {
     public CommandBuilder NewCelFolder()
     {
-        var cmd = new NewFolderLayerCmd(isCel: true) { TargetE = TargetE };
+        var cmd = new NewFolderLayerCmd(isCelFolder: true) { TargetE = TargetE };
         Commands.Add(cmd);
         return this;
     }

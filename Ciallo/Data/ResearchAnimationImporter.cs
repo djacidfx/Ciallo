@@ -36,6 +36,7 @@ public static class ResearchAnimationImporter
         var celFolder = document.World.Create();
         var firstFrame = frames[0];
         var firstCel = document.World.Create();
+        var firstShapeLayer = document.World.Create();
         var celsByFrame = new Dictionary<int, Entity>
         {
             [firstFrame.Frame] = firstCel
@@ -46,13 +47,14 @@ public static class ResearchAnimationImporter
             .SetProperty(e => e.Get<CommonLayerSetting>().Name, Path.GetFileName(directoryPath))
             .AddToLayerTree(document);
 
-        AddFrame(cmd, firstCel, celFolder, firstFrame, brushE, transform, maxPressure, radiusSampler);
+        AddFrame(cmd, firstCel, firstShapeLayer, celFolder, firstFrame, brushE, transform, maxPressure, radiusSampler);
 
         foreach (var frame in frames.Skip(1))
         {
             var cel = document.World.Create();
+            var shapeLayer = document.World.Create();
             celsByFrame.Add(frame.Frame, cel);
-            AddFrame(cmd, cel, celFolder, frame, brushE, transform, maxPressure, radiusSampler);
+            AddFrame(cmd, cel, shapeLayer, celFolder, frame, brushE, transform, maxPressure, radiusSampler);
         }
 
         cmd.SetTarget(celFolder)
@@ -65,7 +67,7 @@ public static class ResearchAnimationImporter
                         exposures.Add(frame.Frame, celsByFrame[frame.Frame]);
                     }
                 })
-            .SetTarget(firstCel)
+            .SetTarget(firstShapeLayer)
             .SetWorkingLayer()
             .SetTarget(document)
             .SetProperty(e => e.Get<SelectionManager>().CurrentFrame, firstFrame.Frame)
@@ -163,6 +165,7 @@ public static class ResearchAnimationImporter
     private static void AddFrame(
         CommandBuilder cmd,
         Entity cel,
+        Entity shapeLayer,
         Entity celFolder,
         AnimationFrame frame,
         Entity brushE,
@@ -171,13 +174,17 @@ public static class ResearchAnimationImporter
         Func<float, float> radiusSampler)
     {
         cmd.SetTarget(cel)
-            .NewShapeLayer()
+            .NewFolderLayer()
             .SetProperty(e => e.Get<CommonLayerSetting>().Name, $"Frame {frame.Frame}")
-            .AddToLayerTree(celFolder);
+            .AddToLayerTree(celFolder)
+            .SetTarget(shapeLayer)
+            .NewShapeLayer()
+            .SetProperty(e => e.Get<CommonLayerSetting>().Name, "Shape layer")
+            .AddToLayerTree(cel);
 
         foreach (var stroke in frame.Strokes)
         {
-            AddStroke(cmd, cel, stroke, brushE, transform, maxPressure, radiusSampler);
+            AddStroke(cmd, shapeLayer, stroke, brushE, transform, maxPressure, radiusSampler);
         }
     }
 

@@ -3,9 +3,9 @@ using Ciallo.Data;
 using Ciallo.Geometry;
 using Ciallo.Rendering;
 using Frent;
+using Godot;
 using ObservableCollections;
 using R3;
-using Godot;
 
 namespace Ciallo.Command;
 
@@ -38,17 +38,22 @@ public class NewVectorFillLayerCmd : CommandBase
         var vectorFillLayerSetting = CopyE.IsNull
             ? new VectorFillLayerSetting()
             : CopyE.Get<VectorFillLayerSetting>().Clone();
-        if (vectorFillLayerSetting.ReferenceLayers.Any(e => e.World != targetE.World))
-            vectorFillLayerSetting.ReferenceLayers.Clear();
+        // The copy path deliberately drops ReferenceLayers. References are cel-local (a fill layer
+        // points at shape-layer siblings inside its own cel), so a blind clone would leave the new
+        // layer pointing at the source's siblings — wrong for both copy-based creation paths:
+        // deserialization rebuilds references from stored entity ids, and cel-from-archetype remaps
+        // them by name into the new cel (see ADR-0001). Neither relies on Clone carrying them over,
+        // so clearing here also removes the need for the old cross-World reference guard.
+        vectorFillLayerSetting.ReferenceLayers.Clear();
         targetE.Add(vectorFillLayerSetting);
 
         var manager = new ArrangementManager().AddTo(targetE);
         vectorFillLayerSetting.ReferenceLayers.ObserveChanged().Subscribe(_ =>
         {
             var refLayers = vectorFillLayerSetting.ReferenceLayers;
-            manager.Observe([.. refLayers.Select(e => e.Get<ShapeLayerPolylineIndex>())]);
+            manager.Observe([.. refLayers.Select(e => e.Get<ChildShapePolylineLookup>())]);
         }).AddTo(targetE);
-        manager.Observe([.. vectorFillLayerSetting.ReferenceLayers.Select(e => e.Get<ShapeLayerPolylineIndex>())]);
+        manager.Observe([.. vectorFillLayerSetting.ReferenceLayers.Select(e => e.Get<ChildShapePolylineLookup>())]);
         targetE.Add(manager);
 
         // Others
