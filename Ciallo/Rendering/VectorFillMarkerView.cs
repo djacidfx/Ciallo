@@ -39,10 +39,10 @@ public partial class VectorFillMarkerView : Node2D
             return;
         }
 
-        ApplyBrush(polygon, marker, brushE.Get<VectorFillBrushSetting>());
+        ApplyBrush(polygon, marker, brushE.Get<FillBrushSetting>());
     }
 
-    public static void ApplyBrush(Polygon2D polygon, VectorFillMarkerView marker, VectorFillBrushSetting setting)
+    public static void ApplyBrush(Polygon2D polygon, VectorFillMarkerView marker, FillBrushSetting setting)
     {
         polygon.Color = setting.FillColor.Value;
         polygon.Material = null;

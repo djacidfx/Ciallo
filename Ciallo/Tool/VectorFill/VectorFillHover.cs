@@ -107,7 +107,7 @@ public class VectorFillHover : InteractiveSessionBase
         var sm = Document.Get<SelectionManager>();
 
         var markerTexture = sm.WorkingVectorFillBrush
-            .Select(e => e.TryGet<VectorFillBrushSetting>()?.MarkerTexture)
+            .Select(e => e.TryGet<FillBrushSetting>()?.MarkerTexture)
             .Flatten();
         var markerPicker = new MarkerPickerButton
         {
@@ -118,7 +118,7 @@ public class VectorFillHover : InteractiveSessionBase
             .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull));
 
         var markerColor = sm.WorkingVectorFillBrush
-            .Select(e => e.TryGet<VectorFillBrushSetting>()?.MarkerColor)
+            .Select(e => e.TryGet<FillBrushSetting>()?.MarkerColor)
             .Flatten();
         container.AddProperty("Marker color",
             new ColorPickerButton { EditAlpha = false }
@@ -134,7 +134,7 @@ public class VectorFillHover : InteractiveSessionBase
         ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
 
         var fillColor = sm.WorkingVectorFillBrush
-            .Select(e => e.TryGet<VectorFillBrushSetting>()?.FillColor)
+            .Select(e => e.TryGet<FillBrushSetting>()?.FillColor)
             .Flatten();
         container.AddProperty("Fill color",
             new ColorPickerButton().BindColor(fillColor)

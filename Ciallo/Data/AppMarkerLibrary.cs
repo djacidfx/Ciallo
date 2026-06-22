@@ -14,7 +14,7 @@ namespace Ciallo.Data;
 /// </summary>
 /// <remarks>
 /// The catalog only provides marker textures to pick from. Each fill brush keeps its own
-/// inline copy of the chosen texture (see <see cref="VectorFillBrushSetting.MarkerTexture"/>),
+/// inline copy of the chosen texture (see <see cref="FillBrushSetting.MarkerTexture"/>),
 /// mirroring how documents hold their own brushes independent of <see cref="AppStrokeBrushLibrary"/>.
 /// </remarks>
 public static class AppMarkerTextureLibrary
@@ -38,7 +38,7 @@ public static class AppMarkerTextureLibrary
     ];
 
     /// <summary>
-    /// Marker textures are white silhouettes tinted at draw time by <see cref="VectorFillBrushSetting.MarkerColor"/>.
+    /// Marker textures are white silhouettes tinted at draw time by <see cref="FillBrushSetting.MarkerColor"/>.
     /// Coerce every imported image to a 128x128 LA8 mask: luminance is discarded by the white-tint convention,
     /// only the alpha shape matters.
     /// </summary>

@@ -44,7 +44,7 @@ public class NewFilledPolygonCmd : NewShapeCmdBase
         setting.BrushE
             .Select(e => e.IsNull
                 ? Observable.Return(Colors.White)
-                : e.Get<VectorFillBrushSetting>().FillColor.AsObservable())
+                : e.Get<FillBrushSetting>().FillColor.AsObservable())
             .Switch()
             .Subscribe(polygonView.SetColor)
             .AddTo(targetE);

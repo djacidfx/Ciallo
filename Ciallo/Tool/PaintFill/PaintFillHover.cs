@@ -37,7 +37,7 @@ public class PaintFillHover : InteractiveSessionBase
         var sm = Document.Get<SelectionManager>();
 
         var fillColor = sm.WorkingVectorFillBrush
-            .Select(e => e.TryGet<VectorFillBrushSetting>()?.FillColor)
+            .Select(e => e.TryGet<FillBrushSetting>()?.FillColor)
             .Flatten();
         container.AddProperty("Fill color",
             new ColorPickerButton().BindColor(fillColor)

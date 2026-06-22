@@ -98,8 +98,8 @@ public static partial class AppDocumentManager
             var brush = document.World.Create();
             cmd.SetTarget(brush)
                 .NewVectorFillBrush()
-                .SetProperty(e => e.Get<VectorFillBrushSetting>().MarkerTexture, tex)
-                .SetProperty(e => e.Get<VectorFillBrushSetting>().FillColor, colors[i]);
+                .SetProperty(e => e.Get<FillBrushSetting>().MarkerTexture, tex)
+                .SetProperty(e => e.Get<FillBrushSetting>().FillColor, colors[i]);
             if (i == 0)
                 cmd.SetProperty(e => e.Document.Get<SelectionManager>().WorkingVectorFillBrush, brush);
         }

@@ -107,7 +107,7 @@ public partial class VectorFillBrushPreviewList : Container
         container.AddChild(markerPreview);
         box.AddChild(container);
 
-        var setting = e.Get<VectorFillBrushSetting>();
+        var setting = e.Get<FillBrushSetting>();
         setting.MarkerTexture.Subscribe(markerPreview.SetTexture).AddTo(e);
         setting.MarkerColor.Subscribe(markerPreview.SetModulate).AddTo(e);
         setting.FillColor.Subscribe(background.SetColor).AddTo(e);

@@ -22,7 +22,7 @@ public class NewVectorFillBrushCmd : CommandBase
     {
         // Data
         var setting = CopyE.IsNull
-            ? new VectorFillBrushSetting()
+            ? new FillBrushSetting()
             {
                 FillColor = { Value = Colors.LemonChiffon },
                 MarkerColor = { Value = Colors.Black },
@@ -31,7 +31,7 @@ public class NewVectorFillBrushCmd : CommandBase
                     Value = ImageTexture.CreateFromImage(GD.Load<Image>("res://Rendering/Image/Bullseye0.svg"))
                 },
             }
-            : CopyE.Get<VectorFillBrushSetting>().Clone();
+            : CopyE.Get<FillBrushSetting>().Clone();
         targetE.Add(setting);
 
         // View

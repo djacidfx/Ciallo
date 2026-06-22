@@ -50,7 +50,7 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
         setting.BrushE
             .Select(e => e.IsNull
                 ? Observable.Return(Colors.Black)
-                : e.Get<VectorFillBrushSetting>().FillColor.AsObservable())
+                : e.Get<FillBrushSetting>().FillColor.AsObservable())
             .Switch()
             .Subscribe(polygonView.SetColor)
             .AddTo(targetE);
@@ -98,14 +98,14 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
         setting.BrushE
             .Select(e => e.IsNull
                 ? Observable.Return<ImageTexture>(null)
-                : e.Get<VectorFillBrushSetting>().MarkerTexture.AsObservable())
+                : e.Get<FillBrushSetting>().MarkerTexture.AsObservable())
             .Switch()
             .Subscribe(marker.Sprite.SetTexture)
             .AddTo(targetE);
         setting.BrushE
             .Select(e => e.IsNull
                 ? Observable.Return(Colors.Black)
-                : e.Get<VectorFillBrushSetting>().MarkerColor.AsObservable())
+                : e.Get<FillBrushSetting>().MarkerColor.AsObservable())
             .Switch()
             .Subscribe(marker.Sprite.SetModulate)
             .AddTo(targetE);

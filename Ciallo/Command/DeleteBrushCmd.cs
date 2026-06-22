@@ -20,7 +20,7 @@ public class DeleteBrushCmd : CommandBase
                     .SetProperty(e => e.Get<StrokeSetting>().BrushE, Entity.Null);
             }
         }
-        else if (targetE.Has<VectorFillBrushSetting>())
+        else if (targetE.Has<FillBrushSetting>())
         {
             var markerQuery = targetE.World.CreateQuery().With<VectorFillMarkerSetting>().Tagged<ToSerializeTag>().Build();
             foreach (var markerE in markerQuery.EnumerateWithEntities())
@@ -61,7 +61,7 @@ public class DeleteBrushCmd : CommandBase
 
         if (brushE.Has<StrokeBrushSetting>())
             bm.StrokeBrushEs.Add(brushE);
-        if (brushE.Has<VectorFillBrushSetting>())
+        if (brushE.Has<FillBrushSetting>())
             bm.VectorFillBrushEs.Add(brushE);
 
         SetNullBrushCmd.Undo();
