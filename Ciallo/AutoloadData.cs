@@ -55,6 +55,8 @@ public partial class AutoloadData : Node
 
         bool brushFilesExists = AppStrokeBrushLibrary.TryLoad();
         if (!brushFilesExists) AppStrokeBrushLibrary.ResetBuiltInBrushes();
+
+        AppMarkerTextureLibrary.Initialise();
     }
 
     public override void _Ready()
@@ -72,6 +74,7 @@ public partial class AutoloadData : Node
             if (!result) return;
 
             AppStrokeBrushLibrary.Save();
+            AppMarkerTextureLibrary.Save();
             AppPreference.Save();
             AppDocumentManager.Clear();
             GetTree().Quit();

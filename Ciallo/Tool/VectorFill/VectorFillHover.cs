@@ -106,6 +106,17 @@ public class VectorFillHover : InteractiveSessionBase
 
         var sm = Document.Get<SelectionManager>();
 
+        var markerTexture = sm.WorkingVectorFillBrush
+            .Select(e => e.TryGet<VectorFillBrushSetting>()?.MarkerTexture)
+            .Flatten();
+        var markerPicker = new MarkerPickerButton
+        {
+            CustomMinimumSize = new(0, 32),
+        };
+        markerPicker.Bind(markerTexture);
+        container.AddProperty("Marker texture", markerPicker
+            .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull));
+
         var markerColor = sm.WorkingVectorFillBrush
             .Select(e => e.TryGet<VectorFillBrushSetting>()?.MarkerColor)
             .Flatten();
