@@ -21,8 +21,8 @@ public abstract partial class ToolBase
         private static readonly Dictionary<MouseButton, Trigger> MouseButtonRelease = new();
         private static readonly Dictionary<Key, Trigger> KeyPress = new();
         private static readonly Dictionary<Key, Trigger> KeyRelease = new();
-        private static readonly Dictionary<AppAction, Trigger> AppActionPress = new();
-        private static readonly Dictionary<AppAction, Trigger> AppActionRelease = new();
+        private static readonly Dictionary<AppHotkey, Trigger> AppActionPress = new();
+        private static readonly Dictionary<AppHotkey, Trigger> AppActionRelease = new();
 
         public static Trigger Get(MouseButton button, bool isPress)
         {
@@ -48,7 +48,7 @@ public abstract partial class ToolBase
             return trigger;
         }
 
-        public static Trigger Get(AppAction action, bool isPress)
+        public static Trigger Get(AppHotkey action, bool isPress)
         {
             var dict = isPress ? AppActionPress : AppActionRelease;
             if (!dict.TryGetValue(action, out var trigger))

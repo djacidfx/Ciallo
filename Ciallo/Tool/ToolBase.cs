@@ -52,7 +52,7 @@ public abstract partial class ToolBase : ITool
     private CursorButtonData _lastestCursor;
     private TimeSpan _accumulatedInterval = TimeSpan.Zero;
 
-    private readonly HashSet<AppAction> _triggerActions = [];
+    private readonly HashSet<AppHotkey> _triggerActions = [];
 
     private IDisposable _commandManagerSub;
 
@@ -80,16 +80,16 @@ public abstract partial class ToolBase : ITool
             {
                 t.Destination.Start(_lastestCursor);
             })
-            .OnExit(t =>
+            .OnExit((Action<StateMachine<InteractiveSessionBase, Trigger>.Transition>)(t =>
             {
                 t.Destination.BeforeTransitionSrcEnd(t.Source);
-                if (t.Trigger == Trigger.Get(AppActions.CancelInteraction, true) ||
-                    t.Trigger == Trigger.Get(AppActions.CancelInteraction, false) ||
+                if (t.Trigger == Trigger.Get((AppHotkey)AppHotkeys.CancelInteraction, true) ||
+                    t.Trigger == Trigger.Get((AppHotkey)AppHotkeys.CancelInteraction, false) ||
                     t.Trigger == Trigger.Deactivate)
                     t.Source.Cancel();
                 else
                     t.Source.End(_lastestCursor);
-            });
+            }));
     }
 
     public StateConfiguration ConfigureInitial(InteractiveSessionBase session)
@@ -222,12 +222,12 @@ public abstract partial class ToolBase : ITool
     protected Trigger Release(MouseButton button) => Trigger.Get(button, false);
     protected Trigger Press(Key key) => Trigger.Get(key, true);
     protected Trigger Release(Key key) => Trigger.Get(key, false);
-    protected Trigger Press(AppAction action)
+    protected Trigger Press(AppHotkey action)
     {
         _triggerActions.Add(action);
         return Trigger.Get(action, true);
     }
-    protected Trigger Release(AppAction action)
+    protected Trigger Release(AppHotkey action)
     {
         _triggerActions.Add(action);
         return Trigger.Get(action, false);

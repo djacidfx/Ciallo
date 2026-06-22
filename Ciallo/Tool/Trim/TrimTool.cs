@@ -32,7 +32,7 @@ public class TrimTool : ToolBase
 
         Configure(Trim)
             .Permit(Release(MouseButton.Left), Hover)
-            .Permit(Press(AppActions.CancelInteraction), Hover);
+            .Permit(Press(AppHotkeys.CancelInteraction), Hover);
     }
 
     public override bool CanHandleLayer(params Entity[] layerEs)

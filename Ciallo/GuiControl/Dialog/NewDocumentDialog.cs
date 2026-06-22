@@ -64,7 +64,7 @@ public partial class NewDocumentDialog : ConfirmationDialog
         };
         var document = AppDocumentManager.Create(setting);
         AppDocumentManager.WorkingDocument.Value = document;
-        AppDocumentManager.InitialEmptyDocumentForUser(document);
+        AppDocumentManager.InitialEmptyAnimationDocumentForUser(document);
         AppDocumentManager.SaveWorkingDocument();
         Hide();
 

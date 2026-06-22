@@ -8,7 +8,7 @@ namespace Ciallo.Data;
 public class ImageLayerSetting
 {
     [DataMember, ProjectField(StorageKind.Blob)] public ImageTexture Texture = new();
-    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<Transform2D> ImageTransform = new(Transform2D.Identity);
+    [DataMember, ProjectField] public ReactiveProperty<Transform2D> ImageTransform = new(Transform2D.Identity);
 
     public Vector2[] GetCorners()
     {

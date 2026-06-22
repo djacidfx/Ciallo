@@ -224,12 +224,12 @@ public static partial class AppDocumentManager
 
     public static void Save(Entity document, string filePath)
     {
-        SqliteProjectSerializer.Save(document, filePath);
+        DuckDbProjectSerializer.Save(document, filePath);
     }
 
     public static Entity Load(string filePath)
     {
-        return SqliteProjectSerializer.Load(filePath);
+        return DuckDbProjectSerializer.Load(filePath);
     }
 
     public static IEnumerable<Type> GetToSerializeTypes()

@@ -9,8 +9,8 @@ public class DocumentSetting
 {
     [DataMember, ProjectField] public ReactiveProperty<string> Name = new();
     // Reference size is used for background size, default export size, import image size, etc.
-    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<Vector2> ReferenceSize = new(new(1920, 1080));
-    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<Color> BackgroundColor = new(Colors.White);
+    [DataMember, ProjectField] public ReactiveProperty<Vector2> ReferenceSize = new(new(1920, 1080));
+    [DataMember, ProjectField] public ReactiveProperty<Color> BackgroundColor = new(Colors.White);
 
     public ReactiveProperty<string> FilePath = new(OS.GetSystemDir(OS.SystemDir.Documents));
 }

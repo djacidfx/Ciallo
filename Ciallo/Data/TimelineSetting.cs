@@ -16,7 +16,7 @@ public class TimelineSetting
     [DataMember, ProjectField] public ReactiveProperty<bool> LoopPlaybackEnabled = new(false);
     [DataMember, ProjectField] public ReactiveProperty<bool> OnionSkinEnabled = new(false);
     // Offsets in exposure index, negative for past frames, positive for future frames.
-    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<ImmutableArray<int>> OnionSkinOffsets = new([-1, 1]);
+    [DataMember, ProjectField] public ReactiveProperty<ImmutableArray<int>> OnionSkinOffsets = new([-1, 1]);
 
     public ReactiveProperty<bool> IsRollingFrame = new(false);
     public readonly ReadOnlyReactiveProperty<SortedList<int, ShaderMaterial>> OnionSkinMaterials;
