@@ -134,7 +134,7 @@ public partial class LayerAction : Control
         // 2. Convert each VectorMarker to a FilledPolygon inside the new ShapeLayer
         foreach (var markerE in markers)
         {
-            var markerPos = markerE.Get<PolylineGeometry>().Positions.Value[0];
+            var markerPos = markerE.Get<SampledPolyline>().Positions.Value[0];
             var brushE = markerE.Get<VectorFillMarkerSetting>().BrushE.Value;
 
             var faceRid = arr.PointQueryFace(markerPos);

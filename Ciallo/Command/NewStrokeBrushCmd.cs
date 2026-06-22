@@ -104,13 +104,13 @@ public class NewStrokeBrushCmd : CommandBase
         // Data
         targetE.Tag<ToSerializeTag>();
         var bm = Document.Get<BrushManager>();
-        bm.StrokeBrushEs.Add(targetE);
+        bm.StrokeBrushes.Add(targetE);
     }
 
     public override void Undo(Entity brushE)
     {
         var bm = Document.Get<BrushManager>();
-        bm.StrokeBrushEs.Remove(brushE);
+        bm.StrokeBrushes.Remove(brushE);
         brushE.Detach<ToSerializeTag>();
     }
 

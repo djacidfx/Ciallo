@@ -32,7 +32,7 @@ public class LiquifyInteractor : InteractiveSessionBase
 
         for (int i = 0; i < _processingEs.Length; i++)
         {
-            var geom = _processingEs[i].Get<PolylineGeometry>();
+            var geom = _processingEs[i].Get<SampledPolyline>();
             var positions = geom.Positions.Value;
             _origPolylines[i] = [.. positions];
             _currPolylines[i] = [.. positions];
@@ -161,7 +161,7 @@ public class LiquifyInteractor : InteractiveSessionBase
 
     private static void UpdateView(Entity e, IReadOnlyList<Vector2> positions, IReadOnlyList<float> radii)
     {
-        var geom = e.Get<PolylineGeometry>();
+        var geom = e.Get<SampledPolyline>();
         if (e.Has<StrokeSetting>())
             e.Get<StrokeView>().SetGeometry(positions, radii, geom.Pressures.Value);
         if (e.Has<FilledPolygonSetting>())

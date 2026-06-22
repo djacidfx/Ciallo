@@ -16,7 +16,7 @@ public static class LiquifyTargetScope
 
     public static bool CanLiquify(Entity shapeE)
     {
-        if (shapeE.IsDyingOrDead || !shapeE.Has<PolylineGeometry>())
+        if (shapeE.IsDyingOrDead || !shapeE.Has<SampledPolyline>())
             return false;
 
         return shapeE.Has<StrokeSetting>() || shapeE.Has<FilledPolygonSetting>();

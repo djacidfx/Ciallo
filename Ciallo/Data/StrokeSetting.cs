@@ -9,14 +9,14 @@ namespace Ciallo.Data;
 public class StrokeSetting
 {
     [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Nullable)]
-    public ReactiveProperty<Entity> BrushE = new(default);
+    public ReactiveProperty<Entity> Brush = new(default);
     [DataMember, ProjectField] public ReactiveProperty<Color?> OverrideColor = new();
 
     public StrokeSetting Clone()
     {
         return new StrokeSetting
         {
-            BrushE = { Value = BrushE.Value },
+            Brush = { Value = Brush.Value },
             OverrideColor = { Value = OverrideColor.Value },
         };
     }

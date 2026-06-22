@@ -47,13 +47,13 @@ public class NewVectorFillBrushCmd : CommandBase
     public override void Do(Entity targetE)
     {
         targetE.Tag<ToSerializeTag>();
-        targetE.Document.Get<BrushManager>().VectorFillBrushEs.Add(targetE);
+        targetE.Document.Get<BrushManager>().VectorFillBrushes.Add(targetE);
     }
 
     public override void Undo(Entity targetE)
     {
         var document = targetE.Document;
-        document.Get<BrushManager>().VectorFillBrushEs.Remove(targetE);
+        document.Get<BrushManager>().VectorFillBrushes.Remove(targetE);
         targetE.Detach<ToSerializeTag>();
         document.Get<SelectionManager>().SelectedShapes.Remove(targetE);
     }

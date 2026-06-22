@@ -28,7 +28,7 @@ public partial class StrokeBrushPreviewList : Container
         Document = document;
         var sm = Document.Get<SelectionManager>();
         var bm = Document.Get<BrushManager>();
-        Bind(bm.StrokeBrushEs, sm.WorkingStrokeBrush);
+        Bind(bm.StrokeBrushes, sm.WorkingStrokeBrush);
     }
 
     public void Init() { }

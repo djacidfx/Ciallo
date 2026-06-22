@@ -205,7 +205,7 @@ public static class ResearchAnimationImporter
         cmd.SetTarget(cel.World.Create())
             .NewStroke()
             .AddToLayerTree(cel)
-            .SetProperty(e => e.Get<StrokeSetting>().BrushE, brushE)
+            .SetProperty(e => e.Get<StrokeSetting>().Brush, brushE)
             .SetPolylineGeometry(positions, radii, pressures, tilts);
     }
 

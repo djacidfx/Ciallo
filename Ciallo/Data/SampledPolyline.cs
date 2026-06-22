@@ -10,7 +10,7 @@ namespace Ciallo.Data;
 
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DataContract, ToSerialize]
-public class PolylineGeometry
+public class SampledPolyline
 {
     [DataMember(Order = 0), ProjectField]
     public ReactiveProperty<ImmutableArray<Vector2>> Positions = new([]);
@@ -24,9 +24,9 @@ public class PolylineGeometry
     public int Count => Positions.Value.Length;
     public int Length => Count;
 
-    public PolylineGeometry Clone()
+    public SampledPolyline Clone()
     {
-        return new PolylineGeometry()
+        return new SampledPolyline()
         {
             Positions = { Value = Positions.Value },
             Radii = { Value = Radii.Value },

@@ -50,9 +50,9 @@ public static partial class AppDocumentManager
 
         // Load brushes
         var loadBrushCmd = new CommandBuilder();
-        foreach (var strokeBrushDataE in dataDocument.Get<BrushManager>().StrokeBrushEs)
+        foreach (var strokeBrushDataE in dataDocument.Get<BrushManager>().StrokeBrushes)
             loadBrushCmd.SetTarget(entityMap[strokeBrushDataE]).NewStrokeBrush(strokeBrushDataE);
-        foreach (var vectorFillBrushDataE in dataDocument.Get<BrushManager>().VectorFillBrushEs)
+        foreach (var vectorFillBrushDataE in dataDocument.Get<BrushManager>().VectorFillBrushes)
             loadBrushCmd.SetTarget(entityMap[vectorFillBrushDataE]).NewVectorFillBrush(vectorFillBrushDataE);
         loadBrushCmd.Do();
 

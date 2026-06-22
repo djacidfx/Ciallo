@@ -57,7 +57,7 @@ public sealed class PaintStrokeSnap
 
         void KeepIfNearer(Entity curve)
         {
-            var positions = curve.Get<PolylineGeometry>().Positions.Value;
+            var positions = curve.Get<SampledPolyline>().Positions.Value;
 
             // Prefer curve endpoints only in the tighter endpoint-preference range.
             // Body targets can still use the full snap distance.
@@ -174,7 +174,7 @@ public sealed class PaintStrokeSnap
         PaintStrokeSnapTarget target,
         bool repairStart)
     {
-        var targetPositions = target.Curve.Get<PolylineGeometry>().Positions.Value;
+        var targetPositions = target.Curve.Get<SampledPolyline>().Positions.Value;
         var hitPoint = targetPositions.Sample(target.HitT);
         var t = target.HitT;
         if (t <= Epsilon)

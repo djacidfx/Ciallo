@@ -34,7 +34,7 @@ public partial class VectorFillBrushPreviewList : Container
         Document = document;
         var sm = Document.Get<SelectionManager>();
         var bm = Document.Get<BrushManager>();
-        Bind(bm.VectorFillBrushEs, sm.WorkingVectorFillBrush);
+        Bind(bm.VectorFillBrushes, sm.WorkingVectorFillBrush);
     }
 
     public void Init() { }

@@ -161,15 +161,15 @@ public class PolylineSelectTool : ToolBase
         var strokeBrushSwitcher = StrokeBrushPreviewList.New().AddToChildOf(container);
         strokeBrushSwitcher.CustomMinimumSize = new(0, 256);
         strokeBrushSwitcher.Document = Document;
-        strokeBrushSwitcher.BindBrushes(Document.Get<BrushManager>().StrokeBrushEs);
+        strokeBrushSwitcher.BindBrushes(Document.Get<BrushManager>().StrokeBrushes);
         strokeBrushSwitcher.VisibleIf(selectionChanged,
             _ => selectedShapes.Count > 0 && selectedShapes.All(e => e.Has<StrokeSetting>()));
 
         selectionChanged.Subscribe(_ =>
         {
             if (selectedShapes.Count <= 0 || !selectedShapes.All(e => e.Has<StrokeSetting>())) return;
-            var firstE = selectedShapes.First().Get<StrokeSetting>().BrushE.Value;
-            bool allSame = selectedShapes.All(e => e.Get<StrokeSetting>().BrushE.Value == firstE);
+            var firstE = selectedShapes.First().Get<StrokeSetting>().Brush.Value;
+            bool allSame = selectedShapes.All(e => e.Get<StrokeSetting>().Brush.Value == firstE);
             strokeBrushSwitcher.Select(allSame ? firstE : Entity.Null);
         }).AddTo(strokeBrushSwitcher);
 
@@ -177,7 +177,7 @@ public class PolylineSelectTool : ToolBase
         {
             var cmd = new CommandBuilder();
             foreach (var shapeE in selectedShapes)
-                cmd.SetTarget(shapeE).SetProperty(e => e.Get<StrokeSetting>().BrushE, brushE);
+                cmd.SetTarget(shapeE).SetProperty(e => e.Get<StrokeSetting>().Brush, brushE);
             cmd.Commit();
             strokeBrushSwitcher.Select(brushE);
         }).AddTo(strokeBrushSwitcher);
@@ -186,7 +186,7 @@ public class PolylineSelectTool : ToolBase
         var vectorFillBrushSwitcher = VectorFillBrushPreviewList.New().AddToChildOf(container);
         vectorFillBrushSwitcher.CustomMinimumSize = new(0, 256);
         vectorFillBrushSwitcher.Document = Document;
-        vectorFillBrushSwitcher.BindBrushes(Document.Get<BrushManager>().VectorFillBrushEs);
+        vectorFillBrushSwitcher.BindBrushes(Document.Get<BrushManager>().VectorFillBrushes);
         vectorFillBrushSwitcher.VisibleIf(selectionChanged,
             _ => selectedShapes.Count > 0 && selectedShapes.All(e => e.Has<VectorFillMarkerSetting>() || e.Has<FilledPolygonSetting>()));
 
@@ -229,7 +229,7 @@ public class PolylineSelectTool : ToolBase
             var builder = new CommandBuilder(Entity.Null);
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
-                var geom = polylineE.Get<PolylineGeometry>();
+                var geom = polylineE.Get<SampledPolyline>();
                 if (geom.Length < 4) continue;
                 geom.Positions.Value.SimplifyCurvatureDistance(SimplificationRatio.Value, out var indices);
 
@@ -261,7 +261,7 @@ public class PolylineSelectTool : ToolBase
             var builder = new CommandBuilder();
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
-                var geom = polylineE.Get<PolylineGeometry>();
+                var geom = polylineE.Get<SampledPolyline>();
                 if (geom.Length < 2) continue;
 
                 var resultLength = geom.Length * 2 - 1;
@@ -314,7 +314,7 @@ public class PolylineSelectTool : ToolBase
             var cmd1 = new CommandBuilder();
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
-                var geom = polylineE.Get<PolylineGeometry>();
+                var geom = polylineE.Get<SampledPolyline>();
                 if (geom.Length < 2) continue;
                 List<float> polyTs = new() { Capacity = geom.Length * 2 - 1 };
                 for (int i = 0; i < geom.Length - 1; i++)
@@ -355,7 +355,7 @@ public class PolylineSelectTool : ToolBase
             var builder = new CommandBuilder(Entity.Null);
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
-                var geom = polylineE.Get<PolylineGeometry>();
+                var geom = polylineE.Get<SampledPolyline>();
                 if (geom.Length < 3) continue;
 
                 // Apply Laplacian smoothing only to positions.

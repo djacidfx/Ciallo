@@ -72,8 +72,8 @@ public static class AppClipboardManager
 
     private static Dictionary<Entity, Entity> CreateTargetBrushMap(BrushManager brushManager)
     {
-        return brushManager.StrokeBrushEs
-            .Concat(brushManager.VectorFillBrushEs)
+        return brushManager.StrokeBrushes
+            .Concat(brushManager.VectorFillBrushes)
             .ToDictionary(brushE => brushE, brushE => brushE);
     }
 }

@@ -24,10 +24,10 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
 
-        var polylineGeometry = CopyE.IsNull
-            ? new PolylineGeometry()
-            : CopyE.Get<PolylineGeometry>().Clone();
-        targetE.Add(polylineGeometry);
+        var sampledPolyline = CopyE.IsNull
+            ? new SampledPolyline()
+            : CopyE.Get<SampledPolyline>().Clone();
+        targetE.Add(sampledPolyline);
 
         var setting = CopyE.IsNull
             ? new VectorFillMarkerSetting()
@@ -39,7 +39,7 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
     protected override void CreateRuntime(Entity targetE)
     {
         var layerNode = targetE.Get<LayerTreeNode>();
-        var polylineGeometry = targetE.Get<PolylineGeometry>();
+        var sampledPolyline = targetE.Get<SampledPolyline>();
         var setting = targetE.Get<VectorFillMarkerSetting>();
 
         // By design, polygons attached to fill markers are views,
@@ -61,7 +61,7 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
                 ? Observable.Return<Arrangement>(null)
                 : e.Get<ArrangementManager>().ArrReady.AsObservable())
             .Switch()
-            .CombineLatest(polylineGeometry.Positions.ThrottleLastFrame(1), ValueTuple.Create)
+            .CombineLatest(sampledPolyline.Positions.ThrottleLastFrame(1), ValueTuple.Create)
             .Subscribe(tuple =>
             {
                 var (arr, positions) = tuple;
@@ -76,7 +76,7 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
         var wireframeOverlay = new PolylineWireframe() { Visible = false };
         targetE.AddNode(wireframeOverlay);
 
-        polylineGeometry.Positions.ThrottleLastFrame(1).Subscribe(p =>
+        sampledPolyline.Positions.ThrottleLastFrame(1).Subscribe(p =>
         {
             wireframeOverlay.SetGeometry(p);
         }).AddTo(targetE);
@@ -110,7 +110,7 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
             .Subscribe(marker.Sprite.SetModulate)
             .AddTo(targetE);
 
-        polylineGeometry.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
+        sampledPolyline.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
         {
             marker.SetGeometry(v.Item1, v.Item2);
         }).AddTo(targetE);
@@ -119,7 +119,7 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
         var strokeBody = new Body();
         targetE.AddNode(strokeBody);
 
-        polylineGeometry.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
+        sampledPolyline.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
         {
             strokeBody.SetStrokeShape(v.Item1, v.Item2);
         }).AddTo(targetE);

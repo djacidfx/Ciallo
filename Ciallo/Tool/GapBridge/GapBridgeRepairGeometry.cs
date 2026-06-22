@@ -19,7 +19,7 @@ public static class GapBridgeRepairGeometry
 
     public static ImmutableArray<Vector2> BuildRepairedPositions(Arrangement arr, GapBridge bridge)
     {
-        var geom = bridge.SourceCurve.Get<PolylineGeometry>();
+        var geom = bridge.SourceCurve.Get<SampledPolyline>();
         var positions = geom.Positions.Value;
         if (positions.Length < 2)
             return positions;

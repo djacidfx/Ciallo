@@ -80,7 +80,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
         _currPolylines = new Vector2[_processingEs.Length][];
         foreach (var (i, e) in _processingEs.Index())
         {
-            var positions = e.Get<PolylineGeometry>().Positions.Value;
+            var positions = e.Get<SampledPolyline>().Positions.Value;
             var bounding = positions.GetBoundingBox();
             _origRect = i == 0 ? bounding : _origRect.Merge(bounding);
             // allocate buffer once per interaction
@@ -172,7 +172,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
         // Update view
         foreach (var (i, e) in _processingEs.Index())
         {
-            var geom = e.Get<PolylineGeometry>();
+            var geom = e.Get<SampledPolyline>();
             for (int j = 0; j < _currPolylines[i].Length; j++)
                 _currPolylines[i][j] = _currTransform * geom.Positions.Value[j];
 
@@ -199,7 +199,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             var cmd = new CommandBuilder();
             foreach (var e in _processingEs)
             {
-                var oldPositions = e.Get<PolylineGeometry>().Positions.Value;
+                var oldPositions = e.Get<SampledPolyline>().Positions.Value;
                 var newPositions = oldPositions.Select(p => resultT * p);
                 cmd.SetTarget(e).SetPolylineGeometry([..newPositions]);
             }
@@ -214,7 +214,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
         // Clean up view change
         foreach (var e in _processingEs)
         {
-            var geom = e.Get<PolylineGeometry>();
+            var geom = e.Get<SampledPolyline>();
             var points = geom.Positions.Value;
             if (e.Has<StrokeSetting>())
             {

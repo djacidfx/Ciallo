@@ -81,7 +81,7 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
         _currPolylines = new Vector2[_processingEs.Length][];
         for (int i = 0; i < _processingEs.Length; i++)
         {
-            var positions = _processingEs[i].Get<PolylineGeometry>().Positions.Value;
+            var positions = _processingEs[i].Get<SampledPolyline>().Positions.Value;
             _origPolylines[i] = positions.ToArray();
             _currPolylines[i] = new Vector2[positions.Length];
             positions.CopyTo(_currPolylines[i]);
@@ -181,7 +181,7 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
         for (int i = 0; i < _processingEs.Length; i++)
         {
             var e = _processingEs[i];
-            var geom = e.Get<PolylineGeometry>();
+            var geom = e.Get<SampledPolyline>();
             for (int j = 0; j < _currPolylines[i].Length; j++)
             {
                 _currPolylines[i][j] = _origPolylines[i][j] + (Curve.Sample(_polyTs[i][j]) - _origCurveSamples[i][j]);
@@ -219,7 +219,7 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
     {
         foreach (var e in _processingEs)
         {
-            var geom = e.Get<PolylineGeometry>();
+            var geom = e.Get<SampledPolyline>();
             var pts = geom.Positions.Value;
             if (e.Has<StrokeSetting>())
                 e.Get<StrokeView>().SetGeometry(pts, geom.Radii.Value, geom.Pressures.Value);

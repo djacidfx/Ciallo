@@ -17,7 +17,7 @@ public class PaintStrokeOnVectorFill : PaintStrokeInteractor
             new CommandBuilder(WorkingLayer.World.Create())
                 .NewStroke()
                 .AddToLayerTree(targetShapeLayer)
-                .SetProperty(e => e.Get<StrokeSetting>().BrushE, BrushE)
+                .SetProperty(e => e.Get<StrokeSetting>().Brush, BrushE)
                 .SetPolylineGeometry(geometry.Positions, geometry.Radii, geometry.Pressures, geometry.Tilts)
                 .Commit();
         }

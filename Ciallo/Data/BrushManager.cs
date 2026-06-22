@@ -8,7 +8,7 @@ namespace Ciallo.Data;
 public class BrushManager
 {
     [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Required)]
-    public ObservableList<Entity> StrokeBrushEs = [];
+    public ObservableList<Entity> StrokeBrushes = [];
     [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Required)]
-    public ObservableList<Entity> VectorFillBrushEs = [];
+    public ObservableList<Entity> VectorFillBrushes = [];
 }

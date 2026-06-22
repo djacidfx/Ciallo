@@ -31,13 +31,13 @@ public class SetPolylineGeometryCmd : CommandBase
     {
         _cmd = new(targetE);
         if (Positions.HasValue)
-            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Positions, Positions.Value);
+            _cmd.SetProperty(e => e.Get<SampledPolyline>().Positions, Positions.Value);
         if (Radii.HasValue)
-            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Radii, Radii.Value);
+            _cmd.SetProperty(e => e.Get<SampledPolyline>().Radii, Radii.Value);
         if (Pressures.HasValue)
-            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Pressures, Pressures.Value);
+            _cmd.SetProperty(e => e.Get<SampledPolyline>().Pressures, Pressures.Value);
         if (Tilts.HasValue)
-            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Tilts, Tilts.Value);
+            _cmd.SetProperty(e => e.Get<SampledPolyline>().Tilts, Tilts.Value);
     }
 
     public override void Do(Entity targetE)
