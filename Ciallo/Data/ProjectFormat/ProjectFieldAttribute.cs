@@ -6,7 +6,6 @@ public enum StorageKind
 {
     Auto,
     Entity,
-    RawArray,
     Blob,
 }
 

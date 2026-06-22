@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Reflection;
@@ -7,6 +8,34 @@ using ObservableCollections;
 using R3;
 
 namespace Ciallo.Data.ProjectFormat;
+
+/// <summary>
+/// How one persisted field maps onto a single DuckDB column.
+/// Every field is exactly one column; there are no side tables in the DuckDB format.
+/// </summary>
+internal enum FieldShape
+{
+    Scalar,         // native column: VARCHAR / BOOLEAN / INTEGER / FLOAT / ...
+    Struct,         // STRUCT column via a StructCodec (Color, Vector2, Transform2D, BezierPoint)
+    StructArray,    // STRUCT[] column (e.g. stroke positions, bezier curves)
+    PrimitiveArray, // scalar list column: FLOAT[] / INTEGER[] / ...
+    EntityRef,      // INTEGER, nullable (entity id, or NULL for Entity.Null)
+    EntityArray,    // INTEGER[] (entity list or set)
+    EntityMap,      // MAP(INTEGER, INTEGER), nullable (int-keyed entity map, e.g. Exposures)
+    Blob,           // BLOB via MessagePack (true binary media only)
+}
+
+/// <summary>Concrete collection type a value/entity array field uses, for reconstruction on read.</summary>
+internal enum ContainerKind
+{
+    None,
+    ImmutableArray,
+    List,
+    ObservableList,
+    HashSet,
+    ObservableHashSet,
+    Array,
+}
 
 internal sealed class FieldDescriptor
 {
@@ -20,15 +49,11 @@ internal sealed class FieldDescriptor
     public Type ValueType { get; }
     public Type NonNullableValueType { get; }
     public Type ElementType { get; }
+    public ContainerKind ContainerKind { get; }
+    public StructCodec Codec { get; }
     public bool IsReactive { get; }
     public bool IsNullable { get; }
-    public string EntityColumnName => Name + "_entity_id";
-    public string BlobColumnName => Name + "_blob";
-    public string CountColumnName => Name + "_count";
-    public string ExistsColumnName => Name + "_exists";
-    public string ChildTableName => Component.TableName + "_" + Name;
-    public bool IsChildTable => Shape is FieldShape.List or FieldShape.Set or FieldShape.IntKeyMap;
-    public IReadOnlyList<ColumnDescriptor> MainColumns { get; }
+    public string DuckDbColumnType { get; }
 
     private FieldDescriptor(
         ComponentDescriptor component,
@@ -39,6 +64,8 @@ internal sealed class FieldDescriptor
         Type valueType,
         Type nonNullableValueType,
         Type elementType,
+        ContainerKind containerKind,
+        StructCodec codec,
         bool isReactive,
         bool isNullable)
     {
@@ -52,9 +79,11 @@ internal sealed class FieldDescriptor
         ValueType = valueType;
         NonNullableValueType = nonNullableValueType;
         ElementType = elementType;
+        ContainerKind = containerKind;
+        Codec = codec;
         IsReactive = isReactive;
         IsNullable = isNullable;
-        MainColumns = BuildMainColumns();
+        DuckDbColumnType = BuildColumnType();
     }
 
     public static FieldDescriptor TryCreate(ComponentDescriptor component, FieldInfo field)
@@ -68,8 +97,8 @@ internal sealed class FieldDescriptor
         var valueType = isReactive ? fieldType.GetGenericArguments()[0] : fieldType;
         var nonNullableType = Nullable.GetUnderlyingType(valueType) ?? valueType;
         var isNullable = !valueType.IsValueType || Nullable.GetUnderlyingType(valueType) != null;
-        var shape = ResolveShape(attr.StorageKind, nonNullableType);
-        var elementType = shape == FieldShape.RawArray ? ResolveRawArrayElementType(nonNullableType) : null;
+
+        var (shape, elementType, containerKind, codec) = ResolveShape(attr.StorageKind, nonNullableType);
 
         return new FieldDescriptor(
             component,
@@ -80,9 +109,13 @@ internal sealed class FieldDescriptor
             valueType,
             nonNullableType,
             elementType,
+            containerKind,
+            codec,
             isReactive,
             isNullable);
     }
+
+    #region Value access (reactive unwrap)
 
     public object GetProjectValue(object component)
     {
@@ -115,137 +148,157 @@ internal sealed class FieldDescriptor
         Field.SetValue(component, value);
     }
 
-    public void SetCollectionExists(object component, bool exists)
+    #endregion
+
+    #region Shape resolution
+
+    private static (FieldShape, Type, ContainerKind, StructCodec) ResolveShape(StorageKind storageKind, Type valueType)
     {
-        var current = Field.GetValue(component);
-        if (!exists)
+        switch (storageKind)
         {
-            ClearEntityCollection(current);
-
-            if (!Field.IsInitOnly)
-                Field.SetValue(component, null);
-            return;
-        }
-
-        if (current == null)
-        {
-            if (Field.IsInitOnly)
-                throw new InvalidOperationException($"{Component.Name}.{Name} is readonly and null.");
-            current = Activator.CreateInstance(FieldType)
-                      ?? throw new InvalidOperationException($"Cannot create collection {FieldType}.");
-            Field.SetValue(component, current);
-        }
-
-        if (ClearEntityCollection(current))
-            return;
-
-        throw new InvalidOperationException($"{Component.Name}.{Name} is not a supported entity collection.");
-    }
-
-    private static bool ClearEntityCollection(object value)
-    {
-        switch (value)
-        {
-            case null:
-                return false;
-            case ObservableList<Entity> observableList:
-                observableList.Clear();
-                return true;
-            case ObservableHashSet<Entity> observableSet:
-                observableSet.Clear();
-                return true;
-            case ObservableSortedList<int, Entity> observableMap:
-                observableMap.Clear();
-                return true;
-            case ICollection<Entity> collection:
-                collection.Clear();
-                return true;
-            case IDictionary<int, Entity> map:
-                map.Clear();
-                return true;
+            case StorageKind.Entity:
+                return ResolveEntityShape(valueType);
+            case StorageKind.Blob:
+                return (FieldShape.Blob, null, ContainerKind.None, null);
+            case StorageKind.Auto:
+                return ResolveAutoShape(valueType);
             default:
-                return false;
+                throw new ArgumentOutOfRangeException(nameof(storageKind), storageKind, null);
         }
     }
 
-    private IReadOnlyList<ColumnDescriptor> BuildMainColumns()
+    private static (FieldShape, Type, ContainerKind, StructCodec) ResolveAutoShape(Type valueType)
     {
-        return Shape switch
+        if (IsScalar(valueType))
+            return (FieldShape.Scalar, null, ContainerKind.None, null);
+
+        if (StructCodecRegistry.TryGet(valueType, out var structCodec))
+            return (FieldShape.Struct, null, ContainerKind.None, structCodec);
+
+        if (TryResolveArray(valueType, out var elementType, out var containerKind))
         {
-            FieldShape.Scalar => [new(Name, ScalarSqlType(NonNullableValueType))],
-            FieldShape.Entity => [new(EntityColumnName, "integer")],
-            FieldShape.Blob => [new(BlobColumnName, "blob")],
-            FieldShape.RawArray => [new(BlobColumnName, "blob"), new(CountColumnName, "integer")],
-            FieldShape.List or FieldShape.Set or FieldShape.IntKeyMap => [new(ExistsColumnName, "integer")],
-            _ => throw new ArgumentOutOfRangeException(nameof(Shape), Shape, null)
-        };
+            if (StructCodecRegistry.TryGet(elementType, out var elementCodec))
+                return (FieldShape.StructArray, elementType, containerKind, elementCodec);
+            if (IsScalar(elementType))
+                return (FieldShape.PrimitiveArray, elementType, containerKind, null);
+        }
+
+        throw new InvalidOperationException(
+            $"{valueType} has no structured DuckDB mapping. Mark the field with StorageKind.Blob if it must stay binary.");
     }
 
-    private static string ScalarSqlType(Type type)
-    {
-        if (type == typeof(string))
-            return "text";
-        if (type == typeof(float) || type == typeof(double))
-            return "real";
-        return "integer";
-    }
-
-    private static FieldShape ResolveShape(StorageKind storageKind, Type valueType)
-    {
-        return storageKind switch
-        {
-            StorageKind.Entity => ResolveEntityShape(valueType),
-            StorageKind.RawArray => FieldShape.RawArray,
-            StorageKind.Blob => FieldShape.Blob,
-            StorageKind.Auto => IsScalar(valueType) ? FieldShape.Scalar : FieldShape.Blob,
-            _ => throw new ArgumentOutOfRangeException(nameof(storageKind), storageKind, null)
-        };
-    }
-
-    private static FieldShape ResolveEntityShape(Type valueType)
+    private static (FieldShape, Type, ContainerKind, StructCodec) ResolveEntityShape(Type valueType)
     {
         if (valueType == typeof(Entity))
-            return FieldShape.Entity;
+            return (FieldShape.EntityRef, null, ContainerKind.None, null);
 
         if (!valueType.IsGenericType)
             throw new InvalidOperationException($"{valueType} is not a supported entity field.");
 
         var def = valueType.GetGenericTypeDefinition();
         var args = valueType.GetGenericArguments();
-        if ((def == typeof(List<>) || def == typeof(ObservableList<>)) && args[0] == typeof(Entity))
-            return FieldShape.List;
-        if ((def == typeof(HashSet<>) || def == typeof(ObservableHashSet<>)) && args[0] == typeof(Entity))
-            return FieldShape.Set;
+
+        if (def == typeof(List<>) && args[0] == typeof(Entity))
+            return (FieldShape.EntityArray, typeof(Entity), ContainerKind.List, null);
+        if (def == typeof(ObservableList<>) && args[0] == typeof(Entity))
+            return (FieldShape.EntityArray, typeof(Entity), ContainerKind.ObservableList, null);
+        if (def == typeof(HashSet<>) && args[0] == typeof(Entity))
+            return (FieldShape.EntityArray, typeof(Entity), ContainerKind.HashSet, null);
+        if (def == typeof(ObservableHashSet<>) && args[0] == typeof(Entity))
+            return (FieldShape.EntityArray, typeof(Entity), ContainerKind.ObservableHashSet, null);
         if ((def == typeof(SortedList<,>) || def == typeof(ObservableSortedList<,>)) &&
-            args[0] == typeof(int) &&
-            args[1] == typeof(Entity))
-            return FieldShape.IntKeyMap;
+            args[0] == typeof(int) && args[1] == typeof(Entity))
+            return (FieldShape.EntityMap, typeof(Entity), ContainerKind.None, null);
 
         throw new InvalidOperationException($"{valueType} is not a supported entity field.");
     }
 
-    private static Type ResolveRawArrayElementType(Type valueType)
+    private static bool TryResolveArray(Type valueType, out Type elementType, out ContainerKind containerKind)
     {
-        Type elementType = null;
+        elementType = null;
+        containerKind = ContainerKind.None;
+
         if (valueType.IsArray)
-            elementType = valueType.GetElementType();
-        else if (valueType.IsGenericType)
         {
-            var def = valueType.GetGenericTypeDefinition();
-            if (def == typeof(ImmutableArray<>) || def == typeof(List<>))
-                elementType = valueType.GetGenericArguments()[0];
+            elementType = valueType.GetElementType();
+            containerKind = ContainerKind.Array;
+            return true;
         }
 
-        if (elementType == null || !RawArrayCodec.IsSupportedElementType(elementType))
-            throw new InvalidOperationException($"{valueType} is not a supported raw array field.");
+        if (!valueType.IsGenericType)
+            return false;
 
-        return elementType;
+        var def = valueType.GetGenericTypeDefinition();
+        if (def == typeof(ImmutableArray<>)) { elementType = valueType.GetGenericArguments()[0]; containerKind = ContainerKind.ImmutableArray; return true; }
+        if (def == typeof(List<>)) { elementType = valueType.GetGenericArguments()[0]; containerKind = ContainerKind.List; return true; }
+        if (def == typeof(ObservableList<>)) { elementType = valueType.GetGenericArguments()[0]; containerKind = ContainerKind.ObservableList; return true; }
+
+        return false;
+    }
+
+    #endregion
+
+    #region DuckDB type mapping
+
+    private string BuildColumnType()
+    {
+        return Shape switch
+        {
+            FieldShape.Scalar => DuckScalarType(NonNullableValueType),
+            FieldShape.Struct => Codec.DuckDbType,
+            FieldShape.StructArray => Codec.DuckDbType + "[]",
+            FieldShape.PrimitiveArray => DuckScalarType(ElementType) + "[]",
+            FieldShape.EntityRef => "INTEGER",
+            FieldShape.EntityArray => "INTEGER[]",
+            FieldShape.EntityMap => "MAP(INTEGER, INTEGER)",
+            FieldShape.Blob => "BLOB",
+            _ => throw new ArgumentOutOfRangeException(nameof(Shape), Shape, null)
+        };
+    }
+
+    public static string DuckScalarType(Type type)
+    {
+        if (type.IsEnum)
+            return "INTEGER";
+        if (type == typeof(string)) return "VARCHAR";
+        if (type == typeof(bool)) return "BOOLEAN";
+        if (type == typeof(byte)) return "UTINYINT";
+        if (type == typeof(sbyte)) return "TINYINT";
+        if (type == typeof(short)) return "SMALLINT";
+        if (type == typeof(ushort)) return "USMALLINT";
+        if (type == typeof(int)) return "INTEGER";
+        if (type == typeof(uint)) return "UINTEGER";
+        if (type == typeof(long)) return "BIGINT";
+        if (type == typeof(ulong)) return "UBIGINT";
+        if (type == typeof(float)) return "FLOAT";
+        if (type == typeof(double)) return "DOUBLE";
+        throw new InvalidOperationException($"{type} has no DuckDB scalar type.");
+    }
+
+    #endregion
+
+    #region Helpers
+
+    /// <summary>Enumerate an array/list value as boxed elements, treating a default ImmutableArray as empty.</summary>
+    public static IEnumerable<object> EnumerateArray(object value)
+    {
+        if (value == null)
+            yield break;
+
+        var type = value.GetType();
+        if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ImmutableArray<>))
+        {
+            var isDefault = (bool)type.GetProperty("IsDefault")!.GetValue(value)!;
+            if (isDefault)
+                yield break;
+        }
+
+        foreach (var item in (IEnumerable)value)
+            yield return item;
     }
 
     private static bool IsReactiveProperty(Type type)
-    {
-        return type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ReactiveProperty<>);
-    }
+        => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(ReactiveProperty<>);
 
     private static bool IsScalar(Type type)
     {
@@ -263,15 +316,6 @@ internal sealed class FieldDescriptor
                || type == typeof(float)
                || type == typeof(double);
     }
-}
 
-internal enum FieldShape
-{
-    Scalar,
-    Entity,
-    List,
-    Set,
-    IntKeyMap,
-    RawArray,
-    Blob,
+    #endregion
 }

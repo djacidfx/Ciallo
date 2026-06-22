@@ -13,7 +13,7 @@ public class CommonLayerSetting
     [DataMember, ProjectField] public ReactiveProperty<string> Name = new("");
     [DataMember, ProjectField] public ReactiveProperty<bool> IsVisible = new(true);
     [DataMember, ProjectField] public ReactiveProperty<float> Opacity = new(1.0f);
-    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<Color?> MarkColor = new();
+    [DataMember, ProjectField] public ReactiveProperty<Color?> MarkColor = new();
     [DataMember, ProjectField] public ReactiveProperty<bool> IsLocked = new(false);
 
     public void CopySettingFrom(CommonLayerSetting other)

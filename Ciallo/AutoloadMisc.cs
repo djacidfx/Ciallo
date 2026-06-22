@@ -30,8 +30,8 @@ public partial class AutoloadMisc : Node
         );
         MessagePackSerializer.DefaultOptions = MessagePackSerializerOptions.Standard.WithResolver(defaultResolver);
 
-        // May 30, 2026. Failed experiment: store Frent's ECS world in a database.
-        // The ECS model maps naturally to relational storage at the schema level:
+        // May 30, 2026. Stored Frent's ECS world in a database. The ECS model maps naturally to
+        // relational storage at the schema level:
         // - Entity ids can be primary keys.
         // - Each component type can be a table.
         // - Component fields can be columns.
@@ -39,13 +39,12 @@ public partial class AutoloadMisc : Node
         //
         // The main goal is not powerful relational querying. It is a file format that is
         // easy for other programs to inspect: they should quickly see which entities have
-        // which components and which fields exist, even if some field values are opaque blobs.
+        // which components and which fields exist.
         //
-        // This is not worth the implementation and migration cost until Ciallo needs serious
-        // version control, cross-program project editing, or stable external tooling.
-        // 
-        // June 22, 2026. We implement this but is it worthy? Opaque blobs are everywhere limited by the database.
-        // And we have no real use for it yet. 
+        // June 22, 2026. Moved from SQLite-in-a-zip to a plain DuckDB file (.ciallo IS the db).
+        // DuckDB's native STRUCT/LIST/MAP let creative data (Color, Vector2, Transform2D, Bezier
+        // curves, stroke geometry) live as structured columns instead of opaque blobs, so the file
+        // is genuinely inspectable via SQL. Only true binary media (textures) stays MessagePack.
     }
 
     public override void _Notification(int what) { }

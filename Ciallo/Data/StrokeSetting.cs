@@ -10,7 +10,7 @@ public class StrokeSetting
 {
     [DataMember, ProjectField(StorageKind.Entity, EntityNullability.Nullable)]
     public ReactiveProperty<Entity> BrushE = new(default);
-    [DataMember, ProjectField(StorageKind.Blob)] public ReactiveProperty<Color?> OverrideColor = new();
+    [DataMember, ProjectField] public ReactiveProperty<Color?> OverrideColor = new();
 
     public StrokeSetting Clone()
     {
