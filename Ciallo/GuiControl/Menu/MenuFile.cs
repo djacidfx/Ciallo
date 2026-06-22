@@ -8,14 +8,14 @@ namespace Ciallo.GuiControl;
 
 public partial class MenuFile : PopupMenu
 {
-    public static readonly OrderedDictionary<string, AppAction> MenuItems = new()
+    public static readonly OrderedDictionary<string, AppHotkey> MenuItems = new()
     {
-        { "New document", AppActions.NewDocument },
-        { "Open document", AppActions.OpenDocument },
+        { "New document", AppHotkeys.NewDocument },
+        { "Open document", AppHotkeys.OpenDocument },
         { "Close document", null },
         { "-1", null },
-        { "Save", AppActions.Save },
-        { "Save As...", AppActions.SaveAs },
+        { "Save", AppHotkeys.Save },
+        { "Save As...", AppHotkeys.SaveAs },
         { "-2", null },
         { "Export as image", null },
         { "Export frame sequence", null },

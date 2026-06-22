@@ -21,8 +21,8 @@ public class VectorFillTool : ToolBase
             .Permit(Press(MouseButton.Left), Left);
         Configure(Left)
             .Permit(Release(MouseButton.Left), Hover)
-            .Permit(Press(AppActions.CancelInteraction), Hover)
-            .Permit(Press(AppActions.ConfirmInteraction), Hover);
+            .Permit(Press(AppHotkeys.CancelInteraction), Hover)
+            .Permit(Press(AppHotkeys.ConfirmInteraction), Hover);
     }
 
     public override bool CanHandleLayer(params Entity[] layerEs)

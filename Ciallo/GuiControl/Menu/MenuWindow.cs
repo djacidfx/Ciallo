@@ -8,7 +8,7 @@ namespace Ciallo.GuiControl;
 
 public partial class MenuWindow : PopupMenu
 {
-    public static readonly OrderedDictionary<string, AppAction> MenuItems = new()
+    public static readonly OrderedDictionary<string, AppHotkey> MenuItems = new()
     {
         { "Brush library", null },
     };

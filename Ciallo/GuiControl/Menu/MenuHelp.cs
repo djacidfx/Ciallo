@@ -15,7 +15,7 @@ public partial class MenuHelp : PopupMenu
 {
     private FileDialog _researchAnimationDialog;
 
-    public static readonly OrderedDictionary<string, AppAction> MenuItems = new()
+    public static readonly OrderedDictionary<string, AppHotkey> MenuItems = new()
     {
         { "User manual", null },
         { "About Ciallo", null },

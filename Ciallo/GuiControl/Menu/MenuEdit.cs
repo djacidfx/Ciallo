@@ -8,10 +8,10 @@ namespace Ciallo.GuiControl;
 
 public partial class MenuEdit : PopupMenu
 {
-    public static readonly OrderedDictionary<string, AppAction> MenuItems = new()
+    public static readonly OrderedDictionary<string, AppHotkey> MenuItems = new()
     {
-        { "Undo", AppActions.Undo },
-        { "Redo", AppActions.Redo },
+        { "Undo", AppHotkeys.Undo },
+        { "Redo", AppHotkeys.Redo },
         { "-1", null },
         // { "Cut", AppActions.Cut },
         // { "Copy", AppActions.Copy },

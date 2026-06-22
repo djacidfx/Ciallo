@@ -1,16 +1,15 @@
 using Godot;
 
-namespace Ciallo.Command;
+namespace Ciallo;
 
 /// <summary>
 /// Static access to the actions defined in godot editor.
-/// We consider actions are those shortcuts defined in the godot editor, while commands are the actual actor.
 /// </summary>
 /// <remarks>Using GodotSharp.SourceGenerators library</remarks>
-[InputMap(nameof(AppAction))]
-public static partial class AppActions;
+[InputMap(nameof(AppHotkey))]
+public static partial class AppHotkeys;
 
-public record AppAction(StringName Name)
+public record AppHotkey(StringName Name)
 {
     public readonly Shortcut Shortcut = new()
     {
@@ -35,5 +34,5 @@ public record AppAction(StringName Name)
     public void Press() => Input.ActionPress(Name);
     public void Release() => Input.ActionRelease(Name);
 
-    public static implicit operator StringName(AppAction input) => input.Name;
+    public static implicit operator StringName(AppHotkey input) => input.Name;
 }
