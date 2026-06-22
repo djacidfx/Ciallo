@@ -93,7 +93,7 @@ public partial class TimelineAction : Container
         int newFrame = ClampPlaybackFrame(targetFrame);
         if (oldFrame == newFrame) return;
 
-        var cmd = new CommandBuilder()
+        var cmd = new CommandBuilder("Navigate Timeline")
             .SetProperty(_selectionManager.CurrentFrame, oldFrame, newFrame);
 
         var newWorkingLayer = _selectionManager.ResolveWorkingLayerForTimelineFrameSelection(newFrame);
@@ -186,7 +186,7 @@ public partial class TimelineAction : Container
         int currentFrame = _selectionManager.CurrentFrame.Value;
         var newWorkingLayer = _selectionManager.ResolveWorkingLayerForTimelineFrameSelection(currentFrame);
         if (!newWorkingLayer.IsNull && newWorkingLayer != _selectionManager.WorkingLayer.Value)
-            new CommandBuilder(newWorkingLayer).SetWorkingLayer().Do();
+            new CommandBuilder("Playback Select Working Layer", newWorkingLayer).SetWorkingLayer().Do();
     }
 
     private void OnAddCelFolder()
@@ -215,7 +215,7 @@ public partial class TimelineAction : Container
 
         var parent = animFolderParent.IsNull ? firstNonAnimFolder : animFolderParent;
 
-        new CommandBuilder(folder)
+        new CommandBuilder("New Cel Folder", folder)
             .NewCelFolder()
             .AddToLayerTree(parent)
             .SetWorkingLayer()

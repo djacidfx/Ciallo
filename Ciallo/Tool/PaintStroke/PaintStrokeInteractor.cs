@@ -38,7 +38,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         if (AppStrokeBrushLibrary.HasSelection)
         {
             var setting = AppStrokeBrushLibrary.SelectedBrushSetting.CurrentValue;
-            new CommandBuilder(Document.World.Create())
+            new CommandBuilder("Use Library Stroke Brush", Document.World.Create())
                 .NewStrokeBrush(setting).SetWorkingStrokeBrush().Commit();
             AppStrokeBrushLibrary.SelectedIndex.Value = -1;
         }
@@ -80,7 +80,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
     {
         var geometry = BuildCommitGeometry(data);
 
-        new CommandBuilder(WorkingLayer.World.Create())
+        new CommandBuilder("Paint Stroke", WorkingLayer.World.Create())
             .NewStroke()
             .AddToLayerTree(WorkingLayer)
             .SetProperty(e => e.Get<StrokeSetting>().Brush, BrushE)

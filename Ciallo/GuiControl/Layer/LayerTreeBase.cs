@@ -58,7 +58,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
             int oldFrame = selectionManager.CurrentFrame.Value;
             int newFrame = selectionManager.ComputeFrameForWorkingLayerSelection(block.LayerEntity);
 
-            var cmd = new CommandBuilder(block.LayerEntity);
+            var cmd = new CommandBuilder("Set Working Layer", block.LayerEntity);
             if (newFrame != oldFrame)
                 cmd.SetProperty(selectionManager.CurrentFrame, oldFrame, newFrame);
             cmd.SetWorkingLayer(recordCelSelectionPreference: true)
@@ -373,7 +373,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
         if (oldParentE == newParentE && draggedTreeNode.Index < insertIndex)
             insertIndex--;
 
-        var cmd = new CommandBuilder(document);
+        var cmd = new CommandBuilder("Move Layer", document);
 
         int[] exposureFrames = [];
         if (oldParentE != newParentE && draggedEntity.Tagged<CelTag>())

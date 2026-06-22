@@ -50,7 +50,7 @@ public class PaintFillInteractor : InteractiveSessionBase
             Clear();
             return;
         }
-        new CommandBuilder(WorkingLayer.World.Create())
+        new CommandBuilder("Paint Fill", WorkingLayer.World.Create())
             .NewFilledPolygon()
             .AddToLayerTree(WorkingLayer)
             .SetPolylineGeometry(

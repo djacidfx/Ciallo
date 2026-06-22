@@ -26,7 +26,7 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
 
         ItemSelected += idx =>
         {
-            new CommandBuilder(document.Get<BrushManager>().StrokeBrushes[(int)idx])
+            new CommandBuilder("Set Working Stroke Brush", document.Get<BrushManager>().StrokeBrushes[(int)idx])
                 .SetWorkingStrokeBrush()
                 .Commit();
         };
@@ -49,7 +49,7 @@ public partial class DocumentBrushListViewer : ItemList, IInitable
                 if (!await AppDialogHost.YesNoDialog.PopupCollectInput()) return;
             }
 
-            var cmd = new CommandBuilder(Entity.Null);
+            var cmd = new CommandBuilder("Delete Stroke Brush", Entity.Null);
             foreach (var strokeE in toDeleteShapes)
             {
                 cmd.SetTarget(strokeE)

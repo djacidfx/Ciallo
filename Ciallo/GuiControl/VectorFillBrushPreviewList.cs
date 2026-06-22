@@ -130,7 +130,7 @@ public partial class VectorFillBrushPreviewList : Container
             int nextIdx = oldIdx == es.Count - 1 ? oldIdx - 1 : oldIdx + 1;
             Entity nextWorking = nextIdx == -1 ? Entity.Null : es[nextIdx];
 
-            new CommandBuilder(Document)
+            new CommandBuilder("Delete Vector Fill Brush", Document)
                 .SetProperty(e => e.Get<SelectionManager>().WorkingVectorFillBrush, nextWorking)
                 .SetTarget(oldE)
                 .DeleteBrush()
@@ -141,7 +141,7 @@ public partial class VectorFillBrushPreviewList : Container
     private void OnAddOrCopyButtonPressed(Entity copyE = default)
     {
         var brushE = Document.World.Create();
-        new CommandBuilder(brushE)
+        new CommandBuilder("New Vector Fill Brush", brushE)
             .NewVectorFillBrush(copyE)
             .SetTarget(Document)
             .SetProperty(e => e.Get<SelectionManager>().WorkingVectorFillBrush, brushE)

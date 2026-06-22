@@ -17,7 +17,7 @@ internal static class LayerContextActions
 
         var document = targetLayer.Document;
         var (parentE, index) = GetNewLayerInsertPosition(targetLayer);
-        new CommandBuilder(document.World.Create())
+        new CommandBuilder("New Shape Layer", document.World.Create())
             .NewShapeLayer()
             .SetProperty(e => e.Get<CommonLayerSetting>().Name, $"{"Shape layer".Tr()} {s_plainShapeLayerId++}")
             .AddToLayerTree(parentE, index)
@@ -29,7 +29,7 @@ internal static class LayerContextActions
     {
         var document = targetLayer.Document;
         var (parentE, index) = GetNewLayerInsertPosition(targetLayer);
-        new CommandBuilder(document.World.Create())
+        new CommandBuilder("New Folder Layer", document.World.Create())
             .NewFolderLayer()
             .AddToLayerTree(parentE, index)
             .SetWorkingLayer()
@@ -40,7 +40,7 @@ internal static class LayerContextActions
     {
         var document = targetLayer.Document;
         var (parentE, index) = GetNewCelFolderInsertPosition(targetLayer);
-        new CommandBuilder(document.World.Create())
+        new CommandBuilder("New Cel Folder", document.World.Create())
             .NewCelFolder()
             .AddToLayerTree(parentE, index)
             .SetWorkingLayer()
@@ -50,7 +50,7 @@ internal static class LayerContextActions
     public static void DeleteLayer(Entity targetLayer)
     {
         var nextLayer = GetNextFocusLayerAfterDeletion(targetLayer);
-        var cmd = new CommandBuilder(nextLayer)
+        var cmd = new CommandBuilder("Delete Layer", nextLayer)
             .SetWorkingLayer();
 
         RemoveParentCelFolderExposures(cmd, targetLayer);
@@ -73,7 +73,7 @@ internal static class LayerContextActions
         var nextLayer = GetNextFocusLayerAfterDeletion(targetFolder);
         int insertIndex = folderNode.Index;
 
-        var cmd = new CommandBuilder(nextLayer)
+        var cmd = new CommandBuilder("Ungroup Folder", nextLayer)
             .SetWorkingLayer();
 
         RemoveParentCelFolderExposures(cmd, targetFolder);

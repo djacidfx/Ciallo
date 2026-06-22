@@ -465,7 +465,7 @@ public partial class TimelineRuler : Control
                 }
                 else if (_dragMode == DragMode.StartHandle)
                 {
-                    var cmd = new CommandBuilder()
+                    var cmd = new CommandBuilder("Set Playback Start")
                         .SetProperty(_playbackStart, _playbackStartAtDragStart, _playbackStart.Value);
                     if (_currentFrame != null && _currentFrame.Value != _frameAtDragStart)
                     {
@@ -478,7 +478,7 @@ public partial class TimelineRuler : Control
                 }
                 else if (_dragMode == DragMode.EndHandle)
                 {
-                    var cmd = new CommandBuilder()
+                    var cmd = new CommandBuilder("Set Playback End")
                         .SetProperty(_playbackEnd, _playbackEndAtDragStart, _playbackEnd.Value);
                     if (_currentFrame != null && _currentFrame.Value != _frameAtDragStart)
                     {
@@ -582,7 +582,7 @@ public partial class TimelineRuler : Control
         if (_currentFrame.Value != newFrame)
             _currentFrame.Value = newFrame;
 
-        var cmd = new CommandBuilder()
+        var cmd = new CommandBuilder("Set Current Frame")
             .SetProperty(_currentFrame, _frameAtDragStart, _currentFrame.Value);
         if (_currentFrame.Value != _frameAtDragStart)
         {

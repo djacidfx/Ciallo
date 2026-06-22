@@ -413,7 +413,7 @@ public partial class CelTrack : Control
                     {
                         var clickedCel = _exposures[pressedFrame];
                         int oldFrame = CurrentFrame.Value;
-                        var cmd = new CommandBuilder(_celFolderEntity)
+                        var cmd = new CommandBuilder("Select Cel Exposure", _celFolderEntity)
                             .SetProperty(CurrentFrame, oldFrame, pressedFrame);
                         var newWorkingLayer = _selectionManager.ComputeWorkingLayerForCelButtonSelection(_celFolderEntity, clickedCel);
                         if (!newWorkingLayer.IsNull)

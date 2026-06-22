@@ -42,7 +42,7 @@ public partial class LayerAction : Control
     public void OnNewFolderLayer()
     {
         var (parentE, index) = GetNewLayerInsertPosition();
-        new CommandBuilder(Document.World.Create())
+        new CommandBuilder("New Folder Layer", Document.World.Create())
             .NewFolderLayer()
             .AddToLayerTree(parentE, index)
             .SetWorkingLayer()
@@ -61,7 +61,7 @@ public partial class LayerAction : Control
         var nextLayerPath = root.GetNextFocusPathAfterDeletion(workingLayerPath);
         var nextLayerE = nextLayerPath.IsEmpty ? document : root.GetDescendant(nextLayerPath);
 
-        var cmd = new CommandBuilder(nextLayerE)
+        var cmd = new CommandBuilder("Delete Layer", nextLayerE)
             .SetWorkingLayer();
 
         if (currentLayerE.Tagged<CelTag>())
@@ -105,7 +105,7 @@ public partial class LayerAction : Control
         }
         if (image == null) return;
         var (parentE, index) = GetNewLayerInsertPosition();
-        new CommandBuilder(Document.World.Create())
+        new CommandBuilder("New Image Layer", Document.World.Create())
             .NewImageLayer(image)
             .AddToLayerTree(parentE, index)
             .Commit();
@@ -122,7 +122,7 @@ public partial class LayerAction : Control
 
         var markers = layerNode.Children.ToList(); // snapshot
         var shapeLayerE = workingLayerE.World.Create();
-        var cmd = new CommandBuilder();
+        var cmd = new CommandBuilder("Convert Vector Fill to Shape");
 
         // 1. Create new ShapeLayer at the same position
         var originalName = workingLayerE.Get<CommonLayerSetting>().Name.Value;

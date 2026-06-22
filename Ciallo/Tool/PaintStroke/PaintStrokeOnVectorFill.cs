@@ -14,7 +14,7 @@ public class PaintStrokeOnVectorFill : PaintStrokeInteractor
         if (layers.Count > 0)
         {
             var targetShapeLayer = layers.First();
-            new CommandBuilder(WorkingLayer.World.Create())
+            new CommandBuilder("Paint Stroke", WorkingLayer.World.Create())
                 .NewStroke()
                 .AddToLayerTree(targetShapeLayer)
                 .SetProperty(e => e.Get<StrokeSetting>().Brush, BrushE)

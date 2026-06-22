@@ -23,7 +23,7 @@ public class DeleteLayerCmd : CommandBase
         var node = targetE.Get<LayerTreeNode>();
         if (!node.IsLeaf)
         {
-            _deleteChildrenCmd = new CommandBuilder();
+            _deleteChildrenCmd = new CommandBuilder("Delete Child Layers");
             bool targetIsFolder = targetE.Has<FolderLayerSetting>();
             foreach (var childE in node.Children.AsEnumerable().Reverse())
             {

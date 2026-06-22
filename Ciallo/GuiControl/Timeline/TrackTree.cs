@@ -207,7 +207,7 @@ public partial class TrackTree : LayerTreeBase
                     return;
                 }
 
-                new CommandBuilder(target).SetWorkingLayer(recordCelSelectionPreference: true).CommitToLatest();
+                new CommandBuilder("Select Cel Child Archetype", target).SetWorkingLayer(recordCelSelectionPreference: true).CommitToLatest();
                 // The target carries this archetype's name and is a cel child of this folder, so it is a member:
                 // light the button optimistically (WorkingCelFolder resettles a frame later via the sub above).
                 block.WorkingButton.SetPressedNoSignal(true);
@@ -218,7 +218,7 @@ public partial class TrackTree : LayerTreeBase
         void PushToMembers<T>(string name, System.Func<Entity, ReactiveProperty<T>> getProp, T value)
         {
             if (!celChildrenByName.TryGetValue(name, out var members) || members.Count == 0) return;
-            var cmd = new CommandBuilder(layerE.Document);
+            var cmd = new CommandBuilder("Edit Cel Child Archetype", layerE.Document);
             foreach (var member in members)
                 cmd.SetTarget(member).SetProperty(getProp, getProp(member).Value, value);
             cmd.Commit();

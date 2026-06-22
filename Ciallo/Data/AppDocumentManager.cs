@@ -73,7 +73,7 @@ public static partial class AppDocumentManager
         var celFolder = document.World.Create();
         var cel = document.World.Create();
         var shapeLayer = document.World.Create();
-        var cmd = new CommandBuilder(celFolder)
+        var cmd = new CommandBuilder("Create Initial Animation Document", celFolder)
             .NewCelFolder()
             .AddToLayerTree(document)
             .SetTarget(cel)

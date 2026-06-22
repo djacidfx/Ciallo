@@ -175,7 +175,7 @@ public class PolylineSelectTool : ToolBase
 
         strokeBrushSwitcher.BrushClicked.Subscribe(brushE =>
         {
-            var cmd = new CommandBuilder();
+            var cmd = new CommandBuilder("Set Selected Stroke Brush");
             foreach (var shapeE in selectedShapes)
                 cmd.SetTarget(shapeE).SetProperty(e => e.Get<StrokeSetting>().Brush, brushE);
             cmd.Commit();
@@ -200,7 +200,7 @@ public class PolylineSelectTool : ToolBase
 
         vectorFillBrushSwitcher.BrushClicked.Subscribe(brushE =>
         {
-            var cmd = new CommandBuilder();
+            var cmd = new CommandBuilder("Set Selected Vector Fill Brush");
             foreach (var shapeE in selectedShapes)
             {
                 if (shapeE.Has<VectorFillMarkerSetting>())
@@ -226,7 +226,7 @@ public class PolylineSelectTool : ToolBase
         var simplifyButton = container.CreateButton("Simplify").AddToChildOf(polylineEditBox);
         simplifyButton.Pressed += () =>
         {
-            var builder = new CommandBuilder(Entity.Null);
+            var builder = new CommandBuilder("Simplify Shapes", Entity.Null);
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
                 var geom = polylineE.Get<SampledPolyline>();
@@ -258,7 +258,7 @@ public class PolylineSelectTool : ToolBase
         var smoothSubdivideButton = container.CreateButton("Smooth subdivide").AddToChildOf(polylineEditBox);
         smoothSubdivideButton.Pressed += () =>
         {
-            var builder = new CommandBuilder();
+            var builder = new CommandBuilder("Smooth Subdivide Shapes");
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
                 var geom = polylineE.Get<SampledPolyline>();
@@ -311,7 +311,7 @@ public class PolylineSelectTool : ToolBase
         var linearSubdivideButton = container.CreateButton("Linear subdivide").AddToChildOf(polylineEditBox);
         linearSubdivideButton.Pressed += () =>
         {
-            var cmd1 = new CommandBuilder();
+            var cmd1 = new CommandBuilder("Linear Subdivide Shapes");
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
                 var geom = polylineE.Get<SampledPolyline>();
@@ -352,7 +352,7 @@ public class PolylineSelectTool : ToolBase
         var smoothButton = container.CreateButton("Smooth").AddToChildOf(polylineEditBox);
         smoothButton.Pressed += () =>
         {
-            var builder = new CommandBuilder(Entity.Null);
+            var builder = new CommandBuilder("Smooth Shapes", Entity.Null);
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
                 var geom = polylineE.Get<SampledPolyline>();

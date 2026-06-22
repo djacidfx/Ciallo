@@ -206,7 +206,7 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
 
         if (changed)
         {
-            var cmd = new CommandBuilder();
+            var cmd = new CommandBuilder("Bezier Deform Shapes");
             foreach (var (i, e) in _processingEs.Index())
                 cmd.SetTarget(e).SetPolylineGeometry([.._currPolylines[i]]);
             cmd.Commit();

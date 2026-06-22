@@ -149,7 +149,7 @@ public partial class StrokeBrushPreviewList : Container
             int nextIdx = oldIdx == es.Count - 1 ? oldIdx - 1 : oldIdx + 1;
             Entity nextWorking = nextIdx == -1 ? Entity.Null : es[nextIdx];
 
-            new CommandBuilder(Document)
+            new CommandBuilder("Delete Stroke Brush", Document)
                 .SetProperty(e => e.Get<SelectionManager>().WorkingStrokeBrush, nextWorking)
                 .SetTarget(oldE)
                 .DeleteBrush()
@@ -162,7 +162,7 @@ public partial class StrokeBrushPreviewList : Container
     private void OnAddOrCopyButtonPressed(Entity copyE = default)
     {
         var brushE = Document.World.Create();
-        new CommandBuilder(brushE)
+        new CommandBuilder("New Stroke Brush", brushE)
             .NewStrokeBrush(copyE)
             .SetTarget(Document)
             .SetProperty(e => e.Get<SelectionManager>().WorkingStrokeBrush, brushE)

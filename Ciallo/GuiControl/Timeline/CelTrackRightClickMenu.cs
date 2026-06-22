@@ -167,7 +167,7 @@ public partial class CelTrackRightClickMenu : PopupMenu
         bool onCel = _onCel;
         string label = onCel ? "Replace Cel" : "Insert Cel";
 
-        new CommandBuilder(label)
+        new CommandBuilder(label, _celFolderEntity)
             .SetObservableCollection(exposures, exp =>
             {
                 if (onCel) exp.Remove(frame);

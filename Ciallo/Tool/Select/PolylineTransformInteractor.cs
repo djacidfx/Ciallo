@@ -196,7 +196,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
         var resultT = _currTransform;
         if (!resultT.IsEqualApprox(Transform2D.Identity))
         {
-            var cmd = new CommandBuilder();
+            var cmd = new CommandBuilder("Transform Shapes");
             foreach (var e in _processingEs)
             {
                 var oldPositions = e.Get<SampledPolyline>().Positions.Value;

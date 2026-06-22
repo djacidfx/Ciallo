@@ -122,7 +122,7 @@ public class PolylineNoSelectionHover : InteractiveSessionBase
 
     private static void DeleteShapes(Entity[] shapeEs)
     {
-        var cmd = new CommandBuilder();
+        var cmd = new CommandBuilder("Delete Shapes");
         foreach (var e in shapeEs)
         {
             cmd.SetTarget(e).RemoveFromLayerTree().DeleteShape();

@@ -49,7 +49,7 @@ public static partial class AppDocumentManager
         }
 
         // Load brushes
-        var loadBrushCmd = new CommandBuilder();
+        var loadBrushCmd = new CommandBuilder("Load Brushes");
         foreach (var strokeBrushDataE in dataDocument.Get<BrushManager>().StrokeBrushes)
             loadBrushCmd.SetTarget(entityMap[strokeBrushDataE]).NewStrokeBrush(strokeBrushDataE);
         foreach (var vectorFillBrushDataE in dataDocument.Get<BrushManager>().VectorFillBrushes)
@@ -81,7 +81,7 @@ public static partial class AppDocumentManager
                     dataExposures.Clear();
                 }
 
-                new CommandBuilder(layerResultE)
+                new CommandBuilder("Load Folder Layer", layerResultE)
                     .NewFolderLayer(layerDataE)
                     .AddToLayerTree(resultParentE)
                     .Do();
@@ -94,14 +94,14 @@ public static partial class AppDocumentManager
             }
             else if (layerDataE.Has<ImageLayerSetting>())
             {
-                new CommandBuilder(layerResultE)
+                new CommandBuilder("Load Image Layer", layerResultE)
                     .NewImageLayer(layerDataE)
                     .AddToLayerTree(resultParentE)
                     .Do();
             }
             else if (layerDataE.Has<ShapeLayerSetting>())
             {
-                new CommandBuilder(layerResultE)
+                new CommandBuilder("Load Shape Layer", layerResultE)
                     .NewShapeLayer(layerDataE)
                     .AddToLayerTree(resultParentE)
                     .Do();
@@ -110,14 +110,14 @@ public static partial class AppDocumentManager
                 {
                     if (shapeDataE.Has<StrokeSetting>())
                     {
-                        new CommandBuilder(entityMap[shapeDataE])
+                        new CommandBuilder("Load Stroke", entityMap[shapeDataE])
                             .NewStroke(shapeDataE, entityMap)
                             .AddToLayerTree(layerResultE)
                             .Do();
                     }
                     else if (shapeDataE.Has<FilledPolygonSetting>())
                     {
-                        new CommandBuilder(entityMap[shapeDataE])
+                        new CommandBuilder("Load Filled Polygon", entityMap[shapeDataE])
                             .NewFilledPolygon(shapeDataE, entityMap)
                             .AddToLayerTree(layerResultE)
                             .Do();
@@ -126,14 +126,14 @@ public static partial class AppDocumentManager
             }
             else if (layerDataE.Has<VectorFillLayerSetting>())
             {
-                new CommandBuilder(layerResultE)
+                new CommandBuilder("Load Vector Fill Layer", layerResultE)
                     .NewVectorFillLayer(layerDataE)
                     .AddToLayerTree(resultParentE)
                     .Do();
 
                 foreach (var markerDataE in layerDataE.Get<LayerTreeNode>().Children)
                 {
-                    new CommandBuilder(entityMap[markerDataE])
+                    new CommandBuilder("Load Vector Fill Marker", entityMap[markerDataE])
                         .NewVectorFillMarker(markerDataE, entityMap)
                         .AddToLayerTree(layerResultE)
                         .Do();
@@ -154,7 +154,7 @@ public static partial class AppDocumentManager
         }
 
         // Load selection
-        var loadSelectionCmd = new CommandBuilder();
+        var loadSelectionCmd = new CommandBuilder("Load Selection");
         var dataSm = dataDocument.Get<SelectionManager>();
         loadSelectionCmd.SetTarget(entityMap[dataSm.WorkingLayer.CurrentValue])
             .SetWorkingLayer(true);

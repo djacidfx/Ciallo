@@ -107,6 +107,8 @@ Select all,Select all,全选,全選,すべて選択,모두 선택,Alles auswähl
 Deselect,Deselect,取消选择,取消選取,選択解除,선택 해제,Abwählen,Désélectionner
 Fill color,Fill color,填充色,填充色,塗りつぶし色,채우기 색상,Füllfarbe,Couleur de remplissage
 Copy system info,Copy system info,复制系统信息,複製系統資訊,システム情報をコピー,시스템 정보 복사,Systeminformationen kopieren,Copier les informations système
+Copy bug report,Copy bug report,复制Bug报告,複製Bug回報,バグレポートをコピー,버그 보고서 복사,Fehlerbericht kopieren,Copier le rapport de bug
+Open log folder,Open log folder,打开日志文件夹,開啟日誌資料夾,ログフォルダーを開く,로그 폴더 열기,Logordner öffnen,Ouvrir le dossier des journaux
 Report bug,Report bug,报告bug,回報bug,バグを報告,버그 신고,Fehler melden,Signaler un bug
 Fill brush,Fill brush,填充笔刷,填充筆刷,塗りつぶしブラシ,채우기 브러시,Füllpinsel,Pinceau de remplissage
 Marker color,Marker color,标记颜色,標記顏色,マーカーの色,마커 색상,Markierungsfarbe,Couleur du marqueur

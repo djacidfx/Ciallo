@@ -140,7 +140,7 @@ public class PaintStrokeHover : InteractiveSessionBase
     {
         if (!AppStrokeBrushLibrary.HasSelection) return;
         var setting = AppStrokeBrushLibrary.SelectedBrushSetting.CurrentValue;
-        new CommandBuilder(Document.World.Create())
+        new CommandBuilder("Use Library Stroke Brush", Document.World.Create())
             .NewStrokeBrush(setting)
             .SetWorkingStrokeBrush()
             .Commit();
