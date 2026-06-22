@@ -99,11 +99,3 @@ This is a production workflow convention, not a guaranteed unique identity. The 
 8. Stroke geometry is not saved as one row per sample point.
 9. Old SQLite format compatibility is not required.
 10. No new cross-file user-facing feature is required.
-
-## Open Risks
-
-1. DuckDB .NET and Godot export packaging must be verified.
-2. DuckDB nested type mapping in C# may require adapter code.
-3. File size and save/load performance must be measured against the current SQLite-backed format.
-4. External DuckDB tools may not immediately understand every Ciallo-specific structure without schema documentation.
-5. Future GIS/spatial use is an opportunity, not a first-phase deliverable.

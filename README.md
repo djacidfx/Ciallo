@@ -204,7 +204,7 @@ SIGGRAPH 2023 Talk
 
 - [Godot C#](https://godotengine.org/): [Why godot?](#tech-faq)
 - [Frent](https://github.com/itsBuggingMe/Frent): Unity-like (gameobject/entity) component pattern (ECS library without need for the 'S').
-- [Microsoft.Data.Sqlite](https://www.nuget.org/packages/Microsoft.Data.Sqlite): SQLite-based project persistence.
+- [DuckDB.NET.Data.Full](https://www.nuget.org/packages/DuckDB.NET.Data.Full): DuckDB-backed project persistence.
 - [CGAL](https://www.cgal.org/): Complex geometry operations.
 - [R3](https://github.com/Cysharp/R3): Signal on steroids and reactive programming.
 - [GdUnit4](https://github.com/MikeSchulze/gdUnit4): Unit test framework.
