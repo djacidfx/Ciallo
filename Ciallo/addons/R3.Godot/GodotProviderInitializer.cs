@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using Ciallo.Diagnostics;
 using Godot;
 
 namespace R3;
@@ -9,7 +10,7 @@ public static class GodotProviderInitializer
 {
     public static void SetDefaultObservableSystem()
     {
-        SetDefaultObservableSystem(ex => GD.PrintErr(ex));
+        SetDefaultObservableSystem(AppBugReport.Exception);
     }
 
     public static void SetDefaultObservableSystem(Action<Exception> unhandledExceptionHandler)

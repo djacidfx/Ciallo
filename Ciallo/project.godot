@@ -32,6 +32,11 @@ AutoloadRendering="res://Rendering/AutoloadRendering.cs"
 AutoloadGuiControl="res://GuiControl/AutoloadGuiControl.cs"
 AutoloadTool="res://Tool/AutoloadTool.cs"
 
+[debug]
+
+file_logging/enable_file_logging=true
+file_logging/log_path="user://logs/ciallo.log"
+
 [display]
 
 window/size/viewport_width=1920

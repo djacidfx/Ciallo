@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Command;
+using Ciallo.Diagnostics;
 using R3;
 
 // ReSharper disable once CheckNamespace
@@ -153,6 +154,7 @@ public partial class CommandManager
 
         CloseOpenSequence();
         var action = PopLast(_undoStack);
+        AppBugReport.Undo(action.ActionName);
         action.Undo();
         _redoStack.Add(action);
 
@@ -167,6 +169,7 @@ public partial class CommandManager
 
         CloseOpenSequence();
         var action = PopLast(_redoStack);
+        AppBugReport.Redo(action.ActionName);
         action.Do();
         _undoStack.Add(action);
 
