@@ -41,22 +41,11 @@ public partial class AutoloadMisc : Node
         // easy for other programs to inspect: they should quickly see which entities have
         // which components and which fields exist, even if some field values are opaque blobs.
         //
-        // The hard part is not the database itself, but the impedance mismatch between our
-        // data components and database mappers such as EF Core, Dapper, sqlite-net:
-        // - ReactiveProperty<T> is persistence noise. We want to store its Value, not the wrapper.
-        // - Generic ReactiveProperty<T> handling requires custom mapping, converters, or DTOs.
-        // - Collections can be mapped, but every choice has a cost: child tables, JSON/blob columns,
-        //   or custom converters all make schema evolution and partial updates harder.
-        // - Godot types and Frent Entity handles need stable serialized representations.
-        // - Fields that are too awkward for database mapping would still need MessagePack blobs.
-        //
-        // A hybrid schema is possible: keep entity/component/field structure in database columns,
-        // and serialize difficult values as byte[] with MessagePack. This preserves inspectability
-        // at the ECS/component/field level, but blob fields lose database-level type information,
-        // constraints, querying, diffing, and migration support.
-        //
         // This is not worth the implementation and migration cost until Ciallo needs serious
         // version control, cross-program project editing, or stable external tooling.
+        // 
+        // June 22, 2026. We implement this but is it worthy? Opaque blobs are everywhere limited by the database.
+        // And we have no real use for it yet. 
     }
 
     public override void _Notification(int what) { }
