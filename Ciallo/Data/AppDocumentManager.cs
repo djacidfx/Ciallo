@@ -67,17 +67,28 @@ public static partial class AppDocumentManager
         return document;
     }
 
-    public static void InitialEmptyDocumentForUser(Entity document)
+    public static void InitialEmptyAnimationDocumentForUser(Entity document)
     {
-        AppStrokeBrushLibrary.SelectedIndex.Value = 0;
-
-        // Empty shape layer
-        var cmd = new CommandBuilder(document.World.Create())
-            .NewShapeLayer()
+        // Cel folder layer has one cel holding a shape layer
+        var celFolder = document.World.Create();
+        var cel = document.World.Create();
+        var shapeLayer = document.World.Create();
+        var cmd = new CommandBuilder(celFolder)
+            .NewCelFolder()
             .AddToLayerTree(document)
-            .SetWorkingLayer();
+            .SetTarget(cel)
+            .NewFolderLayer()
+            .SetProperty(e => e.Get<CommonLayerSetting>().Name, "1")
+            .AddToLayerTree(celFolder)
+            .SetTarget(shapeLayer)
+            .NewShapeLayer()
+            .AddToLayerTree(cel)
+            .SetTarget(celFolder)
+            .SetObservableCollection(e => e.Get<FolderLayerSetting>().Exposures, exposures => exposures.Add(0, cel))
+            .SetTarget(shapeLayer)
+            .SetWorkingLayer(true);
 
-        // Vector fill brushes
+        // Fill brush
         Color[] colors = [Colors.PaleTurquoise, Colors.LightGreen, Colors.LemonChiffon, Colors.LightPink];
         for (int i = 0; i < colors.Length; i++)
         {
@@ -92,10 +103,18 @@ public static partial class AppDocumentManager
             if (i == 0)
                 cmd.SetProperty(e => e.Document.Get<SelectionManager>().WorkingVectorFillBrush, brush);
         }
-        cmd.Do();
 
+        // Stroke brush
+        // Guard when users delete all built-in brushes for whatever reason.
         if (AppStrokeBrushLibrary.BrushSettings.Count > 0)
-            AppStrokeBrushLibrary.SelectedIndex.Value = 0;
+        {
+            var strokeBrush = document.World.Create();
+            cmd.SetTarget(strokeBrush)
+            .NewStrokeBrush(AppStrokeBrushLibrary.BrushSettings[0])
+            .SetWorkingStrokeBrush();
+        }
+
+        cmd.Do();
         document.Get<ToolManager>().ActivatePaintTool();
     }
 
