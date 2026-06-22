@@ -7,6 +7,12 @@ using Godot;
 
 namespace Ciallo.Rendering;
 
+/// <remarks>
+/// Rough load estimation:
+/// By software design, we should roughly support 1K-4K visible strokes and 100K invisible&inactive strokes with good performance
+/// Node system has high risk of performance degradation; Rids in RenderingServer are preferred.
+/// But don't make pre mature optimization. Make sure this is a real bottleneck.
+/// </remarks>
 [Tool, GlobalClass]
 public partial class StrokeView : MultiMeshInstance2D
 {
