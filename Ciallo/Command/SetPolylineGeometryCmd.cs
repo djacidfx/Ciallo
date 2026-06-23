@@ -29,7 +29,7 @@ public class SetPolylineGeometryCmd : CommandBase
 
     public override void BeforeFirstDo(Entity targetE)
     {
-        _cmd = new(targetE);
+        _cmd = new("Set Polyline Geometry Inner", targetE);
         if (Positions.HasValue)
             _cmd.SetProperty(e => e.Get<SampledPolyline>().Positions, Positions.Value);
         if (Radii.HasValue)
