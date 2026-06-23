@@ -97,7 +97,7 @@ public class VectorFillHover : InteractiveSessionBase
     {
         container.AddChild(new Label
         {
-            Text = "Fill brush",
+            Text = "Fill brush".Tr(),
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
         });
         var brushPreview = VectorFillBrushPreviewList.New(Document);
@@ -153,7 +153,7 @@ public class VectorFillHover : InteractiveSessionBase
 
         var editReferenceLayers = new Button
         {
-            Text = "Edit reference layers",
+            Text = "Edit reference layers".Tr(),
             CustomMinimumSize = new(0, 32),
         };
         editReferenceLayers.Pressed += () =>

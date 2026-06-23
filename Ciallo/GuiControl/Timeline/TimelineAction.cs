@@ -175,7 +175,7 @@ public partial class TimelineAction : Container
         _isPlaying.Value = playing;
         _playbackAccumulator = 0.0;
         PlayStop.Icon = playing ? _stopIcon : _playIcon;
-        PlayStop.TooltipText = playing ? "Stop playback" : "Play";
+        PlayStop.TooltipText = playing ? "Stop playback".Tr() : "Play".Tr();
         SetProcess(playing);
     }
 

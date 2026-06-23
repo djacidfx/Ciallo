@@ -83,7 +83,7 @@ public class PaintStrokeHover : InteractiveSessionBase
 
         var useBrushButton = new Button()
         {
-            Text = "Use brush",
+            Text = "Use brush".Tr(),
             Alignment = HorizontalAlignment.Left,
             CustomMinimumSize = new(0, 32),
             SizeFlagsHorizontal = Control.SizeFlags.Fill
@@ -92,7 +92,7 @@ public class PaintStrokeHover : InteractiveSessionBase
         useBrushButton.Pressed += OnUseBrushPressed;
         var manageButton = new Button()
         {
-            Text = "Manage brush library",
+            Text = "Manage brush library".Tr(),
             Alignment = HorizontalAlignment.Left,
             CustomMinimumSize = new(0, 32),
             SizeFlagsHorizontal = Control.SizeFlags.Fill

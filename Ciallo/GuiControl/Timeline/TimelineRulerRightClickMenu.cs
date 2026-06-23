@@ -46,16 +46,16 @@ public partial class TimelineRulerRightClickMenu : PopupMenu
     {
         Clear();
 
-        AddItem("Insert Frame", IdInsertFrame);
-        AddItem("Delete Frame", IdDeleteFrame);
+        AddItem("Insert Frame".Tr(), IdInsertFrame);
+        AddItem("Delete Frame".Tr(), IdDeleteFrame);
         SetItemDisabled(ItemCount - 1, !CanDeleteFrame());
 
         AddSeparator();
 
-        AddItem("Set Playback Start", IdSetPlaybackStart);
+        AddItem("Set Playback Start".Tr(), IdSetPlaybackStart);
         SetItemDisabled(ItemCount - 1, !CanSetPlaybackStart());
 
-        AddItem("Set Playback End", IdSetPlaybackEnd);
+        AddItem("Set Playback End".Tr(), IdSetPlaybackEnd);
         SetItemDisabled(ItemCount - 1, !CanSetPlaybackEnd());
     }
 

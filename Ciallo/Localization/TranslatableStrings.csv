@@ -14,7 +14,6 @@ Error,Error,错误,錯誤,エラー,오류,Fehler,Erreur
 Export as Godot scene,Export as Godot scene,导出为Godot场景,匯出為Godot場景,Godotシーンとしてエクスポート,Godot 씬으로 내보내기,Als Godot-Szene exportieren,Exporter comme scène Godot
 Export as image,Export as image,导出为图像,匯出為圖像,画像としてエクスポート,이미지로 내보내기,Als Bild exportieren,Exporter comme image
 Language,Language,语言,語言,言語,언어,Sprache,Langue
-Lasso - Free-hand selection,Lasso - Free-hand selection,套索 - 自由选择,套索 - 自由選取,投げ縄 - フリーハンド選択,올가미 - 자유 선택,Lasso - Freihandauswahl,Lasso - Sélection à main levée
 Layer,Layer,图层,圖層,レイヤー,레이어,Ebene,Calque
 New document,New document,新建文档,新增文檔,新しいドキュメント,새 문서,Neues Dokument,Nouveau document
 Opacity,Opacity,不透明度,不透明度,不透明度,불투명도,Deckkraft,Opacité 
@@ -153,3 +152,66 @@ Selected animation contains no stroke samples.,Selected animation contains no st
 No working stroke brush is selected.,No working stroke brush is selected.,未选择当前工作笔刷。,未選擇目前工作筆刷。,作業中のストロークブラシが選択されていません。,작업 중인 스트로크 브러시가 선택되지 않았습니다.,Kein aktiver Strichpinsel ausgewählt.,Aucun pinceau de trait actif n'est sélectionné.
 Cannot save document.,Cannot save document.,无法保存文档。,無法儲存文件。,ドキュメントを保存できません。,문서를 저장할 수 없습니다.,Dokument kann nicht gespeichert werden.,Impossible d'enregistrer le document.
 Cannot open document.,Cannot open document.,无法打开文档。,無法開啟文件。,ドキュメントを開けません。,문서를 열 수 없습니다.,Dokument kann nicht geöffnet werden.,Impossible d'ouvrir le document.
+Export frame sequence,Export frame sequence,导出帧序列,匯出影格序列,フレームシーケンスをエクスポート,프레임 시퀀스 내보내기,Bildsequenz exportieren,Exporter la séquence d'images
+Export folder,Export folder,导出文件夹,匯出資料夾,エクスポート先フォルダー,내보내기 폴더,Exportordner,Dossier d'exportation
+File name preview,File name preview,文件名预览,檔案名稱預覽,ファイル名プレビュー,파일 이름 미리보기,Dateinamenvorschau,Aperçu du nom de fichier
+Prefix,Prefix,前缀,前綴,接頭辞,접두사,Präfix,Préfixe
+Suffix,Suffix,后缀,後綴,接尾辞,접미사,Suffix,Suffixe
+Separator,Separator,分隔符,分隔符號,区切り文字,구분자,Trennzeichen,Séparateur
+Start number,Start number,起始编号,起始編號,開始番号,시작 번호,Startnummer,Numéro de départ
+Save image,Save image,保存图像,儲存圖像,画像を保存,이미지 저장,Bild speichern,Enregistrer l'image
+New document - Ciallo,New document - Ciallo,新建文档 - Ciallo,新增文檔 - Ciallo,新しいドキュメント - Ciallo,새 문서 - Ciallo,Neues Dokument - Ciallo,Nouveau document - Ciallo
+Set your canvas reference size in pixels—you can always export your artwork at a higher resolution.,Set your canvas reference size in pixels—you can always export your artwork at a higher resolution.,设置画布参考尺寸（像素）——之后始终可以用更高分辨率导出作品。,設定畫布參考尺寸（像素）——之後仍可用更高解析度匯出作品。,キャンバスの参照サイズをピクセル単位で設定します。作品はいつでもより高い解像度でエクスポートできます。,캔버스 기준 크기를 픽셀 단위로 설정합니다. 작품은 언제든지 더 높은 해상도로 내보낼 수 있습니다.,Legen Sie die Referenzgröße der Leinwand in Pixeln fest. Sie können Ihr Werk jederzeit mit höherer Auflösung exportieren.,Définissez la taille de référence du canevas en pixels. Vous pourrez toujours exporter votre œuvre à une résolution plus élevée.
+Add a layer,Add a layer,添加图层,新增圖層,レイヤーを追加,레이어 추가,Ebene hinzufügen,Ajouter un calque
+Import an image,Import an image,导入图像,匯入圖像,画像をインポート,이미지 가져오기,Bild importieren,Importer une image
+Convert to shape layer,Convert to shape layer,转换为形状图层,轉換為形狀圖層,シェイプレイヤーに変換,쉐이프 레이어로 변환,In Formebene umwandeln,Convertir en calque de forme
+Dragged layer name,Dragged layer name,拖动的图层名称,拖曳中的圖層名稱,ドラッグ中のレイヤー名,드래그 중인 레이어 이름,Name der gezogenen Ebene,Nom du calque déplacé
+Mark color,Mark color,标记颜色,標記顏色,マーク色,표시 색상,Markierungsfarbe,Couleur de marquage
+New animation folder,New animation folder,新建动画文件夹,新增動畫資料夾,新しいアニメーションフォルダー,새 애니메이션 폴더,Neuer Animationsordner,Nouveau dossier d'animation
+Go to playback start,Go to playback start,跳到播放起点,跳到播放起點,再生開始へ移動,재생 시작으로 이동,Zum Wiedergabestart,Aller au début de lecture
+Previous frame,Previous frame,上一帧,上一影格,前のフレーム,이전 프레임,Vorheriges Bild,Image précédente
+Loop playback,Loop playback,循环播放,循環播放,ループ再生,반복 재생,Wiedergabe wiederholen,Lecture en boucle
+Next frame,Next frame,下一帧,下一影格,次のフレーム,다음 프레임,Nächstes Bild,Image suivante
+Go to playback end,Go to playback end,跳到播放终点,跳到播放終點,再生終了へ移動,재생 끝으로 이동,Zum Wiedergabeende,Aller à la fin de lecture
+Onion skin,Onion skin,洋葱皮,洋蔥皮,オニオンスキン,어니언 스킨,Onion Skin,Pelure d'oignon
+Stop playback,Stop playback,停止播放,停止播放,再生を停止,재생 중지,Wiedergabe stoppen,Arrêter la lecture
+Trim,Trim,修剪,修剪,トリム,자르기,Trimmen,Rogner
+Stroke Brush Library,Stroke Brush Library,线条笔刷库,綫條筆刷庫,ストロークブラシライブラリ,스트로크 브러시 라이브러리,Strichpinselbibliothek,Bibliothèque de pinceaux de trait
+Enabled,Enabled,已启用,已啟用,有効,활성화됨,Aktiviert,Activé
+Apply,Apply,应用,套用,適用,적용,Anwenden,Appliquer
+Select reference shape layers,Select reference shape layers,选择参考形状图层,選擇參考形狀圖層,参照シェイプレイヤーを選択,참조 쉐이프 레이어 선택,Referenz-Formebenen auswählen,Sélectionner les calques de forme de référence
+Edit reference layers,Edit reference layers,编辑参考图层,編輯參考圖層,参照レイヤーを編集,참조 레이어 편집,Referenzebenen bearbeiten,Modifier les calques de référence
+Max gap length,Max gap length,最大间隙长度,最大間隙長度,最大ギャップ長,최대 간격 길이,Maximale Lückenlänge,Longueur maximale de lacune
+Snap,Snap,吸附,吸附,スナップ,스냅,Einrasten,Accrochage
+Snap distance,Snap distance,吸附距离,吸附距離,スナップ距離,스냅 거리,Einrastabstand,Distance d'accrochage
+Import marker,Import marker,导入标记,匯入標記,マーカーをインポート,마커 가져오기,Marker importieren,Importer un marqueur
+Remove marker,Remove marker,移除标记,移除標記,マーカーを削除,마커 제거,Marker entfernen,Supprimer le marqueur
+Add Shape Layer to All Cels,Add Shape Layer to All Cels,添加形状图层到所有赛璐珞,將形狀圖層新增到所有賽璐珞,すべてのセルにシェイプレイヤーを追加,모든 셀에 쉐이프 레이어 추가,Formebene zu allen Cels hinzufügen,Ajouter un calque de forme à tous les cellulos
+New Shape Layer,New Shape Layer,新建形状图层,新增形狀圖層,新しいシェイプレイヤー,새 쉐이프 레이어,Neue Formebene,Nouveau calque de forme
+New Folder Layer,New Folder Layer,新建文件夹图层,新增資料夾圖層,新しいフォルダーレイヤー,새 폴더 레이어,Neue Ordnerebene,Nouveau calque dossier
+New Cel Folder Layer,New Cel Folder Layer,新建赛璐珞文件夹图层,新增賽璐珞資料夾圖層,新しいセルフォルダーレイヤー,새 셀 폴더 레이어,Neue Cel-Ordnerebene,Nouveau calque dossier de cellulos
+Delete Layer,Delete Layer,删除图层,刪除圖層,レイヤーを削除,레이어 삭제,Ebene löschen,Supprimer le calque
+Wrap Self into Folder,Wrap Self into Folder,将自身包装到文件夹,將自身包裝進資料夾,自身をフォルダーにまとめる,자신을 폴더로 감싸기,Diese Ebene in Ordner packen,Placer ce calque dans un dossier
+Rename Cels by Exposure,Rename Cels by Exposure,按曝光重命名赛璐珞,依曝光重新命名賽璐珞,露出順でセル名を変更,노출 순서로 셀 이름 변경,Cels nach Belichtung umbenennen,Renommer les cellulos par exposition
+Wrap Children in Folders,Wrap Children in Folders,将子项包装到文件夹,將子項包裝進資料夾,子レイヤーをフォルダーにまとめる,자식을 폴더로 감싸기,Unterebenen in Ordner packen,Placer les enfants dans des dossiers
+Ungroup Folder,Ungroup Folder,取消文件夹分组,取消資料夾群組,フォルダーのグループ解除,폴더 그룹 해제,Ordnergruppierung aufheben,Dissocier le dossier
+New Animation Cel,New Animation Cel,新建动画赛璐珞,新增動畫賽璐珞,新しいアニメーションセル,새 애니메이션 셀,Neue Animations-Cel,Nouveau cellulo d'animation
+Replace Cel:,Replace Cel:,替换赛璐珞:,取代賽璐珞：,セルを置き換え:,셀 교체:,Cel ersetzen:,Remplacer le cellulo :
+Insert Cel:,Insert Cel:,插入赛璐珞:,插入賽璐珞：,セルを挿入:,셀 삽입:,Cel einfügen:,Insérer le cellulo :
+(no cels),(no cels),（无赛璐珞）,（無賽璐珞）,（セルなし）,(셀 없음),(keine Cels),(aucun cellulo)
+(unnamed),(unnamed),（未命名）,（未命名）,（無名）,(이름 없음),(unbenannt),(sans nom)
+Delete Cel,Delete Cel,删除赛璐珞,刪除賽璐珞,セルを削除,셀 삭제,Cel löschen,Supprimer le cellulo
+Insert Frame,Insert Frame,插入帧,插入影格,フレームを挿入,프레임 삽입,Bild einfügen,Insérer une image
+Delete Frame,Delete Frame,删除帧,刪除影格,フレームを削除,프레임 삭제,Bild löschen,Supprimer une image
+Set Playback Start,Set Playback Start,设置播放起点,設定播放起點,再生開始を設定,재생 시작 설정,Wiedergabestart festlegen,Définir le début de lecture
+Set Playback End,Set Playback End,设置播放终点,設定播放終點,再生終了を設定,재생 끝 설정,Wiedergabeende festlegen,Définir la fin de lecture
+Export,Export,导出,匯出,エクスポート,내보내기,Exportieren,Exporter
+Yes,Yes,是,是,はい,예,Ja,Oui
+No,No,否,否,いいえ,아니요,Nein,Non
+Color,Color,颜色,顏色,色,색상,Farbe,Couleur
+Marker texture,Marker texture,标记纹理,標記紋理,マーカーテクスチャ,마커 텍스처,Markertextur,Texture du marqueur
+WithinCurrentCel,Within current cel,在当前赛璐珞内,在目前賽璐珞內,現在のセル内,현재 셀 안,In der aktuellen Cel,Dans le cellulo actuel
+WithinAllCels,Within all cels,在所有赛璐珞内,在所有賽璐珞內,すべてのセル内,모든 셀 안,In allen Cels,Dans tous les cellulos
+Mirror horizontally,Mirror horizontally,水平镜像,水平鏡像,左右反転,가로로 뒤집기,Horizontal spiegeln,Inverser horizontalement
+Mirror vertically,Mirror vertically,垂直镜像,垂直鏡像,上下反転,세로로 뒤집기,Vertikal spiegeln,Inverser verticalement
+Play,Play,播放,播放,再生,재생,Wiedergabe,Lire

@@ -28,20 +28,20 @@ public partial class NewDocumentDialog : ConfirmationDialog
         // Sanity checks
         if (string.IsNullOrEmpty(docName))
         {
-            errorMessage.Text = "Document name cannot be empty.";
+            errorMessage.Text = "Document name cannot be empty.".Tr();
             errorMessage.Visible = true;
             return;
         }
         if (!Directory.Exists(saveFolder))
         {
-            errorMessage.Text = "Save folder does not exist.";
+            errorMessage.Text = "Save folder does not exist.".Tr();
             errorMessage.Visible = true;
             return;
         }
 
         if (!docName.IsValidFileName())
         {
-            errorMessage.Text = "[Invalid Document Name]";
+            errorMessage.Text = "[Invalid Document Name]".Tr();
             errorMessage.Visible = true;
             return;
         }

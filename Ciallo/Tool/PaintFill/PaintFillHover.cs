@@ -27,7 +27,7 @@ public class PaintFillHover : InteractiveSessionBase
     {
         container.AddChild(new Label
         {
-            Text = "Fill brush",
+            Text = "Fill brush".Tr(),
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
         });
         var brushPreview = VectorFillBrushPreviewList.New(Document);

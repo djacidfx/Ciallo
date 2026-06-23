@@ -54,8 +54,7 @@ expand_icon = true
 visible = false
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
-tooltip_text = "Lasso
-- Free-hand selection"
+tooltip_text = "[Lasso Tooltip]"
 focus_mode = 0
 theme_type_variation = &"ToolButton"
 toggle_mode = true
