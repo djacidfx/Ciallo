@@ -118,8 +118,7 @@ public partial class TrackTree : LayerTreeBase
             // and its click navigates to a same-named cel child instead of toggling group membership.
             block.WorkingButton.Visible = true;
             block.DropdownArrow.Visible = false;
-            block.RegularFolderIcon.Visible = false;
-            block.CelFolderIcon.Visible = false;
+            block.FolderIcon.Visible = false;
             block.LabelLineEdit.SubmitOnFocusExit(); // once: re-calling would stack FocusExited handlers.
 
             // Wrap in an HSplitContainer (block left, blank right) so the row obeys the shared

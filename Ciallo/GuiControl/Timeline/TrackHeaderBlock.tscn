@@ -10,7 +10,6 @@
 [ext_resource type="Texture2D" uid="uid://tcs0hhsr6evc" path="res://Icon/FixedSize/chevron-down-sized.svg" id="7_f2a0e"]
 [ext_resource type="Texture2D" uid="uid://k84vnagoi87c" path="res://Icon/FixedSize/chevron-forward-sized.svg" id="8_qhucf"]
 [ext_resource type="Texture2D" uid="uid://kc3cwh88aicc" path="res://Icon/folder.svg" id="9_folder"]
-[ext_resource type="Texture2D" uid="uid://2lcc8gqapmry" path="res://Icon/folder-animation.svg" id="10_folderanim"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_41jg2"]
 content_margin_left = 8.0
@@ -89,20 +88,11 @@ expand_icon = true
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_41jg2")
 
-[node name="RegularFolderIcon" type="TextureRect" parent="Layer/DeSeparationMarginContainer/HBoxContainer/IconPanel" unique_id=1549803962]
+[node name="FolderIcon" type="TextureRect" parent="Layer/DeSeparationMarginContainer/HBoxContainer/IconPanel" unique_id=1549803962]
 unique_name_in_owner = true
-visible = false
 custom_minimum_size = Vector2(32, 0)
 layout_mode = 2
 texture = ExtResource("9_folder")
-expand_mode = 1
-stretch_mode = 5
-
-[node name="CelFolderIcon" type="TextureRect" parent="Layer/DeSeparationMarginContainer/HBoxContainer/IconPanel" unique_id=1839858191]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(32, 0)
-layout_mode = 2
-texture = ExtResource("10_folderanim")
 expand_mode = 1
 stretch_mode = 5
 
