@@ -7,7 +7,7 @@ using Frent;
 using ObservableCollections;
 using R3;
 
-namespace Ciallo.Data.ProjectFormat;
+namespace Ciallo.Data;
 
 /// <summary>
 /// How one persisted field maps onto a single DuckDB column.

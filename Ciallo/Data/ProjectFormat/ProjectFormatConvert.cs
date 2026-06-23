@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using Frent;
 using ObservableCollections;
 
-namespace Ciallo.Data.ProjectFormat;
+namespace Ciallo.Data;
 
 /// <summary>
 /// Rebuilds the concrete collection type a field declares (ImmutableArray&lt;T&gt;, List&lt;T&gt;,

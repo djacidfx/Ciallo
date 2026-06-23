@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 
-namespace Ciallo.Data.ProjectFormat;
+namespace Ciallo.Data;
 
 internal sealed class ProjectFormatRegistry
 {
