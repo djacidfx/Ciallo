@@ -92,8 +92,9 @@ public class FolderLayerSetting
     /// follows the direct cel child sharing this name. If the newly exposed cel has no direct child with
     /// this name (including the empty-name default), no layer is selected.
     ///
-    /// Set only when the working layer becomes a direct cel child (see <see cref="Command.SetWorkingLayerCmd"/>);
-    /// other working-layer changes leave it untouched. Empty by default.
+    /// Set when the working layer becomes a direct cel child (see <see cref="Command.SetWorkingLayerCmd"/>),
+    /// and migrated when the working layer's cel-child archetype is renamed.
+    /// Other working-layer changes leave it untouched. Empty by default.
     /// </summary>
     [DataMember, ProjectField]
     public ReactiveProperty<string> PreferredNameForCelSelection = new("");

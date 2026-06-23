@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Ciallo.Command;
 using Ciallo.Data;
@@ -159,13 +160,27 @@ public partial class TrackTree : LayerTreeBase
             foreach (var m in members) { rep = m; break; }
             var repSetting = rep.Get<CommonLayerSetting>();
             repSetting.IsVisible.Subscribe(block.VisibleButton.SetPressedNoSignal).AddTo(bs);
-            repSetting.Name.Subscribe(v => { if (block.LabelLineEdit.Text != v) block.LabelLineEdit.Text = v; }).AddTo(bs);
+            repSetting.Name.Subscribe(v =>
+            {
+                block.LabelLineEdit.SetText(v);
+                GD.Print("set text");
+            }).AddTo(bs);
 
             // Input pushes to every current member as one undoable action.
             block.VisibleButton.OnToggledAsObservable()
-                .Subscribe(v => PushToMembers(name, e => e.Get<CommonLayerSetting>().IsVisible, v)).AddTo(bs);
-            block.LabelLineEdit.OnTextSubmittedAsObservable()
-                .Subscribe(v => PushToMembers(name, e => e.Get<CommonLayerSetting>().Name, v)).AddTo(bs);
+                .Subscribe(v =>
+                {
+                    PushToMembers(name, e => e.Get<CommonLayerSetting>().IsVisible, v).Commit();
+                }).AddTo(bs);
+            block.LabelLineEdit.OnTextChangedAsObservable()
+                .Subscribe(v =>
+                {
+                    var renameMembers = celChildrenByName[name];
+                    var cmd = PushToMembers(name, e => e.Get<CommonLayerSetting>().Name, v);
+                    if (renameMembers.Contains(sm.WorkingLayer.Value))
+                        cmd.SetProperty(folderSetting.PreferredNameForCelSelection, v);
+                    cmd.Commit();
+                }).AddTo(bs);
 
             // Derived pressed state: lit when the working layer is a current member of this archetype
             // (which, since members are this folder's cel children, also implies WorkingCelFolder == layerE).
@@ -177,11 +192,8 @@ public partial class TrackTree : LayerTreeBase
             // Recompute on: working-layer switch, working-cel-folder resettle (debounced), and member-set
             // mutation. The last one matters because renaming the working layer moves it between name groups
             // (an inner-set add/remove) without changing the working-layer entity or the dict keys.
-            sm.WorkingLayer.Select(_ => Unit.Default)
-                .Merge(sm.WorkingCelFolder.Select(_ => Unit.Default))
-                .Merge(members.ObserveAdd().Select(_ => Unit.Default))
-                .Merge(members.ObserveRemove().Select(_ => Unit.Default))
-                .DebounceFrame(1, GodotFrameProvider.Process)
+            sm.WorkingLayer.CombineLatest(sm.WorkingCelFolder, members.ObserveChanged().PrependDefault(), ValueTuple.Create)
+                .DebounceFrame(1)
                 .Subscribe(_ => SyncPressed()).AddTo(bs);
             SyncPressed();
 
@@ -206,7 +218,9 @@ public partial class TrackTree : LayerTreeBase
                     return;
                 }
 
-                new CommandBuilder("Select Cel Child Archetype", target).SetWorkingLayer(recordCelSelectionPreference: true).CommitToLatest();
+                new CommandBuilder("Select Cel Child Archetype", target)
+                    .SetWorkingLayer(recordCelSelectionPreference: true)
+                    .CommitToLatest();
                 // The target carries this archetype's name and is a cel child of this folder, so it is a member:
                 // light the button optimistically (WorkingCelFolder resettles a frame later via the sub above).
                 block.WorkingButton.SetPressedNoSignal(true);
@@ -214,13 +228,16 @@ public partial class TrackTree : LayerTreeBase
         }
 
         // Overwrite the chosen property on every current member of the named group, in one undoable action.
-        void PushToMembers<T>(string name, System.Func<Entity, ReactiveProperty<T>> getProp, T value)
+        CommandBuilder PushToMembers<T>(
+            string name,
+            System.Func<Entity, ReactiveProperty<T>> getProp,
+            T value)
         {
-            if (!celChildrenByName.TryGetValue(name, out var members) || members.Count == 0) return;
-            var cmd = new CommandBuilder("Edit Cel Child Archetype", layerE.Document);
+            var members = celChildrenByName[name];
+            var cmd = new CommandBuilder("Edit Cel Child Archetype");
             foreach (var member in members)
                 cmd.SetTarget(member).SetProperty(getProp, getProp(member).Value, value);
-            cmd.Commit();
+            return cmd;
         }
 
         void RemoveArchetype(string name)
@@ -283,9 +300,8 @@ public partial class TrackTree : LayerTreeBase
             ReorderArchetypes();
         }
 
-        celChildrenByName.ObserveDictionaryAdd().Select(_ => Unit.Default)
-            .Merge(celChildrenByName.ObserveDictionaryRemove().Select(_ => Unit.Default))
-            .DebounceFrame(1, GodotFrameProvider.Process)
+        celChildrenByName.ObserveChanged()
+            .DebounceFrame(1)
             .Subscribe(_ => Reconcile())
             .AddTo(subs);
 
