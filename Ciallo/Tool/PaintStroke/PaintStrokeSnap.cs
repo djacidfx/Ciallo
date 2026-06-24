@@ -17,21 +17,15 @@ public sealed class PaintStrokeSnap
     private const float Epsilon = 1e-5f;
     private const float BodyTargetOverrunDistanceWorld = 0.05f;
     private const float EndpointPreferenceSnapDistanceRatio = 1f / 3;
-    // Laplacian smoothness weight is implicitly 1.0; these values control the baseline penalty and distance falloff penalty scale.
-    private const double DisplacementPenaltyWeight = 0.08;
-    private const double FalloffPenaltyScale = 4.0;
-
     private readonly HashSet<Entity> _seen = [];
 
-    public bool TryFindTarget(
+    public PaintStrokeSnapTarget? TryFindTarget(
         Arrangement arr,
         Vector2 worldPosition,
-        float snapDistance,
-        out PaintStrokeSnapTarget target)
+        float snapDistance)
     {
-        target = default;
         if (snapDistance <= 0f)
-            return false;
+            return null;
 
         float snapDistanceSquared = snapDistance * snapDistance;
         float endpointPreferenceDistance = snapDistance * EndpointPreferenceSnapDistanceRatio;
@@ -52,8 +46,11 @@ public sealed class PaintStrokeSnap
                 KeepIfNearer(curve);
         }
 
-        target = foundEndpoint ? endpointTarget : bodyTarget;
-        return foundEndpoint || foundBody;
+        if (foundEndpoint)
+            return endpointTarget;
+        if (foundBody)
+            return bodyTarget;
+        return null;
 
         void KeepIfNearer(Entity curve)
         {
@@ -114,41 +111,23 @@ public sealed class PaintStrokeSnap
         if (!startTarget.HasValue && !endTarget.HasValue)
             return CreateGeometry(geometry, geometry.Positions);
 
-        // Paint Stroke Snap is not smoothing the drawn stroke itself. The user already
-        // authored that curve; snap repair only distributes endpoint correction across
-        // the new stroke without creating the hard kink produced by the old local ramp.
-        //
-        // Business requirement:
-        // - snapped endpoints must land exactly on the repair point;
-        // - nearby points may follow the endpoint so the connection looks intentional;
-        // - distant points should move less, preserving the user's stroke away from the snap;
-        // - "Snap distance" is only the hit-test radius, not a repair-range cutoff.
-        //
-        // The snapped endpoints are both the hard constraints and the penalty origins, so the
-        // displacement-Laplacian penalty grows with distance from them. See
-        // PolylineExtension.SolveDisplacementLaplacian for the full model.
-        var fixedDisplacements = new Dictionary<int, Vector2>(2);
-        var penaltyOrigins = new List<int>(2);
+        // Snapped endpoint(s) become HARD constraints; the free interior vertices are deformed to
+        // preserve the stroke's shape (turning-angle gesture) so the span rotates to absorb the endpoint
+        // move instead of shearing. The pierce point already sits on the body-bulk's opposite side,
+        // so the endpoint->neighbour segment crosses the target; shape preservation keeps that
+        // neighbour near where it was drawn, so the crossing is retained.
+        var fixedPositions = new Dictionary<int, Vector2>(2);
         if (startTarget.HasValue)
-        {
-            fixedDisplacements[0] = ResolveRepairPoint(geometry.Positions, startTarget.Value, repairStart: true) - geometry.Positions[0];
-            penaltyOrigins.Add(0);
-        }
+            fixedPositions[0] = ResolveRepairPoint(geometry.Positions, startTarget.Value, repairStart: true);
         if (endTarget.HasValue)
-        {
-            int last = geometry.Count - 1;
-            fixedDisplacements[last] = ResolveRepairPoint(geometry.Positions, endTarget.Value, repairStart: false) - geometry.Positions[last];
-            penaltyOrigins.Add(last);
-        }
+            fixedPositions[geometry.Count - 1] =
+                ResolveRepairPoint(geometry.Positions, endTarget.Value, repairStart: false);
 
-        var repairedPositions = PolylineExtension.SolveDisplacementLaplacian(
+        var deformed = PolylineShapeOptimizer.PreserveShape(
             geometry.Positions,
-            fixedDisplacements,
-            penaltyOrigins,
-            DisplacementPenaltyWeight,
-            FalloffPenaltyScale);
+            fixedPositions);
 
-        return CreateGeometry(geometry, repairedPositions);
+        return CreateGeometry(geometry, deformed);
     }
 
     private static PaintStrokeGeometry CreateGeometry(
@@ -187,55 +166,46 @@ public sealed class PaintStrokeSnap
         var segDir = targetPositions[segIndex + 1] - targetPositions[segIndex];
         var normal = new Vector2(segDir.Y, -segDir.X).Normalized();
 
-        // Walk inward to the first point distinct from the endpoint. It pins down both the body
-        // side of the target line and the stroke's outgoing tangent — a stable reference that
-        // does not depend on the endpoint's own (possibly on-line) position.
+        // Overrun straight along the target-segment NORMAL. The repaired endpoint must land on the
+        // side OPPOSITE the stroke's body bulk (forces the crossing when not pierced; keeps the
+        // endpoint on the tail side it already pierced to when pierced).
+        //
+        // sd is measured against ONE target segment's INFINITE line, so the body-side scan must stay
+        // LOCAL to the hit: a non-pierced but curved stroke can place a distant point on the far side
+        // of the extended line without ever crossing the real target curve. Treating that as a flip
+        // would wrongly push the endpoint back onto the body side (no crossing -> snap fails). So the
+        // default body side is the immediate off-line neighbour; a flip only counts as a real pierce
+        // when it happens within a local radius of the endpoint (a snap overshoot is small).
         int endpoint = repairStart ? 0 : strokePositions.Count - 1;
         int step = repairStart ? 1 : -1;
-        var endpointPos = strokePositions[endpoint];
-        var inner = endpointPos;
+        float tailSd = 0f;
+        float bodyBulkSd = 0f;
+        float localRadius = 0f;
         for (int i = endpoint + step; i >= 0 && i < strokePositions.Count; i += step)
         {
-            if ((strokePositions[i] - endpointPos).LengthSquared() > Epsilon * Epsilon)
+            var p = strokePositions[i];
+            float sd = (p - hitPoint).Dot(normal);
+            if (Mathf.Abs(sd) <= Epsilon)
+                continue;
+            if (tailSd == 0f)
             {
-                inner = strokePositions[i];
+                tailSd = sd;
+                bodyBulkSd = sd; // default: not pierced -> body bulk == tail side (local neighbour)
+                // Local window = a few times the endpoint->neighbour spacing; a genuine snap pierce
+                // overshoots by only ~BodyTargetOverrunDistanceWorld, so the body-side flip sits close.
+                localRadius = 4f * (p - hitPoint).Length();
+                continue;
+            }
+            if ((p - hitPoint).Length() > localRadius)
+                break; // left the local crossing region; anything beyond is unrelated curvature
+            if (Mathf.Sign(sd) != Mathf.Sign(tailSd))
+            {
+                bodyBulkSd = sd; // local flip back toward the body bulk == real pierce
                 break;
             }
         }
-
-        // The pierce point overruns the hit so the last segment crosses the target near the hit
-        // and the arrangement records the approximate EEK intersection the snap is after. The
-        // displacement is fixed only at the endpoint (no interior anchor), so the Laplacian stays
-        // C1-smooth — a pinned interior point is what produced the violent kink when a
-        // near-perpendicular stroke stopped short of the target.
-        //
-        // Direction = outgoing tangent, decomposed against the target line:
-        // - the NORMAL component (sign chosen below) forces the crossing, and still holds when the
-        //   stroke runs (near-)parallel and the tangent carries no normal component;
-        // - the IN-LINE component follows the stroke, so a slanted stroke pierces at its natural
-        //   angle and a perpendicular stroke reduces to a clean normal overrun — no kink either way.
-        var tangentOut = endpointPos - inner;
-        var inLine = tangentOut - tangentOut.Dot(normal) * normal;
-        float inLineLen = inLine.Length();
-        var inLineDir = inLineLen > Epsilon ? inLine / inLineLen : Vector2.Zero;
-
-        // Which side to pierce depends on where the neighbour lands AFTER the solve, not where it
-        // starts: the Laplacian propagates the endpoint's fix displacement to its immediate free
-        // neighbour at a strikingly constant ratio — measured 0.635-0.64 across six independent
-        // endpoints. When the endpoint sits far from the line that pull drags the neighbour toward
-        // -sign(endSd), so reading the neighbour's pre-solve side fails exactly when it starts near
-        // the line (reads one side, gets pulled across). Predict the neighbour's post-solve side
-        // (innerSd - p*endSd) and pierce the opposite side. This self-handles the parallel case
-        // too: a near-line endpoint has a small endSd term, so innerSd dominates and the pierce
-        // still lands opposite the stroke body.
-        const float NeighbourPropagation = 0.64f;
-        float endSd = (endpointPos - hitPoint).Dot(normal);
-        float innerSd = (inner - hitPoint).Dot(normal);
-        float predictedNeighbourSd = innerSd - endSd * NeighbourPropagation;
-        float pierceSide = predictedNeighbourSd >= 0f ? -1f : 1f;
-
-        var piercePoint = hitPoint + (inLineDir + pierceSide * normal) * BodyTargetOverrunDistanceWorld;
-        return piercePoint;
+        float bodyBulkSide = bodyBulkSd >= 0f ? 1f : -1f;
+        return hitPoint - bodyBulkSide * normal * BodyTargetOverrunDistanceWorld;
     }
 }
 

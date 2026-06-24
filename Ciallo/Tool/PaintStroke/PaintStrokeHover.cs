@@ -149,13 +149,14 @@ public class PaintStrokeHover : InteractiveSessionBase
 
     private void RefreshSnap(Vector2 worldPosition)
     {
-        if (!Tool.TryFindSnapTarget(worldPosition, out var target))
+        var target = Tool.TryFindSnapTarget(worldPosition);
+        if (!target.HasValue)
         {
             _snapDots.Visible = false;
             return;
         }
 
         _snapDots.Visible = true;
-        _snapDots.SetDotGeometry([target.HitPoint], AppPreference.StrokeDotRadius);
+        _snapDots.SetDotGeometry([target.Value.HitPoint], AppPreference.StrokeDotRadius);
     }
 }

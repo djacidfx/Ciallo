@@ -97,20 +97,18 @@ public class PaintStrokeTool : ToolBase
         DeactivateSignal.OnNext(Unit.Default);
     }
 
-    public bool TryFindSnapTarget(Vector2 worldPosition, out PaintStrokeSnapTarget target)
+    public PaintStrokeSnapTarget? TryFindSnapTarget(Vector2 worldPosition)
     {
-        target = default;
         if (!AppPreference.PaintStrokeSnapEnabled.Value)
-            return false;
+            return null;
 
         var arr = Arrangement.ArrReady.CurrentValue;
         if (arr == null)
-            return false;
+            return null;
 
         return _snap.TryFindTarget(
             arr,
             worldPosition,
-            AppPreference.PaintStrokeSnapDistance.Value,
-            out target);
+            AppPreference.PaintStrokeSnapDistance.Value);
     }
 }

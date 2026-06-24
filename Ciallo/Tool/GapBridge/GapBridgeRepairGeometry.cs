@@ -12,10 +12,8 @@ public static class GapBridgeRepairGeometry
     // Body targets overpass the hit point slightly so visual fills do not leave a hairline gap.
     private const float BodyTargetOverrunDistanceWorld = 0.05f;
 
-    // Identical to Paint Stroke Snap's displacement-Laplacian tuning. Smoothness weight is
-    // implicitly 1.0; these values control the baseline penalty and distance falloff penalty scale.
     private const double DisplacementPenaltyWeight = 0.08;
-    private const double FalloffPenaltyScale = 4;
+    private const double FalloffPenaltyScale = 32;
 
     public static ImmutableArray<Vector2> BuildRepairedPositions(Arrangement arr, GapBridge bridge)
     {

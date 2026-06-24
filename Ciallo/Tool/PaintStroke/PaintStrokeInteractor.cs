@@ -59,9 +59,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         var brushSetting = BrushE.Get<StrokeBrushSetting>();
         Generator.RadiusSampler = brushSetting.ToRadiusSampler();
 
-        _startSnapTarget = Tool.TryFindSnapTarget(data.WorldPosition, out var startTarget)
-            ? startTarget
-            : null;
+        _startSnapTarget = Tool.TryFindSnapTarget(data.WorldPosition);
         _endSnapTarget = null;
         Generator.Start(data);
         UpdatePreview();
@@ -78,6 +76,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 
     public override void End(CursorButtonData data)
     {
+        Generator.End(data);
         var geometry = BuildCommitGeometry(data);
 
         new CommandBuilder("Paint Stroke", WorkingLayer.World.Create())
@@ -126,7 +125,6 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 
     protected PaintStrokeGeometry BuildCommitGeometry(CursorButtonData data)
     {
-        Generator.End(data);
         RefreshEndSnapTarget(data.WorldPosition);
         return PaintStrokeSnap.BuildRepairedGeometry(
             Generator.CurrentGeometry,
@@ -142,9 +140,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 
     private void RefreshEndSnapTarget(Vector2 worldPosition)
     {
-        _endSnapTarget = Tool.TryFindSnapTarget(worldPosition, out var endTarget)
-            ? endTarget
-            : null;
+        _endSnapTarget = Tool.TryFindSnapTarget(worldPosition);
     }
 
     private void UpdateSnapHint()
