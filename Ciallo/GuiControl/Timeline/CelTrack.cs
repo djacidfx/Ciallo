@@ -90,7 +90,7 @@ public partial class CelTrack : Control
         var pressedStyleBox = (StyleBoxFlat)GetThemeStylebox("pressed", "Button");
         BarPressedColor = pressedStyleBox.BgColor;
         LabelColor = GetThemeColor("font_color", "Button");
-        ArrowColor = LabelColor with { A = 0.4f };
+        ArrowColor = LabelColor with { A = 0.8f };
         LabelFont = GetThemeFont("font", "Button");
         LabelFontSize = (int)(GetThemeFontSize("font_size", "Button") * 0.8f);
     }
@@ -285,7 +285,7 @@ public partial class CelTrack : Control
     {
         if (tipX - shaftStart <= ArrowHeadLength) return;
 
-        DrawLine(new(shaftStart, midY), new(tipX - ArrowHeadLength, midY), color);
+        DrawLine(new(shaftStart, midY), new(tipX - ArrowHeadLength, midY), color, 1.0f);
 
         Vector2 tip = new(tipX, midY);
         Vector2 p1 = new(tipX - ArrowHeadLength, midY - ArrowHeadHalfWidth);
