@@ -12,7 +12,16 @@ public partial class AutoloadData : Node
 
     public override void _EnterTree()
     {
-        Input.UseAccumulatedInput = false;
+        // // Godot delivers a high-report-rate device (e.g. 1000Hz mouse) as a burst of events at
+        // // each ~60fps frame. Per-event TimeDelta (WorldEventDispatcher._timer) then measures
+        // // processing time, not real input spacing: one event of the frame gets the full ~16ms,
+        // // the other ~15 get ~0. Fed into InkStrokeModeler's spring integrator (position +=
+        // // velocity*dt), it stalls through the near-zero steps then lurches on the big one ->
+        // // per-frame wobble and stutter. A 150Hz pen has ~2 events/frame, so it never shows.
+        // // Leaving accumulation ON (default) merges the burst into one event/frame at the correct
+        // // dt; the modeler upsamples to its own output rate anyway, so feeding it the raw bursty
+        // // timestamps is worse than not feeding all of them.
+        // Input.UseAccumulatedInput = false;
         GetTree().AutoAcceptQuit = false;
 
         DefaultOption = MessagePackSerializer.DefaultOptions;
