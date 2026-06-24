@@ -183,32 +183,59 @@ public sealed class PaintStrokeSnap
         if (t >= targetPositions.Length - 1f - Epsilon)
             return targetPositions[^1];
 
-        // ponytail: overrun along target-segment normal guarantees piercing topologically.
         int segIndex = Mathf.Min((int)t, targetPositions.Length - 2);
         var segDir = targetPositions[segIndex + 1] - targetPositions[segIndex];
         var normal = new Vector2(segDir.Y, -segDir.X).Normalized();
 
-        // Walk inward to find a point far enough from hitPoint for a stable direction.
-        var toInner = Vector2.Zero;
-        if (strokePositions.Count > 1)
+        // Walk inward to the first point distinct from the endpoint. It pins down both the body
+        // side of the target line and the stroke's outgoing tangent — a stable reference that
+        // does not depend on the endpoint's own (possibly on-line) position.
+        int endpoint = repairStart ? 0 : strokePositions.Count - 1;
+        int step = repairStart ? 1 : -1;
+        var endpointPos = strokePositions[endpoint];
+        var inner = endpointPos;
+        for (int i = endpoint + step; i >= 0 && i < strokePositions.Count; i += step)
         {
-            int start = repairStart ? 1 : strokePositions.Count - 2;
-            int step = repairStart ? 1 : -1;
-            for (int i = start; i >= 0 && i < strokePositions.Count; i += step)
+            if ((strokePositions[i] - endpointPos).LengthSquared() > Epsilon * Epsilon)
             {
-                var candidate = hitPoint - strokePositions[i];
-                if (candidate.LengthSquared() > Epsilon * Epsilon)
-                {
-                    toInner = candidate;
-                    break;
-                }
+                inner = strokePositions[i];
+                break;
             }
         }
-        // ponytail: if all points coincide with hitPoint, either direction pierces.
-        if (toInner.Dot(normal) < 0)
-            normal = -normal;
 
-        return hitPoint + normal * BodyTargetOverrunDistanceWorld;
+        // The pierce point overruns the hit so the last segment crosses the target near the hit
+        // and the arrangement records the approximate EEK intersection the snap is after. The
+        // displacement is fixed only at the endpoint (no interior anchor), so the Laplacian stays
+        // C1-smooth — a pinned interior point is what produced the violent kink when a
+        // near-perpendicular stroke stopped short of the target.
+        //
+        // Direction = outgoing tangent, decomposed against the target line:
+        // - the NORMAL component (sign chosen below) forces the crossing, and still holds when the
+        //   stroke runs (near-)parallel and the tangent carries no normal component;
+        // - the IN-LINE component follows the stroke, so a slanted stroke pierces at its natural
+        //   angle and a perpendicular stroke reduces to a clean normal overrun — no kink either way.
+        var tangentOut = endpointPos - inner;
+        var inLine = tangentOut - tangentOut.Dot(normal) * normal;
+        float inLineLen = inLine.Length();
+        var inLineDir = inLineLen > Epsilon ? inLine / inLineLen : Vector2.Zero;
+
+        // Which side to pierce depends on where the neighbour lands AFTER the solve, not where it
+        // starts: the Laplacian propagates the endpoint's fix displacement to its immediate free
+        // neighbour at a strikingly constant ratio — measured 0.635-0.64 across six independent
+        // endpoints. When the endpoint sits far from the line that pull drags the neighbour toward
+        // -sign(endSd), so reading the neighbour's pre-solve side fails exactly when it starts near
+        // the line (reads one side, gets pulled across). Predict the neighbour's post-solve side
+        // (innerSd - p*endSd) and pierce the opposite side. This self-handles the parallel case
+        // too: a near-line endpoint has a small endSd term, so innerSd dominates and the pierce
+        // still lands opposite the stroke body.
+        const float NeighbourPropagation = 0.64f;
+        float endSd = (endpointPos - hitPoint).Dot(normal);
+        float innerSd = (inner - hitPoint).Dot(normal);
+        float predictedNeighbourSd = innerSd - endSd * NeighbourPropagation;
+        float pierceSide = predictedNeighbourSd >= 0f ? -1f : 1f;
+
+        var piercePoint = hitPoint + (inLineDir + pierceSide * normal) * BodyTargetOverrunDistanceWorld;
+        return piercePoint;
     }
 }
 
