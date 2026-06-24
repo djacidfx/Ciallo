@@ -160,11 +160,7 @@ public partial class TrackTree : LayerTreeBase
             foreach (var m in members) { rep = m; break; }
             var repSetting = rep.Get<CommonLayerSetting>();
             repSetting.IsVisible.Subscribe(block.VisibleButton.SetPressedNoSignal).AddTo(bs);
-            repSetting.Name.Subscribe(v =>
-            {
-                block.LabelLineEdit.SetText(v);
-                GD.Print("set text");
-            }).AddTo(bs);
+            repSetting.Name.Subscribe(block.LabelLineEdit.SetText).AddTo(bs);
 
             // Input pushes to every current member as one undoable action.
             block.VisibleButton.OnToggledAsObservable()
@@ -172,7 +168,7 @@ public partial class TrackTree : LayerTreeBase
                 {
                     PushToMembers(name, e => e.Get<CommonLayerSetting>().IsVisible, v).Commit();
                 }).AddTo(bs);
-            block.LabelLineEdit.OnTextChangedAsObservable()
+            block.LabelLineEdit.OnTextSubmittedAsObservable()
                 .Subscribe(v =>
                 {
                     var renameMembers = celChildrenByName[name];

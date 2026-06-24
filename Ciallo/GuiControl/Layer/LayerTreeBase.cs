@@ -29,6 +29,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
     /// True when the dragged layer's subtree contains a CelFolder.
     /// </summary>
     protected bool DraggedSubtreeHasCelFolder;
+    private bool _dragCancelled;
 
     protected const float ScrollZone = 50f;
     protected const float MaxScrollSpeed = 280f;
@@ -76,6 +77,21 @@ public abstract partial class LayerTreeBase : ScrollContainer
             ScrollVertical += step;
             ScrollAccum -= step;
         }
+    }
+
+    public override void _Input(InputEvent @event)
+    {
+        if (!IsDragging) return;
+        if (!AppHotkeys.CancelInteraction.IsPressedBy(@event)) return;
+
+        IsDragging = false;
+        _dragCancelled = true;
+        HoveredBlock = null;
+        _hinter.Visible = false;
+        _label.Visible = false;
+        ScrollSpeed = 0f;
+        ScrollAccum = 0f;
+        GetViewport().SetInputAsHandled();
     }
 
     // ── Abstract factory methods ────────────────────────────────────────────
@@ -186,7 +202,7 @@ public abstract partial class LayerTreeBase : ScrollContainer
             .OfType<InputEvent, InputEventMouseMotion>()
             .Where(motion => motion.ButtonMask == MouseButtonMask.Left)
             .Where(motion => motion.GlobalPosition.DistanceTo(mouseState.CurrentValue.GlobalPosition) > 20)
-            .Where(_ => !IsDragging);
+            .Where(_ => !IsDragging && !_dragCancelled);
         dragStart.Subscribe(motion =>
         {
             IsDragging = true;
@@ -200,9 +216,11 @@ public abstract partial class LayerTreeBase : ScrollContainer
         dragging.Subscribe(motion => OnDragging(block, motion)).AddTo(e);
 
         var dragEnd = leftMouse
-            .Where(button => IsDragging && button.IsReleased());
+            .Where(button => button.IsReleased());
         dragEnd.Subscribe(button =>
         {
+            _dragCancelled = false;
+            if (!IsDragging) return;
             IsDragging = false;
             OnDragEnd(block, button);
         }).AddTo(e);

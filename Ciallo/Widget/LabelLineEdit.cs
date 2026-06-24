@@ -9,6 +9,7 @@ namespace Ciallo.Widget;
 public partial class LabelLineEdit : LineEdit
 {
     public CursorShape DefaultCursorShape;
+    private string _textBeforeEdit = "";
 
     public override void _Ready()
     {
@@ -27,24 +28,36 @@ public partial class LabelLineEdit : LineEdit
     {
         if (e is InputEventMouseButton { ButtonIndex: MouseButton.Left, DoubleClick: true } && !Editable)
         {
+            _textBeforeEdit = Text;
             Editable = true;
             SelectingEnabled = true;
             MouseDefaultCursorShape = CursorShape.Ibeam;
+            Edit();
+            GetViewport().SetInputAsHandled();
+            return;
         }
-        Edit();
+
+        if (Editable && AppHotkeys.UiCancel.IsPressedBy(e))
+        {
+            Text = _textBeforeEdit;
+            FinishEdit();
+            GetViewport().SetInputAsHandled();
+        }
     }
 
     public void OnTextSubmitted(string newText)
     {
-        Editable = false;
-        SelectingEnabled = false;
-        Unedit();
-        MouseDefaultCursorShape = DefaultCursorShape;
+        FinishEdit();
     }
 
     public void OnFocusExited()
     {
         if (!Editable) return; // IsEditing is false here.
+        FinishEdit();
+    }
+
+    private void FinishEdit()
+    {
         Editable = false;
         SelectingEnabled = false;
         Unedit();
