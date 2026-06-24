@@ -15,11 +15,11 @@ public readonly record struct PaintStrokeSnapTarget(
 public sealed class PaintStrokeSnap
 {
     private const float Epsilon = 1e-5f;
-    private const float BodyTargetOverrunDistanceWorld = 0.1f;
+    private const float BodyTargetOverrunDistanceWorld = 0.05f;
     private const float EndpointPreferenceSnapDistanceRatio = 1f / 3;
-    // Laplacian smoothness weight is implicitly 1.0; DisplacementWeight is relative to it.
-    private const double DisplacementWeight = 0.08;
-    private const double FarDisplacementPenalty = 24.0;
+    // Laplacian smoothness weight is implicitly 1.0; these values control the baseline penalty and distance falloff penalty scale.
+    private const double DisplacementPenaltyWeight = 0.08;
+    private const double FalloffPenaltyScale = 4.0;
 
     private readonly HashSet<Entity> _seen = [];
 
@@ -145,8 +145,8 @@ public sealed class PaintStrokeSnap
             geometry.Positions,
             fixedDisplacements,
             penaltyOrigins,
-            DisplacementWeight,
-            FarDisplacementPenalty);
+            DisplacementPenaltyWeight,
+            FalloffPenaltyScale);
 
         return CreateGeometry(geometry, repairedPositions);
     }
@@ -177,31 +177,39 @@ public sealed class PaintStrokeSnap
         var targetPositions = target.Curve.Get<SampledPolyline>().Positions.Value;
         var hitPoint = targetPositions.Sample(target.HitT);
         var t = target.HitT;
+        // Endpoint snap targets land exactly on the endpoint; no overrun needed.
         if (t <= Epsilon)
             return targetPositions[0];
         if (t >= targetPositions.Length - 1f - Epsilon)
             return targetPositions[^1];
 
-        var outwardTangent = GetEndpointOutwardTangent(strokePositions, repairStart);
-        return hitPoint + outwardTangent * BodyTargetOverrunDistanceWorld;
-    }
+        // ponytail: overrun along target-segment normal guarantees piercing topologically.
+        int segIndex = Mathf.Min((int)t, targetPositions.Length - 2);
+        var segDir = targetPositions[segIndex + 1] - targetPositions[segIndex];
+        var normal = new Vector2(segDir.Y, -segDir.X).Normalized();
 
-    private static Vector2 GetEndpointOutwardTangent(IReadOnlyList<Vector2> strokePositions, bool fromStart)
-    {
-        var endpoint = fromStart ? strokePositions[0] : strokePositions[^1];
-        int step = fromStart ? 1 : -1;
-        for (int i = fromStart ? 1 : strokePositions.Count - 2;
-             i >= 0 && i < strokePositions.Count;
-             i += step)
+        // Walk inward to find a point far enough from hitPoint for a stable direction.
+        var toInner = Vector2.Zero;
+        if (strokePositions.Count > 1)
         {
-            var tangent = endpoint - strokePositions[i];
-            if (tangent.LengthSquared() > Epsilon * Epsilon)
-                return tangent.Normalized();
+            int start = repairStart ? 1 : strokePositions.Count - 2;
+            int step = repairStart ? 1 : -1;
+            for (int i = start; i >= 0 && i < strokePositions.Count; i += step)
+            {
+                var candidate = hitPoint - strokePositions[i];
+                if (candidate.LengthSquared() > Epsilon * Epsilon)
+                {
+                    toInner = candidate;
+                    break;
+                }
+            }
         }
+        // ponytail: if all points coincide with hitPoint, either direction pierces.
+        if (toInner.Dot(normal) < 0)
+            normal = -normal;
 
-        return Vector2.Zero;
+        return hitPoint + normal * BodyTargetOverrunDistanceWorld;
     }
-
 }
 
 public readonly record struct PaintStrokeGeometry(

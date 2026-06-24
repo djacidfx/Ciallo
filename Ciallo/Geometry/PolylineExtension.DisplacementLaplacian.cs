@@ -45,8 +45,8 @@ public static partial class PolylineExtension
         IReadOnlyList<Vector2> positions,
         IReadOnlyDictionary<int, Vector2> fixedDisplacements,
         IReadOnlyList<int> penaltyOrigins,
-        double displacementWeight,
-        double farDisplacementPenalty)
+        double displacementPenaltyWeight,
+        double falloffPenaltyScale)
     {
         int count = positions.Count;
         var variableByPoint = new int[count];
@@ -96,7 +96,7 @@ public static partial class PolylineExtension
                 continue;
 
             double distance = penaltyDistance[i];
-            diagonal[variable] += displacementWeight * (1.0 + farDisplacementPenalty * distance * distance);
+            diagonal[variable] += displacementPenaltyWeight * (1.0 + falloffPenaltyScale * distance * distance);
         }
 
         var solutionX = SolvePentadiagonal(diagonal, upper1, upper2, rhsX);

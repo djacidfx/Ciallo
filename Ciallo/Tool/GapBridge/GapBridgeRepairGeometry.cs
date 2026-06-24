@@ -10,12 +10,12 @@ namespace Ciallo.Tool;
 public static class GapBridgeRepairGeometry
 {
     // Body targets overpass the hit point slightly so visual fills do not leave a hairline gap.
-    private const float BodyTargetOverrunDistanceWorld = 0.1f;
+    private const float BodyTargetOverrunDistanceWorld = 0.05f;
 
     // Identical to Paint Stroke Snap's displacement-Laplacian tuning. Smoothness weight is
-    // implicitly 1.0; these values scale the distance-weighted displacement penalty.
-    private const double DisplacementWeight = 0.08;
-    private const double FarDisplacementPenalty = 24.0;
+    // implicitly 1.0; these values control the baseline penalty and distance falloff penalty scale.
+    private const double DisplacementPenaltyWeight = 0.08;
+    private const double FalloffPenaltyScale = 4;
 
     public static ImmutableArray<Vector2> BuildRepairedPositions(Arrangement arr, GapBridge bridge)
     {
@@ -48,8 +48,8 @@ public static class GapBridgeRepairGeometry
             tailPositions,
             fixedDisplacements,
             [endpointLocal],
-            DisplacementWeight,
-            FarDisplacementPenalty);
+            DisplacementPenaltyWeight,
+            FalloffPenaltyScale);
 
         var repaired = positions.ToBuilder();
         for (int i = 0; i < tailIndices.Length; i++)
