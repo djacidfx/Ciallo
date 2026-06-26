@@ -55,6 +55,10 @@ internal sealed class FieldDescriptor
     public bool IsNullable { get; }
     public string DuckDbColumnType { get; }
 
+    // Cached ReactiveProperty<T>.Value accessor; null for non-reactive fields. Resolving this
+    // per-row via FieldType.GetProperty("Value") showed up under save/load of large documents.
+    private readonly PropertyInfo _reactiveValueProperty;
+
     private FieldDescriptor(
         ComponentDescriptor component,
         FieldInfo field,
@@ -84,6 +88,7 @@ internal sealed class FieldDescriptor
         IsReactive = isReactive;
         IsNullable = isNullable;
         DuckDbColumnType = BuildColumnType();
+        _reactiveValueProperty = isReactive ? fieldType.GetProperty("Value") : null;
     }
 
     public static FieldDescriptor TryCreate(ComponentDescriptor component, FieldInfo field)
@@ -122,7 +127,7 @@ internal sealed class FieldDescriptor
         var value = Field.GetValue(component);
         if (!IsReactive || value == null)
             return value;
-        return FieldType.GetProperty("Value")!.GetValue(value);
+        return _reactiveValueProperty!.GetValue(value);
     }
 
     public object GetFieldStorageObject(object component)
@@ -141,7 +146,7 @@ internal sealed class FieldDescriptor
                 Field.SetValue(component, property);
                 return;
             }
-            FieldType.GetProperty("Value")!.SetValue(property, value);
+            _reactiveValueProperty!.SetValue(property, value);
             return;
         }
 

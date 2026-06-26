@@ -22,6 +22,7 @@ public static class DuckDbProjectSerializer
 
     // DuckDB storage block size for new project files (bytes, power of two, 16KB..256KB).
     private const int BlockSize = 65536;
+    private const int InsertBatchSize = 512;
 
     #region Public API
 
@@ -121,7 +122,6 @@ public static class DuckDbProjectSerializer
             Execute(connection, "USE project;");
 
             CreateInfrastructureTables(connection);
-            WriteMetadata(connection);
             foreach (var component in registry.Components)
                 CreateComponentTable(connection, component);
 
@@ -130,19 +130,12 @@ public static class DuckDbProjectSerializer
             for (int i = 0; i < entities.Count; i++)
                 entityToId[entities[i]] = i;
 
-            for (int id = 0; id < entities.Count; id++)
-            {
-                var entity = entities[id];
-                InsertEntity(connection, id);
-                foreach (var component in registry.Components)
-                {
-                    if (!entity.ComponentTypes.Any(t => t.Type == component.ComponentType))
-                        continue;
-
-                    var value = entity.Get(component.ComponentType);
-                    InsertComponent(connection, component, id, value, entityToId);
-                }
-            }
+            Execute(connection, "BEGIN TRANSACTION;");
+            WriteMetadata(connection);
+            InsertEntities(connection, entities.Count);
+            foreach (var component in registry.Components)
+                InsertComponentRows(connection, component, entities, entityToId);
+            Execute(connection, "COMMIT;");
 
             // Collapse the WAL into the main file so the single .ciallo file is self-contained
             // and can be atomically moved with no sidecar.
@@ -207,22 +200,51 @@ public static class DuckDbProjectSerializer
         command.ExecuteNonQuery();
     }
 
-    private static void InsertEntity(DuckDBConnection connection, int id)
+    private static void InsertEntities(DuckDBConnection connection, int count)
     {
-        using var command = connection.CreateCommand();
-        command.CommandText = """insert into "entities" ("id") values ($id);""";
-        command.Parameters.Add(new DuckDBParameter("id", id));
-        command.ExecuteNonQuery();
+        if (count <= 0)
+            return;
+
+        // Ids are a dense 0..count-1 sequence, so let DuckDB generate them in one statement
+        // instead of binding a parameter per row. The count is our own integer (not user input),
+        // so inlining it is injection-safe. range(stop) yields BIGINT 0..stop-1.
+        Execute(connection,
+            $"""insert into "entities" ("id") select cast("range" as integer) from range({count});""");
     }
 
-    private static void InsertComponent(
+    private static void InsertComponentRows(
         DuckDBConnection connection,
+        ComponentDescriptor descriptor,
+        IReadOnlyList<Entity> entities,
+        Dictionary<Entity, int> entityToId)
+    {
+        var batch = new List<InsertBuilder>(InsertBatchSize);
+        for (int id = 0; id < entities.Count; id++)
+        {
+            var entity = entities[id];
+            if (!entity.Has(descriptor.ComponentType))
+                continue;
+
+            var component = entity.Get(descriptor.ComponentType);
+            batch.Add(BuildComponentRow(descriptor, id, component, entityToId, "r" + batch.Count));
+            if (batch.Count == InsertBatchSize)
+            {
+                ExecuteComponentBatch(connection, descriptor, batch);
+                batch.Clear();
+            }
+        }
+
+        ExecuteComponentBatch(connection, descriptor, batch);
+    }
+
+    private static InsertBuilder BuildComponentRow(
         ComponentDescriptor descriptor,
         int ownerId,
         object component,
-        Dictionary<Entity, int> entityToId)
+        Dictionary<Entity, int> entityToId,
+        string parameterPrefix)
     {
-        var builder = new InsertBuilder();
+        var builder = new InsertBuilder(parameterPrefix);
         builder.AddColumn("entity_id", builder.NextParam(ownerId));
 
         foreach (var field in descriptor.Fields)
@@ -231,10 +253,23 @@ public static class DuckDbProjectSerializer
             SerializeField(builder, field, value, entityToId);
         }
 
+        return builder;
+    }
+
+    private static void ExecuteComponentBatch(
+        DuckDBConnection connection,
+        ComponentDescriptor descriptor,
+        List<InsertBuilder> batch)
+    {
+        if (batch.Count == 0)
+            return;
+
         using var command = connection.CreateCommand();
+        var rows = batch.Select(builder => $"({builder.ValueSql()})");
         command.CommandText =
-            $"insert into {Quote(descriptor.TableName)} ({builder.ColumnSql()}) values ({builder.ValueSql()});";
-        builder.Apply(command);
+            $"insert into {Quote(descriptor.TableName)} ({batch[0].ColumnSql()}) values {string.Join(", ", rows)};";
+        foreach (var builder in batch)
+            builder.Apply(command);
         command.ExecuteNonQuery();
     }
 
@@ -677,7 +712,13 @@ internal sealed class InsertBuilder
     private readonly List<string> _columns = new();
     private readonly List<string> _valueExprs = new();
     private readonly List<DuckDBParameter> _parameters = new();
+    private readonly string _parameterPrefix;
     private int _seq;
+
+    public InsertBuilder(string parameterPrefix = "p")
+    {
+        _parameterPrefix = parameterPrefix;
+    }
 
     public void AddColumn(string column, string valueExpr)
     {
@@ -687,7 +728,7 @@ internal sealed class InsertBuilder
 
     public string NextParam(object value)
     {
-        var name = "p" + _seq++;
+        var name = _parameterPrefix + "_" + _seq++;
         _parameters.Add(new DuckDBParameter(name, value ?? (object)DBNull.Value));
         return "$" + name;
     }
