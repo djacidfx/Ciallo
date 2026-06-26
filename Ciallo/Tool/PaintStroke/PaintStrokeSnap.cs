@@ -17,6 +17,7 @@ public sealed class PaintStrokeSnap
     private const float Epsilon = 1e-5f;
     private const float BodyTargetOverrunDistanceWorld = 0.05f;
     private const float EndpointPreferenceSnapDistanceRatio = 1f / 3;
+    private const double RampTargetWeight = 0.01;
     private readonly HashSet<Entity> _seen = [];
 
     public PaintStrokeSnapTarget? TryFindTarget(
@@ -101,9 +102,9 @@ public sealed class PaintStrokeSnap
         if (geometry.Count == 1)
         {
             var position = startTarget.HasValue
-                ? ResolveRepairPoint(geometry.Positions, startTarget.Value, repairStart: true)
+                ? ResolveRepairPoint(geometry.Positions, startTarget.Value, repairStart: true).Position
                 : endTarget.HasValue
-                    ? ResolveRepairPoint(geometry.Positions, endTarget.Value, repairStart: false)
+                    ? ResolveRepairPoint(geometry.Positions, endTarget.Value, repairStart: false).Position
                     : geometry.Positions[0];
             return CreateGeometry(geometry, [position]);
         }
@@ -111,21 +112,52 @@ public sealed class PaintStrokeSnap
         if (!startTarget.HasValue && !endTarget.HasValue)
             return CreateGeometry(geometry, geometry.Positions);
 
-        // Snapped endpoint(s) become HARD constraints; the free interior vertices are deformed to
-        // preserve the stroke's shape (turning-angle gesture) so the span rotates to absorb the endpoint
-        // move instead of shearing. The pierce point already sits on the body-bulk's opposite side,
-        // so the endpoint->neighbour segment crosses the target; shape preservation keeps that
-        // neighbour near where it was drawn, so the crossing is retained.
-        var fixedPositions = new Dictionary<int, Vector2>(2);
-        if (startTarget.HasValue)
-            fixedPositions[0] = ResolveRepairPoint(geometry.Positions, startTarget.Value, repairStart: true);
-        if (endTarget.HasValue)
-            fixedPositions[geometry.Count - 1] =
-                ResolveRepairPoint(geometry.Positions, endTarget.Value, repairStart: false);
+        var repairedPositions = new Vector2[geometry.Count];
+        for (int i = 0; i < geometry.Count; i++)
+            repairedPositions[i] = geometry.Positions[i];
 
-        var deformed = PolylineShapeOptimizer.PreserveShape(
-            geometry.Positions,
-            fixedPositions);
+        var fixedDisplacements = new Dictionary<int, Vector2>(2);
+        var rampOrigins = new List<int>(2);
+        if (startTarget.HasValue)
+        {
+            var repairPoint = ResolveRepairPoint(geometry.Positions, startTarget.Value, repairStart: true);
+            if (repairPoint.Pierced)
+            {
+                repairedPositions[0] = repairPoint.Position;
+                fixedDisplacements[0] = Vector2.Zero;
+            }
+            else
+            {
+                fixedDisplacements[0] = repairPoint.Position - repairedPositions[0];
+                rampOrigins.Add(0);
+            }
+        }
+        if (endTarget.HasValue)
+        {
+            int endpoint = geometry.Count - 1;
+            var repairPoint = ResolveRepairPoint(geometry.Positions, endTarget.Value, repairStart: false);
+            if (repairPoint.Pierced)
+            {
+                repairedPositions[endpoint] = repairPoint.Position;
+                fixedDisplacements[endpoint] = Vector2.Zero;
+            }
+            else
+            {
+                fixedDisplacements[endpoint] = repairPoint.Position - repairedPositions[endpoint];
+                rampOrigins.Add(endpoint);
+            }
+        }
+
+        if (rampOrigins.Count == 0)
+            return CreateGeometry(geometry, repairedPositions);
+
+        // Non-piercing snap endpoints still use displacement-Laplacian repair so the endpoint move
+        // can be absorbed by the nearby stroke instead of only editing one sample.
+        var deformed = PolylineExtension.SolveDisplacementLaplacian(
+            repairedPositions,
+            fixedDisplacements,
+            rampOrigins,
+            RampTargetWeight);
 
         return CreateGeometry(geometry, deformed);
     }
@@ -148,7 +180,7 @@ public sealed class PaintStrokeSnap
             geometry.Tilts.ToImmutableArray());
     }
 
-    private static Vector2 ResolveRepairPoint(
+    private static (Vector2 Position, bool Pierced) ResolveRepairPoint(
         IReadOnlyList<Vector2> strokePositions,
         PaintStrokeSnapTarget target,
         bool repairStart)
@@ -158,9 +190,9 @@ public sealed class PaintStrokeSnap
         var t = target.HitT;
         // Endpoint snap targets land exactly on the endpoint; no overrun needed.
         if (t <= Epsilon)
-            return targetPositions[0];
+            return (targetPositions[0], Pierced: false);
         if (t >= targetPositions.Length - 1f - Epsilon)
-            return targetPositions[^1];
+            return (targetPositions[^1], Pierced: false);
 
         int segIndex = Mathf.Min((int)t, targetPositions.Length - 2);
         var segDir = targetPositions[segIndex + 1] - targetPositions[segIndex];
@@ -181,6 +213,7 @@ public sealed class PaintStrokeSnap
         float tailSd = 0f;
         float bodyBulkSd = 0f;
         float localRadius = 0f;
+        bool pierced = false;
         for (int i = endpoint + step; i >= 0 && i < strokePositions.Count; i += step)
         {
             var p = strokePositions[i];
@@ -201,11 +234,14 @@ public sealed class PaintStrokeSnap
             if (Mathf.Sign(sd) != Mathf.Sign(tailSd))
             {
                 bodyBulkSd = sd; // local flip back toward the body bulk == real pierce
+                pierced = true;
                 break;
             }
         }
         float bodyBulkSide = bodyBulkSd >= 0f ? 1f : -1f;
-        return hitPoint - bodyBulkSide * normal * BodyTargetOverrunDistanceWorld;
+        return (
+            hitPoint - bodyBulkSide * normal * BodyTargetOverrunDistanceWorld,
+            Pierced: pierced);
     }
 }
 

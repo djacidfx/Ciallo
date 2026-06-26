@@ -12,8 +12,7 @@ public static class GapBridgeRepairGeometry
     // Body targets overpass the hit point slightly so visual fills do not leave a hairline gap.
     private const float BodyTargetOverrunDistanceWorld = 0.05f;
 
-    private const double DisplacementPenaltyWeight = 0.08;
-    private const double FalloffPenaltyScale = 32;
+    private const double RampTargetWeight = 0.08;
 
     public static ImmutableArray<Vector2> BuildRepairedPositions(Arrangement arr, GapBridge bridge)
     {
@@ -46,8 +45,7 @@ public static class GapBridgeRepairGeometry
             tailPositions,
             fixedDisplacements,
             [endpointLocal],
-            DisplacementPenaltyWeight,
-            FalloffPenaltyScale);
+            RampTargetWeight);
 
         var repaired = positions.ToBuilder();
         for (int i = 0; i < tailIndices.Length; i++)
