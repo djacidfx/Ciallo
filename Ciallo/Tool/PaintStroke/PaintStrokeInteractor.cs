@@ -127,9 +127,11 @@ public class PaintStrokeInteractor : InteractiveSessionBase
     {
         RefreshEndSnapTarget(data.WorldPosition);
         return PaintStrokeSnap.BuildRepairedGeometry(
+            Tool.Arrangement.ArrReady.CurrentValue,
             Generator.CurrentGeometry,
             _startSnapTarget,
-            _endSnapTarget);
+            _endSnapTarget,
+            AppPreference.PaintStrokeSnapDistance.Value);
     }
 
     private void UpdatePreview()
