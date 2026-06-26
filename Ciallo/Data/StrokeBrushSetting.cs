@@ -18,7 +18,7 @@ public class StrokeBrushSetting
     [DataMember, ProjectField] public ReactiveProperty<Color> Color = new(Colors.Black); // RGB+Flow
     [DataMember, ProjectField] public ReactiveProperty<BrushFlags> ActiveBrushFlags = new();
     [DataMember, ProjectField] public ReactiveProperty<BlendMode> BlendMode = new();
-    [DataMember, ProjectField] public ReactiveProperty<float> BaseRadius = new(5.0f);
+    [DataMember, ProjectField] public ReactiveProperty<float> BaseRadius = new(1.5f);
     [DataMember, ProjectField] public ReactiveProperty<ImmutableArray<BezierPoint>> Pressure2RadiusCurve = new(BezierCurveFactory.Linear(0.2f, 1.0f)); // radius = baseRadius * curve(pressure)
     [DataMember, ProjectField] public ReactiveProperty<BrushRenderingType> RenderingType = new(BrushRenderingType.Stamp);
     [DataMember, ProjectField] public ReactiveProperty<ImmutableArray<BezierPoint>> Pressure2FlowCurve = new(BezierCurveFactory.Constant(1.0f)); // finalFlow = curve(pressure) * Color.a
