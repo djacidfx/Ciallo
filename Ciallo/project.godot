@@ -24,6 +24,7 @@ config/icon="uid://lvg5yck52fyc"
 
 [autoload]
 
+
 FrameProviderDispatcher="res://addons/R3.Godot/FrameProviderDispatcher.cs"
 ObservableTrackerRuntimeHook="res://addons/R3.Godot/ObservableTrackerRuntimeHook.cs"
 AutoloadMisc="res://AutoloadMisc.cs"

@@ -109,6 +109,13 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
             .Switch()
             .Subscribe(marker.Sprite.SetModulate)
             .AddTo(targetE);
+        setting.BrushE
+            .Select(e => e.IsNull
+                ? Observable.Return<Color?>(null)
+                : e.Get<FillBrushSetting>().MarkerOutlineColor.AsObservable())
+            .Switch()
+            .Subscribe(marker.SetOutlineColor)
+            .AddTo(targetE);
 
         sampledPolyline.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
         {

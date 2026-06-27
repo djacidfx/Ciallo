@@ -70,7 +70,6 @@ public static class AppMarkerTextureLibrary
                     continue;
                 }
                 ConvertMarkerImage(image);
-                image.GenerateMipmaps();
                 result.Add(new MarkerEntry { Texture = ImageTexture.CreateFromImage(image), IsBuiltIn = true });
             }
         }

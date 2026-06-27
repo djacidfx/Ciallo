@@ -215,3 +215,6 @@ WithinAllCels,Within all cels,在所有赛璐珞内,在所有賽璐珞內,すべ
 Mirror horizontally,Mirror horizontally,水平镜像,水平鏡像,左右反転,가로로 뒤집기,Horizontal spiegeln,Inverser horizontalement
 Mirror vertically,Mirror vertically,垂直镜像,垂直鏡像,上下反転,세로로 뒤집기,Vertikal spiegeln,Inverser verticalement
 Play,Play,播放,播放,再生,재생,Wiedergabe,Lire
+Default,Default,默认,預設,デフォルト,기본,Standard,Par défaut
+Default brush,Default brush,默认笔刷,預設筆刷,デフォルトブラシ,기본 브러시,Standardpinsel,Pinceau par défaut
+Marker outline color,Marker outline color,标记描边颜色,標記描邊顏色,マーカーのアウトライン色,마커 외곽선 색,Markierungsumrissfarbe,Couleur du contour du marqueur
