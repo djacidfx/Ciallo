@@ -28,7 +28,7 @@ public class NewVectorFillBrushCmd : CommandBase
                 MarkerColor = { Value = Colors.Black },
                 MarkerTexture =
                 {
-                    Value = ImageTexture.CreateFromImage(GD.Load<Image>("res://Rendering/Image/Bullseye0.svg"))
+                    Value = ImageTexture.CreateFromImage(GD.Load<Image>("res://Rendering/Image/Bullseye0_0.svg"))
                 },
             }
             : CopyE.Get<FillBrushSetting>().Clone();

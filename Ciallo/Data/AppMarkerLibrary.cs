@@ -29,13 +29,11 @@ public static class AppMarkerTextureLibrary
 
     public static readonly string MarkerFolder = "user://Marker/";
 
-    private static readonly string[] BuiltInPaths =
-    [
-        "res://Rendering/Image/Bullseye0.svg",
-        "res://Rendering/Image/Bullseye1.svg",
-        "res://Rendering/Image/Bullseye2.svg",
-        "res://Rendering/Image/Bullseye3.svg",
-    ];
+    // Built-in marker files are named Bullseye{outer}_{inner}.svg.
+    // outer: 0 circle, 1 square, 2 diamond, 3 hexagon, 4 rounded square, 5 octagon.
+    // inner: 0 dot, 1 crosshair, 2 ring, 3 diamond dot.
+    private const int BuiltInOuterMarkerCount = 6;
+    private const int BuiltInInnerMarkerCount = 4;
 
     /// <summary>
     /// Marker textures are white silhouettes tinted at draw time by <see cref="FillBrushSetting.MarkerColor"/>.
@@ -60,17 +58,21 @@ public static class AppMarkerTextureLibrary
     private static List<MarkerEntry> CreateBuiltInMarkers()
     {
         var result = new List<MarkerEntry>();
-        foreach (var path in BuiltInPaths)
+        for (int outer = 0; outer < BuiltInOuterMarkerCount; outer++)
         {
-            var image = GD.Load<Image>(path);
-            if (image == null)
+            for (int inner = 0; inner < BuiltInInnerMarkerCount; inner++)
             {
-                GD.PrintErr($"Cannot load built-in marker {path}.");
-                continue;
+                string path = $"res://Rendering/Image/Bullseye{outer}_{inner}.svg";
+                var image = GD.Load<Image>(path);
+                if (image == null)
+                {
+                    GD.PrintErr($"Cannot load built-in marker {path}.");
+                    continue;
+                }
+                ConvertMarkerImage(image);
+                image.GenerateMipmaps();
+                result.Add(new MarkerEntry { Texture = ImageTexture.CreateFromImage(image), IsBuiltIn = true });
             }
-            ConvertMarkerImage(image);
-            image.GenerateMipmaps();
-            result.Add(new MarkerEntry { Texture = ImageTexture.CreateFromImage(image), IsBuiltIn = true });
         }
         return result;
     }

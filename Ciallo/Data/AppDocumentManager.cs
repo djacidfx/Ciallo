@@ -92,7 +92,7 @@ public static partial class AppDocumentManager
         Color[] colors = [Colors.PaleTurquoise, Colors.LightGreen, Colors.LemonChiffon, Colors.LightPink];
         for (int i = 0; i < colors.Length; i++)
         {
-            string path = $"res://Rendering/Image/Bullseye{i}.svg";
+            string path = $"res://Rendering/Image/Bullseye{i}_0.svg";
             var img = GD.Load<Image>(path);
             var tex = ImageTexture.CreateFromImage(img);
             var brush = document.World.Create();
