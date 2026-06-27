@@ -113,10 +113,13 @@ public partial class WorldBody : BodyHolder
 
     public void MakeScreenSize(Body body)
     {
-        _paintPanel.CameraZoom.Subscribe(v =>
+        _paintPanel.CameraZoom
+            .CombineLatest(body.HitTestActive, (zoom, active) => (zoom, active))
+            .Where(v => v.active)
+            .Subscribe(v =>
         {
-            body.Scale = Vector2.One / v;
-        }).AddTo(body);
+            body.Scale = Vector2.One / v.zoom;
+        }).AddTo(body);// Note:Exittree will dispose this but we don't more body between layers for now. 
     }
 
     public static Body CreateRect(Vector2 size, Vector2 center)
@@ -244,7 +247,7 @@ public partial class WorldBody : BodyHolder
             cornerBodies[idx] = body;
         }
 
-        return [rotation, translation, ..cornerBodies];
+        return [rotation, translation, .. cornerBodies];
     }
 
     public Body[] CreateAddTransformAreas(Vector2 size, Vector2 position)

@@ -5,6 +5,7 @@ using Ciallo.Data;
 using Frent;
 using Frent.Components;
 using Godot;
+using R3;
 
 namespace Ciallo.Rendering;
 
@@ -12,9 +13,11 @@ public partial class Body : StaticBody2D, IInitable, IDestroyable
 {
     private Control.CursorShape _mouseDefaultCursorShape = Control.CursorShape.Arrow;
     private List<Rid> _shapes = [];
+    private readonly ReactiveProperty<bool> _hitTestActive = new(false);
 
     public bool IsHovered { get; set; } // Should only be set by manager
     public Entity SelfEntity;
+    public ReadOnlyReactiveProperty<bool> HitTestActive => _hitTestActive;
 
     public Control.CursorShape MouseDefaultCursorShape
     {
@@ -35,7 +38,20 @@ public partial class Body : StaticBody2D, IInitable, IDestroyable
         {
             _shapes.ForEach(PhysicsServer2D.FreeRid);
             _shapes.Clear();
+            HitTestActive.Dispose();
+            return;
         }
+
+        if (what == NotificationEnterTree ||
+            what == NotificationExitTree ||
+            what == NotificationDisabled ||
+            what == NotificationEnabled ||
+            what == NotificationPaused ||
+            what == NotificationUnpaused)
+        {
+            _hitTestActive.Value = CanProcess();
+        }
+
     }
 
     public void ClearShapes()
