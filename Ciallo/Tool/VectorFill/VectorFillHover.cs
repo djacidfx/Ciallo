@@ -125,13 +125,6 @@ public class VectorFillHover : InteractiveSessionBase
                 .BindColor(markerColor)
         ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
 
-        var markerOutlineColor = sm.WorkingVectorFillBrush
-            .Select(e => e.TryGet<FillBrushSetting>()?.MarkerOutlineColor)
-            .Flatten();
-        container.AddProperty("Marker outline color",
-            new NullableColorPickerButton().BindColor(markerOutlineColor)
-        ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
-
         container.AddProperty("Marker radius",
             new SpinSlider
             {

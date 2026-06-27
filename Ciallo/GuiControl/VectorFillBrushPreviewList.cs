@@ -20,9 +20,6 @@ namespace Ciallo.GuiControl;
 [SceneTree, Instantiable]
 public partial class VectorFillBrushPreviewList : Container
 {
-    private const float MarkerPreviewOutlineWidth = 2.0f;
-    private static readonly Shader MarkerOutlineShader = GD.Load<Shader>("res://Rendering/VectorFillMarker.gdshader");
-
     protected readonly Dictionary<Entity, Control> PreviewMap = [];
     protected ISynchronizedView<Entity, Control> SyncView;
     protected ObservableList<Entity> Brushes;
@@ -113,28 +110,6 @@ public partial class VectorFillBrushPreviewList : Container
         var setting = e.Get<FillBrushSetting>();
         setting.MarkerTexture.Subscribe(markerPreview.SetTexture).AddTo(e);
         setting.MarkerColor.Subscribe(markerPreview.SetModulate).AddTo(e);
-        setting.MarkerOutlineColor.Subscribe(color =>
-        {
-            if (!color.HasValue)
-            {
-                markerPreview.Material = null;
-                return;
-            }
-
-            var material = markerPreview.Material as ShaderMaterial;
-            if (material == null)
-            {
-                material = new ShaderMaterial
-                {
-                    Shader = MarkerOutlineShader,
-                };
-                material.SetShaderParameter("width", MarkerPreviewOutlineWidth);
-                material.SetShaderParameter("add_margins", false);
-            }
-
-            material.SetShaderParameter("color", color.Value);
-            markerPreview.Material = material;
-        }).AddTo(e);
         setting.FillColor.Subscribe(background.SetColor).AddTo(e);
         return box;
     }
