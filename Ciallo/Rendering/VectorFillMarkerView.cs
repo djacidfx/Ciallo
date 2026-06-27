@@ -8,7 +8,11 @@ namespace Ciallo.Rendering;
 
 public partial class VectorFillMarkerView : Node2D
 {
-    public FixedSizeSprite2D Sprite = new() { Visible = false };
+    public FixedSizeSprite2D Sprite = new()
+    {
+        Visible = false,
+        Material = AutoloadRendering.VectorFillMarkerMaterial,
+    };
 
     public VectorFillMarkerView()
     {
@@ -47,7 +51,7 @@ public partial class VectorFillMarkerView : Node2D
         polygon.Color = setting.FillColor.Value;
         polygon.Material = null;
         polygon.Texture = null;
-        marker.Sprite.Texture = setting.MarkerTexture.Value;
+        marker.Sprite.Texture = setting.MarkerTexture.Value ?? ImageTexture.Dummy;
         marker.Sprite.Modulate = setting.MarkerColor.Value;
     }
 
@@ -56,7 +60,7 @@ public partial class VectorFillMarkerView : Node2D
         polygon.Color = Colors.Black;
         polygon.Material = AutoloadRendering.MissingFillBrushMaterial;
         polygon.Texture = AutoloadRendering.DummyTextureForUV;
-        marker.Sprite.Texture = null;
+        marker.Sprite.Texture = ImageTexture.Dummy;
         marker.Sprite.Modulate = Colors.Black;
     }
 }

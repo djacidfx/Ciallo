@@ -106,14 +106,17 @@ public partial class WorldBody : BodyHolder
             AddChild(body);
 
         if (flags.HasFlag(CursorRectFlags.ScreenSize))
-        {
-            _paintPanel.CameraZoom.Subscribe(v =>
-            {
-                body.Scale = Vector2.One / v;
-            }).AddTo(body);
-        }
+            MakeScreenSize(body);
 
         return body;
+    }
+
+    public void MakeScreenSize(Body body)
+    {
+        _paintPanel.CameraZoom.Subscribe(v =>
+        {
+            body.Scale = Vector2.One / v;
+        }).AddTo(body);
     }
 
     public static Body CreateRect(Vector2 size, Vector2 center)

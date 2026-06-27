@@ -125,13 +125,14 @@ public class VectorFillHover : InteractiveSessionBase
                 .BindColor(markerColor)
         ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
 
-        container.AddProperty("Marker radius",
-            new SpinSlider
-            {
-                MinValue = 1.0f,
-                MaxValue = 32f,
-            }.BindNumber(AppPreference.VectorFillMarkerRadius)
-        ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
+        //// Comments out to test if custom radius size is necessary.
+        // container.AddProperty("Marker radius",
+        //     new SpinSlider
+        //     {
+        //         MinValue = 1.0f,
+        //         MaxValue = 32f,
+        //     }.BindNumber(AppPreference.VectorFillMarkerRadius)
+        // ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
 
         var fillColor = sm.WorkingVectorFillBrush
             .Select(e => e.TryGet<FillBrushSetting>()?.FillColor)

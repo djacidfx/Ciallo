@@ -97,10 +97,10 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
         }).AddTo(targetE);
         setting.BrushE
             .Select(e => e.IsNull
-                ? Observable.Return<ImageTexture>(null)
+                ? Observable.Return(ImageTexture.Dummy)
                 : e.Get<FillBrushSetting>().MarkerTexture.AsObservable())
             .Switch()
-            .Subscribe(marker.Sprite.SetTexture)
+            .Subscribe(texture => marker.Sprite.Texture = texture ?? ImageTexture.Dummy)
             .AddTo(targetE);
         setting.BrushE
             .Select(e => e.IsNull
@@ -119,9 +119,18 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
         var strokeBody = new Body();
         targetE.AddNode(strokeBody);
 
+        Document.Get<WorldBody>().MakeScreenSize(strokeBody);
+
         sampledPolyline.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
         {
-            strokeBody.SetStrokeShape(v.Item1, v.Item2);
+            strokeBody.ClearShapes();
+            if (v.Item1.IsDefaultOrEmpty) return;
+
+            strokeBody.Position = v.Item1[0];
+            strokeBody.AddChild(new CollisionShape2D()
+            {
+                Shape = new RectangleShape2D { Size = 2f * v.Item2[0] * Vector2.One },
+            });
         }).AddTo(targetE);
 
         // Layer tree events
