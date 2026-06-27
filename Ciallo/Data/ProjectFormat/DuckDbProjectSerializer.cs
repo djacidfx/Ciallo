@@ -22,6 +22,7 @@ public static class DuckDbProjectSerializer
 
     // DuckDB storage block size for new project files (bytes, power of two, 16KB..256KB).
     private const int BlockSize = 65536;
+    // DuckDB.NET 1.4.1 appender cannot write STRUCT columns yet, so batch with VALUES instead.
     private const int InsertBatchSize = 512;
 
     #region Public API
