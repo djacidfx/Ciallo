@@ -100,13 +100,13 @@ public class Preference
 
     #endregion
 
-    #region VectorFillTool
+    #region Tool
 
     [DataMember]
-    public ReactiveProperty<float> VectorFillMarkerRadius = new(10.0f);
+    public ReactiveProperty<float> VectorFillMarkerRadius = new(15.0f);
 
     [DataMember]
-    public ReactiveProperty<Color?> VectorFillLayerBoundedAreaColor = new();
+    public ReactiveProperty<Color?> VectorFillLayerBoundedAreaColor = new(new(0.62f, 0.62f, 0.62f, 1.0f));
 
     [DataMember]
     public ReactiveProperty<bool> ShowVectorFillReferenceLayerWireframe = new(false);

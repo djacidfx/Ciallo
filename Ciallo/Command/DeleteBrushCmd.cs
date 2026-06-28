@@ -15,12 +15,12 @@ public class DeleteBrushCmd : CommandBase
             var query = targetE.World.CreateQuery().With<StrokeSetting>().Tagged<ToSerializeTag>().Build();
             foreach (var strokeE in query.EnumerateWithEntities())
             {
-                if (strokeE.Get<StrokeSetting>().BrushE.Value != targetE) continue;
+                if (strokeE.Get<StrokeSetting>().Brush.Value != targetE) continue;
                 SetNullBrushCmd.SetTarget(strokeE)
-                    .SetProperty(e => e.Get<StrokeSetting>().BrushE, Entity.Null);
+                    .SetProperty(e => e.Get<StrokeSetting>().Brush, Entity.Null);
             }
         }
-        else if (targetE.Has<VectorFillBrushSetting>())
+        else if (targetE.Has<FillBrushSetting>())
         {
             var markerQuery = targetE.World.CreateQuery().With<VectorFillMarkerSetting>().Tagged<ToSerializeTag>().Build();
             foreach (var markerE in markerQuery.EnumerateWithEntities())
@@ -48,8 +48,8 @@ public class DeleteBrushCmd : CommandBase
 
         // Data
         var bm = Document.Get<BrushManager>();
-        bm.StrokeBrushEs.Remove(brushE);
-        bm.VectorFillBrushEs.Remove(brushE);
+        bm.StrokeBrushes.Remove(brushE);
+        bm.VectorFillBrushes.Remove(brushE);
         brushE.Detach<ToSerializeTag>();
     }
 
@@ -60,9 +60,9 @@ public class DeleteBrushCmd : CommandBase
         var bm = Document.Get<BrushManager>();
 
         if (brushE.Has<StrokeBrushSetting>())
-            bm.StrokeBrushEs.Add(brushE);
-        if (brushE.Has<VectorFillBrushSetting>())
-            bm.VectorFillBrushEs.Add(brushE);
+            bm.StrokeBrushes.Add(brushE);
+        if (brushE.Has<FillBrushSetting>())
+            bm.VectorFillBrushes.Add(brushE);
 
         SetNullBrushCmd.Undo();
     }

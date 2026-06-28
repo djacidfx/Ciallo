@@ -97,7 +97,7 @@ public class VectorFillHover : InteractiveSessionBase
     {
         container.AddChild(new Label
         {
-            Text = "Fill brush",
+            Text = "Fill brush".Tr(),
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
         });
         var brushPreview = VectorFillBrushPreviewList.New(Document);
@@ -107,7 +107,7 @@ public class VectorFillHover : InteractiveSessionBase
         var sm = Document.Get<SelectionManager>();
 
         var markerTexture = sm.WorkingVectorFillBrush
-            .Select(e => e.TryGet<VectorFillBrushSetting>()?.MarkerTexture)
+            .Select(e => e.TryGet<FillBrushSetting>()?.MarkerTexture)
             .Flatten();
         var markerPicker = new MarkerPickerButton
         {
@@ -118,23 +118,24 @@ public class VectorFillHover : InteractiveSessionBase
             .VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull));
 
         var markerColor = sm.WorkingVectorFillBrush
-            .Select(e => e.TryGet<VectorFillBrushSetting>()?.MarkerColor)
+            .Select(e => e.TryGet<FillBrushSetting>()?.MarkerColor)
             .Flatten();
         container.AddProperty("Marker color",
             new ColorPickerButton { EditAlpha = false }
                 .BindColor(markerColor)
         ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
 
-        container.AddProperty("Marker radius",
-            new SpinSlider
-            {
-                MinValue = 1.0f,
-                MaxValue = 32f,
-            }.BindNumber(AppPreference.VectorFillMarkerRadius)
-        ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
+        //// Comments out to test if custom radius size is necessary.
+        // container.AddProperty("Marker radius",
+        //     new SpinSlider
+        //     {
+        //         MinValue = 1.0f,
+        //         MaxValue = 32f,
+        //     }.BindNumber(AppPreference.VectorFillMarkerRadius)
+        // ).VisibleIf(sm.WorkingVectorFillBrush, Entity.IsNotNull);
 
         var fillColor = sm.WorkingVectorFillBrush
-            .Select(e => e.TryGet<VectorFillBrushSetting>()?.FillColor)
+            .Select(e => e.TryGet<FillBrushSetting>()?.FillColor)
             .Flatten();
         container.AddProperty("Fill color",
             new ColorPickerButton().BindColor(fillColor)
@@ -153,7 +154,7 @@ public class VectorFillHover : InteractiveSessionBase
 
         var editReferenceLayers = new Button
         {
-            Text = "Edit reference layers",
+            Text = "Edit reference layers".Tr(),
             CustomMinimumSize = new(0, 32),
         };
         editReferenceLayers.Pressed += () =>

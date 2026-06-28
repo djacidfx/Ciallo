@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
+using Ciallo.Diagnostics;
 using Frent;
 using Frent.Components;
 using R3;
@@ -60,6 +61,7 @@ public partial class ToolManager : IInitable, IDestroyable
 
     private void SwitchWorkingTool(ITool targetTool, Entity layerE)
     {
+        AppBugReport.ToolSwitch(PressedToolButton.Value, WorkingTool.Value, targetTool, layerE);
         WorkingTool.Value?.OnDeactivate();
         targetTool?.OnActivate(layerE);
         WorkingTool.Value = targetTool;

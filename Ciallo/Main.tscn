@@ -21,7 +21,7 @@
 bg_color = Color(0.234608, 0.23460817, 0.23460811, 1)
 
 [node name="Main" type="Panel" unique_id=1926960144]
-texture_filter = 2
+texture_filter = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0

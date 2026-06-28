@@ -72,17 +72,17 @@ public partial class CelTrackRightClickMenu : PopupMenu
             _celListEntities.Add(celEntity);
         }
 
-        AddItem("New Animation Cel", IdNewAnimationCel);
+        AddItem("New Animation Cel".Tr(), IdNewAnimationCel);
 
         AddSeparator();
 
-        string celListLabel = _onCel ? "Replace Cel:" : "Insert Cel:";
+        string celListLabel = _onCel ? "Replace Cel:".Tr() : "Insert Cel:".Tr();
         AddItem(celListLabel, -1);
         SetItemDisabled(ItemCount - 1, true);
 
         if (_celListEntities.Count == 0)
         {
-            AddItem("  (no cels)", -2);
+            AddItem("  " + "(no cels)".Tr(), -2);
             SetItemDisabled(ItemCount - 1, true);
         }
         else
@@ -90,19 +90,19 @@ public partial class CelTrackRightClickMenu : PopupMenu
             for (int i = 0; i < _celListEntities.Count; i++)
             {
                 string name = _celListEntities[i].Get<CommonLayerSetting>().Name.Value;
-                AddItem("  " + (string.IsNullOrEmpty(name) ? "(unnamed)" : name), CelListIdBase + i);
+                AddItem("  " + (string.IsNullOrEmpty(name) ? "(unnamed)".Tr() : name), CelListIdBase + i);
             }
         }
 
         if (_onCel)
         {
             AddSeparator();
-            AddItem("Delete Cel", IdDeleteCel);
+            AddItem("Delete Cel".Tr(), IdDeleteCel);
         }
 
         AddSeparator();
-        AddItem("Insert Frame", IdInsertFrame);
-        AddItem("Delete Frame", IdDeleteFrame);
+        AddItem("Insert Frame".Tr(), IdInsertFrame);
+        AddItem("Delete Frame".Tr(), IdDeleteFrame);
     }
 
     // ── Event handler ─────────────────────────────────────────────────────────
@@ -167,7 +167,7 @@ public partial class CelTrackRightClickMenu : PopupMenu
         bool onCel = _onCel;
         string label = onCel ? "Replace Cel" : "Insert Cel";
 
-        new CommandBuilder(label)
+        new CommandBuilder(label, _celFolderEntity)
             .SetObservableCollection(exposures, exp =>
             {
                 if (onCel) exp.Remove(frame);

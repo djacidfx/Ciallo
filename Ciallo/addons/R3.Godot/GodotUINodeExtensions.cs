@@ -28,17 +28,12 @@ public static class GodotUINodeExtensions
         return Observable.FromEvent(h => button.Pressed += h, h => button.Pressed -= h, cancellationToken);
     }
 
-    /// <summary>Observe Toggled with current `ButtonPressed` value on subscribe.</summary>
+    /// <summary>Observe Toggled event.</summary>
     public static Observable<bool> OnToggledAsObservable(this BaseButton button, CancellationToken cancellationToken = default)
     {
-        if (!button.ToggleMode) return Observable.Empty<bool>();
-
-        return Observable.Create<bool, (BaseButton, CancellationToken)>((button, cancellationToken), static (observer, state) =>
-        {
-            var (b, cancellationToken) = state;
-            observer.OnNext(b.ButtonPressed);
-            return Observable.FromEvent<BaseButton.ToggledEventHandler, bool>(h => new BaseButton.ToggledEventHandler(h), h => b.Toggled += h, h => b.Toggled -= h, cancellationToken).Subscribe(observer);
-        });
+        // The previous R3 default implementation pushed ButtonPressed on subscribe, so state changed through
+        // SetPressedNoSignal could still flow without Godot emitting Toggled.
+        return Observable.FromEvent<BaseButton.ToggledEventHandler, bool>(h => new BaseButton.ToggledEventHandler(h), h => button.Toggled += h, h => button.Toggled -= h, cancellationToken);
     }
 
     /// <summary>Observe ValueChanged with current `Value` on subscribe.</summary>

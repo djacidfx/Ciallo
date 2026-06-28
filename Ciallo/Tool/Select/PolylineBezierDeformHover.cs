@@ -52,18 +52,18 @@ public class PolylineBezierDeformHover : PolylineNoSelectionHover
         // Data
         if (Curve == null)
         {
-            int pointCount = SelectedShapes.Select(e => e.Get<PolylineGeometry>().Count).Sum();
+            int pointCount = SelectedShapes.Select(e => e.Get<SampledPolyline>().Count).Sum();
             if (pointCount <= 1) return;
             if (SelectedShapes.Count == 1)
             {
                 // Straight fit
-                Curve = SelectedShapes.Single().Get<PolylineGeometry>().Positions.Value.FitBezier(2);
+                Curve = SelectedShapes.Single().Get<SampledPolyline>().Positions.Value.FitBezier(2);
             }
             else
             {
                 // Cluster polylines first, then fit
                 var polylines = SelectedShapes
-                    .Select(e => (IReadOnlyList<Vector2>)e.Get<PolylineGeometry>().Positions.Value)
+                    .Select(e => (IReadOnlyList<Vector2>)e.Get<SampledPolyline>().Positions.Value)
                     .ToList();
                 var fitPoints = Geometry.Geometry.ClusterPolylines(polylines);
                 Curve = fitPoints.FitBezier(2);

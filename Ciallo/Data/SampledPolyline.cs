@@ -10,7 +10,7 @@ namespace Ciallo.Data;
 
 [DebuggerDisplay("{DebuggerDisplay,nq}")]
 [DataContract, ToSerialize]
-public class PolylineGeometry
+public class SampledPolyline
 {
     [DataMember(Order = 0), ProjectField]
     public ReactiveProperty<ImmutableArray<Vector2>> Positions = new([]);
@@ -24,9 +24,9 @@ public class PolylineGeometry
     public int Count => Positions.Value.Length;
     public int Length => Count;
 
-    public PolylineGeometry Clone()
+    public SampledPolyline Clone()
     {
-        return new PolylineGeometry()
+        return new SampledPolyline()
         {
             Positions = { Value = Positions.Value },
             Radii = { Value = Radii.Value },
@@ -63,14 +63,14 @@ public class PolylineGeometry
 
         if (positions.Length == 0)
         {
-            return $"PolylineGeometry(Pos={Positions.Value.Length}, Radii={Radii.Value.Length}, Pressures={Pressures.Value.Length}, Tilts={Tilts.Value.Length}, Sample=[Ø])";
+            return $"SampledPolyline(Pos={Positions.Value.Length}, Radii={Radii.Value.Length}, Pressures={Pressures.Value.Length}, Tilts={Tilts.Value.Length}, Sample=[Ø])";
         }
 
         var count = Math.Min(sampleCount, positions.Length);
         var samples = Enumerable.Range(0, count).Select(FormatSample);
         var sample = string.Join("\n", samples);
         var suffix = positions.Length > sampleCount ? $"\n  ... ({positions.Length - sampleCount} more)" : string.Empty;
-        return $"PolylineGeometry(Pos={positions.Length}, Radii={radii.Length}, Pressures={pressures.Length}, Tilts={tilts.Length})\nSamples:\n{sample}{suffix}";
+        return $"SampledPolyline(Pos={positions.Length}, Radii={radii.Length}, Pressures={pressures.Length}, Tilts={tilts.Length})\nSamples:\n{sample}{suffix}";
     }
 
     public override string ToString() => Describe();

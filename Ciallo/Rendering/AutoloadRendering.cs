@@ -10,6 +10,10 @@ public partial class AutoloadRendering : Node
     public static StrokeBrushMaterial WireframeMaterial;
     public static readonly ShaderMaterial WireframeDotMaterial =
         GD.Load<ShaderMaterial>("res://Rendering/WireframeDotMaterial.tres");
+    public static readonly ShaderMaterial VectorFillMarkerMaterial = new()
+    {
+        Shader = GD.Load<Shader>("res://Rendering/VectorFillMarker.gdshader"),
+    };
     public static readonly Shader StrokeShader = GD.Load<Shader>("res://Rendering/Stroke.gdshader");
     public static readonly Shader AddShader = CreateStrokeShaderVariant("#define BLEND_ADD");
     public static readonly Shader MultiplyShader = CreateStrokeShaderVariant("#define BLEND_MUL");

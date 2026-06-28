@@ -6,7 +6,7 @@ using Godot;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class SetPolylineGeometryCmd : CommandBase
+public class SetSampledPolylineCmd : CommandBase
 {
     public ImmutableArray<Vector2>? Positions { get; }
     public ImmutableArray<float>? Radii { get; }
@@ -15,7 +15,7 @@ public class SetPolylineGeometryCmd : CommandBase
 
     private CommandBuilder _cmd;
 
-    public SetPolylineGeometryCmd(
+    public SetSampledPolylineCmd(
         ImmutableArray<Vector2>? positions = null,
         ImmutableArray<float>? radii = null,
         ImmutableArray<float>? pressures = null,
@@ -29,15 +29,15 @@ public class SetPolylineGeometryCmd : CommandBase
 
     public override void BeforeFirstDo(Entity targetE)
     {
-        _cmd = new(targetE);
+        _cmd = new("Set Polyline Geometry Inner", targetE);
         if (Positions.HasValue)
-            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Positions, Positions.Value);
+            _cmd.SetProperty(e => e.Get<SampledPolyline>().Positions, Positions.Value);
         if (Radii.HasValue)
-            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Radii, Radii.Value);
+            _cmd.SetProperty(e => e.Get<SampledPolyline>().Radii, Radii.Value);
         if (Pressures.HasValue)
-            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Pressures, Pressures.Value);
+            _cmd.SetProperty(e => e.Get<SampledPolyline>().Pressures, Pressures.Value);
         if (Tilts.HasValue)
-            _cmd.SetProperty(e => e.Get<PolylineGeometry>().Tilts, Tilts.Value);
+            _cmd.SetProperty(e => e.Get<SampledPolyline>().Tilts, Tilts.Value);
     }
 
     public override void Do(Entity targetE)

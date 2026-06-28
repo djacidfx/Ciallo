@@ -27,7 +27,7 @@ public class PaintFillHover : InteractiveSessionBase
     {
         container.AddChild(new Label
         {
-            Text = "Fill brush",
+            Text = "Fill brush".Tr(),
             AutowrapMode = TextServer.AutowrapMode.WordSmart,
         });
         var brushPreview = VectorFillBrushPreviewList.New(Document);
@@ -37,7 +37,7 @@ public class PaintFillHover : InteractiveSessionBase
         var sm = Document.Get<SelectionManager>();
 
         var fillColor = sm.WorkingVectorFillBrush
-            .Select(e => e.TryGet<VectorFillBrushSetting>()?.FillColor)
+            .Select(e => e.TryGet<FillBrushSetting>()?.FillColor)
             .Flatten();
         container.AddProperty("Fill color",
             new ColorPickerButton().BindColor(fillColor)

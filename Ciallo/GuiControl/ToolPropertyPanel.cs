@@ -39,7 +39,7 @@ public partial class ToolPropertyPanel : Container
             }
             holderPerDocument.AddChild(new Label
                 {
-                    Text = "[Cannot Tool Layer]",
+                    Text = "[Cannot Tool Layer]".Tr(),
                     AutowrapMode = TextServer.AutowrapMode.WordSmart,
                 }
                 .VisibleIf(toolManager.WorkingTool, (ITool)null));

@@ -20,10 +20,10 @@ public class NewFilledPolygonCmd : NewShapeCmdBase
         var layerNode = new LayerTreeNode();
         targetE.Add(layerNode);
 
-        var polylineGeometry = CopyE.IsNull
-            ? new PolylineGeometry()
-            : CopyE.Get<PolylineGeometry>().Clone();
-        targetE.Add(polylineGeometry);
+        var sampledPolyline = CopyE.IsNull
+            ? new SampledPolyline()
+            : CopyE.Get<SampledPolyline>().Clone();
+        targetE.Add(sampledPolyline);
 
         var setting = CopyE.IsNull
             ? new FilledPolygonSetting()
@@ -35,7 +35,7 @@ public class NewFilledPolygonCmd : NewShapeCmdBase
     protected override void CreateRuntime(Entity targetE)
     {
         var layerNode = targetE.Get<LayerTreeNode>();
-        var polylineGeometry = targetE.Get<PolylineGeometry>();
+        var sampledPolyline = targetE.Get<SampledPolyline>();
         var setting = targetE.Get<FilledPolygonSetting>();
 
         // View
@@ -44,7 +44,7 @@ public class NewFilledPolygonCmd : NewShapeCmdBase
         setting.BrushE
             .Select(e => e.IsNull
                 ? Observable.Return(Colors.White)
-                : e.Get<VectorFillBrushSetting>().FillColor.AsObservable())
+                : e.Get<FillBrushSetting>().FillColor.AsObservable())
             .Switch()
             .Subscribe(polygonView.SetColor)
             .AddTo(targetE);
@@ -54,7 +54,7 @@ public class NewFilledPolygonCmd : NewShapeCmdBase
             polygonView.Texture = brushE.IsNull ? AutoloadRendering.DummyTextureForUV : null;
         }).AddTo(targetE);
 
-        polylineGeometry.Positions.Subscribe(ps =>
+        sampledPolyline.Positions.Subscribe(ps =>
         {
             polygonView.SetPolygonFromRawRing(ps);
         }).AddTo(targetE);
@@ -64,7 +64,7 @@ public class NewFilledPolygonCmd : NewShapeCmdBase
         targetE.AddNode(overlay);
         var polygonBody = new Body();
         targetE.AddNode(polygonBody);
-        polylineGeometry.Positions.Subscribe(ps =>
+        sampledPolyline.Positions.Subscribe(ps =>
         {
             overlay.SetGeometry(ps);
             polygonBody.SetPolygonFromRawRing(ps);

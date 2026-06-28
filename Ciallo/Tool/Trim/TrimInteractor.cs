@@ -91,9 +91,9 @@ public class TrimInteractor : InteractiveSessionBase
             var key = (hit.SourceShape, hit.FromT, hit.ToT);
             if (_doomedPreviews.ContainsKey(key)) continue;
             if (!_sourceSnapshot.Contains(hit.SourceShape)) continue;
-            if (!hit.SourceShape.IsAlive || !hit.SourceShape.Has<PolylineGeometry>()) continue;
+            if (!hit.SourceShape.IsAlive || !hit.SourceShape.Has<SampledPolyline>()) continue;
 
-            var geom = hit.SourceShape.Get<PolylineGeometry>();
+            var geom = hit.SourceShape.Get<SampledPolyline>();
             var slicePts = geom.Positions.Value.Slice(hit.FromT, hit.ToT);
             if (slicePts.Length < 2) continue;
 
@@ -121,7 +121,7 @@ public class TrimInteractor : InteractiveSessionBase
         // AddToLayerTreeCmd's static insertion index stays valid within that layer.
         var groups = hits
             .Where(h => _sourceSnapshot.Contains(h.SourceShape))
-            .Where(h => h.SourceShape.IsAlive && h.SourceShape.Has<PolylineGeometry>())
+            .Where(h => h.SourceShape.IsAlive && h.SourceShape.Has<SampledPolyline>())
             .GroupBy(h => h.SourceShape)
             .Select(g =>
             {
@@ -150,7 +150,7 @@ public class TrimInteractor : InteractiveSessionBase
             var sourceE = entry.SourceE;
             if (!CanRebuildTrimmedShape(sourceE)) continue;
 
-            var geom = sourceE.Get<PolylineGeometry>();
+            var geom = sourceE.Get<SampledPolyline>();
             var sourcePositions = geom.Positions.Value;
             int n = sourcePositions.Length;
             if (n < 2) continue;
@@ -177,7 +177,7 @@ public class TrimInteractor : InteractiveSessionBase
                 var newE = WorkingLayer.World.Create();
                 AddShapeCreation(cmd.SetTarget(newE), sourceE)
                     .AddToLayerTree(entry.SourceLayer, originalIndex + insertOffset)
-                    .SetPolylineGeometry(
+                    .SetSampledPolyline(
                         pieceGeom.positions,
                         pieceGeom.radii,
                         pieceGeom.pressures,
@@ -205,7 +205,7 @@ public class TrimInteractor : InteractiveSessionBase
         ImmutableArray<Vector2> positions,
         ImmutableArray<float> radii,
         ImmutableArray<float> pressures,
-        ImmutableArray<Vector2> tilts) SliceGeometry(PolylineGeometry geom, float from, float to)
+        ImmutableArray<Vector2> tilts) SliceGeometry(SampledPolyline geom, float from, float to)
     {
         var pos = geom.Positions.Value.Slice(from, to);
         var rad = geom.Radii.Value.Length == geom.Positions.Value.Length

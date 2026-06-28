@@ -22,20 +22,20 @@ public class NewStrokeCmd : NewShapeCmdBase
         var strokeSetting = CopyE.IsNull
             ? new StrokeSetting()
             : CopyE.Get<StrokeSetting>().Clone();
-        strokeSetting.BrushE.Value = MapEntityRef(strokeSetting.BrushE.Value);
+        strokeSetting.Brush.Value = MapEntityRef(strokeSetting.Brush.Value);
         targetE.Add(strokeSetting);
 
-        var polylineGeometry = CopyE.IsNull
-            ? new PolylineGeometry()
-            : CopyE.Get<PolylineGeometry>().Clone();
-        targetE.Add(polylineGeometry);
+        var sampledPolyline = CopyE.IsNull
+            ? new SampledPolyline()
+            : CopyE.Get<SampledPolyline>().Clone();
+        targetE.Add(sampledPolyline);
     }
 
     protected override void CreateRuntime(Entity targetE)
     {
         var layerNode = targetE.Get<LayerTreeNode>();
         var strokeSetting = targetE.Get<StrokeSetting>();
-        var polylineGeometry = targetE.Get<PolylineGeometry>();
+        var sampledPolyline = targetE.Get<SampledPolyline>();
 
         // View
         var strokeView = new StrokeView()
@@ -44,14 +44,14 @@ public class NewStrokeCmd : NewShapeCmdBase
         };
         targetE.AddNode(strokeView);
 
-        strokeSetting.BrushE.Subscribe(brushE =>
+        strokeSetting.Brush.Subscribe(brushE =>
         {
             strokeView.Material = !brushE.TryHas<StrokeBrushMaterial>()
                 ? AutoloadRendering.MissingStrokeBrushMaterial
                 : brushE.Get<StrokeBrushMaterial>();
         }).AddTo(targetE);
 
-        polylineGeometry.ObserveAll().ThrottleLastFrame(1).Subscribe(v =>
+        sampledPolyline.ObserveAll().ThrottleLastFrame(1).Subscribe(v =>
         {
             strokeView.SetGeometry(v.Item1, v.Item2, v.Item3);
         }).AddTo(targetE);
@@ -60,7 +60,7 @@ public class NewStrokeCmd : NewShapeCmdBase
         var strokeWireframe = new PolylineWireframe() { Visible = false };
         targetE.AddNode(strokeWireframe);
 
-        polylineGeometry.Positions.ThrottleLastFrame(1).Subscribe(p =>
+        sampledPolyline.Positions.ThrottleLastFrame(1).Subscribe(p =>
         {
             strokeWireframe.SetGeometry(p);
         }).AddTo(targetE);
@@ -69,7 +69,7 @@ public class NewStrokeCmd : NewShapeCmdBase
         var strokeBody = new Body();
         targetE.AddNode(strokeBody);
 
-        polylineGeometry.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
+        sampledPolyline.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
         {
             strokeBody.SetStrokeShape(v.Item1, v.Item2);
         }).AddTo(targetE);

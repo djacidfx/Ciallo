@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://c2ahwcgc6f1da" path="res://GuiControl/Layer/LayerWrapper.cs" id="2_5retc"]
 [ext_resource type="PackedScene" uid="uid://bd701bypxjeqj" path="res://GuiControl/Layer/LayerBlock.tscn" id="3_ysmpr"]
 [ext_resource type="Script" uid="uid://bdjd4la8oswpt" path="res://Widget/StrokeRect.cs" id="4_54v1c"]
-[ext_resource type="Script" path="res://GuiControl/Layer/LayerRightClickMenu.cs" id="5_lrcm"]
+[ext_resource type="Script" uid="uid://b2kcp261ds55u" path="res://GuiControl/Layer/LayerRightClickMenu.cs" id="5_lrcm"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4h4vt"]
 bg_color = Color(0, 0, 0, 0.74509805)
@@ -40,8 +40,8 @@ top_level = true
 layout_mode = 2
 mouse_filter = 2
 script = ExtResource("4_54v1c")
-Color = Color(1, 1, 0.64705884, 1)
-Width = 5.0
+Color = Color(0.9285939, 0.91523206, 0.3060817, 1)
+Width = 2.0
 metadata/_custom_type_script = "uid://bdjd4la8oswpt"
 
 [node name="DragLabel" type="Label" parent="." unique_id=1354153089]

@@ -22,16 +22,16 @@ public class NewVectorFillBrushCmd : CommandBase
     {
         // Data
         var setting = CopyE.IsNull
-            ? new VectorFillBrushSetting()
+            ? new FillBrushSetting()
             {
                 FillColor = { Value = Colors.LemonChiffon },
                 MarkerColor = { Value = Colors.Black },
                 MarkerTexture =
                 {
-                    Value = ImageTexture.CreateFromImage(GD.Load<Image>("res://Rendering/Image/Bullseye0.svg"))
+                    Value = ImageTexture.CreateFromImage(GD.Load<Image>("res://Rendering/Image/Bullseye0_0.svg"))
                 },
             }
-            : CopyE.Get<VectorFillBrushSetting>().Clone();
+            : CopyE.Get<FillBrushSetting>().Clone();
         targetE.Add(setting);
 
         // View
@@ -47,13 +47,13 @@ public class NewVectorFillBrushCmd : CommandBase
     public override void Do(Entity targetE)
     {
         targetE.Tag<ToSerializeTag>();
-        targetE.Document.Get<BrushManager>().VectorFillBrushEs.Add(targetE);
+        targetE.Document.Get<BrushManager>().VectorFillBrushes.Add(targetE);
     }
 
     public override void Undo(Entity targetE)
     {
         var document = targetE.Document;
-        document.Get<BrushManager>().VectorFillBrushEs.Remove(targetE);
+        document.Get<BrushManager>().VectorFillBrushes.Remove(targetE);
         targetE.Detach<ToSerializeTag>();
         document.Get<SelectionManager>().SelectedShapes.Remove(targetE);
     }

@@ -38,7 +38,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         if (AppStrokeBrushLibrary.HasSelection)
         {
             var setting = AppStrokeBrushLibrary.SelectedBrushSetting.CurrentValue;
-            new CommandBuilder(Document.World.Create())
+            new CommandBuilder("Use Library Stroke Brush", Document.World.Create())
                 .NewStrokeBrush(setting).SetWorkingStrokeBrush().Commit();
             AppStrokeBrushLibrary.SelectedIndex.Value = -1;
         }
@@ -59,9 +59,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
         var brushSetting = BrushE.Get<StrokeBrushSetting>();
         Generator.RadiusSampler = brushSetting.ToRadiusSampler();
 
-        _startSnapTarget = Tool.TryFindSnapTarget(data.WorldPosition, out var startTarget)
-            ? startTarget
-            : null;
+        _startSnapTarget = Tool.TryFindSnapTarget(data.WorldPosition);
         _endSnapTarget = null;
         Generator.Start(data);
         UpdatePreview();
@@ -78,13 +76,14 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 
     public override void End(CursorButtonData data)
     {
+        Generator.End(data);
         var geometry = BuildCommitGeometry(data);
 
-        new CommandBuilder(WorkingLayer.World.Create())
+        new CommandBuilder("Paint Stroke", WorkingLayer.World.Create())
             .NewStroke()
             .AddToLayerTree(WorkingLayer)
-            .SetProperty(e => e.Get<StrokeSetting>().BrushE, BrushE)
-            .SetPolylineGeometry(geometry.Positions, geometry.Radii, geometry.Pressures, geometry.Tilts)
+            .SetProperty(e => e.Get<StrokeSetting>().Brush, BrushE)
+            .SetSampledPolyline(geometry.Positions, geometry.Radii, geometry.Pressures, geometry.Tilts)
             .Commit();
         Clear();
     }
@@ -126,12 +125,13 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 
     protected PaintStrokeGeometry BuildCommitGeometry(CursorButtonData data)
     {
-        Generator.End(data);
         RefreshEndSnapTarget(data.WorldPosition);
         return PaintStrokeSnap.BuildRepairedGeometry(
+            Tool.Arrangement.ArrReady.CurrentValue,
             Generator.CurrentGeometry,
             _startSnapTarget,
-            _endSnapTarget);
+            _endSnapTarget,
+            AppPreference.PaintStrokeSnapDistance.Value);
     }
 
     private void UpdatePreview()
@@ -142,9 +142,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
 
     private void RefreshEndSnapTarget(Vector2 worldPosition)
     {
-        _endSnapTarget = Tool.TryFindSnapTarget(worldPosition, out var endTarget)
-            ? endTarget
-            : null;
+        _endSnapTarget = Tool.TryFindSnapTarget(worldPosition);
     }
 
     private void UpdateSnapHint()

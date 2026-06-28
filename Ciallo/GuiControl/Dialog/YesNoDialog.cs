@@ -9,8 +9,8 @@ public partial class YesNoDialog : ConfirmationDialog
 
     public YesNoDialog()
     {
-        GetOkButton().Text = "Yes";
-        GetCancelButton().Text = "No";
+        GetOkButton().Text = "Yes".Tr();
+        GetCancelButton().Text = "No".Tr();
 
         GetOkButton().Pressed += OnYes;
         Canceled += OnNo;

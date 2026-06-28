@@ -81,7 +81,7 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
         _currPolylines = new Vector2[_processingEs.Length][];
         for (int i = 0; i < _processingEs.Length; i++)
         {
-            var positions = _processingEs[i].Get<PolylineGeometry>().Positions.Value;
+            var positions = _processingEs[i].Get<SampledPolyline>().Positions.Value;
             _origPolylines[i] = positions.ToArray();
             _currPolylines[i] = new Vector2[positions.Length];
             positions.CopyTo(_currPolylines[i]);
@@ -121,55 +121,55 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
         switch (_dragMode)
         {
             case DragMode.Centerline:
-            {
-                // Adobe Illustrator style: both handles shift so B(t) tracks the mouse.
-                // d = (mouse - origClickPos) / (3(1-t)t)
-                float denom = 3f * (1f - _centerlineSegT) * _centerlineSegT;
-                if (Mathf.IsZeroApprox(denom)) break;
+                {
+                    // Adobe Illustrator style: both handles shift so B(t) tracks the mouse.
+                    // d = (mouse - origClickPos) / (3(1-t)t)
+                    float denom = 3f * (1f - _centerlineSegT) * _centerlineSegT;
+                    if (Mathf.IsZeroApprox(denom)) break;
 
-                var handleDelta = (data.WorldPosition - _origClickPos) / denom;
-                Curve[_centerlineSegIdx] = _origCurve[_centerlineSegIdx]
-                    .WithOut(_origCurve[_centerlineSegIdx].Out + handleDelta);
-                Curve[_centerlineSegIdx + 1] = _origCurve[_centerlineSegIdx + 1]
-                    .WithIn(_origCurve[_centerlineSegIdx + 1].In + handleDelta);
-                break;
-            }
+                    var handleDelta = (data.WorldPosition - _origClickPos) / denom;
+                    Curve[_centerlineSegIdx] = _origCurve[_centerlineSegIdx]
+                        .WithOut(_origCurve[_centerlineSegIdx].Out + handleDelta);
+                    Curve[_centerlineSegIdx + 1] = _origCurve[_centerlineSegIdx + 1]
+                        .WithIn(_origCurve[_centerlineSegIdx + 1].In + handleDelta);
+                    break;
+                }
             case DragMode.Anchor:
-            {
-                var origPt = _origCurve[_dragPointIndex];
-                Curve[_dragPointIndex] = origPt.WithPoint(origPt.P + totalDisplacement);
-                break;
-            }
+                {
+                    var origPt = _origCurve[_dragPointIndex];
+                    Curve[_dragPointIndex] = origPt.WithPoint(origPt.P + totalDisplacement);
+                    break;
+                }
             case DragMode.InHandle:
-            {
-                var origPt = _origCurve[_dragPointIndex];
-                var newIn = origPt.In + totalDisplacement;
-                if (altHeld || origPt.Out.IsZeroApprox())
-                    Curve[_dragPointIndex] = origPt.WithIn(newIn);
-                else
                 {
-                    float angleDelta = newIn.Angle() - origPt.In.Angle();
-                    float lengthDelta = newIn.Length() - origPt.In.Length();
-                    var newOut = origPt.Out.Normalized().Rotated(angleDelta) * (origPt.Out.Length() + lengthDelta);
-                    Curve[_dragPointIndex] = new BezierPoint(origPt.P, newIn, newOut);
+                    var origPt = _origCurve[_dragPointIndex];
+                    var newIn = origPt.In + totalDisplacement;
+                    if (altHeld || origPt.Out.IsZeroApprox())
+                        Curve[_dragPointIndex] = origPt.WithIn(newIn);
+                    else
+                    {
+                        float angleDelta = newIn.Angle() - origPt.In.Angle();
+                        float lengthDelta = newIn.Length() - origPt.In.Length();
+                        var newOut = origPt.Out.Normalized().Rotated(angleDelta) * (origPt.Out.Length() + lengthDelta);
+                        Curve[_dragPointIndex] = new BezierPoint(origPt.P, newIn, newOut);
+                    }
+                    break;
                 }
-                break;
-            }
             case DragMode.OutHandle:
-            {
-                var origPt = _origCurve[_dragPointIndex];
-                var newOut = origPt.Out + totalDisplacement;
-                if (altHeld || origPt.In.IsZeroApprox())
-                    Curve[_dragPointIndex] = origPt.WithOut(newOut);
-                else
                 {
-                    float angleDelta = newOut.Angle() - origPt.Out.Angle();
-                    float lengthDelta = newOut.Length() - origPt.Out.Length();
-                    var newIn = origPt.In.Normalized().Rotated(angleDelta) * (origPt.In.Length() + lengthDelta);
-                    Curve[_dragPointIndex] = new BezierPoint(origPt.P, newIn, newOut);
+                    var origPt = _origCurve[_dragPointIndex];
+                    var newOut = origPt.Out + totalDisplacement;
+                    if (altHeld || origPt.In.IsZeroApprox())
+                        Curve[_dragPointIndex] = origPt.WithOut(newOut);
+                    else
+                    {
+                        float angleDelta = newOut.Angle() - origPt.Out.Angle();
+                        float lengthDelta = newOut.Length() - origPt.Out.Length();
+                        var newIn = origPt.In.Normalized().Rotated(angleDelta) * (origPt.In.Length() + lengthDelta);
+                        Curve[_dragPointIndex] = new BezierPoint(origPt.P, newIn, newOut);
+                    }
+                    break;
                 }
-                break;
-            }
         }
 
         // Update wireframe live view
@@ -181,7 +181,7 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
         for (int i = 0; i < _processingEs.Length; i++)
         {
             var e = _processingEs[i];
-            var geom = e.Get<PolylineGeometry>();
+            var geom = e.Get<SampledPolyline>();
             for (int j = 0; j < _currPolylines[i].Length; j++)
             {
                 _currPolylines[i][j] = _origPolylines[i][j] + (Curve.Sample(_polyTs[i][j]) - _origCurveSamples[i][j]);
@@ -200,15 +200,15 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
     {
         bool changed = false;
         for (int i = 0; i < _currPolylines.Length && !changed; i++)
-        for (int j = 0; j < _currPolylines[i].Length && !changed; j++)
-            if (!_currPolylines[i][j].IsEqualApprox(_origPolylines[i][j]))
-                changed = true;
+            for (int j = 0; j < _currPolylines[i].Length && !changed; j++)
+                if (!_currPolylines[i][j].IsEqualApprox(_origPolylines[i][j]))
+                    changed = true;
 
         if (changed)
         {
-            var cmd = new CommandBuilder();
+            var cmd = new CommandBuilder("Bezier Deform Shapes");
             foreach (var (i, e) in _processingEs.Index())
-                cmd.SetTarget(e).SetPolylineGeometry([.._currPolylines[i]]);
+                cmd.SetTarget(e).SetSampledPolyline([.. _currPolylines[i]]);
             cmd.Commit();
         }
 
@@ -219,7 +219,7 @@ public class PolylineBezierDeformInteractor : InteractiveSessionBase
     {
         foreach (var e in _processingEs)
         {
-            var geom = e.Get<PolylineGeometry>();
+            var geom = e.Get<SampledPolyline>();
             var pts = geom.Positions.Value;
             if (e.Has<StrokeSetting>())
                 e.Get<StrokeView>().SetGeometry(pts, geom.Radii.Value, geom.Pressures.Value);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Ciallo.Geometry;
 using Godot;
 
-namespace Ciallo.Data.ProjectFormat;
+namespace Ciallo.Data;
 
 /// <summary>
 /// Maps a creative value type (Color, Vector2, Transform2D, BezierPoint) to a DuckDB STRUCT.

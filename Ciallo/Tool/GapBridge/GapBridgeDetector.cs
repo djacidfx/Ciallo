@@ -51,7 +51,7 @@ internal sealed class GapBridgeDetector
         var result = new Dictionary<Entity, GapBridgeCurveInfo>();
         foreach (var sourceShape in sourceShapes)
         {
-            var positions = sourceShape.Get<PolylineGeometry>().Positions.Value;
+            var positions = sourceShape.Get<SampledPolyline>().Positions.Value;
             var endpointInfo = arr.GetCurveEndpointInfo(sourceShape.PackedValue);
             result[sourceShape] = new GapBridgeCurveInfo(
                 positions,

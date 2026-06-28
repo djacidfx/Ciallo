@@ -47,10 +47,10 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
     {
         ClearPreview();
         // Allow to place marker even if the arrangement is not ready or fill on unbounded area or brush is null.
-        new CommandBuilder(WorkingLayer.World.Create())
+        new CommandBuilder("Paint Vector Fill Marker", WorkingLayer.World.Create())
             .NewVectorFillMarker()
             .AddToLayerTree(WorkingLayer)
-            .SetPolylineGeometry([data.WorldPosition], [MarkerRadius], [1.0f], [Vector2.Zero])
+            .SetSampledPolyline([data.WorldPosition], [MarkerRadius], [1.0f], [Vector2.Zero])
             .SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, _fillBrush)
             .Commit();
 

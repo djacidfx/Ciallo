@@ -47,7 +47,7 @@ public class ChildShapePolylineLookup : IInitable, IDestroyable
             .Select(et => et.Value)
             .Subscribe(shapeE =>
             {
-                _polylines[shapeE] = CreateIndexedPolyline(shapeE.Get<PolylineGeometry>().Positions.Value);
+                _polylines[shapeE] = CreateIndexedPolyline(shapeE.Get<SampledPolyline>().Positions.Value);
                 Generation++;
                 shapeSubs[shapeE] = SubscribeShape(shapeE);
             })
@@ -79,7 +79,7 @@ public class ChildShapePolylineLookup : IInitable, IDestroyable
 
     private IDisposable SubscribeShape(Entity shapeE)
     {
-        return shapeE.Get<PolylineGeometry>().Positions
+        return shapeE.Get<SampledPolyline>().Positions
             .Skip(1)
             .Subscribe(p =>
             {
@@ -92,7 +92,7 @@ public class ChildShapePolylineLookup : IInitable, IDestroyable
     {
         _polylines.Clear();
         foreach (var shapeE in _layerE.Get<LayerTreeNode>().Children)
-            _polylines[shapeE] = CreateIndexedPolyline(shapeE.Get<PolylineGeometry>().Positions.Value);
+            _polylines[shapeE] = CreateIndexedPolyline(shapeE.Get<SampledPolyline>().Positions.Value);
         Generation++;
     }
 

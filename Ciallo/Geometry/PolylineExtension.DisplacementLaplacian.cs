@@ -12,26 +12,23 @@ public static partial class PolylineExtension
     /// Solves a constrained displacement-Laplacian deformation for one polyline span.
     ///
     /// The unknown is displacement \(d_i = x'_i - x_i\), not raw position \(x'_i\). This
-    /// preserves the authored curve away from hard constraints: free points move only when
-    /// Laplacian smoothness and the displacement penalty agree that they should.
+    /// preserves the authored curve away from hard constraints: free points move when
+    /// Laplacian smoothness and the ramp target agree that they should.
     ///
     /// $$
     /// \min_d \;
     /// \sum_i \left\lVert d_{i-1} - 2d_i + d_{i+1} \right\rVert^2
     /// \;+\;
-    /// \lambda_{\mathrm{disp}} \sum_i w_i \left\lVert d_i \right\rVert^2,
-    /// \qquad
-    /// w_i = 1 + \alpha \left(\frac{\operatorname{dist}(i,\text{nearest origin})}{L}\right)^2
+    /// \lambda_{\mathrm{ramp}} \sum_i \left\lVert d_i - q_i \right\rVert^2
     /// $$
     ///
     /// subject to \(d_i\) fixed for every <paramref name="fixedDisplacements"/> entry. The
-    /// Laplacian term keeps the correction gradual; the displacement term prevents the whole
-    /// span from drifting, with larger weights farther from the nearest penalty origin.
+    /// Laplacian term keeps the correction gradual; the ramp target lets snap points pull nearby
+    /// samples along before the correction fades back to zero.
     ///
-    /// <paramref name="penaltyOrigins"/> are the indices the penalty distance is measured from
-    /// (nearest wins). This lets callers distinguish constrained points that should "pull" the
-    /// curve (snap targets) from points that are merely fixed boundaries (a junction anchor): list
-    /// only the former as origins so the correction concentrates there and fades along the span.
+    /// <paramref name="rampOrigins"/> are fixed-displacement indices whose displacement should
+    /// softly pull nearby samples. Fixed boundaries that should not pull the curve, such as a
+    /// zero-displacement junction anchor, should be omitted.
     /// </summary>
     /// <returns>Resolved positions for the span (<c>positions[i] + d_i</c>).</returns>
     /// <remarks>
@@ -44,9 +41,8 @@ public static partial class PolylineExtension
     public static Vector2[] SolveDisplacementLaplacian(
         IReadOnlyList<Vector2> positions,
         IReadOnlyDictionary<int, Vector2> fixedDisplacements,
-        IReadOnlyList<int> penaltyOrigins,
-        double displacementWeight,
-        double farDisplacementPenalty)
+        IReadOnlyList<int> rampOrigins,
+        double rampTargetWeight)
     {
         int count = positions.Count;
         var variableByPoint = new int[count];
@@ -67,7 +63,7 @@ public static partial class PolylineExtension
             return result;
         }
 
-        var penaltyDistance = BuildNormalizedPenaltyDistances(positions, penaltyOrigins);
+        var rampTargets = BuildRampTargetDisplacements(positions, fixedDisplacements, rampOrigins);
 
         var diagonal = new double[variableCount];
         var upper1 = new double[Math.Max(variableCount - 1, 0)];
@@ -95,8 +91,9 @@ public static partial class PolylineExtension
             if (variable < 0)
                 continue;
 
-            double distance = penaltyDistance[i];
-            diagonal[variable] += displacementWeight * (1.0 + farDisplacementPenalty * distance * distance);
+            diagonal[variable] += rampTargetWeight;
+            rhsX[variable] += rampTargetWeight * rampTargets[i].X;
+            rhsY[variable] += rampTargetWeight * rampTargets[i].Y;
         }
 
         var solutionX = SolvePentadiagonal(diagonal, upper1, upper2, rhsX);
@@ -113,28 +110,44 @@ public static partial class PolylineExtension
         return result;
     }
 
-    // Distance (along the span, normalized by span length) from each point to the nearest
-    // penalty origin. With no origins the penalty is uniform.
-    private static double[] BuildNormalizedPenaltyDistances(
+    private static Vector2[] BuildRampTargetDisplacements(
         IReadOnlyList<Vector2> positions,
-        IReadOnlyList<int> penaltyOrigins)
+        IReadOnlyDictionary<int, Vector2> fixedDisplacements,
+        IReadOnlyList<int> rampOrigins)
     {
         int count = positions.Count;
         var arcLength = new double[count];
         for (int i = 1; i < count; i++)
             arcLength[i] = arcLength[i - 1] + positions[i - 1].DistanceTo(positions[i]);
 
-        double invTotalLength = 1.0 / Math.Max(arcLength[^1], DisplacementLaplacianEpsilon);
-        var distance = new double[count];
-        for (int i = 0; i < count; i++)
+        double totalLength = arcLength[^1];
+        double averageSegmentLength = totalLength / Math.Max(count - 1, 1);
+        double minimumRampRadius = Math.Min(totalLength, 4.0 * Math.Max(averageSegmentLength, DisplacementLaplacianEpsilon));
+        var targets = new Vector2[count];
+        var influenceSums = new double[count];
+
+        foreach (int origin in rampOrigins)
         {
-            double nearest = double.PositiveInfinity;
-            foreach (int origin in penaltyOrigins)
-                nearest = Math.Min(nearest, Math.Abs(arcLength[i] - arcLength[origin]));
-            distance[i] = double.IsPositiveInfinity(nearest) ? 0.0 : nearest * invTotalLength;
+            var originDisplacement = fixedDisplacements[origin];
+            double radius = Math.Min(
+                totalLength,
+                Math.Max(2.0 * originDisplacement.Length(), minimumRampRadius));
+            double invRadius = 1.0 / Math.Max(radius, DisplacementLaplacianEpsilon);
+
+            for (int i = 0; i < count; i++)
+            {
+                double t = Math.Clamp(Math.Abs(arcLength[i] - arcLength[origin]) * invRadius, 0.0, 1.0);
+                double influence = 1.0 - t * t * (3.0 - 2.0 * t);
+                targets[i] += originDisplacement * (float)influence;
+                influenceSums[i] += influence;
+            }
         }
 
-        return distance;
+        for (int i = 0; i < count; i++)
+            if (influenceSums[i] > 1.0)
+                targets[i] /= (float)influenceSums[i];
+
+        return targets;
     }
 
     private static void AddLaplacianTerm(

@@ -161,23 +161,23 @@ public class PolylineSelectTool : ToolBase
         var strokeBrushSwitcher = StrokeBrushPreviewList.New().AddToChildOf(container);
         strokeBrushSwitcher.CustomMinimumSize = new(0, 256);
         strokeBrushSwitcher.Document = Document;
-        strokeBrushSwitcher.BindBrushes(Document.Get<BrushManager>().StrokeBrushEs);
+        strokeBrushSwitcher.BindBrushes(Document.Get<BrushManager>().StrokeBrushes);
         strokeBrushSwitcher.VisibleIf(selectionChanged,
             _ => selectedShapes.Count > 0 && selectedShapes.All(e => e.Has<StrokeSetting>()));
 
         selectionChanged.Subscribe(_ =>
         {
             if (selectedShapes.Count <= 0 || !selectedShapes.All(e => e.Has<StrokeSetting>())) return;
-            var firstE = selectedShapes.First().Get<StrokeSetting>().BrushE.Value;
-            bool allSame = selectedShapes.All(e => e.Get<StrokeSetting>().BrushE.Value == firstE);
+            var firstE = selectedShapes.First().Get<StrokeSetting>().Brush.Value;
+            bool allSame = selectedShapes.All(e => e.Get<StrokeSetting>().Brush.Value == firstE);
             strokeBrushSwitcher.Select(allSame ? firstE : Entity.Null);
         }).AddTo(strokeBrushSwitcher);
 
         strokeBrushSwitcher.BrushClicked.Subscribe(brushE =>
         {
-            var cmd = new CommandBuilder();
+            var cmd = new CommandBuilder("Set Selected Stroke Brush");
             foreach (var shapeE in selectedShapes)
-                cmd.SetTarget(shapeE).SetProperty(e => e.Get<StrokeSetting>().BrushE, brushE);
+                cmd.SetTarget(shapeE).SetProperty(e => e.Get<StrokeSetting>().Brush, brushE);
             cmd.Commit();
             strokeBrushSwitcher.Select(brushE);
         }).AddTo(strokeBrushSwitcher);
@@ -186,7 +186,7 @@ public class PolylineSelectTool : ToolBase
         var vectorFillBrushSwitcher = VectorFillBrushPreviewList.New().AddToChildOf(container);
         vectorFillBrushSwitcher.CustomMinimumSize = new(0, 256);
         vectorFillBrushSwitcher.Document = Document;
-        vectorFillBrushSwitcher.BindBrushes(Document.Get<BrushManager>().VectorFillBrushEs);
+        vectorFillBrushSwitcher.BindBrushes(Document.Get<BrushManager>().VectorFillBrushes);
         vectorFillBrushSwitcher.VisibleIf(selectionChanged,
             _ => selectedShapes.Count > 0 && selectedShapes.All(e => e.Has<VectorFillMarkerSetting>() || e.Has<FilledPolygonSetting>()));
 
@@ -200,7 +200,7 @@ public class PolylineSelectTool : ToolBase
 
         vectorFillBrushSwitcher.BrushClicked.Subscribe(brushE =>
         {
-            var cmd = new CommandBuilder();
+            var cmd = new CommandBuilder("Set Selected Vector Fill Brush");
             foreach (var shapeE in selectedShapes)
             {
                 if (shapeE.Has<VectorFillMarkerSetting>())
@@ -226,10 +226,10 @@ public class PolylineSelectTool : ToolBase
         var simplifyButton = container.CreateButton("Simplify").AddToChildOf(polylineEditBox);
         simplifyButton.Pressed += () =>
         {
-            var builder = new CommandBuilder(Entity.Null);
+            var builder = new CommandBuilder("Simplify Shapes", Entity.Null);
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
-                var geom = polylineE.Get<PolylineGeometry>();
+                var geom = polylineE.Get<SampledPolyline>();
                 if (geom.Length < 4) continue;
                 geom.Positions.Value.SimplifyCurvatureDistance(SimplificationRatio.Value, out var indices);
 
@@ -245,7 +245,7 @@ public class PolylineSelectTool : ToolBase
                     pressures.Add(geom.Pressures.Value[idx]);
                     tilts.Add(geom.Tilts.Value[idx]);
                 }
-                builder.SetTarget(polylineE).SetPolylineGeometry(
+                builder.SetTarget(polylineE).SetSampledPolyline(
                     positions.MoveToImmutable(),
                     radii.MoveToImmutable(),
                     pressures.MoveToImmutable(),
@@ -258,10 +258,10 @@ public class PolylineSelectTool : ToolBase
         var smoothSubdivideButton = container.CreateButton("Smooth subdivide").AddToChildOf(polylineEditBox);
         smoothSubdivideButton.Pressed += () =>
         {
-            var builder = new CommandBuilder();
+            var builder = new CommandBuilder("Smooth Subdivide Shapes");
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
-                var geom = polylineE.Get<PolylineGeometry>();
+                var geom = polylineE.Get<SampledPolyline>();
                 if (geom.Length < 2) continue;
 
                 var resultLength = geom.Length * 2 - 1;
@@ -298,7 +298,7 @@ public class PolylineSelectTool : ToolBase
                     pressures.Add(pp);
                     tilts.Add(tilt);
                 }
-                builder.SetTarget(polylineE).SetPolylineGeometry(
+                builder.SetTarget(polylineE).SetSampledPolyline(
                     positions.MoveToImmutable(),
                     radii.MoveToImmutable(),
                     pressures.MoveToImmutable(),
@@ -311,10 +311,10 @@ public class PolylineSelectTool : ToolBase
         var linearSubdivideButton = container.CreateButton("Linear subdivide").AddToChildOf(polylineEditBox);
         linearSubdivideButton.Pressed += () =>
         {
-            var cmd1 = new CommandBuilder();
+            var cmd1 = new CommandBuilder("Linear Subdivide Shapes");
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
-                var geom = polylineE.Get<PolylineGeometry>();
+                var geom = polylineE.Get<SampledPolyline>();
                 if (geom.Length < 2) continue;
                 List<float> polyTs = new() { Capacity = geom.Length * 2 - 1 };
                 for (int i = 0; i < geom.Length - 1; i++)
@@ -339,7 +339,7 @@ public class PolylineSelectTool : ToolBase
                     tilts.Add(geom.Tilts.Value[idx].Lerp(geom.Tilts.Value[nIdx], t));
                 }
 
-                cmd1.SetTarget(polylineE).SetPolylineGeometry(
+                cmd1.SetTarget(polylineE).SetSampledPolyline(
                     positions.MoveToImmutable(),
                     radii.MoveToImmutable(),
                     pressures.MoveToImmutable(),
@@ -352,17 +352,17 @@ public class PolylineSelectTool : ToolBase
         var smoothButton = container.CreateButton("Smooth").AddToChildOf(polylineEditBox);
         smoothButton.Pressed += () =>
         {
-            var builder = new CommandBuilder(Entity.Null);
+            var builder = new CommandBuilder("Smooth Shapes", Entity.Null);
             foreach (var polylineE in selectionManager.SelectedShapes)
             {
-                var geom = polylineE.Get<PolylineGeometry>();
+                var geom = polylineE.Get<SampledPolyline>();
                 if (geom.Length < 3) continue;
 
                 // Apply Laplacian smoothing only to positions.
                 const int iterations = 1;
                 const float lambda = 0.5f;
                 var smoothedPositions = geom.Positions.Value.SmoothLaplacian(iterations, lambda);
-                builder.SetTarget(polylineE).SetPolylineGeometry([.. smoothedPositions]); // copy but fine
+                builder.SetTarget(polylineE).SetSampledPolyline([.. smoothedPositions]); // copy but fine
             }
             builder.Commit();
         };

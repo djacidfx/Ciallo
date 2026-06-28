@@ -205,8 +205,8 @@ public static class ResearchAnimationImporter
         cmd.SetTarget(cel.World.Create())
             .NewStroke()
             .AddToLayerTree(cel)
-            .SetProperty(e => e.Get<StrokeSetting>().BrushE, brushE)
-            .SetPolylineGeometry(positions, radii, pressures, tilts);
+            .SetProperty(e => e.Get<StrokeSetting>().Brush, brushE)
+            .SetSampledPolyline(positions, radii, pressures, tilts);
     }
 
     private static float NormalizePressure(float pressure, float maxPressure)

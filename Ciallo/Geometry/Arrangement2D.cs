@@ -14,6 +14,15 @@ public readonly record struct CurveEndpointInfo(
 
 public readonly record struct PolylineEdgeHit(Entity SourceShape, float FromT, float ToT);
 
+// A single intersection between a query polyline and a source curve already in the arrangement.
+// QueryT / SourceT use SampledPolyline.Sample(t) semantics (segment index + in-segment fraction):
+// QueryT indexes the polyline passed to the query, SourceT indexes SourceShape's own polyline.
+public readonly record struct PolylineCurveIntersection(
+    Entity SourceShape,
+    float QueryT,
+    float SourceT,
+    Vector2 Position);
+
 // Wrapper of CGAL's Arrangement_2 with polyline curves.
 // Need manually call Dispose(), don't call Free() directly.
 public partial class Arrangement : Arrangement2D
@@ -42,6 +51,26 @@ public partial class Arrangement : Arrangement2D
     public long[] PolylineQueryCurves(ImmutableArray<Vector2> polyline)
     {
         return PolylineQueryCurves(ImmutableCollectionsMarshal.AsArray(polyline));
+    }
+
+    // Returns one record per intersection point between the query polyline and any source curve in
+    // the arrangement (the query polyline itself is NOT added to the arrangement). An overlap
+    // (parallel coincident run) is reported as its two endpoints. Endpoints touching a curve count
+    // as intersections too; callers filter by QueryT/SourceShape as needed.
+    public PolylineCurveIntersection[] PolylineQueryCurveIntersections(ImmutableArray<Vector2> polyline)
+    {
+        var raw = PolylineQueryCurveIntersections(ImmutableCollectionsMarshal.AsArray(polyline));
+        var hits = new PolylineCurveIntersection[raw.Count];
+        for (int i = 0; i < raw.Count; i++)
+        {
+            var dict = (GodotDictionary)raw[i];
+            hits[i] = new PolylineCurveIntersection(
+                ((long)dict["source_id"]).ToEntity(),
+                (float)dict["query_t"],
+                (float)dict["source_t"],
+                (Vector2)dict["position"]);
+        }
+        return hits;
     }
 
     public new CurveEndpointInfo GetCurveEndpointInfo(long curveId)

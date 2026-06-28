@@ -8,7 +8,7 @@ namespace Ciallo.GuiControl;
 /// ColorPickerButton-style entry point for choosing a fill brush's marker texture: shows the current
 /// marker on a dark backdrop and opens a <see cref="MarkerPickerPopup"/> on press. Two-way bound to the
 /// target <see cref="ReactiveProperty{ImageTexture}"/> (the working brush's
-/// <see cref="VectorFillBrushSetting.MarkerTexture"/>).
+/// <see cref="FillBrushSetting.MarkerTexture"/>).
 /// </summary>
 public partial class MarkerPickerButton : Button
 {

@@ -73,7 +73,7 @@ public static partial class AppDocumentManager
         var celFolder = document.World.Create();
         var cel = document.World.Create();
         var shapeLayer = document.World.Create();
-        var cmd = new CommandBuilder(celFolder)
+        var cmd = new CommandBuilder("Create Initial Animation Document", celFolder)
             .NewCelFolder()
             .AddToLayerTree(document)
             .SetTarget(cel)
@@ -92,14 +92,14 @@ public static partial class AppDocumentManager
         Color[] colors = [Colors.PaleTurquoise, Colors.LightGreen, Colors.LemonChiffon, Colors.LightPink];
         for (int i = 0; i < colors.Length; i++)
         {
-            string path = $"res://Rendering/Image/Bullseye{i}.svg";
+            string path = $"res://Rendering/Image/Bullseye{i}_0.svg";
             var img = GD.Load<Image>(path);
             var tex = ImageTexture.CreateFromImage(img);
             var brush = document.World.Create();
             cmd.SetTarget(brush)
                 .NewVectorFillBrush()
-                .SetProperty(e => e.Get<VectorFillBrushSetting>().MarkerTexture, tex)
-                .SetProperty(e => e.Get<VectorFillBrushSetting>().FillColor, colors[i]);
+                .SetProperty(e => e.Get<FillBrushSetting>().MarkerTexture, tex)
+                .SetProperty(e => e.Get<FillBrushSetting>().FillColor, colors[i]);
             if (i == 0)
                 cmd.SetProperty(e => e.Document.Get<SelectionManager>().WorkingVectorFillBrush, brush);
         }

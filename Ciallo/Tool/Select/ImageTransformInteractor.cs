@@ -162,7 +162,7 @@ public class ImageTransformInteractor : InteractiveSessionBase
 
     public override void End(CursorButtonData data)
     {
-        new CommandBuilder(WorkingLayer)
+        new CommandBuilder("Transform Image Layer", WorkingLayer)
             .SetProperty(_startTransform, e => e.Get<ImageLayerSetting>().ImageTransform)
             .Commit();
         Clear();

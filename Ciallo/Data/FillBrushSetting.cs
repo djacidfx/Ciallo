@@ -5,7 +5,7 @@ using R3;
 namespace Ciallo.Data;
 
 [DataContract, ToSerialize]
-public class VectorFillBrushSetting
+public class FillBrushSetting
 {
     [DataMember, ProjectField(StorageKind.Blob)]
     public ReactiveProperty<ImageTexture> MarkerTexture = new(null);
@@ -15,11 +15,12 @@ public class VectorFillBrushSetting
     [DataMember, ProjectField]
     public ReactiveProperty<Color> FillColor = new(Colors.Black);
 
-    public VectorFillBrushSetting Clone()
+    public FillBrushSetting Clone()
     {
-        return new VectorFillBrushSetting
+        return new FillBrushSetting
         {
             MarkerTexture = { Value = MarkerTexture.Value },
+            MarkerColor = { Value = MarkerColor.Value },
             FillColor = { Value = FillColor.Value }
         };
     }

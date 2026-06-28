@@ -95,11 +95,11 @@ public class GapBridgeTool : ToolBase
 
     private void CommitBridge(GapBridge bridge)
     {
-        var sourceGeometry = bridge.SourceCurve.Get<PolylineGeometry>();
+        var sourceGeometry = bridge.SourceCurve.Get<SampledPolyline>();
         var repairedPositions = GapBridgeRepairGeometry.BuildRepairedPositions(Arrangement.ArrReady.CurrentValue, bridge);
 
         new CommandBuilder("Gap Bridge", bridge.SourceCurve)
-            .SetPolylineGeometry(
+            .SetSampledPolyline(
                 repairedPositions,
                 sourceGeometry.Radii.Value,
                 sourceGeometry.Pressures.Value,

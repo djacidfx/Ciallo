@@ -83,7 +83,7 @@ public class PaintStrokeHover : InteractiveSessionBase
 
         var useBrushButton = new Button()
         {
-            Text = "Use brush",
+            Text = "Use brush".Tr(),
             Alignment = HorizontalAlignment.Left,
             CustomMinimumSize = new(0, 32),
             SizeFlagsHorizontal = Control.SizeFlags.Fill
@@ -92,7 +92,7 @@ public class PaintStrokeHover : InteractiveSessionBase
         useBrushButton.Pressed += OnUseBrushPressed;
         var manageButton = new Button()
         {
-            Text = "Manage brush library",
+            Text = "Manage brush library".Tr(),
             Alignment = HorizontalAlignment.Left,
             CustomMinimumSize = new(0, 32),
             SizeFlagsHorizontal = Control.SizeFlags.Fill
@@ -140,7 +140,7 @@ public class PaintStrokeHover : InteractiveSessionBase
     {
         if (!AppStrokeBrushLibrary.HasSelection) return;
         var setting = AppStrokeBrushLibrary.SelectedBrushSetting.CurrentValue;
-        new CommandBuilder(Document.World.Create())
+        new CommandBuilder("Use Library Stroke Brush", Document.World.Create())
             .NewStrokeBrush(setting)
             .SetWorkingStrokeBrush()
             .Commit();
@@ -149,13 +149,14 @@ public class PaintStrokeHover : InteractiveSessionBase
 
     private void RefreshSnap(Vector2 worldPosition)
     {
-        if (!Tool.TryFindSnapTarget(worldPosition, out var target))
+        var target = Tool.TryFindSnapTarget(worldPosition);
+        if (!target.HasValue)
         {
             _snapDots.Visible = false;
             return;
         }
 
         _snapDots.Visible = true;
-        _snapDots.SetDotGeometry([target.HitPoint], AppPreference.StrokeDotRadius);
+        _snapDots.SetDotGeometry([target.Value.HitPoint], AppPreference.StrokeDotRadius);
     }
 }

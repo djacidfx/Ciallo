@@ -48,7 +48,7 @@ public class PolylineTransformHover : PolylineNoSelectionHover
             _wireframes.Add(wire);
 
             // transform box overlay
-            var bound = e.Get<PolylineGeometry>().Positions.Value.GetBoundingBox();
+            var bound = e.Get<SampledPolyline>().Positions.Value.GetBoundingBox();
             rect = i == 0 ? bound : rect.Merge(bound);
         }
         if (!rect.IsEqualApprox(default) && !rect.Size.IsZeroApprox())

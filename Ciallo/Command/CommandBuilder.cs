@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Ciallo.Data;
+using Ciallo.Diagnostics;
 using Frent;
 
 namespace Ciallo.Command;
@@ -31,6 +32,7 @@ public partial class CommandBuilder
     public void Commit(bool execute = true)
     {
         if (Commands.Count == 0) return;
+        AppBugReport.Command("CommandBuilder.Commit", ActionName, Commands, execute);
         var cm = GetCommandManager();
         cm.Commit(ActionName, Commands, execute);
         Commands.Clear();
@@ -41,6 +43,7 @@ public partial class CommandBuilder
     public void CommitSequence(bool execute = true)
     {
         if (Commands.Count == 0) return;
+        AppBugReport.Command("CommandBuilder.CommitSequence", ActionName, Commands, execute);
         var cm = GetCommandManager();
         cm.CommitSequence(ActionName, Commands, execute);
         Commands.Clear();
@@ -51,6 +54,7 @@ public partial class CommandBuilder
     public void CommitOpenSequence(bool execute = true)
     {
         if (Commands.Count == 0) return;
+        AppBugReport.Command("CommandBuilder.CommitOpenSequence", ActionName, Commands, execute);
         var cm = GetCommandManager();
         cm.CommitOpenSequence(ActionName, Commands, execute);
         Commands.Clear();
@@ -60,6 +64,7 @@ public partial class CommandBuilder
     public void CommitToLatest(bool execute = true)
     {
         if (Commands.Count == 0) return;
+        AppBugReport.Command("CommandBuilder.CommitToLatest", ActionName, Commands, execute);
         var cm = GetCommandManager();
         cm.CommitToLatest(ActionName, Commands, execute);
         Commands.Clear();
@@ -74,6 +79,9 @@ public partial class CommandBuilder
 
     public void Do()
     {
+        if (Commands.Count > 0)
+            AppBugReport.Command("CommandBuilder.Do", ActionName, Commands, true);
+
         foreach (var cmd in Commands)
         {
             cmd.Do();
@@ -82,6 +90,9 @@ public partial class CommandBuilder
 
     public void Undo()
     {
+        if (Commands.Count > 0)
+            AppBugReport.Command("CommandBuilder.Undo", ActionName, Commands, true);
+
         foreach (var cmd in Commands.AsEnumerable().Reverse())
         {
             cmd.Undo();

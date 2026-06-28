@@ -34,7 +34,7 @@ public partial class VectorFillBrushPreviewList : Container
         Document = document;
         var sm = Document.Get<SelectionManager>();
         var bm = Document.Get<BrushManager>();
-        Bind(bm.VectorFillBrushEs, sm.WorkingVectorFillBrush);
+        Bind(bm.VectorFillBrushes, sm.WorkingVectorFillBrush);
     }
 
     public void Init() { }
@@ -107,7 +107,7 @@ public partial class VectorFillBrushPreviewList : Container
         container.AddChild(markerPreview);
         box.AddChild(container);
 
-        var setting = e.Get<VectorFillBrushSetting>();
+        var setting = e.Get<FillBrushSetting>();
         setting.MarkerTexture.Subscribe(markerPreview.SetTexture).AddTo(e);
         setting.MarkerColor.Subscribe(markerPreview.SetModulate).AddTo(e);
         setting.FillColor.Subscribe(background.SetColor).AddTo(e);
@@ -130,7 +130,7 @@ public partial class VectorFillBrushPreviewList : Container
             int nextIdx = oldIdx == es.Count - 1 ? oldIdx - 1 : oldIdx + 1;
             Entity nextWorking = nextIdx == -1 ? Entity.Null : es[nextIdx];
 
-            new CommandBuilder(Document)
+            new CommandBuilder("Delete Vector Fill Brush", Document)
                 .SetProperty(e => e.Get<SelectionManager>().WorkingVectorFillBrush, nextWorking)
                 .SetTarget(oldE)
                 .DeleteBrush()
@@ -141,7 +141,7 @@ public partial class VectorFillBrushPreviewList : Container
     private void OnAddOrCopyButtonPressed(Entity copyE = default)
     {
         var brushE = Document.World.Create();
-        new CommandBuilder(brushE)
+        new CommandBuilder("New Vector Fill Brush", brushE)
             .NewVectorFillBrush(copyE)
             .SetTarget(Document)
             .SetProperty(e => e.Get<SelectionManager>().WorkingVectorFillBrush, brushE)

@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Management;
-using System.Runtime.InteropServices;
-using System.Text;
 using Ciallo.Command;
 using Ciallo.Data;
+using Ciallo.Diagnostics;
 using Godot;
-using Environment = System.Environment;
 
 namespace Ciallo.GuiControl;
 
@@ -19,7 +16,8 @@ public partial class MenuHelp : PopupMenu
     {
         { "User manual", null },
         { "About Ciallo", null },
-        { "Copy system info", null },
+        { "Copy bug report", null },
+        { "Open log folder", null },
         { "Report bug", null },
         { "-Debug", null },
         { "Load research animation", null },
@@ -52,12 +50,16 @@ public partial class MenuHelp : PopupMenu
                 AppDialogHost.AboutCiallo.Popup();
                 break;
             case 2:
-                DisplayServer.ClipboardSet(CollectSystemInfo());
+                AppBugReport.CopyMarkdownToClipboard();
                 break;
             case 3:
+                AppBugReport.OpenLogFolder();
+                break;
+            case 4:
+                AppBugReport.CopyMarkdownToClipboard();
                 OS.ShellOpen("https://github.com/ShenCiao/Ciallo/issues/new");
                 break;
-            case 5:
+            case 6:
                 PopupResearchAnimationDialog();
                 break;
         }
@@ -96,40 +98,12 @@ public partial class MenuHelp : PopupMenu
         }
         catch (Exception exception)
         {
+            AppBugReport.Exception(exception);
             GD.PrintErr(exception);
             AppDialogHost.WarnUser.DialogText = "Cannot load research animation.".Tr() + " " + exception.Message.Tr();
             AppDialogHost.WarnUser.Popup();
         }
     }
 
-    public static string CollectSystemInfo()
-    {
-        var builder = new StringBuilder();
-        var device = RenderingServer.GetRenderingDevice();
-
-        builder.AppendLine($"OS: {Environment.OSVersion}");
-        var cpuNames = new List<string>();
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            using var searcher = new ManagementObjectSearcher("select Name from Win32_Processor");
-            foreach (var item in searcher.Get())
-            {
-                var name = item["Name"]?.ToString()?.Trim();
-                if (!string.IsNullOrEmpty(name))
-                {
-                    cpuNames.Add(name);
-                }
-            }
-        }
-        if (cpuNames.Count == 0)
-        {
-            cpuNames.Add(RuntimeInformation.ProcessArchitecture.ToString());
-        }
-        builder.AppendLine($"CPU: {string.Join("|", cpuNames)}");
-        builder.AppendLine($"GPU: {device.GetDeviceName()}");
-        var driverInfo = OS.GetVideoAdapterDriverInfo();
-        builder.AppendLine($"Driver: {driverInfo[0]} {driverInfo[1]}");
-
-        return builder.ToString().TrimEnd();
-    }
+    public static string CollectSystemInfo() => AppBugReport.CollectSystemInfo();
 }
