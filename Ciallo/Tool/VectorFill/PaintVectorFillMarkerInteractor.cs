@@ -50,7 +50,7 @@ public class PaintVectorFillMarkerInteractor : InteractiveSessionBase
         new CommandBuilder("Paint Vector Fill Marker", WorkingLayer.World.Create())
             .NewVectorFillMarker()
             .AddToLayerTree(WorkingLayer)
-            .SetPolylineGeometry([data.WorldPosition], [MarkerRadius], [1.0f], [Vector2.Zero])
+            .SetSampledPolyline([data.WorldPosition], [MarkerRadius], [1.0f], [Vector2.Zero])
             .SetProperty(e => e.Get<VectorFillMarkerSetting>().BrushE, _fillBrush)
             .Commit();
 

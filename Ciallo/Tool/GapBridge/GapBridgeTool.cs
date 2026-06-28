@@ -99,7 +99,7 @@ public class GapBridgeTool : ToolBase
         var repairedPositions = GapBridgeRepairGeometry.BuildRepairedPositions(Arrangement.ArrReady.CurrentValue, bridge);
 
         new CommandBuilder("Gap Bridge", bridge.SourceCurve)
-            .SetPolylineGeometry(
+            .SetSampledPolyline(
                 repairedPositions,
                 sourceGeometry.Radii.Value,
                 sourceGeometry.Pressures.Value,

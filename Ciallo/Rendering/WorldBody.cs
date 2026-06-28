@@ -119,7 +119,7 @@ public partial class WorldBody : BodyHolder
             .Subscribe(v =>
         {
             body.Scale = Vector2.One / v.zoom;
-        }).AddTo(body);// Note:Exittree will dispose this but we don't more body between layers for now. 
+        }).AddTo(body);// Note:Exittree will dispose this but we don't move body between layers for now. 
     }
 
     public static Body CreateRect(Vector2 size, Vector2 center)

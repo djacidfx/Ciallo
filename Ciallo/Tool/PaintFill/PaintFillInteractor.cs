@@ -53,7 +53,7 @@ public class PaintFillInteractor : InteractiveSessionBase
         new CommandBuilder("Paint Fill", WorkingLayer.World.Create())
             .NewFilledPolygon()
             .AddToLayerTree(WorkingLayer)
-            .SetPolylineGeometry(
+            .SetSampledPolyline(
                 [.. geometry.Positions, geometry.Positions[0]],
                 [.. geometry.Radii, geometry.Radii[0]],
                 [.. geometry.Pressures, geometry.Pressures[0]],

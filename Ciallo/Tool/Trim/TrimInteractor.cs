@@ -177,7 +177,7 @@ public class TrimInteractor : InteractiveSessionBase
                 var newE = WorkingLayer.World.Create();
                 AddShapeCreation(cmd.SetTarget(newE), sourceE)
                     .AddToLayerTree(entry.SourceLayer, originalIndex + insertOffset)
-                    .SetPolylineGeometry(
+                    .SetSampledPolyline(
                         pieceGeom.positions,
                         pieceGeom.radii,
                         pieceGeom.pressures,

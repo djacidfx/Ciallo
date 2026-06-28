@@ -69,9 +69,9 @@ public class LiquifyInteractor : InteractiveSessionBase
 
             cmd.SetTarget(_processingEs[i]);
             if (_processingEs[i].Has<StrokeSetting>())
-                cmd.SetPolylineGeometry(_currPolylines[i].ToImmutableArray(), _currRadii[i].ToImmutableArray());
+                cmd.SetSampledPolyline(_currPolylines[i].ToImmutableArray(), _currRadii[i].ToImmutableArray());
             else
-                cmd.SetPolylineGeometry(_currPolylines[i].ToImmutableArray());
+                cmd.SetSampledPolyline(_currPolylines[i].ToImmutableArray());
         }
         cmd.Commit();
 

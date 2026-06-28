@@ -245,7 +245,7 @@ public class PolylineSelectTool : ToolBase
                     pressures.Add(geom.Pressures.Value[idx]);
                     tilts.Add(geom.Tilts.Value[idx]);
                 }
-                builder.SetTarget(polylineE).SetPolylineGeometry(
+                builder.SetTarget(polylineE).SetSampledPolyline(
                     positions.MoveToImmutable(),
                     radii.MoveToImmutable(),
                     pressures.MoveToImmutable(),
@@ -298,7 +298,7 @@ public class PolylineSelectTool : ToolBase
                     pressures.Add(pp);
                     tilts.Add(tilt);
                 }
-                builder.SetTarget(polylineE).SetPolylineGeometry(
+                builder.SetTarget(polylineE).SetSampledPolyline(
                     positions.MoveToImmutable(),
                     radii.MoveToImmutable(),
                     pressures.MoveToImmutable(),
@@ -339,7 +339,7 @@ public class PolylineSelectTool : ToolBase
                     tilts.Add(geom.Tilts.Value[idx].Lerp(geom.Tilts.Value[nIdx], t));
                 }
 
-                cmd1.SetTarget(polylineE).SetPolylineGeometry(
+                cmd1.SetTarget(polylineE).SetSampledPolyline(
                     positions.MoveToImmutable(),
                     radii.MoveToImmutable(),
                     pressures.MoveToImmutable(),
@@ -362,7 +362,7 @@ public class PolylineSelectTool : ToolBase
                 const int iterations = 1;
                 const float lambda = 0.5f;
                 var smoothedPositions = geom.Positions.Value.SmoothLaplacian(iterations, lambda);
-                builder.SetTarget(polylineE).SetPolylineGeometry([.. smoothedPositions]); // copy but fine
+                builder.SetTarget(polylineE).SetSampledPolyline([.. smoothedPositions]); // copy but fine
             }
             builder.Commit();
         };

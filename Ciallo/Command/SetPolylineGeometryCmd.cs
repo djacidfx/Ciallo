@@ -6,7 +6,7 @@ using Godot;
 namespace Ciallo.Command;
 
 [CommandBuilder]
-public class SetPolylineGeometryCmd : CommandBase
+public class SetSampledPolylineCmd : CommandBase
 {
     public ImmutableArray<Vector2>? Positions { get; }
     public ImmutableArray<float>? Radii { get; }
@@ -15,7 +15,7 @@ public class SetPolylineGeometryCmd : CommandBase
 
     private CommandBuilder _cmd;
 
-    public SetPolylineGeometryCmd(
+    public SetSampledPolylineCmd(
         ImmutableArray<Vector2>? positions = null,
         ImmutableArray<float>? radii = null,
         ImmutableArray<float>? pressures = null,

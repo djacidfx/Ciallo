@@ -83,7 +83,7 @@ public class PaintStrokeInteractor : InteractiveSessionBase
             .NewStroke()
             .AddToLayerTree(WorkingLayer)
             .SetProperty(e => e.Get<StrokeSetting>().Brush, BrushE)
-            .SetPolylineGeometry(geometry.Positions, geometry.Radii, geometry.Pressures, geometry.Tilts)
+            .SetSampledPolyline(geometry.Positions, geometry.Radii, geometry.Pressures, geometry.Tilts)
             .Commit();
         Clear();
     }

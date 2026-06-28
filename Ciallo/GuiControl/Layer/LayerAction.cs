@@ -172,7 +172,7 @@ public partial class LayerAction : Control
             builder.SetTarget(targetLayerE.World.Create())
                 .NewFilledPolygon()
                 .AddToLayerTree(targetLayerE)
-                .SetPolylineGeometry(positions, ones, ones, zeros)
+                .SetSampledPolyline(positions, ones, ones, zeros)
                 .SetProperty(e => e.Get<FilledPolygonSetting>().BrushE, brushE);
         }
     }

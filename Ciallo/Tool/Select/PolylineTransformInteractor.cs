@@ -201,7 +201,7 @@ public class PolylineTransformInteractor : InteractiveSessionBase
             {
                 var oldPositions = e.Get<SampledPolyline>().Positions.Value;
                 var newPositions = oldPositions.Select(p => resultT * p);
-                cmd.SetTarget(e).SetPolylineGeometry([..newPositions]);
+                cmd.SetTarget(e).SetSampledPolyline([.. newPositions]);
             }
             cmd.Commit();
         }
