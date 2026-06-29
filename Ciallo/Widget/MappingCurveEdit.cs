@@ -31,6 +31,7 @@ public partial class MappingCurveEdit : Control
     private const float AspectRatio = 1.0f;
     private const float LineWidth = 0.5f;
     private const int StepSize = 2; // Number of pixels between plot points.
+    private const int PresetButtonMargin = 4; // Inset of the presets button from the top-right corner.
 
     private ReactiveProperty<ImmutableArray<BezierPoint>> _property;
     private ImmutableArray<BezierPoint> Points => _property.Value;
@@ -50,6 +51,8 @@ public partial class MappingCurveEdit : Control
     private Vector2 _initialGrabPos;
     private int _initialGrabIndex = -1;
     private HandleControlMode _initialHandleMode = HandleControlMode.LinearEqual;
+
+    private MenuButton _presetsButton;
 
     public enum PresetId
     {
@@ -79,6 +82,25 @@ public partial class MappingCurveEdit : Control
     {
         FocusMode = FocusModeEnum.All;
         ClipContents = true;
+
+        // Presets menu, anchored to the top-right corner inside the control (overlay).
+        // A small margin keeps the label from being clipped against the (clipped) right edge.
+        _presetsButton = new MenuButton
+        {
+            Text = "Presets",
+            SwitchOnHover = true,
+            // Stop input here so clicks on the button don't reach the curve drawing area.
+            MouseFilter = MouseFilterEnum.Stop,
+        };
+        _presetsButton.SetAnchorsAndOffsetsPreset(LayoutPreset.TopRight, LayoutPresetMode.Minsize, PresetButtonMargin);
+        var popup = _presetsButton.GetPopup();
+        popup.AddItem("Constant", (int)PresetId.Constant);
+        popup.AddItem("Linear", (int)PresetId.Linear);
+        popup.AddItem("Ease In", (int)PresetId.EaseIn);
+        popup.AddItem("Ease Out", (int)PresetId.EaseOut);
+        popup.AddItem("Smoothstep", (int)PresetId.Smoothstep);
+        popup.IdPressed += id => UsePreset((PresetId)id);
+        AddChild(_presetsButton);
     }
 
     public MappingCurveEdit BindCurve(ReactiveProperty<ImmutableArray<BezierPoint>> property)
@@ -90,6 +112,72 @@ public partial class MappingCurveEdit : Control
     }
 
     public override Vector2 _GetMinimumSize() => new Vector2(256, 256);
+
+    /// <summary>
+    /// Replaces the curve with a two-point preset shape, mirroring Godot's CurveEdit::use_preset.
+    /// Handle vectors follow BezierCurveFactory conventions (horizontal for flat tangents,
+    /// slope-aligned for eased ones). Respects the configurable domain/value ranges.
+    /// </summary>
+    private void UsePreset(PresetId preset)
+    {
+        if (_property == null)
+            return;
+
+        float minX = MinDomain, maxX = MaxDomain;
+        float minY = MinValue, maxY = MaxValue;
+        float midY = (minY + maxY) / 2.0f;
+        // Handle length as a fraction of the domain range (matches BezierCurveFactory's L for a [0,1] domain).
+        float l = DomainRange * 0.4f;
+        // Ease strength scaled like Godot: value_range / domain_range * 1.4.
+        float ease = ValueRange / DomainRange * 1.4f;
+
+        ImmutableArray<BezierPoint> points = preset switch
+        {
+            PresetId.Constant =>
+            [
+                new(new(minX, midY), new(-l, 0f), new(l, 0f)),
+                new(new(maxX, midY), new(-l, 0f), new(l, 0f))
+            ],
+            PresetId.Linear => BuildLinear(),
+            PresetId.EaseIn =>
+            [
+                // Flat start, slope-up arrival: in-handle of the end point points back-and-down.
+                new(new(minX, minY), new(-l, 0f), new(l, 0f)),
+                new(new(maxX, maxY), SlopeHandle(-l, ease), new(l, 0f))
+            ],
+            PresetId.EaseOut =>
+            [
+                // Slope-up departure then flat: out-handle of the start point points forward-and-up.
+                new(new(minX, minY), new(-l, 0f), SlopeHandle(l, ease)),
+                new(new(maxX, maxY), new(-l, 0f), new(l, 0f))
+            ],
+            PresetId.Smoothstep =>
+            [
+                new(new(minX, minY), new(-l, 0f), new(l, 0f)),
+                new(new(maxX, maxY), new(-l, 0f), new(l, 0f))
+            ],
+            _ => Points
+        };
+
+        _property.Value = points;
+        SetSelectedIndex(-1);
+        _CurveChanged();
+        return;
+
+        // Linear preset honors the actual range so the tangent direction matches the line.
+        ImmutableArray<BezierPoint> BuildLinear()
+        {
+            var dir = new Vector2(DomainRange, ValueRange).Normalized() * l;
+            return
+            [
+                new(new(minX, minY), -dir, dir),
+                new(new(maxX, maxY), -dir, dir)
+            ];
+        }
+
+        // A handle of horizontal extent dx whose slope produces an ease curve.
+        static Vector2 SlopeHandle(float dx, float slope) => new(dx, dx * slope);
+    }
 
     public override void _GuiInput(InputEvent @event)
     {
@@ -477,9 +565,12 @@ public partial class MappingCurveEdit : Control
         float fontSize = (int)(GetThemeFontSize("font_size", "Label") * 0.8f);
         float margin = fontSize + 8;
 
+        // Reserve a top band so the curve plots below the presets button instead of crossing it.
+        float topBand = _presetsButton.Size.Y + PresetButtonMargin * 2;
+        float topMargin = Mathf.Max(margin, topBand);
+
         Rect2 worldRect = new Rect2(MinDomain, MinValue, DomainRange, ValueRange);
-        Vector2 viewMargin = new Vector2(margin, margin);
-        Vector2 viewSize = Size - viewMargin * 2;
+        Vector2 viewSize = Size - new Vector2(margin * 2, topMargin + margin);
         Vector2 scale = viewSize / worldRect.Size;
 
         Transform2D worldTrans = Transform2D.Identity;
@@ -487,7 +578,7 @@ public partial class MappingCurveEdit : Control
         worldTrans = worldTrans.Scaled(new Vector2(scale.X, -scale.Y));
 
         Transform2D viewTrans = Transform2D.Identity;
-        viewTrans = viewTrans.Translated(viewMargin);
+        viewTrans = viewTrans.Translated(new Vector2(margin, topMargin));
 
         _worldToView = viewTrans * worldTrans;
     }
