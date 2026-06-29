@@ -72,9 +72,13 @@ public class StrokeBrushSetting
         container.AddProperty("Blend mode", blendModeButton);
 
         var pp2RadiusCurveEdit = new MappingCurveEdit { MinValue = 0.01f }.BindCurve(Pressure2RadiusCurve);
-        var aspectBox = new AspectRatioContainer();
+        var aspectBox = new AspectRatioContainer()
+            .VisibleIf(ActiveBrushFlags, v => v.HasFlag(BrushFlags.Pressure2Radius));
         aspectBox.AddChild(pp2RadiusCurveEdit);
-        container.AddProperty("Pressure to radius", aspectBox);
+        var radiusCurveFlagCheck = new CheckBox()
+            .BindFlag(ActiveBrushFlags, BrushFlags.Pressure2Radius);
+        container.CreateCheckBoxCombo("Pressure to radius", radiusCurveFlagCheck, aspectBox)
+            .AddToChildOf(container);
 
         var pp2FlowCurveEdit = new MappingCurveEdit()
             .BindCurve(Pressure2FlowCurve)
@@ -188,6 +192,8 @@ public class StrokeBrushSetting
     public Func<float, float> ToRadiusSampler()
     {
         var baseRadius = BaseRadius.Value;
+        if (!ActiveBrushFlags.Value.HasFlag(BrushFlags.Pressure2Radius))
+            return _ => baseRadius; // disabled: constant radius, pressure does not affect thickness
         var points = Pressure2RadiusCurve.Value; // capture snapshot at sampler creation time
         return pressure => baseRadius * points.SampleX(pressure);
     }
@@ -208,6 +214,7 @@ public enum BrushFlags
 {
     Pressure2Flow = 1 << 0,
     Dash = 1 << 1,
+    Pressure2Radius = 1 << 2,
 }
 
 [Flags]

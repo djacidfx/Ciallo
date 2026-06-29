@@ -160,13 +160,14 @@ public static partial class AppStrokeBrushLibrary
         panel.BrushPreviewViewport.AddChild(preview);
         // Note: Lazy on clearing these caches on destruction. I don't believe user will view 1e5 brushes in one session.
         Dictionary<StrokeBrushSetting, StrokeBrushMaterial> materialCache = new();
-        CompositeDisposable curveChangeSubs = new();
-        curveChangeSubs.AddTo(panel);
+        SerialDisposable curveChangeSub = new();
+        curveChangeSub.AddTo(panel);
         SelectedBrushSetting.Subscribe(setting =>
         {
             if (setting == null)
             {
                 preview.Material = null;
+                curveChangeSub.Disposable = null;
                 return;
             }
             materialCache.TryGetValue(setting, out var material);
@@ -175,11 +176,13 @@ public static partial class AppStrokeBrushLibrary
                 material = new();
                 material.ObserveBrushSetting(setting);
                 materialCache[setting] = material;
-
-                setting.BaseRadius.CombineLatest(setting.Pressure2RadiusCurve, ValueTuple.Create)
-                    .Subscribe(t => UpdateStrokePreview(preview, t.Item2, t.Item1)).AddTo(curveChangeSubs);
             }
             preview.Material = material;
+
+            // ponytail: resubscribe per selection so the initial value re-fires for this brush; preview geometry is shared
+            curveChangeSub.Disposable = setting.BaseRadius
+                .CombineLatest(setting.Pressure2RadiusCurve, setting.ActiveBrushFlags, ValueTuple.Create)
+                .Subscribe(t => UpdateStrokePreview(preview, t.Item2, t.Item1, t.Item3.HasFlag(BrushFlags.Pressure2Radius)));
         }).AddTo(panel);
 
         // Brush list operations and buttons
@@ -265,7 +268,7 @@ public static partial class AppStrokeBrushLibrary
         };
     }
 
-    private static void UpdateStrokePreview(StrokeView view, ImmutableArray<BezierPoint> pressureCurve, float baseRadius = 0)
+    private static void UpdateStrokePreview(StrokeView view, ImmutableArray<BezierPoint> pressureCurve, float baseRadius = 0, bool pressure2Radius = true)
     {
         int n = 64;
         float gr = (1 + Mathf.Sqrt(5)) / 2; // golden ratio
@@ -291,7 +294,7 @@ public static partial class AppStrokeBrushLibrary
             .ToImmutableArray();
         float targetRadius = baseRadius.SigmoidRemap(2.0f, 16f, 0.25f / gr, 0.75f / gr);
         var radii = pressures
-            .Select(p => pressureCurve.SampleX(p))
+            .Select(p => pressure2Radius ? pressureCurve.SampleX(p) : 1.0f)
             .Select(radiusRatio => radiusRatio * targetRadius)
             .ToImmutableArray();
         view.SetGeometry(positions, radii, pressures);

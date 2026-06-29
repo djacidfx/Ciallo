@@ -59,16 +59,17 @@ public class NewStrokeBrushCmd : CommandBase
         };
         float gv = 16;
         var previewRect = new Rect2(Vector2.Zero, size).GrowIndividual(-gv, -1.5f * gv, -gv, -1.5f * gv);
-        _setting.BaseRadius.CombineLatest(_setting.Pressure2RadiusCurve, ValueTuple.Create)
+        _setting.BaseRadius.CombineLatest(_setting.Pressure2RadiusCurve, _setting.ActiveBrushFlags, ValueTuple.Create)
             .Subscribe(combo =>
             {
-                var (r, pts) = combo;
+                var (r, pts, flags) = combo;
                 int n = 32;
                 float pi = Mathf.Pi;
+                bool pressure2Radius = flags.HasFlag(BrushFlags.Pressure2Radius);
                 var radius = Enumerable.Range(0, n)
                     .Select(i => Mathf.Lerp(-pi / 2, pi / 2, (float)i / (n - 1)))
                     .Select(Mathf.Cos) // pen pressure
-                    .Select(x => pts.SampleX(x))
+                    .Select(x => pressure2Radius ? pts.SampleX(x) : 1.0f)
                     .Select(ratio => ratio * r.SigmoidRemap(1, 12, 1, 36))
                     .ToArray();
                 previewStroke.SetGeometry(CreatePreviewGeometry(previewRect, n), radius);
