@@ -2,11 +2,6 @@ namespace InkStrokeModeler.Internal.Prediction.KalmanFilter;
 
 internal sealed class AxisPredictor
 {
-    private const int PositionIndex = 0;
-    private const int VelocityIndex = 1;
-    private const int AccelerationIndex = 2;
-    private const int JerkIndex = 3;
-
     private readonly KalmanFilter _kalmanFilter;
 
     public AxisPredictor(double processNoise, double measurementNoise, int minStableIteration)
@@ -21,10 +16,10 @@ internal sealed class AxisPredictor
 
     public bool Stable => _kalmanFilter.Stable;
     public int IterationCount => _kalmanFilter.IterationCount;
-    public double Position => _kalmanFilter.StateEstimation[PositionIndex];
-    public double Velocity => _kalmanFilter.StateEstimation[VelocityIndex];
-    public double Acceleration => _kalmanFilter.StateEstimation[AccelerationIndex];
-    public double Jerk => _kalmanFilter.StateEstimation[JerkIndex];
+    public double Position => _kalmanFilter.StateEstimation.X;
+    public double Velocity => _kalmanFilter.StateEstimation.Y;
+    public double Acceleration => _kalmanFilter.StateEstimation.Z;
+    public double Jerk => _kalmanFilter.StateEstimation.W;
 
     public void Reset() => _kalmanFilter.Reset();
 

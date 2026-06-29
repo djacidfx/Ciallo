@@ -11,7 +11,8 @@ internal sealed class StylusStateModeler
         public bool ReceivedUnknownPressure;
         public bool ReceivedUnknownTilt;
         public bool ReceivedUnknownOrientation;
-        public readonly LinkedList<ModelerResult> RawInputAndStylusStates = [];
+        public readonly List<ModelerResult> RawInputAndStylusStates = [];
+        public int FirstRawInputIndex;
         public RawInputProjection Projection;
 
         public ModelerState Clone()
@@ -21,10 +22,37 @@ internal sealed class StylusStateModeler
                 ReceivedUnknownPressure = ReceivedUnknownPressure,
                 ReceivedUnknownTilt = ReceivedUnknownTilt,
                 ReceivedUnknownOrientation = ReceivedUnknownOrientation,
+                FirstRawInputIndex = 0,
                 Projection = Projection,
             };
-            foreach (ModelerResult state in RawInputAndStylusStates) clone.RawInputAndStylusStates.AddLast(state);
+            clone.RawInputAndStylusStates.EnsureCapacity(Count);
+            for (int i = FirstRawInputIndex; i < RawInputAndStylusStates.Count; i++)
+                clone.RawInputAndStylusStates.Add(RawInputAndStylusStates[i]);
             return clone;
+        }
+
+        public int Count => RawInputAndStylusStates.Count - FirstRawInputIndex;
+
+        public ModelerResult this[int index] => RawInputAndStylusStates[FirstRawInputIndex + index];
+
+        public ModelerResult Last => RawInputAndStylusStates[^1];
+
+        public void Add(ModelerResult state) => RawInputAndStylusStates.Add(state);
+
+        public void Clear()
+        {
+            RawInputAndStylusStates.Clear();
+            FirstRawInputIndex = 0;
+            Projection = default;
+        }
+
+        public void RemoveFirst()
+        {
+            FirstRawInputIndex++;
+            if (FirstRawInputIndex <= 32 || FirstRawInputIndex <= RawInputAndStylusStates.Count / 2) return;
+
+            RawInputAndStylusStates.RemoveRange(0, FirstRawInputIndex);
+            FirstRawInputIndex = 0;
         }
     }
 
@@ -57,22 +85,22 @@ internal sealed class StylusStateModeler
             _state.ReceivedUnknownTilt &&
             _state.ReceivedUnknownOrientation)
         {
-            _state.RawInputAndStylusStates.Clear();
+            _state.Clear();
             return;
         }
 
         Vector2 velocity = Vector2.Zero;
         Vector2 acceleration = Vector2.Zero;
-        if (_state.RawInputAndStylusStates.Count > 0 &&
-            time != _state.RawInputAndStylusStates.Last!.Value.Time)
+        if (_state.Count > 0 &&
+            time != _state.Last.Time)
         {
-            ModelerResult last = _state.RawInputAndStylusStates.Last.Value;
+            ModelerResult last = _state.Last;
             float deltaSeconds = (float)(time - last.Time).TotalSeconds;
             velocity = (position - last.Position) / deltaSeconds;
             acceleration = (velocity - last.Velocity) / deltaSeconds;
         }
 
-        _state.RawInputAndStylusStates.AddLast(new ModelerResult(
+        _state.Add(new ModelerResult(
             position,
             velocity,
             acceleration,
@@ -81,30 +109,27 @@ internal sealed class StylusStateModeler
             state.Tilt,
             state.Orientation));
 
-        while (_state.RawInputAndStylusStates.Count > _params.MaxInputSamples)
-            _state.RawInputAndStylusStates.RemoveFirst();
+        while (_state.Count > _params.MaxInputSamples)
+            _state.RemoveFirst();
     }
 
     public ModelerResult Project(TipState tip, Vector2? strokeNormal)
     {
-        LinkedList<ModelerResult> states = _state.RawInputAndStylusStates;
-        if (states.Count == 0) return default;
+        if (_state.Count == 0) return default;
 
-        List<ModelerResult> list = [.. states];
         _state.Projection = _params.UseStrokeNormalProjection && strokeNormal.HasValue
-            ? ProjectAlongStrokeNormal(tip.Position, tip.Acceleration, strokeNormal.Value, list, _state.Projection)
-            : ProjectToClosestPoint(tip.Position, list, _state.Projection);
+            ? ProjectAlongStrokeNormal(tip.Position, tip.Acceleration, strokeNormal.Value, _state, _state.Projection)
+            : ProjectToClosestPoint(tip.Position, _state, _state.Projection);
 
         while (_state.Projection.SegmentIndex > 0)
         {
             _state.Projection = _state.Projection with { SegmentIndex = _state.Projection.SegmentIndex - 1 };
-            _state.RawInputAndStylusStates.RemoveFirst();
+            _state.RemoveFirst();
         }
 
-        list = [.. _state.RawInputAndStylusStates];
-        ModelerResult projected = list.Count > 1
-            ? Utils.InterpResult(list[0], list[1], _state.Projection.RatioAlongSegment)
-            : list[0];
+        ModelerResult projected = _state.Count > 1
+            ? Utils.InterpResult(_state[0], _state[1], _state.Projection.RatioAlongSegment)
+            : _state[0];
 
         projected = projected with { Time = tip.Time };
         if (_state.ReceivedUnknownPressure) projected = projected with { Pressure = -1 };
@@ -124,15 +149,16 @@ internal sealed class StylusStateModeler
         Vector2 position,
         Vector2 acceleration,
         Vector2 strokeNormal,
-        IReadOnlyList<ModelerResult> rawInputPolyline,
+        ModelerState rawInputPolyline,
         RawInputProjection previousProjection)
     {
         RawInputProjection? bestLeftProjection = null;
         RawInputProjection? bestRightProjection = null;
         float bestDistanceLeft = float.PositiveInfinity;
         float bestDistanceRight = float.PositiveInfinity;
+        int endIndex = rawInputPolyline.Count - 1;
 
-        for (int i = previousProjection.SegmentIndex; i < rawInputPolyline.Count - 1; i++)
+        for (int i = previousProjection.SegmentIndex; i < endIndex; i++)
         {
             Vector2 segmentStart = rawInputPolyline[i].Position;
             Vector2 segmentEnd = rawInputPolyline[i + 1].Position;
@@ -167,13 +193,14 @@ internal sealed class StylusStateModeler
 
     private static RawInputProjection ProjectToClosestPoint(
         Vector2 position,
-        IReadOnlyList<ModelerResult> rawInputPolyline,
+        ModelerState rawInputPolyline,
         RawInputProjection previousProjection)
     {
         RawInputProjection? bestProjection = null;
         float minDistance = float.PositiveInfinity;
+        int endIndex = rawInputPolyline.Count - 1;
 
-        for (int i = 0; i < rawInputPolyline.Count - 1; i++)
+        for (int i = 0; i < endIndex; i++)
         {
             Vector2 segmentStart = rawInputPolyline[i].Position;
             Vector2 segmentEnd = rawInputPolyline[i + 1].Position;
