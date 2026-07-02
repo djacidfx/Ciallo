@@ -1,0 +1,51 @@
+#!/bin/sh
+set -eu
+
+hook_dir=${0%/*}
+if [ "$hook_dir" = "$0" ]; then
+    hook_dir=.
+fi
+cd "$hook_dir/.."
+
+file="export_presets.cfg"
+index_path="$(git rev-parse --show-prefix)$file"
+
+if git diff --cached --quiet -- "$file"; then
+    exit 0
+fi
+
+if ! git cat-file -e ":$index_path" 2>/dev/null; then
+    exit 0
+fi
+
+old_blob=$(git rev-parse ":$index_path")
+new_blob=$(
+    git show ":$index_path" |
+        while IFS= read -r line || [ -n "$line" ]; do
+            case "$line" in
+                'export_path='*)
+                    printf '%s\n' 'export_path=""'
+                    ;;
+                'custom_template/debug='*)
+                    printf '%s\n' 'custom_template/debug=""'
+                    ;;
+                'custom_template/release='*)
+                    printf '%s\n' 'custom_template/release=""'
+                    ;;
+                *)
+                    printf '%s\n' "$line"
+                    ;;
+            esac
+        done |
+        git hash-object -w --stdin
+)
+
+if [ "$old_blob" = "$new_blob" ]; then
+    exit 0
+fi
+
+set -- $(git ls-files -s -- "$file")
+mode=$1
+git update-index --cacheinfo "$mode,$new_blob,$index_path"
+
+echo "Cleaned staged Godot export paths in $file."
