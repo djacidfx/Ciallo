@@ -1,28 +1,5 @@
 # Roadmap
 
-## v0.1 EA plan
-
-V0.1EA focus on bulding MVP (minimum viable product) to support flat color drawings, should be as feature-rich as SAI2.
-
-Plan to follow [pikat](https://www.youtube.com/@pikat)'s feature list:
-
-![](/.github/PikatFeatureList.png)
-
-- [ ] Lasso tool like lasso on CSP vector layer
-- [ ] Sculpt(liquify) tool like GP
-- Layer operations
-  - [ ] Basic modifiers
-  - [ ] Folder
-  - [ ] Blend modes
-  - [ ] Lock & rasterize
-  - [ ] Mask
-- [ ] Technical stuffs
-
-Aim to be able to produce business-level galgame tachies. Notify me if there are missing features to produce tachies in following style.
-
-![](/.github/Ririko.png)
-
-
 # Ciallo Contributing Guide
 
 ## Introduction
@@ -109,16 +86,12 @@ If you have to understand how I handle dragging mouse input with R3 (reactive pr
 3. Reference [ReactiveX operator document](https://reactivex.io/documentation/operators.html) to choose suitable operators.
 4. Make hard guess on the problems to solve.
 
-### Data serialization and MessagePack
+### Data serialization and DuckDB
 
-Data uses [MessagePack](https://github.com/MessagePack-CSharp/MessagePack-CSharp) library with C# built-in [DataContract] to serialize data into `.ciallo` file.
+Project data is stored in a DuckDB-backed `.ciallo` file.
 No DTO by design.
 The mechanism is combined with the component system:
 
-- When an entity is tagged with `ToSerializeTag`, it will be serialized to .Ciallo files.
-- When its components are attributed with `[ToSerialize]` (and also [DataContract] when necessary). these components are serialized.
-- An entity without `ToSerializeTag` but has `[ToSerialize]` component won't be serialized, including entity itself and its components.
-
-## Code style
-
-See my [instruction](../Ciallo/.github/copilot-instructions.md) to copilot.
+- When an entity is tagged with `ToSerializeTag`, it will be persisted to `.ciallo` files.
+- Components attributed with `[ToSerialize]` are mapped to DuckDB columns. Scalar values use DuckDB scalar types, and creative value types such as `Color`, `Vector2`, `Transform2D`, and Bezier data use DuckDB `STRUCT`, `LIST`, or array-like structured types when possible.
+- An entity without `ToSerializeTag` but with `[ToSerialize]` components won't be persisted, including the entity itself and its components.
