@@ -327,17 +327,12 @@ jobs:
         shell: pwsh
         run: dotnet restore "$env:CSPROJ" --configfile NuGet.Config
 
-      - name: Build C# project
-        shell: pwsh
-        run: dotnet build "$env:CSPROJ" --configuration Release --no-restore
-
       - name: Import resources
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
-          # Localization .translation files are generated during --import, so the
-          # first pass logs expected "cannot open" errors. Filter that known noise.
-          $noise = "res://Localization/.+\.translation|resource_format_binary\.cpp:1220|resource_loader\.cpp:343"
+          # Filter expected first-scan noise before Godot finishes importing resources.
+          $noise = "res://Localization/.+\.translation|resource_format_binary\.cpp:1220|resource_loader\.cpp:343|Failed to create an autoload, script 'res://.+\.cs' is not compiling|_create_autoload \(editor/settings/editor_autoload_settings\.cpp:409\)"
           Push-Location $env:PROJECT_PATH
           & "${{ steps.editor.outputs.path }}" --headless --import 2>&1 |
             Where-Object { $_ -notmatch $noise }
@@ -355,11 +350,18 @@ jobs:
           $outDir = Join-Path (Get-Location) "${{ matrix.output_dir }}"
           New-Item -ItemType Directory -Force -Path $outDir | Out-Null
           $outFile = Join-Path $outDir "${{ matrix.output_file }}"
+          # Filter expected C# autoload first-scan noise before Godot publishes .NET.
+          $noise = "Failed to create an autoload, script 'res://.+\.cs' is not compiling|_create_autoload \(editor/settings/editor_autoload_settings\.cpp:409\)"
 
           Push-Location $env:PROJECT_PATH
-          & "${{ steps.editor.outputs.path }}" --headless --export-release "${{ matrix.preset }}" $outFile
+          & "${{ steps.editor.outputs.path }}" --headless --export-release "${{ matrix.preset }}" $outFile 2>&1 |
+            Where-Object { $_ -notmatch $noise }
+          $exportExitCode = $LASTEXITCODE
           Pop-Location
 
+          if ($exportExitCode -ne 0) {
+            throw "Godot export failed with exit code $exportExitCode."
+          }
           if (-not (Test-Path -LiteralPath $outFile)) {
             throw "Export did not create expected output: $outFile"
           }
