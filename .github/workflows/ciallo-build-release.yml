@@ -1,0 +1,436 @@
+name: Ciallo Build and Release
+
+"on":
+  pull_request:
+    branches:
+      - dev
+      - main
+  push:
+    branches:
+      - dev
+      - main
+    tags:
+      - "ft/**"
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ciallo-build-release-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PROJECT_PATH: Ciallo
+  CSPROJ: Ciallo/Ciallo.csproj
+  EXPORT_NAME: Ciallo
+  GODOT_FEED: https://shenciao.github.io/godot/index.json
+  GODOT_SDK_FLAT: https://shenciao.github.io/godot/flatcontainer/godot.net.sdk/index.json
+  GODOT_RELEASE_REPO: ShenCiao/godot
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+  meta:
+    name: Validate version and SDK
+    runs-on: ubuntu-24.04
+    outputs:
+      artifact_retention_days: ${{ steps.meta.outputs.artifact_retention_days }}
+      engine_release_tag: ${{ steps.meta.outputs.engine_release_tag }}
+      engine_status: ${{ steps.meta.outputs.engine_status }}
+      hotfix_base_version: ${{ steps.meta.outputs.hotfix_base_version }}
+      is_release: ${{ steps.meta.outputs.is_release }}
+      is_prerelease: ${{ steps.meta.outputs.is_prerelease }}
+      project_name: ${{ steps.meta.outputs.project_name }}
+      release_title: ${{ steps.meta.outputs.release_title }}
+      project_version: ${{ steps.meta.outputs.project_version }}
+      sdk_version: ${{ steps.meta.outputs.sdk_version }}
+      tag_kind: ${{ steps.meta.outputs.tag_kind }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          lfs: true
+          submodules: true
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Validate metadata
+        id: meta
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+
+          function Read-GodotSetting([string]$Path, [string]$Key) {
+            $line = Get-Content -LiteralPath $Path | Where-Object { $_ -match "^$([regex]::Escape($Key))=" } | Select-Object -First 1
+            if (-not $line) {
+              throw "Missing setting '$Key' in $Path"
+            }
+            $value = $line.Substring($line.IndexOf("=") + 1).Trim()
+            if ($value.StartsWith('"') -and $value.EndsWith('"')) {
+              $value = $value.Substring(1, $value.Length - 2)
+            }
+            return $value
+          }
+
+          $projectFile = Join-Path $env:PROJECT_PATH "project.godot"
+          $projectName = Read-GodotSetting $projectFile "config/name"
+          $projectVersion = Read-GodotSetting $projectFile "config/version"
+          if ($projectVersion -notmatch "^\d+\.\d+\.\d+$") {
+            throw "project.godot config/version must be plain semver X.Y.Z. Actual: $projectVersion"
+          }
+
+          [xml]$csproj = Get-Content -LiteralPath $env:CSPROJ
+          $sdk = $csproj.Project.Sdk
+          if ($sdk -notmatch "^Godot\.NET\.Sdk/(?<version>\d+\.\d+\.\d+-ciallo\.g(?<sha>[0-9a-f]+))$") {
+            throw "C# project must use published custom Godot SDK: Godot.NET.Sdk/<semver>-ciallo.g<sha>. Actual: $sdk"
+          }
+
+          $sdkVersion = $Matches.version
+          $engineStatus = "ciallo.g$($Matches.sha)"
+
+          $sdkIndex = Invoke-RestMethod -Uri $env:GODOT_SDK_FLAT
+          if ($sdkIndex.versions -notcontains $sdkVersion) {
+            throw "SDK '$sdkVersion' is not published on public feed '$env:GODOT_FEED'."
+          }
+
+          $headers = @{
+            Accept = "application/vnd.github+json"
+            "X-GitHub-Api-Version" = "2022-11-28"
+          }
+          if ($env:GH_TOKEN) {
+            $headers.Authorization = "Bearer $env:GH_TOKEN"
+          }
+          $templateAsset = "godot-export-templates-$engineStatus.tpz"
+          $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$env:GODOT_RELEASE_REPO/releases?per_page=100" -Headers $headers
+          $engineRelease = $releases | Where-Object { $_.assets.name -contains $templateAsset } | Select-Object -First 1
+          if (-not $engineRelease) {
+            throw "Could not find a $env:GODOT_RELEASE_REPO release containing '$templateAsset'."
+          }
+          $engineReleaseTag = $engineRelease.tag_name
+
+          $tagKind = "branch"
+          $hotfixBaseVersion = ""
+          $isRelease = "false"
+          $isPrerelease = "false"
+          $releaseTitle = "$projectName $projectVersion"
+          $retention = "2"
+          $refType = "${{ github.ref_type }}"
+          $refName = "${{ github.ref_name }}"
+
+          if ($refType -eq "tag") {
+            if ($refName -match "^ft/[^/]+/[^/]+\.\d+$") {
+              $tagKind = "feature-test"
+              $retention = "2"
+            } elseif ($refName -match "^v(?<version>\d+\.\d+\.\d+)-rc\.\d+$") {
+              if ($Matches.version -ne $projectVersion) {
+                throw "RC tag version '$($Matches.version)' must match project.godot config/version '$projectVersion'."
+              }
+              git merge-base --is-ancestor HEAD origin/dev
+              if ($LASTEXITCODE -ne 0) {
+                throw "RC tag '$refName' must point to a commit contained in origin/dev."
+              }
+              $tagKind = "rc"
+              $isRelease = "true"
+              $isPrerelease = "true"
+              $releaseTitle = "$projectName $refName"
+              $retention = "30"
+            } elseif ($refName -match "^v(?<version>\d+\.\d+\.\d+)-hotfix\.(?<number>[1-9]\d*)$") {
+              $hotfixVersion = $Matches.version
+              $hotfixTag = "v$hotfixVersion"
+              if ($hotfixVersion -ne $projectVersion) {
+                throw "Hotfix tag base version '$hotfixVersion' must match project.godot config/version '$projectVersion'. Do not write the hotfix suffix into project.godot."
+              }
+              git merge-base --is-ancestor HEAD origin/main
+              if ($LASTEXITCODE -ne 0) {
+                throw "Hotfix tag '$refName' must point to a commit contained in origin/main."
+              }
+              $latestStable = Invoke-RestMethod -Uri "https://api.github.com/repos/${{ github.repository }}/releases/latest" -Headers $headers
+              if ($latestStable.tag_name -ne $hotfixTag) {
+                throw "Hotfix tag '$refName' is only allowed for the latest stable release. Latest stable: '$($latestStable.tag_name)'."
+              }
+              $tagKind = "hotfix"
+              $hotfixBaseVersion = $hotfixVersion
+              $isRelease = "true"
+              $isPrerelease = "true"
+              $releaseTitle = "$projectName $refName"
+              $retention = "30"
+            } elseif ($refName -match "^v(?<version>\d+\.\d+\.\d+)$") {
+              if ($Matches.version -ne $projectVersion) {
+                throw "Release tag version '$($Matches.version)' must match project.godot config/version '$projectVersion'."
+              }
+              git merge-base --is-ancestor HEAD origin/main
+              if ($LASTEXITCODE -ne 0) {
+                throw "Release tag '$refName' must point to a commit contained in origin/main."
+              }
+              $tagKind = "release"
+              $isRelease = "true"
+              $isPrerelease = "false"
+              $releaseTitle = "$projectName $refName"
+              $retention = "30"
+            } else {
+              throw "Unsupported tag '$refName'. Use ft/<name>/<topic>.<N>, vX.Y.Z-rc.N, vX.Y.Z-hotfix.N, or vX.Y.Z."
+            }
+          }
+
+          "artifact_retention_days=$retention" >> $env:GITHUB_OUTPUT
+          "engine_release_tag=$engineReleaseTag" >> $env:GITHUB_OUTPUT
+          "engine_status=$engineStatus" >> $env:GITHUB_OUTPUT
+          "hotfix_base_version=$hotfixBaseVersion" >> $env:GITHUB_OUTPUT
+          "is_release=$isRelease" >> $env:GITHUB_OUTPUT
+          "is_prerelease=$isPrerelease" >> $env:GITHUB_OUTPUT
+          "project_name=$projectName" >> $env:GITHUB_OUTPUT
+          "release_title=$releaseTitle" >> $env:GITHUB_OUTPUT
+          "project_version=$projectVersion" >> $env:GITHUB_OUTPUT
+          "sdk_version=$sdkVersion" >> $env:GITHUB_OUTPUT
+          "tag_kind=$tagKind" >> $env:GITHUB_OUTPUT
+
+          "Project: $projectName $projectVersion"
+          "Godot SDK: $sdkVersion"
+          "Engine status: $engineStatus"
+          "Engine release: $engineReleaseTag"
+          "Tag kind: $tagKind"
+
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore "$env:CSPROJ" --configfile NuGet.Config
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build "$env:CSPROJ" --configuration Debug --no-restore
+
+  export:
+    name: Export ${{ matrix.name }}
+    needs: meta
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            runner: windows-latest
+            editor_asset: godot-windows-x86_64
+            editor_glob: godot*.exe
+            preset: Windows Desktop
+            output_dir: build/windows
+            output_file: Ciallo.exe
+            package: Ciallo-Windows-x86_64.zip
+          - name: Linux
+            runner: ubuntu-24.04
+            editor_asset: godot-linuxbsd-x86_64
+            editor_glob: godot*
+            preset: Linux
+            output_dir: build/linux
+            output_file: Ciallo.x86_64
+            package: Ciallo-Linux-x86_64.tar.gz
+          - name: macOS
+            runner: macos-26
+            editor_asset: godot-macos-arm64
+            editor_glob: godot*
+            preset: macOS
+            output_dir: build/macos
+            output_file: Ciallo.dmg
+            package: Ciallo-macOS-arm64.dmg
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          lfs: true
+          submodules: true
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Download custom Godot editor and templates
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ENGINE_RELEASE_TAG: ${{ needs.meta.outputs.engine_release_tag }}
+          ENGINE_STATUS: ${{ needs.meta.outputs.engine_status }}
+          EDITOR_ASSET: ${{ matrix.editor_asset }}
+          RELEASE_REPO: ${{ env.GODOT_RELEASE_REPO }}
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          New-Item -ItemType Directory -Force -Path .godot-ci | Out-Null
+
+          $editorArchive = "$env:EDITOR_ASSET-$env:ENGINE_STATUS.zip"
+          $templateArchive = "godot-export-templates-$env:ENGINE_STATUS.tpz"
+
+          gh release download $env:ENGINE_RELEASE_TAG --repo $env:RELEASE_REPO --pattern $editorArchive --dir .godot-ci
+          gh release download $env:ENGINE_RELEASE_TAG --repo $env:RELEASE_REPO --pattern $templateArchive --dir .godot-ci
+
+          Expand-Archive -LiteralPath ".godot-ci/$editorArchive" -DestinationPath .godot-ci/editor -Force
+          New-Item -ItemType Directory -Force -Path .godot-ci/templates_src | Out-Null
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          [System.IO.Compression.ZipFile]::ExtractToDirectory(
+            (Resolve-Path ".godot-ci/$templateArchive").Path,
+            (Resolve-Path ".godot-ci/templates_src").Path
+          )
+
+      - name: Install export templates
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $versionFile = Get-ChildItem -LiteralPath .godot-ci/templates_src -Recurse -Filter version.txt | Select-Object -First 1
+          if (-not $versionFile) {
+            throw "Export template version.txt was not found."
+          }
+
+          $templateVersion = (Get-Content -LiteralPath $versionFile.FullName -Raw).Trim()
+          $templateDir = Split-Path -Parent $versionFile.FullName
+
+          if ($IsWindows) {
+            $dest = Join-Path $env:APPDATA "Godot/export_templates/$templateVersion"
+          } elseif ($IsMacOS) {
+            $dest = Join-Path $HOME "Library/Application Support/Godot/export_templates/$templateVersion"
+          } else {
+            $dest = Join-Path $HOME ".local/share/godot/export_templates/$templateVersion"
+          }
+
+          New-Item -ItemType Directory -Force -Path $dest | Out-Null
+          Copy-Item -Path (Join-Path $templateDir "*") -Destination $dest -Recurse -Force
+          "Installed export templates to $dest"
+
+      - name: Locate editor
+        id: editor
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $candidate = Get-ChildItem -LiteralPath .godot-ci/editor -Recurse -File -Filter "${{ matrix.editor_glob }}" |
+            Where-Object {
+              $_.Name -notmatch '\.(pdb|lib|exp)$' -and
+              $_.FullName -notmatch '\.app[\\/]' -and
+              $_.Name -notmatch 'console'
+            } |
+            Sort-Object FullName |
+            Select-Object -First 1
+
+          if (-not $candidate) {
+            Get-ChildItem -LiteralPath .godot-ci/editor -Recurse | Select-Object FullName
+            throw "Could not locate Godot editor binary."
+          }
+
+          if (-not $IsWindows) {
+            chmod +x $candidate.FullName
+          }
+
+          "path=$($candidate.FullName)" >> $env:GITHUB_OUTPUT
+          "Editor: $($candidate.FullName)"
+
+      - name: Restore
+        shell: pwsh
+        run: dotnet restore "$env:CSPROJ" --configfile NuGet.Config
+
+      - name: Import resources
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Push-Location $env:PROJECT_PATH
+          & "${{ steps.editor.outputs.path }}" --headless --import
+          Pop-Location
+
+      - name: Export release
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $outDir = Join-Path (Get-Location) "${{ matrix.output_dir }}"
+          New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+          $outFile = Join-Path $outDir "${{ matrix.output_file }}"
+
+          Push-Location $env:PROJECT_PATH
+          & "${{ steps.editor.outputs.path }}" --headless --export-release "${{ matrix.preset }}" $outFile
+          Pop-Location
+
+          if (-not (Test-Path -LiteralPath $outFile)) {
+            throw "Export did not create expected output: $outFile"
+          }
+
+      - name: Package export
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $outDir = Join-Path (Get-Location) "${{ matrix.output_dir }}"
+          $package = Join-Path (Get-Location) "${{ matrix.package }}"
+
+          if ("${{ matrix.name }}" -eq "Windows") {
+            Compress-Archive -Path (Join-Path $outDir "*") -DestinationPath $package -Force
+          } elseif ("${{ matrix.name }}" -eq "Linux") {
+            tar -czf $package -C $outDir .
+          } else {
+            Copy-Item -LiteralPath (Join-Path $outDir "${{ matrix.output_file }}") -Destination $package -Force
+          }
+
+          if (-not (Test-Path -LiteralPath $package)) {
+            throw "Package was not created: $package"
+          }
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.package }}
+          path: ${{ matrix.package }}
+          retention-days: ${{ needs.meta.outputs.artifact_retention_days }}
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub Release
+    if: needs.meta.outputs.is_release == 'true'
+    needs:
+      - meta
+      - export
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v6
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Write release notes
+        shell: bash
+        run: |
+          cat > release-notes.md <<'EOF'
+          ${{ needs.meta.outputs.release_title }}
+
+          - Godot SDK: Godot.NET.Sdk/${{ needs.meta.outputs.sdk_version }}
+          - Custom engine status: ${{ needs.meta.outputs.engine_status }}
+          - Custom engine release: ${{ needs.meta.outputs.engine_release_tag }}
+          - Windows, Linux, and macOS artifacts are exported from the same SDK-locked build.
+          - macOS is ad-hoc signed and not notarized in this early GitHub Release flow.
+          - Release kind: ${{ needs.meta.outputs.tag_kind }}
+          EOF
+
+      - name: Publish
+        uses: softprops/action-gh-release@v3
+        with:
+          files: dist/*
+          name: ${{ needs.meta.outputs.release_title }}
+          prerelease: ${{ needs.meta.outputs.is_prerelease }}
+          fail_on_unmatched_files: true
+          body_path: release-notes.md
+
+      - name: Remove older hotfix prereleases
+        if: needs.meta.outputs.tag_kind == 'hotfix'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE_VERSION: ${{ needs.meta.outputs.hotfix_base_version }}
+          CURRENT_TAG: ${{ github.ref_name }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for tag in $(gh release list --repo "$REPO" --limit 100 --json tagName,isPrerelease \
+            --jq ".[] | select(.isPrerelease == true and (.tagName | startswith(\"v${BASE_VERSION}-hotfix.\")) and .tagName != \"$CURRENT_TAG\") | .tagName"); do
+            echo "Deleting old hotfix GitHub Release: $tag"
+            gh release delete "$tag" --repo "$REPO" --yes
+          done
