@@ -104,9 +104,7 @@ jobs:
           $headers = @{
             Accept = "application/vnd.github+json"
             "X-GitHub-Api-Version" = "2022-11-28"
-          }
-          if ($env:GH_TOKEN) {
-            $headers.Authorization = "Bearer $env:GH_TOKEN"
+            Authorization = "Bearer $env:GH_TOKEN"
           }
           $templateAsset = "godot-export-templates-$engineStatus.tpz"
           $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$env:GODOT_RELEASE_REPO/releases?per_page=100" -Headers $headers
@@ -221,23 +219,23 @@ jobs:
             preset: Windows Desktop
             output_dir: build/windows
             output_file: Ciallo.exe
-            package: Ciallo-Windows-x86_64.zip
+            package: Ciallo-Windows.zip
           - name: Linux
             runner: ubuntu-24.04
             editor_asset: godot-linuxbsd-x86_64
             editor_glob: godot*
             preset: Linux
             output_dir: build/linux
-            output_file: Ciallo.x86_64
-            package: Ciallo-Linux-x86_64.tar.gz
+            output_file: Ciallo
+            package: Ciallo-Linux.tar.gz
           - name: macOS
             runner: macos-26
             editor_asset: godot-macos-arm64
             editor_glob: godot*
             preset: macOS
             output_dir: build/macos
-            output_file: Ciallo.dmg
-            package: Ciallo-macOS-arm64.dmg
+            output_file: Ciallo.app
+            package: Ciallo-macOS.zip
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -315,8 +313,7 @@ jobs:
             Select-Object -First 1
 
           if (-not $candidate) {
-            Get-ChildItem -LiteralPath .godot-ci/editor -Recurse | Select-Object FullName
-            throw "Could not locate Godot editor binary."
+            throw "Could not locate Godot editor binary in .godot-ci/editor."
           }
 
           if (-not $IsWindows) {
@@ -330,13 +327,26 @@ jobs:
         shell: pwsh
         run: dotnet restore "$env:CSPROJ" --configfile NuGet.Config
 
+      - name: Build C# project
+        shell: pwsh
+        run: dotnet build "$env:CSPROJ" --configuration Release --no-restore
+
       - name: Import resources
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
+          # Localization .translation files are generated during --import, so the
+          # first pass logs expected "cannot open" errors. Filter that known noise.
+          $noise = "res://Localization/.+\.translation|resource_format_binary\.cpp:1220|resource_loader\.cpp:343"
           Push-Location $env:PROJECT_PATH
-          & "${{ steps.editor.outputs.path }}" --headless --import
+          & "${{ steps.editor.outputs.path }}" --headless --import 2>&1 |
+            Where-Object { $_ -notmatch $noise }
+          $importExitCode = $LASTEXITCODE
           Pop-Location
+
+          if ($importExitCode -ne 0) {
+            throw "Godot resource import failed with exit code $importExitCode."
+          }
 
       - name: Export release
         shell: pwsh
@@ -366,11 +376,7 @@ jobs:
           } elseif ("${{ matrix.name }}" -eq "Linux") {
             tar -czf $package -C $outDir .
           } else {
-            Copy-Item -LiteralPath (Join-Path $outDir "${{ matrix.output_file }}") -Destination $package -Force
-          }
-
-          if (-not (Test-Path -LiteralPath $package)) {
-            throw "Package was not created: $package"
+            Compress-Archive -Path (Join-Path $outDir "${{ matrix.output_file }}") -DestinationPath $package -Force
           }
 
       - name: Upload artifact
@@ -405,7 +411,7 @@ jobs:
           - Custom engine status: ${{ needs.meta.outputs.engine_status }}
           - Custom engine release: ${{ needs.meta.outputs.engine_release_tag }}
           - Windows, Linux, and macOS artifacts are exported from the same SDK-locked build.
-          - macOS is ad-hoc signed and not notarized in this early GitHub Release flow.
+          - macOS is exported as a .app bundle, wrapped in a ZIP for GitHub Release distribution, and not notarized in this early flow.
           - Release kind: ${{ needs.meta.outputs.tag_kind }}
           EOF
 
