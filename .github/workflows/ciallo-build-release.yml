@@ -19,7 +19,8 @@ permissions:
 
 concurrency:
   group: ciallo-build-release-${{ github.ref }}
-  cancel-in-progress: true
+  # Never cancel tag builds: release/rc/hotfix/feature-test runs must complete.
+  cancel-in-progress: ${{ github.ref_type != 'tag' }}
 
 env:
   PROJECT_PATH: Ciallo
@@ -54,11 +55,6 @@ jobs:
           fetch-depth: 0
           lfs: true
           submodules: true
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v5
-        with:
-          dotnet-version: 10.0.x
 
       - name: Validate metadata
         id: meta
@@ -98,7 +94,7 @@ jobs:
 
           $sdkIndex = Invoke-RestMethod -Uri $env:GODOT_SDK_FLAT
           if ($sdkIndex.versions -notcontains $sdkVersion) {
-            throw "SDK '$sdkVersion' is not published on public feed '$env:GODOT_FEED'."
+            throw "SDK '$sdkVersion' is not published on public feed '$env:GODOT_SDK_FLAT'."
           }
 
           $headers = @{
@@ -196,14 +192,6 @@ jobs:
           "Engine release: $engineReleaseTag"
           "Tag kind: $tagKind"
 
-      - name: Restore
-        shell: pwsh
-        run: dotnet restore "$env:CSPROJ" --configfile NuGet.Config
-
-      - name: Build
-        shell: pwsh
-        run: dotnet build "$env:CSPROJ" --configuration Debug --no-restore
-
   export:
     name: Export ${{ matrix.name }}
     needs: meta
@@ -219,7 +207,7 @@ jobs:
             preset: Windows Desktop
             output_dir: build/windows
             output_file: Ciallo.exe
-            package: Ciallo-Windows.zip
+            artifact: Ciallo-Windows
           - name: Linux
             runner: ubuntu-24.04
             editor_asset: godot-linuxbsd-x86_64
@@ -227,7 +215,7 @@ jobs:
             preset: Linux
             output_dir: build/linux
             output_file: Ciallo
-            package: Ciallo-Linux.tar.gz
+            artifact: Ciallo-Linux
           - name: macOS
             runner: macos-26
             editor_asset: godot-macos-arm64
@@ -235,7 +223,7 @@ jobs:
             preset: macOS
             output_dir: build/macos
             output_file: Ciallo.app
-            package: Ciallo-macOS.zip
+            artifact: Ciallo-macOS
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -366,26 +354,11 @@ jobs:
             throw "Export did not create expected output: $outFile"
           }
 
-      - name: Package export
-        shell: pwsh
-        run: |
-          $ErrorActionPreference = "Stop"
-          $outDir = Join-Path (Get-Location) "${{ matrix.output_dir }}"
-          $package = Join-Path (Get-Location) "${{ matrix.package }}"
-
-          if ("${{ matrix.name }}" -eq "Windows") {
-            Compress-Archive -Path (Join-Path $outDir "*") -DestinationPath $package -Force
-          } elseif ("${{ matrix.name }}" -eq "Linux") {
-            tar -czf $package -C $outDir .
-          } else {
-            Compress-Archive -Path (Join-Path $outDir "${{ matrix.output_file }}") -DestinationPath $package -Force
-          }
-
       - name: Upload artifact
         uses: actions/upload-artifact@v7
         with:
-          name: ${{ matrix.package }}
-          path: ${{ matrix.package }}
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.output_dir }}/*
           retention-days: ${{ needs.meta.outputs.artifact_retention_days }}
           if-no-files-found: error
 
@@ -397,11 +370,52 @@ jobs:
       - export
     runs-on: ubuntu-24.04
     steps:
-      - name: Download artifacts
+      - name: Download Windows artifact
         uses: actions/download-artifact@v6
         with:
-          path: dist
-          merge-multiple: true
+          name: Ciallo-Windows
+          path: dist/raw/windows
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v6
+        with:
+          name: Ciallo-Linux
+          path: dist/raw/linux
+
+      - name: Download macOS artifact
+        uses: actions/download-artifact@v6
+        with:
+          name: Ciallo-macOS
+          path: dist/raw/macos
+
+      - name: Package release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p packages
+
+          (
+            cd dist/raw/windows
+            zip -r -q "$GITHUB_WORKSPACE/packages/Ciallo-Windows.zip" .
+          )
+
+          chmod +x dist/raw/linux/Ciallo
+          (
+            cd dist/raw/linux
+            zip -r -q "$GITHUB_WORKSPACE/packages/Ciallo-Linux.zip" .
+          )
+
+          mac_exe="dist/raw/macos/Ciallo.app/Contents/MacOS/Ciallo"
+          if [ ! -f "$mac_exe" ]; then
+            echo "Missing macOS app executable: $mac_exe"
+            exit 1
+          fi
+          chmod +x "$mac_exe"
+          (
+            cd dist/raw/macos
+            zip -r -q "$GITHUB_WORKSPACE/packages/Ciallo-macOS.zip" Ciallo.app
+          )
 
       - name: Write release notes
         shell: bash
@@ -413,14 +427,14 @@ jobs:
           - Custom engine status: ${{ needs.meta.outputs.engine_status }}
           - Custom engine release: ${{ needs.meta.outputs.engine_release_tag }}
           - Windows, Linux, and macOS artifacts are exported from the same SDK-locked build.
-          - macOS is exported as a .app bundle, wrapped in a ZIP for GitHub Release distribution, and not notarized in this early flow.
+          - macOS `.app` is not code-signed or notarized yet. On first launch, remove the quarantine flag with `xattr -dr com.apple.quarantine Ciallo.app` or right-click > Open.
           - Release kind: ${{ needs.meta.outputs.tag_kind }}
           EOF
 
       - name: Publish
         uses: softprops/action-gh-release@v3
         with:
-          files: dist/*
+          files: packages/*
           name: ${{ needs.meta.outputs.release_title }}
           prerelease: ${{ needs.meta.outputs.is_prerelease }}
           fail_on_unmatched_files: true
