@@ -109,6 +109,14 @@ public class NewVectorFillMarkerCmd : NewShapeCmdBase
             .Switch()
             .Subscribe(marker.Sprite.SetModulate)
             .AddTo(targetE);
+        // Dot hints at the polygon's fill color, so bind it to the same FillColor source as polygonView.
+        setting.BrushE
+            .Select(e => e.IsNull
+                ? Observable.Return(Colors.Black)
+                : e.Get<FillBrushSetting>().FillColor.AsObservable())
+            .Switch()
+            .Subscribe(c => marker.ColorDot.Color = c)
+            .AddTo(targetE);
 
         sampledPolyline.ObserveShape().ThrottleLastFrame(1).Subscribe(v =>
         {
