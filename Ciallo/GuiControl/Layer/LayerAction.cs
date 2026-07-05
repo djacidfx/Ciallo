@@ -31,6 +31,7 @@ public partial class LayerAction : Control
         Root.RemoveLayer.Pressed += OnRemoveLayer;
         Root.NewImage.Pressed += OnNewImage;
         Root.ConvertToShape.Pressed += OnConvertToShape;
+        Root.FileDialog.FileSelected += OnImageFileSelected;
     }
 
     public void OnNewShapeLayer()
@@ -99,11 +100,16 @@ public partial class LayerAction : Control
         {
             image = Image.LoadFromFile(path);
         }
-        catch
+        catch (System.Exception e)
         {
+            GD.PushError($"Failed to load image from '{path}': {e.Message}");
             return;
         }
-        if (image == null) return;
+        if (image == null || image.IsEmpty())
+        {
+            GD.PushError($"Loaded image from '{path}' is empty.");
+            return;
+        }
         var (parentE, index) = GetNewLayerInsertPosition();
         new CommandBuilder("New Image Layer", Document.World.Create())
             .NewImageLayer(image)
