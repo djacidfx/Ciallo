@@ -211,7 +211,7 @@ public sealed class StrokeModeler
     }
 
     private static void ModelStylus(
-        IReadOnlyList<TipState> tipStates,
+        List<TipState> tipStates,
         StylusStateModeler stylusStateModeler,
         LoopContractionMitigationModeler loopContractionMitigationModeler,
         List<ModelerResult> results,
@@ -219,8 +219,9 @@ public sealed class StrokeModeler
     {
         results.EnsureCapacity(results.Count + tipStates.Count);
         float interpolationValue = loopContractionMitigationModeler.GetInterpolationValue();
-        foreach (TipState tipState in tipStates)
+        for (int i = 0; i < tipStates.Count; i++)
         {
+            TipState tipState = tipStates[i];
             Vector2? strokeNormal = Utils.GetStrokeNormal(tipState, prevTime);
             ModelerResult projectedState = stylusStateModeler.Project(tipState, strokeNormal);
             ModelerResult modeledState = new(
@@ -231,8 +232,9 @@ public sealed class StrokeModeler
                 projectedState.Pressure,
                 projectedState.Tilt,
                 projectedState.Orientation);
-            results.Add(Utils.InterpResult(projectedState, modeledState, interpolationValue));
-            interpolationValue = loopContractionMitigationModeler.Update(results[^1].Velocity, tipState.Time);
+            ModelerResult result = Utils.InterpResult(projectedState, modeledState, interpolationValue);
+            results.Add(result);
+            interpolationValue = loopContractionMitigationModeler.Update(result.Velocity, tipState.Time);
             prevTime = tipState.Time;
         }
     }

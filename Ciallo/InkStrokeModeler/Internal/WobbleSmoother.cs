@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
 
 namespace InkStrokeModeler.Internal;
 
 internal sealed class WobbleSmoother
 {
-    private sealed record Sample(Vector2 Position, Vector2 WeightedPosition, float Distance, TimeSpan Duration, TimeSpan Time);
+    private readonly record struct Sample(Vector2 Position, Vector2 WeightedPosition, float Distance, TimeSpan Duration, TimeSpan Time);
 
     private sealed class State
     {
-        public readonly LinkedList<Sample> Samples = [];
+        public readonly List<Sample> Samples = [];
+        public int FirstSampleIndex;
         public Vector2 WeightedPositionSum;
         public float DistanceSum;
         public float DurationSum;
@@ -20,12 +20,30 @@ internal sealed class WobbleSmoother
         {
             State clone = new()
             {
+                FirstSampleIndex = 0,
                 WeightedPositionSum = WeightedPositionSum,
                 DistanceSum = DistanceSum,
                 DurationSum = DurationSum,
             };
-            foreach (Sample sample in Samples) clone.Samples.AddLast(sample);
+            clone.Samples.EnsureCapacity(Samples.Count - FirstSampleIndex);
+            for (int i = FirstSampleIndex; i < Samples.Count; i++)
+                clone.Samples.Add(Samples[i]);
             return clone;
+        }
+
+        public Sample First => Samples[FirstSampleIndex];
+
+        public Sample Last => Samples[^1];
+
+        public void Add(Sample sample) => Samples.Add(sample);
+
+        public void RemoveFirst()
+        {
+            FirstSampleIndex++;
+            if (FirstSampleIndex <= 32 || FirstSampleIndex <= Samples.Count / 2) return;
+
+            Samples.RemoveRange(0, FirstSampleIndex);
+            FirstSampleIndex = 0;
         }
     }
 
@@ -36,7 +54,7 @@ internal sealed class WobbleSmoother
     public void Reset(WobbleSmootherParams parameters, Vector2 position, TimeSpan time)
     {
         _state = new State();
-        _state.Samples.AddLast(new Sample(position, Vector2.Zero, 0, TimeSpan.Zero, time));
+        _state.Add(new Sample(position, Vector2.Zero, 0, TimeSpan.Zero, time));
         _savedState = null;
         _params = parameters;
     }
@@ -45,7 +63,7 @@ internal sealed class WobbleSmoother
     {
         if (!_params.IsEnabled) return position;
 
-        Sample last = _state.Samples.Last!.Value;
+        Sample last = _state.Last;
         TimeSpan deltaTime = time - last.Time;
         float deltaSeconds = (float)deltaTime.TotalSeconds;
         Sample sample = new(
@@ -54,18 +72,18 @@ internal sealed class WobbleSmoother
             Utils.Distance(position, last.Position),
             deltaTime,
             time);
-        _state.Samples.AddLast(sample);
+        _state.Add(sample);
         _state.WeightedPositionSum += sample.WeightedPosition;
         _state.DistanceSum += sample.Distance;
         _state.DurationSum += (float)sample.Duration.TotalSeconds;
 
-        while (_state.Samples.First!.Value.Time < time - _params.Timeout)
+        while (_state.First.Time < time - _params.Timeout)
         {
-            Sample removed = _state.Samples.First.Value;
+            Sample removed = _state.First;
             _state.WeightedPositionSum -= removed.WeightedPosition;
             _state.DistanceSum -= removed.Distance;
             _state.DurationSum -= (float)removed.Duration.TotalSeconds;
-            _state.Samples.RemoveFirst();
+            _state.RemoveFirst();
         }
 
         if (_state.DurationSum == 0) return position;

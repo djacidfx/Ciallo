@@ -26,8 +26,9 @@ const StampFlag StampFlags = StampFlag(1 << 0, 1 << 1, 1 << 2, 1 << 3);
 struct BrushFlag {
     int Pressure2FlowCurve;
     int Dash;
+    int Pressure2Radius;
 };
-const BrushFlag BrushFlags = BrushFlag(1 << 0, 1 << 1);
+const BrushFlag BrushFlags = BrushFlag(1 << 0, 1 << 1, 1 << 2);
 
 const int Vanilla = 0, Stamp = 1, Airbrush = 2;
 uniform int StrokeType : hint_enum("Vanilla", "Stamp", "Airbrush") = 0;

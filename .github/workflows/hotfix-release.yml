@@ -1,0 +1,179 @@
+name: Ciallo Hotfix Release
+
+"on":
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ciallo-hotfix-release-main
+  cancel-in-progress: false
+
+env:
+  PROJECT_PATH: Ciallo
+
+jobs:
+  create-hotfix:
+    name: Create hotfix tag and dev backport PR
+    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'hotfix/')
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout merged main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Create hotfix tag
+        id: hotfix
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ -z "$MERGE_SHA" ]; then
+            echo "This workflow requires a merge commit SHA. Use squash merge for hotfix PRs."
+            exit 1
+          fi
+
+          git fetch origin +refs/heads/main:refs/remotes/origin/main +refs/heads/dev:refs/remotes/origin/dev --tags
+          git checkout --detach "$MERGE_SHA"
+
+          if ! git merge-base --is-ancestor "$MERGE_SHA" origin/main; then
+            echo "Hotfix merge commit $MERGE_SHA is not contained in origin/main."
+            exit 1
+          fi
+
+          parent_count="$(git show -s --format=%P "$MERGE_SHA" | wc -w | tr -d ' ')"
+          if [ "$parent_count" != "1" ]; then
+            echo "Hotfix PRs must be squash merged so the main hotfix commit has exactly one parent. Actual parent count: $parent_count."
+            exit 1
+          fi
+
+          project_file="$PROJECT_PATH/project.godot"
+          version_line="$(grep -E '^config/version=' "$project_file" | head -n 1)"
+          project_version="${version_line#*=}"
+          project_version="${project_version%\"}"
+          project_version="${project_version#\"}"
+
+          if ! [[ "$project_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "project.godot config/version must be plain semver X.Y.Z. Actual: $project_version"
+            exit 1
+          fi
+
+          base_tag="v$project_version"
+          if ! git rev-parse -q --verify "refs/tags/$base_tag" >/dev/null; then
+            echo "Missing stable release tag $base_tag."
+            exit 1
+          fi
+
+          latest_stable="$(gh api "repos/$REPO/releases/latest" --jq '.tag_name')"
+          if [ "$latest_stable" != "$base_tag" ]; then
+            echo "Hotfixes are only allowed for the latest stable release. Latest stable: $latest_stable; project version tag: $base_tag."
+            exit 1
+          fi
+
+          existing_tag="$(git tag --points-at "$MERGE_SHA" --list "${base_tag}-hotfix.*" | sort -V | tail -n 1)"
+          if [ -n "$existing_tag" ]; then
+            hotfix_tag="$existing_tag"
+            echo "Reusing existing hotfix tag $hotfix_tag for $MERGE_SHA"
+          else
+            next_number="$(
+              git tag --list "${base_tag}-hotfix.*" |
+                sed -E "s/^${base_tag}-hotfix\.([0-9]+)$/\1/" |
+                sort -n |
+                tail -n 1
+            )"
+            if [ -z "$next_number" ]; then
+              next_number=1
+            else
+              next_number=$((next_number + 1))
+            fi
+
+            hotfix_tag="${base_tag}-hotfix.${next_number}"
+            git tag -a "$hotfix_tag" "$MERGE_SHA" -m "Ciallo ${hotfix_tag#v}"
+            git push origin "$hotfix_tag"
+          fi
+
+          # Tags pushed with GITHUB_TOKEN do not start push workflows, so dispatch explicitly.
+          gh workflow run github-release.yml --repo "$REPO" --ref "$hotfix_tag"
+
+          backport_branch="backport/${hotfix_tag}-to-dev"
+          echo "hotfix_tag=$hotfix_tag" >> "$GITHUB_OUTPUT"
+          echo "backport_branch=$backport_branch" >> "$GITHUB_OUTPUT"
+          echo "merge_sha=$MERGE_SHA" >> "$GITHUB_OUTPUT"
+          echo "Created $hotfix_tag from PR #$PR_NUMBER: $PR_TITLE"
+
+      - name: Create dev backport PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          HOTFIX_TAG: ${{ steps.hotfix.outputs.hotfix_tag }}
+          BACKPORT_BRANCH: ${{ steps.hotfix.outputs.backport_branch }}
+          MERGE_SHA: ${{ steps.hotfix.outputs.merge_sha }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch origin dev
+          git checkout -B "$BACKPORT_BRANCH" origin/dev
+
+          if git merge-base --is-ancestor "$MERGE_SHA" HEAD; then
+            echo "dev already contains $HOTFIX_TAG; no backport PR needed."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          if ! git cherry-pick "$MERGE_SHA"; then
+            if git diff --quiet && git diff --cached --quiet; then
+              git cherry-pick --abort
+              echo "dev already has the same changes as $HOTFIX_TAG; no backport PR needed."
+              exit 0
+            fi
+            echo "Could not cherry-pick $HOTFIX_TAG into dev automatically."
+            echo "Resolve manually by backporting $MERGE_SHA to dev."
+            exit 1
+          fi
+
+          if git diff --quiet origin/dev...HEAD; then
+            echo "dev already contains $HOTFIX_TAG; no backport PR needed."
+            exit 0
+          fi
+
+          git push --force-with-lease origin "HEAD:$BACKPORT_BRANCH"
+
+          existing_pr="$(gh pr list --repo "$REPO" --head "$BACKPORT_BRANCH" --base dev --state open --json number --jq '.[0].number // empty')"
+          if [ -n "$existing_pr" ]; then
+            echo "Backport PR already exists: #$existing_pr"
+            exit 0
+          fi
+
+          cat > backport-body.md <<EOF
+          Backports hotfix $HOTFIX_TAG from #$PR_NUMBER to dev.
+
+          This PR is created automatically after the hotfix is merged into main.
+          It intentionally does not change project.godot version unless the hotfix itself changed it.
+          EOF
+
+          gh pr create \
+            --repo "$REPO" \
+            --base dev \
+            --head "$BACKPORT_BRANCH" \
+            --title "Backport $HOTFIX_TAG to dev" \
+            --body-file backport-body.md

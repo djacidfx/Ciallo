@@ -2,15 +2,6 @@ namespace InkStrokeModeler.Internal.Prediction.KalmanFilter;
 
 internal readonly record struct Vec4(double X, double Y, double Z, double W)
 {
-    public double this[int index] => index switch
-    {
-        0 => X,
-        1 => Y,
-        2 => Z,
-        3 => W,
-        _ => throw new IndexOutOfRangeException(),
-    };
-
     public static Vec4 operator +(Vec4 lhs, Vec4 rhs) => new(lhs.X + rhs.X, lhs.Y + rhs.Y, lhs.Z + rhs.Z, lhs.W + rhs.W);
     public static Vec4 operator *(Vec4 v, double k) => new(v.X * k, v.Y * k, v.Z * k, v.W * k);
     public static Vec4 operator /(Vec4 v, double k) => new(v.X / k, v.Y / k, v.Z / k, v.W / k);
@@ -40,33 +31,6 @@ internal readonly record struct Matrix4(
         0, 0, 1, 0,
         0, 0, 0, 1);
 
-    public static Matrix4 Zero => new(
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0,
-        0, 0, 0, 0);
-
-    public double At(int row, int column) => (row, column) switch
-    {
-        (0, 0) => M00,
-        (0, 1) => M01,
-        (0, 2) => M02,
-        (0, 3) => M03,
-        (1, 0) => M10,
-        (1, 1) => M11,
-        (1, 2) => M12,
-        (1, 3) => M13,
-        (2, 0) => M20,
-        (2, 1) => M21,
-        (2, 2) => M22,
-        (2, 3) => M23,
-        (3, 0) => M30,
-        (3, 1) => M31,
-        (3, 2) => M32,
-        (3, 3) => M33,
-        _ => throw new IndexOutOfRangeException(),
-    };
-
     public Matrix4 Transpose() => new(
         M00, M10, M20, M30,
         M01, M11, M21, M31,
@@ -76,12 +40,8 @@ internal readonly record struct Matrix4(
 
 internal static class MatrixMath
 {
-    public static double Dot(Vec4 lhs, Vec4 rhs)
-    {
-        double result = 0;
-        for (int i = 0; i < 4; i++) result += lhs[i] * rhs[i];
-        return result;
-    }
+    public static double Dot(Vec4 lhs, Vec4 rhs) =>
+        lhs.X * rhs.X + lhs.Y * rhs.Y + lhs.Z * rhs.Z + lhs.W * rhs.W;
 
     public static Matrix4 OuterProduct(Vec4 lhs, Vec4 rhs) => new(
         lhs.X * rhs.X, lhs.X * rhs.Y, lhs.X * rhs.Z, lhs.X * rhs.W,
@@ -109,34 +69,34 @@ internal static class MatrixMath
 
     public static Matrix4 Multiply(Matrix4 lhs, Matrix4 rhs)
     {
-        double[] values = new double[16];
-        for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 4; j++)
-        for (int k = 0; k < 4; k++)
-            values[i * 4 + j] += lhs.At(i, k) * rhs.At(k, j);
-
         return new Matrix4(
-            values[0], values[1], values[2], values[3],
-            values[4], values[5], values[6], values[7],
-            values[8], values[9], values[10], values[11],
-            values[12], values[13], values[14], values[15]);
+            lhs.M00 * rhs.M00 + lhs.M01 * rhs.M10 + lhs.M02 * rhs.M20 + lhs.M03 * rhs.M30,
+            lhs.M00 * rhs.M01 + lhs.M01 * rhs.M11 + lhs.M02 * rhs.M21 + lhs.M03 * rhs.M31,
+            lhs.M00 * rhs.M02 + lhs.M01 * rhs.M12 + lhs.M02 * rhs.M22 + lhs.M03 * rhs.M32,
+            lhs.M00 * rhs.M03 + lhs.M01 * rhs.M13 + lhs.M02 * rhs.M23 + lhs.M03 * rhs.M33,
+            lhs.M10 * rhs.M00 + lhs.M11 * rhs.M10 + lhs.M12 * rhs.M20 + lhs.M13 * rhs.M30,
+            lhs.M10 * rhs.M01 + lhs.M11 * rhs.M11 + lhs.M12 * rhs.M21 + lhs.M13 * rhs.M31,
+            lhs.M10 * rhs.M02 + lhs.M11 * rhs.M12 + lhs.M12 * rhs.M22 + lhs.M13 * rhs.M32,
+            lhs.M10 * rhs.M03 + lhs.M11 * rhs.M13 + lhs.M12 * rhs.M23 + lhs.M13 * rhs.M33,
+            lhs.M20 * rhs.M00 + lhs.M21 * rhs.M10 + lhs.M22 * rhs.M20 + lhs.M23 * rhs.M30,
+            lhs.M20 * rhs.M01 + lhs.M21 * rhs.M11 + lhs.M22 * rhs.M21 + lhs.M23 * rhs.M31,
+            lhs.M20 * rhs.M02 + lhs.M21 * rhs.M12 + lhs.M22 * rhs.M22 + lhs.M23 * rhs.M32,
+            lhs.M20 * rhs.M03 + lhs.M21 * rhs.M13 + lhs.M22 * rhs.M23 + lhs.M23 * rhs.M33,
+            lhs.M30 * rhs.M00 + lhs.M31 * rhs.M10 + lhs.M32 * rhs.M20 + lhs.M33 * rhs.M30,
+            lhs.M30 * rhs.M01 + lhs.M31 * rhs.M11 + lhs.M32 * rhs.M21 + lhs.M33 * rhs.M31,
+            lhs.M30 * rhs.M02 + lhs.M31 * rhs.M12 + lhs.M32 * rhs.M22 + lhs.M33 * rhs.M32,
+            lhs.M30 * rhs.M03 + lhs.M31 * rhs.M13 + lhs.M32 * rhs.M23 + lhs.M33 * rhs.M33);
     }
 
-    public static Vec4 Multiply(Matrix4 m, Vec4 v)
-    {
-        double[] values = new double[4];
-        for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 4; j++)
-            values[i] += v[j] * m.At(i, j);
-        return new Vec4(values[0], values[1], values[2], values[3]);
-    }
+    public static Vec4 Multiply(Matrix4 m, Vec4 v) => new(
+        v.X * m.M00 + v.Y * m.M01 + v.Z * m.M02 + v.W * m.M03,
+        v.X * m.M10 + v.Y * m.M11 + v.Z * m.M12 + v.W * m.M13,
+        v.X * m.M20 + v.Y * m.M21 + v.Z * m.M22 + v.W * m.M23,
+        v.X * m.M30 + v.Y * m.M31 + v.Z * m.M32 + v.W * m.M33);
 
-    public static Vec4 Multiply(Vec4 v, Matrix4 m)
-    {
-        double[] values = new double[4];
-        for (int i = 0; i < 4; i++)
-        for (int j = 0; j < 4; j++)
-            values[i] += v[j] * m.At(j, i);
-        return new Vec4(values[0], values[1], values[2], values[3]);
-    }
+    public static Vec4 Multiply(Vec4 v, Matrix4 m) => new(
+        v.X * m.M00 + v.Y * m.M10 + v.Z * m.M20 + v.W * m.M30,
+        v.X * m.M01 + v.Y * m.M11 + v.Z * m.M21 + v.W * m.M31,
+        v.X * m.M02 + v.Y * m.M12 + v.Z * m.M22 + v.W * m.M32,
+        v.X * m.M03 + v.Y * m.M13 + v.Z * m.M23 + v.W * m.M33);
 }

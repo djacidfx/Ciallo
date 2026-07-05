@@ -3,8 +3,10 @@
 这个视频将会向你介绍如何使用**矢量油漆桶**工具给你的手绘图上色
 
 其实“矢量油漆桶”这个工具的名字已经说明了它的用途：做矢量化的填充工作。
-现在软件有线稿（演示），使用矢量油漆桶工具点击闭合的区域，颜色就填充上了。点击的位置被这个新建的带中心点的圆记录下来，这个小圆我们叫它填充标记
-随后我可以随意拖拽填充标记的位置（演示），填色块的位置便跟随着标记实时改变
+现在软件有线稿（演示），使用矢量油漆桶工具点击闭合的区域，颜色就填充上了。
+点击的位置被这个新建的带中心点的圆记录下来，这个小圆我们叫它填充标记
+随后我可以随意拖拽填充标记的位置（演示），填色块的位置便跟随着标记改变。
+标记的中心位置就代表油漆桶填色的目标位置，修改标记，我们就拥有了可编辑的，矢量化的填色。
 
 你可能想问：除了填色位置以外，还有什么可以修改呢？
 这张图里**一切**都可以修改
@@ -21,4 +23,127 @@
 所以为了避免这种情况，我准备了**修剪工具**，帮你修剪掉线头，那些为了稳定相交而绘制的额外小线头；**缝隙修补工具**，激活这个工具后它会把所有的闭合区域都填上一个随机的颜色，并且尝试找出所有的可疑的未闭合的端点，可疑的缝隙会用这种动态的虚线高亮显示。如果你觉得它找的正确，可以把鼠标移动上去，点击，线条就会自动的做轻微的形变帮你闭合上目标小缝隙。
 除了上面说的修改工具来避免缝隙，你还可以在使用笔刷工具在绘制的时候就开启**吸附功能**。把光标移动到画布上，会有小黄点实时的提示你吸附的目标位置，线条画好后就会自动的吸附到小黄点附近。开启缝隙修补之后，你可以看到被吸附的地方是没有任何缝隙的。
 
-如果你喜欢这个功能，来Steam上查找Ciallo；⚠️ TODO：
+⚠️ TODO：如果你喜欢这个功能，来Steam上查找Ciallo；
+
+## English voiceover script for TTS
+## THE SCENE: 
+A quiet, professional remote workspace.
+### DIRECTOR'S NOTES
+Pace: Regular product explanation on YouTube.
+
+#### TRANSCRIPT
+[calmly] In this video, I want to show you a fast way to color hand-drawn animation, with the "Vector Bucket Fill" tool.
+
+The name already gives away the idea, it is a paint bucket tool, but [enunciate every syllable] "vectorized".
+
+Let me show you how it works. Here, I already have some line drawings.
+
+I choose the Vector Bucket Fill tool, click inside a closed area, and the color appears.
+
+[slightly excited] But notice this.
+
+The click is not just a one-time action. It creates this small circle, with a center point.
+
+This is called a "fill marker."
+
+And now, I can drag that marker anywhere I want, and the filled area follows it.
+
+[calmly] The target position of bucket fill is the center of marker. By modifying the marker, we get the "editable, vectorized" flood fill or bucket fill.
+
+So you might ask, besides the position of the fill, what else can I edit?
+
+[pause] The answer is, everything.
+
+[slightly excited] I can change the fill color, I can change the marker shape, I can change the outer contour, and I can even change the brush used by the outline.
+
+This whole drawing is still alive, still editable.
+
+That is why I call it, "Vector Bucket Fill."
+
+---
+
+Now, you may be thinking, okay, editable coloring is nice, but my drawings are already clean. My colors are already accurate. I do not really need to fix them later.
+
+And honestly, maybe that is true.
+
+But The real power of this tool is not correction, but [pause] reuse.
+
+[calmly] Let me show you this. I can select all the fill markers from the previous frame, press Control C copy them, then go to the next frame, press Control V paste them.
+
+After that, the whole frame is nearly colored. I only need to drag each marker into the right place.
+
+And just like that, the whole frame is colored.
+
+[confidently] This is the core purpose of "Vector Bucket Fill", to make coloring reusable.
+
+Once you color one drawing, or one character, you can reuse that work across all the similar drawings.
+
+And I beieve when making frame-by-frame animation, that matters a lot.
+
+You may have thousands of hand-drawn frames to color, all very similar to each other. This tool will save you a huge amount of work on coloring.
+
+---
+
+[calmly] Now, to use "Vector Bucket Fill" efficiently, there are a few things to know.
+
+First, it needs a dedicated fill layer.
+
+All bucket-fill operations happen inside this special layer.
+
+By default, the layer automatically adds a gray base under closed area.
+
+If you do not want that, you can turn it off in the tool settings, or simply change the color.
+
+Second, this tool only looks at the center line.
+
+Not the stroke width.
+
+Not the actual pixels covered by the stroke.
+
+Only the center line is used as the closed contour.
+
+This has a very nice benefit.
+
+You do not need to carefully paint around the pixels occupied by the line itself.
+
+When I hide the line art, you can see the color shapes fit together tightly, with no gaps at all.
+
+But there is one catch.
+
+Because the tool only looks at center lines, some areas may look closed on the screen, while the actual center lines are still open.
+
+For example, here.
+
+The pixels look connected.
+
+But inside the stroke, the center lines are not actually closed.
+
+---
+
+So, to handle this, I prepared a "Trim" tool.
+
+It helps remove loose line ends, especially those tiny extra strokes to make intersections more stable.
+
+I also prepared a "Gap Repair" tool.
+
+When this tool is active, it fills all closed regions with random colors, then tries to find suspicious open endpoints.
+
+Possible gaps are highlighted with animated dashed lines.
+
+If the highlighted gap looks correct, just move the cursor over it, and click.
+
+The line will gently deform, and close that small gap automatically.
+
+Besides repairing gaps afterward, you can also prevent them while drawing.
+
+When using the brush tool, turn on "Snapping."
+
+As you move the cursor over the canvas, small yellow dots show the snapping targets in real time.
+
+After the stroke is drawn, it snaps near the yellow dot automatically.
+
+[pleased] And once "Gap Repair" is turned on, you can see it clearly, the snapped area has no gap.
+
+Not even a tiny one.
+
+[warmly] If you like this feature, search for "Ciallo" on Steam.

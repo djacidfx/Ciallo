@@ -1,28 +1,5 @@
 # Roadmap
 
-## v0.1 EA plan
-
-V0.1EA focus on bulding MVP (minimum viable product) to support flat color drawings, should be as feature-rich as SAI2.
-
-Plan to follow [pikat](https://www.youtube.com/@pikat)'s feature list:
-
-![](/.github/PikatFeatureList.png)
-
-- [ ] Lasso tool like lasso on CSP vector layer
-- [ ] Sculpt(liquify) tool like GP
-- Layer operations
-  - [ ] Basic modifiers
-  - [ ] Folder
-  - [ ] Blend modes
-  - [ ] Lock & rasterize
-  - [ ] Mask
-- [ ] Technical stuffs
-
-Aim to be able to produce business-level galgame tachies. Notify me if there are missing features to produce tachies in following style.
-
-![](/.github/Ririko.png)
-
-
 # Ciallo Contributing Guide
 
 ## Introduction
@@ -109,16 +86,114 @@ If you have to understand how I handle dragging mouse input with R3 (reactive pr
 3. Reference [ReactiveX operator document](https://reactivex.io/documentation/operators.html) to choose suitable operators.
 4. Make hard guess on the problems to solve.
 
-### Data serialization and MessagePack
+### Data serialization and DuckDB
 
-Data uses [MessagePack](https://github.com/MessagePack-CSharp/MessagePack-CSharp) library with C# built-in [DataContract] to serialize data into `.ciallo` file.
+Project data is stored in a DuckDB-backed `.ciallo` file.
 No DTO by design.
 The mechanism is combined with the component system:
 
-- When an entity is tagged with `ToSerializeTag`, it will be serialized to .Ciallo files.
-- When its components are attributed with `[ToSerialize]` (and also [DataContract] when necessary). these components are serialized.
-- An entity without `ToSerializeTag` but has `[ToSerialize]` component won't be serialized, including entity itself and its components.
+- When an entity is tagged with `ToSerializeTag`, it will be persisted to `.ciallo` files.
+- Components attributed with `[ToSerialize]` are mapped to DuckDB columns. Scalar values use DuckDB scalar types, and creative value types such as `Color`, `Vector2`, `Transform2D`, and Bezier data use DuckDB `STRUCT`, `LIST`, or array-like structured types when possible.
+- An entity without `ToSerializeTag` but with `[ToSerialize]` components won't be persisted, including the entity itself and its components.
 
-## Code style
 
-See my [instruction](../Ciallo/.github/copilot-instructions.md) to copilot.
+## Release and tags
+
+Ciallo uses `dev` for daily integration and `main` for formal releases.
+Create feature branches from `dev` using `<your-name>/<feature-topic>`, for example `alice/brush-preview`.
+There are no alpha/beta tags and no release branches for now.
+The Ciallo Build and Release workflow reads the app version from `Ciallo/project.godot` (`config/version`) and requires the C# project to use a `Godot.NET.Sdk/*-ciallo.g<sha>` package that is already published to the public custom Godot NuGet feed.
+
+Before creating an RC or final release tag, update `Ciallo/project.godot`:
+
+```ini
+config/version="0.0.2"
+```
+
+Commit and push that change before tagging.
+The tag version must exactly match `config/version`.
+After a final release, bump `dev` to the next planned version immediately, while `main` stays on the released version.
+
+### Feature test builds
+
+Use feature test tags when a branch needs downloadable builds for testers before merging to `dev`.
+These tags create GitHub Actions artifacts only; they do not create GitHub Releases.
+Artifacts are short-lived.
+
+```bash
+git checkout alice/brush-preview
+git pull --ff-only
+git tag -a ft/alice/brush-preview.1 -m "Feature test brush preview 1"
+git push origin ft/alice/brush-preview.1
+```
+
+### Release candidates
+
+Create RC tags from a commit that is already contained in `origin/dev`.
+RC tags create GitHub Prereleases with Windows, Linux, and macOS artifacts.
+
+```bash
+git checkout dev
+git pull --ff-only
+git tag -a v0.0.2-rc.1 -m "Ciallo 0.0.2 rc.1"
+git push origin v0.0.2-rc.1
+```
+
+If another RC is needed, increment only the RC number:
+
+```bash
+git tag -a v0.0.2-rc.2 -m "Ciallo 0.0.2 rc.2"
+git push origin v0.0.2-rc.2
+```
+
+### Final releases (managed by owner)
+
+Final release tags must be created from a commit that is already contained in `origin/main`.
+Normally, merge `dev` into `main` first, then tag `main`.
+
+```bash
+git checkout main
+git pull --ff-only
+git merge --ff-only origin/dev
+git push origin main
+git tag -a v0.0.2 -m "Ciallo 0.0.2"
+git push origin v0.0.2
+```
+
+Final tags create normal GitHub Releases.
+After the final release is verified, old RC prereleases can be deleted manually when they are no longer useful.
+
+### Hotfix releases
+
+Hotfix releases publish bug fix within 5-10min. 
+Use a hotfix when the latest stable release needs an urgent public fix. 
+Hotfixes are temporary prereleases under the already published stable version:
+
+```text
+v0.1.0
+v0.1.0-hotfix.1
+v0.1.0-hotfix.2
+v0.1.1
+```
+
+Hotfixes are allowed only for the latest stable GitHub Release.
+
+Create hotfix branches from `main` using the `hotfix/` prefix:
+
+```bash
+git checkout main
+git pull --ff-only
+git checkout -b hotfix/fix-export-crash
+```
+
+Open a PR from `hotfix/fix-export-crash` to `main`.
+Hotfix PRs must be squash merged.
+After the PR is merged, the Ciallo Hotfix Release workflow automatically:
+
+- creates the next `vX.Y.Z-hotfix.N` tag on the merged `main` commit;
+- dispatches the Ciallo Build and Release workflow for that tag;
+- publishes the tag as a GitHub Prerelease with exported Windows, Linux, and macOS artifacts;
+- creates a backport PR from `backport/vX.Y.Z-hotfix.N-to-dev` into `dev`.
+
+If the automatic cherry-pick to `dev` conflicts, the workflow fails and the fix must be backported manually.
+Do not manually bump `project.godot` for hotfixes; bump it only for RCs, final releases, and the next accumulated stable patch release.
