@@ -109,7 +109,7 @@ jobs:
           fi
 
           # Tags pushed with GITHUB_TOKEN do not start push workflows, so dispatch explicitly.
-          gh workflow run ciallo-build-release.yml --repo "$REPO" --ref "$hotfix_tag"
+          gh workflow run github-release.yml --repo "$REPO" --ref "$hotfix_tag"
 
           backport_branch="backport/${hotfix_tag}-to-dev"
           echo "hotfix_tag=$hotfix_tag" >> "$GITHUB_OUTPUT"

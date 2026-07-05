@@ -1,26 +1,58 @@
-name: Ciallo Build and Release
+name: Godot Export
 
-"on":
-  pull_request:
-    branches:
-      - dev
-      - main
-  push:
-    branches:
-      - dev
-      - main
-    tags:
-      - "ft/**"
-      - "v*"
-  workflow_dispatch:
+# Reusable export pipeline: validates project/SDK metadata and exports the
+# Windows/Linux/macOS builds. Shared by github-release.yml (release
+# automation) and steam-deploy.yml (manual Steam upload).
+#
+# KEY POINTS (this file replaced the inline meta+export jobs of
+# github-release.yml when Steam upload was added):
+# - Tag semantics are derived from `checkout_ref`, NOT github.ref_name.
+#   In a workflow_call context github.ref_name / github.ref_type describe the
+#   CALLER's ref, so relying on them would validate the wrong commit. The
+#   release caller passes github.ref; the Steam caller passes a manual
+#   branch/tag/SHA.
+# - A checkout_ref that is a release-like tag keeps the full tag rules
+#   (rc must be on dev; hotfix must be on main and target latest stable;
+#   release must be on main). A branch or SHA only has to build and is never
+#   treated as a release.
+# - Artifacts (Ciallo-Windows/Linux/macOS) are the raw exported files.
+#   actions/upload-artifact strips the Unix executable bit, so ANY consumer
+#   that runs the binaries (GitHub Release zip packaging, Steam depot staging)
+#   MUST re-chmod +x after download. See the chmod steps in the callers.
+
+on:
+  workflow_call:
+    inputs:
+      checkout_ref:
+        description: Git ref to checkout and build (full ref like refs/tags/vX, or a bare tag/branch/SHA).
+        required: true
+        type: string
+    outputs:
+      project_name:
+        value: ${{ jobs.meta.outputs.project_name }}
+      project_version:
+        value: ${{ jobs.meta.outputs.project_version }}
+      head_sha:
+        value: ${{ jobs.meta.outputs.head_sha }}
+      engine_status:
+        value: ${{ jobs.meta.outputs.engine_status }}
+      engine_release_tag:
+        value: ${{ jobs.meta.outputs.engine_release_tag }}
+      sdk_version:
+        value: ${{ jobs.meta.outputs.sdk_version }}
+      tag_kind:
+        value: ${{ jobs.meta.outputs.tag_kind }}
+      is_release:
+        value: ${{ jobs.meta.outputs.is_release }}
+      is_prerelease:
+        value: ${{ jobs.meta.outputs.is_prerelease }}
+      release_title:
+        value: ${{ jobs.meta.outputs.release_title }}
+      hotfix_base_version:
+        value: ${{ jobs.meta.outputs.hotfix_base_version }}
 
 permissions:
-  contents: write
-
-concurrency:
-  group: ciallo-build-release-${{ github.ref }}
-  # Never cancel tag builds: release/rc/hotfix/feature-test runs must complete.
-  cancel-in-progress: ${{ github.ref_type != 'tag' }}
+  contents: read
 
 env:
   PROJECT_PATH: Ciallo
@@ -40,6 +72,7 @@ jobs:
       artifact_retention_days: ${{ steps.meta.outputs.artifact_retention_days }}
       engine_release_tag: ${{ steps.meta.outputs.engine_release_tag }}
       engine_status: ${{ steps.meta.outputs.engine_status }}
+      head_sha: ${{ steps.meta.outputs.head_sha }}
       hotfix_base_version: ${{ steps.meta.outputs.hotfix_base_version }}
       is_release: ${{ steps.meta.outputs.is_release }}
       is_prerelease: ${{ steps.meta.outputs.is_prerelease }}
@@ -52,6 +85,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
+          ref: ${{ inputs.checkout_ref }}
           fetch-depth: 0
           lfs: true
           submodules: true
@@ -60,6 +94,7 @@ jobs:
         id: meta
         env:
           GH_TOKEN: ${{ github.token }}
+          CHECKOUT_REF: ${{ inputs.checkout_ref }}
         shell: pwsh
         run: |
           $ErrorActionPreference = "Stop"
@@ -110,16 +145,35 @@ jobs:
           }
           $engineReleaseTag = $engineRelease.tag_name
 
+          $headSha = (git rev-parse HEAD).Trim()
+
           $tagKind = "branch"
           $hotfixBaseVersion = ""
           $isRelease = "false"
           $isPrerelease = "false"
           $releaseTitle = "$projectName $projectVersion"
           $retention = "2"
-          $refType = "${{ github.ref_type }}"
-          $refName = "${{ github.ref_name }}"
 
-          if ($refType -eq "tag") {
+          # Derive tag-ness from checkout_ref, not github.ref_name (which in a
+          # workflow_call run points at the caller, not the built commit).
+          #   refs/tags/*  -> a real pushed tag; validate against tag patterns.
+          #   refs/*       -> branch or PR merge ref; build only, never a release.
+          #   bare value   -> manual Steam dispatch; treat as a release tag only
+          #                   when it matches a known tag pattern, else build only.
+          $checkoutRef = $env:CHECKOUT_REF
+          $refName = $checkoutRef
+          $treatAsTag = $false
+          if ($checkoutRef.StartsWith("refs/tags/")) {
+            $treatAsTag = $true
+            $refName = $checkoutRef.Substring("refs/tags/".Length)
+          } elseif ($checkoutRef.StartsWith("refs/")) {
+            $treatAsTag = $false
+          } elseif ($checkoutRef -match "^ft/[^/]+/[^/]+\.\d+$" -or $checkoutRef -match "^v\d+\.\d+\.\d+(-(rc|hotfix)\.\d+)?$") {
+            $treatAsTag = $true
+            $refName = $checkoutRef
+          }
+
+          if ($treatAsTag) {
             if ($refName -match "^ft/[^/]+/[^/]+\.\d+$") {
               $tagKind = "feature-test"
               $retention = "2"
@@ -177,6 +231,7 @@ jobs:
           "artifact_retention_days=$retention" >> $env:GITHUB_OUTPUT
           "engine_release_tag=$engineReleaseTag" >> $env:GITHUB_OUTPUT
           "engine_status=$engineStatus" >> $env:GITHUB_OUTPUT
+          "head_sha=$headSha" >> $env:GITHUB_OUTPUT
           "hotfix_base_version=$hotfixBaseVersion" >> $env:GITHUB_OUTPUT
           "is_release=$isRelease" >> $env:GITHUB_OUTPUT
           "is_prerelease=$isPrerelease" >> $env:GITHUB_OUTPUT
@@ -187,9 +242,11 @@ jobs:
           "tag_kind=$tagKind" >> $env:GITHUB_OUTPUT
 
           "Project: $projectName $projectVersion"
+          "Commit: $headSha"
           "Godot SDK: $sdkVersion"
           "Engine status: $engineStatus"
           "Engine release: $engineReleaseTag"
+          "Checkout ref: $checkoutRef"
           "Tag kind: $tagKind"
 
   export:
@@ -228,6 +285,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
         with:
+          ref: ${{ inputs.checkout_ref }}
           lfs: true
           submodules: true
 
@@ -361,98 +419,3 @@ jobs:
           path: ${{ matrix.output_dir }}/*
           retention-days: ${{ needs.meta.outputs.artifact_retention_days }}
           if-no-files-found: error
-
-  release:
-    name: Publish GitHub Release
-    if: needs.meta.outputs.is_release == 'true'
-    needs:
-      - meta
-      - export
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Download Windows artifact
-        uses: actions/download-artifact@v6
-        with:
-          name: Ciallo-Windows
-          path: dist/raw/windows
-
-      - name: Download Linux artifact
-        uses: actions/download-artifact@v6
-        with:
-          name: Ciallo-Linux
-          path: dist/raw/linux
-
-      - name: Download macOS artifact
-        uses: actions/download-artifact@v6
-        with:
-          name: Ciallo-macOS
-          path: dist/raw/macos
-
-      - name: Package release assets
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          mkdir -p packages
-
-          (
-            cd dist/raw/windows
-            zip -r -q "$GITHUB_WORKSPACE/packages/Ciallo-Windows.zip" .
-          )
-
-          chmod +x dist/raw/linux/Ciallo
-          (
-            cd dist/raw/linux
-            zip -r -q "$GITHUB_WORKSPACE/packages/Ciallo-Linux.zip" .
-          )
-
-          mac_exe="dist/raw/macos/Ciallo.app/Contents/MacOS/Ciallo"
-          if [ ! -f "$mac_exe" ]; then
-            echo "Missing macOS app executable: $mac_exe"
-            exit 1
-          fi
-          chmod +x "$mac_exe"
-          (
-            cd dist/raw/macos
-            zip -r -q "$GITHUB_WORKSPACE/packages/Ciallo-macOS.zip" Ciallo.app
-          )
-
-      - name: Write release notes
-        shell: bash
-        run: |
-          cat > release-notes.md <<'EOF'
-          ${{ needs.meta.outputs.release_title }}
-
-          - Godot SDK: Godot.NET.Sdk/${{ needs.meta.outputs.sdk_version }}
-          - Custom engine status: ${{ needs.meta.outputs.engine_status }}
-          - Custom engine release: ${{ needs.meta.outputs.engine_release_tag }}
-          - Windows, Linux, and macOS artifacts are exported from the same SDK-locked build.
-          - macOS `.app` is not code-signed or notarized yet. On first launch, remove the quarantine flag with `xattr -dr com.apple.quarantine Ciallo.app` or right-click > Open.
-          - Release kind: ${{ needs.meta.outputs.tag_kind }}
-          EOF
-
-      - name: Publish
-        uses: softprops/action-gh-release@v3
-        with:
-          files: packages/*
-          name: ${{ needs.meta.outputs.release_title }}
-          prerelease: ${{ needs.meta.outputs.is_prerelease }}
-          fail_on_unmatched_files: true
-          body_path: release-notes.md
-
-      - name: Remove older hotfix prereleases
-        if: needs.meta.outputs.tag_kind == 'hotfix'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BASE_VERSION: ${{ needs.meta.outputs.hotfix_base_version }}
-          CURRENT_TAG: ${{ github.ref_name }}
-          REPO: ${{ github.repository }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          for tag in $(gh release list --repo "$REPO" --limit 100 --json tagName,isPrerelease \
-            --jq ".[] | select(.isPrerelease == true and (.tagName | startswith(\"v${BASE_VERSION}-hotfix.\")) and .tagName != \"$CURRENT_TAG\") | .tagName"); do
-            echo "Deleting old hotfix GitHub Release: $tag"
-            gh release delete "$tag" --repo "$REPO" --yes
-          done

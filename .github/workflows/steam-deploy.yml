@@ -1,0 +1,226 @@
+name: Steam Deploy
+
+# Manual-only Steam upload entry point. Independent from the GitHub Release
+# workflow so Steam publishing is never an accidental side effect of a tag or
+# branch push. Runs game-ci/steam-deploy against the already-configured depots.
+#
+# KEY POINTS:
+# - Two source modes:
+#     build_ref     rebuild from a branch/tag/SHA via godot-export.yml (default).
+#     existing_run  reuse Ciallo-{Windows,Linux,macOS} artifacts from a prior run.
+# - Steam receives RAW depot content, not the GitHub Release zips.
+# - actions/upload-artifact strips the Unix executable bit, so the Linux binary
+#   and the macOS .app executable are re-chmod +x during staging. Without this,
+#   Steam serves non-executable Linux/macOS builds and players cannot launch.
+# - existing_run reads project_version from the reused run's head_sha via the
+#   GitHub API (repos/.../contents/...?ref=<sha>), so the build description
+#   matches the real uploaded commit. If that commit was GC'd, version is
+#   recorded as "unknown" rather than faked.
+# - existing_run only works while artifacts still exist: non-release builds keep
+#   artifacts for ~2 days, release-like tags for ~30 days (see godot-export.yml
+#   retention). Past that, the download 404s and the run fails naturally.
+# - steam_branch is any non-empty string; existence/permissions are owned by
+#   Steamworks. "default" is allowed as an experiment but SetLive to default is
+#   expected to fail (Steam requires promoting default via App Admin). Failure
+#   is NOT swallowed: the run stays red and you inspect the Steamworks Builds
+#   page manually.
+#
+# NOTE: this workflow was designed to be used rarely / once. It reuses
+# godot-export.yml (the same reusable pipeline the release workflow calls).
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_mode:
+        description: Build from a ref or reuse artifacts from an existing run.
+        type: choice
+        required: true
+        default: build_ref
+        options:
+          - build_ref
+          - existing_run
+      build_ref:
+        description: Branch, tag, or commit SHA to build when source_mode is build_ref. Prefer a tag or SHA.
+        required: false
+        default: main
+      run_id:
+        description: GitHub Actions run id to reuse when source_mode is existing_run.
+        required: false
+      steam_branch:
+        description: Steam branch to set live after upload. Use "default" only as an experiment.
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  # Serialize Steam uploads for this app: parallel SteamPipe sessions can clash.
+  group: steam-deploy-${{ vars.STEAM_APP_ID }}
+  cancel-in-progress: false
+
+jobs:
+  export:
+    name: Build from ref
+    if: inputs.source_mode == 'build_ref'
+    uses: ./.github/workflows/godot-export.yml
+    permissions:
+      contents: read
+    with:
+      checkout_ref: ${{ inputs.build_ref }}
+
+  deploy:
+    name: Upload to Steam
+    needs:
+      - export
+    # export is skipped in existing_run mode; a skipped need would skip this job
+    # too, so gate explicitly with always().
+    if: >-
+      always() &&
+      (inputs.source_mode == 'existing_run' || needs.export.result == 'success')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Resolve source metadata
+        id: meta
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SOURCE_MODE: ${{ inputs.source_mode }}
+          RUN_ID: ${{ inputs.run_id }}
+          BUILD_REF: ${{ inputs.build_ref }}
+          EXPORT_VERSION: ${{ needs.export.outputs.project_version }}
+          EXPORT_SHA: ${{ needs.export.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "$SOURCE_MODE" = "build_ref" ]; then
+            version="$EXPORT_VERSION"
+            sha="$EXPORT_SHA"
+            source_label="$BUILD_REF"
+            download_run_id=""
+          else
+            if [ -z "${RUN_ID:-}" ]; then
+              echo "source_mode=existing_run requires run_id."
+              exit 1
+            fi
+            download_run_id="$RUN_ID"
+            source_label="run $RUN_ID"
+
+            # Pin version/SHA to the run that produced the artifacts, not this
+            # workflow's checkout, so the Steam build description is truthful.
+            sha="$(gh api "repos/$REPO/actions/runs/$RUN_ID" --jq '.head_sha' || true)"
+            if [ -z "${sha:-}" ] || [ "$sha" = "null" ]; then
+              echo "Could not read head_sha for run $RUN_ID."
+              exit 1
+            fi
+
+            version="unknown"
+            project_raw="$(gh api "repos/$REPO/contents/Ciallo/project.godot?ref=$sha" \
+              -H "Accept: application/vnd.github.raw" 2>/dev/null || true)"
+            if [ -n "$project_raw" ]; then
+              parsed="$(printf '%s\n' "$project_raw" \
+                | grep -E '^config/version=' | head -n 1 | sed -E 's/^config\/version="?([^"]*)"?$/\1/')"
+              if [ -n "$parsed" ]; then
+                version="$parsed"
+              fi
+            fi
+            # version stays "unknown" if the commit was GC'd; never faked.
+          fi
+
+          short_sha="${sha:0:7}"
+          {
+            echo "project_version=$version"
+            echo "head_sha=$sha"
+            echo "short_sha=$short_sha"
+            echo "source_label=$source_label"
+            echo "download_run_id=$download_run_id"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Download build_ref artifacts
+        if: inputs.source_mode == 'build_ref'
+        uses: actions/download-artifact@v6
+        with:
+          pattern: Ciallo-*
+          path: artifacts
+
+      - name: Download existing_run artifacts
+        if: inputs.source_mode == 'existing_run'
+        uses: actions/download-artifact@v6
+        with:
+          pattern: Ciallo-*
+          path: artifacts
+          run-id: ${{ steps.meta.outputs.download_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Stage Steam depot content
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p steam-content/windows steam-content/linux steam-content/macos
+
+          cp -a artifacts/Ciallo-Windows/. steam-content/windows/
+          cp -a artifacts/Ciallo-Linux/. steam-content/linux/
+          cp -a artifacts/Ciallo-macOS/. steam-content/macos/
+
+          # upload-artifact strips the executable bit; restore it so Steam serves
+          # launchable Linux/macOS builds.
+          chmod +x steam-content/linux/Ciallo
+
+          mac_exe="steam-content/macos/Ciallo.app/Contents/MacOS/Ciallo"
+          if [ ! -f "$mac_exe" ]; then
+            echo "Missing macOS app executable: $mac_exe"
+            exit 1
+          fi
+          chmod +x "$mac_exe"
+
+      - name: Build Steam description
+        id: desc
+        env:
+          SOURCE_MODE: ${{ inputs.source_mode }}
+          VERSION: ${{ steps.meta.outputs.project_version }}
+          SOURCE_LABEL: ${{ steps.meta.outputs.source_label }}
+          SHORT_SHA: ${{ steps.meta.outputs.short_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "text=Ciallo $VERSION | $SOURCE_MODE | $SOURCE_LABEL | $SHORT_SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to Steam
+        uses: game-ci/steam-deploy@v3
+        with:
+          username: ${{ secrets.STEAM_USERNAME }}
+          configVdf: ${{ secrets.STEAM_CONFIG_VDF }}
+          appId: ${{ vars.STEAM_APP_ID }}
+          buildDescription: ${{ steps.desc.outputs.text }}
+          rootPath: steam-content
+          firstDepotIdOverride: 4103991
+          depot1Path: windows
+          depot2Path: linux
+          depot3Path: macos
+          releaseBranch: ${{ inputs.steam_branch }}
+
+      - name: Write job summary
+        # Report whatever is known even if the Steam step failed.
+        if: always()
+        env:
+          SOURCE_MODE: ${{ inputs.source_mode }}
+          SOURCE_LABEL: ${{ steps.meta.outputs.source_label }}
+          SHA: ${{ steps.meta.outputs.head_sha }}
+          STEAM_BRANCH: ${{ inputs.steam_branch }}
+          APP_ID: ${{ vars.STEAM_APP_ID }}
+        shell: bash
+        run: |
+          {
+            echo "## Steam upload"
+            echo ""
+            echo "- Source mode: $SOURCE_MODE"
+            echo "- Source ref or run id: $SOURCE_LABEL"
+            echo "- Commit SHA: ${SHA:-unknown}"
+            echo "- Steam app id: $APP_ID"
+            echo "- Steam branch: $STEAM_BRANCH"
+            echo "- Depots: 4103991 Windows, 4103992 Linux, 4103993 macOS"
+          } >> "$GITHUB_STEP_SUMMARY"
