@@ -12,11 +12,6 @@ public partial class MenuEdit : PopupMenu
     {
         { "Undo", AppHotkeys.Undo },
         { "Redo", AppHotkeys.Redo },
-        { "-1", null },
-        // { "Cut", AppActions.Cut },
-        // { "Copy", AppActions.Copy },
-        // { "Paste", AppActions.Paste },
-        // { "Delete", AppActions.Delete },
     };
 
     public override void _Ready()
