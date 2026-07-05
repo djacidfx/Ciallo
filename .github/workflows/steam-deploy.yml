@@ -1,8 +1,10 @@
-name: Steam Deploy
+name: Manual Steam Deploy
 
-# Manual-only Steam upload entry point. Independent from the GitHub Release
-# workflow so Steam publishing is never an accidental side effect of a tag or
-# branch push. Runs game-ci/steam-deploy against the already-configured depots.
+# Manual fallback for Steam uploads. Steam publishing normally happens
+# automatically in github-release.yml (the `steam` job) when an rc/release/hotfix
+# tag is pushed. This workflow is the hand-operated escape hatch: re-upload a
+# past build, push an arbitrary ref, target a different Steam branch or app id,
+# customize the build description, or dry-run to preview parameters.
 #
 # KEY POINTS:
 # - Two source modes:
@@ -12,21 +14,18 @@ name: Steam Deploy
 # - actions/upload-artifact strips the Unix executable bit, so the Linux binary
 #   and the macOS .app executable are re-chmod +x during staging. Without this,
 #   Steam serves non-executable Linux/macOS builds and players cannot launch.
-# - existing_run reads project_version from the reused run's head_sha via the
-#   GitHub API (repos/.../contents/...?ref=<sha>), so the build description
-#   matches the real uploaded commit. If that commit was GC'd, version is
-#   recorded as "unknown" rather than faked.
-# - existing_run only works while artifacts still exist: non-release builds keep
-#   artifacts for ~2 days, release-like tags for ~30 days (see godot-export.yml
-#   retention). Past that, the download 404s and the run fails naturally.
-# - steam_branch is any non-empty string; existence/permissions are owned by
-#   Steamworks. "default" is allowed as an experiment but SetLive to default is
-#   expected to fail (Steam requires promoting default via App Admin). Failure
-#   is NOT swallowed: the run stays red and you inspect the Steamworks Builds
-#   page manually.
-#
-# NOTE: this workflow was designed to be used rarely / once. It reuses
-# godot-export.yml (the same reusable pipeline the release workflow calls).
+# - existing_run pins version/SHA to the reused run's head_sha (via the GitHub
+#   API) so the build description matches the real uploaded commit; if that
+#   commit was GC'd, version is recorded as "unknown" rather than faked. It only
+#   works while artifacts still exist: non-release builds keep them for ~2 days,
+#   release-like tags ~30 days (see godot-export.yml). Past that the download
+#   404s and the run fails naturally.
+# - Depot ids are derived from the target app id (last digit -> 1/2/3 for
+#   windows/linux/macos), so switching app id needs no other change.
+# - steam_branch defaults to "default": the build uploads successfully but is
+#   NOT set live — Steam requires promoting default by hand in App Admin >
+#   Builds. That is expected, not an error; the run stays green. Any other
+#   branch (e.g. development) is set live automatically.
 
 on:
   workflow_dispatch:
@@ -47,14 +46,29 @@ on:
         description: GitHub Actions run id to reuse when source_mode is existing_run.
         required: false
       steam_branch:
-        description: Steam branch to set live after upload. Use "default" only as an experiment.
-        required: true
+        description: 'Steam branch to set live after upload. Defaults to "default", which uploads fine but is NOT auto set-live — Steam requires promoting it by hand in App Admin > Builds. Any other branch (e.g. development) is set live automatically.'
+        required: false
+        default: default
+      app_id:
+        description: Steam app id to upload to. Leave empty to use the STEAM_APP_ID repo variable.
+        required: false
+      build_description:
+        description: Custom Steam build description. Leave empty to auto-generate from version, source mode, ref, and short SHA.
+        required: false
+      dry_run:
+        description: If true, print the resolved app id, depots, branch, and description, then skip the actual Steam upload. Use to review parameters before a real push.
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
 
 concurrency:
-  # Serialize Steam uploads for this app: parallel SteamPipe sessions can clash.
+  # Serialize Steam uploads with the automated github-release.yml steam job.
+  # Keyed on the repo's default app id; an app_id input override still shares
+  # this group, which is fine — it only means uploads to a non-default app also
+  # serialize against the default one, never the reverse race.
   group: steam-deploy-${{ vars.STEAM_APP_ID }}
   cancel-in-progress: false
 
@@ -92,9 +106,29 @@ jobs:
           BUILD_REF: ${{ inputs.build_ref }}
           EXPORT_VERSION: ${{ needs.export.outputs.project_version }}
           EXPORT_SHA: ${{ needs.export.outputs.head_sha }}
+          INPUT_APP_ID: ${{ inputs.app_id }}
+          DEFAULT_APP_ID: ${{ vars.STEAM_APP_ID }}
         shell: bash
         run: |
           set -euo pipefail
+
+          # Resolve the target app id: explicit input wins, else the repo var.
+          app_id="${INPUT_APP_ID:-$DEFAULT_APP_ID}"
+          if [ -z "$app_id" ]; then
+            echo "No app id: set the app_id input or the STEAM_APP_ID repo variable."
+            exit 1
+          fi
+          echo "app_id=$app_id" >> "$GITHUB_OUTPUT"
+
+          # Depot ids are the app id with its last digit replaced by 1/2/3
+          # (windows/linux/macos). Both the demo (4103990) and future main
+          # product (3973810) app ids end in 0. game-ci/steam-deploy auto-
+          # increments from the first depot, so we only hand it depot1 = <base>1.
+          # ${app_id%?} strips the trailing digit.
+          base="${app_id%?}"
+          echo "depot_windows=${base}1" >> "$GITHUB_OUTPUT"
+          echo "depot_linux=${base}2" >> "$GITHUB_OUTPUT"
+          echo "depot_macos=${base}3" >> "$GITHUB_OUTPUT"
 
           if [ "$SOURCE_MODE" = "build_ref" ]; then
             version="$EXPORT_VERSION"
@@ -184,34 +218,72 @@ jobs:
           VERSION: ${{ steps.meta.outputs.project_version }}
           SOURCE_LABEL: ${{ steps.meta.outputs.source_label }}
           SHORT_SHA: ${{ steps.meta.outputs.short_sha }}
+          CUSTOM: ${{ inputs.build_description }}
         shell: bash
         run: |
           set -euo pipefail
-          echo "text=Ciallo $VERSION | $SOURCE_MODE | $SOURCE_LABEL | $SHORT_SHA" >> "$GITHUB_OUTPUT"
+          # Custom description wins; otherwise auto-generate from build metadata.
+          if [ -n "${CUSTOM:-}" ]; then
+            text="$CUSTOM"
+          else
+            text="Ciallo $VERSION | $SOURCE_MODE | $SOURCE_LABEL | $SHORT_SHA"
+          fi
+          echo "text=$text" >> "$GITHUB_OUTPUT"
+
+      - name: Preview parameters (dry run)
+        if: inputs.dry_run
+        env:
+          APP_ID: ${{ steps.meta.outputs.app_id }}
+          DEPOT_WINDOWS: ${{ steps.meta.outputs.depot_windows }}
+          DEPOT_LINUX: ${{ steps.meta.outputs.depot_linux }}
+          DEPOT_MACOS: ${{ steps.meta.outputs.depot_macos }}
+          STEAM_BRANCH: ${{ inputs.steam_branch }}
+          DESC: ${{ steps.desc.outputs.text }}
+        shell: bash
+        run: |
+          {
+            echo "## Dry run — no upload performed"
+            echo ""
+            echo "Would upload with:"
+            echo ""
+            echo "- App id: $APP_ID"
+            echo "- Depots: $DEPOT_WINDOWS Windows, $DEPOT_LINUX Linux, $DEPOT_MACOS macOS"
+            echo "- Steam branch: $STEAM_BRANCH"
+            echo "- Build description: $DESC"
+            echo ""
+            echo "Re-run with dry_run unchecked to perform the real upload."
+          } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload to Steam
+        id: upload
+        if: ${{ !inputs.dry_run }}
         uses: game-ci/steam-deploy@v3
         with:
           username: ${{ secrets.STEAM_USERNAME }}
           configVdf: ${{ secrets.STEAM_CONFIG_VDF }}
-          appId: ${{ vars.STEAM_APP_ID }}
+          appId: ${{ steps.meta.outputs.app_id }}
           buildDescription: ${{ steps.desc.outputs.text }}
           rootPath: steam-content
-          firstDepotIdOverride: 4103991
+          firstDepotIdOverride: ${{ steps.meta.outputs.depot_windows }}
           depot1Path: windows
           depot2Path: linux
           depot3Path: macos
           releaseBranch: ${{ inputs.steam_branch }}
 
       - name: Write job summary
-        # Report whatever is known even if the Steam step failed.
-        if: always()
+        # Report whatever is known even if the Steam step failed. Skipped on dry
+        # runs, where the preview step already wrote the summary.
+        if: ${{ always() && !inputs.dry_run }}
         env:
           SOURCE_MODE: ${{ inputs.source_mode }}
           SOURCE_LABEL: ${{ steps.meta.outputs.source_label }}
           SHA: ${{ steps.meta.outputs.head_sha }}
           STEAM_BRANCH: ${{ inputs.steam_branch }}
-          APP_ID: ${{ vars.STEAM_APP_ID }}
+          APP_ID: ${{ steps.meta.outputs.app_id }}
+          DEPOT_WINDOWS: ${{ steps.meta.outputs.depot_windows }}
+          DEPOT_LINUX: ${{ steps.meta.outputs.depot_linux }}
+          DEPOT_MACOS: ${{ steps.meta.outputs.depot_macos }}
+          UPLOAD_RESULT: ${{ steps.upload.outcome }}
         shell: bash
         run: |
           {
@@ -222,5 +294,12 @@ jobs:
             echo "- Commit SHA: ${SHA:-unknown}"
             echo "- Steam app id: $APP_ID"
             echo "- Steam branch: $STEAM_BRANCH"
-            echo "- Depots: 4103991 Windows, 4103992 Linux, 4103993 macOS"
+            echo "- Depots: $DEPOT_WINDOWS Windows, $DEPOT_LINUX Linux, $DEPOT_MACOS macOS"
+            echo ""
+            if [ "$UPLOAD_RESULT" = "success" ] && [ "$STEAM_BRANCH" = "default" ]; then
+              echo "> [!IMPORTANT]"
+              echo "> Uploaded to **default**, which is NOT set live automatically."
+              echo "> Open Steamworks > App Admin > Builds and promote this build to"
+              echo "> **default** by hand for players to receive it."
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
