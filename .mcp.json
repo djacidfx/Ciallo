@@ -6,7 +6,7 @@
         "code-review-graph",
         "serve"
       ],
-      "cwd": "C:\\dev\\Ciallo",
+      "cwd": ".",
       "type": "stdio"
     }
   }
