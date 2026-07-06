@@ -373,6 +373,34 @@ jobs:
         shell: pwsh
         run: dotnet restore "$env:CSPROJ" --configfile NuGet.Config
 
+      - name: Validate localization CSV
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $script = @'
+          import csv
+          import pathlib
+          import sys
+
+          failed = False
+          for path in sorted(pathlib.Path("Ciallo/Localization").glob("*.csv")):
+              with path.open("r", encoding="utf-8-sig", newline="") as stream:
+                  rows = list(csv.reader(stream))
+
+              expected_width = len(rows[0])
+              for row_number, row in enumerate(rows, start=1):
+                  if len(row) != expected_width:
+                      print(
+                          f"{path}:{row_number}: expected {expected_width} columns, got {len(row)}",
+                          file=sys.stderr,
+                      )
+                      failed = True
+
+          if failed:
+              sys.exit(1)
+          '@
+          $script | python -
+
       - name: Import resources
         shell: pwsh
         run: |
