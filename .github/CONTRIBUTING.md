@@ -102,70 +102,67 @@ The mechanism is combined with the component system:
 Ciallo uses `dev` for daily integration and `main` for formal releases.
 Create feature branches from `dev` using `<your-name>/<feature-topic>`, for example `alice/brush-preview`.
 There are no alpha/beta tags and no release branches for now.
-The Ciallo Build and Release workflow reads the app version from `Ciallo/project.godot` (`config/version`) and requires the C# project to use a `Godot.NET.Sdk/*-ciallo.g<sha>` package that is already published to the public custom Godot NuGet feed.
 
-Before creating an RC or final release tag, update `Ciallo/project.godot`:
+Publishing is done by running a workflow from the Actions page, not by pushing tags
+by hand. Each publish workflow reads the app version from `Ciallo/project.godot`
+(`config/version`), creates the tag for you, and dispatches the shared Ciallo Release
+pipeline on it. A hand-pushed `v*` tag does nothing. The pipeline also requires the C#
+project to use a `Godot.NET.Sdk/*-ciallo.g<sha>` package already published to the public
+custom Godot NuGet feed.
+
+Before publishing an RC or final release, update `Ciallo/project.godot` and push it to
+the branch you will publish (`dev` for RC, `main` for release):
 
 ```ini
 config/version="0.0.2"
 ```
 
-Commit and push that change before tagging.
-The tag version must exactly match `config/version`.
-After a final release, bump `dev` to the next planned version immediately, while `main` stays on the released version.
+The publish workflow tags `v<config/version>`, so the version in `project.godot` is the
+single source of truth — you never type the version anywhere else.
+After a final release, bump `dev` to the next planned version immediately, while `main`
+stays on the released version.
 
 ### Feature test builds
 
-Use feature test tags when a branch needs downloadable builds for testers before merging to `dev`.
-These tags create GitHub Actions artifacts only; they do not create GitHub Releases.
-Artifacts are short-lived.
+Use a feature test build when a branch needs downloadable builds for testers before
+merging to `dev`. It produces short-lived GitHub Actions artifacts only — no GitHub
+Release, no Steam upload.
 
-```bash
-git checkout alice/brush-preview
-git pull --ff-only
-git tag -a ft/alice/brush-preview.1 -m "Feature test brush preview 1"
-git push origin ft/alice/brush-preview.1
-```
+Run the **Ciallo Publish Feature Test** workflow from the Actions page and pick the
+branch to publish in the "Run workflow" ref dropdown. It publishes that branch's HEAD,
+derives a slug from the branch name, and tags `ft/<slug>.<N>` with `<N>` auto-incremented
+(for example branch `alice/brush-preview` -> `ft/alice-brush-preview.1`). The branch name
+is not validated; whatever branch you dispatch is what gets built.
 
 ### Release candidates
 
-Create RC tags from a commit that is already contained in `origin/dev`.
-RC tags create GitHub Prereleases with Windows, Linux, and macOS artifacts.
+Run the **Ciallo Publish RC** workflow from the Actions page. Anyone with write access
+can run it. It publishes the current tip of `origin/dev`, auto-increments the RC counter
+from existing tags, and tags `v<config/version>-rc.<N>`.
 
-```bash
-git checkout dev
-git pull --ff-only
-git tag -a v0.0.2-rc.1 -m "Ciallo 0.0.2 rc.1"
-git push origin v0.0.2-rc.1
-```
-
-If another RC is needed, increment only the RC number:
-
-```bash
-git tag -a v0.0.2-rc.2 -m "Ciallo 0.0.2 rc.2"
-git push origin v0.0.2-rc.2
-```
+RC builds create GitHub Prereleases with Windows, Linux, and macOS artifacts, and are
+uploaded to Steam and set live on the **development** branch automatically for testers.
 
 ### Final releases (managed by owner)
 
-Final release tags must be created from a commit that is already contained in `origin/main`.
-Normally, merge `dev` into `main` first, then tag `main`.
 
-```bash
-git checkout main
-git pull --ff-only
-git merge --ff-only origin/dev
-git push origin main
-git tag -a v0.0.2 -m "Ciallo 0.0.2"
-git push origin v0.0.2
-```
+Then run the **Ciallo Publish Release** workflow from the Actions page. The run pauses for
+a required reviewer (project owner) in the `production` environment before anything is
+tagged — anyone can start it, but only an approver can complete it. After approval it
+publishes the tip of `origin/main` and tags `v<config/version>`.
 
-Final tags create normal GitHub Releases.
-After the final release is verified, old RC prereleases can be deleted manually when they are no longer useful.
+Final builds create normal GitHub Releases and are uploaded to Steam's **default** branch,
+but are NOT set live automatically — a project owner must promote the build by hand in
+Steamworks App Admin > Builds. Re-running the workflow for a version whose tag already
+exists overwrites it (the tag is force-moved, the GitHub Release and Steam build are
+replaced), so a failed publish can simply be re-run; bumping `config/version` remains the
+norm for an actual new release.
+After the final release is verified, old RC prereleases can be deleted manually when they
+are no longer useful.
 
 ### Hotfix releases
 
-Hotfix releases publish bug fix within 5-10min. 
+Hotfix releases aim to publish bug fix within 5-10min. 
 Use a hotfix when the latest stable release needs an urgent public fix. 
 Hotfixes are temporary prereleases under the already published stable version:
 
@@ -191,7 +188,7 @@ Hotfix PRs must be squash merged.
 After the PR is merged, the Ciallo Hotfix Release workflow automatically:
 
 - creates the next `vX.Y.Z-hotfix.N` tag on the merged `main` commit;
-- dispatches the Ciallo Build and Release workflow for that tag;
+- dispatches the Ciallo Release pipeline for that tag;
 - publishes the tag as a GitHub Prerelease with exported Windows, Linux, and macOS artifacts;
 - creates a backport PR from `backport/vX.Y.Z-hotfix.N-to-dev` into `dev`.
 

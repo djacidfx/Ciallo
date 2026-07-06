@@ -5,6 +5,24 @@ name: Ciallo Release
 # for release-like tags, packages zips and publishes a GitHub Release AND
 # pushes the same build to Steam.
 #
+# ENTRY POINTS: release-like runs are started ONLY by the dispatch workflows
+# rc-release.yml, release.yml, and hotfix-release.yml, which create the tag and
+# then `gh workflow run` this file on it. Pushing a v* tag by hand does nothing.
+# (push/pull_request on dev/main still run build-only CI; ft/** tags still run
+# feature-test builds.)
+#
+# ACCEPTED RISK (won't-fix): this workflow keeps workflow_dispatch, and its
+# release/steam jobs are NOT behind the production environment gate that
+# release.yml's tag job uses. So someone with write access could hand-push a v*
+# tag and `gh workflow run` this file at it to publish without approval. We do
+# NOT guard against this on purpose: the gate is here to prevent MISTAKES, not a
+# malicious insider. Anyone with write access can already edit these workflows
+# directly (delete the gate, add a new publisher), which is far easier than the
+# tag+dispatch dance, and normal accidental publishing goes through release.yml
+# where the gate does stop them. Defending the worker against someone who can
+# rewrite the worker is theater. If we ever need to defend against MALICE, the
+# real control is CODEOWNERS + branch protection on .github/, not job gates.
+#
 # The reusable workflow derives tag semantics from its `checkout_ref` input,
 # so here we always pass github.ref (a full refs/... value) to keep the exact
 # rc/hotfix/release rules that used to run inline.
@@ -31,8 +49,10 @@ name: Ciallo Release
       - dev
       - main
     tags:
+      # Feature-test builds only. Real releases (v*) are NOT triggered by tag
+      # push — they come in via workflow_dispatch from rc-release.yml /
+      # release.yml / hotfix-release.yml, so a hand-pushed v* tag never publishes.
       - "ft/**"
-      - "v*"
   workflow_dispatch:
 
 permissions:

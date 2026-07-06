@@ -1,0 +1,96 @@
+name: Ciallo Publish RC
+
+# Manual dev (rc) publish. Self-serve: anyone with write access can run it.
+#
+# What it does:
+# - Reads config/version (X.Y.Z) from project.godot.
+# - Derives the next rc counter from existing v<version>-rc.* tags (the .N is
+#   NOT stored in project.godot, so it is computed from the tag list).
+# - Tags origin/dev HEAD as v<version>-rc.<N> and dispatches the shared release
+#   pipeline (github-release.yml) on that tag.
+#
+# It always publishes the current tip of origin/dev regardless of which ref the
+# dispatch was started from, so there is nothing to pick correctly. Tag rules
+# (rc must be contained in origin/dev, version must match project.godot) are
+# re-validated inside godot-export.yml; the checks here just fail fast.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: ciallo-rc-release
+  cancel-in-progress: false
+
+env:
+  PROJECT_PATH: Ciallo
+
+jobs:
+  tag:
+    name: Tag and dispatch rc
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout dev
+        uses: actions/checkout@v5
+        with:
+          ref: dev
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Create rc tag and dispatch pipeline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch origin +refs/heads/dev:refs/remotes/origin/dev --tags
+          head_sha="$(git rev-parse HEAD)"
+          if ! git merge-base --is-ancestor "$head_sha" origin/dev; then
+            echo "Refusing to tag: HEAD $head_sha is not contained in origin/dev."
+            exit 1
+          fi
+
+          project_file="$PROJECT_PATH/project.godot"
+          version_line="$(grep -E '^config/version=' "$project_file" | head -n 1)"
+          project_version="${version_line#*=}"
+          project_version="${project_version%\"}"
+          project_version="${project_version#\"}"
+
+          if ! [[ "$project_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "project.godot config/version must be plain semver X.Y.Z. Actual: $project_version"
+            exit 1
+          fi
+
+          base_tag="v$project_version"
+
+          # rc counter is not in project.godot; take the highest existing
+          # v<version>-rc.N and add one (first rc for a version starts at 1).
+          last_number="$(
+            git tag --list "${base_tag}-rc.*" |
+              sed -E "s/^${base_tag}-rc\.([0-9]+)$/\1/" |
+              sort -n |
+              tail -n 1
+          )"
+          if [ -z "$last_number" ]; then
+            next_number=1
+          else
+            next_number=$((last_number + 1))
+          fi
+
+          rc_tag="${base_tag}-rc.${next_number}"
+          if git rev-parse -q --verify "refs/tags/$rc_tag" >/dev/null; then
+            echo "Tag $rc_tag already exists; refusing to overwrite."
+            exit 1
+          fi
+
+          git tag -a "$rc_tag" "$head_sha" -m "Ciallo ${rc_tag#v}"
+          git push origin "$rc_tag"
+
+          # Tags pushed with GITHUB_TOKEN do not start push workflows, so dispatch explicitly.
+          gh workflow run github-release.yml --repo "$REPO" --ref "$rc_tag"
+          echo "Created $rc_tag from origin/dev@$head_sha and dispatched the release pipeline."

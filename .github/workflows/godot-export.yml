@@ -1,6 +1,6 @@
 name: Godot Export
 
-# Reusable export pipeline: validates project/SDK metadata and exports the
+# Export pipeline: validates project/SDK metadata and exports the
 # Windows/Linux/macOS builds. Shared by github-release.yml (release
 # automation) and steam-deploy.yml (manual Steam upload).
 #
@@ -168,13 +168,13 @@ jobs:
             $refName = $checkoutRef.Substring("refs/tags/".Length)
           } elseif ($checkoutRef.StartsWith("refs/")) {
             $treatAsTag = $false
-          } elseif ($checkoutRef -match "^ft/[^/]+/[^/]+\.\d+$" -or $checkoutRef -match "^v\d+\.\d+\.\d+(-(rc|hotfix)\.\d+)?$") {
+          } elseif ($checkoutRef -match "^ft/[^/]+\.\d+$" -or $checkoutRef -match "^v\d+\.\d+\.\d+(-(rc|hotfix)\.\d+)?$") {
             $treatAsTag = $true
             $refName = $checkoutRef
           }
 
           if ($treatAsTag) {
-            if ($refName -match "^ft/[^/]+/[^/]+\.\d+$") {
+            if ($refName -match "^ft/[^/]+\.\d+$") {
               $tagKind = "feature-test"
               $retention = "2"
             } elseif ($refName -match "^v(?<version>\d+\.\d+\.\d+)-rc\.\d+$") {
@@ -224,7 +224,7 @@ jobs:
               $releaseTitle = "$projectName $refName"
               $retention = "30"
             } else {
-              throw "Unsupported tag '$refName'. Use ft/<name>/<topic>.<N>, vX.Y.Z-rc.N, vX.Y.Z-hotfix.N, or vX.Y.Z."
+              throw "Unsupported tag '$refName'. Use ft/<slug>.<N>, vX.Y.Z-rc.N, vX.Y.Z-hotfix.N, or vX.Y.Z."
             }
           }
 
