@@ -212,9 +212,15 @@ public class PolylineSelectTool : ToolBase
             vectorFillBrushSwitcher.Select(brushE);
         }).AddTo(vectorFillBrushSwitcher);
 
-        var polylineEditBox = container.CreateBox().AddToChildOf(container)
-            .VisibleIf(selectionManager.SelectedShapes.ObserveCountChanged()
-            .Prepend(0), count => count > 1); // ignore single point.
+        var polylineEditBox = container.CreateBox()
+            .AddToChildOf(container)
+            .VisibleIf(selectionManager.SelectedShapes.ObserveCountChanged().Prepend(0),
+            count =>
+            {
+                if (count <= 0) return false;
+                var e = selectionManager.SelectedShapes[0];
+                return e.Get<SampledPolyline>().Count > 1; // naively ignore single point.
+            });
 
         var simplificationRatioEdit = new SpinSlider()
         {
