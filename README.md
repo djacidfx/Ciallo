@@ -15,7 +15,7 @@
 
 ---
 
-Ciallo is an open-source graphics program for digital painting (animation and illustration).
+Ciallo is a graphics program for digital painting (animation and illustration).
 It supercharges the vector layers in software like Toon Boom Harmony, CSP, and Fresco by offering the following unique features:
 
 ## Unique features
@@ -28,7 +28,9 @@ A bucket fill tool, but vectorized:
 
 Watch the video demonstration:
 
-[Vector bucket fill demonstration](https://www.youtube.com/watch?v=Ry9N5B3CWsI)
+<a href="https://youtu.be/Ry9N5B3CWsI">
+<img width="1216" height="720" alt="play-image-1783355747059" src="https://github.com/user-attachments/assets/fd00d801-ee5e-4054-a979-3844a0469fee" />
+</a>
 
 ### Vectorized Photoshop-like brushes
 
@@ -51,6 +53,8 @@ The following features may be in your favor:
 Ciallo uses a custom vector format that is aiming to be the game industry standard and hard to generate by the current AI techniques.
 We may offer AI-powered features in the future --- but always designed for professional artists.
 
+<br clear="left">
+
 ### Optimized pen feel
 
 Ciallo aims to provide a drawing/pen feel significantly better than _CSP_,  _Procreate_ and _SAI 2_; this will require several technical advancements in future updates.
@@ -62,7 +66,11 @@ Ciallo will support exporting real-time-renderable vector 2D content to game eng
 
 ## Download (Free on all platforms)
 
-[Steam](https://store.steampowered.com/app/3973810) | [GitHub Releases](https://github.com/ShenCiao/Ciallo/releases) | [Itch.io](https://shenciao.itch.io/ciallo)
+[![Steam](https://img.shields.io/badge/steam-%23000000.svg?style=for-the-badge&logo=steam&logoColor=white)](https://store.steampowered.com/app/3973810)
+[![GitHub Release](https://img.shields.io/github/v/release/ShenCiao/Ciallo)](https://github.com/ShenCiao/Ciallo/releases)
+[![Itch.io](https://img.shields.io/badge/Itch-%23FF0B34.svg?style=for-the-badge&logo=Itch.io&logoColor=white)](https://shenciao.itch.io/ciallo)
+
+(Recommended [STEAM](https://store.steampowered.com/app/3973810) for the best version control)
 
 System requirements:
 Requires a system capable of running small to mid-sized modern 3D games.
@@ -76,6 +84,19 @@ We recommend closing any other software that heavily uses your GPU before openin
 
 > Ciallo is highly sensitive to your tablet polling rate. It can potentially respond to tablet/mouse input at up to 1000 Hz. However, tablets in 2025 can reach at most 360 Hz (DTC-141), and 150–200 Hz on average, which is highly insufficient for capturing small turning points and handwritten text.
 > If a tablet with a 500–1000 Hz polling rate becomes available on the market, contact the developer — Ciallo will try to add support.
+
+---
+
+## Feature requests
+
+Hope Ciallo has already addressed something important to you. To be frank, those large companies should have provided these infrastructures a decade ago. There is always more to add as Ciallo grows.
+
+The developer basically knows the most needed features during the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2).
+
+Instead of asking for features existing in other paint programs, you may propose creative features unconstrained in style.
+The developer would love to hear new ideas about line art (especially anime-style art) and may be able to do technical research on your request.
+
+If you urgently need a feature from other programs implemented in Ciallo within a week or month, consider contacting the developer or sponsoring the project.
 
 ## Development guideline
 
@@ -94,17 +115,6 @@ It will be a DCC program providing vector hand-drawn assets, including illustrat
 
 Ciallo is in an early stage of development; its version number will be labeled as EA (early access).
 During the EA stage, Ciallo mainly focuses on R&D of traditional painting features using modern shaders and GPU APIs. After finishing those major painting features, we plan to open Steam Workshop, marking the end of the EA stage.
-
-## Feature requests
-
-I hope Ciallo has already addressed something important to you. To be frank, those large companies should have provided these infrastructures a decade ago. There is always more to add as Ciallo grows.
-
-The developer basically knows the most needed features during the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2).
-
-Instead of asking for features existing in other paint programs, you may propose creative features unconstrained in style.
-The developer would love to hear new ideas about line art (especially anime-style art) and may be able to do technical research on your request.
-
-If you urgently need a feature from other programs implemented in Ciallo within a week or month, consider contacting the developer or sponsoring the project.
 
 ## Sponsor Ciallo's research and your future
 
@@ -160,6 +170,19 @@ These special Shader Code terms are an integral part of the Project’s licensin
 
 The name "Ciallo" is a combination of the Italian "Ciao" and English "Hello", and means "Hello". It comes from the galgames developed by [Yuzusoft](https://www.yuzu-soft.com/). We won't shame this name.
 
+### Coding frameworks/libraries
+
+- [Godot C#](https://godotengine.org/): [Why godot?](#tech-faq)
+- [Frent](https://github.com/itsBuggingMe/Frent): Unity-like (gameobject/entity) component pattern (ECS library without need for the 'S').
+- [DuckDB.NET.Data.Full](https://www.nuget.org/packages/DuckDB.NET.Data.Full): DuckDB-backed project persistence.
+- [CGAL](https://www.cgal.org/): Complex geometry operations.
+- [R3](https://github.com/Cysharp/R3): Signal on steroids and reactive programming.
+- [GdUnit4](https://github.com/MikeSchulze/gdUnit4): Unit test framework.
+- [MessagePack](https://github.com/MessagePack-CSharp/MessagePack-CSharp): Binary serialization.
+- [Newtonsoft.Json](https://www.newtonsoft.com/json): JSON serialization.
+- [GodotSharp.SourceGenerators](https://github.com/Cat-Lips/GodotSharp.SourceGenerators): Godot auxiliary.
+- [Stateless](https://github.com/dotnet-state-machine/stateless): Managing complex interactive states (tool system).
+
 ### Citation
 
 Check Ciallo's [research project] if you are interested in how Ciallo's unique features are implemented.
@@ -201,19 +224,6 @@ SIGGRAPH 2023 Talk
        location = {Los Angeles, CA, USA},
        series = {SIGGRAPH '23}
     }
-
-### Coding frameworks/libraries
-
-- [Godot C#](https://godotengine.org/): [Why godot?](#tech-faq)
-- [Frent](https://github.com/itsBuggingMe/Frent): Unity-like (gameobject/entity) component pattern (ECS library without need for the 'S').
-- [DuckDB.NET.Data.Full](https://www.nuget.org/packages/DuckDB.NET.Data.Full): DuckDB-backed project persistence.
-- [CGAL](https://www.cgal.org/): Complex geometry operations.
-- [R3](https://github.com/Cysharp/R3): Signal on steroids and reactive programming.
-- [GdUnit4](https://github.com/MikeSchulze/gdUnit4): Unit test framework.
-- [MessagePack](https://github.com/MessagePack-CSharp/MessagePack-CSharp): Binary serialization.
-- [Newtonsoft.Json](https://www.newtonsoft.com/json): JSON serialization.
-- [GodotSharp.SourceGenerators](https://github.com/Cat-Lips/GodotSharp.SourceGenerators): Godot auxiliary.
-- [Stateless](https://github.com/dotnet-state-machine/stateless): Managing complex interactive states (tool system).
 
 ## Build Guide
 
