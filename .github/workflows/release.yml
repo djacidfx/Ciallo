@@ -10,9 +10,11 @@ name: Ciallo Publish Release
 # - Tags origin/main HEAD as v<version> and dispatches the shared release
 #   pipeline (github-release.yml) on that tag.
 #
-# It always publishes the current tip of origin/main. Tag rules (release must be
-# contained in origin/main, version must match project.godot) are re-validated
-# inside godot-export.yml; the checks here just fail fast.
+# GitHub always shows a "Use workflow from" ref picker for workflow_dispatch
+# workflows. This workflow intentionally ignores that picker for the published
+# code and always publishes the current tip of origin/main. Tag rules (release
+# must be contained in origin/main, version must match project.godot) are
+# re-validated inside godot-export.yml; the checks here just fail fast.
 
 on:
   workflow_dispatch:
@@ -56,6 +58,9 @@ jobs:
             echo "Refusing to tag: HEAD $head_sha is not contained in origin/main."
             exit 1
           fi
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           project_file="$PROJECT_PATH/project.godot"
           version_line="$(grep -E '^config/version=' "$project_file" | head -n 1)"

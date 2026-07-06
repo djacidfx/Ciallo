@@ -57,6 +57,9 @@ jobs:
             exit 1
           fi
 
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           parent_count="$(git show -s --format=%P "$MERGE_SHA" | wc -w | tr -d ' ')"
           if [ "$parent_count" != "1" ]; then
             echo "Hotfix PRs must be squash merged so the main hotfix commit has exactly one parent. Actual parent count: $parent_count."
@@ -137,8 +140,8 @@ jobs:
             exit 0
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           if ! git cherry-pick "$MERGE_SHA"; then
             if git diff --quiet && git diff --cached --quiet; then
