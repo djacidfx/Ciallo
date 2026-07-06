@@ -50,6 +50,9 @@ jobs:
 
           head_sha="$(git rev-parse HEAD)"
 
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
           # Slug from the branch name: lowercase, collapse any run of non-alnum
           # into a single dash, trim leading/trailing dashes. alice/brush-preview
           # -> alice-brush-preview. The branch name is NOT validated; whatever
