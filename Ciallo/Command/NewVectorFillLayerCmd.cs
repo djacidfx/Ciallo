@@ -64,7 +64,6 @@ public class NewVectorFillLayerCmd : CommandBase
         {
             Name = "BoundedArea",
             Antialiased = true,
-            VisibilityLayer = (uint)AppGodotLayers.Render2DLayer.Other,
         };
         targetE.AddNode(boundedAreaPreview);
         targetE.Get<ShapeLayerView>().AddChild(boundedAreaPreview, false, Node.InternalMode.Front);
@@ -87,7 +86,6 @@ public class NewVectorFillLayerCmd : CommandBase
             if (arr == null) return;
             boundedAreaPreview.SetTriangleResult(arr.GetTrianglesFromFace(arr.GetUnboundedFace()));
         }).AddTo(targetE);
-        // Intentionally not set owner for boundedAreaView, so won't participate in exportation.
 
         // Overlay extra
         var overlayHolder = targetE.Get<OverlayHolder>();

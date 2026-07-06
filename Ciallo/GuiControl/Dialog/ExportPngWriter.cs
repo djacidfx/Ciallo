@@ -10,10 +10,11 @@ internal static class ExportPngWriter
         var image = viewport.GetTexture().GetImage();
 
         // Export viewports render through the same HDR 2D path as the paint viewport
-        // so blended edges and translucent colors match what the user saw. PNG is an
-        // sRGB delivery format here, so the linear HDR readback must be encoded first.
-        image.LinearToSrgb();
+        // so blended edges and translucent colors match what the user saw. The HDR
+        // readback is a linear float format (RGBAH); LinearToSrgb only accepts 8-bit
+        // RGB8/RGBA8, so quantize to Rgba8 first, then apply the sRGB delivery curve.
         image.Convert(Image.Format.Rgba8);
+        image.LinearToSrgb();
 
         var error = image.SavePng(path);
         if (error != Error.Ok)

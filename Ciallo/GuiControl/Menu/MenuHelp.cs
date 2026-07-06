@@ -19,8 +19,8 @@ public partial class MenuHelp : PopupMenu
         { "Copy bug report", null },
         { "Open log folder", null },
         { "Report bug", null },
-        { "-Debug", null },
-        { "Load research animation", null },
+        // { "-Debug", null },
+        // { "Load research animation", null },
     };
 
     public override void _Ready()

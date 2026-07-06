@@ -1,12 +1,43 @@
-name: Ciallo Build and Release
+name: Ciallo Release
 
 # Release automation. The actual metadata validation + three-platform export
 # now lives in the reusable godot-export.yml; this workflow just calls it and,
-# for release-like tags, packages zips and publishes a GitHub Release.
+# for release-like tags, packages zips and publishes a GitHub Release AND
+# pushes the same build to Steam.
+#
+# ENTRY POINTS: release-like runs are started ONLY by the dispatch workflows
+# rc-release.yml, release.yml, and hotfix-release.yml, which create the tag and
+# then `gh workflow run` this file on it. Pushing a v* tag by hand does nothing.
+# (push/pull_request on dev/main still run build-only CI; ft/** tags still run
+# feature-test builds.)
+#
+# ACCEPTED RISK (won't-fix): this workflow keeps workflow_dispatch, and its
+# release/steam jobs are NOT behind the production environment gate that
+# release.yml's tag job uses. So someone with write access could hand-push a v*
+# tag and `gh workflow run` this file at it to publish without approval. We do
+# NOT guard against this on purpose: the gate is here to prevent MISTAKES, not a
+# malicious insider. Anyone with write access can already edit these workflows
+# directly (delete the gate, add a new publisher), which is far easier than the
+# tag+dispatch dance, and normal accidental publishing goes through release.yml
+# where the gate does stop them. Defending the worker against someone who can
+# rewrite the worker is theater. If we ever need to defend against MALICE, the
+# real control is CODEOWNERS + branch protection on .github/, not job gates.
 #
 # The reusable workflow derives tag semantics from its `checkout_ref` input,
 # so here we always pass github.ref (a full refs/... value) to keep the exact
 # rc/hotfix/release rules that used to run inline.
+#
+# STEAM AUTOMATION (see the `steam` job):
+# - rc tags (from dev)           -> uploaded AND set live on Steam branch
+#                                   "development" automatically.
+# - release / hotfix tags (main) -> uploaded but NOT set live. Steam requires
+#                                   the "default" branch to be promoted by hand
+#                                   in App Admin, so releaseBranch is left empty
+#                                   (setlive="") and a project owner finishes it.
+# - feature-test (ft/**) + branch builds -> never touch Steam.
+# The steam job reuses the artifacts the build job already produced (no rebuild)
+# and shares the manual steam-deploy.yml concurrency group so SteamPipe sessions
+# for this app never run in parallel.
 
 "on":
   pull_request:
@@ -18,8 +49,10 @@ name: Ciallo Build and Release
       - dev
       - main
     tags:
+      # Feature-test builds only. Real releases (v*) are NOT triggered by tag
+      # push — they come in via workflow_dispatch from rc-release.yml /
+      # release.yml / hotfix-release.yml, so a hand-pushed v* tag never publishes.
       - "ft/**"
-      - "v*"
   workflow_dispatch:
 
 permissions:
@@ -137,3 +170,146 @@ jobs:
             echo "Deleting old hotfix GitHub Release: $tag"
             gh release delete "$tag" --repo "$REPO" --yes
           done
+
+  steam:
+    name: Push to Steam
+    # rc/release/hotfix only. ft/feature-test and plain branch builds never
+    # touch Steam (is_release is false for those, and tag_kind is never one of
+    # these three).
+    if: >-
+      needs.build.outputs.tag_kind == 'rc' ||
+      needs.build.outputs.tag_kind == 'release' ||
+      needs.build.outputs.tag_kind == 'hotfix'
+    needs:
+      - build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+    # Share the manual steam-deploy.yml group so automated and manual uploads
+    # for this app never run SteamPipe in parallel (parallel sessions clash).
+    concurrency:
+      group: steam-deploy-${{ vars.STEAM_APP_ID }}
+      cancel-in-progress: false
+    steps:
+      - name: Resolve Steam branch and depots
+        id: steam
+        env:
+          TAG_KIND: ${{ needs.build.outputs.tag_kind }}
+          APP_ID: ${{ vars.STEAM_APP_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # rc -> auto set live on "development".
+          # release/hotfix -> upload only; leave releaseBranch empty so the
+          # action writes setlive="" and a project owner promotes "default" by
+          # hand in Steamworks App Admin (Steam refuses automated default SetLive).
+          if [ "$TAG_KIND" = "rc" ]; then
+            echo "release_branch=development" >> "$GITHUB_OUTPUT"
+          else
+            echo "release_branch=" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Depot ids are the app id with its last digit replaced by 1/2/3
+          # (windows/linux/macos). Both the demo (4103990) and the future main
+          # product (3973810) app ids end in 0. game-ci/steam-deploy then auto-
+          # increments from the first depot, so we only need to hand it
+          # depot1 = <base>1. ${APP_ID%?} strips the trailing digit.
+          base="${APP_ID%?}"
+          echo "depot_windows=${base}1" >> "$GITHUB_OUTPUT"
+          echo "depot_linux=${base}2" >> "$GITHUB_OUTPUT"
+          echo "depot_macos=${base}3" >> "$GITHUB_OUTPUT"
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v6
+        with:
+          pattern: Ciallo-*
+          path: artifacts
+
+      - name: Stage Steam depot content
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p steam-content/windows steam-content/linux steam-content/macos
+
+          cp -a artifacts/Ciallo-Windows/. steam-content/windows/
+          cp -a artifacts/Ciallo-Linux/. steam-content/linux/
+          cp -a artifacts/Ciallo-macOS/. steam-content/macos/
+
+          # upload-artifact strips the executable bit; restore it so Steam serves
+          # launchable Linux/macOS builds.
+          chmod +x steam-content/linux/Ciallo
+
+          mac_exe="steam-content/macos/Ciallo.app/Contents/MacOS/Ciallo"
+          if [ ! -f "$mac_exe" ]; then
+            echo "Missing macOS app executable: $mac_exe"
+            exit 1
+          fi
+          chmod +x "$mac_exe"
+
+      - name: Build Steam description
+        id: desc
+        env:
+          TITLE: ${{ needs.build.outputs.release_title }}
+          KIND: ${{ needs.build.outputs.tag_kind }}
+          SHA: ${{ needs.build.outputs.head_sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "text=$TITLE | $KIND | ${SHA:0:7}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload to Steam
+        uses: game-ci/steam-deploy@v3
+        with:
+          username: ${{ secrets.STEAM_USERNAME }}
+          configVdf: ${{ secrets.STEAM_CONFIG_VDF }}
+          appId: ${{ vars.STEAM_APP_ID }}
+          buildDescription: ${{ steps.desc.outputs.text }}
+          rootPath: steam-content
+          firstDepotIdOverride: ${{ steps.steam.outputs.depot_windows }}
+          depot1Path: windows
+          depot2Path: linux
+          depot3Path: macos
+          releaseBranch: ${{ steps.steam.outputs.release_branch }}
+
+      - name: Write job summary
+        # Report whatever is known even if the Steam step failed.
+        if: always()
+        env:
+          KIND: ${{ needs.build.outputs.tag_kind }}
+          TAG: ${{ github.ref_name }}
+          SHA: ${{ needs.build.outputs.head_sha }}
+          APP_ID: ${{ vars.STEAM_APP_ID }}
+          DEPOT_WINDOWS: ${{ steps.steam.outputs.depot_windows }}
+          DEPOT_LINUX: ${{ steps.steam.outputs.depot_linux }}
+          DEPOT_MACOS: ${{ steps.steam.outputs.depot_macos }}
+          STEAM_RESULT: ${{ job.status }}
+        shell: bash
+        run: |
+          {
+            echo "## Steam upload"
+            echo ""
+            echo "- Tag: $TAG"
+            echo "- Release kind: $KIND"
+            echo "- Commit SHA: ${SHA:-unknown}"
+            echo "- Steam app id: $APP_ID"
+            echo "- Depots: $DEPOT_WINDOWS Windows, $DEPOT_LINUX Linux, $DEPOT_MACOS macOS"
+            echo ""
+            if [ "$STEAM_RESULT" != "success" ]; then
+              echo "> [!CAUTION]"
+              echo "> **Steam upload FAILED.** The build was NOT delivered to Steam."
+              echo "> This often means the \`STEAM_CONFIG_VDF\` Steam Guard credential"
+              echo "> expired and must be regenerated locally. **Contact the project"
+              echo "> owner** to refresh the credential and re-run this job."
+            elif [ "$KIND" = "rc" ]; then
+              echo "> [!NOTE]"
+              echo "> Uploaded and set live on Steam branch **development** automatically."
+              echo "> Testers on that branch will update on next client restart."
+            else
+              echo "> [!IMPORTANT]"
+              echo "> **Build uploaded but NOT yet released to players.**"
+              echo "> Steam requires the **default** branch to be promoted by hand."
+              echo "> A **project owner** must open Steamworks > App Admin > Builds and"
+              echo "> SetLive this build to **default** for players to receive it."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,88 @@
+name: Ciallo Publish Feature Test
+
+# Manual feature-test publish. Self-serve: anyone with write access runs it to
+# get downloadable builds for testers off any branch, before merging to dev.
+# Feature-test runs produce short-lived GitHub Actions artifacts only — no
+# GitHub Release, no Steam upload.
+#
+# HOW TO RUN: on the Actions page, pick the branch to publish in the "Run
+# workflow" ref dropdown. This workflow publishes THAT branch's HEAD; there is
+# no branch input to fill.
+#
+# What it does:
+# - Derives a slug from the dispatch branch name (lowercased, non-alnum -> "-").
+# - Derives the next counter from existing ft/<slug>.* tags (auto-increment).
+# - Tags the dispatched branch HEAD as ft/<slug>.<N> and dispatches the shared
+#   pipeline (github-release.yml) on that tag. godot-export.yml recognises the
+#   ft/<slug>.<N> tag as feature-test and builds artifacts only.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  # Per-branch: different feature branches publish independently.
+  group: ciallo-ft-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  tag:
+    name: Tag and dispatch feature test
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout dispatched branch
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Create feature-test tag and dispatch pipeline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          head_sha="$(git rev-parse HEAD)"
+
+          # Slug from the branch name: lowercase, collapse any run of non-alnum
+          # into a single dash, trim leading/trailing dashes. alice/brush-preview
+          # -> alice-brush-preview. The branch name is NOT validated; whatever
+          # branch was dispatched is what gets published.
+          slug="$(printf '%s' "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+//; s/-+$//')"
+          if [ -z "$slug" ]; then
+            echo "Could not derive a slug from branch name '$BRANCH'."
+            exit 1
+          fi
+
+          # Counter is not stored anywhere; take the highest existing
+          # ft/<slug>.N and add one (first build for a slug starts at 1).
+          last_number="$(
+            git tag --list "ft/${slug}.*" |
+              sed -E "s#^ft/${slug}\.([0-9]+)\$#\1#" |
+              sort -n |
+              tail -n 1
+          )"
+          if [ -z "$last_number" ]; then
+            next_number=1
+          else
+            next_number=$((last_number + 1))
+          fi
+
+          ft_tag="ft/${slug}.${next_number}"
+          if git rev-parse -q --verify "refs/tags/$ft_tag" >/dev/null; then
+            echo "Tag $ft_tag already exists; refusing to overwrite."
+            exit 1
+          fi
+
+          git tag -a "$ft_tag" "$head_sha" -m "Ciallo feature test ${slug}.${next_number}"
+          git push origin "$ft_tag"
+
+          # Tags pushed with GITHUB_TOKEN do not start push workflows, so dispatch explicitly.
+          gh workflow run github-release.yml --repo "$REPO" --ref "$ft_tag"
+          echo "Created $ft_tag from $BRANCH@$head_sha and dispatched the pipeline."

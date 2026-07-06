@@ -1,0 +1,87 @@
+name: Ciallo Publish Release
+
+# Manual main (stable release) publish. Gated: the `tag` job runs in the
+# `production` environment, so triggering it PAUSES for a required reviewer
+# (project owner / authorized publishers) before any tag is created. Anyone can
+# start the run, but without an approval nothing is tagged or published.
+#
+# What it does (after approval):
+# - Reads config/version (X.Y.Z) from project.godot.
+# - Tags origin/main HEAD as v<version> and dispatches the shared release
+#   pipeline (github-release.yml) on that tag.
+#
+# It always publishes the current tip of origin/main. Tag rules (release must be
+# contained in origin/main, version must match project.godot) are re-validated
+# inside godot-export.yml; the checks here just fail fast.
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: ciallo-release
+  cancel-in-progress: false
+
+env:
+  PROJECT_PATH: Ciallo
+
+jobs:
+  tag:
+    name: Tag and dispatch release
+    runs-on: ubuntu-24.04
+    # Enforces publish permission: run pauses here for a required reviewer.
+    environment: production
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ github.token }}
+
+      - name: Create release tag and dispatch pipeline
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git fetch origin +refs/heads/main:refs/remotes/origin/main --tags
+          head_sha="$(git rev-parse HEAD)"
+          if ! git merge-base --is-ancestor "$head_sha" origin/main; then
+            echo "Refusing to tag: HEAD $head_sha is not contained in origin/main."
+            exit 1
+          fi
+
+          project_file="$PROJECT_PATH/project.godot"
+          version_line="$(grep -E '^config/version=' "$project_file" | head -n 1)"
+          project_version="${version_line#*=}"
+          project_version="${project_version%\"}"
+          project_version="${project_version#\"}"
+
+          if ! [[ "$project_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "project.godot config/version must be plain semver X.Y.Z. Actual: $project_version"
+            exit 1
+          fi
+
+          release_tag="v$project_version"
+          # Re-publishing the same version is allowed and OVERWRITES the previous
+          # one: the tag is force-moved to the new HEAD, the GitHub Release is
+          # updated in place (action-gh-release upserts by tag name, overwrite_files
+          # defaults true), and a fresh Steam build supersedes the old upload.
+          # Bumping config/version is still the norm; this path mainly lets a
+          # failed/incomplete publish be re-run without hand-deleting the tag.
+          if git rev-parse -q --verify "refs/tags/$release_tag" >/dev/null; then
+            echo "Tag $release_tag already exists; moving it to $head_sha (overwriting the previous $release_tag)."
+          fi
+
+          git tag -f -a "$release_tag" "$head_sha" -m "Ciallo ${release_tag#v}"
+          git push -f origin "refs/tags/$release_tag"
+
+          # Tags pushed with GITHUB_TOKEN do not start push workflows, so dispatch explicitly.
+          gh workflow run github-release.yml --repo "$REPO" --ref "$release_tag"
+          echo "Published $release_tag at origin/main@$head_sha and dispatched the release pipeline."

@@ -13,14 +13,18 @@ After getting a basic idea on Ciallo's code architecture here, you can check AI 
 
 ### How to build
 
-Ciallo is built on Godot. Building the core part of Ciallo is the same as building a standard Godot C# project:
+Ciallo is built on Godot. Building the core part of Ciallo is similar to building a standard Godot C# project:
 
-- Set up Godot 4.5.2 with .Net10. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
+- Set up [our custom Godot editor](https://github.com/ShenCiao/godot/releases) with .NET 10. You can follow a [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
 - Open the `Ciallo/project.godot` file with your Godot editor, then build and run.
   - Note: Godot will raise annoying errors about autoload before first build, we can safely ignore them.
 - Enable the "Embedded game size stretches..." option in the game run window.
 
 ![](/.github/EnableStretch.png)
+
+### No need to build the Godot editor
+
+You do not need to build the Godot editor from source. Use the provided custom editor release instead. (And wish you would never be tortured by C++.)
 
 ## Code architecture and third-party libraries
 
@@ -29,8 +33,8 @@ Please contact me if you have suggestions for improvement.
 
 ### Godot 2D
 
-Ciallo uses the vast majority of Godot features for developing a 2D game, and heavily uses nearly all types of GUI control nodes.
-So every piece of experience you have in 2D game development is helpful, and skills you learn from Ciallo can also be applied your future game development.
+Ciallo uses many Godot 2D features, especially GUI control nodes.
+So every piece of experience you have in 2D game development is helpful, and skills you learn from Ciallo can also be applied to your future game development.
 
 You can find all the ui scenes and custom gui nodes in the `GuiControl` or `Widget` folders.
 
@@ -81,91 +85,65 @@ Then you understand most of the R3 usage in Ciallo.
 
 If you have to understand how I handle dragging mouse input with R3 (reactive programming) in the Layers panel, here is my learning path:
 
-1. Know [reactive programming](https://gist.github.com/staltz/868e7e9bc2a7b8c1f754) concept first.
-2. Then read [UniRx](https://github.com/neuecc/UniRx) to know the former version of R3.
-3. Reference [ReactiveX operator document](https://reactivex.io/documentation/operators.html) to choose suitable operators.
-4. Make hard guess on the problems to solve.
-
 ### Data serialization and DuckDB
 
 Project data is stored in a DuckDB-backed `.ciallo` file.
-No DTO by design.
 The mechanism is combined with the component system:
 
-- When an entity is tagged with `ToSerializeTag`, it will be persisted to `.ciallo` files.
-- Components attributed with `[ToSerialize]` are mapped to DuckDB columns. Scalar values use DuckDB scalar types, and creative value types such as `Color`, `Vector2`, `Transform2D`, and Bezier data use DuckDB `STRUCT`, `LIST`, or array-like structured types when possible.
-- An entity without `ToSerializeTag` but with `[ToSerialize]` components won't be persisted, including the entity itself and its components.
+- When an entity is tagged with `ToSerializeTag`, it will be persisted to `.ciallo` files, indexed by an id.
+- The document entity is always persisted as id `0`.
+- Component classes attributed with `[ToSerialize]` are mapped to DuckDB tables. Members marked with `[ProjectField]` are mapped to table columns.
+- Scalar values use DuckDB scalar types, and creative value types such as `Color`, `Vector2`, `Transform2D`, and Bezier data use DuckDB `STRUCT` columns. Structured and scalar arrays use DuckDB array columns, and entity maps use `MAP(INTEGER, INTEGER)`.
+- Binary media such as textures and images stays in `BLOB` columns.
+- An entity without `ToSerializeTag` but with `[ToSerialize]` components won't be persisted, including the entity itself and its components, unless it is the document entity.
 
 
-## Release and tags
+## Release
 
 Ciallo uses `dev` for daily integration and `main` for formal releases.
 Create feature branches from `dev` using `<your-name>/<feature-topic>`, for example `alice/brush-preview`.
-There are no alpha/beta tags and no release branches for now.
-The Ciallo Build and Release workflow reads the app version from `Ciallo/project.godot` (`config/version`) and requires the C# project to use a `Godot.NET.Sdk/*-ciallo.g<sha>` package that is already published to the public custom Godot NuGet feed.
 
-Before creating an RC or final release tag, update `Ciallo/project.godot`:
-
-```ini
-config/version="0.0.2"
-```
-
-Commit and push that change before tagging.
-The tag version must exactly match `config/version`.
-After a final release, bump `dev` to the next planned version immediately, while `main` stays on the released version.
+Publishing is done by running a workflow from the Actions page.
 
 ### Feature test builds
 
-Use feature test tags when a branch needs downloadable builds for testers before merging to `dev`.
-These tags create GitHub Actions artifacts only; they do not create GitHub Releases.
-Artifacts are short-lived.
+Use a feature test build when a branch needs downloadable builds for testers before
+merging to `dev`. It produces short-lived GitHub Actions artifacts only — no GitHub
+Release, no Steam upload.
 
-```bash
-git checkout alice/brush-preview
-git pull --ff-only
-git tag -a ft/alice/brush-preview.1 -m "Feature test brush preview 1"
-git push origin ft/alice/brush-preview.1
-```
+Run the **Ciallo Publish Feature Test** workflow from the Actions page and pick the
+branch to publish in the "Run workflow" ref dropdown. It publishes that branch's HEAD,
+derives a slug from the branch name, and tags `ft/<slug>.<N>` with `<N>` auto-incremented
+(for example branch `alice/brush-preview` -> `ft/alice-brush-preview.1`).
 
 ### Release candidates
 
-Create RC tags from a commit that is already contained in `origin/dev`.
-RC tags create GitHub Prereleases with Windows, Linux, and macOS artifacts.
+Run the **Ciallo Publish RC** workflow from the Actions page. Anyone with write access
+can run it. It publishes the current tip of `origin/dev`, auto-increments the RC counter
+from existing tags, and tags `v<config/version>-rc.<N>`.
 
-```bash
-git checkout dev
-git pull --ff-only
-git tag -a v0.0.2-rc.1 -m "Ciallo 0.0.2 rc.1"
-git push origin v0.0.2-rc.1
-```
-
-If another RC is needed, increment only the RC number:
-
-```bash
-git tag -a v0.0.2-rc.2 -m "Ciallo 0.0.2 rc.2"
-git push origin v0.0.2-rc.2
-```
+RC builds create GitHub Prereleases with Windows, Linux, and macOS artifacts, and are
+uploaded to Steam and set live on the **development** branch automatically for testers.
 
 ### Final releases (managed by owner)
 
-Final release tags must be created from a commit that is already contained in `origin/main`.
-Normally, merge `dev` into `main` first, then tag `main`.
+Run the **Ciallo Publish Release** workflow from the Actions page. The run pauses for
+a required reviewer (project owner) in the `production` environment before anything is
+tagged — anyone can start it, but only an approver can complete it. After approval it
+publishes the tip of `origin/main` and tags `v<config/version>`.
 
-```bash
-git checkout main
-git pull --ff-only
-git merge --ff-only origin/dev
-git push origin main
-git tag -a v0.0.2 -m "Ciallo 0.0.2"
-git push origin v0.0.2
-```
-
-Final tags create normal GitHub Releases.
-After the final release is verified, old RC prereleases can be deleted manually when they are no longer useful.
+Final builds create normal GitHub Releases and are uploaded to Steam's **default** branch,
+but are NOT set live automatically — a project owner must promote the build by hand in
+Steamworks App Admin > Builds. Re-running the workflow for a version whose tag already
+exists overwrites it (the tag is force-moved, the GitHub Release and Steam build are
+replaced), so a failed publish can simply be re-run; bumping `config/version` remains the
+norm for an actual new release.
+After the final release is verified, old RC prereleases can be deleted manually when they
+are no longer useful.
 
 ### Hotfix releases
 
-Hotfix releases publish bug fix within 5-10min. 
+Hotfix releases aim to publish bug fix within 5-10min. 
 Use a hotfix when the latest stable release needs an urgent public fix. 
 Hotfixes are temporary prereleases under the already published stable version:
 
@@ -191,7 +169,7 @@ Hotfix PRs must be squash merged.
 After the PR is merged, the Ciallo Hotfix Release workflow automatically:
 
 - creates the next `vX.Y.Z-hotfix.N` tag on the merged `main` commit;
-- dispatches the Ciallo Build and Release workflow for that tag;
+- dispatches the Ciallo Release pipeline for that tag;
 - publishes the tag as a GitHub Prerelease with exported Windows, Linux, and macOS artifacts;
 - creates a backport PR from `backport/vX.Y.Z-hotfix.N-to-dev` into `dev`.
 

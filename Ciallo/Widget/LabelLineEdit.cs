@@ -11,6 +11,11 @@ public partial class LabelLineEdit : LineEdit
     public CursorShape DefaultCursorShape;
     private string _textBeforeEdit = "";
 
+    public LabelLineEdit()
+    {
+        ContextMenuEnabled = false;
+    }
+
     public override void _Ready()
     {
         Editable = false;

@@ -20,6 +20,16 @@ It supercharges the vector layers in software like Toon Boom Harmony, CSP, and F
 
 ## Unique features
 
+### Vector bucket fill
+
+A bucket fill tool, but vectorized:
+
+![](/.github/VectorFill.gif)
+
+Watch the video demonstration:
+
+[Vector bucket fill demonstration](https://www.youtube.com/watch?v=Ry9N5B3CWsI)
+
 ### Vectorized Photoshop-like brushes
 
 Vectorized stamp brushes, rendered in real time on your graphics card (GPU).
@@ -29,16 +39,6 @@ Vectorized stamp brushes, rendered in real time on your graphics card (GPU).
 Resolution-independent airbrush, adjust the opacity falloff directly, with ultra‑fast rendering performance.
 
 ![](/.github/Airbrush.gif)
-
-### Vector bucket fill
-
-Bucket fill in vector form: The positions to fill are editable and tracked with "fill markers", the shape $\odot$ in the image:
-
-![](/.github/VectorFill.gif)
-
-Copy and paste these markers between animation frames:
-
-![](/.github/VectorFillFrames.gif)
 
 ## Other features
 
@@ -54,38 +54,40 @@ We may offer AI-powered features in the future --- but always designed for profe
 ### Optimized pen feel
 
 Ciallo aims to provide a drawing/pen feel significantly better than _CSP_,  _Procreate_ and _SAI 2_; this will require several technical advancements in future updates.
-For the current version, the feel is not worse than _SAI 2_ and certainly better than _Photoshop_ or _Krita_. (Report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.)
+For the current version, the feel is not worse than _SAI 2_ and certainly better than _Photoshop_ or _Krita_. Please report a bug if the paint tool feels laggier than _Photoshop_ or _Krita_.
 
 ### (WIP) Export to game engines
-Ciallo will support export real-time renderable vector 2D contents into game engines（BTW, Ciallo is built upon a game engine so it is absolutely possible.)
+
+Ciallo will support exporting real-time-renderable vector 2D content to game engines. (Ciallo itself is built on a game engine.)
 
 ## Download (Free on all platforms)
 
-[Steam](https://store.steampowered.com/app/3973810) | [Itch.io](https://shenciao.itch.io/ciallo)
+[Steam](https://store.steampowered.com/app/3973810) | [GitHub Releases](https://github.com/ShenCiao/Ciallo/releases) | [Itch.io](https://shenciao.itch.io/ciallo)
 
 System requirements:
-Requires a system capable of running small to mid-sized 3D games.
-Close any other software that heavily uses your GPU before opening Ciallo (except OBS, if necessary).
+Requires a system capable of running small to mid-sized modern 3D games.
+We recommend closing any other software that heavily uses your GPU before opening Ciallo.
 
 - OS: Windows 10 or higher
 - Memory: 6 GB or more
 - GPU: Minimum NV GTX 1650 or AMD Radeon RX 6500 XT
-- Monitor: A refresh rate greater than 100 Hz is recommended for the best drawing experience
+- Monitor: A refresh rate greater than 100 Hz is highly recommended for the best drawing experience
 - Tablet: Use your tablet at its maximum polling/reporting rate.
 
-> Ciallo is highly sensitive to your tablet polling rate. It can potentially respond to tablet/mouse input at up to 1000 Hz. However, tablets in 2025 can reach at most 360 Hz (DTC-141), and 150–200 Hz on average, which is highly insufficient for capturing small turning points and handwritten text. If a tablet with a 500–1000 Hz polling rate becomes available on the market, contact me — Ciallo will try to add support.
+> Ciallo is highly sensitive to your tablet polling rate. It can potentially respond to tablet/mouse input at up to 1000 Hz. However, tablets in 2025 can reach at most 360 Hz (DTC-141), and 150–200 Hz on average, which is highly insufficient for capturing small turning points and handwritten text.
+> If a tablet with a 500–1000 Hz polling rate becomes available on the market, contact the developer — Ciallo will try to add support.
 
 ## Development guideline
 
-**Hand-drawn art**
+**Digital painting first**
 
-Although Ciallo focuses on vector features, it is NOT intended to replace those for graphic design like Inkscape, Illustrator or Figma.
+Although Ciallo focuses on vector features, it is NOT intended to replace those for graphic design software like Inkscape, Illustrator or Figma.
 Instead, it aims to provide Clip Studio Paint or Krita vector layers on super steroids.
-All features that were previously available only in raster workflows would be supported in Ciallo's new vector workflow.
+Features that were previously available only in raster workflows will be supported in Ciallo's new vector workflow.
 
 **Game art first**
 
-Except for the core illustration and animation, Ciallo prioritizes auxiliary features supporting video game development.
+Except for the core animation, Ciallo prioritizes features supporting video game development.
 It will be a DCC program providing vector hand-drawn assets, including illustrations, 2D animations and hand-drawn textures for 3D.
 
 **EA stage**
@@ -95,7 +97,7 @@ During the EA stage, Ciallo mainly focuses on R&D of traditional painting featur
 
 ## Feature requests
 
-Hope Ciallo has already addressed something important to you. (To be frank, the large company should have provided these infrastructures a decade ago.) There's always more to add as Ciallo grows. Check the [Contributing Tab] for the development plan.
+I hope Ciallo has already addressed something important to you. To be frank, those large companies should have provided these infrastructures a decade ago. There is always more to add as Ciallo grows.
 
 The developer basically knows the most needed features during the EA stage. These are the YouTube channels he learns painting: [Dong Chang](https://www.youtube.com/@DongChang) | [Aaron's Painter Tutorials](https://www.youtube.com/@AaronsPainterTutorials) | [saitonaoki](https://www.youtube.com/@saitonaoki2).
 
@@ -215,16 +217,11 @@ SIGGRAPH 2023 Talk
 
 ## Build Guide
 
-Building the core part of Ciallo is the same as building a standard Godot C# project with a custom Godot binary:
+Building the core part of Ciallo is the same as building a standard Godot C# project with a custom Godot editor:
 
-Link: https://github.com/ShenCiao/godot
+- Set up our [custom Godot editor](https://github.com/ShenCiao/godot/releases) and .NET 10. You can follow a [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
 
-(Still investigating how to distribute custom Godot to others)
-
-<!-- - Set up latest Godot and .Net. You can follow an arbitrary [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), and pay attention to the version.
-- Open the `Ciallo/project.godot` file with your Godot editor, then build and run.
-
-Go to [Contributing Tab](https://github.com/ShenCiao/Ciallo?tab=contributing-ov-file#how-to-build) for a more complete guide. -->
+Go to [Contributing Tab](https://github.com/ShenCiao/Ciallo?tab=contributing-ov-file#how-to-build) for a more complete guide.
 
 ## Tech FAQ
 

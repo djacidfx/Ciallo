@@ -21,7 +21,6 @@ public abstract partial class LayerTreeBase : ScrollContainer
     protected readonly ButtonGroup WorkingLayerButtonGroup = new();
 
     protected bool IsDragging;
-    protected ILayerBlock HoveredBlock;
     protected float ScrollSpeed;
     protected float ScrollAccum;
     /// <summary>
@@ -86,7 +85,6 @@ public abstract partial class LayerTreeBase : ScrollContainer
 
         IsDragging = false;
         _dragCancelled = true;
-        HoveredBlock = null;
         _hinter.Visible = false;
         _label.Visible = false;
         ScrollSpeed = 0f;
@@ -146,13 +144,6 @@ public abstract partial class LayerTreeBase : ScrollContainer
         var lineEdit = block.LabelLineEdit
             .BindString(commonSetting.Name, subs)
             .RegisterUndo(cmdM);
-
-        block.Node.MouseEntered += () => HoveredBlock = block;
-        block.Node.MouseExited += () =>
-        {
-            if (ReferenceEquals(HoveredBlock, block))
-                HoveredBlock = null;
-        };
 
         if (ShouldShowDropdownArrow(e))
         {
@@ -237,9 +228,12 @@ public abstract partial class LayerTreeBase : ScrollContainer
 
     private DropTarget ClassifyDrop(ILayerBlock draggedBlock)
     {
-        if (HoveredBlock == null)
+        var mousePos = GetViewport().GetMousePosition();
+        var hoverBlock = HitTestBlock(mousePos);
+
+        if (hoverBlock == null)
         {
-            if (this.GetGlobalRect().HasPoint(GetViewport().GetMousePosition()))
+            if (this.GetGlobalRect().HasPoint(mousePos))
             {
                 var docE = AppDocumentManager.WorkingDocument.CurrentValue;
                 return new(DropKind.FolderChild, docE, 0);
@@ -247,11 +241,10 @@ public abstract partial class LayerTreeBase : ScrollContainer
             return default;
         }
 
-        if (ReferenceEquals(HoveredBlock, draggedBlock))
+        if (ReferenceEquals(hoverBlock, draggedBlock))
             return default;
 
         var draggedEntity = draggedBlock.LayerEntity;
-        var hoverBlock = HoveredBlock;
         var hoverEntity = hoverBlock.LayerEntity;
         var hoverTreeNode = hoverEntity.Get<LayerTreeNode>();
         var localPos = hoverBlock.Node.GetLocalMousePosition();
@@ -279,6 +272,36 @@ public abstract partial class LayerTreeBase : ScrollContainer
         int insertIndex = localPos.Y <= size.Y / 2f ? hoverIndex + 1 : hoverIndex;
 
         return new(DropKind.Sibling, parentEntity, insertIndex);
+    }
+
+    /// <summary>
+    /// Returns the layer block whose header contains <paramref name="globalPos"/>, or null if none.
+    /// Walks the visible <see cref="LayerWrapper"/> subtree directly instead of relying on
+    /// MouseEntered/MouseExited, which are unreliable while a mouse button is held during a drag.
+    /// </summary>
+    private ILayerBlock HitTestBlock(Vector2 globalPos)
+    {
+        return Search(_root);
+
+        ILayerBlock Search(Node node)
+        {
+            foreach (Node child in node.GetChildren())
+            {
+                if (child is not LayerWrapper wrapper) continue;
+
+                var block = wrapper.Block;
+                if (block != null && block.Node.GetGlobalRect().HasPoint(globalPos))
+                    return block;
+
+                // Folded wrappers push their content children out of view, so skip them.
+                if (wrapper.IsExpanded)
+                {
+                    var hit = Search(wrapper);
+                    if (hit != null) return hit;
+                }
+            }
+            return null;
+        }
     }
 
     // ── Drag handlers ───────────────────────────────────────────────────────
@@ -377,7 +400,6 @@ public abstract partial class LayerTreeBase : ScrollContainer
         ScrollAccum = 0f;
 
         var dropTarget = ClassifyDrop(draggedBlock);
-        HoveredBlock = null;
 
         if (dropTarget.Kind == DropKind.None) return;
 

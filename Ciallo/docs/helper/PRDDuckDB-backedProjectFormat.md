@@ -14,7 +14,7 @@ Switch Ciallo project files to a DuckDB-backed format. A `.ciallo` file should i
 
 The user-visible behavior of opening, saving, and saving-as a project remains unchanged. Regular users do not need to know that the storage backend changed.
 
-The schema is a project format contract. It should roughly mirror the persisted Component Class structure, but it must not be a raw dump of C# reflection fields. Field names should be stable, readable, and reflect Ciallo domain concepts.
+The schema is a project format contract. It should roughly mirror the persisted Component Class structure, but it must not be treated as an arbitrary binary dump. Component and field names currently default to the persisted C# storage names, with explicit `[ToSerialize]` and `[ProjectField]` names available when the project format needs a stable domain name that differs from the implementation field name.
 
 ## Goals
 
@@ -28,7 +28,8 @@ The schema is a project format contract. It should roughly mirror the persisted 
 ## Non-Goals
 
 1. Do not read the old SQLite project format.
-2. Do not provide forward or migration compatibility; Ciallo has not shipped this format publicly yet.
+2. Do not provide old-format migration compatibility; Ciallo has not shipped this format publicly yet.
+3. Do not promise forward compatibility between schema versions. The loader may tolerate missing component tables or fields as a best-effort development convenience, but that tolerance is not a public compatibility contract.
 
 ## Business Rationale
 
@@ -38,7 +39,7 @@ The priority is explicit: single-file drawing save/load always comes before anal
 
 DuckDB is valuable here because:
 
-1. It supports rich structured data types such as `STRUCT`, `LIST`, and `MAP`, which are a good fit for creative data such as `Color`, `Vector2`, Bezier curves, and brush parameters.
+1. It supports rich structured data types such as `STRUCT`, `LIST`, and `MAP`, which are a good fit for creative data such as `Color`, `Vector2`, Bezier curves, stroke sample arrays, entity maps, and non-media brush parameters.
 2. It supports nested structures, allowing saved data to stay close to the shape of Component Classes while remaining inspectable through SQL.
 3. It gives Ciallo a stronger foundation for future cross-file querying, aggregation, and production tooling.
 4. It has potential synergy with 2D geometry and GIS-adjacent workflows, though GIS functionality is not a first-phase deliverable.
@@ -49,11 +50,11 @@ DuckDB is valuable here because:
 2. Component fields should roughly correspond to DuckDB columns.
 3. Project-format infrastructure tables such as `metadata` and `entities` are allowed.
 4. Entity references, entity lists, and entity maps should preserve the current SQLite format semantics.
-5. Blobs should be reserved for true binary media.
+5. Blobs should be reserved for true binary media. Blob payloads may still use MessagePack internally when the stored value is an engine/media object rather than raw file bytes.
 6. Creative semantic data should be stored structurally whenever practical.
 7. Do not add derived summary fields in this phase.
 8. Do not add extra analysis tables in this phase.
-9. The schema is a project format contract, not a dump of C# implementation details.
+9. The schema is a project format contract, not a private opaque object graph. Names may follow persisted C# storage names until a field needs an explicit stable domain name.
 
 ## Structured Data Scope
 
@@ -63,15 +64,15 @@ The first phase should store these data categories structurally:
 2. `Vector2`
 3. `Transform2D`
 4. Bezier curves
-5. Brush parameters
+5. Brush scalar, enum, color, and curve parameters
 6. Stroke geometry positions, pressures, radii, and tilts
 
 These data categories may remain blobs:
 
 1. Images
 2. Textures
-3. Stamp and mask images
-4. Other resources that are inherently binary media
+3. Stamp, mask, and marker images
+4. Other resources that are inherently binary media or engine-owned media objects
 
 ## Stroke Geometry Decision
 
@@ -85,7 +86,7 @@ Raw point columns may remain expandable for technical inspection, but point-leve
 
 Future cross-project brush search or replacement may treat brushes with the same name as the same business-level brush category.
 
-This is a production workflow convention, not a guaranteed unique identity. The first phase only needs to preserve enough structured brush data to make this future query possible. It does not implement search or replacement behavior.
+This is a production workflow convention, not a guaranteed unique identity. The first phase only needs to preserve enough structured brush metadata and non-media brush parameters to make this future query possible. It does not implement search or replacement behavior.
 
 ## Acceptance Criteria
 
