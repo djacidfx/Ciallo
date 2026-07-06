@@ -146,4 +146,20 @@ After the stroke is drawn, it snaps near the yellow dot automatically.
 
 Not even a tiny one.
 
-[warmly] If you like this feature, search for "Ciallo" on Steam.
+---
+
+And that is the basic idea behind "Vector Bucket Fill."
+
+I hope you will find these features useful.
+
+If you want to try, you can find it on Steam by searching for "Ciallo." to download. It is free.
+
+If you don't have a Steam account, visit our GitHub repository and download from the release page there.
+
+I will put all the links in the description.
+
+Thank you for watching.
+
+If this video help, please upvote and leave a comment below.
+
+I would love to hear what you think.

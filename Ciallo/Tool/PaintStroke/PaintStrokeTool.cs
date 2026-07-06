@@ -62,7 +62,7 @@ public class PaintStrokeTool : ToolBase
     {
         base.DrawProperty(container);
 
-        container.AddProperty("Snap", new CheckBox
+        container.AddProperty("Snapping", new CheckBox
         {
             ToggleMode = true,
         }.BindBool(AppPreference.PaintStrokeSnapEnabled));

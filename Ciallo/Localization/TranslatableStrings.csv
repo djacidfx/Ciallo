@@ -161,7 +161,6 @@ Separator,Separator,分隔符,分隔符號,区切り文字,구분자,Trennzeiche
 Start number,Start number,起始编号,起始編號,開始番号,시작 번호,Startnummer,Numéro de départ
 Save image,Save image,保存图像,儲存圖像,画像を保存,이미지 저장,Bild speichern,Enregistrer l'image
 New document - Ciallo,New document - Ciallo,新建文档 - Ciallo,新增文檔 - Ciallo,新しいドキュメント - Ciallo,새 문서 - Ciallo,Neues Dokument - Ciallo,Nouveau document - Ciallo
-Set your canvas reference size in pixels—you can always export your artwork at a higher resolution.,Set your canvas reference size in pixels—you can always export your artwork at a higher resolution.,设置画布参考尺寸（像素）——之后始终可以用更高分辨率导出作品。,設定畫布參考尺寸（像素）——之後仍可用更高解析度匯出作品。,キャンバスの参照サイズをピクセル単位で設定します。作品はいつでもより高い解像度でエクスポートできます。,캔버스 기준 크기를 픽셀 단위로 설정합니다. 작품은 언제든지 더 높은 해상도로 내보낼 수 있습니다.,Legen Sie die Referenzgröße der Leinwand in Pixeln fest. Sie können Ihr Werk jederzeit mit höherer Auflösung exportieren.,Définissez la taille de référence du canevas en pixels. Vous pourrez toujours exporter votre œuvre à une résolution plus élevée.
 Add a layer,Add a layer,添加图层,新增圖層,レイヤーを追加,레이어 추가,Ebene hinzufügen,Ajouter un calque
 Import an image,Import an image,导入图像,匯入圖像,画像をインポート,이미지 가져오기,Bild importieren,Importer une image
 Convert to shape layer,Convert to shape layer,转换为形状图层,轉換為形狀圖層,シェイプレイヤーに変換,쉐이프 레이어로 변환,In Formebene umwandeln,Convertir en calque de forme
@@ -182,7 +181,7 @@ Apply,Apply,应用,套用,適用,적용,Anwenden,Appliquer
 Select reference shape layers,Select reference shape layers,选择参考形状图层,選擇參考形狀圖層,参照シェイプレイヤーを選択,참조 쉐이프 레이어 선택,Referenz-Formebenen auswählen,Sélectionner les calques de forme de référence
 Edit reference layers,Edit reference layers,编辑参考图层,編輯參考圖層,参照レイヤーを編集,참조 레이어 편집,Referenzebenen bearbeiten,Modifier les calques de référence
 Max gap length,Max gap length,最大间隙长度,最大間隙長度,最大ギャップ長,최대 간격 길이,Maximale Lückenlänge,Longueur maximale de lacune
-Snap,Snap,吸附,吸附,スナップ,스냅,Einrasten,Accrochage
+Snapping,Snapping,吸附,吸附,スナップ,스냅,Einrasten,Accrochage
 Snap distance,Snap distance,吸附距离,吸附距離,スナップ距離,스냅 거리,Einrastabstand,Distance d'accrochage
 Import marker,Import marker,导入标记,匯入標記,マーカーをインポート,마커 가져오기,Marker importieren,Importer un marqueur
 Remove marker,Remove marker,移除标记,移除標記,マーカーを削除,마커 제거,Marker entfernen,Supprimer le marqueur
