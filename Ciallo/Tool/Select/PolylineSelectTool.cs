@@ -213,7 +213,8 @@ public class PolylineSelectTool : ToolBase
         }).AddTo(vectorFillBrushSwitcher);
 
         var polylineEditBox = container.CreateBox().AddToChildOf(container)
-            .VisibleIf(selectionManager.SelectedShapes.ObserveCountChanged().Prepend(0), count => count > 0);
+            .VisibleIf(selectionManager.SelectedShapes.ObserveCountChanged()
+            .Prepend(0), count => count > 1); // ignore single point.
 
         var simplificationRatioEdit = new SpinSlider()
         {
