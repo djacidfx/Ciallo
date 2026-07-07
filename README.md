@@ -4,11 +4,14 @@
 <div align="center">
 
 [![Steam](https://img.shields.io/badge/steam-%23000000.svg?style=for-the-badge&logo=steam&logoColor=white)](https://store.steampowered.com/app/3973810)
-[![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/cw/ShenCiao)
+[![Discord](https://img.shields.io/discord/1115272560196726834?style=for-the-badge&logo=discord)](https://discord.gg/9HxhnuHKrk)
 [![Pixiv](https://img.shields.io/badge/pixiv-0096FA.svg?style=for-the-badge&logo=pixiv&logoColor=white)](https://www.pixiv.net/artworks/137703808)
+[![Patreon](https://img.shields.io/badge/Patreon-F96854?style=for-the-badge&logo=patreon&logoColor=white)](https://www.patreon.com/cw/ShenCiao)
+
 
 [![License](https://img.shields.io/github/license/ShenCiao/Ciallo.svg)](https://github.com/ShenCiao/Ciallo/blob/main/LICENSE)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ShenCiao/Ciallo)
+[![GitHub Release](https://img.shields.io/github/v/release/ShenCiao/Ciallo)](https://github.com/ShenCiao/Ciallo/releases)
 
 </div>
 
