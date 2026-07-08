@@ -1,0 +1,7 @@
+[gd_scene format=3 uid="uid://bj3j8m0bx8tb5"]
+
+[ext_resource type="Script" uid="uid://dsiljl8rq1x8j" path="res://GuiControl/Dialog/ConfigureGlobalPenPressure.cs" id="1_m588g"]
+
+[node name="ConfigureGlobalPenPressure" type="AcceptDialog" unique_id=44268714]
+oversampling_override = 1.0
+script = ExtResource("1_m588g")
