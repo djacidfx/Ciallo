@@ -69,6 +69,13 @@ public class PolylineInteractiveGenerator
 
     public PolylineGeneratorGeometry CurrentGeometry => new(_positions, _radii, _pressures, _tilts);
 
+    // Upper bound for the per-input dt handed to the modeler. Past this bound the
+    // spring integrator's sub-step exceeds the explicit-Euler stability limit and
+    // diverges to NaN, silently freezing the stroke. At the bound the sub-step is
+    // 1 / MinOutputRate (normal drawing cadence), which is stable.
+    private double MaxModelerInputDeltaSeconds =>
+        _modelerParams.Sampling.MaxOutputsPerCall / _modelerParams.Sampling.MinOutputRate;
+
     public void Start(CursorButtonData data)
     {
         Clear();
@@ -82,7 +89,9 @@ public class PolylineInteractiveGenerator
         if (!_strokeStarted)
             BeginStroke(data.Pressure, data.Tilt);
 
-        _elapsedSeconds += Math.Max(0, data.TimeDelta.TotalSeconds);
+        // Clamp the advance so one stalled input cannot open a huge modeler
+        // time gap that diverges the spring integrator (see MaxModelerInputDeltaSeconds).
+        _elapsedSeconds += Math.Clamp(data.TimeDelta.TotalSeconds, 0, MaxModelerInputDeltaSeconds);
         UpdateWorldUnitsPerPixel(data);
         AddRawSample(data.WorldPosition, data.Tilt, _elapsedSeconds);
         UpdateModeler(new ModelerInput(
@@ -210,8 +219,15 @@ public class PolylineInteractiveGenerator
     {
         foreach (var result in results)
         {
+            // Safety net: a non-finite sample poisons the bounding box (Godot culls the
+            // stroke) and feeds back into the next update, freezing the stroke. Drop it so
+            // the stroke self-recovers. The dt clamp prevents divergence; this backs it up.
+            var position = ToVector2(result.Position);
+            if (!float.IsFinite(position.X) || !float.IsFinite(position.Y))
+                continue;
+
             float pressure = result.Pressure < 0 ? 1f : Mathf.Clamp(result.Pressure, 0f, 1f);
-            positions.Add(ToVector2(result.Position));
+            positions.Add(position);
             pressures.Add(pressure);
             radii.Add(CalculateRadius(pressure));
             tilts.Add(TiltAt(result.Time.TotalSeconds));
