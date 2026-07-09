@@ -356,10 +356,14 @@ jobs:
           }
           $preset = Join-Path $env:PROJECT_PATH "export_presets.cfg"
           $presetText = Get-Content -LiteralPath $preset -Raw
-          if ($presetText -notmatch '(?ms)^\[preset\.(?<index>\d+)\]\s*.*?^name="macOS"\s*.*?^platform="macOS"\s*') {
+          $macPresetMatch = [regex]::Match(
+            $presetText,
+            '(?ms)^\[preset\.(?<index>\d+)\]\s*(?:(?!^\[preset\.\d+(?:\.options)?\]).)*?^name="macOS"\s*$(?:(?!^\[preset\.\d+(?:\.options)?\]).)*?^platform="macOS"\s*$'
+          )
+          if (-not $macPresetMatch.Success) {
             throw "Could not find the macOS export preset."
           }
-          $macOptionsHeader = "[preset.$($Matches.index).options]"
+          $macOptionsHeader = "[preset.$($macPresetMatch.Groups["index"].Value).options]"
 
           function Set-PresetOption([string]$Key, [string]$Value) {
             $escapedKey = [regex]::Escape($Key)
