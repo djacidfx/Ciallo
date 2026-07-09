@@ -532,6 +532,30 @@ jobs:
             echo "::endgroup::"
           }
 
+          poll_notary_diagnostics() {
+            local elapsed="$1"
+
+            echo "::group::notarytool info poll (${elapsed}s)"
+            info_json="$(xcrun notarytool info "$submission_id" "${notary_credentials[@]}" --output-format json --verbose)"
+            printf '%s\n' "$info_json"
+            echo "::endgroup::"
+
+            # Apple's log is usually unavailable until processing finishes, but asking during
+            # a long In Progress period sometimes returns useful service-side context.
+            if (( elapsed == 0 || elapsed % 300 == 0 )); then
+              echo "::group::notarytool log poll (${elapsed}s)"
+              xcrun notarytool log "$submission_id" "${notary_credentials[@]}" "notary/notary-log-${elapsed}s.json" --verbose || true
+              if [[ -f "notary/notary-log-${elapsed}s.json" ]]; then
+                cat "notary/notary-log-${elapsed}s.json"
+              fi
+              echo "::endgroup::"
+
+              echo "::group::notarytool history poll (${elapsed}s)"
+              xcrun notarytool history "${notary_credentials[@]}" --output-format json --verbose || true
+              echo "::endgroup::"
+            fi
+          }
+
           submit_json="$(xcrun notarytool submit notary/Ciallo-macOS-notary.zip "${notary_credentials[@]}" --output-format json --verbose)"
           printf '%s\n' "$submit_json"
           submission_id="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["id"])' <<<"$submit_json")"
@@ -540,11 +564,10 @@ jobs:
           deadline=$((SECONDS + 15 * 60))
           wait_started_at=$SECONDS
           while true; do
-            info_json="$(xcrun notarytool info "$submission_id" "${notary_credentials[@]}" --output-format json)"
-            status="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["status"])' <<<"$info_json")"
             elapsed=$((SECONDS - wait_started_at))
+            poll_notary_diagnostics "$elapsed"
+            status="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["status"])' <<<"$info_json")"
             echo "Notarization status: $status; elapsed=${elapsed}s; submission_id=$submission_id"
-            printf '%s\n' "$info_json"
 
             case "$status" in
               "Accepted")
