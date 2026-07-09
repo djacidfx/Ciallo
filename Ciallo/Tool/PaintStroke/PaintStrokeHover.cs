@@ -39,12 +39,6 @@ public class PaintStrokeHover : InteractiveSessionBase
 
     public override void DrawProperty(PropertyContainer container)
     {
-        // ---- Global pen pressure map
-        var ppCurveEdit = new MappingCurveEdit().BindCurve(AppPreference.PenPressureRemapCurve);
-        var aspectBox = new AspectRatioContainer();
-        aspectBox.AddChild(ppCurveEdit);
-        container.AddProperty("Global pen pressure remap", aspectBox);
-
         // ---- App brush library
         var brushSelector = new OptionButton()
         {
