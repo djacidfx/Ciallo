@@ -1,0 +1,37 @@
+name: Stage Steam depot content
+description: >-
+  Lay out Ciallo package artifacts into steam-content for game-ci/steam-deploy.
+
+inputs:
+  artifacts_dir:
+    description: Downloaded Ciallo-* artifact folders.
+    required: false
+    default: artifacts
+  output_dir:
+    description: Steam depot output directory.
+    required: false
+    default: steam-content
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        ARTIFACTS_DIR: ${{ inputs.artifacts_dir }}
+        OUTPUT_DIR: ${{ inputs.output_dir }}
+      run: |
+        set -euo pipefail
+
+        mkdir -p "$OUTPUT_DIR/windows" "$OUTPUT_DIR/linux" "$OUTPUT_DIR/macos"
+
+        unzip -q "$ARTIFACTS_DIR/Ciallo-Windows/Ciallo-Windows.zip" -d "$OUTPUT_DIR/windows"
+        unzip -q "$ARTIFACTS_DIR/Ciallo-Linux/Ciallo-Linux.zip" -d "$OUTPUT_DIR/linux"
+
+        # Signed macOS zip is required; unsigned artifacts fail here.
+        mac_zip="$ARTIFACTS_DIR/Ciallo-macOS/Ciallo-macOS.zip"
+        if [ ! -f "$mac_zip" ]; then
+          echo "Missing signed macOS package: $mac_zip"
+          echo "Rebuild from a ref to produce a signed, notarized macOS artifact."
+          exit 1
+        fi
+        unzip -q "$mac_zip" -d "$OUTPUT_DIR/macos"
