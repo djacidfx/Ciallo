@@ -106,7 +106,9 @@ public partial class MappingCurveEdit : Control
     public MappingCurveEdit BindCurve(ReactiveProperty<ImmutableArray<BezierPoint>> property)
     {
         _property = property;
-        property.Subscribe(_ => QueueRedraw()).AddTo(this);
+        // Route through _CurveChanged so an external curve swap (Straighten, preset) clamps a
+        // now-out-of-bounds selection before the next _Draw indexes Points with it.
+        property.Subscribe(_ => _CurveChanged()).AddTo(this);
         _CurveChanged();
         return this;
     }
@@ -701,7 +703,7 @@ public partial class MappingCurveEdit : Control
         }
 
         // Draw selected point and tangents
-        if (_selectedIndex >= 0)
+        if (_selectedIndex >= 0 && _selectedIndex < Points.Length)
         {
             Vector2 pointPos = Points[_selectedIndex].P;
             Color selectedPointColor = GetThemeColor("font_color", "Label");

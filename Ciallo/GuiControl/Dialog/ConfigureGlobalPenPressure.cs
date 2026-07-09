@@ -14,6 +14,7 @@ public partial class ConfigureGlobalPenPressure : AcceptDialog
     private OptionButton _brandButton;
     private OptionButton _penButton;
     private OptionButton _tabletButton;
+    private Button _straightenButton;
 
     // Left: device's raw digital response (gram -> 0..1). Right: response after the remap curve.
     private PolylineChart _rawChart;
@@ -47,6 +48,10 @@ public partial class ConfigureGlobalPenPressure : AcceptDialog
         selectors.AddChild(_penButton);
         selectors.AddChild(_tabletButton);
 
+        // Solves for a remap curve that straightens the selected device's force -> pressure response.
+        _straightenButton = new Button { Text = "Straighten" };
+        selectors.AddChild(_straightenButton);
+
         // Three panels side by side: raw response, the editable remap curve, the composed result.
         var charts = new HBoxContainer { SizeFlagsVertical = Control.SizeFlags.ExpandFill };
         vbox.AddChild(charts);
@@ -72,6 +77,7 @@ public partial class ConfigureGlobalPenPressure : AcceptDialog
         _brandButton.ItemSelected += OnBrandSelected;
         _penButton.ItemSelected += OnPenSelected;
         _tabletButton.ItemSelected += OnTabletSelected;
+        _straightenButton.Pressed += OnStraightenPressed;
 
         // The mapped chart depends on the remap curve, so re-plot it whenever the curve changes.
         AppPreference.PenPressureRemapCurve.Subscribe(_ => PlotMapped()).AddTo(_disposables);
@@ -145,6 +151,22 @@ public partial class ConfigureGlobalPenPressure : AcceptDialog
         _selected = PenPressureResponseLibrary.MatchLatest(brand, pen, tablet);
         PlotRaw();
         PlotMapped();
+    }
+
+    // Solves for a remap curve that straightens the selected device's force->pressure response,
+    // then overwrites the global remap curve. The mapped chart re-plots automatically via the
+    // PenPressureRemapCurve subscription, so the right panel is the visual verification.
+    private void OnStraightenPressed()
+    {
+        if (_selected == null)
+            return;
+        var remap = PressureRemapSolver.Straighten(_selected.Records);
+        if (remap is null)
+        {
+            GD.PushWarning("Cannot straighten: the selected device response is degenerate (no usable force span).");
+            return;
+        }
+        AppPreference.PenPressureRemapCurve.Value = remap.Value;
     }
 
     private void PlotRaw()
