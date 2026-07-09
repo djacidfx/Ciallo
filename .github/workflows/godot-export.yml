@@ -518,10 +518,12 @@ jobs:
           echo "Notary submission id: $submission_id"
 
           deadline=$((SECONDS + 15 * 60))
+          wait_started_at=$SECONDS
           while true; do
             info_json="$(xcrun notarytool info "$submission_id" "${notary_credentials[@]}" --output-format json)"
             status="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["status"])' <<<"$info_json")"
-            echo "Current notarization status: $status"
+            elapsed=$((SECONDS - wait_started_at))
+            echo "Notarization status: $status; elapsed=${elapsed}s; submission_id=$submission_id"
 
             case "$status" in
               "Accepted")
@@ -543,7 +545,7 @@ jobs:
               exit 1
             fi
 
-            sleep 20
+            sleep 60
           done
 
           xcrun stapler staple "$APP_PATH"
