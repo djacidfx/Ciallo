@@ -475,7 +475,7 @@ jobs:
       - name: Notarize, staple, verify, and package macOS app
         # Godot already signed the bundle; this step notarizes, staples, verifies, and zips it.
         if: matrix.name == 'macOS' && inputs.sign_macos
-        timeout-minutes: 45
+        timeout-minutes: 20
         env:
           APP_PATH: build/macos/Ciallo.app
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
@@ -517,7 +517,7 @@ jobs:
           submission_id="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["id"])' <<<"$submit_json")"
           echo "Notary submission id: $submission_id"
 
-          deadline=$((SECONDS + 35 * 60))
+          deadline=$((SECONDS + 15 * 60))
           while true; do
             info_json="$(xcrun notarytool info "$submission_id" "${notary_credentials[@]}" --output-format json)"
             status="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["status"])' <<<"$info_json")"
@@ -536,7 +536,7 @@ jobs:
             esac
 
             if (( SECONDS >= deadline )); then
-              echo "Timed out waiting for notarization after 35 minutes."
+              echo "Timed out waiting for notarization after 15 minutes."
               printf '%s\n' "$info_json"
               xcrun notarytool log "$submission_id" "${notary_credentials[@]}" notary/notary-log.json || true
               cat notary/notary-log.json || true
