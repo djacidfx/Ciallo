@@ -1,0 +1,237 @@
+name: Steam Upload
+
+on:
+  workflow_call:
+    inputs:
+      source_mode:
+        description: Source mode label.
+        required: true
+        type: string
+      source_label:
+        description: Ref, tag, or run label.
+        required: true
+        type: string
+      project_version:
+        description: Project version.
+        required: true
+        type: string
+      head_sha:
+        description: Artifact commit SHA.
+        required: true
+        type: string
+      tag_kind:
+        description: rc, release, hotfix, or manual.
+        required: false
+        default: manual
+        type: string
+      release_title:
+        description: Release title.
+        required: false
+        default: ""
+        type: string
+      app_id:
+        description: Steam app id. Empty uses STEAM_APP_ID.
+        required: false
+        default: ""
+        type: string
+      steam_branch:
+        description: Steam branch. __auto__ uses release policy.
+        required: false
+        default: __auto__
+        type: string
+      build_description:
+        description: Custom description. Empty auto-generates.
+        required: false
+        default: ""
+        type: string
+      download_run_id:
+        description: Existing run id. Empty uses current run.
+        required: false
+        default: ""
+        type: string
+      dry_run:
+        description: Preview without uploading.
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: steam-deploy-${{ vars.STEAM_APP_ID }}
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    name: Upload to Steam
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Resolve Steam parameters
+        id: steam
+        env:
+          INPUT_APP_ID: ${{ inputs.app_id }}
+          DEFAULT_APP_ID: ${{ vars.STEAM_APP_ID }}
+          TAG_KIND: ${{ inputs.tag_kind }}
+          STEAM_BRANCH: ${{ inputs.steam_branch }}
+          RELEASE_TITLE: ${{ inputs.release_title }}
+          SOURCE_MODE: ${{ inputs.source_mode }}
+          SOURCE_LABEL: ${{ inputs.source_label }}
+          VERSION: ${{ inputs.project_version }}
+          SHA: ${{ inputs.head_sha }}
+          CUSTOM: ${{ inputs.build_description }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          app_id="${INPUT_APP_ID:-$DEFAULT_APP_ID}"
+          if [ -z "$app_id" ]; then
+            echo "No app id: set the app_id input or the STEAM_APP_ID repo variable."
+            exit 1
+          fi
+
+          if [ "$STEAM_BRANCH" = "__auto__" ]; then
+            if [ "$TAG_KIND" = "rc" ]; then
+              release_branch="development"
+            elif [ "$TAG_KIND" = "release" ] || [ "$TAG_KIND" = "hotfix" ]; then
+              # Empty releaseBranch uploads only; default branch promotion stays manual.
+              release_branch=""
+            else
+              release_branch="default"
+            fi
+          else
+            release_branch="$STEAM_BRANCH"
+          fi
+
+          # Steam depot ids are app_id with the last digit replaced by 1/2/3.
+          base="${app_id%?}"
+          depot_windows="${base}1"
+          depot_linux="${base}2"
+          depot_macos="${base}3"
+
+          short_sha="${SHA:0:7}"
+          if [ -n "${CUSTOM:-}" ]; then
+            description="$CUSTOM"
+          elif [ "$TAG_KIND" = "rc" ] || [ "$TAG_KIND" = "release" ] || [ "$TAG_KIND" = "hotfix" ]; then
+            description="$RELEASE_TITLE | $TAG_KIND | $short_sha"
+          else
+            description="Ciallo $VERSION | $SOURCE_MODE | $SOURCE_LABEL | $short_sha"
+          fi
+
+          {
+            echo "app_id=$app_id"
+            echo "release_branch=$release_branch"
+            echo "depot_windows=$depot_windows"
+            echo "depot_linux=$depot_linux"
+            echo "depot_macos=$depot_macos"
+            echo "short_sha=$short_sha"
+            echo "description=$description"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Checkout for composite actions
+        uses: actions/checkout@v5
+
+      - name: Download current run artifacts
+        if: inputs.download_run_id == ''
+        uses: actions/download-artifact@v6
+        with:
+          pattern: Ciallo-*
+          path: artifacts
+
+      - name: Download existing run artifacts
+        if: inputs.download_run_id != ''
+        uses: actions/download-artifact@v6
+        with:
+          pattern: Ciallo-*
+          path: artifacts
+          run-id: ${{ inputs.download_run_id }}
+          github-token: ${{ github.token }}
+
+      - name: Stage Steam depot content
+        uses: ./.github/actions/stage-steam-content
+
+      - name: Preview parameters
+        if: inputs.dry_run
+        env:
+          APP_ID: ${{ steps.steam.outputs.app_id }}
+          DEPOT_WINDOWS: ${{ steps.steam.outputs.depot_windows }}
+          DEPOT_LINUX: ${{ steps.steam.outputs.depot_linux }}
+          DEPOT_MACOS: ${{ steps.steam.outputs.depot_macos }}
+          STEAM_BRANCH: ${{ steps.steam.outputs.release_branch }}
+          DESC: ${{ steps.steam.outputs.description }}
+        shell: bash
+        run: |
+          {
+            echo "## Dry run — no upload performed"
+            echo ""
+            echo "Would upload with:"
+            echo ""
+            echo "- App id: $APP_ID"
+            echo "- Depots: $DEPOT_WINDOWS Windows, $DEPOT_LINUX Linux, $DEPOT_MACOS macOS"
+            echo "- Steam branch: ${STEAM_BRANCH:-default upload only}"
+            echo "- Build description: $DESC"
+            echo ""
+            echo "Re-run with dry_run unchecked to perform the real upload."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload to Steam
+        id: upload
+        if: ${{ !inputs.dry_run }}
+        uses: game-ci/steam-deploy@v3
+        with:
+          username: ${{ secrets.STEAM_USERNAME }}
+          configVdf: ${{ secrets.STEAM_CONFIG_VDF }}
+          appId: ${{ steps.steam.outputs.app_id }}
+          buildDescription: ${{ steps.steam.outputs.description }}
+          rootPath: steam-content
+          firstDepotIdOverride: ${{ steps.steam.outputs.depot_windows }}
+          depot1Path: windows
+          depot2Path: linux
+          depot3Path: macos
+          releaseBranch: ${{ steps.steam.outputs.release_branch }}
+
+      - name: Write job summary
+        if: ${{ always() && !inputs.dry_run }}
+        env:
+          SOURCE_MODE: ${{ inputs.source_mode }}
+          SOURCE_LABEL: ${{ inputs.source_label }}
+          KIND: ${{ inputs.tag_kind }}
+          SHA: ${{ inputs.head_sha }}
+          APP_ID: ${{ steps.steam.outputs.app_id }}
+          STEAM_BRANCH: ${{ steps.steam.outputs.release_branch }}
+          DEPOT_WINDOWS: ${{ steps.steam.outputs.depot_windows }}
+          DEPOT_LINUX: ${{ steps.steam.outputs.depot_linux }}
+          DEPOT_MACOS: ${{ steps.steam.outputs.depot_macos }}
+          UPLOAD_RESULT: ${{ steps.upload.outcome }}
+        shell: bash
+        run: |
+          {
+            echo "## Steam upload"
+            echo ""
+            echo "- Source mode: $SOURCE_MODE"
+            echo "- Source ref or run id: $SOURCE_LABEL"
+            echo "- Release kind: $KIND"
+            echo "- Commit SHA: ${SHA:-unknown}"
+            echo "- Steam app id: $APP_ID"
+            echo "- Steam branch: ${STEAM_BRANCH:-default upload only}"
+            echo "- Depots: $DEPOT_WINDOWS Windows, $DEPOT_LINUX Linux, $DEPOT_MACOS macOS"
+            echo ""
+            if [ "$UPLOAD_RESULT" != "success" ]; then
+              echo "> [!CAUTION]"
+              echo "> **Steam upload FAILED.** The build was NOT delivered to Steam."
+              echo "> This often means the \`STEAM_CONFIG_VDF\` Steam Guard credential"
+              echo "> expired and must be regenerated locally. **Contact the project"
+              echo "> owner** to refresh the credential and re-run this job."
+            elif [ "$KIND" = "rc" ]; then
+              echo "> [!NOTE]"
+              echo "> Uploaded and set live on Steam branch **development** automatically."
+              echo "> Testers on that branch will update on next client restart."
+            elif [ -z "$STEAM_BRANCH" ] || [ "$STEAM_BRANCH" = "default" ]; then
+              echo "> [!IMPORTANT]"
+              echo "> **Build uploaded but NOT yet released to players.**"
+              echo "> Steam requires the **default** branch to be promoted by hand."
+              echo "> A **project owner** must open Steamworks > App Admin > Builds and"
+              echo "> SetLive this build to **default** for players to receive it."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"

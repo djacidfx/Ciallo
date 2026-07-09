@@ -1,19 +1,7 @@
 name: Ciallo Publish RC
 
-# Manual dev (rc) publish. Self-serve: anyone with write access can run it.
-#
-# What it does:
-# - Reads config/version (X.Y.Z) from project.godot.
-# - Derives the next rc counter from existing v<version>-rc.* tags (the .N is
-#   NOT stored in project.godot, so it is computed from the tag list).
-# - Tags origin/dev HEAD as v<version>-rc.<N> and dispatches the shared release
-#   pipeline (github-release.yml) on that tag.
-#
-# GitHub always shows a "Use workflow from" ref picker for workflow_dispatch
-# workflows. This workflow intentionally ignores that picker for the published
-# code and always publishes the current tip of origin/dev. Tag rules (rc must be
-# contained in origin/dev, version must match project.godot) are re-validated
-# inside godot-export.yml; the checks here just fail fast.
+# Tags origin/dev as the next v<version>-rc.N and dispatches github-release.yml.
+# The dispatch ref picker is ignored; published code always comes from origin/dev.
 
 on:
   workflow_dispatch:
@@ -56,24 +44,13 @@ jobs:
             exit 1
           fi
 
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
 
-          project_file="$PROJECT_PATH/project.godot"
-          version_line="$(grep -E '^config/version=' "$project_file" | head -n 1)"
-          project_version="${version_line#*=}"
-          project_version="${project_version%\"}"
-          project_version="${project_version#\"}"
-
-          if ! [[ "$project_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "project.godot config/version must be plain semver X.Y.Z. Actual: $project_version"
-            exit 1
-          fi
-
+          project_version="$(bash .github/scripts/read-project-version.sh "$PROJECT_PATH")"
           base_tag="v$project_version"
 
-          # rc counter is not in project.godot; take the highest existing
-          # v<version>-rc.N and add one (first rc for a version starts at 1).
+          # rc counter is derived from existing v<version>-rc.N tags.
           last_number="$(
             git tag --list "${base_tag}-rc.*" |
               sed -E "s/^${base_tag}-rc\.([0-9]+)$/\1/" |
@@ -95,6 +72,5 @@ jobs:
           git tag -a "$rc_tag" "$head_sha" -m "Ciallo ${rc_tag#v}"
           git push origin "$rc_tag"
 
-          # Tags pushed with GITHUB_TOKEN do not start push workflows, so dispatch explicitly.
           gh workflow run github-release.yml --repo "$REPO" --ref "$rc_tag"
           echo "Created $rc_tag from origin/dev@$head_sha and dispatched the release pipeline."

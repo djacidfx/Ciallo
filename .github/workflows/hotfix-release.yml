@@ -57,8 +57,8 @@ jobs:
             exit 1
           fi
 
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com"
 
           parent_count="$(git show -s --format=%P "$MERGE_SHA" | wc -w | tr -d ' ')"
           if [ "$parent_count" != "1" ]; then
@@ -66,17 +66,7 @@ jobs:
             exit 1
           fi
 
-          project_file="$PROJECT_PATH/project.godot"
-          version_line="$(grep -E '^config/version=' "$project_file" | head -n 1)"
-          project_version="${version_line#*=}"
-          project_version="${project_version%\"}"
-          project_version="${project_version#\"}"
-
-          if ! [[ "$project_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "project.godot config/version must be plain semver X.Y.Z. Actual: $project_version"
-            exit 1
-          fi
-
+          project_version="$(bash .github/scripts/read-project-version.sh "$PROJECT_PATH")"
           base_tag="v$project_version"
           if ! git rev-parse -q --verify "refs/tags/$base_tag" >/dev/null; then
             echo "Missing stable release tag $base_tag."
@@ -111,7 +101,6 @@ jobs:
             git push origin "$hotfix_tag"
           fi
 
-          # Tags pushed with GITHUB_TOKEN do not start push workflows, so dispatch explicitly.
           gh workflow run github-release.yml --repo "$REPO" --ref "$hotfix_tag"
 
           backport_branch="backport/${hotfix_tag}-to-dev"
@@ -120,30 +109,23 @@ jobs:
           echo "merge_sha=$MERGE_SHA" >> "$GITHUB_OUTPUT"
           echo "Created $hotfix_tag from PR #$PR_NUMBER: $PR_TITLE"
 
-      - name: Create dev backport PR
+      - name: Prepare dev backport changes
         env:
-          GH_TOKEN: ${{ github.token }}
           HOTFIX_TAG: ${{ steps.hotfix.outputs.hotfix_tag }}
-          BACKPORT_BRANCH: ${{ steps.hotfix.outputs.backport_branch }}
           MERGE_SHA: ${{ steps.hotfix.outputs.merge_sha }}
-          PR_NUMBER: ${{ github.event.pull_request.number }}
-          REPO: ${{ github.repository }}
         shell: bash
         run: |
           set -euo pipefail
 
           git fetch origin dev
-          git checkout -B "$BACKPORT_BRANCH" origin/dev
+          git checkout -B dev origin/dev
 
           if git merge-base --is-ancestor "$MERGE_SHA" HEAD; then
             echo "dev already contains $HOTFIX_TAG; no backport PR needed."
             exit 0
           fi
 
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          if ! git cherry-pick "$MERGE_SHA"; then
+          if ! git cherry-pick --no-commit "$MERGE_SHA"; then
             if git diff --quiet && git diff --cached --quiet; then
               git cherry-pick --abort
               echo "dev already has the same changes as $HOTFIX_TAG; no backport PR needed."
@@ -154,29 +136,24 @@ jobs:
             exit 1
           fi
 
-          if git diff --quiet origin/dev...HEAD; then
+          if git diff --quiet && git diff --cached --quiet; then
             echo "dev already contains $HOTFIX_TAG; no backport PR needed."
             exit 0
           fi
 
-          git push --force-with-lease origin "HEAD:$BACKPORT_BRANCH"
+      - name: Create dev backport PR
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ github.token }}
+          commit-message: Backport ${{ steps.hotfix.outputs.hotfix_tag }} to dev
+          committer: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
+          author: ${{ github.actor }} <${{ github.actor_id }}+${{ github.actor }}@users.noreply.github.com>
+          branch: ${{ steps.hotfix.outputs.backport_branch }}
+          base: dev
+          delete-branch: true
+          title: Backport ${{ steps.hotfix.outputs.hotfix_tag }} to dev
+          body: |
+            Backports hotfix ${{ steps.hotfix.outputs.hotfix_tag }} from #${{ github.event.pull_request.number }} to dev.
 
-          existing_pr="$(gh pr list --repo "$REPO" --head "$BACKPORT_BRANCH" --base dev --state open --json number --jq '.[0].number // empty')"
-          if [ -n "$existing_pr" ]; then
-            echo "Backport PR already exists: #$existing_pr"
-            exit 0
-          fi
-
-          cat > backport-body.md <<EOF
-          Backports hotfix $HOTFIX_TAG from #$PR_NUMBER to dev.
-
-          This PR is created automatically after the hotfix is merged into main.
-          It intentionally does not change project.godot version unless the hotfix itself changed it.
-          EOF
-
-          gh pr create \
-            --repo "$REPO" \
-            --base dev \
-            --head "$BACKPORT_BRANCH" \
-            --title "Backport $HOTFIX_TAG to dev" \
-            --body-file backport-body.md
+            This PR is created automatically after the hotfix is merged into main.
+            It intentionally does not change project.godot version unless the hotfix itself changed it.
