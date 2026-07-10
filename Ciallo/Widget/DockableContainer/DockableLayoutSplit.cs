@@ -1,7 +1,7 @@
 using System;
 using Godot;
 
-namespace Ciallo.Widget.DockableContainer;
+namespace Ciallo.Widget;
 
 [Tool, GlobalClass]
 public partial class DockableLayoutSplit : DockableLayoutNode

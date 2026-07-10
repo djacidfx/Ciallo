@@ -1,7 +1,7 @@
 #if TOOLS
 using Godot;
 
-namespace Ciallo.Widget.DockableContainer;
+namespace Ciallo.Widget;
 
 [Tool]
 public partial class DockableContainerPlugin : EditorPlugin

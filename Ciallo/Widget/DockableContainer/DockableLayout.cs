@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using Godot;
 using GodotDictionary = Godot.Collections.Dictionary;
 
-namespace Ciallo.Widget.DockableContainer;
+namespace Ciallo.Widget;
 
 [Tool, GlobalClass]
 public partial class DockableLayout : Resource

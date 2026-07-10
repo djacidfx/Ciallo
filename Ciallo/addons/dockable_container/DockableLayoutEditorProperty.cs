@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Godot;
 
-namespace Ciallo.Widget.DockableContainer;
+namespace Ciallo.Widget;
 
 public partial class DockableLayoutEditorProperty : EditorProperty
 {

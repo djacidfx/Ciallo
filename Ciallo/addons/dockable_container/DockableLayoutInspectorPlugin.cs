@@ -1,7 +1,7 @@
 #if TOOLS
 using Godot;
 
-namespace Ciallo.Widget.DockableContainer;
+namespace Ciallo.Widget;
 
 public partial class DockableLayoutInspectorPlugin : EditorInspectorPlugin
 {

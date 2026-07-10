@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Godot;
 
-namespace Ciallo.Widget.DockableContainer;
+namespace Ciallo.Widget;
 
 [Tool, GlobalClass]
 public partial class DockableLayoutPanel : DockableLayoutNode

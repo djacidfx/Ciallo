@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Godot;
 
-namespace Ciallo.Widget.DockableContainer;
+namespace Ciallo.Widget;
 
-[Tool, GlobalClass]
+[Tool, GlobalClass, Icon("res://addons/dockable_container/icon.svg")]
 public partial class DockableContainer : Container
 {
     private readonly Container _panelContainer = new();
