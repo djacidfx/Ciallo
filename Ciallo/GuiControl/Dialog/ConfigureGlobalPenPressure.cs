@@ -3,23 +3,16 @@ using System.Collections.Immutable;
 using System.Linq;
 using Ciallo.Data;
 using Ciallo.Geometry;
-using Ciallo.Widget;
 using Godot;
 using R3;
 
 namespace Ciallo.GuiControl;
 
+// Layout lives in ConfigureGlobalPenPressure.tscn; [SceneTree] generates the typed node
+// accessors (BrandButton, RawChart, Scribble, ...) from the uniquely-named scene nodes.
+[SceneTree]
 public partial class ConfigureGlobalPenPressure : AcceptDialog
 {
-    private OptionButton _brandButton;
-    private OptionButton _penButton;
-    private OptionButton _tabletButton;
-    private Button _straightenButton;
-
-    // Left: device's raw digital response (gram -> 0..1). Right: response after the remap curve.
-    private PolylineChart _rawChart;
-    private PolylineChart _mappedChart;
-
     // Current cascade selections. Downstream lists are recomputed whenever an upstream value changes.
     private IReadOnlyList<string> _pens = [];
     private IReadOnlyList<string> _tablets = [];
@@ -33,51 +26,39 @@ public partial class ConfigureGlobalPenPressure : AcceptDialog
 
     public override void _Ready()
     {
-        Title = "Configure Global Pen Pressure";
-
-        var vbox = new VBoxContainer();
-        vbox.SetAnchorsPreset(Control.LayoutPreset.FullRect);
-        AddChild(vbox);
-
-        var selectors = new HBoxContainer();
-        vbox.AddChild(selectors);
-        _brandButton = new OptionButton();
-        _penButton = new OptionButton();
-        _tabletButton = new OptionButton();
-        selectors.AddChild(_brandButton);
-        selectors.AddChild(_penButton);
-        selectors.AddChild(_tabletButton);
-
-        // Solves for a remap curve that straightens the selected device's force -> pressure response.
-        _straightenButton = new Button { Text = "Straighten" };
-        selectors.AddChild(_straightenButton);
-
-        // Three panels side by side: raw response, the editable remap curve, the composed result.
-        var charts = new HBoxContainer { SizeFlagsVertical = Control.SizeFlags.ExpandFill };
-        vbox.AddChild(charts);
-
-        // X (grams) pinned to origin 0 and integer-labelled; Y (0..1 digital) fixed to 0..1
-        // so the ticks read 0 / 0.5 / 1.0 like the remap curve. Scatter: samples are discrete.
-        _rawChart = new PolylineChart
+        // Chart display options aren't [Export], so they're configured here rather than in the scene.
+        // X (grams) pinned to origin 0 and integer-labelled; Y (0..1 digital) fixed to 0..1 so the
+        // ticks read 0 / 0.5 / 1.0 like the remap curve. Scatter: samples are discrete.
+        foreach (var chart in new[] { RawChart, MappedChart })
         {
-            FixedMinX = 0f, FixedMinY = 0f, FixedMaxY = 1f,
-            XFormat = "0", YFormat = "0.0", Scatter = true, NiceNumbers = true,
-        };
-        var curveEdit = new MappingCurveEdit().BindCurve(AppPreference.PenPressureRemapCurve);
-        _mappedChart = new PolylineChart
+            chart.FixedMinX = 0f;
+            chart.FixedMinY = 0f;
+            chart.FixedMaxY = 1f;
+            chart.XFormat = "0";
+            chart.YFormat = "0.0";
+            chart.Scatter = true;
+            chart.NiceNumbers = true;
+        }
+
+        CurveEdit.BindCurve(AppPreference.PenPressureRemapCurve);
+
+        // Scribble pad: live pressure readout + radius sliders + clear.
+        Scribble.PressureSampled += UpdatePressureReadout;
+        UpdatePressureReadout(0f, 0f);
+        MinRadiusSlider.BindNumber(Scribble.MinRadius);
+        MaxRadiusSlider.BindNumber(Scribble.MaxRadius);
+        ClearButton.Pressed += Scribble.Clear;
+
+        // Wipe scribbles whenever the dialog is closed, so it reopens blank.
+        VisibilityChanged += () =>
         {
-            FixedMinX = 0f, FixedMinY = 0f, FixedMaxY = 1f,
-            XFormat = "0", YFormat = "0.0", Scatter = true, NiceNumbers = true,
+            if (!Visible) Scribble.Clear();
         };
 
-        charts.AddChild(WrapTitled("Device response", _rawChart));
-        charts.AddChild(WrapTitled("Global remap", curveEdit));
-        charts.AddChild(WrapTitled("Mapped response", _mappedChart));
-
-        _brandButton.ItemSelected += OnBrandSelected;
-        _penButton.ItemSelected += OnPenSelected;
-        _tabletButton.ItemSelected += OnTabletSelected;
-        _straightenButton.Pressed += OnStraightenPressed;
+        BrandButton.ItemSelected += OnBrandSelected;
+        PenButton.ItemSelected += OnPenSelected;
+        TabletButton.ItemSelected += OnTabletSelected;
+        StraightenButton.Pressed += OnStraightenPressed;
 
         // The mapped chart depends on the remap curve, so re-plot it whenever the curve changes.
         AppPreference.PenPressureRemapCurve.Subscribe(_ => PlotMapped()).AddTo(_disposables);
@@ -85,68 +66,82 @@ public partial class ConfigureGlobalPenPressure : AcceptDialog
         PopulateBrands();
     }
 
-    private static Control WrapTitled(string title, Control content)
-    {
-        content.CustomMinimumSize = new Vector2(300, 300);
-        content.SizeFlagsHorizontal = Control.SizeFlags.ExpandFill;
-        content.SizeFlagsVertical = Control.SizeFlags.ExpandFill;
-        var box = new VBoxContainer { SizeFlagsHorizontal = Control.SizeFlags.ExpandFill };
-        box.AddChild(new Label { Text = title.Tr(), HorizontalAlignment = HorizontalAlignment.Center });
-        box.AddChild(content);
-        return box;
-    }
+    private void UpdatePressureReadout(float raw, float mapped) =>
+        PressureReadout.Text = $"pen pressure  raw {raw:F2}  →  mapped {mapped:F2}";
 
     private void PopulateBrands()
     {
         var brands = PenPressureResponseLibrary.Brands();
-        _brandButton.Clear();
+        BrandButton.Clear();
+        // Index 0 is an empty "no brand" entry: selecting it hides both charts.
+        BrandButton.AddItem("");
         foreach (var brand in brands)
-            _brandButton.AddItem(brand);
+            BrandButton.AddItem(brand);
 
-        if (brands.Count > 0)
-        {
-            _brandButton.Selected = 0;
-            OnBrandSelected(0);
-        }
+        // Start with no brand selected so the charts stay hidden until the user picks one.
+        BrandButton.Selected = 0;
+        OnBrandSelected(0);
     }
 
     private void OnBrandSelected(long index)
     {
-        string brand = _brandButton.GetItemText((int)index);
+        // The empty entry at index 0 means "no device"; hide the charts and clear downstream.
+        if (index == 0)
+        {
+            _selected = null;
+            _pens = [];
+            _tablets = [];
+            PenButton.Clear();
+            TabletButton.Clear();
+            PenButton.Disabled = true;
+            TabletButton.Disabled = true;
+            StraightenButton.Disabled = true;
+            RawPanel.Visible = false;
+            MappedPanel.Visible = false;
+            return;
+        }
+
+        PenButton.Disabled = false;
+        TabletButton.Disabled = false;
+        StraightenButton.Disabled = false;
+        RawPanel.Visible = true;
+        MappedPanel.Visible = true;
+
+        string brand = BrandButton.GetItemText((int)index);
         _pens = PenPressureResponseLibrary.PensOf(brand);
 
-        _penButton.Clear();
+        PenButton.Clear();
         foreach (var pen in _pens)
-            _penButton.AddItem(PenPressureEntry.ShortName(pen));
+            PenButton.AddItem(PenPressureEntry.ShortName(pen));
 
         if (_pens.Count > 0)
         {
-            _penButton.Selected = 0;
+            PenButton.Selected = 0;
             OnPenSelected(0);
         }
     }
 
     private void OnPenSelected(long index)
     {
-        string brand = _brandButton.GetItemText(_brandButton.Selected);
+        string brand = BrandButton.GetItemText(BrandButton.Selected);
         string pen = _pens[(int)index];
         _tablets = PenPressureResponseLibrary.TabletsOf(brand, pen);
 
-        _tabletButton.Clear();
+        TabletButton.Clear();
         foreach (var tablet in _tablets)
-            _tabletButton.AddItem(PenPressureEntry.ShortName(tablet));
+            TabletButton.AddItem(PenPressureEntry.ShortName(tablet));
 
         if (_tablets.Count > 0)
         {
-            _tabletButton.Selected = 0;
+            TabletButton.Selected = 0;
             OnTabletSelected(0);
         }
     }
 
     private void OnTabletSelected(long index)
     {
-        string brand = _brandButton.GetItemText(_brandButton.Selected);
-        string pen = _pens[_penButton.Selected];
+        string brand = BrandButton.GetItemText(BrandButton.Selected);
+        string pen = _pens[PenButton.Selected];
         string tablet = _tablets[(int)index];
         _selected = PenPressureResponseLibrary.MatchLatest(brand, pen, tablet);
         PlotRaw();
@@ -175,7 +170,7 @@ public partial class ConfigureGlobalPenPressure : AcceptDialog
         if (_selected == null)
             return;
         var property = new ReactiveProperty<ImmutableArray<Vector2>>(_selected.Records);
-        _rawChart.BindPolyline(property).AddTo(_rawPlot);
+        RawChart.BindPolyline(property).AddTo(_rawPlot);
     }
 
     // Composes each raw sample (gram, digital01) through the remap curve -> (gram, remapped01).
@@ -189,7 +184,7 @@ public partial class ConfigureGlobalPenPressure : AcceptDialog
             .Select(p => new Vector2(p.X, curve.SampleX(p.Y)))
             .ToImmutableArray();
         var property = new ReactiveProperty<ImmutableArray<Vector2>>(mapped);
-        _mappedChart.BindPolyline(property).AddTo(_mappedPlot);
+        MappedChart.BindPolyline(property).AddTo(_mappedPlot);
     }
 
     public override void _ExitTree()

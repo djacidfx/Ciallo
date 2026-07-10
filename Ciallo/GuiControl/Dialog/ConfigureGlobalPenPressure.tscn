@@ -1,7 +1,212 @@
 [gd_scene format=3 uid="uid://bj3j8m0bx8tb5"]
 
-[ext_resource type="Script" uid="uid://dsiljl8rq1x8j" path="res://GuiControl/Dialog/ConfigureGlobalPenPressure.cs" id="1_m588g"]
+[ext_resource type="Script" uid="uid://dsiljl8rq1x8j" path="res://GuiControl/Dialog/ConfigureGlobalPenPressure.cs" id="1_root"]
+[ext_resource type="Script" uid="uid://dkxdfoq86l10a" path="res://Widget/PolylineChart.cs" id="2_chart"]
+[ext_resource type="Script" uid="uid://dokvqf0x6xvmu" path="res://Widget/MappingCurveEdit.cs" id="3_curve"]
+[ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="4_spin"]
+[ext_resource type="Script" uid="uid://b366s8yiymhbn" path="res://GuiControl/Dialog/PressureScribbleArea.cs" id="5_scribble"]
 
 [node name="ConfigureGlobalPenPressure" type="AcceptDialog" unique_id=44268714]
 oversampling_override = 1.0
-script = ExtResource("1_m588g")
+title = "Configure Global Pen Pressure"
+position = Vector2i(0, 36)
+size = Vector2i(1780, 800)
+script = ExtResource("1_root")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1000000001]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -49.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Selectors" type="HBoxContainer" parent="VBoxContainer" unique_id=1000000002]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/Selectors" unique_id=428453488]
+layout_mode = 2
+text = "Select your pen tablet"
+
+[node name="Blank" type="Control" parent="VBoxContainer/Selectors" unique_id=1289900443]
+custom_minimum_size = Vector2(12, 0)
+layout_mode = 2
+
+[node name="BrandButton" type="OptionButton" parent="VBoxContainer/Selectors" unique_id=1000000003]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="PenButton" type="OptionButton" parent="VBoxContainer/Selectors" unique_id=1000000004]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="TabletButton" type="OptionButton" parent="VBoxContainer/Selectors" unique_id=1000000005]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="Blank2" type="Control" parent="VBoxContainer/Selectors" unique_id=966231971]
+custom_minimum_size = Vector2(12, 0)
+layout_mode = 2
+
+[node name="StraightenButton" type="Button" parent="VBoxContainer/Selectors" unique_id=1000000006]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+text = "Straighten"
+
+[node name="Blank3" type="Control" parent="VBoxContainer/Selectors" unique_id=1787851843]
+custom_minimum_size = Vector2(36, 0)
+layout_mode = 2
+
+[node name="Label2" type="Label" parent="VBoxContainer/Selectors" unique_id=452214328]
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/font_color = Color(0.5324173, 0.5324173, 0.53241724, 1)
+text = "Data measured by"
+vertical_alignment = 1
+
+[node name="LinkButton" type="LinkButton" parent="VBoxContainer/Selectors" unique_id=724530082]
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.5324173, 0.5324173, 0.53241724, 1)
+text = "Seven Pens"
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer" unique_id=611834909]
+layout_mode = 2
+
+[node name="MainArea" type="HBoxContainer" parent="VBoxContainer" unique_id=1000000026]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 24
+
+[node name="Charts" type="HBoxContainer" parent="VBoxContainer/MainArea" unique_id=1000000007]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.77
+
+[node name="RawPanel" type="VBoxContainer" parent="VBoxContainer/MainArea/Charts" unique_id=1000000008]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/MainArea/Charts/RawPanel" unique_id=1000000009]
+layout_mode = 2
+text = "Device response"
+horizontal_alignment = 1
+
+[node name="RawChart" type="Control" parent="VBoxContainer/MainArea/Charts/RawPanel" unique_id=1000000010]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("2_chart")
+metadata/_custom_type_script = "uid://dkxdfoq86l10a"
+
+[node name="GlobalPanel" type="VBoxContainer" parent="VBoxContainer/MainArea/Charts" unique_id=1000000011]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/MainArea/Charts/GlobalPanel" unique_id=1000000012]
+layout_mode = 2
+text = "Global remap"
+horizontal_alignment = 1
+
+[node name="CurveEdit" type="Control" parent="VBoxContainer/MainArea/Charts/GlobalPanel" unique_id=1000000013]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+focus_mode = 2
+script = ExtResource("3_curve")
+metadata/_custom_type_script = "uid://dokvqf0x6xvmu"
+
+[node name="MappedPanel" type="VBoxContainer" parent="VBoxContainer/MainArea/Charts" unique_id=1000000014]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/MainArea/Charts/MappedPanel" unique_id=1000000015]
+layout_mode = 2
+text = "Mapped response"
+horizontal_alignment = 1
+
+[node name="MappedChart" type="Control" parent="VBoxContainer/MainArea/Charts/MappedPanel" unique_id=1000000016]
+unique_name_in_owner = true
+clip_contents = true
+custom_minimum_size = Vector2(300, 300)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("2_chart")
+metadata/_custom_type_script = "uid://dkxdfoq86l10a"
+
+[node name="ScribblePanel" type="VBoxContainer" parent="VBoxContainer/MainArea" unique_id=1000000027]
+custom_minimum_size = Vector2(440, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="Label" type="Label" parent="VBoxContainer/MainArea/ScribblePanel" unique_id=1000000028]
+layout_mode = 2
+text = "Scribble test"
+horizontal_alignment = 1
+
+[node name="ScribbleHeader" type="HBoxContainer" parent="VBoxContainer/MainArea/ScribblePanel" unique_id=1000000017]
+layout_mode = 2
+
+[node name="MinLabel" type="Label" parent="VBoxContainer/MainArea/ScribblePanel/ScribbleHeader" unique_id=1000000020]
+layout_mode = 2
+text = "Min radius"
+
+[node name="MinRadiusSlider" type="HBoxContainer" parent="VBoxContainer/MainArea/ScribblePanel/ScribbleHeader" unique_id=1000000021]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("4_spin")
+MaxValue = 32.0
+Value = 1.0
+Step = 0.1
+metadata/_custom_type_script = "uid://b1dclx7d0dgng"
+
+[node name="MaxLabel" type="Label" parent="VBoxContainer/MainArea/ScribblePanel/ScribbleHeader" unique_id=1000000022]
+layout_mode = 2
+text = "Max radius"
+
+[node name="MaxRadiusSlider" type="HBoxContainer" parent="VBoxContainer/MainArea/ScribblePanel/ScribbleHeader" unique_id=1000000023]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+script = ExtResource("4_spin")
+MinValue = 1.0
+MaxValue = 128.0
+Value = 8.0
+Step = 0.1
+ExpEdit = true
+metadata/_custom_type_script = "uid://b1dclx7d0dgng"
+
+[node name="ClearButton" type="Button" parent="VBoxContainer/MainArea/ScribblePanel/ScribbleHeader" unique_id=1000000024]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Clear"
+
+[node name="PressureReadout" type="Label" parent="VBoxContainer/MainArea/ScribblePanel" unique_id=1000000019]
+unique_name_in_owner = true
+auto_translate_mode = 2
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="Scribble" type="Control" parent="VBoxContainer/MainArea/ScribblePanel" unique_id=1000000025]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("5_scribble")
+metadata/_custom_type_script = "uid://b366s8yiymhbn"
