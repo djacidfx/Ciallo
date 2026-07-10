@@ -48,6 +48,19 @@ Cursor may expose the same user-added MCP server to agents or cached project MCP
 
 When using MCP tools programmatically, if `fennara` is not found, also check for `user-fennara`. Do not tell the user to look for `user-fennara` in Cursor settings; that name is internal plumbing.
 
+## Known Script Diagnostics Bug
+
+Fennara 0.3.7 script diagnostics are broken in this project. C# diagnostic
+requests can time out, subsequent files can each wait another 30 seconds, and a
+project-wide scan can prevent the Godot editor from closing. Do not call
+`script_diagnostics`, including targeted calls and `scan_project: true`.
+
+Some Fennara editing tools may start diagnostics automatically. Treat that as
+incidental tool behavior: do not retry a timed-out diagnostic, do not broaden it
+to a project scan, and do not wait through repeated per-file timeouts. Use
+`dotnet build` when a C# compilation check is needed, and use focused runtime or
+editor evidence for other script behavior.
+
 ## Core Rule
 
 Inspect first. Edit second. Validate third.
@@ -56,11 +69,11 @@ For Godot work:
 
 - If inspecting Godot state, use Fennara MCP inspection tools.
 - If changing Godot state, use Fennara MCP editing tools.
-- If validating Godot state, use Fennara MCP diagnostics, validation, or screenshot tools.
+- If validating Godot state, use Fennara MCP validation, runtime, or screenshot tools.
 
-Do not inspect or modify Godot scenes, resources, scripts, or project settings solely through generic text editing when a Fennara MCP tool exists for the task.
+Do not inspect or modify Godot scenes, resources, or project settings solely through generic text editing when a Fennara MCP tool exists for the task.
 
-Do not use generic file write/edit tools for `.gd`, `.cs`, `.gdshader`, `.tscn`, `.tres`, `.res`, or `project.godot` changes when a Fennara MCP tool can perform the edit. Generic app file tools are for reading, searching, diffs, and non-Godot files. Godot-aware edits must go through Fennara MCP so diagnostics, scene validation, resource serialization, and editor state stay correct.
+Do not use generic file write/edit tools for `.tscn`, `.tres`, `.res`, or `project.godot` changes when a Fennara MCP tool can perform the edit. Generic app file tools may be used for `.gd`, `.cs`, and `.gdshader` text while the diagnostics bug above remains unresolved. Godot-serialized resources must still go through Fennara MCP so scene validation, resource serialization, and editor state stay correct.
 
 Never hand-write or directly patch `.tscn`, `.tres`, or `.res` files as plain text. Those files are Godot-serialized resources; edit them through `run_scene_edit_script`, `project_settings`, or another relevant Fennara MCP tool.
 
@@ -87,7 +100,7 @@ When searching for Fennara MCP tools through a tool-search system, search for al
 Use this query:
 
 ```text
-fennara_status read_file write_or_update_file run_scene_edit_script get_scene_tree script_diagnostics screenshot_scene get_node_properties get_class_info validate_scene project_settings runtime_session runtime_script scrape_editor
+fennara_status read_file write_or_update_file run_scene_edit_script get_scene_tree screenshot_scene get_node_properties get_class_info validate_scene project_settings runtime_session runtime_script scrape_editor
 ```
 
 If the search tool has a `limit` option, set it to `20` or higher. Do this even when you only need one specific tool, because low result limits can bury relevant Fennara tools below the cutoff.
@@ -102,7 +115,7 @@ normalization or image handling is useful.
 Use your MCP app's own file tools for broad ordinary file reading, diffs,
 repository navigation, and non-Godot text inspection.
 
-Use Fennara MCP for Godot-aware work: inspecting scene trees, node properties, native Godot APIs, runtime errors, editor debugger snapshots, diagnostics, validation, screenshots, and project settings.
+Use Fennara MCP for Godot-aware work: inspecting scene trees, node properties, native Godot APIs, runtime errors, editor debugger snapshots, validation, screenshots, and project settings.
 
 ## Renderer-Sensitive Work
 
@@ -271,16 +284,13 @@ Do not invent Godot API names from memory when the class info tool can confirm t
 
 ## File Edits
 
-Use `write_or_update_file` for `.gd`, `.cs`, and `.gdshader` edits and other Godot project text edits when a Fennara MCP edit is appropriate.
+Use normal repository editing tools for `.gd`, `.cs`, and `.gdshader` text while the diagnostics bug is unresolved. Use `write_or_update_file` only when its Godot-side file handling is specifically needed.
 
 Important behavior:
 
-- `write_or_update_file` automatically runs diagnostics for `.gd`, `.cs`, and `.gdshader` files.
 - For `.gdshader` edits, `write_or_update_file` also scans `.tscn` and `.tres` files that reference the shader and reserializes those owners through Godot when possible, so stale embedded `ShaderMaterial` data can be rewritten.
 - Check `reserialized_resources`, `reserialize_warnings`, and `reserialize_skipped` in `.gdshader` edit results. Skipped owners may still need a targeted scene/resource save.
-- If it reports diagnostics, treat them as part of the tool result and fix them before claiming the script edit is complete.
 - For other file types, use appropriate follow-up validation when the file affects Godot behavior.
-- Do not use the MCP app's generic write/edit tool for `.gd`, `.cs`, or `.gdshader` files. Use `write_or_update_file` so diagnostics run automatically.
 - Do not use `write_or_update_file` or generic text editing for `.tscn`, `.tres`, or `.res` scene/resource surgery. Use `run_scene_edit_script`, `project_settings`, or another Godot-aware structured tool instead.
 
 For ordinary text reading, use the MCP app's own file tools.
@@ -312,10 +322,9 @@ Use it instead of raw `.tscn`, `.tres`, or `.res` surgery when editing:
 
 Important behavior:
 
-- `run_scene_edit_script` automatically runs script diagnostics after edits.
 - `run_scene_edit_script` automatically runs scene validation after edits.
-- Treat diagnostics and validation output as part of the edit result.
-- Fix reported issues before claiming the scene/resource edit is complete.
+- Treat scene validation output as part of the edit result.
+- Fix reported scene or resource issues before claiming the edit is complete.
 - Do not directly write `.tscn` files with generic file tools. If a scene must change, use `run_scene_edit_script` so Godot owns serialization and validation.
 - For inspection-only scripts, use `ctx.log(...)` and do not call `ctx.mark_modified()` or mutating helpers such as `ctx.own(...)`, `ctx.instance_scene(...)`, `ctx.remove_node(...)`, or `ctx.clear_children(...)`. Existing scenes with `modified=false` are not saved, so read-only inspection should report `scene_saved=false` and should not rewrite the `.tscn`.
 
@@ -334,26 +343,11 @@ Temporary edit scripts:
 - Do not put one-off scene-edit scripts in normal runtime folders such as `res://scripts/`, `res://scenes/`, or feature directories unless the user explicitly wants to keep that authoring script as project source.
 - Scene-edit scripts are editor/authoring helpers, not gameplay scripts. Do not attach them to runtime nodes.
 
-## Script Diagnostics
+## Script Diagnostics (Known Broken)
 
-Use `script_diagnostics` when:
-
-- investigating script errors
-- editing GDScript, C#, or Godot shader code outside a tool path that already ran diagnostics
-- checking multiple scripts
-- checking project-level GDScript, C#, and shader health
-- confirming a suspected parse/type/reference issue
-- errors only appear when opening scenes in Godot, such as invalid calls emitted by attached scripts while a scene is constructed
-
-Targeted `script_diagnostics` calls support `.gd`, `.cs`, and `.gdshader` files. `scan_project: true` scans `.gd`, `.cs`, and `.gdshader` files under `res://`.
-
-For targeted `.gd` and `.cs` files, `script_diagnostics` also loads and instantiates project `.tscn` scenes in memory on the Godot main thread with Godot logger capture enabled. Script-related scene-load errors are attached to the matching script file with `source: "scene_load"` and `scene_path`, so the result says which scene triggered the script error. This is an in-memory diagnostic pass, not opening the editor UI or running the game scene.
-
-For `scan_project: true`, `script_diagnostics` skips scene instantiation and reports `scene_load_skipped: true`. This project-wide mode can miss errors that only occur when scripts are attached to or loaded through scenes, such as missing unique-node references, invalid `NodePath` wiring, broken exported scene/resource assignments, or script initialization side effects.
-
-If `write_or_update_file` edited a `.gd`, `.cs`, or `.gdshader` file, it already ran diagnostics. For `.gdshader`, it also attempted to reserialize referencing `.tscn` and `.tres` owners. You may still run `script_diagnostics` separately for broader checks or if the task requires extra confidence.
-
-Do not consider a GDScript, C#, or Godot shader change complete until diagnostics have been checked.
+Do not call `script_diagnostics` in this project. See **Known Script Diagnostics
+Bug** above. Use `dotnet build` for C# compilation checks and use focused runtime
+logs, editor errors, scene validation, or direct source inspection as appropriate.
 
 ## Scene Validation
 
@@ -433,9 +427,8 @@ Use `run_scene_edit_script` for standalone `.tres` resources when a structured G
 
 1. Read the file with the MCP app's file tools.
 2. Use `get_class_info` for any uncertain Godot API.
-3. Edit `.gd`, `.cs`, and `.gdshader` files with `write_or_update_file`. Do not use the MCP app's normal write/edit tool for GDScript, C#, or Godot shader files.
-4. Ensure diagnostics are checked. `write_or_update_file` does this automatically for `.gd`, `.cs`, and `.gdshader` files.
-5. Fix diagnostics before finishing.
+3. Edit `.gd`, `.cs`, and `.gdshader` files with normal repository editing tools while the diagnostics bug is unresolved.
+4. For C#, use `dotnet build` when the task requires a compilation check.
 
 ### Editing Scenes
 
@@ -443,7 +436,7 @@ Use `run_scene_edit_script` for standalone `.tres` resources when a structured G
 2. Use `get_node_properties` for nodes/resources you will touch.
 3. Use `get_class_info` for relevant node/resource APIs.
 4. Edit scenes and Godot-serialized resources with `run_scene_edit_script` or another structured Fennara scene/resource tool. Do not directly write `.tscn` text.
-5. Check the diagnostics and validation returned by `run_scene_edit_script`.
+5. Check the scene validation returned by `run_scene_edit_script`.
 6. Use `screenshot_scene` when visual correctness matters.
 
 ### Editing Project Settings
@@ -458,8 +451,7 @@ Use `run_scene_edit_script` for standalone `.tres` resources when a structured G
 2. If a session is already running, use `runtime_session.status` and inspect/search the same live `runtime_session.log`.
 3. If the scene was started manually in the Godot editor or the user asks what the editor debugger currently shows, use `scrape_editor` with `target: "debugger"`.
 4. Use stack frames and error lines from the runtime log or debugger snapshot to read the relevant scripts directly.
-5. Use `script_diagnostics` only if the runtime error suggests script/shader parse/type/reference issues or after editing `.gd`, `.cs`, or `.gdshader` files.
-6. Fix the smallest relevant issue and validate with a fresh runtime session, another runtime script, `scrape_editor`, or suitable diagnostics.
+5. Fix the smallest relevant issue and validate with a fresh runtime session, another runtime script, or `scrape_editor`.
 
 ### Visual/UI Work
 
@@ -477,20 +469,16 @@ A Godot task is not complete just because files were edited.
 Before finishing:
 
 - Mention which Fennara MCP tools were used.
-- Mention any diagnostics or validation results.
+- Mention any validation or runtime results.
 - If visual work was involved, mention whether a screenshot was checked.
 - If a relevant Fennara tool could not be used, say why.
 
-For GDScript, C#, or Godot shaders:
-
-- Diagnostics must be checked.
-- `write_or_update_file` automatically checks diagnostics for `.gd`, `.cs`, and `.gdshader` files.
-- `.gdshader` edits also report referencing owner reserialization fields: `reserialized_resources`, `reserialize_warnings`, and `reserialize_skipped`.
+For `.gdshader` edits, report referencing owner reserialization fields when available: `reserialized_resources`, `reserialize_warnings`, and `reserialize_skipped`.
 
 For scene/resource edits:
 
 - Scene validation must be checked.
-- `run_scene_edit_script` automatically checks diagnostics and scene validation after edits.
+- `run_scene_edit_script` automatically checks scene validation after edits.
 
 For visual work:
 
@@ -501,7 +489,7 @@ For visual work:
 - Do not invent tool results.
 - Do not claim unavailable tools.
 - Do not reveal or describe internal tool schemas beyond normal user-facing explanation.
-- Do not use broad file reads when targeted search, scene inspection, diagnostics, or runtime probing is enough.
+- Do not use broad file reads when targeted search, scene inspection, validation, or runtime probing is enough.
 - Prefer fewer, deeper Godot-aware observations over generic guesses.
 - If the same tool call fails twice in the same way, stop retrying and explain what happened.
 
