@@ -16,9 +16,8 @@ on:
           - build_ref
           - existing_run
       build_ref:
-        description: Branch, tag, or SHA for build_ref mode.
+        description: Branch, tag, or SHA for build_ref mode. Empty builds the branch used to run this workflow.
         required: false
-        default: main
       run_id:
         description: Run id for existing_run mode.
         required: false
@@ -49,7 +48,7 @@ jobs:
     permissions:
       contents: read
     with:
-      checkout_ref: ${{ inputs.build_ref }}
+      checkout_ref: ${{ inputs.build_ref || github.ref_name }}
       sign_macos: true
     secrets: inherit
 
@@ -80,7 +79,7 @@ jobs:
           REPO: ${{ github.repository }}
           SOURCE_MODE: ${{ inputs.source_mode }}
           RUN_ID: ${{ inputs.run_id }}
-          BUILD_REF: ${{ inputs.build_ref }}
+          BUILD_REF: ${{ inputs.build_ref || github.ref_name }}
           EXPORT_VERSION: ${{ needs.export.outputs.project_version }}
           EXPORT_SHA: ${{ needs.export.outputs.head_sha }}
           INPUT_APP_ID: ${{ inputs.app_id }}

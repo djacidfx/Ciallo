@@ -336,10 +336,24 @@ jobs:
       - name: Import signing certificate
         # Imports the Developer ID cert into a temporary keychain for Godot codesign=3.
         if: matrix.name == 'macOS' && inputs.sign_macos
+        id: import_codesign_certs
         uses: apple-actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
         with:
           p12-file-base64: ${{ secrets.MACOS_CERTIFICATE_P12_BASE64 }}
           p12-password: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+
+      - name: Prepare signing keychain
+        # Avoid CI keychain access prompts before Godot/codesign touch the imported private key.
+        if: matrix.name == 'macOS' && inputs.sign_macos
+        env:
+          KEYCHAIN_PASSWORD: ${{ steps.import_codesign_certs.outputs['keychain-password'] }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" signing_temp.keychain
+          security set-keychain-settings -lut 21600 signing_temp.keychain
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" signing_temp.keychain
+          security find-identity -v -p codesigning signing_temp.keychain
 
       - name: Inject macOS signing identity into export preset
         if: matrix.name == 'macOS' && inputs.sign_macos
@@ -356,10 +370,14 @@ jobs:
           }
           $preset = Join-Path $env:PROJECT_PATH "export_presets.cfg"
           $presetText = Get-Content -LiteralPath $preset -Raw
-          if ($presetText -notmatch '(?ms)^\[preset\.(?<index>\d+)\]\s*.*?^name="macOS"\s*.*?^platform="macOS"\s*') {
+          $macPresetMatch = [regex]::Match(
+            $presetText,
+            '(?ms)^\[preset\.(?<index>\d+)\]\s*(?:(?!^\[preset\.\d+(?:\.options)?\]).)*?^name="macOS"\s*$(?:(?!^\[preset\.\d+(?:\.options)?\]).)*?^platform="macOS"\s*$'
+          )
+          if (-not $macPresetMatch.Success) {
             throw "Could not find the macOS export preset."
           }
-          $macOptionsHeader = "[preset.$($Matches.index).options]"
+          $macOptionsHeader = "[preset.$($macPresetMatch.Groups["index"].Value).options]"
 
           function Set-PresetOption([string]$Key, [string]$Value) {
             $escapedKey = [regex]::Escape($Key)
@@ -457,6 +475,7 @@ jobs:
       - name: Notarize, staple, verify, and package macOS app
         # Godot already signed the bundle; this step notarizes, staples, verifies, and zips it.
         if: matrix.name == 'macOS' && inputs.sign_macos
+        timeout-minutes: 20
         env:
           APP_PATH: build/macos/Ciallo.app
           APP_STORE_CONNECT_API_KEY_ID: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
@@ -486,11 +505,68 @@ jobs:
           # Notary zip is separate; the distributable zip is made after stapling.
           mkdir -p notary packages
           ditto -c -k --keepParent "$APP_PATH" notary/Ciallo-macOS-notary.zip
-          xcrun notarytool submit notary/Ciallo-macOS-notary.zip \
-            --key "$app_store_key" \
-            --key-id "$APP_STORE_CONNECT_API_KEY_ID" \
-            --issuer "$APP_STORE_CONNECT_API_ISSUER_ID" \
-            --wait
+
+          notary_credentials=(
+            --key "$app_store_key"
+            --key-id "$APP_STORE_CONNECT_API_KEY_ID"
+            --issuer "$APP_STORE_CONNECT_API_ISSUER_ID"
+          )
+
+          dump_notary_diagnostics() {
+            local reason="$1"
+            echo "Notary diagnostics: $reason; submission_id=${submission_id:-unknown}"
+
+            if [[ -n "${submission_id:-}" ]]; then
+              echo "::group::notarytool info"
+              xcrun notarytool info "$submission_id" "${notary_credentials[@]}" --output-format json || true
+              echo "::endgroup::"
+
+              echo "::group::notarytool log"
+              xcrun notarytool log "$submission_id" "${notary_credentials[@]}" notary/notary-log.json || true
+              cat notary/notary-log.json || true
+              echo "::endgroup::"
+            fi
+
+            echo "::group::notarytool history"
+            xcrun notarytool history "${notary_credentials[@]}" --output-format json || true
+            echo "::endgroup::"
+          }
+
+          if ! submit_json="$(xcrun notarytool submit notary/Ciallo-macOS-notary.zip "${notary_credentials[@]}" --output-format json)"; then
+            echo "notarytool submit failed or timed out."
+            exit 1
+          fi
+          printf '%s\n' "$submit_json"
+          submission_id="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["id"])' <<<"$submit_json")"
+          echo "Notary submission id: $submission_id"
+
+          deadline=$((SECONDS + 15 * 60))
+          wait_started_at=$SECONDS
+          while true; do
+            elapsed=$((SECONDS - wait_started_at))
+            info_json="$(xcrun notarytool info "$submission_id" "${notary_credentials[@]}" --output-format json)"
+            status="$(python3 -c 'import json, sys; print(json.load(sys.stdin)["status"])' <<<"$info_json")"
+            echo "Notarization status: $status; elapsed=${elapsed}s; submission_id=$submission_id"
+            printf '%s\n' "$info_json"
+
+            case "$status" in
+              "Accepted")
+                break
+                ;;
+              "Invalid"|"Rejected")
+                dump_notary_diagnostics "terminal status: $status"
+                exit 1
+                ;;
+            esac
+
+            if (( SECONDS >= deadline )); then
+              echo "Timed out waiting for notarization after 15 minutes."
+              dump_notary_diagnostics "timeout after ${elapsed}s"
+              exit 1
+            fi
+
+            sleep 60
+          done
 
           xcrun stapler staple "$APP_PATH"
           spctl --assess --type execute --verbose=2 "$APP_PATH"

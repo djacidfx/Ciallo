@@ -11,6 +11,7 @@ public partial class MenuWindow : PopupMenu
     public static readonly OrderedDictionary<string, AppHotkey> MenuItems = new()
     {
         { "Brush library", null },
+        { "Configure global pen pressure", null },
     };
 
     public override void _Ready()
@@ -35,6 +36,9 @@ public partial class MenuWindow : PopupMenu
         {
             case 0:
                 AppDialogHost.BrushLibrary.Popup();
+                break;
+            case 1:
+                AppDialogHost.ConfigureGlobalPenPressure.PopupCentered();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(id), $"Unhandled menu item index: {id}");
