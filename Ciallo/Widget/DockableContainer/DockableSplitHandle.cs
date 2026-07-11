@@ -27,26 +27,34 @@ public partial class DockableSplitHandle : Control
     public Vector2 FirstMinimumSize { get; set; }
     public Vector2 SecondMinimumSize { get; set; }
 
+    public override void _Ready()
+    {
+        SetProcess(false);
+    }
+
     public override void _Draw()
     {
-        base._Draw();
         string themeClass = SplitThemeClass[(int)LayoutSplit.Direction];
+        DrawStyleBox(
+            GetThemeStylebox("split_bar_background", themeClass),
+            new Rect2(Vector2.Zero, Size)
+        );
+
         var icon = GetThemeIcon("grabber", themeClass);
         bool autohide = GetThemeConstant("autohide", themeClass) != 0;
-        if (icon == null || autohide && !_mouseHovering) return;
+        if (autohide && !_mouseHovering && !_dragging) return;
 
         DrawTexture(icon, (Size - icon.GetSize()) * 0.5f);
     }
 
     public override void _GuiInput(InputEvent @event)
     {
-        base._GuiInput(@event);
-
         if (@event is InputEventMouseButton { ButtonIndex: MouseButton.Left } mouseButton)
         {
-            _dragging = mouseButton.Pressed;
+            SetDragging(mouseButton.Pressed);
             if (mouseButton.DoubleClick)
                 LayoutSplit.Percent = 0.5f;
+            AcceptEvent();
         }
         else if (_dragging && @event is InputEventMouseMotion)
         {
@@ -57,9 +65,20 @@ public partial class DockableSplitHandle : Control
         }
     }
 
+    // Why have to use this _Process extra guard: 
+    // Without this, dragging cannot be released correctly when mouse is released.
+    // Debugging on Godot 4.6.2/Windows ruled out focus loss, embedded-window input,
+    // GUI drag, relayout/replacement, and early project input handling. We observed
+    // Input report Left as released while neither _Input nor _GuiInput received the
+    // release event, so guess this is engine-level dispatch gap while dragging.
+    public override void _Process(double delta)
+    {
+        if (!Input.IsMouseButtonPressed(MouseButton.Left))
+            SetDragging(false);
+    }
+
     public override void _Notification(int what)
     {
-        base._Notification(what);
         if (what == NotificationMouseEnter)
         {
             _mouseHovering = true;
@@ -74,15 +93,11 @@ public partial class DockableSplitHandle : Control
             if (GetThemeConstant("autohide", SplitThemeClass[(int)LayoutSplit.Direction]) != 0)
                 QueueRedraw();
         }
-        else if (what == NotificationFocusExit)
-        {
-            _dragging = false;
-        }
     }
 
     public Vector2 GetLayoutMinimumSize()
     {
-        int separation = GetThemeConstant("separation", SplitThemeClass[(int)LayoutSplit.Direction]);
+        int separation = GetSeparation();
         return LayoutSplit.IsHorizontal()
             ? new Vector2(FirstMinimumSize.X + separation + SecondMinimumSize.X, Mathf.Max(FirstMinimumSize.Y, SecondMinimumSize.Y))
             : new Vector2(Mathf.Max(FirstMinimumSize.X, SecondMinimumSize.X), FirstMinimumSize.Y + separation + SecondMinimumSize.Y);
@@ -93,10 +108,20 @@ public partial class DockableSplitHandle : Control
         MouseDefaultCursorShape = value ? SplitMouseCursorShape[(int)LayoutSplit.Direction] : CursorShape.Arrow;
     }
 
+    private void SetDragging(bool value)
+    {
+        if (_dragging == value) return;
+
+        _dragging = value;
+        SetProcess(value);
+        if (GetThemeConstant("autohide", SplitThemeClass[(int)LayoutSplit.Direction]) != 0)
+            QueueRedraw();
+    }
+
     public (Rect2 First, Rect2 Self, Rect2 Second) GetSplitRects(Rect2 rect)
     {
         _parentRect = rect;
-        int separation = GetThemeConstant("separation", SplitThemeClass[(int)LayoutSplit.Direction]);
+        int separation = GetSeparation();
         Vector2 origin = rect.Position;
         float percent = LayoutSplit.Percent;
 
@@ -130,6 +155,14 @@ public partial class DockableSplitHandle : Control
             new Rect2(origin.X, origin.Y + verticalSizes.First, rect.Size.X, verticalSizes.Separation),
             new Rect2(origin.X, origin.Y + verticalSizes.First + verticalSizes.Separation, rect.Size.X, verticalSizes.Second)
         );
+    }
+
+    private int GetSeparation()
+    {
+        string themeClass = SplitThemeClass[(int)LayoutSplit.Direction];
+        int separation = GetThemeConstant("separation", themeClass);
+        Vector2 grabberSize = GetThemeIcon("grabber", themeClass).GetSize();
+        return Mathf.Max(separation, LayoutSplit.IsHorizontal() ? (int)grabberSize.X : (int)grabberSize.Y);
     }
 
     private static (float First, float Separation, float Second) CalculateAxisSizes(

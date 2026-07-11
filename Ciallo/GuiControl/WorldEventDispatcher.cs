@@ -14,8 +14,6 @@ namespace Ciallo.GuiControl;
 public partial class WorldEventDispatcher : Container
 {
     private Camera2D _camera;
-
-    private bool _isHovering;
     private bool _isPanning;
 
     private Vector2 _prevScreenPos;
@@ -40,8 +38,6 @@ public partial class WorldEventDispatcher : Container
         _camera = GetNode<Camera2D>("%MainCamera");
 
         GuiInput += OnGuiInput;
-        MouseEntered += OnMouseEnter;
-        MouseExited += OnMouseExit;
     }
 
     public void OnGuiInput(InputEvent e)
@@ -98,7 +94,7 @@ public partial class WorldEventDispatcher : Container
             panel.CameraOffset.Value -= cursor.WorldDeltaBeforeTransformCamera;
 
         // Drag middle mouse to pan
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: true } && _isHovering)
+        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.Middle, Pressed: true })
         {
             _isPanning = true;
         }
@@ -118,21 +114,21 @@ public partial class WorldEventDispatcher : Container
         }
 
         // Scroll mouse wheel to zoom camera.
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp, AltPressed: false } && _isHovering)
+        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp, AltPressed: false })
         {
             panel.CameraZoom.Value *= 1.0f + AppPreference.MouseWheelZoomFactor.Value;
         }
-        else if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelDown, AltPressed: false } && _isHovering)
+        else if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelDown, AltPressed: false })
         {
             panel.CameraZoom.Value *= 1.0f - AppPreference.MouseWheelZoomFactor.Value;
         }
 
         // Alt + scroll mouse wheel to rotate camera.
-        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp, AltPressed: true } && _isHovering)
+        if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelUp, AltPressed: true })
         {
             panel.CameraRotation.Value += AppPreference.MouseWheelRotateFactor.Value;
         }
-        else if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelDown, AltPressed: true } && _isHovering)
+        else if (mouseEvent is InputEventMouseButton { ButtonIndex: MouseButton.WheelDown, AltPressed: true })
         {
             panel.CameraRotation.Value -= AppPreference.MouseWheelRotateFactor.Value;
         }
@@ -335,20 +331,5 @@ public partial class WorldEventDispatcher : Container
     public void DispatchMotion(CursorMotionData data)
     {
         ToolManager.WorkingTool.CurrentValue?.OnMoving(data);
-    }
-
-    public void OnMouseEnter()
-    {
-        // Pitfall: Godot Bug 4.4.1, Dragging the vsplit/hsplit bar around the container can trigger mouse enter.
-        // So use OnGuiInput together to decide whether handle world input.
-        _isHovering = true;
-        // For some unknown bug, shen's touch screen pen cannot trigger Godot's control's focus on pen cursor enter (mouse can).
-        CallDeferred(Control.MethodName.GrabFocus);
-    }
-
-    public void OnMouseExit()
-    {
-        CallDeferred(Control.MethodName.ReleaseFocus);
-        _isHovering = false;
     }
 }
