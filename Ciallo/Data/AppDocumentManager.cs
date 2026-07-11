@@ -1,13 +1,11 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 using Ciallo.Command;
 using Ciallo.GuiControl;
 using Ciallo.Tool;
 using Frent;
 using Godot;
-using ObservableCollections;
 using R3;
 
 namespace Ciallo.Data;
@@ -20,8 +18,6 @@ namespace Ciallo.Data;
 /// </summary>
 public static partial class AppDocumentManager
 {
-    public static readonly ObservableHashSet<Entity> LoadedDocuments = [];
-
     public static readonly ReactiveProperty<Entity> WorkingDocument = new(Entity.Null);
 
     public static bool WorkingDocumentModified => !WorkingDocument.Value.IsNull &&
@@ -52,17 +48,6 @@ public static partial class AppDocumentManager
         document.Get<ToolManager>().ObserveTimelineRolling(document.Get<TimelineSetting>().IsRollingFrame);
 
         WorldToDocument.Add(world, document);
-
-        // Always init first, then add to list
-        LoadedDocuments.Add(document);
-
-        document.Get<CommandManager>().DocumentModified
-            .CombineLatest(settings.Name, (modified, name) => (modified, name))
-            .Subscribe(v =>
-            {
-                string prepend = v.modified ? "(*)" : "";
-                DisplayServer.WindowSetTitle($"{prepend + v.name} - Ciallo");
-            }).AddTo(document);
 
         return document;
     }
@@ -120,31 +105,25 @@ public static partial class AppDocumentManager
 
     public static void Remove(Entity document)
     {
-        if (!LoadedDocuments.Contains(document)) throw new KeyNotFoundException("The specified world does not exist.");
-
         DisplayServer.WindowSetTitle("Ciallo");
 
         document.Get<ToolManager>().DeactivateWorkingTool();
-        // Signal working world removal
-        LoadedDocuments.Remove(document);
-        if (WorkingDocument.Value == document)
-            WorkingDocument.Value = Entity.Null;
+        WorkingDocument.Value = Entity.Null;
 
         // Dispose world
         // Warning: Dispose a world don't trigger it's entities' deletion events.
-        var allQuery = document.World.CreateQuery().Build();
+        var world = document.World;
+        var allQuery = world.CreateQuery().Build();
         foreach (Entity e in allQuery.EnumerateWithEntities())
             e.Delete();
-        document.World.Dispose();
+        WorldToDocument.Remove(world);
+        world.Dispose();
     }
 
     public static void Clear()
     {
-        // Don't use `clear` on LoadedWorlds since it will trigger reset rather than remove event.
-        foreach (var document in LoadedDocuments.ToList())
-        {
-            Remove(document);
-        }
+        if (WorkingDocument.Value.IsNull) return;
+        Remove(WorkingDocument.Value);
     }
 
     // If false, user cancels the close operation.

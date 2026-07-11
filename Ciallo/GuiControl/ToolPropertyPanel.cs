@@ -1,8 +1,8 @@
 using Ciallo.Data;
 using Ciallo.Tool;
 using Ciallo.Widget;
+using Frent;
 using Godot;
-using ObservableCollections;
 using R3;
 
 namespace Ciallo.GuiControl;
@@ -18,12 +18,22 @@ public partial class ToolPropertyPanel : Container
         PropertyHolder = GetNode<VBoxContainer>("%PropertiesHolder");
         PropertyHolder.QueueFreeChildren();
 
-        AppDocumentManager.LoadedDocuments.ObserveAdd().Select(et => et.Value).Subscribe(document =>
+        AppDocumentManager.WorkingDocument.Pairwise().Subscribe(pair =>
         {
-            var holderPerDocument = new DocumentToolPropertyContainer()
+            var previousDocument = pair.Previous;
+            var document = pair.Current;
+            if (!previousDocument.IsNull)
+            {
+                previousDocument.Get<DocumentToolPropertyContainer>().QueueFree();
+                previousDocument.Remove<DocumentToolPropertyContainer>();
+            }
+
+            if (document.IsNull) return;
+
+            var holderPerDocument = new DocumentToolPropertyContainer
             {
                 SizeFlagsHorizontal = SizeFlags.ExpandFill
-            }.VisibleIf(AppDocumentManager.WorkingDocument, document);
+            };
             document.Add(holderPerDocument);
             PropertyHolder.AddChild(holderPerDocument);
 
@@ -37,18 +47,13 @@ public partial class ToolPropertyPanel : Container
 
                 holderPerDocument.AddChild(container);
             }
+
             holderPerDocument.AddChild(new Label
                 {
                     Text = "[Cannot Tool Layer]".Tr(),
                     AutowrapMode = TextServer.AutowrapMode.WordSmart,
                 }
                 .VisibleIf(toolManager.WorkingTool, (ITool)null));
-        }).AddTo(this);
-
-        AppDocumentManager.LoadedDocuments.ObserveRemove().Select(et => et.Value).Subscribe(document =>
-        {
-            document.Get<DocumentToolPropertyContainer>().QueueFree();
-            document.Remove<DocumentToolPropertyContainer>();
         }).AddTo(this);
     }
 }

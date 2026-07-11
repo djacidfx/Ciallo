@@ -2,6 +2,14 @@
 
 ## Glossary
 
+### Document
+
+A document is the complete editable animation content stored in exactly one `.ciallo` file.
+
+### Working Document
+
+The working document is the one document currently open for editing in a Ciallo process, and is absent when that process has no document open.
+
 ### Cel
 
 A cel is a direct child layer of a cel folder, whether or not it is currently assigned to an exposure.
@@ -94,3 +102,7 @@ A command segment is one ordered part of an undoable action. Related gestures ma
 - A **Vector Fill Layer** can have zero or more **Reference Layers**.
 - A **Reference Layer** can provide boundary artwork for zero or more **Vector Fill Layers**.
 - When editing reference artwork from a **Vector Fill Layer**, the edited **Shape** remains owned by its original **Reference Layer**.
+
+## Flagged Ambiguities
+
+- "Project" was used to mean a **Document** stored in one `.ciallo` file; **Document** is the canonical term and does not contain multiple documents.
