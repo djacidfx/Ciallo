@@ -85,6 +85,9 @@ public partial class AutoloadData : Node
             AppStrokeBrushLibrary.Save();
             AppMarkerTextureLibrary.Save();
             AppPreference.Save();
+            GetTree().CurrentScene
+                .GetNode<MainDockableContainer>(MainDockableContainer.ScenePath)
+                .FlushPendingLayoutSave();
             AppDocumentManager.Clear();
             GetTree().Quit();
             // Prevent default handler

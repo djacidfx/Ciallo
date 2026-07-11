@@ -51,7 +51,7 @@ authoritative online source.
 
 ### Repository Files
 
-- Normal repository tools: broad reads, search, diffs, and `.gd`, `.cs`, or
+- Normal repository tools: broad reads, search, diffs, and `.gd`, or
   `.gdshader` text edits.
 
 ### Scene Inspection

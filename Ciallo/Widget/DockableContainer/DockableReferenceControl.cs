@@ -3,39 +3,61 @@ using Godot;
 namespace Ciallo.Widget;
 
 [Tool]
-public partial class DockableReferenceControl : Container
+public partial class DockableReferenceControl : Container, ISerializationListener
 {
-    private Control _referenceTo;
-
+    // TabContainer needs child controls, but managed panels must remain children of DockableContainer.
+    // This proxy mirrors a panel's geometry, visibility, and minimum size without reparenting it.
     public Control ReferenceTo
     {
-        get => _referenceTo;
+        get;
         set
         {
-            if (_referenceTo == value) return;
-
-            // Reparenting real tabs into TabContainer makes them disappear from DockableContainer's saved children.
-            if (IsInstanceValid(_referenceTo))
+            var minimumSizeChanged = new Callable(this, MethodName.OnReferenceToMinimumSizeChanged);
+            if (field == value)
             {
-                var renamed = new Callable(this, MethodName.OnReferenceToRenamed);
-                var minimumSizeChanged = new Callable(this, MethodName.OnReferenceToMinimumSizeChanged);
-                if (_referenceTo.IsConnected(Node.SignalName.Renamed, renamed))
-                    _referenceTo.Disconnect(Node.SignalName.Renamed, renamed);
-                if (_referenceTo.IsConnected(Control.SignalName.MinimumSizeChanged, minimumSizeChanged))
-                    _referenceTo.Disconnect(Control.SignalName.MinimumSizeChanged, minimumSizeChanged);
+                // Reload deserialization can assign the same native object after connections are restored.
+                DisconnectLegacyRenameSignal(value);
+                DockableSignalConnection.EnsureConnected(value, Control.SignalName.MinimumSizeChanged, minimumSizeChanged);
+                return;
             }
 
-            _referenceTo = value;
-            EmitSignal(SignalName.MinimumSizeChanged);
+            Control previousReference = field;
+            field = value;
+            DisconnectLegacyRenameSignal(previousReference);
+            DisconnectLegacyRenameSignal(field);
+            DockableSignalConnection.Rebind(
+                previousReference,
+                field,
+                Control.SignalName.MinimumSizeChanged,
+                minimumSizeChanged
+            );
+            UpdateMinimumSize();
 
-            if (!IsInstanceValid(_referenceTo)) return;
-            // _referenceTo.Renamed += ... can reload as: "delegate_handle.value is null".
-            _referenceTo.Connect(Node.SignalName.Renamed, new Callable(this, MethodName.OnReferenceToRenamed));
-            _referenceTo.Connect(Control.SignalName.MinimumSizeChanged, new Callable(this, MethodName.OnReferenceToMinimumSizeChanged));
-            SetVisibleIfChanged(_referenceTo, Visible);
+            if (!IsInstanceValid(field)) return;
+            SetVisibleIfChanged(field, Visible);
             RepositionReference();
-            OnReferenceToRenamed();
+            Name = field.Name;
         }
+    }
+
+    public void OnBeforeSerialize()
+    {
+    }
+
+    public void OnAfterDeserialize()
+    {
+        DisconnectLegacyRenameSignal(ReferenceTo);
+        DockableSignalConnection.EnsureConnected(
+            ReferenceTo,
+            Control.SignalName.MinimumSizeChanged,
+            new Callable(this, MethodName.OnReferenceToMinimumSizeChanged)
+        );
+        UpdateMinimumSize();
+
+        if (!IsInstanceValid(ReferenceTo)) return;
+        SetVisibleIfChanged(ReferenceTo, Visible);
+        RepositionReference();
+        Name = ReferenceTo.Name;
     }
 
     public override void _Ready()
@@ -48,29 +70,33 @@ public partial class DockableReferenceControl : Container
     public override void _Notification(int what)
     {
         base._Notification(what);
-        if (what == NotificationVisibilityChanged && _referenceTo != null)
-            SetVisibleIfChanged(_referenceTo, Visible);
-        else if (what == NotificationTransformChanged && _referenceTo != null)
+        if (what == NotificationVisibilityChanged && ReferenceTo != null)
+            SetVisibleIfChanged(ReferenceTo, Visible);
+        else if (what == NotificationTransformChanged && ReferenceTo != null)
             RepositionReference();
     }
 
-    public override Vector2 _GetMinimumSize() => _referenceTo?.GetCombinedMinimumSize() ?? Vector2.Zero;
+    public override Vector2 _GetMinimumSize() => ReferenceTo?.GetCombinedMinimumSize() ?? Vector2.Zero;
 
     private void RepositionReference()
     {
-        if (!_referenceTo.GlobalPosition.IsEqualApprox(GlobalPosition))
-            _referenceTo.GlobalPosition = GlobalPosition;
-        if (!_referenceTo.Size.IsEqualApprox(Size))
-            _referenceTo.Size = Size;
-    }
-
-    private void OnReferenceToRenamed()
-    {
-        if (Name == _referenceTo.Name) return;
-        Name = _referenceTo.Name;
+        if (!ReferenceTo.GlobalPosition.IsEqualApprox(GlobalPosition))
+            ReferenceTo.GlobalPosition = GlobalPosition;
+        if (!ReferenceTo.Size.IsEqualApprox(Size))
+            ReferenceTo.SetSize(Size);
     }
 
     private void OnReferenceToMinimumSizeChanged() => UpdateMinimumSize();
+
+    private void DisconnectLegacyRenameSignal(Control source)
+    {
+        // Renames are now tracked once by DockableContainer through SceneTree.NodeRenamed.
+        DockableSignalConnection.Disconnect(
+            source,
+            Node.SignalName.Renamed,
+            new Callable(this, "OnReferenceToRenamed")
+        );
+    }
 
     private static void SetVisibleIfChanged(CanvasItem item, bool visible)
     {

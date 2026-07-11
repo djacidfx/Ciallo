@@ -216,3 +216,9 @@ Mirror vertically,Mirror vertically,垂直镜像,垂直鏡像,上下反転,세�
 Play,Play,播放,播放,再生,재생,Wiedergabe,Lire
 Default,Default,默认,預設,デフォルト,기본,Standard,Par défaut
 Default brush,Default brush,默认笔刷,預設筆刷,デフォルトブラシ,기본 브러시,Standardpinsel,Pinceau par défaut
+Tool,Tool,工具,工具,ツール,도구,Werkzeug,Outil
+Tool Properties,Tool Properties,工具属性,工具屬性,ツールプロパティ,도구 속성,Werkzeugeigenschaften,Propriétés de l'outil
+Layers,Layers,图层,圖層,レイヤー,레이어,Ebenen,Calques
+Timeline,Timeline,时间轴,時間軸,タイムライン,타임라인,Zeitleiste,Chronologie
+Reset Layout,Reset Layout,重置布局,重設版面配置,レイアウトをリセット,레이아웃 재설정,Layout zurücksetzen,Réinitialiser la disposition
+Canvas,Canvas,画布,畫布,キャンバス,캔버스,Leinwand,Toile

@@ -5,6 +5,7 @@ namespace Ciallo.Widget;
 [Tool]
 public partial class DockableSplitHandle : Control
 {
+    // Both tables mirror DockableLayoutSplit.SplitDirection's numeric order.
     private static readonly string[] SplitThemeClass =
     [
         "HSplitContainer",
@@ -17,6 +18,7 @@ public partial class DockableSplitHandle : Control
         CursorShape.Vsplit,
     ];
 
+    // Drag ratios use the whole subtree rect, not the separator-width control rect.
     private Rect2 _parentRect;
     private bool _mouseHovering;
     private bool _dragging;
@@ -100,31 +102,62 @@ public partial class DockableSplitHandle : Control
 
         if (LayoutSplit.IsHorizontal())
         {
-            float splitOffset = Mathf.Clamp(
-                rect.Size.X * percent - separation * 0.5f,
+            var sizes = CalculateAxisSizes(
+                rect.Size.X,
+                separation,
+                percent,
                 FirstMinimumSize.X,
-                rect.Size.X - SecondMinimumSize.X - separation
+                SecondMinimumSize.X
             );
-            float secondWidth = rect.Size.X - splitOffset - separation;
 
             return (
-                new Rect2(origin.X, origin.Y, splitOffset, rect.Size.Y),
-                new Rect2(origin.X + splitOffset, origin.Y, separation, rect.Size.Y),
-                new Rect2(origin.X + splitOffset + separation, origin.Y, secondWidth, rect.Size.Y)
+                new Rect2(origin.X, origin.Y, sizes.First, rect.Size.Y),
+                new Rect2(origin.X + sizes.First, origin.Y, sizes.Separation, rect.Size.Y),
+                new Rect2(origin.X + sizes.First + sizes.Separation, origin.Y, sizes.Second, rect.Size.Y)
             );
         }
 
-        float verticalSplitOffset = Mathf.Clamp(
-            rect.Size.Y * percent - separation * 0.5f,
+        var verticalSizes = CalculateAxisSizes(
+            rect.Size.Y,
+            separation,
+            percent,
             FirstMinimumSize.Y,
-            rect.Size.Y - SecondMinimumSize.Y - separation
+            SecondMinimumSize.Y
         );
-        float secondHeight = rect.Size.Y - verticalSplitOffset - separation;
 
         return (
-            new Rect2(origin.X, origin.Y, rect.Size.X, verticalSplitOffset),
-            new Rect2(origin.X, origin.Y + verticalSplitOffset, rect.Size.X, separation),
-            new Rect2(origin.X, origin.Y + verticalSplitOffset + separation, rect.Size.X, secondHeight)
+            new Rect2(origin.X, origin.Y, rect.Size.X, verticalSizes.First),
+            new Rect2(origin.X, origin.Y + verticalSizes.First, rect.Size.X, verticalSizes.Separation),
+            new Rect2(origin.X, origin.Y + verticalSizes.First + verticalSizes.Separation, rect.Size.X, verticalSizes.Second)
         );
+    }
+
+    private static (float First, float Separation, float Second) CalculateAxisSizes(
+        float axisSize,
+        float separation,
+        float percent,
+        float firstMinimumSize,
+        float secondMinimumSize)
+    {
+        axisSize = Mathf.Max(0, axisSize);
+        separation = Mathf.Clamp(separation, 0, axisSize);
+        float availableSize = axisSize - separation;
+        float maximumFirstSize = availableSize - secondMinimumSize;
+
+        if (firstMinimumSize > maximumFirstSize)
+        {
+            // The parent should honor DockableContainer's reported minimum size. Preserve both
+            // leaf minima during a transient undersize instead of corrupting their layouts.
+            return (firstMinimumSize, separation, secondMinimumSize);
+        }
+
+        float firstSize = Mathf.Clamp(
+            // Percent denotes the separator center, consistent across either split direction.
+            axisSize * percent - separation * 0.5f,
+            firstMinimumSize,
+            maximumFirstSize
+        );
+
+        return (firstSize, separation, availableSize - firstSize);
     }
 }

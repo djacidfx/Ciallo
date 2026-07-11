@@ -71,6 +71,7 @@ public partial class DockableDragNDropPanel : Control
     public void SetEnabled(bool enabled, bool shouldSplit = true)
     {
         Visible = enabled;
+        // An empty layout accepts its first tab in the center instead of offering edge splits.
         _shouldSplit = shouldSplit;
         if (!enabled) return;
         _drawMargin = DrawNothing;
@@ -81,6 +82,7 @@ public partial class DockableDragNDropPanel : Control
 
     private int FindHoverMargin(Vector2 point)
     {
+        // Nearest edge midpoint yields four symmetric triangular drop zones.
         Vector2 halfSize = Size * 0.5f;
 
         float lesser = point.DistanceSquaredTo(new Vector2(0, halfSize.Y));

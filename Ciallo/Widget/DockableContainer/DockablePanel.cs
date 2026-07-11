@@ -3,37 +3,44 @@ using Godot;
 namespace Ciallo.Widget;
 
 [Tool]
-public partial class DockablePanel : TabContainer
+public partial class DockablePanel : TabContainer, ISerializationListener
 {
     [Signal]
     public delegate void TabLayoutChangedEventHandler(int tab, DockablePanel panel);
 
-    private DockableLayoutPanel _leaf;
-    private bool _showTabs = true;
-    private bool _hideSingleTab;
+    private string[] _trackedNames = [];
 
-    public DockableLayoutPanel Leaf
-    {
-        get => _leaf;
-        set => SetLeaf(value);
-    }
+    public DockableLayoutPanel Leaf { get; private set; }
 
     public bool ShowTabs
     {
-        get => _showTabs;
+        get;
         set
         {
-            _showTabs = value;
+            if (field == value) return;
+            field = value;
+            HandleTabVisibility();
+        }
+    } = true;
+
+    public bool HideSingleTab
+    {
+        get;
+        set
+        {
+            if (field == value) return;
+            field = value;
             HandleTabVisibility();
         }
     }
 
-    public bool HideSingleTab
+    public bool HideTabs
     {
-        get => _hideSingleTab;
+        get;
         set
         {
-            _hideSingleTab = value;
+            if (field == value) return;
+            field = value;
             HandleTabVisibility();
         }
     }
@@ -47,23 +54,31 @@ public partial class DockablePanel : TabContainer
     public override void _EnterTree()
     {
         base._EnterTree();
-        // ActiveTabRearranged += OnTabChanged can exit as: "Attempt to disconnect a nonexistent connection ... Delegate::Invoke".
-        Connect(TabContainer.SignalName.ActiveTabRearranged, new Callable(this, MethodName.OnTabChanged));
-        Connect(TabContainer.SignalName.TabSelected, new Callable(this, MethodName.OnTabSelected));
-        Connect(TabContainer.SignalName.TabChanged, new Callable(this, MethodName.OnTabChanged));
+        BindTabSignals();
     }
 
     public override void _ExitTree()
     {
-        Disconnect(TabContainer.SignalName.ActiveTabRearranged, new Callable(this, MethodName.OnTabChanged));
-        Disconnect(TabContainer.SignalName.TabSelected, new Callable(this, MethodName.OnTabSelected));
-        Disconnect(TabContainer.SignalName.TabChanged, new Callable(this, MethodName.OnTabChanged));
+        UnbindTabSignals();
         base._ExitTree();
     }
 
-    public void TrackNodes(Control[] nodes, DockableLayoutPanel newLeaf)
+    public void OnBeforeSerialize()
     {
-        _leaf = null;
+    }
+
+    public void OnAfterDeserialize()
+    {
+        // Native signal connections can survive a C# tool-script reload, including old callback names.
+        DisconnectLegacyTabSignals();
+        if (IsInsideTree())
+            BindTabSignals();
+    }
+
+    public void TrackNodes(Control[] nodes, string[] titles, DockableLayoutPanel newLeaf, bool hideTabs)
+    {
+        // TabContainer emits selection signals while children are rebuilt; detach the old leaf first.
+        Leaf = null;
 
         int minSize = Mathf.Min(nodes.Length, GetChildCount());
         while (GetChildCount() > minSize)
@@ -74,6 +89,7 @@ public partial class DockablePanel : TabContainer
             child.QueueFree();
         }
 
+        // Tabs own geometry proxies; the real controls stay direct children of DockableContainer.
         while (GetChildCount() < nodes.Length)
             AddChild(new DockableReferenceControl());
 
@@ -81,10 +97,15 @@ public partial class DockablePanel : TabContainer
         {
             var refControl = (DockableReferenceControl)GetChild(i);
             refControl.ReferenceTo = nodes[i];
-            if (GetTabTitle(i) != nodes[i].Name)
-                SetTabTitle(i, nodes[i].Name);
+            refControl.Name = nodes[i].Name;
+            if (GetTabTitle(i) != titles[i])
+                SetTabTitle(i, titles[i]);
         }
 
+        _trackedNames = new string[nodes.Length];
+        for (int i = 0; i < nodes.Length; i++)
+            _trackedNames[i] = nodes[i].Name;
+        HideTabs = hideTabs;
         SetLeaf(newLeaf);
         HandleTabVisibility();
     }
@@ -97,42 +118,106 @@ public partial class DockablePanel : TabContainer
 
     public void SetLeaf(DockableLayoutPanel value)
     {
+        Leaf = value;
         if (GetTabCount() > 0 && value != null)
         {
-            int currentTab = Mathf.Clamp(value.CurrentTab, 0, GetTabCount() - 1);
+            // Layout indices include hidden tabs, so restore selection by name in the visible tab list.
+            string currentName = value.Names[value.CurrentTab];
+            int currentTab = FindVisibleTab(currentName);
+            if (currentTab < 0)
+                currentTab = 0;
             if (CurrentTab != currentTab)
                 CurrentTab = currentTab;
         }
-        _leaf = value;
     }
 
     public Vector2 GetLayoutMinimumSize() => GetCombinedMinimumSize();
 
     private void OnTabSelected(long tab)
     {
-        if (_leaf != null)
-            _leaf.CurrentTab = (int)tab;
+        if (Leaf == null) return;
+
+        string name = GetTabName(GetTabControl((int)tab));
+        int rawIndex = Leaf.FindName(name);
+        if (rawIndex < 0)
+        {
+            EmitSignal(SignalName.TabLayoutChanged, (int)tab, this);
+            return;
+        }
+
+        Leaf.CurrentTab = rawIndex;
     }
 
-    private void OnTabChanged(long tab)
+    private void OnTabRearranged(long tab)
     {
-        if (_leaf == null) return;
+        if (Leaf == null) return;
 
         var control = GetTabControl((int)tab);
         if (control == null) return;
 
-        int nameIndexInLeaf = _leaf.FindName(control.Name);
-        if (nameIndexInLeaf != tab)
+        // Cross-panel tabs are absent from the snapshot and always emit;
+        // a local tab emits only when its visible index changes.
+        int previousVisibleIndex = System.Array.IndexOf(_trackedNames, GetTabName(control));
+        if (previousVisibleIndex != tab)
         {
             // Capturing panel in a lambda can reload as: "Can't get method on CallableCustom 'Delegate::Invoke'".
             EmitSignal(SignalName.TabLayoutChanged, (int)tab, this);
         }
     }
 
+    private int FindVisibleTab(string name)
+    {
+        for (int i = 0; i < GetTabCount(); i++)
+        {
+            if (GetTabName(GetTabControl(i)) == name)
+                return i;
+        }
+
+        return -1;
+    }
+
+    private static string GetTabName(Control control) =>
+        control is DockableReferenceControl reference ? reference.ReferenceTo.Name : control.Name;
+
+    private void BindTabSignals()
+    {
+        DockableSignalConnection.EnsureConnected(
+            this,
+            TabContainer.SignalName.ActiveTabRearranged,
+            new Callable(this, MethodName.OnTabRearranged)
+        );
+        DockableSignalConnection.EnsureConnected(
+            this,
+            TabContainer.SignalName.TabSelected,
+            new Callable(this, MethodName.OnTabSelected)
+        );
+    }
+
+    private void UnbindTabSignals()
+    {
+        DockableSignalConnection.Disconnect(
+            this,
+            TabContainer.SignalName.ActiveTabRearranged,
+            new Callable(this, MethodName.OnTabRearranged)
+        );
+        DockableSignalConnection.Disconnect(
+            this,
+            TabContainer.SignalName.TabSelected,
+            new Callable(this, MethodName.OnTabSelected)
+        );
+    }
+
+    private void DisconnectLegacyTabSignals()
+    {
+        var legacy = new Callable(this, "OnTabChanged");
+        DockableSignalConnection.Disconnect(this, TabContainer.SignalName.ActiveTabRearranged, legacy);
+        DockableSignalConnection.Disconnect(this, TabContainer.SignalName.TabChanged, legacy);
+    }
+
     private void HandleTabVisibility()
     {
-        TabsVisible = !_hideSingleTab || GetTabCount() != 1
-            ? _showTabs
-            : false;
+        TabsVisible = ShowTabs
+            && !HideTabs
+            && (!HideSingleTab || GetTabCount() != 1);
     }
 }

@@ -7,28 +7,37 @@ namespace Ciallo.Widget;
 [Tool, GlobalClass]
 public partial class DockableLayoutPanel : DockableLayoutNode
 {
-    private string[] _names = [];
-    private int _currentTab;
-
     [Export]
     public string[] Names
     {
-        get => _names;
+        get;
         set
         {
-            _names = value;
+            value ??= [];
+            if (field == value) return;
+
+            // Preserve selection by panel identity when tabs are reordered or removed.
+            string currentName = field.Length == 0 ? null : field[CurrentTab];
+            field = value;
+            if (currentName != null)
+            {
+                int currentIndex = Array.IndexOf(field, currentName);
+                if (currentIndex >= 0)
+                    CurrentTab = currentIndex;
+            }
             EmitTreeChanged();
         }
-    }
+    } = [];
 
     [Export]
     public int CurrentTab
     {
-        get => Math.Clamp(_currentTab, 0, Math.Max(0, _names.Length - 1));
+        // Names can shrink independently; callers must never receive an index outside the leaf.
+        get => Math.Clamp(field, 0, Math.Max(0, Names.Length - 1));
         set
         {
-            if (value == _currentTab) return;
-            _currentTab = value;
+            if (value == field) return;
+            field = value;
             EmitTreeChanged();
         }
     }
@@ -38,26 +47,24 @@ public partial class DockableLayoutPanel : DockableLayoutNode
         ResourceName = "Tabs";
     }
 
-    public override bool IsEmpty() => _names.Length == 0;
+    public override bool IsEmpty() => Names.Length == 0;
 
-    public override string[] GetNames() => _names;
+    public override string[] GetNames() => Names;
 
     public void PushName(string name)
     {
-        var names = new List<string>(_names) { name };
-        _names = names.ToArray();
-        EmitTreeChanged();
+        var names = new List<string>(Names) { name };
+        Names = names.ToArray();
     }
 
     public void InsertNode(int position, Node node)
     {
-        var names = new List<string>(_names);
+        var names = new List<string>(Names);
         names.Insert(position, node.Name);
-        _names = names.ToArray();
-        EmitTreeChanged();
+        Names = names.ToArray();
     }
 
-    public int FindName(string nodeName) => Array.IndexOf(_names, nodeName);
+    public int FindName(string nodeName) => Array.IndexOf(Names, nodeName);
 
     public int FindChild(Node node) => FindName(node.Name);
 
@@ -65,35 +72,30 @@ public partial class DockableLayoutPanel : DockableLayoutNode
     {
         int index = FindChild(node);
         if (index < 0)
-        {
-            GD.PushWarning($"Remove failed, node '{node}' was not found");
-            return;
-        }
+            throw new InvalidOperationException($"Layout node '{node.Name}' was not found");
 
-        var names = new List<string>(_names);
+        var names = new List<string>(Names);
         names.RemoveAt(index);
-        _names = names.ToArray();
-        EmitTreeChanged();
+        Names = names.ToArray();
     }
 
     public void RenameNode(string previousName, string newName)
     {
         int index = FindName(previousName);
         if (index < 0)
-        {
-            GD.PushWarning($"Rename failed, name '{previousName}' was not found");
-            return;
-        }
+            throw new InvalidOperationException($"Layout node '{previousName}' was not found");
 
-        _names[index] = newName;
-        EmitTreeChanged();
+        string[] names = [.. Names];
+        names[index] = newName;
+        Names = names;
     }
 
     public void UpdateNodes(HashSet<string> nodeNames, Dictionary<string, DockableLayoutPanel> leafByNodeName)
     {
-        var names = new List<string>(_names);
+        var names = new List<string>(Names);
         bool removedAny = false;
 
+        // The traversal-wide map gives the first leaf ownership of each panel name.
         for (int i = names.Count - 1; i >= 0; i--)
         {
             string current = names[i];
@@ -109,7 +111,6 @@ public partial class DockableLayoutPanel : DockableLayoutNode
         }
 
         if (!removedAny) return;
-        _names = names.ToArray();
-        EmitTreeChanged();
+        Names = names.ToArray();
     }
 }
