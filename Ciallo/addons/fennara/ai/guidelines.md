@@ -23,6 +23,14 @@ Never call `script_diagnostics`. In Fennara 0.3.7 it can time out repeatedly
 and prevent Godot from closing. Do not retry or broaden an automatic timeout;
 use `dotnet build` for C# compilation.
 
+## Runtime Sessions
+
+Never call `runtime_session` or `runtime_script` in this project. In Fennara
+0.3.7, runtime-session preflight can pass non-`[Tool]` `.cs` scene scripts to
+the GDScript loader and block the launch with `expected type: GDScript`. Use
+`dotnet build` and `validate_scene`; ask the user to run the scene manually
+when live runtime evidence is required.
+
 ## Serialized Files
 
 Prefer Fennara for `.tscn`, `.scn`, `.tres`, and `.res` edits. Never write or
@@ -78,15 +86,10 @@ authoritative online source.
 - `project_settings`: `project.godot`, InputMap, autoload, window, rendering,
   physics, metadata, and addon settings.
 
-### Runtime And Editor
+### Editor
 
-- `runtime_session`: starts, checks, or stops one windowed runtime and returns
-  `runtime_session.log`, the full source of runtime output and captures.
-- `runtime_script`: runs a bounded `RefCounted` GDScript probe in that session.
-  Yielding helpers require `await`; node references can become stale across
-  waits/reloads, coordinate spaces differ, and pressed actions require release.
-- `scrape_editor`: reads only the debugger tree for a scene the user ran in the
-  editor. For Fennara runtime sessions, use `runtime_session.status` and its log.
+- `scrape_editor`: reads the debugger tree for a scene the user ran in the
+  editor.
 
 ### File Editing
 
@@ -127,8 +130,6 @@ Tool lifecycle logs are under
 `user://.fennara/tool_logs/<session_id>/calls.jsonl`; results and artifacts are
 under the adjacent `results/` directory. Events are `received`, `started`,
 `completed`, and `failed`; final events link `result_path` and `artifact_path`.
-Runtime calls share one artifact directory containing `runtime_session.log` and
-captures.
 
 ## Timeout Recovery
 

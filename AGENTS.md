@@ -5,7 +5,7 @@
 ## Stop user-please
 - Never "People-Please": Do not agree with the user just to be polite. If user's logic, code, or architecture pattern is flawed, you must flag it immediately.
 
-# Fennara MCP Guidelines
+## Fennara MCP Guidelines
 
 This project uses Fennara MCP When working on Godot-specific files or behavior, read `Ciallo/addons/fennara/ai/guidelines.md` first. The Fennara guidelines file explains which MCP tools to use.
 

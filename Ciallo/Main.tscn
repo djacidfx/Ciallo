@@ -82,9 +82,6 @@ Second = SubResource("Resource_sqvbp")
 resource_name = "Layout"
 script = ExtResource("11_3b0ty")
 Root = SubResource("Resource_hri7i")
-HiddenTabs = {
-"TimelinePanel": true
-}
 
 [node name="Main" type="Panel" unique_id=1926960144]
 texture_filter = 1
@@ -167,6 +164,7 @@ script = ExtResource("8_sc1dx")
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 15
+theme_override_constants/margin_right = 10
 
 [node name="DockableContainer" type="Container" parent="MainGui/MarginContainer" unique_id=1417645468]
 unique_name_in_owner = true
@@ -221,11 +219,11 @@ script = ExtResource("16_5tuhn")
 
 [node name="TimelinePanel" type="MarginContainer" parent="MainGui/MarginContainer/DockableContainer" unique_id=1659802599 groups=["UncategorizedControl"]]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_constants/margin_top = 4
 script = ExtResource("23_hhcpw")
 metadata/dockable_title = "Timeline"
 
-[node name="TimelinePanel" parent="MainGui/MarginContainer/DockableContainer/TimelinePanel" unique_id=2020419585 instance=ExtResource("24_hhcpw")]
+[node name="TimelinePanelPreview" parent="MainGui/MarginContainer/DockableContainer/TimelinePanel" unique_id=2020419585 instance=ExtResource("24_hhcpw")]
 layout_mode = 2
