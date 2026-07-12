@@ -46,22 +46,25 @@ public partial class TrackTree : LayerTreeBase
         get => _splitOffset;
         set
         {
+            if (_splitOffset == value) return;
             _splitOffset = value;
-            UpdateAllSplits(RootContainer, value);
+            UpdateAllSplits(RootContainer, [value]);
         }
     }
 
-    private static void UpdateAllSplits(Node node, int splitOffset)
+    private static void UpdateAllSplits(Node node, int[] splitOffsets)
     {
-        foreach (var child in node.GetChildren())
+        int childCount = node.GetChildCount();
+        for (int i = 0; i < childCount; i++)
         {
+            var child = node.GetChild(i);
             // Archetype rows are HSplitContainers added directly under a wrapper (not a TrackRow title).
             if (child is HSplitContainer archetypeSplit)
-                archetypeSplit.SplitOffsets = [splitOffset];
+                archetypeSplit.SplitOffsets = splitOffsets;
             if (child is not TrackRowWrapper wrapper) continue;
             if (wrapper.Title is TrackRow row)
-                row.SplitOffsets = [splitOffset];
-            UpdateAllSplits(wrapper, splitOffset);
+                row.SplitOffsets = splitOffsets;
+            UpdateAllSplits(wrapper, splitOffsets);
         }
     }
 

@@ -18,9 +18,11 @@ public partial class TimelinePanel : VBoxContainer
         // Keep all track-row splits, the scrollbar spacer, and the BackgroundGrid in lockstep.
         HSplitRuler.Dragged += offset =>
         {
-            TrackTree.SplitOffset = (int)offset;
-            HSplitScrollBar.SplitOffsets = [(int)offset];
-            HSplitBgGrid.SplitOffsets = [(int)offset];
+            int splitOffset = (int)offset;
+            int[] splitOffsets = [splitOffset];
+            TrackTree.SplitOffset = splitOffset;
+            HSplitScrollBar.SplitOffsets = splitOffsets;
+            HSplitBgGrid.SplitOffsets = splitOffsets;
         };
     }
 
