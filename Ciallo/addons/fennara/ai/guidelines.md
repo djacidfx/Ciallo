@@ -17,32 +17,48 @@ and result shape. If tools are deferred, search with a limit of at least 20:
 fennara_status read_file write_or_update_file run_scene_edit_script get_scene_tree screenshot_scene get_node_properties get_class_info validate_scene project_settings runtime_session runtime_script scrape_editor
 ```
 
-## Script Diagnostics
+Use the live tool schemas as the source of truth for arguments, limits, script
+contracts, result fields, and recovery procedures.
 
-Never call `script_diagnostics`. In Fennara 0.3.7 it can time out repeatedly
-and prevent Godot from closing. Do not retry or broaden an automatic timeout;
-use `dotnet build` for C# compilation.
+## Tool Choice
+
+- Scene structure and properties: `get_scene_tree`, `get_node_properties`.
+- Native Godot APIs: `get_class_info`.
+- Scene and resource edits: `run_scene_edit_script`.
+- Script and shader diagnostics: `script_diagnostics`.
+- Live behavior: `runtime_session` with `runtime_script`.
+- Visual verification: `screenshot_scene`.
+- Project settings and InputMap: `project_settings`.
 
 ## Runtime Sessions
 
-Never call `runtime_session` or `runtime_script` in this project. In Fennara
-0.3.7, runtime-session preflight can pass non-`[Tool]` `.cs` scene scripts to
-the GDScript loader and block the launch with `expected type: GDScript`. Use
-`dotnet build` and `validate_scene`; ask the user to run the scene manually
-when live runtime evidence is required.
+Use `runtime_session` with `runtime_script` when live scene state, input-driven
+behavior, or runtime captures provide evidence that build and validation cannot.
+Start or inspect the managed session first, pass its `session_id` to each
+`runtime_script` call, and stop the session when finished.
+
+Verify behavior from observed state changes; a successful helper call only
+proves that the helper ran.
 
 ## Serialized Files
 
-Prefer Fennara for `.tscn`, `.scn`, `.tres`, and `.res` edits. Never write or
-patch these serialized files as text; use `run_scene_edit_script` or another
-Godot-aware structured tool.
+Prefer Fennara for `.tscn`, `.scn`, `.tres`, and `.res` edits. do not write or
+patch these files as text; prefer using other Godot-aware structured tool.
 
-Check the validation returned by `run_scene_edit_script` and fix reported
-scene/resource errors before claiming the edit is complete.
+Direct text repair is allowed only when an existing text resource is already
+unloadable or contains merge conflicts and structured tools cannot operate.
 
 ## Project Settings
 
 Prefer `project_settings` over editing `project.godot` manually.
+
+## Source Files
+
+Normal repository tools may read and edit source files. Prefer
+`write_or_update_file` for `.gd` when immediate Godot diagnostics are useful,
+and for `.gdshader` when diagnostics and referencing resource reserialization
+are useful. After related C# edits, use `dotnet build` or one project-wide
+`script_diagnostics` call.
 
 ## Fennara Autoloads
 
@@ -55,93 +71,9 @@ When Godot behavior, APIs, renderer/platform support, or version details are
 uncertain, consult current official Godot documentation or another
 authoritative online source.
 
-## Tools
-
-### Repository Files
-
-- Normal repository tools: broad reads, search, diffs, and `.gd`, or
-  `.gdshader` text edits.
-
-### Scene Inspection
-
-- `get_scene_tree`: scene hierarchy and node paths.
-- `get_node_properties`: node properties, scripts, exports, connections,
-  resources, and animation data.
-- `get_class_info`: native Godot classes, APIs, signals, enums, and constants.
-
-### Scene Editing
-
-- `run_scene_edit_script`: editor-side Godot object-model inspection and edits,
-  including nodes, scene-owned resources, standalone resources, and addon APIs.
-
-### Validation And Screenshots
-
-- `validate_scene`: structural checks for 1-10 scenes, followed by a three-second
-  headless run for structurally valid scenes. The forced stop's non-zero exit is
-  not itself a failure; unset exports are notes and may be intentional.
-- `screenshot_scene`: rendered scene image for visual inspection.
-
-### Project Settings
-
-- `project_settings`: `project.godot`, InputMap, autoload, window, rendering,
-  physics, metadata, and addon settings.
-
-### Editor
-
-- `scrape_editor`: reads the debugger tree for a scene the user ran in the
-  editor.
-
-### File Editing
-
-`write_or_update_file` is only useful when Godot-side path/image handling is
-needed. For `.gdshader`, it can reserialize referencing `.tscn`/`.tres` owners;
-inspect `reserialized_resources`, `reserialize_warnings`, and
-`reserialize_skipped`.
-
-## Scene Edit Scripts
-
-### Inspection Scripts
-
-`run_scene_edit_script` saves inline scripts under `.fennara`. Inspection-only
-scripts should log with `ctx.log(...)` and not call `ctx.mark_modified()` or
-mutating helpers. If no edit is marked, `modified=false`, `scene_saved=false`
-is expected.
-
-### Inherited Scenes
-
-For inherited scenes, Fennara preserves the inherited root or rejects the save
-and restores the original file. On `inherited_root_scene=true` with
-`scene_saved=false`, the edit did not apply; adjust the returned `script_path`
-or narrow the edit. Do not patch the scene text.
-
 ## Renderer
 
-Forward+, Mobile, and Compatibility are different renderers, not quality
-levels. Compatibility/OpenGL lacks or constrains many RenderingDevice,
-screen/depth, post-processing, GI, fog, decal, particle, HDR, MSAA, and texture
-features; mobile and web may be more constrained than the editor.
-`fennara_status.rendering_context` and `project_settings` expose the active and
-configured renderers. `has_rendering_device=false` means low-level
-RenderingDevice and compute workflows are unavailable in the connected runtime.
-
-## Tool Call Logs
-
-Tool lifecycle logs are under
-`user://.fennara/tool_logs/<session_id>/calls.jsonl`; results and artifacts are
-under the adjacent `results/` directory. Events are `received`, `started`,
-`completed`, and `failed`; final events link `result_path` and `artifact_path`.
-
-## Timeout Recovery
-
-After a timeout, inspect the latest matching request event before retrying. Use
-the linked result if it completed or failed. A request left at `started` may
-still be running; wait, then narrow or split it instead of repeating the same
-broad call.
-
-## Large Scenes
-
-For large scenes, target known nodes/subtrees, keep output bounded, and use broad
-`run_scene_edit_script` scans only when native object access is required.
+Forward+, Mobile, and Compatibility are different renderers. This project only support Forward+.
 
 ## Failure States
 
