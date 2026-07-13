@@ -67,7 +67,7 @@ Names = PackedStringArray("TimelinePanel")
 resource_name = "Split"
 script = ExtResource("10_devvj")
 Direction = 1
-Percent = 0.694922
+Percent = 0.7769532
 First = SubResource("Resource_mxvw5")
 Second = SubResource("Resource_xrxkg")
 
@@ -107,6 +107,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_constants/separation = 0
 
 [node name="MenuBarContainer" type="PanelContainer" parent="MainGui" unique_id=628027750]
 layout_mode = 2
