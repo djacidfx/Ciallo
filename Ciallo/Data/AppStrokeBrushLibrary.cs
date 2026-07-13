@@ -140,10 +140,9 @@ public static partial class AppStrokeBrushLibrary
         return true;
     }
 
-    public static void BindToGui()
+    public static void BindToGui(BrushPanel panel)
     {
         // Setup brush library panel
-        var panel = AppDialogHost.BrushLibrary;
         SelectedIndex = panel.SelectedIndex;
         panel.BindBrushSetting(BrushSettings, s => s);
 

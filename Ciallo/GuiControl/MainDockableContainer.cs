@@ -64,8 +64,9 @@ public partial class MainDockableContainer : DockableContainer
         SaveLayout();
     }
 
-    public void FlushPendingLayoutSave()
+    public override void _ExitTree()
     {
+        if (Engine.IsEditorHint()) return;
         _layoutSaveTimer.Stop();
         SaveLayout();
     }

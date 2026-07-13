@@ -1,5 +1,4 @@
 using System;
-using Ciallo.GuiControl;
 using Godot;
 using MessagePack;
 using R3;
@@ -68,12 +67,6 @@ public partial class AutoloadData : Node
         AppMarkerTextureLibrary.Initialise();
     }
 
-    public override void _Ready()
-    {
-        AppDialogHost = GetTree().CurrentScene.GetNode<DialogHost>("DialogHost");
-        AppStrokeBrushLibrary.BindToGui();
-    }
-
     // ReSharper disable once AsyncVoidMethod
     public override async void _Notification(int what)
     {
@@ -85,9 +78,6 @@ public partial class AutoloadData : Node
             AppStrokeBrushLibrary.Save();
             AppMarkerTextureLibrary.Save();
             AppPreference.Save();
-            GetTree().CurrentScene
-                .GetNode<MainDockableContainer>(MainDockableContainer.ScenePath)
-                .FlushPendingLayoutSave();
             AppDocumentManager.Clear();
             GetTree().Quit();
             // Prevent default handler
