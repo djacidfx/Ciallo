@@ -145,20 +145,20 @@ public partial class ConfigureGlobalPenPressure : AcceptDialog
         string tablet = _tablets[(int)index];
         _selected = PenPressureResponseLibrary.MatchLatest(brand, pen, tablet);
         PlotRaw();
-        PlotMapped();
+        OnStraightenPressed();
     }
 
     // Solves for a remap curve that straightens the selected device's force->pressure response,
-    // then overwrites the global remap curve. The mapped chart re-plots automatically via the
-    // PenPressureRemapCurve subscription, so the right panel is the visual verification.
+    // preserving the current curve's terminal X as the full-pressure cutoff. The mapped chart
+    // re-plots automatically via the PenPressureRemapCurve subscription.
     private void OnStraightenPressed()
     {
-        if (_selected == null)
-            return;
-        var remap = PressureRemapSolver.Straighten(_selected.Records);
+        float maxReading = AppPreference.PenPressureRemapCurve.Value[^1].P.X;
+        var remap = PressureRemapSolver.Straighten(_selected.Records, maxReading);
         if (remap is null)
         {
             GD.PushWarning("Cannot straighten: the selected device response is degenerate (no usable force span).");
+            PlotMapped();
             return;
         }
         AppPreference.PenPressureRemapCurve.Value = remap.Value;
