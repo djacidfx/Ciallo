@@ -175,7 +175,7 @@ public partial class ExportFrameSequence : ConfirmationDialog
             _background.Color = BackgroundColor.Value.Value;
     }
 
-    public void PopupCentered(Entity document)
+    public void Popup(Entity document)
     {
         Document = document;
         var documentSetting = document.Get<DocumentSetting>();
@@ -191,7 +191,7 @@ public partial class ExportFrameSequence : ConfirmationDialog
         }).AddTo(_popupSubs);
 
         ExportPath.Value = documentSetting.FilePath.Value.GetBaseDir();
-        base.PopupCentered();
+        base.Popup();
     }
 
     private void BindExportPath(CompositeDisposable subs)

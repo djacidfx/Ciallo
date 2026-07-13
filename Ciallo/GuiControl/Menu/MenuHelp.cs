@@ -80,6 +80,7 @@ public partial class MenuHelp : PopupMenu
                 Size = new Vector2I(1080, 720),
                 DisplayMode = FileDialog.DisplayModeEnum.List,
                 UseNativeDialog = true,
+                InitialPosition = Window.WindowInitialPosition.CenterScreenWithMouseFocus,
             };
             _researchAnimationDialog.Filters = [$"*.csv;{"Research animation CSV".Tr()}"];
             _researchAnimationDialog.FileSelected += OnResearchAnimationPathSelected;
@@ -87,7 +88,7 @@ public partial class MenuHelp : PopupMenu
             AddChild(_researchAnimationDialog);
         }
 
-        _researchAnimationDialog.PopupCentered();
+        _researchAnimationDialog.Popup();
     }
 
     private void OnResearchAnimationPathSelected(string path)

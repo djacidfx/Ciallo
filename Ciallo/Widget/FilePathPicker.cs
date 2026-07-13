@@ -55,7 +55,7 @@ public partial class FilePathPicker : HBoxContainer
     {
         if (IsInstanceValid(FileDialog))
         {
-            FileDialog.PopupCentered();
+            FileDialog.Popup();
             return;
         }
 
@@ -79,6 +79,7 @@ public partial class FilePathPicker : HBoxContainer
             Unresizable = false,
             DialogCloseOnEscape = true,
             UseNativeDialog = true,
+            InitialPosition = Window.WindowInitialPosition.CenterScreenWithMouseFocus,
         };
         if (FileMode == FileDialog.FileModeEnum.OpenDir)
         {
@@ -90,7 +91,7 @@ public partial class FilePathPicker : HBoxContainer
         }
         AddChild(FileDialog);
         FileDialog.SetOwner(this);
-        FileDialog.PopupCentered();
+        FileDialog.Popup();
     }
 
     private void OnSelected(string path)

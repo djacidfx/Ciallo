@@ -74,7 +74,7 @@ public partial class MenuWindow : PopupMenu
                 AppDialogHost.BrushLibrary.Popup();
                 break;
             case Command.ConfigureGlobalPenPressure:
-                AppDialogHost.ConfigureGlobalPenPressure.PopupCentered();
+                AppDialogHost.ConfigureGlobalPenPressure.Popup();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(command), command, "Unhandled Window menu command");

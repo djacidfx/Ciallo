@@ -1,4 +1,4 @@
-[gd_scene load_steps=6 format=3 uid="uid://dvy6gjoyohxh3"]
+[gd_scene format=3 uid="uid://dvy6gjoyohxh3"]
 
 [ext_resource type="Script" uid="uid://d0tvejqc5yhxk" path="res://Widget/ImageTextureEdit.cs" id="1_pccdo"]
 [ext_resource type="Texture2D" uid="uid://dhjldtye0na35" path="res://Icon/FixedSize/folder-edit-outline-sized.svg" id="2_cdoaa"]
@@ -6,46 +6,46 @@
 [ext_resource type="Texture2D" uid="uid://ce3ajixnbpwk1" path="res://Icon/FixedSize/rotate-right.svg" id="4_xysc2"]
 [ext_resource type="Texture2D" uid="uid://dac403stmdufe" path="res://Icon/FixedSize/invert-colors.svg" id="5_6ftc3"]
 
-[node name="ImageTextureEdit" type="VBoxContainer"]
-anchors_preset = 15
+[node name="ImageTextureEdit" type="VBoxContainer" unique_id=1988452119]
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_pccdo")
 
-[node name="VBoxContainer" type="HBoxContainer" parent="."]
+[node name="VBoxContainer" type="HBoxContainer" parent="." unique_id=1722730014]
 custom_minimum_size = Vector2(0, 27.96)
 layout_mode = 2
 
-[node name="LoadButton" type="Button" parent="VBoxContainer"]
+[node name="LoadButton" type="Button" parent="VBoxContainer" unique_id=1117488707]
 unique_name_in_owner = true
 layout_mode = 2
 icon = ExtResource("2_cdoaa")
 
-[node name="ClearButton" type="Button" parent="VBoxContainer"]
+[node name="ClearButton" type="Button" parent="VBoxContainer" unique_id=1021443704]
 unique_name_in_owner = true
 layout_mode = 2
 icon = ExtResource("3_xysc2")
 
-[node name="RotateButton" type="Button" parent="VBoxContainer"]
+[node name="RotateButton" type="Button" parent="VBoxContainer" unique_id=1302201905]
 unique_name_in_owner = true
 layout_mode = 2
 icon = ExtResource("4_xysc2")
 
-[node name="InvertColorButton" type="Button" parent="VBoxContainer"]
+[node name="InvertColorButton" type="Button" parent="VBoxContainer" unique_id=567332306]
 unique_name_in_owner = true
 layout_mode = 2
 icon = ExtResource("5_6ftc3")
 
-[node name="TexturePreview" type="TextureRect" parent="."]
+[node name="TexturePreview" type="TextureRect" parent="." unique_id=1517508921]
 unique_name_in_owner = true
 layout_mode = 2
 stretch_mode = 4
 
-[node name="FileDialog" type="FileDialog" parent="."]
+[node name="FileDialog" type="FileDialog" parent="." unique_id=164103857]
 unique_name_in_owner = true
 title = "Open a File"
+initial_position = 4
 file_mode = 0
 access = 2
 filters = PackedStringArray(".jpg,*.jpeg,*.png,*.webp,*.tga,*.bmp,*.dds,*.ktx,*.exr,*.hdr,*")

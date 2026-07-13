@@ -6,19 +6,19 @@
 
 [sub_resource type="Theme" id="Theme_kf6mc"]
 
-[node name="NewDocumentDialog" type="ConfirmationDialog"]
+[node name="NewDocumentDialog" type="ConfirmationDialog" unique_id=527511303]
 auto_translate_mode = 1
 use_hdr_2d = true
 oversampling_override = 1.0
 title = "New document - Ciallo"
-initial_position = 2
+initial_position = 4
 size = Vector2i(568, 512)
 visible = true
 ok_button_text = "Create"
 dialog_hide_on_ok = false
 script = ExtResource("1_rukb6")
 
-[node name="NewDocument" type="MarginContainer" parent="."]
+[node name="NewDocument" type="MarginContainer" parent="." unique_id=1468866944]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -32,45 +32,45 @@ theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 
-[node name="VBoxContainer" type="VBoxContainer" parent="NewDocument"]
+[node name="VBoxContainer" type="VBoxContainer" parent="NewDocument" unique_id=1778186474]
 layout_mode = 2
 theme = SubResource("Theme_kf6mc")
 
-[node name="Label" type="Label" parent="NewDocument/VBoxContainer"]
+[node name="Label" type="Label" parent="NewDocument/VBoxContainer" unique_id=2055407590]
 layout_mode = 2
 text = "Settings"
 
-[node name="VSeparator" type="HSeparator" parent="NewDocument/VBoxContainer"]
+[node name="VSeparator" type="HSeparator" parent="NewDocument/VBoxContainer" unique_id=19451471]
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="GridContainer" type="GridContainer" parent="NewDocument/VBoxContainer"]
+[node name="GridContainer" type="GridContainer" parent="NewDocument/VBoxContainer" unique_id=844695774]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/h_separation = 40
 theme_override_constants/v_separation = 10
 columns = 2
 
-[node name="Label3" type="Label" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="Label3" type="Label" parent="NewDocument/VBoxContainer/GridContainer" unique_id=964533941]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_vertical = 1
 text = "Document name"
 vertical_alignment = 1
 
-[node name="DocumentNameControl" type="LineEdit" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="DocumentNameControl" type="LineEdit" parent="NewDocument/VBoxContainer/GridContainer" unique_id=1855863559]
 unique_name_in_owner = true
 layout_mode = 2
 text = "New document"
 
-[node name="Label4" type="Label" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="Label4" type="Label" parent="NewDocument/VBoxContainer/GridContainer" unique_id=1843807767]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_vertical = 1
 text = "Save folder"
 vertical_alignment = 1
 
-[node name="SaveFolderControl" type="HBoxContainer" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="SaveFolderControl" type="HBoxContainer" parent="NewDocument/VBoxContainer/GridContainer" unique_id=1007759053]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -79,7 +79,7 @@ FileMode = 2
 DefaultPath = 2
 metadata/_custom_type_script = "uid://ckillqfnqh8wc"
 
-[node name="Label2" type="Label" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="Label2" type="Label" parent="NewDocument/VBoxContainer/GridContainer" unique_id=1946989474]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_horizontal = 0
@@ -90,7 +90,7 @@ mouse_default_cursor_shape = 16
 text = "Reference size"
 vertical_alignment = 1
 
-[node name="ReferenceSizeControl" type="HBoxContainer" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="ReferenceSizeControl" type="HBoxContainer" parent="NewDocument/VBoxContainer/GridContainer" unique_id=1538656821]
 unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("1_kf6mc")
@@ -99,21 +99,21 @@ Step = 1.0
 Rounded = true
 Value = Vector2(1920, 1080)
 
-[node name="Label" type="Label" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="Label" type="Label" parent="NewDocument/VBoxContainer/GridContainer" unique_id=1844383464]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_vertical = 1
 text = "Background color"
 vertical_alignment = 1
 
-[node name="BackgroundColorControl" type="ColorPickerButton" parent="NewDocument/VBoxContainer/GridContainer"]
+[node name="BackgroundColorControl" type="ColorPickerButton" parent="NewDocument/VBoxContainer/GridContainer" unique_id=1900374055]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 color = Color(1, 1, 1, 1)
 edit_intensity = false
 
-[node name="ErrorMessage" type="Label" parent="NewDocument/VBoxContainer"]
+[node name="ErrorMessage" type="Label" parent="NewDocument/VBoxContainer" unique_id=1496392430]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2

@@ -9,7 +9,7 @@
 use_hdr_2d = true
 oversampling_override = 1.0
 title = "Export frame sequence"
-initial_position = 2
+initial_position = 4
 size = Vector2i(515, 520)
 visible = true
 ok_button_text = "Export"

@@ -16,7 +16,7 @@ script = ExtResource("1_qp7qr")
 [node name="FileDialog" type="FileDialog" parent="." unique_id=146062056]
 oversampling_override = 1.0
 title = "Open a File"
-initial_position = 2
+initial_position = 4
 dialog_hide_on_ok = true
 file_mode = 0
 access = 2

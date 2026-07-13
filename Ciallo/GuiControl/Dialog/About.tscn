@@ -1,17 +1,17 @@
-[gd_scene load_steps=2 format=3 uid="uid://b605gtasdgmsb"]
+[gd_scene format=3 uid="uid://b605gtasdgmsb"]
 
 [ext_resource type="Texture2D" uid="uid://43k5wfcj0bkj" path="res://Icon/ciallo.svg" id="1_g7ast"]
 
-[node name="PopupPanel" type="AcceptDialog"]
+[node name="PopupPanel" type="AcceptDialog" unique_id=1809862238]
 auto_translate_mode = 1
 use_hdr_2d = true
 oversampling_override = 1.0
 title = "About Ciallo"
-initial_position = 1
+initial_position = 4
 size = Vector2i(600, 582)
 visible = true
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1005062293]
 offset_left = 8.0
 offset_top = 8.0
 offset_right = 592.0
@@ -20,17 +20,17 @@ theme_override_constants/margin_left = 30
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 30
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=789308999]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=61900089]
 layout_mode = 2
 size_flags_horizontal = 4
 theme_override_constants/separation = -10
 alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+[node name="TextureRect" type="TextureRect" parent="MarginContainer/VBoxContainer/HBoxContainer" unique_id=1143958995]
 custom_minimum_size = Vector2(420, 0)
 layout_mode = 2
 size_flags_horizontal = 6
@@ -38,7 +38,7 @@ texture = ExtResource("1_g7ast")
 expand_mode = 5
 stretch_mode = 5
 
-[node name="Version" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+[node name="Version" type="RichTextLabel" parent="MarginContainer/VBoxContainer" unique_id=900325680]
 auto_translate_mode = 2
 layout_mode = 2
 bbcode_enabled = true
@@ -46,10 +46,10 @@ text = "[font_size=24]Demo version[/font_size]"
 fit_content = true
 horizontal_alignment = 2
 
-[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=1864152973]
 layout_mode = 2
 
-[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+[node name="RichTextLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer" unique_id=1827125528]
 layout_mode = 2
 size_flags_vertical = 3
 bbcode_enabled = true

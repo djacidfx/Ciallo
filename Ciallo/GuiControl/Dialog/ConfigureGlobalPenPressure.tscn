@@ -9,7 +9,7 @@
 [node name="ConfigureGlobalPenPressure" type="AcceptDialog" unique_id=44268714]
 oversampling_override = 1.0
 title = "Configure Global Pen Pressure"
-position = Vector2i(0, 36)
+initial_position = 4
 size = Vector2i(1780, 800)
 script = ExtResource("1_root")
 

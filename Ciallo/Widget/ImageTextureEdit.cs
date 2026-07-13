@@ -22,7 +22,7 @@ public partial class ImageTextureEdit : BoxContainer
     {
         Texture.Subscribe(TexturePreview.SetTexture);
 
-        LoadButton.Pressed += () => FileDialog.PopupCentered();
+        LoadButton.Pressed += () => FileDialog.Popup();
         ClearButton.Pressed += () =>
         {
             Texture.Value = null;

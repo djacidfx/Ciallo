@@ -26,7 +26,7 @@ visible = false
 unique_name_in_owner = true
 use_hdr_2d = true
 title = "Open a File"
-initial_position = 1
+initial_position = 4
 size = Vector2i(1080, 720)
 ok_button_text = "Open"
 file_mode = 0
@@ -43,6 +43,7 @@ visible = false
 [node name="NewLayer" type="ConfirmationDialog" parent="." unique_id=1207508410]
 unique_name_in_owner = true
 oversampling_override = 1.0
+initial_position = 4
 
 [node name="BrushLibrary" parent="." unique_id=1348164898 instance=ExtResource("5_hs7a8")]
 unique_name_in_owner = true
@@ -59,7 +60,7 @@ visible = false
 [node name="ExportGodotScene" type="FileDialog" parent="." unique_id=2111474897]
 unique_name_in_owner = true
 use_hdr_2d = true
-initial_position = 2
+initial_position = 4
 display_mode = 1
 access = 2
 filters = PackedStringArray("*.scn", "*.tscn")
@@ -68,21 +69,24 @@ script = ExtResource("7_xkft4")
 
 [node name="WarnUser" type="AcceptDialog" parent="." unique_id=1656009061]
 unique_name_in_owner = true
-initial_position = 1
+initial_position = 4
 transient = false
 always_on_top = true
 
 [node name="SaveChangeDialog" type="ConfirmationDialog" parent="." unique_id=819494425]
 unique_name_in_owner = true
+initial_position = 4
 ok_button_text = "Save"
 script = ExtResource("8_qrdyv")
 
 [node name="YesNoDialog" type="ConfirmationDialog" parent="." unique_id=774819221]
 unique_name_in_owner = true
+initial_position = 4
 script = ExtResource("9_t87eu")
 
 [node name="SaveAsDialog" type="FileDialog" parent="." unique_id=1444371044]
 unique_name_in_owner = true
+initial_position = 4
 access = 2
 filters = PackedStringArray("*.ciallo;")
 use_native_dialog = true
