@@ -135,8 +135,6 @@ public partial class StrokeBrushPreviewList : Container
 
     public override void _Ready()
     {
-        AddButton.Pressed += () => OnAddOrCopyButtonPressed();
-
         CopyButton.Pressed += () => OnAddOrCopyButtonPressed(WorkingBrush.Value);
 
         RemoveButton.Pressed += () =>
