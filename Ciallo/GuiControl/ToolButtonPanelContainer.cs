@@ -1,7 +1,7 @@
 using Ciallo.Data;
 using Ciallo.Tool;
+using Frent;
 using Godot;
-using ObservableCollections;
 using R3;
 
 namespace Ciallo.GuiControl;
@@ -11,25 +11,25 @@ public partial class ToolButtonPanelContainer : Container
     public override void _Ready()
     {
         this.QueueFreeChildren();
-        AppDocumentManager.LoadedDocuments.ObserveAdd()
-            .Select(et => et.Value)
-            .Subscribe(document =>
-            {
-                var panel = ToolButtonPanel.Instantiate();
-                panel.Bind(document.Get<ToolManager>().PressedToolButton);
-                panel.VisibleIf(AppDocumentManager.WorkingDocument, document);
-                document.Add(panel);
-                AddChild(panel);
-            }).AddTo(this);
 
-        AppDocumentManager.LoadedDocuments.ObserveRemove()
-            .Select(et => et.Value)
-            .Subscribe(document =>
+        AppDocumentManager.WorkingDocument.Pairwise().Subscribe(pair =>
+        {
+            var previousDocument = pair.Previous;
+            var document = pair.Current;
+            if (!previousDocument.IsNull)
             {
-                var panel = document.Get<ToolButtonPanel>();
-                panel.UnpressActiveButton();
-                panel.QueueFree();
-                document.Remove<ToolButtonPanel>();
-            }).AddTo(this);
+                var previousPanel = previousDocument.Get<ToolButtonPanel>();
+                previousPanel.UnpressActiveButton();
+                previousPanel.QueueFree();
+                previousDocument.Remove<ToolButtonPanel>();
+            }
+
+            if (document.IsNull) return;
+
+            var panel = ToolButtonPanel.Instantiate();
+            panel.Bind(document.Get<ToolManager>().PressedToolButton);
+            document.Add(panel);
+            AddChild(panel);
+        }).AddTo(this);
     }
 }

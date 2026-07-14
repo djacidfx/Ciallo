@@ -107,6 +107,8 @@ public partial class BrushPanel : AcceptDialog
                 Camera.Zoom *= 1.0f - zoomFactor;
             }
         };
+
+        AppStrokeBrushLibrary.BindToGui(this);
     }
 
     public override void _UnhandledInput(InputEvent @event)

@@ -94,10 +94,11 @@ public partial class MarkerPickerPopup : PopupPanel
             Access = FileDialog.AccessEnum.Filesystem,
             Filters = [".jpg,*.jpeg,*.png,*.webp,*.tga,*.bmp,*.dds,*.ktx,*.exr,*.hdr,*"],
             UseNativeDialog = true,
+            InitialPosition = Window.WindowInitialPosition.CenterScreenWithMouseFocus,
         };
         AddChild(_fileDialog);
 
-        importButton.Pressed += () => _fileDialog.PopupCentered();
+        importButton.Pressed += () => _fileDialog.Popup();
         removeButton.Pressed += OnRemovePressed;
         _fileDialog.FileSelected += OnFileSelected;
 

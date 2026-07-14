@@ -5,20 +5,83 @@
 [ext_resource type="Texture2D" uid="uid://bs1ihvm0fcb3p" path="res://Icon/star.svg" id="4_kjvhd"]
 [ext_resource type="Script" uid="uid://dl5upm3versn3" path="res://GuiControl/Menu/MenuFile.cs" id="5_5tuhn"]
 [ext_resource type="Script" uid="uid://jlhg6n6d75q0" path="res://GuiControl/Menu/MenuEdit.cs" id="6_2gh4u"]
+[ext_resource type="Script" uid="uid://bu48sb2g4a75y" path="res://GuiControl/MainDockableContainer.cs" id="8_2gh4u"]
 [ext_resource type="Script" uid="uid://cwjtb7r01fcf7" path="res://GuiControl/Menu/MenuWindow.cs" id="8_c2ibq"]
 [ext_resource type="Script" uid="uid://b4qlaa8fwe6i6" path="res://GuiControl/Menu/MenuHelp.cs" id="8_sc1dx"]
+[ext_resource type="Script" uid="uid://cu8o528wq4i7e" path="res://Widget/DockableContainer/DockableLayoutPanel.cs" id="9_2gh4u"]
 [ext_resource type="PackedScene" uid="uid://bfwvwd77tb7tq" path="res://Tool/ToolButtonPanel.tscn" id="9_5vvyt"]
 [ext_resource type="PackedScene" uid="uid://cbe5uqtdiejke" path="res://GuiControl/ToolPropertyPanel.tscn" id="10_c6i3y"]
+[ext_resource type="Script" uid="uid://cgiveuhr4itew" path="res://Widget/DockableContainer/DockableLayoutSplit.cs" id="10_devvj"]
+[ext_resource type="Script" uid="uid://xsu7uupcvpeq" path="res://Widget/DockableContainer/DockableLayout.cs" id="11_3b0ty"]
 [ext_resource type="Script" uid="uid://dqewxa0t2mptr" path="res://GuiControl/ToolButtonPanelContainer.cs" id="13_kjvhd"]
-[ext_resource type="Script" uid="uid://b7mwe7nmkxh5d" path="res://GuiControl/PaintPanelContainer.cs" id="16_5tuhn"]
 [ext_resource type="PackedScene" uid="uid://duv6uwd686wfj" path="res://GuiControl/WelcomePanel.tscn" id="16_fpfj3"]
 [ext_resource type="PackedScene" uid="uid://bnhhwk1a3yv70" path="res://GuiControl/Layer/LayerPanel.tscn" id="16_kjvhd"]
+[ext_resource type="Script" uid="uid://b8vseqiegyqlw" path="res://GuiControl/CanvasPanel.cs" id="17_2gh4u"]
 [ext_resource type="Script" uid="uid://bc538pxjigcuv" path="res://GuiControl/Layer/LayerPanelContainer.cs" id="19_3b0ty"]
 [ext_resource type="Script" uid="uid://b4x3guxbl2wmb" path="res://GuiControl/Timeline/TimelinePanelContainer.cs" id="23_hhcpw"]
 [ext_resource type="PackedScene" uid="uid://cetiftxidiijh" path="res://GuiControl/Timeline/TimelinePanel.tscn" id="24_hhcpw"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hhcpw"]
 bg_color = Color(0.234608, 0.23460817, 0.23460811, 1)
+
+[sub_resource type="Resource" id="Resource_2gh4u"]
+resource_name = "Tabs"
+script = ExtResource("9_2gh4u")
+Names = PackedStringArray("ToolPanel")
+
+[sub_resource type="Resource" id="Resource_devvj"]
+resource_name = "Tabs"
+script = ExtResource("9_2gh4u")
+Names = PackedStringArray("ToolPropertyPanel")
+
+[sub_resource type="Resource" id="Resource_3b0ty"]
+resource_name = "Split"
+script = ExtResource("10_devvj")
+Percent = 0.12668425
+First = SubResource("Resource_2gh4u")
+Second = SubResource("Resource_devvj")
+
+[sub_resource type="Resource" id="Resource_bg4s2"]
+resource_name = "Tabs"
+script = ExtResource("9_2gh4u")
+Names = PackedStringArray("LayerPanel")
+
+[sub_resource type="Resource" id="Resource_hhcpw"]
+resource_name = "Split"
+script = ExtResource("10_devvj")
+Direction = 1
+First = SubResource("Resource_3b0ty")
+Second = SubResource("Resource_bg4s2")
+
+[sub_resource type="Resource" id="Resource_mxvw5"]
+resource_name = "Tabs"
+script = ExtResource("9_2gh4u")
+Names = PackedStringArray("CanvasPanel")
+
+[sub_resource type="Resource" id="Resource_xrxkg"]
+resource_name = "Tabs"
+script = ExtResource("9_2gh4u")
+Names = PackedStringArray("TimelinePanel")
+
+[sub_resource type="Resource" id="Resource_sqvbp"]
+resource_name = "Split"
+script = ExtResource("10_devvj")
+Direction = 1
+Percent = 0.7769532
+First = SubResource("Resource_mxvw5")
+Second = SubResource("Resource_xrxkg")
+
+[sub_resource type="Resource" id="Resource_hri7i"]
+resource_name = "Split"
+script = ExtResource("10_devvj")
+Percent = 0.211
+First = SubResource("Resource_hhcpw")
+Second = SubResource("Resource_sqvbp")
+
+[sub_resource type="Resource" id="Resource_w3rk5"]
+resource_name = "Layout"
+script = ExtResource("11_3b0ty")
+Root = SubResource("Resource_hri7i")
 
 [node name="Main" type="Panel" unique_id=1926960144]
 texture_filter = 1
@@ -44,6 +107,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_constants/separation = 0
 
 [node name="MenuBarContainer" type="PanelContainer" parent="MainGui" unique_id=628027750]
 layout_mode = 2
@@ -101,61 +165,64 @@ script = ExtResource("8_sc1dx")
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 15
+theme_override_constants/margin_right = 10
 
-[node name="UIBlock" type="HSplitContainer" parent="MainGui/MarginContainer" unique_id=1603521729]
+[node name="DockableContainer" type="Container" parent="MainGui/MarginContainer" unique_id=1417645468]
+unique_name_in_owner = true
+clip_contents = true
 layout_mode = 2
 size_flags_vertical = 3
-split_offsets = PackedInt32Array(365)
+script = ExtResource("8_2gh4u")
+UseHiddenTabsForMinSize = true
+Layout = SubResource("Resource_w3rk5")
 
-[node name="VSplit" type="VSplitContainer" parent="MainGui/MarginContainer/UIBlock" unique_id=861482289]
+[node name="ToolPanel" type="MarginContainer" parent="MainGui/MarginContainer/DockableContainer" unique_id=747777120]
+unique_name_in_owner = true
 layout_mode = 2
-split_offsets = PackedInt32Array(500)
-
-[node name="HSplitContainer" type="HSplitContainer" parent="MainGui/MarginContainer/UIBlock/VSplit" unique_id=648431329]
-layout_mode = 2
-split_offsets = PackedInt32Array(5)
-
-[node name="ToolButtonPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer" unique_id=747777120]
-layout_mode = 2
-theme_override_constants/margin_top = 20
-theme_override_constants/margin_right = 10
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 8
 script = ExtResource("13_kjvhd")
+metadata/dockable_title = "Tool"
 
-[node name="ToolButtonPanelPreview" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer/ToolButtonPanelContainer" unique_id=559447363 instance=ExtResource("9_5vvyt")]
+[node name="ToolButtonPanelPreview" parent="MainGui/MarginContainer/DockableContainer/ToolPanel" unique_id=559447363 instance=ExtResource("9_5vvyt")]
 layout_mode = 2
 
-[node name="ToolPropertyPanel" parent="MainGui/MarginContainer/UIBlock/VSplit/HSplitContainer" unique_id=1992566448 instance=ExtResource("10_c6i3y")]
+[node name="ToolPropertyPanel" parent="MainGui/MarginContainer/DockableContainer" unique_id=1992566448 instance=ExtResource("10_c6i3y")]
+unique_name_in_owner = true
 layout_mode = 2
+metadata/dockable_title = "Tool Properties"
 
-[node name="LayerPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplit" unique_id=840531377 groups=["UncategorizedControl"]]
+[node name="LayerPanel" type="MarginContainer" parent="MainGui/MarginContainer/DockableContainer" unique_id=840531377 groups=["UncategorizedControl"]]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 6
 script = ExtResource("19_3b0ty")
+metadata/dockable_title = "Layers"
 
-[node name="LayerPanelPreview" parent="MainGui/MarginContainer/UIBlock/VSplit/LayerPanelContainer" unique_id=1083993257 instance=ExtResource("16_kjvhd")]
+[node name="LayerPanelPreview" parent="MainGui/MarginContainer/DockableContainer/LayerPanel" unique_id=1083993257 instance=ExtResource("16_kjvhd")]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="VSplitContainer" type="VSplitContainer" parent="MainGui/MarginContainer/UIBlock" unique_id=619523970]
-layout_mode = 2
-split_offsets = PackedInt32Array(265)
-
-[node name="WelcomePanel" parent="MainGui/MarginContainer/UIBlock/VSplitContainer" unique_id=1492248500 groups=["UncategorizedControl"] instance=ExtResource("16_fpfj3")]
+[node name="CanvasPanel" type="MarginContainer" parent="MainGui/MarginContainer/DockableContainer" unique_id=2027990210 groups=["UncategorizedControl"]]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-mouse_filter = 1
+script = ExtResource("17_2gh4u")
+metadata/dockable_title = "Canvas"
+metadata/dockable_exclusive = true
 
-[node name="PaintPanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplitContainer/WelcomePanel" unique_id=1684309810 groups=["UncategorizedControl"]]
+[node name="WelcomePanel" parent="MainGui/MarginContainer/DockableContainer/CanvasPanel" unique_id=593651183 instance=ExtResource("16_fpfj3")]
+layout_mode = 2
+
+[node name="TimelinePanel" type="MarginContainer" parent="MainGui/MarginContainer/DockableContainer" unique_id=1659802599 groups=["UncategorizedControl"]]
+unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-mouse_filter = 2
-script = ExtResource("16_5tuhn")
-
-[node name="TimelinePanelContainer" type="MarginContainer" parent="MainGui/MarginContainer/UIBlock/VSplitContainer" unique_id=1659802599 groups=["UncategorizedControl"]]
-layout_mode = 2
-size_flags_vertical = 3
+theme_override_constants/margin_top = 4
 script = ExtResource("23_hhcpw")
+metadata/dockable_title = "Timeline"
 
-[node name="TimelinePanel" parent="MainGui/MarginContainer/UIBlock/VSplitContainer/TimelinePanelContainer" unique_id=2020419585 instance=ExtResource("24_hhcpw")]
+[node name="TimelinePanelPreview" parent="MainGui/MarginContainer/DockableContainer/TimelinePanel" unique_id=2020419585 instance=ExtResource("24_hhcpw")]
 layout_mode = 2

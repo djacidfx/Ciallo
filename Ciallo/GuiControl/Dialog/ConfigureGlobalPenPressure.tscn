@@ -9,7 +9,7 @@
 [node name="ConfigureGlobalPenPressure" type="AcceptDialog" unique_id=44268714]
 oversampling_override = 1.0
 title = "Configure Global Pen Pressure"
-position = Vector2i(0, 36)
+initial_position = 4
 size = Vector2i(1780, 800)
 script = ExtResource("1_root")
 
@@ -88,6 +88,19 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.77
 
+[node name="Control" type="Control" parent="VBoxContainer/MainArea/Charts" unique_id=500322887]
+custom_minimum_size = Vector2(28, 0)
+layout_mode = 2
+
+[node name="YLabel" type="Label" parent="VBoxContainer/MainArea/Charts/Control" unique_id=259727242]
+layout_mode = 0
+offset_top = 338.0
+offset_right = 112.0
+offset_bottom = 361.0
+rotation = -1.5707964
+text = "Pen pressure"
+horizontal_alignment = 1
+
 [node name="RawPanel" type="VBoxContainer" parent="VBoxContainer/MainArea/Charts" unique_id=1000000008]
 unique_name_in_owner = true
 layout_mode = 2
@@ -107,6 +120,11 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("2_chart")
 metadata/_custom_type_script = "uid://dkxdfoq86l10a"
+
+[node name="XLabel" type="Label" parent="VBoxContainer/MainArea/Charts/RawPanel" unique_id=1189302535]
+layout_mode = 2
+text = "Physical force (gf)"
+horizontal_alignment = 1
 
 [node name="GlobalPanel" type="VBoxContainer" parent="VBoxContainer/MainArea/Charts" unique_id=1000000011]
 layout_mode = 2
@@ -128,6 +146,11 @@ focus_mode = 2
 script = ExtResource("3_curve")
 metadata/_custom_type_script = "uid://dokvqf0x6xvmu"
 
+[node name="XLabel" type="Label" parent="VBoxContainer/MainArea/Charts/GlobalPanel" unique_id=1613989998]
+layout_mode = 2
+text = "Pen pressure"
+horizontal_alignment = 1
+
 [node name="MappedPanel" type="VBoxContainer" parent="VBoxContainer/MainArea/Charts" unique_id=1000000014]
 unique_name_in_owner = true
 layout_mode = 2
@@ -147,6 +170,11 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("2_chart")
 metadata/_custom_type_script = "uid://dkxdfoq86l10a"
+
+[node name="XLabel" type="Label" parent="VBoxContainer/MainArea/Charts/MappedPanel" unique_id=2100125723]
+layout_mode = 2
+text = "Physical force (gf)"
+horizontal_alignment = 1
 
 [node name="ScribblePanel" type="VBoxContainer" parent="VBoxContainer/MainArea" unique_id=1000000027]
 custom_minimum_size = Vector2(440, 0)

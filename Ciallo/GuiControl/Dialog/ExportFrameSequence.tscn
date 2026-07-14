@@ -9,8 +9,8 @@
 use_hdr_2d = true
 oversampling_override = 1.0
 title = "Export frame sequence"
-initial_position = 2
-size = Vector2i(465, 520)
+initial_position = 4
+size = Vector2i(515, 520)
 visible = true
 ok_button_text = "Export"
 dialog_hide_on_ok = false
@@ -19,7 +19,7 @@ script = ExtResource("1_kjou5")
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=661194910]
 offset_left = 8.0
 offset_top = 8.0
-offset_right = 457.0
+offset_right = 507.0
 offset_bottom = 471.0
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 16

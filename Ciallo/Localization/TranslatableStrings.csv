@@ -216,3 +216,25 @@ Mirror vertically,Mirror vertically,垂直镜像,垂直鏡像,上下反転,세�
 Play,Play,播放,播放,再生,재생,Wiedergabe,Lire
 Default,Default,默认,預設,デフォルト,기본,Standard,Par défaut
 Default brush,Default brush,默认笔刷,預設筆刷,デフォルトブラシ,기본 브러시,Standardpinsel,Pinceau par défaut
+Tool,Tool,工具,工具,ツール,도구,Werkzeug,Outil
+Tool Properties,Tool Properties,工具属性,工具屬性,ツールプロパティ,도구 속성,Werkzeugeigenschaften,Propriétés de l'outil
+Layers,Layers,图层,圖層,レイヤー,레이어,Ebenen,Calques
+Timeline,Timeline,时间轴,時間軸,タイムライン,타임라인,Zeitleiste,Chronologie
+Reset Layout,Reset Layout,重置布局,重設版面配置,レイアウトをリセット,레이아웃 재설정,Layout zurücksetzen,Réinitialiser la disposition
+Canvas,Canvas,画布,畫布,キャンバス,캔버스,Leinwand,Toile
+Configure Global Pen Pressure,Configure Global Pen Pressure,配置全局笔压,設定全域筆壓,グローバル筆圧を設定,전역 펜 압력 설정,Globalen Stiftdruck konfigurieren,Configurer la pression globale du stylet
+Configure global pen pressure,Configure global pen pressure,配置全局笔压,設定全域筆壓,グローバル筆圧を設定,전역 펜 압력 설정,Globalen Stiftdruck konfigurieren,Configurer la pression globale du stylet
+Select your pen tablet,Select your pen tablet,选择您的数位板,選擇您的繪圖板,使用するペンタブレットを選択,사용할 펜 태블릿을 선택하세요,Wählen Sie Ihr Grafiktablett,Sélectionnez votre tablette graphique
+Straighten,Straighten,线性化,線性化,線形化,선형화,Linearisieren,Linéariser
+Data measured by,Data measured by,测量数据来源,測量資料來源,測定データ提供,측정 데이터 제공,Messdaten von,Données mesurées par
+Seven Pens,Seven Pens,Seven Pens,Seven Pens,Seven Pens,Seven Pens,Seven Pens,Seven Pens
+Device response,Device response,设备响应,裝置響應,デバイス応答,기기 응답,Gerätekennlinie,Réponse du périphérique
+Physical force (gf),Physical force (gf),物理作用力 (gf),物理作用力 (gf),物理的な力 (gf),물리적 힘 (gf),Physische Kraft (gf),Force physique (gf)
+Global remap,Global remap,全局重映射,全域重映射,グローバルリマップ,전역 리매핑,Globale Neuzuordnung,Remappage global
+Mapped response,Mapped response,重映射后的响应,重映射後的響應,リマップ後の応答,리매핑된 응답,Neu zugeordnete Kennlinie,Réponse remappée
+Scribble test,Scribble test,涂鸦测试,塗鴉測試,試し描き,낙서 테스트,Kritzeltest,Test de gribouillage
+Min radius,Min radius,最小半径,最小半徑,最小半径,최소 반지름,Minimaler Radius,Rayon min.
+Max radius,Max radius,最大半径,最大半徑,最大半径,최대 반지름,Maximaler Radius,Rayon max.
+Clear,Clear,清除,清除,クリア,지우기,Leeren,Effacer
+raw,raw,原始,原始,元,원본,roh,brute
+mapped,mapped,映射后,映射後,マッピング後,매핑됨,zugeordnet,remappée

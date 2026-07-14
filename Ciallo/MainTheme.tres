@@ -8,9 +8,9 @@
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ogfsw"]
 
-[sub_resource type="StyleBoxLine" id="StyleBoxLine_4as0w"]
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_yhag5"]
 color = Color(0.101961, 0.101961, 0.101961, 0.6)
-thickness = 5
+thickness = 8
 vertical = true
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_rfn4m"]
@@ -71,6 +71,22 @@ _source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\">
 _source = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"16\" height=\"16\"><circle cx=\"8\" cy=\"8\" r=\"7\" fill=\"#1a1a1a\" fill-opacity=\".25\"/></svg>
 "
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_6qad1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_nwvi7"]
+bg_color = Color(0.101960786, 0.101960786, 0.101960786, 0.33333334)
+expand_margin_left = 8.0
+expand_margin_right = 8.0
+expand_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8twj1"]
+bg_color = Color(0.101960786, 0.101960786, 0.101960786, 0.6)
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+expand_margin_left = 8.0
+expand_margin_right = 8.0
+expand_margin_bottom = 2.0
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yhag5"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ogfsw"]
@@ -102,9 +118,9 @@ expand_margin_top = 5.0
 expand_margin_right = 5.0
 expand_margin_bottom = 5.0
 
-[sub_resource type="StyleBoxLine" id="StyleBoxLine_yhag5"]
+[sub_resource type="StyleBoxLine" id="StyleBoxLine_4as0w"]
 color = Color(0.101961, 0.101961, 0.101961, 0.6)
-thickness = 5
+thickness = 8
 
 [resource]
 default_font = ExtResource("1_4as0w")
@@ -113,7 +129,7 @@ Button/styles/focus = SubResource("StyleBoxEmpty_8s18r")
 ColorPickerButton/styles/focus = SubResource("StyleBoxEmpty_u23kh")
 ColorPickerButton/styles/normal = SubResource("StyleBoxEmpty_ogfsw")
 HSplitContainer/constants/separation = 6
-HSplitContainer/styles/split_bar_background = SubResource("StyleBoxLine_4as0w")
+HSplitContainer/styles/split_bar_background = SubResource("StyleBoxLine_yhag5")
 ItemList/colors/guide_color = Color(0, 0, 0, 0)
 ItemList/styles/focus = SubResource("StyleBoxEmpty_rfn4m")
 LayerBlockButton/base_type = &"CheckBox"
@@ -139,11 +155,15 @@ PopupMenu/icons/radio_checked = SubResource("DPITexture_rfn4m")
 PopupMenu/icons/radio_checked_disabled = SubResource("DPITexture_u23kh")
 PopupMenu/icons/radio_unchecked = SubResource("DPITexture_ogfsw")
 PopupMenu/icons/radio_unchecked_disabled = SubResource("DPITexture_6qad1")
-TabBar/styles/tab_focus = SubResource("StyleBoxEmpty_yhag5")
+TabContainer/constants/tab_separation = 16
+TabContainer/styles/panel = SubResource("StyleBoxEmpty_6qad1")
+TabContainer/styles/tab_hovered = SubResource("StyleBoxFlat_nwvi7")
+TabContainer/styles/tab_selected = SubResource("StyleBoxFlat_8twj1")
+TabContainer/styles/tab_unselected = SubResource("StyleBoxEmpty_yhag5")
 ToolButton/base_type = &"Button"
 ToolButton/styles/hover = SubResource("StyleBoxFlat_ogfsw")
 ToolButton/styles/hover_pressed = SubResource("StyleBoxFlat_u23kh")
 ToolButton/styles/normal = SubResource("StyleBoxFlat_t6ki5")
 ToolButton/styles/pressed = SubResource("StyleBoxFlat_6qad1")
 VSplitContainer/constants/separation = 6
-VSplitContainer/styles/split_bar_background = SubResource("StyleBoxLine_yhag5")
+VSplitContainer/styles/split_bar_background = SubResource("StyleBoxLine_4as0w")

@@ -19,7 +19,7 @@ public partial class YesNoDialog : ConfirmationDialog
     public Task<bool> PopupCollectInput()
     {
         _dialogResultSource = new TaskCompletionSource<bool>();
-        PopupCentered();
+        Popup();
 
         return _dialogResultSource.Task;
     }

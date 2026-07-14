@@ -59,7 +59,7 @@ public partial class MenuFile : PopupMenu
                 if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
                 var setting = AppDocumentManager.WorkingDocument.CurrentValue.Get<DocumentSetting>();
                 AppDialogHost.SaveAsDialog.CurrentDir = setting.FilePath.CurrentValue.GetBaseDir();
-                AppDialogHost.SaveAsDialog.PopupCentered();
+                AppDialogHost.SaveAsDialog.Popup();
                 break;
 
             case 7: // Export as image
@@ -70,7 +70,7 @@ public partial class MenuFile : PopupMenu
 
             case 8: // Export frame sequence
                 if (AppDocumentManager.WorkingDocument.Value.IsNull) break;
-                AppDialogHost.ExportFrameSequence.PopupCentered(AppDocumentManager.WorkingDocument.CurrentValue);
+                AppDialogHost.ExportFrameSequence.Popup(AppDocumentManager.WorkingDocument.CurrentValue);
                 break;
 
             default:

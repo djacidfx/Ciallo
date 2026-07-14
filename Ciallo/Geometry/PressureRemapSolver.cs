@@ -40,32 +40,49 @@ public static class PressureRemapSolver
     private const float AnchorPenalty = 0.007f;
 
     /// <summary>
-    /// Fits a remap curve that straightens the given device response.
+    /// Fits a remap curve that straightens the given device response up to a raw-reading cutoff.
     /// </summary>
     /// <param name="deviceResponse">Measured samples as <c>(force, reading)</c>, ascending by force.</param>
+    /// <param name="maxReading">
+    /// Raw reading mapped to full pressure. The corresponding physical force is interpolated from
+    /// <paramref name="deviceResponse"/>; readings beyond this point sample to 1.
+    /// </param>
     /// <returns>
     /// The remap curve mapping <c>reading -> pressure</c>, or <c>null</c> if the response is degenerate
     /// (fewer than two samples, or no usable reading span).
     /// </returns>
-    public static ImmutableArray<BezierPoint>? Straighten(IReadOnlyList<Vector2> deviceResponse)
+    public static ImmutableArray<BezierPoint>? Straighten(
+        IReadOnlyList<Vector2> deviceResponse,
+        float maxReading)
     {
         if (deviceResponse.Count < 2)
             return null;
 
         float activationForce = deviceResponse[0].X;
-        float maxForce = deviceResponse[^1].X;
+
+        // Use the first force at which the response reaches maxReading. When the cutoff falls
+        // between measurements, interpolate its force from the surrounding response samples.
+        int upperIndex = 1;
+        while (deviceResponse[upperIndex].Y < maxReading)
+            upperIndex++;
+        var lower = deviceResponse[upperIndex - 1];
+        var upper = deviceResponse[upperIndex];
+        float maxForce = Mathf.Lerp(lower.X, upper.X,
+            Mathf.InverseLerp(lower.Y, upper.Y, maxReading));
+
         float forceSpan = maxForce - activationForce;
         if (forceSpan <= 1e-5f)
             return null;
 
-        // Pair each sample's reading with the target pressure that lies on the straight force->pressure line.
-        var fitInput = new Vector2[deviceResponse.Count];
-        for (int i = 0; i < deviceResponse.Count; i++)
-        {
-            float reading = deviceResponse[i].Y;
-            float target = (deviceResponse[i].X - activationForce) / forceSpan; // 0 at activation, 1 at max
-            fitInput[i] = new Vector2(reading, target);
-        }
+        // Fit only the unsaturated response, then pin the final anchor at (maxReading, 1).
+        // SampleX returns the final anchor's Y beyond its X, producing the saturated region.
+        var fitInput = deviceResponse
+            .TakeWhile(sample => sample.Y < maxReading)
+            .Select(sample => new Vector2(
+                sample.Y,
+                (sample.X - activationForce) / forceSpan))
+            .Append(new Vector2(maxReading, 1f))
+            .ToArray();
 
         // Search anchor counts; keep the one with the lowest penalized, monotone fit.
         BezierPoint[] best = null;

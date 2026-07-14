@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://cmxkg61nilwq8"]
 
 [ext_resource type="Theme" uid="uid://cmwretuqbofqt" path="res://MainTheme.tres" id="1_55ijv"]
-[ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://GuiControl/Dialog/PaintPanel.cs" id="1_ract4"]
+[ext_resource type="Script" uid="uid://c20iw0gbptrxk" path="res://GuiControl/PaintPanel.cs" id="1_ract4"]
 [ext_resource type="Script" uid="uid://b1dclx7d0dgng" path="res://Widget/SpinSlider.cs" id="2_jsupi"]
 [ext_resource type="Script" uid="uid://b6lwngerf3uwg" path="res://GuiControl/WorldEventDispatcher.cs" id="3_7pmtm"]
 [ext_resource type="Material" uid="uid://cnro8325i0qmw" path="res://Rendering/Checkerboard.tres" id="4_pm3jj"]
@@ -25,31 +25,39 @@ script = ExtResource("1_ract4")
 layout_mode = 2
 theme_override_constants/separation = 0
 
-[node name="Bar" type="MarginContainer" parent="VBoxContainer" unique_id=1520481521]
+[node name="ScrollContainerForClippingMinSize" type="ScrollContainer" parent="VBoxContainer" unique_id=1266275173]
 layout_mode = 2
-theme_override_constants/margin_left = 35
+horizontal_scroll_mode = 3
+vertical_scroll_mode = 0
+
+[node name="Bar" type="MarginContainer" parent="VBoxContainer/ScrollContainerForClippingMinSize" unique_id=1520481521]
+layout_mode = 2
 theme_override_constants/margin_top = 3
 theme_override_constants/margin_bottom = 4
 
-[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/Bar" unique_id=307601825]
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar" unique_id=307601825]
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="Label3" type="Label" parent="VBoxContainer/Bar/HBoxContainer" unique_id=726981523]
+[node name="Blank" type="Control" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=501715383]
+custom_minimum_size = Vector2(32, 0)
+layout_mode = 2
+
+[node name="Label3" type="Label" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=726981523]
 layout_mode = 2
 tooltip_text = "[Canvas Navigation Guide Tooltip]"
 mouse_filter = 0
 mouse_default_cursor_shape = 16
 text = "Canvas navigation guide"
 
-[node name="VSeparator2" type="VSeparator" parent="VBoxContainer/Bar/HBoxContainer" unique_id=1710000642]
+[node name="VSeparator2" type="VSeparator" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=1710000642]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBoxContainer/Bar/HBoxContainer" unique_id=1561680243]
+[node name="Label" type="Label" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=1561680243]
 layout_mode = 2
 text = "Zoom"
 
-[node name="ZoomControl" type="HBoxContainer" parent="VBoxContainer/Bar/HBoxContainer" unique_id=886921966]
+[node name="ZoomControl" type="HBoxContainer" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=886921966]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
@@ -58,16 +66,18 @@ MinValue = 0.1
 MaxValue = 10.0
 Value = 1.0
 ExpEdit = true
+AllowLesser = true
+AllowGreater = true
 metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 
-[node name="VSeparator" type="VSeparator" parent="VBoxContainer/Bar/HBoxContainer" unique_id=1534472719]
+[node name="VSeparator" type="VSeparator" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=1534472719]
 layout_mode = 2
 
-[node name="Label2" type="Label" parent="VBoxContainer/Bar/HBoxContainer" unique_id=1933452166]
+[node name="Label2" type="Label" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=1933452166]
 layout_mode = 2
 text = "Rotation"
 
-[node name="RotationControl" type="HBoxContainer" parent="VBoxContainer/Bar/HBoxContainer" unique_id=235629808]
+[node name="RotationControl" type="HBoxContainer" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=235629808]
 unique_name_in_owner = true
 layout_mode = 2
 script = ExtResource("2_jsupi")
@@ -76,22 +86,22 @@ MaxValue = 180.0
 Step = 1.0
 metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 
-[node name="VSeparator3" type="VSeparator" parent="VBoxContainer/Bar/HBoxContainer" unique_id=1913596086]
+[node name="VSeparator3" type="VSeparator" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=1913596086]
 layout_mode = 2
 
-[node name="Label4" type="Label" parent="VBoxContainer/Bar/HBoxContainer" unique_id=58145263]
+[node name="Label4" type="Label" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=58145263]
 layout_mode = 2
 text = "Background color"
 
-[node name="BackgroundColorControl" type="ColorPickerButton" parent="VBoxContainer/Bar/HBoxContainer" unique_id=692671950]
+[node name="BackgroundColorControl" type="ColorPickerButton" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=692671950]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 
-[node name="VSeparator4" type="VSeparator" parent="VBoxContainer/Bar/HBoxContainer" unique_id=1856136557]
+[node name="VSeparator4" type="VSeparator" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=1856136557]
 layout_mode = 2
 
-[node name="MirrorHorizontalButton" type="Button" parent="VBoxContainer/Bar/HBoxContainer" unique_id=1856136558]
+[node name="MirrorHorizontalButton" type="Button" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=1856136558]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2
@@ -101,7 +111,7 @@ toggle_mode = true
 icon = ExtResource("8_0jsmf")
 expand_icon = true
 
-[node name="MirrorVerticalButton" type="Button" parent="VBoxContainer/Bar/HBoxContainer" unique_id=1856136559]
+[node name="MirrorVerticalButton" type="Button" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=1856136559]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(32, 32)
 layout_mode = 2

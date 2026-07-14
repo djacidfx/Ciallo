@@ -10,7 +10,8 @@ draw_center = false
 border_color = Color(0.124784, 0.124784, 0.124784, 1)
 
 [sub_resource type="StyleBoxLine" id="StyleBoxLine_xhgsw"]
-color = Color(0.728829, 0.728829, 0.728829, 1)
+color = Color(0.57, 0.57, 0.57, 1)
+thickness = 4
 
 [sub_resource type="InputEventAction" id="InputEventAction_8on0h"]
 action = &"NewDocument"

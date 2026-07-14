@@ -24,7 +24,7 @@ public partial class SaveChangeDialog : ConfirmationDialog
     public Task<int> PopupCollectInput()
     {
         _dialogResultSource = new TaskCompletionSource<int>();
-        PopupCentered();
+        Popup();
 
         return _dialogResultSource.Task;
     }
