@@ -1,6 +1,6 @@
 [gd_resource type="Theme" format=3 uid="uid://cmwretuqbofqt"]
 
-[ext_resource type="SystemFont" uid="uid://vj6b51ucwaps" path="res://Localization/JPCNFont.tres" id="1_4as0w"]
+[ext_resource type="FontFile" uid="uid://b6uafvfw15ygs" path="res://Localization/NotoSansCJKsc-Regular.otf" id="1_4as0w"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8s18r"]
 
