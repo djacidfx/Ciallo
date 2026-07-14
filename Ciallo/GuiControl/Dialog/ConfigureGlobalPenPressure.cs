@@ -67,7 +67,7 @@ public partial class ConfigureGlobalPenPressure : AcceptDialog
     }
 
     private void UpdatePressureReadout(float raw, float mapped) =>
-        PressureReadout.Text = $"pen pressure  raw {raw:F2}  →  mapped {mapped:F2}";
+        PressureReadout.Text = $"{"Pen pressure".Tr()}  {"raw".Tr()} {raw:F2}  →  {"mapped".Tr()} {mapped:F2}";
 
     private void PopulateBrands()
     {
