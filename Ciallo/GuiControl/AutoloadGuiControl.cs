@@ -15,6 +15,8 @@ public partial class AutoloadGuiControl : Node
         {
             var previousDocument = pair.Previous;
             var document = pair.Current;
+            var canvasPanel = GetTree().GetNodesInGroup("UncategorizedControl")
+                .OfType<CanvasPanel>().Single();
             if (!previousDocument.IsNull)
             {
                 // View, overlay... are the children of paint panel
@@ -24,7 +26,11 @@ public partial class AutoloadGuiControl : Node
                 previousDocument.Get<TimelinePanel>().SetProcessInput(false);
             }
 
-            if (document.IsNull) return;
+            if (document.IsNull)
+            {
+                canvasPanel.ShowWelcome();
+                return;
+            }
 
             // Window title
             document.Get<CommandManager>().DocumentModified
@@ -43,8 +49,7 @@ public partial class AutoloadGuiControl : Node
 
             // Paint panel
             var paintPanel = PaintPanel.New();
-            GetTree().GetNodesInGroup("UncategorizedControl")
-                .OfType<PaintPanelContainer>().Single().AddChild(paintPanel);
+            canvasPanel.ShowDocument(paintPanel);
             document.AddNode(paintPanel);
 
             var worldView = paintPanel.GetNode<WorldView>("%WorldView");

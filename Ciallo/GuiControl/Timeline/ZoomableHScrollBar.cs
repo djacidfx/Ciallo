@@ -136,15 +136,23 @@ public partial class ZoomableHScrollBar : Control
     private (float L, float R) GetDisplayThumb()
     {
         float trackPx = ScrollZoneWidth;
-        if (trackPx <= 0f) return (0f, MinThumbWidth);
+        if (trackPx <= 0f) return (0f, 0f);
 
         var (virtualStartFrame, virtualRangeFrames) = ComputeVirtualBounds();
         float virtualRangePx = virtualRangeFrames * _ppf;
-        float thumbW = Mathf.Clamp(trackPx * Size.X / virtualRangePx, MinThumbWidth, trackPx);
+        float thumbW = Mathf.Min(
+            Mathf.Max(trackPx * Size.X / virtualRangePx, MinThumbWidth),
+            trackPx
+        );
         // Thumb position is relative to the virtual-space left edge, not absolute scroll=0.
         float thumbLeft = (_scrollOffset - virtualStartFrame * _ppf) / virtualRangePx * trackPx;
         thumbLeft = Mathf.Clamp(thumbLeft, 0f, trackPx - thumbW);
         return (thumbLeft, thumbLeft + thumbW);
+    }
+
+    private float GetDisplayGrabZoneWidth(float thumbLeft, float thumbRight)
+    {
+        return Mathf.Min(GrabZoneWidth, (thumbRight - thumbLeft) * 0.5f);
     }
 
     // ── Drawing ──────────────────────────────────────────────────────────────
@@ -152,17 +160,20 @@ public partial class ZoomableHScrollBar : Control
     public override void _Draw()
     {
         float h = Size.Y;
+        if (ScrollZoneWidth <= 0f || h <= 0f) return;
+
         var (thumbLeft, thumbRight) = GetDisplayThumb();
+        float grabZoneWidth = GetDisplayGrabZoneWidth(thumbLeft, thumbRight);
         float trackOffset = ScrollZoneOffset;
-        const float pad = 2f;
+        float pad = Mathf.Min(2f, h * 0.5f);
 
         DrawRect(new Rect2(trackOffset, 0f, ScrollZoneWidth, h), TrackColor);
 
         var thumbColor = _dragMode != DragMode.None ? ThumbActiveColor : ThumbColor;
         DrawRect(new Rect2(thumbLeft + trackOffset, pad, thumbRight - thumbLeft, h - pad * 2f), thumbColor);
 
-        DrawRect(new Rect2(thumbLeft + trackOffset, 0f, GrabZoneWidth, h), GrabHandleColor);
-        DrawRect(new Rect2(thumbRight - GrabZoneWidth + trackOffset, 0f, GrabZoneWidth, h), GrabHandleColor);
+        DrawRect(new Rect2(thumbLeft + trackOffset, 0f, grabZoneWidth, h), GrabHandleColor);
+        DrawRect(new Rect2(thumbRight - grabZoneWidth + trackOffset, 0f, grabZoneWidth, h), GrabHandleColor);
     }
 
     // ── Input ────────────────────────────────────────────────────────────────
@@ -174,6 +185,9 @@ public partial class ZoomableHScrollBar : Control
             if (btn.Pressed)
             {
                 var (thumbLeft, thumbRight) = GetDisplayThumb();
+                if (thumbLeft == thumbRight) return;
+
+                float grabZoneWidth = GetDisplayGrabZoneWidth(thumbLeft, thumbRight);
                 float trackLocalX = btn.Position.X - ScrollZoneOffset;
 
                 _dragScrollOffset = _scrollOffset;
@@ -182,9 +196,9 @@ public partial class ZoomableHScrollBar : Control
                 _dragThumbLeft = thumbLeft;
                 _dragThumbRight = thumbRight;
 
-                if (trackLocalX >= thumbLeft && trackLocalX < thumbLeft + GrabZoneWidth)
+                if (trackLocalX >= thumbLeft && trackLocalX < thumbLeft + grabZoneWidth)
                     _dragMode = DragMode.ZoomLeft;
-                else if (trackLocalX > thumbRight - GrabZoneWidth && trackLocalX <= thumbRight)
+                else if (trackLocalX > thumbRight - grabZoneWidth && trackLocalX <= thumbRight)
                     _dragMode = DragMode.ZoomRight;
                 else if (trackLocalX >= thumbLeft && trackLocalX <= thumbRight)
                     _dragMode = DragMode.Scroll;
@@ -204,6 +218,12 @@ public partial class ZoomableHScrollBar : Control
         {
             float mouseDx = motion.Position.X - _dragMouseX;
             float trackPx = ScrollZoneWidth;
+            if (trackPx <= 0f)
+            {
+                _dragMode = DragMode.None;
+                return;
+            }
+
             float virtualRangePx = _dragVirtualBounds.Range * _ppf;
 
             var (virtualStartFrame, virtualRangeFrames) = _dragVirtualBounds;
@@ -225,7 +245,6 @@ public partial class ZoomableHScrollBar : Control
                 }
                 case DragMode.ZoomLeft:
                 {
-                    if (trackPx <= 0f) break;
                     float anchoredRightFrame = TrackPxToFrame(_dragThumbRight);
                     float newThumbLeft = _dragThumbLeft + mouseDx;
                     float newViewportLeft = TrackPxToFrame(newThumbLeft);
@@ -237,7 +256,6 @@ public partial class ZoomableHScrollBar : Control
                 }
                 case DragMode.ZoomRight:
                 {
-                    if (trackPx <= 0f) break;
                     float anchoredLeftFrame = TrackPxToFrame(_dragThumbLeft);
                     float newThumbRight = _dragThumbRight + mouseDx;
                     float newViewportRight = TrackPxToFrame(newThumbRight);
@@ -271,11 +289,12 @@ public partial class ZoomableHScrollBar : Control
     public override int _GetCursorShape(Vector2 atPosition)
     {
         var (thumbLeft, thumbRight) = GetDisplayThumb();
+        float grabZoneWidth = GetDisplayGrabZoneWidth(thumbLeft, thumbRight);
         float trackLocalX = atPosition.X - ScrollZoneOffset;
 
-        if (trackLocalX >= thumbLeft && trackLocalX < thumbLeft + GrabZoneWidth)
+        if (trackLocalX >= thumbLeft && trackLocalX < thumbLeft + grabZoneWidth)
             return (int)CursorShape.Hsize;
-        if (trackLocalX > thumbRight - GrabZoneWidth && trackLocalX <= thumbRight)
+        if (trackLocalX > thumbRight - grabZoneWidth && trackLocalX <= thumbRight)
             return (int)CursorShape.Hsize;
 
         return (int)CursorShape.Arrow;
