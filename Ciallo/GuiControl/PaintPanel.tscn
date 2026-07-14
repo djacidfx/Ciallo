@@ -62,10 +62,12 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 4
 script = ExtResource("2_jsupi")
-MinValue = 0.01
-MaxValue = 100.0
+MinValue = 0.1
+MaxValue = 10.0
 Value = 1.0
 ExpEdit = true
+AllowLesser = true
+AllowGreater = true
 metadata/_custom_type_script = "uid://b1dclx7d0dgng"
 
 [node name="VSeparator" type="VSeparator" parent="VBoxContainer/ScrollContainerForClippingMinSize/Bar/HBoxContainer" unique_id=1534472719]
