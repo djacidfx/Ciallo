@@ -230,7 +230,8 @@ SIGGRAPH 2023 Talk
 
 Building the core part of Ciallo is the same as building a standard Godot C# project with a custom Godot editor:
 
-- Set up our [custom Godot editor](https://github.com/ShenCiao/godot/releases) and .NET 10. You can follow a [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw), but pay attention to the version.
+- Install Git LFS, then run `git lfs pull` in the repository.
+- Set up the latest release of our [custom Godot editor](https://github.com/ShenCiao/godot/releases) and the .NET 10 SDK. You can follow a [video guide](https://www.youtube.com/watch?v=7nExKQn1CAw).
 
 Go to [Contributing Tab](https://github.com/ShenCiao/Ciallo?tab=contributing-ov-file#how-to-build) for a more complete guide.
 

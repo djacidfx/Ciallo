@@ -6,6 +6,7 @@
 .claude/
 .vscode
 *.lscache
+.VSCodeCounter/
 
 #----------------------------------------------------------------------
 # copied from https://gist.github.com/drch-/00d98ab2b93b930f55e0f7c62abc4af2.js
@@ -359,3 +360,7 @@ MigrationBackup/
 !.vscode/extensions.json
 # Added by code-review-graph
 .code-review-graph/
+
+# Local agent instructions and Fennara tooling
+/AGENTS.md
+/Ciallo/addons/fennara/
